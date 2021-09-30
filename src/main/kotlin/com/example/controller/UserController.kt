@@ -2,14 +2,15 @@ package com.example.controller
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.example.entities.*
-import com.example.models.JwtTokenBody
-import com.example.models.LoginBody
-import com.example.models.RegistrationResponse
-import com.example.models.RegistrationBody
+import com.example.models.*
+import com.example.utils.AppConstants
 import com.example.utils.currentTimeInUTC
+import org.apache.commons.mail.DefaultAuthenticator
+import org.apache.commons.mail.SimpleEmail
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
+import kotlin.random.Random
 
 class UserController {
     fun registration(registrationBody: RegistrationBody) = transaction {
@@ -26,6 +27,13 @@ class UserController {
             UsersProfileEntity.new {
                 profileId = EntityID(UUID.randomUUID().toString(), UsersProfileTable)
                 user_id = inserted.userId.value
+                created_at = currentTimeInUTC().toString()
+                updated_at = currentTimeInUTC().toString()
+            }
+            UserHasTypeEntity.new {
+                id_ = EntityID(UUID.randomUUID().toString(), UserHasTypeTable)
+                user_id = inserted.userId.value
+                user_type_id = registrationBody.userType
                 created_at = currentTimeInUTC().toString()
                 updated_at = currentTimeInUTC().toString()
             }
@@ -49,6 +57,7 @@ class UserController {
         return@transaction userEntity?.let {
             if (BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), it.password).verified) {
                 it.password = BCrypt.withDefaults().hashToString(12, changePassword.newPassword.toCharArray())
+                it.updated_at = currentTimeInUTC().toString()
                 it
             } else {
                 return@transaction changePassword
@@ -58,9 +67,32 @@ class UserController {
         }
     }
 
-    fun forgetPassword() {
-
+    fun forgetPassword(forgetPasswordBody: ForgetPasswordBody) = transaction {
+        val userEntity = UsersEntity.find { UsersTable.email eq forgetPasswordBody.email }.toList().singleOrNull()
+        return@transaction userEntity?.let {
+            val verificationCode = Random.nextInt(1000, 9999).toString()
+            it.verification_code = verificationCode
+            VerificationCode(verificationCode)
+        } ?: run {
+            null
+        }
     }
+
+    fun confirmPassword(confirmPasswordBody: ConfirmPasswordBody) = transaction {
+        val userEntity = UsersEntity.find { UsersTable.email eq confirmPasswordBody.email }.toList().singleOrNull()
+        return@transaction userEntity?.let {
+            if (confirmPasswordBody.verificationCode == it.verification_code) {
+                it.password = BCrypt.withDefaults().hashToString(12, confirmPasswordBody.password.toCharArray())
+                it.verification_code = null
+                AppConstants.DataBaseTransaction.FOUND
+            } else {
+                AppConstants.DataBaseTransaction.NOT_FOUND
+            }
+        } ?: run {
+            null
+        }
+    }
+
 
     fun updateProfile(userId: String, userProfile: UserProfile?) = transaction {
         val userProfileEntity = UsersProfileEntity.find { UsersProfileTable.user_id eq userId }.toList().singleOrNull()

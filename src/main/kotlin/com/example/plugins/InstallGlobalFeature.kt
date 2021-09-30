@@ -3,10 +3,12 @@ package com.example.plugins
 import com.example.controller.UserController
 import com.example.models.JwtTokenBody
 import com.example.utils.JwtConfig
+import freemarker.cache.ClassTemplateLoader
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.auth.jwt.*
 import io.ktor.features.*
+import io.ktor.freemarker.*
 import io.ktor.gson.*
 import io.ktor.routing.*
 
@@ -22,6 +24,9 @@ fun Application.installGlobalFeature() {
             setPrettyPrinting()
            // serializeNulls()
         }
+    }
+    install(FreeMarker) {
+        templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
     }
     install(Authentication) {
         /**

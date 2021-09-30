@@ -12,11 +12,12 @@ object UsersTable : IdTable<String>("users") {
     val email = text("email")
     val password = text("password")
     val mobile_number = text("mobile_number").nullable()
-    val email_verified_at = text("email_verified_at").nullable()
+    val email_verified_at = text("email_verified_at").nullable() // so far unkmown
     val remember_token = text("remember_token").nullable()
+    val verification_code = text("verification_code").nullable() // verification_code
     val created_at = text("created_at").nullable()
     val updated_at = text("updated_at").nullable()
-    val is_verified = text("is_verified").nullable()
+    val is_verified = text("is_verified").nullable() // email verified by validation code
     override val primaryKey = PrimaryKey(id)
 }
 
@@ -29,6 +30,7 @@ class UsersEntity(id: EntityID<String>) : Entity<String>(id)  {
     var mobile_number by UsersTable.mobile_number
     var email_verified_at by UsersTable.email_verified_at
     var remember_token by UsersTable.remember_token
+    var verification_code by UsersTable.verification_code
     var created_at by UsersTable.created_at
     var updated_at by UsersTable.updated_at
     var is_verified by UsersTable.is_verified
@@ -45,3 +47,4 @@ data class UsersResponse(  val userId :String,
                            val isVerified :String?)
 
 data class ChangePassword(val oldPassword:String, val newPassword:String)
+data class VerificationCode(val verificationCode:String)

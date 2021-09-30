@@ -31,9 +31,9 @@ dependencies {
     implementation( "io.ktor:ktor-auth-jwt:$ktor_version")
 
     // exposed ORM library
-    implementation("org.jetbrains.exposed:exposed-core:0.34.1")
-    implementation( "org.jetbrains.exposed:exposed-dao:0.34.1")
-    implementation( "org.jetbrains.exposed:exposed-jdbc:0.34.1")
+    implementation("org.jetbrains.exposed:exposed-core:0.35.1")
+    implementation( "org.jetbrains.exposed:exposed-dao:0.35.1")
+    implementation( "org.jetbrains.exposed:exposed-jdbc:0.35.1")
 
     // postgresql
     implementation( "org.postgresql:postgresql:42.2.23")
@@ -41,6 +41,13 @@ dependencies {
 
     // password hashing
     implementation("at.favre.lib:bcrypt:0.9.0")
+    // date time
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
+    // mail server
+    implementation("org.apache.commons:commons-email:1.5")
+
+    // email templete
+    implementation( "io.ktor:ktor-freemarker:$ktor_version")
+
 
 }
