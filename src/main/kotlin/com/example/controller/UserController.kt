@@ -5,34 +5,39 @@ import com.example.entities.*
 import com.example.models.*
 import com.example.utils.AppConstants
 import com.example.utils.currentTimeInUTC
+import com.example.utils.toMap
+import com.google.gson.Gson
+import kotlinx.datetime.LocalDateTime
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.SimpleEmail
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.load
+import org.jetbrains.exposed.dao.with
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 import kotlin.random.Random
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.isAccessible
 
 class UserController {
     fun registration(registrationBody: RegistrationBody) = transaction {
         val userEntity = UsersEntity.find { UsersTable.email eq registrationBody.email }.toList().singleOrNull()
         return@transaction if (userEntity == null) {
-            val inserted = UsersEntity.new {
-                userId = EntityID(UUID.randomUUID().toString(), UsersTable)
+            val inserted = UsersEntity.new(UUID.randomUUID().toString()) {
                 user_name = registrationBody.userName
                 email = registrationBody.email
                 password = BCrypt.withDefaults().hashToString(12, registrationBody.password.toCharArray())
-                created_at = currentTimeInUTC().toString()
-                updated_at = currentTimeInUTC().toString()
+                updated_at = java.time.LocalDateTime.now()
             }
-            UsersProfileEntity.new {
-                profileId = EntityID(UUID.randomUUID().toString(), UsersProfileTable)
-                user_id = inserted.userId.value
-                created_at = currentTimeInUTC().toString()
-                updated_at = currentTimeInUTC().toString()
+            UsersProfileEntity.new(UUID.randomUUID().toString()) {
+                user_id = inserted.id
+                updated_at = java.time.LocalDateTime.now()
             }
-            UserHasTypeEntity.new {
-                id_ = EntityID(UUID.randomUUID().toString(), UserHasTypeTable)
-                user_id = inserted.userId.value
+            UserHasTypeEntity.new(UUID.randomUUID().toString()) {
+                user_id = inserted.id
                 user_type_id = registrationBody.userType
                 created_at = currentTimeInUTC().toString()
                 updated_at = currentTimeInUTC().toString()
@@ -42,14 +47,22 @@ class UserController {
     }
 
     fun login(loginBody: LoginBody) = transaction {
-        return@transaction UsersEntity.find { UsersTable.email eq loginBody.email }.toList().singleOrNull()
+        val query = UsersTable.leftJoin(UserHasTypeTable).select { UsersTable.email eq loginBody.email }
+        val result = UsersEntity.wrapRows(query).first()
+        if (BCrypt.verifyer().verify(loginBody.password.toCharArray(), result.password).verified && result.userType.user_type_id == loginBody.userType) {
+            return@transaction result.userResponse()
+        } else null
     }
 
     fun jwtVerification(jwtTokenBody: JwtTokenBody) = transaction {
         val usersEntity = UsersEntity.find { UsersTable.email eq jwtTokenBody.email }.toList().singleOrNull()
-        return@transaction if (usersEntity != null) {
-            JwtTokenBody(usersEntity.id.value, usersEntity.email)
-        } else null
+        println("user : ${usersEntity?.userType}")
+        usersEntity?.let {
+            return@transaction if (usersEntity != null) {
+               // JwtTokenBody(usersEntity.id.value, usersEntity.email)
+                JwtTokenBody(usersEntity.id.value, usersEntity.email, usersEntity.userType.user_type_id)
+            } else null
+        }
     }
 
     fun changePassword(userId: String, changePassword: ChangePassword) = transaction {
@@ -57,13 +70,11 @@ class UserController {
         return@transaction userEntity?.let {
             if (BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), it.password).verified) {
                 it.password = BCrypt.withDefaults().hashToString(12, changePassword.newPassword.toCharArray())
-                it.updated_at = currentTimeInUTC().toString()
+                it.updated_at = java.time.LocalDateTime.now()
                 it
             } else {
                 return@transaction changePassword
             }
-        } ?: run {
-            null
         }
     }
 
@@ -73,8 +84,6 @@ class UserController {
             val verificationCode = Random.nextInt(1000, 9999).toString()
             it.verification_code = verificationCode
             VerificationCode(verificationCode)
-        } ?: run {
-            null
         }
     }
 
@@ -88,8 +97,6 @@ class UserController {
             } else {
                 AppConstants.DataBaseTransaction.NOT_FOUND
             }
-        } ?: run {
-            null
         }
     }
 
@@ -111,10 +118,8 @@ class UserController {
             it.marital_status = userProfile?.maritalStatus ?: it.marital_status
             it.post_code = userProfile?.postCode ?: it.post_code
             it.gender = userProfile?.gender ?: it.gender
-            it.updated_at = currentTimeInUTC().toString()
+            it.updated_at = java.time.LocalDateTime.now()
             it
-        } ?: run {
-            null
         }
     }
 

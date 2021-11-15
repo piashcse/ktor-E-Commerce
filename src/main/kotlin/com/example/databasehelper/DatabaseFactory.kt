@@ -6,12 +6,15 @@ import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.SchemaUtils.create
+import org.jetbrains.exposed.sql.SchemaUtils.createMissingTablesAndColumns
 
 object DatabaseFactory {
     fun init() {
         initDB()
         transaction {
-            create(UserTypeTable, UserHasTypeTable, UsersTable, UsersProfileTable)
+            //create(UsersTable, UserHasTypeTable)
+             create(UserTypeTable, UserHasTypeTable, UsersTable, UsersProfileTable)
+             create(ProductCategoryTable, ProductSubCategoryTable, ProductTable, ProductSizeTable, ProductColorTable)
         }
     }
 

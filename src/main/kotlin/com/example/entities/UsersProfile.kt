@@ -5,10 +5,14 @@ import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.javatime.CurrentDateTime
+import org.jetbrains.exposed.sql.javatime.datetime
 
 object UsersProfileTable : IdTable<String>("users_profile") {
-    override val id: Column<EntityID<String>> = text("user_profile_id").uniqueIndex().entityId()
-    val user_id = text("user_id").references(UsersTable.id)
+    override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
+
+    //val user_id = text("user_id").references(UsersTable.id)
+    val user_id = reference("user_id", UsersTable.id)
     val user_profile_image = text("user_profile_image").nullable()
     val first_name = text("first_name").nullable()
     val last_name = text("last_name").nullable()
@@ -23,8 +27,8 @@ object UsersProfileTable : IdTable<String>("users_profile") {
     val marital_status = text("marital_status").nullable()
     val post_code = text("post_code").nullable()
     val gender = text("gender").nullable()
-    val created_at = text("created_at")
-    val updated_at = text("updated_at")
+    val created_at = datetime("created_at").defaultExpression(CurrentDateTime()) // UTC time
+    val updated_at = datetime("updated_at")
     override val primaryKey = PrimaryKey(id)
 }
 
@@ -48,7 +52,25 @@ class UsersProfileEntity(id: EntityID<String>) : Entity<String>(id) {
     var gender by UsersProfileTable.gender
     var created_at by UsersProfileTable.created_at
     var updated_at by UsersProfileTable.updated_at
-    fun userProfileResponse() = UserProfile(user_id, user_profile_image, first_name, last_name, secondary_mobile_number, fax_number, street_address, city, identification_type, identification_no, occupation, user_description, marital_status, post_code, gender, created_at, updated_at)
+    fun userProfileResponse() = UserProfile(
+        user_id.value,
+        user_profile_image,
+        first_name,
+        last_name,
+        secondary_mobile_number,
+        fax_number,
+        street_address,
+        city,
+        identification_type,
+        identification_no,
+        occupation,
+        user_description,
+        marital_status,
+        post_code,
+        gender,
+        created_at.toString(),
+        updated_at.toString()
+    )
 }
 
 data class UserProfile(

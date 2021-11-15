@@ -8,6 +8,12 @@ object AppConstants {
         const val MERCHANT = "3"
         const val CUSTOMER = "4"
     }
+    object RoleManagement{
+        const val SUPER_ADMIN = "super_admin"
+        const val ADMIN = "admin"
+        const val MERCHANT = "merchant"
+        //const val CUSTOMER = "" default auth will be customer
+    }
     object ErrorMessage {
         const val UNAUTHORIZED = "Unauthorized api call"
         const val INTERNAL_SERVER_ERROR = "Internal server error"

@@ -1,16 +1,28 @@
 package com.example.plugins
 
 import com.example.controller.UserController
+import com.example.models.GoogleLogin
 import com.example.models.JwtTokenBody
+import com.example.utils.AppConstants
 import com.example.utils.JwtConfig
 import freemarker.cache.ClassTemplateLoader
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.auth.jwt.*
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.json.serializer.*
+import io.ktor.client.request.*
 import io.ktor.features.*
 import io.ktor.freemarker.*
 import io.ktor.gson.*
+import io.ktor.http.*
+import io.ktor.request.*
+import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.sessions.*
+import kotlinx.serialization.SerialName
 
 fun Application.installGlobalFeature() {
     install(Compression)
@@ -22,11 +34,16 @@ fun Application.installGlobalFeature() {
     install(ContentNegotiation) {
         gson {
             setPrettyPrinting()
-           // serializeNulls()
+            // serializeNulls()
         }
     }
     install(FreeMarker) {
         templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
+    }
+    val httpClient = HttpClient(CIO) {
+        install(JsonFeature) {
+            serializer = KotlinxSerializer()
+        }
     }
     install(Authentication) {
         /**
@@ -34,18 +51,70 @@ fun Application.installGlobalFeature() {
          * If the token is valid, the corresponding [User] is fetched from the database.
          * The [User] can then be accessed in each [ApplicationCall].
          */
-        jwt {
+        jwt{
             verifier(JwtConfig.verifier)
             realm = "ktor.io"
             validate {
                 val userId = it.payload.getClaim("userId").asString()
                 val email = it.payload.getClaim("email").asString()
-                if (userId != null && email != null) {
-                    UserController().jwtVerification(JwtTokenBody(userId, email))
+                val userType = it.payload.getClaim("userType").asString()
+                println("auth : $userType")
+                if (userId != null && email != null && userType != null) {
+                    if (userType == AppConstants.UserType.CUSTOMER){
+                        UserController().jwtVerification(JwtTokenBody(userId, email, userType))
+                    }else null
                 } else {
                     null
                 }
             }
         }
+        jwt(AppConstants.RoleManagement.ADMIN) {
+            verifier(JwtConfig.verifier)
+            realm = "ktor.io"
+            validate {
+                val userId = it.payload.getClaim("userId").asString()
+                val email = it.payload.getClaim("email").asString()
+                val userType = it.payload.getClaim("userType").asString()
+                println("auth : $userType")
+                if (userId != null && email != null && userType != null) {
+                    if (userType == AppConstants.UserType.ADMIN){
+                        UserController().jwtVerification(JwtTokenBody(userId, email, userType))
+                    }else null
+                } else {
+                    null
+                }
+            }
+        }
+        jwt(AppConstants.RoleManagement.MERCHANT){
+            verifier(JwtConfig.verifier)
+            realm = "ktor.io"
+            validate {
+                val userId = it.payload.getClaim("userId").asString()
+                val email = it.payload.getClaim("email").asString()
+                val userType = it.payload.getClaim("userType").asString()
+                if (userId != null && email != null && userType != null) {
+                    if (userType == AppConstants.UserType.MERCHANT){
+                        UserController().jwtVerification(JwtTokenBody(userId, email, userType))
+                    }else null
+                } else {
+                    null
+                }
+            }
+        }
+        /*oauth("auth-oauth-google") {
+            urlProvider = { "http://localhost:8080/callback" }
+            providerLookup = {
+                OAuthServerSettings.OAuth2ServerSettings(
+                    name = "google",
+                    authorizeUrl = "https://accounts.google.com/o/oauth2/auth",
+                    accessTokenUrl = "https://accounts.google.com/o/oauth2/token",
+                    requestMethod = HttpMethod.Post,
+                    clientId = System.getenv("165959276467-pq9voon4cucgobe583vdbesnbqum7qae.apps.googleusercontent.com"),
+                    clientSecret = System.getenv("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"),
+                    defaultScopes = listOf("https://www.googleapis.com/auth/userinfo.profile"),
+                )
+            }
+            client = httpClient
+        }*/
     }
 }

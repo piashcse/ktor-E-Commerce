@@ -1,12 +1,15 @@
-package com.example.plugins
+package com.example.routing
 
-import at.favre.lib.crypto.bcrypt.BCrypt
 import com.example.controller.UserController
 import com.example.entities.ChangePassword
 import com.example.entities.UserProfile
 import com.example.entities.UsersEntity
 import com.example.models.*
 import com.example.utils.*
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.gson.GsonFactory
 import helpers.JsonResponse
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -16,10 +19,13 @@ import io.ktor.http.content.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import kotlinx.serialization.SerialName
 import org.apache.commons.mail.DefaultAuthenticator
-import org.apache.commons.mail.HtmlEmail
 import org.apache.commons.mail.SimpleEmail
 import java.io.File
+import java.util.*
+import javax.naming.AuthenticationException
+
 
 fun Route.userRoute(userController: UserController) {
     route("user/") {
@@ -55,22 +61,19 @@ fun Route.userRoute(userController: UserController) {
             try {
                 val db = userController.login(loginBody)
                 db?.let {
-                    if (BCrypt.verifyer().verify(loginBody.password.toCharArray(), it.password).verified) {
                         val loginResponse =
-                            LoginResponse(db.userResponse(), JwtConfig.makeToken(JwtTokenBody(db.id.value, db.email)))
+                           LoginResponse(it, JwtConfig.makeToken(JwtTokenBody(db.id , db.email, db.userType.user_type_id)))
                         call.respond(JsonResponse.success(loginResponse, HttpStatusCode.OK))
-                    } else {
-                        call.respond(JsonResponse.failure("Email or password is wrong", HttpStatusCode.BadRequest))
-                    }
                 } ?: run {
-                    throw UserNotExistException()
+                    call.respond(JsonResponse.failure("Email or password is wrong", HttpStatusCode.BadRequest))
+                    //throw UserNotExistException()
                 }
             } catch (e: Throwable) {
                 throw e
             }
         }
 
-        authenticate {
+        authenticate(AppConstants.RoleManagement.ADMIN, AppConstants.RoleManagement.MERCHANT){
             post("update-profile") {
                 try {
                     val profileId = call.request.queryParameters["userId"]
@@ -189,7 +192,7 @@ fun Route.userRoute(userController: UserController) {
                      }*/
                     call.respond(
                         JsonResponse.failure(
-                            "${AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_SEND_TO}${forgetPasswordBody.email}",
+                            "${AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_SEND_TO} ${forgetPasswordBody.email}",
                             HttpStatusCode.OK
                         )
                     )
@@ -236,5 +239,34 @@ fun Route.userRoute(userController: UserController) {
                 throw e
             }
         }
+      //  authenticate("auth-oauth-google") {
+            post("/google-login") {
+                val accessToken = call.receive<GoogleLogin>()
+                val idToken:GoogleIdToken = authenticateByGoogle(accessToken.accessToken,"165959276467-4q6oqs1dt8dikeloe52g7283l42gcome.apps.googleusercontent.com")
+                println(idToken.payload.email)
+            }
+     //   }
     }
 }
+private fun authenticateByGoogle(idTokenString: String, clientId: String): GoogleIdToken {
+    val transport = NetHttpTransport()
+    val jsonFactory = GsonFactory()
+    val verifier: GoogleIdTokenVerifier = GoogleIdTokenVerifier
+        .Builder(transport, jsonFactory)
+        .setAudience(Collections.singletonList(clientId))
+        .setIssuer("https://accounts.google.com")
+        .build()
+
+    // 確認結果がnullの場合はAuthenticationExceptionをthrowしている
+    print("token : $idTokenString")
+    return verifier.verify(idTokenString) ?: throw AuthenticationException()
+}
+
+data class UserInfo(
+    val id: String,
+    val name: String,
+    @SerialName("given_name") val givenName: String,
+    @SerialName("family_name") val familyName: String,
+    val picture: String,
+    val locale: String
+)

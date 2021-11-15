@@ -1,10 +1,11 @@
 package com.example
 
 import com.example.databasehelper.DatabaseFactory
-import com.example.installfeature.installExceptionFeature
+import com.example.plugins.installExceptionFeature
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import com.example.plugins.*
+import com.example.routing.configureRouting
 import com.typesafe.config.ConfigFactory
 import io.ktor.config.*
 import org.slf4j.LoggerFactory

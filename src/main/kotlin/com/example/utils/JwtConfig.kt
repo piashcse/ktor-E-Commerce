@@ -3,7 +3,6 @@ package com.example.utils
 import com.auth0.jwt.*
 import com.auth0.jwt.algorithms.*
 import com.example.models.JwtTokenBody
-import com.example.models.LoginBody
 import java.util.*
 
 object JwtConfig {
@@ -25,6 +24,7 @@ object JwtConfig {
         .withIssuer(issuer)
         .withClaim("email", jwtTokenBody.email)
         .withClaim("userId", jwtTokenBody.userId)
+        .withClaim("userType", jwtTokenBody.userType)
         .withExpiresAt(getExpiration())
         .sign(algorithm)
 

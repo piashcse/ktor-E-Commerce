@@ -1,4 +1,4 @@
-package com.example.installfeature
+package com.example.plugins
 
 import com.example.utils.AppConstants
 import com.example.utils.EmailNotExist
@@ -10,11 +10,12 @@ import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.response.*
 import java.lang.NullPointerException
+import javax.naming.AuthenticationException
 
 fun Application.installExceptionFeature(){
     install(StatusPages) {
         exception<Throwable> {
-            call.respond(JsonResponse.failure("${AppConstants.ErrorMessage.INTERNAL_SERVER_ERROR} : ${it.message}", HttpStatusCode.InternalServerError))
+            call.respond(JsonResponse.failure("${AppConstants.ErrorMessage.INTERNAL_SERVER_ERROR} : $it", HttpStatusCode.InternalServerError))
         }
         exception<MissingRequestParameterException> { exception ->
             call.respond(JsonResponse.failure(exception.message,  HttpStatusCode.BadRequest))
@@ -36,7 +37,7 @@ fun Application.installExceptionFeature(){
         }
         exception<NullPointerException> {
             call.respond(
-                JsonResponse.failure("Missing parameter cause null", HttpStatusCode.BadRequest)
+                JsonResponse.failure("Missing parameter cause null ${it.message}", HttpStatusCode.BadRequest)
             )
         }
 
@@ -49,6 +50,12 @@ fun Application.installExceptionFeature(){
         }
         exception<EmailNotExist> {
             call.respond(JsonResponse.failure("Email not exist", HttpStatusCode.BadRequest))
+        }
+        exception<NoSuchElementException> {
+            call.respond(JsonResponse.failure("User not exist", HttpStatusCode.BadRequest))
+        }
+        exception<AuthenticationException> {
+            call.respond(JsonResponse.failure(it.message, HttpStatusCode.Unauthorized))
         }
     }
 }

@@ -1,5 +1,6 @@
-package com.example.plugins
+package com.example.routing
 
+import com.example.controller.CategoryController
 import com.example.controller.UserController
 import io.ktor.routing.*
 import io.ktor.application.*
@@ -12,5 +13,6 @@ fun Application.configureRouting() {
             }
         }
         userRoute(UserController())
+        categoryRouter(CategoryController())
     }
 }
