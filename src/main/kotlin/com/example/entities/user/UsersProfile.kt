@@ -1,4 +1,4 @@
-package com.example.entities
+package com.example.entities.user
 
 import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass
@@ -10,8 +10,6 @@ import org.jetbrains.exposed.sql.javatime.datetime
 
 object UsersProfileTable : IdTable<String>("users_profile") {
     override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
-
-    //val user_id = text("user_id").references(UsersTable.id)
     val user_id = reference("user_id", UsersTable.id)
     val user_profile_image = text("user_profile_image").nullable()
     val first_name = text("first_name").nullable()
@@ -34,7 +32,6 @@ object UsersProfileTable : IdTable<String>("users_profile") {
 
 class UsersProfileEntity(id: EntityID<String>) : Entity<String>(id) {
     companion object : EntityClass<String, UsersProfileEntity>(UsersProfileTable)
-    var profileId by UsersProfileTable.id
     var user_id by UsersProfileTable.user_id
     var user_profile_image by UsersProfileTable.user_profile_image
     var first_name by UsersProfileTable.first_name

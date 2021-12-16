@@ -1,7 +1,5 @@
-package com.example.entities
+package com.example.entities.product
 
-import com.example.entities.ProductCategoryTable.entityId
-import com.example.entities.ProductCategoryTable.uniqueIndex
 import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.id.EntityID

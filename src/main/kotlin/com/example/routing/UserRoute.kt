@@ -1,11 +1,16 @@
 package com.example.routing
 
 import com.example.controller.UserController
-import com.example.entities.ChangePassword
-import com.example.entities.UserProfile
-import com.example.entities.UsersEntity
+import com.example.entities.user.ChangePassword
+import com.example.entities.user.UserProfile
+import com.example.entities.user.UsersEntity
 import com.example.models.*
+import com.example.models.user.*
+import com.example.plugins.ErrorMessage
 import com.example.utils.*
+import com.example.utils.EmailNotExist
+import com.example.utils.UserNotExistException
+import com.example.utils.UserTypeException
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -36,18 +41,14 @@ fun Route.userRoute(userController: UserController) {
                     throw MissingRequestParameterException(it.toString())
                 }
             }
-            if (!AppConstants.ALL_USERS_TYPE.contains(userBody.userType)) {
+            if (AppConstants.ALL_USERS_TYPE.contains(userBody.userType).not()) {
                 throw UserTypeException()
             }
-            try {
-                val db = userController.registration(userBody)
-                db?.let {
-                    call.respond(JsonResponse.success(it, HttpStatusCode.OK))
-                } ?: run {
-                    call.respond(JsonResponse.failure("User already exists", HttpStatusCode.BadRequest))
-                }
-            } catch (e: Throwable) {
-                throw e
+            val db = userController.registration(userBody)
+            db?.let {
+                call.respond(JsonResponse.success(it, HttpStatusCode.OK))
+            } ?: run {
+                throw UserNotExistException()
             }
         }
 
@@ -58,64 +59,57 @@ fun Route.userRoute(userController: UserController) {
                     throw MissingRequestParameterException(it.toString())
                 }
             }
-            try {
-                val db = userController.login(loginBody)
-                db?.let {
-                        val loginResponse =
-                           LoginResponse(it, JwtConfig.makeToken(JwtTokenBody(db.id , db.email, db.userType.user_type_id)))
-                        call.respond(JsonResponse.success(loginResponse, HttpStatusCode.OK))
-                } ?: run {
-                    call.respond(JsonResponse.failure("Email or password is wrong", HttpStatusCode.BadRequest))
-                    //throw UserNotExistException()
-                }
-            } catch (e: Throwable) {
-                throw e
+            val db = userController.login(loginBody)
+            db.let {
+                val loginResponse =
+                    LoginResponse(it, JwtConfig.makeToken(JwtTokenBody(db.id, db.email, db.userType.user_type_id)))
+                call.respond(JsonResponse.success(loginResponse, HttpStatusCode.OK))
             }
         }
 
-        authenticate(AppConstants.RoleManagement.ADMIN, AppConstants.RoleManagement.MERCHANT){
+        authenticate(AppConstants.RoleManagement.ADMIN, AppConstants.RoleManagement.MERCHANT) {
             post("update-profile") {
-                try {
-                    val profileId = call.request.queryParameters["userId"]
-                    if (profileId != null) {
-                        val profileBody = call.receive<UserProfile>()
-                        val db = userController.updateProfile(profileId, profileBody)
-                        db?.let {
-                            call.respond(JsonResponse.success(db.userProfileResponse(), HttpStatusCode.OK))
-                        } ?: run {
-                            throw UserNotExistException()
-                        }
-                    } else {
-                        throw MissingRequestParameterException(AppConstants.ErrorMessage.MissingParameter.PROFILE_ID)
+                val profileId = call.request.queryParameters["userId"]
+                if (profileId != null) {
+                    val profileBody = call.receive<UserProfile>()
+                    val db = userController.updateProfile(profileId, profileBody)
+                    db?.let {
+                        call.respond(JsonResponse.success(db.userProfileResponse(), HttpStatusCode.OK))
+                    } ?: run {
+                        throw UserNotExistException()
                     }
-                } catch (e: Throwable) {
-                    throw e
+                } else {
+                    throw MissingRequestParameterException(ErrorMessage.MissingParameter.PROFILE_ID)
                 }
             }
             post("change-password") {
-                try {
-                    val userId = call.request.queryParameters["userId"]
-                    if (userId != null) {
-                        val changePasswordBody = call.receive<ChangePassword>()
-                        nullProperties(changePasswordBody) {
-                            if (it.isNotEmpty()) {
-                                throw MissingRequestParameterException(it.toString())
-                            }
+                val userId = call.request.queryParameters["userId"]
+                if (userId != null) {
+                    val changePasswordBody = call.receive<ChangePassword>()
+                    nullProperties(changePasswordBody) {
+                        if (it.isNotEmpty()) {
+                            throw MissingRequestParameterException(it.toString())
                         }
-                        val db = userController.changePassword(userId, changePasswordBody)
-                        db?.let {
-                            if (it is UsersEntity)
-                                call.respond(JsonResponse.success(it.userResponse(), HttpStatusCode.OK))
-                            if (it is ChangePassword)
-                                call.respond(JsonResponse.failure("Old password is wrong", HttpStatusCode.OK))
-                        } ?: run {
-                            throw UserNotExistException()
-                        }
-                    } else {
-                        throw MissingRequestParameterException(AppConstants.ErrorMessage.MissingParameter.USER_ID)
                     }
-                } catch (e: Throwable) {
-                    throw e
+                    val db = userController.changePassword(userId, changePasswordBody)
+                    db?.let {
+                        if (it is UsersEntity) call.respond(
+                            JsonResponse.success(
+                                it.userResponse(),
+                                HttpStatusCode.OK
+                            )
+                        )
+                        if (it is ChangePassword) call.respond(
+                            JsonResponse.failure(
+                                "Old password is wrong",
+                                HttpStatusCode.OK
+                            )
+                        )
+                    } ?: run {
+                        throw UserNotExistException()
+                    }
+                } else {
+                    throw MissingRequestParameterException(ErrorMessage.MissingParameter.USER_ID)
                 }
             }
 
@@ -134,11 +128,15 @@ fun Route.userRoute(userController: UserController) {
                             File("${AppConstants.Image.IMAGE_FOLDER_LOCATION}$fileName").writeBytes(fileBytes)
                         }
                         else -> {
-                            call.respond(JsonResponse.failure(AppConstants.ErrorMessage.IMAGE_UPLOAD_FAILED, HttpStatusCode.OK))
+                            call.respond(JsonResponse.failure(ErrorMessage.IMAGE_UPLOAD_FAILED, HttpStatusCode.OK))
                         }
                     }
                 }
-                call.respond(JsonResponse.success("$fileDescription is uploaded to 'uploads/$fileName", HttpStatusCode.OK))
+                call.respond(
+                    JsonResponse.success(
+                        "$fileDescription is uploaded to 'uploads/$fileName", HttpStatusCode.OK
+                    )
+                )
             }
 
         }
@@ -218,8 +216,7 @@ fun Route.userRoute(userController: UserController) {
                         AppConstants.DataBaseTransaction.FOUND -> {
                             call.respond(
                                 JsonResponse.success(
-                                    AppConstants.SuccessMessage.Password.PASSWORD_CHANGE_SUCCESS,
-                                    HttpStatusCode.OK
+                                    AppConstants.SuccessMessage.Password.PASSWORD_CHANGE_SUCCESS, HttpStatusCode.OK
                                 )
                             )
                         }
@@ -239,23 +236,24 @@ fun Route.userRoute(userController: UserController) {
                 throw e
             }
         }
-      //  authenticate("auth-oauth-google") {
-            post("/google-login") {
-                val accessToken = call.receive<GoogleLogin>()
-                val idToken:GoogleIdToken = authenticateByGoogle(accessToken.accessToken,"165959276467-4q6oqs1dt8dikeloe52g7283l42gcome.apps.googleusercontent.com")
-                println(idToken.payload.email)
-            }
-     //   }
+        //  authenticate("auth-oauth-google") {
+        post("/google-login") {
+            val accessToken = call.receive<GoogleLogin>()
+            val idToken: GoogleIdToken = authenticateByGoogle(
+                accessToken.accessToken, "165959276467-4q6oqs1dt8dikeloe52g7283l42gcome.apps.googleusercontent.com"
+            )
+            println(idToken.payload.email)
+        }
+        //   }
     }
 }
+
 private fun authenticateByGoogle(idTokenString: String, clientId: String): GoogleIdToken {
     val transport = NetHttpTransport()
     val jsonFactory = GsonFactory()
-    val verifier: GoogleIdTokenVerifier = GoogleIdTokenVerifier
-        .Builder(transport, jsonFactory)
-        .setAudience(Collections.singletonList(clientId))
-        .setIssuer("https://accounts.google.com")
-        .build()
+    val verifier: GoogleIdTokenVerifier =
+        GoogleIdTokenVerifier.Builder(transport, jsonFactory).setAudience(Collections.singletonList(clientId))
+            .setIssuer("https://accounts.google.com").build()
 
     // 確認結果がnullの場合はAuthenticationExceptionをthrowしている
     print("token : $idTokenString")

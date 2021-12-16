@@ -1,13 +1,10 @@
-package com.example.entities
+package com.example.entities.product
 
 import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass
-import org.jetbrains.exposed.dao.UUIDEntity
-import org.jetbrains.exposed.dao.UUIDEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.Column
-import java.util.*
 
 object ProductSubCategoryTable : IdTable<String>("product_sub_category") {
     override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()

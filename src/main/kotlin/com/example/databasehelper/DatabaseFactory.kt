@@ -1,12 +1,18 @@
 package com.example.databasehelper
 
-import com.example.entities.*
+import com.example.entities.product.*
+import com.example.entities.shop.Shop
+import com.example.entities.shop.ShopCategoryTable
+import com.example.entities.shop.ShopTable
+import com.example.entities.user.UserHasTypeTable
+import com.example.entities.user.UserTypeTable
+import com.example.entities.user.UsersProfileTable
+import com.example.entities.user.UsersTable
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.SchemaUtils.create
-import org.jetbrains.exposed.sql.SchemaUtils.createMissingTablesAndColumns
 
 object DatabaseFactory {
     fun init() {
@@ -14,6 +20,7 @@ object DatabaseFactory {
         transaction {
             //create(UsersTable, UserHasTypeTable)
              create(UserTypeTable, UserHasTypeTable, UsersTable, UsersProfileTable)
+             create(ShopTable, ShopCategoryTable)
              create(ProductCategoryTable, ProductSubCategoryTable, ProductTable, ProductSizeTable, ProductColorTable)
         }
     }

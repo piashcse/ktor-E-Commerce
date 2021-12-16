@@ -1,8 +1,6 @@
 package com.example.plugins
 
-import com.example.controller.UserController
-import com.example.models.GoogleLogin
-import com.example.models.JwtTokenBody
+import com.example.models.user.JwtTokenBody
 import com.example.utils.AppConstants
 import com.example.utils.JwtConfig
 import freemarker.cache.ClassTemplateLoader
@@ -22,7 +20,6 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.sessions.*
-import kotlinx.serialization.SerialName
 
 fun Application.installGlobalFeature() {
     install(Compression)
@@ -40,32 +37,22 @@ fun Application.installGlobalFeature() {
     install(FreeMarker) {
         templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
     }
-    val httpClient = HttpClient(CIO) {
-        install(JsonFeature) {
-            serializer = KotlinxSerializer()
-        }
-    }
     install(Authentication) {
         /**
          * Setup the JWT authentication to be used in [Routing].
          * If the token is valid, the corresponding [User] is fetched from the database.
          * The [User] can then be accessed in each [ApplicationCall].
          */
-        jwt{
+        jwt {
             verifier(JwtConfig.verifier)
             realm = "ktor.io"
             validate {
                 val userId = it.payload.getClaim("userId").asString()
                 val email = it.payload.getClaim("email").asString()
                 val userType = it.payload.getClaim("userType").asString()
-                println("auth : $userType")
-                if (userId != null && email != null && userType != null) {
-                    if (userType == AppConstants.UserType.CUSTOMER){
-                        UserController().jwtVerification(JwtTokenBody(userId, email, userType))
-                    }else null
-                } else {
-                    null
-                }
+                if (userType == AppConstants.UserType.CUSTOMER) {
+                    JwtTokenBody(userId, email, userType)
+                } else null
             }
         }
         jwt(AppConstants.RoleManagement.ADMIN) {
@@ -75,30 +62,21 @@ fun Application.installGlobalFeature() {
                 val userId = it.payload.getClaim("userId").asString()
                 val email = it.payload.getClaim("email").asString()
                 val userType = it.payload.getClaim("userType").asString()
-                println("auth : $userType")
-                if (userId != null && email != null && userType != null) {
-                    if (userType == AppConstants.UserType.ADMIN){
-                        UserController().jwtVerification(JwtTokenBody(userId, email, userType))
-                    }else null
-                } else {
-                    null
-                }
+                if (userType == AppConstants.UserType.ADMIN) {
+                    JwtTokenBody(userId, email, userType)
+                } else null
             }
         }
-        jwt(AppConstants.RoleManagement.MERCHANT){
+        jwt(AppConstants.RoleManagement.MERCHANT) {
             verifier(JwtConfig.verifier)
             realm = "ktor.io"
             validate {
                 val userId = it.payload.getClaim("userId").asString()
                 val email = it.payload.getClaim("email").asString()
                 val userType = it.payload.getClaim("userType").asString()
-                if (userId != null && email != null && userType != null) {
-                    if (userType == AppConstants.UserType.MERCHANT){
-                        UserController().jwtVerification(JwtTokenBody(userId, email, userType))
-                    }else null
-                } else {
-                    null
-                }
+                if (userType == AppConstants.UserType.MERCHANT) {
+                    JwtTokenBody(userId, email, userType)
+                } else null
             }
         }
         /*oauth("auth-oauth-google") {

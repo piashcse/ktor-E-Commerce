@@ -1,4 +1,4 @@
-package com.example.entities
+package com.example.entities.product
 
 import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass

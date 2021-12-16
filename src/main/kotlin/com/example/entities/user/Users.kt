@@ -1,4 +1,4 @@
-package com.example.entities
+package com.example.entities.user
 
 import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass
@@ -43,8 +43,6 @@ class UsersEntity(id: EntityID<String>) : Entity<String>(id) {
         mobile_number,
         email_verified_at,
         remember_token,
-        created_at.toString(),
-        updated_at.toString(),
         is_verified,
         userType.userHasTypeResponse()
     )
@@ -57,8 +55,6 @@ data class UsersResponse(
     val mobileNumber: String?,
     val emailVerifiedAt: String?,
     val rememberToken: String?,
-    val createdAt: String,
-    val updatedAt: String?,
     val isVerified: String?,
     var userType: UserHasType
 )

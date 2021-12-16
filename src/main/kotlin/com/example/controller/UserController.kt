@@ -1,26 +1,16 @@
 package com.example.controller
 
 import at.favre.lib.crypto.bcrypt.BCrypt
-import com.example.entities.*
-import com.example.models.*
+import com.example.entities.user.*
+import com.example.models.user.*
 import com.example.utils.AppConstants
+import com.example.utils.PasswordNotMatch
+import com.example.utils.UserTypeException
 import com.example.utils.currentTimeInUTC
-import com.example.utils.toMap
-import com.google.gson.Gson
-import kotlinx.datetime.LocalDateTime
-import org.apache.commons.mail.DefaultAuthenticator
-import org.apache.commons.mail.SimpleEmail
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.load
-import org.jetbrains.exposed.dao.with
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 import kotlin.random.Random
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.isAccessible
 
 class UserController {
     fun registration(registrationBody: RegistrationBody) = transaction {
@@ -49,17 +39,19 @@ class UserController {
     fun login(loginBody: LoginBody) = transaction {
         val query = UsersTable.leftJoin(UserHasTypeTable).select { UsersTable.email eq loginBody.email }
         val result = UsersEntity.wrapRows(query).first()
-        if (BCrypt.verifyer().verify(loginBody.password.toCharArray(), result.password).verified && result.userType.user_type_id == loginBody.userType) {
+        if (result.userType.user_type_id != loginBody.userType) throw UserTypeException()
+        if (BCrypt.verifyer().verify(
+                loginBody.password.toCharArray(), result.password
+            ).verified && result.userType.user_type_id == loginBody.userType
+        ) {
             return@transaction result.userResponse()
-        } else null
+        } else throw PasswordNotMatch()
     }
 
     fun jwtVerification(jwtTokenBody: JwtTokenBody) = transaction {
         val usersEntity = UsersEntity.find { UsersTable.email eq jwtTokenBody.email }.toList().singleOrNull()
-        println("user : ${usersEntity?.userType}")
         usersEntity?.let {
             return@transaction if (usersEntity != null) {
-               // JwtTokenBody(usersEntity.id.value, usersEntity.email)
                 JwtTokenBody(usersEntity.id.value, usersEntity.email, usersEntity.userType.user_type_id)
             } else null
         }

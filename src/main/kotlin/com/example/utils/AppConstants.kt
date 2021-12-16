@@ -9,21 +9,10 @@ object AppConstants {
         const val CUSTOMER = "4"
     }
     object RoleManagement{
-        const val SUPER_ADMIN = "super_admin"
-        const val ADMIN = "admin"
-        const val MERCHANT = "merchant"
+        const val SUPER_ADMIN = "super_admin" // 1
+        const val ADMIN = "admin" //2
+        const val MERCHANT = "merchant" // 3
         //const val CUSTOMER = "" default auth will be customer
-    }
-    object ErrorMessage {
-        const val UNAUTHORIZED = "Unauthorized api call"
-        const val INTERNAL_SERVER_ERROR = "Internal server error"
-        const val BAD_REQUEST = "Parameter mismatch"
-        const val USER_NOT_EXIT = "User not exist"
-        const val IMAGE_UPLOAD_FAILED = "Image upload is failed"
-        object MissingParameter{
-            const val PROFILE_ID ="profileId"
-            const val USER_ID ="userId"
-        }
     }
     object SuccessMessage{
         object Password{
