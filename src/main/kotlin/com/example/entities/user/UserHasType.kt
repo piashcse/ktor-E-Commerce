@@ -21,7 +21,6 @@ class UserHasTypeEntity(id: EntityID<String>) : Entity<String>(id) {
     var user_type_id by UserHasTypeTable.user_type_id
     var created_at by UserHasTypeTable.created_at
     var updated_at by UserHasTypeTable.updated_at
-
     //var users by UsersEntity referencedOn  UserHasTypeTable.user_id
     fun userHasTypeResponse() = UserHasType(id.toString(), user_type_id)
 }

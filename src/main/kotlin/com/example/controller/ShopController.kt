@@ -1,7 +1,7 @@
 package com.example.controller
 
 import com.example.entities.shop.*
-import com.example.utils.AlreadyExist
+import com.example.utils.CommonException
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
@@ -12,10 +12,36 @@ class ShopController {
             ShopCategoryEntity.find { ShopCategoryTable.shop_category_name eq shopCategoryName }.toList().singleOrNull()
         return@transaction if (categoryExist == null) {
             ShopCategoryEntity.new(UUID.randomUUID().toString()) {
-                this.shopCategoryName = shopCategoryName
+                shop_category_name = shopCategoryName
             }.shopCategoryResponse()
         } else {
-            throw AlreadyExist("Category name $shopCategoryName already exist")
+            throw CommonException("Category name $shopCategoryName already exist")
+        }
+    }
+
+    fun getShopCategories(offset: Int, limit: Int) = transaction {
+        val shopCategories = ShopCategoryEntity.all().limit(limit, offset.toLong())
+        return@transaction shopCategories.map {
+            it.shopCategoryResponse()
+        }
+    }
+
+    fun updateShopCategory(shopCategoryId: String, shopCategoryName: String) = transaction {
+        val shopCategoryExist =
+            ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
+        return@transaction shopCategoryExist?.apply {
+            shop_category_name = shopCategoryName
+        }?.shopCategoryResponse() ?: throw CommonException("Category id $shopCategoryId is not exist")
+    }
+
+    fun deleteShopCategory(shopCategoryId: String) = transaction {
+        val shopCategoryExist =
+            ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
+        return@transaction if (shopCategoryExist != null) {
+            shopCategoryExist.delete()
+            shopCategoryId
+        } else {
+            throw CommonException("Category id $shopCategoryId is not exist")
         }
     }
 
@@ -28,7 +54,7 @@ class ShopController {
                 shop_name = shopName
             }.shopResponse()
         } else {
-            throw AlreadyExist("Shop name $shopName already exist")
+            throw CommonException("Shop name $shopName already exist")
         }
     }
 }

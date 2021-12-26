@@ -15,7 +15,8 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
-import helpers.JsonResponse
+import com.example.utils.JsonResponse
+import com.example.utils.extension.nullProperties
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*

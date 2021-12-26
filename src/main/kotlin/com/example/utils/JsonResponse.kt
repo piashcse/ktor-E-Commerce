@@ -1,4 +1,4 @@
-package helpers
+package com.example.utils
 
 import io.ktor.http.HttpStatusCode
 

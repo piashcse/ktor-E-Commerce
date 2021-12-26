@@ -1,9 +1,8 @@
-package com.example.utils
+package com.example.utils.extension
 
 import kotlinx.datetime.*
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ResultRow
-import java.time.format.DateTimeFormatterBuilder
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 

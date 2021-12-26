@@ -6,7 +6,7 @@ import com.example.models.user.*
 import com.example.utils.AppConstants
 import com.example.utils.PasswordNotMatch
 import com.example.utils.UserTypeException
-import com.example.utils.currentTimeInUTC
+import com.example.utils.extension.currentTimeInUTC
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*

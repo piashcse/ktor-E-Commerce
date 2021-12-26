@@ -15,8 +15,8 @@ object ShopCategoryTable : IdTable<String>("shop_category") {
 class ShopCategoryEntity(id: EntityID<String>) : Entity<String>(id) {
     companion object : EntityClass<String, ShopCategoryEntity>(ShopCategoryTable)
 
-    var shopCategoryName by ShopCategoryTable.shop_category_name
-    fun shopCategoryResponse() = ShopCategory(id.value, shopCategoryName)
+    var shop_category_name by ShopCategoryTable.shop_category_name
+    fun shopCategoryResponse() = ShopCategory(id.value, shop_category_name)
 }
 
 data class ShopCategory(val id: String, val shopName: String)

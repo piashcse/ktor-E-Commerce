@@ -1,8 +1,7 @@
 package com.example.plugins
 
-import com.example.plugins.ErrorMessage.NULL_POINTER_ERROR
 import com.example.utils.*
-import helpers.JsonResponse
+import com.example.utils.JsonResponse
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
@@ -39,7 +38,7 @@ fun Application.installExceptionFeature() {
         }
         exception<NullPointerException> {
             call.respond(
-                JsonResponse.failure("$NULL_POINTER_ERROR ${it.message}", HttpStatusCode.BadRequest)
+                JsonResponse.failure("${ErrorMessage.NULL_POINTER_ERROR} ${it.message}", HttpStatusCode.BadRequest)
             )
         }
 
@@ -62,8 +61,8 @@ fun Application.installExceptionFeature() {
         exception<PasswordNotMatch> {
             call.respond(JsonResponse.failure(ErrorMessage.PASSWORD_IS_WRONG, HttpStatusCode.BadRequest))
         }
-        exception<ProductCategoryExist> {
-            call.respond(JsonResponse.failure(ErrorMessage.PRODUCT_CATEGORY_ALREADY_EXIST, HttpStatusCode.BadRequest))
+        exception<CommonException> {
+            call.respond(JsonResponse.failure(it.message, HttpStatusCode.BadRequest))
         }
     }
 }
@@ -78,7 +77,6 @@ object ErrorMessage {
     const val EMAIL_NOT_EXIST = "User not exist"
     const val PASSWORD_IS_WRONG = "Password is wrong"
     const val TYPE_CAST_EXCEPTION = "Type cast exception"
-    const val PRODUCT_CATEGORY_ALREADY_EXIST = "Product category already exist"
     const val NULL_POINTER_ERROR = "Null pointer error : "
 
     object MissingParameter {

@@ -1,12 +1,11 @@
 package com.example.routing
 
 import com.example.controller.ShopController
-import com.example.models.shop.AddShopCategory
-import com.example.models.shop.AddShop
+import com.example.models.shop.*
 import com.example.models.user.JwtTokenBody
 import com.example.utils.AppConstants
-import com.example.utils.nullProperties
-import helpers.JsonResponse
+import com.example.utils.extension.nullProperties
+import com.example.utils.JsonResponse
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
@@ -26,6 +25,44 @@ fun Route.shopRoute(shopController: ShopController) {
                     }
                 }
                 val db = shopController.createShopCategory(addShopCategory.shopCategoryName)
+                db.let {
+                    call.respond(JsonResponse.success(db, HttpStatusCode.OK))
+                }
+            }
+            post ("shop-categories") {
+                val shopCategories = call.receive<GetShopCategory>()
+                nullProperties(shopCategories) {
+                    if (it.isNotEmpty()) {
+                        throw MissingRequestParameterException(it.toString())
+                    }
+                }
+                val db = shopController.getShopCategories(shopCategories.offset, shopCategories.limit)
+                db.let {
+                    call.respond(JsonResponse.success(db, HttpStatusCode.OK))
+                }
+            }
+            delete("delete-shop-category") {
+                val deleteShopCategory = call.receive<DeleteShopCategory>()
+                nullProperties(deleteShopCategory) {
+                    if (it.isNotEmpty()) {
+                        throw MissingRequestParameterException(it.toString())
+                    }
+                }
+                val db = shopController.deleteShopCategory(deleteShopCategory.shopCategoryId)
+                db.let {
+                    call.respond(JsonResponse.success(db, HttpStatusCode.OK))
+                }
+            }
+            put("update-shop-category") {
+                val updateShopCategory = call.receive<UpdateShopCategory>()
+                nullProperties(updateShopCategory) {
+                    if (it.isNotEmpty()) {
+                        throw MissingRequestParameterException(it.toString())
+                    }
+                }
+                val db = shopController.updateShopCategory(
+                    updateShopCategory.shopCategoryId, updateShopCategory.shopCategoryName
+                )
                 db.let {
                     call.respond(JsonResponse.success(db, HttpStatusCode.OK))
                 }

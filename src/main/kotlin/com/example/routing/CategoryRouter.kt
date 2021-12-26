@@ -4,8 +4,8 @@ import com.example.controller.CategoryController
 import com.example.models.category.AddCategoryBody
 import com.example.models.user.JwtTokenBody
 import com.example.utils.AppConstants
-import com.example.utils.nullProperties
-import helpers.JsonResponse
+import com.example.utils.extension.nullProperties
+import com.example.utils.JsonResponse
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*

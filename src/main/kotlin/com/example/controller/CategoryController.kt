@@ -2,8 +2,7 @@ package com.example.controller
 
 import com.example.entities.product.ProductCategoryEntity
 import com.example.entities.product.ProductCategoryTable
-import com.example.utils.AlreadyExist
-import com.example.utils.ProductCategoryExist
+import com.example.utils.CommonException
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
@@ -17,7 +16,7 @@ class CategoryController {
                 product_category_name = productCategoryName
             }.productCategoryResponse()
         } else {
-            throw AlreadyExist("Product category name $productCategoryName already exist")
+            throw CommonException("Product category name $productCategoryName already exist")
         }
     }
 }
