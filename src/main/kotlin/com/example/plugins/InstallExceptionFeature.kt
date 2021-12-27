@@ -1,68 +1,75 @@
 package com.example.plugins
 
 import com.example.utils.*
-import com.example.utils.JsonResponse
-import io.ktor.application.*
-import io.ktor.features.*
 import io.ktor.http.*
-import io.ktor.response.*
-import java.lang.NullPointerException
-import javax.naming.AuthenticationException
+import io.ktor.server.application.*
+import io.ktor.server.plugins.*
+import io.ktor.server.response.*
 
 fun Application.installExceptionFeature() {
     install(StatusPages) {
-        exception<Throwable> {
+        exception<Throwable> { call, error ->
             call.respond(
-                JsonResponse.failure(
-                    "${ErrorMessage.INTERNAL_SERVER_ERROR} : $it", HttpStatusCode.InternalServerError
+                HttpStatusCode.InternalServerError, JsonResponse.failure(
+                    "${ErrorMessage.INTERNAL_SERVER_ERROR} : ${error.message}", HttpStatusCode.InternalServerError
                 )
             )
         }
-        exception<MissingRequestParameterException> { exception ->
-            call.respond(JsonResponse.failure(exception.message, HttpStatusCode.BadRequest))
+
+        status(HttpStatusCode.Unauthorized) { call, statusCode ->
+            call.respond(HttpStatusCode.Unauthorized, JsonResponse.failure(ErrorMessage.UNAUTHORIZED, statusCode))
         }
-        status(HttpStatusCode.Unauthorized) { statusCode ->
-            call.respond(JsonResponse.failure(ErrorMessage.UNAUTHORIZED, statusCode))
-        }
-        status(HttpStatusCode.BadRequest) { statusCode ->
+        status(HttpStatusCode.BadRequest) { call, statusCode ->
             call.respond(JsonResponse.failure(ErrorMessage.BAD_REQUEST, statusCode))
         }
-        status(HttpStatusCode.InternalServerError) { statusCode ->
-            call.respond(JsonResponse.failure(ErrorMessage.INTERNAL_SERVER_ERROR, statusCode))
+        status(HttpStatusCode.InternalServerError) { call, statusCode ->
+            call.respond(
+                HttpStatusCode.BadRequest, JsonResponse.failure(ErrorMessage.INTERNAL_SERVER_ERROR, statusCode)
+            )
         }
-
-        exception<TypeCastException> { exception ->
+        exception<TypeCastException> { call, _ ->
             call.respond(
                 JsonResponse.failure(ErrorMessage.TYPE_CAST_EXCEPTION, HttpStatusCode.BadRequest)
             )
         }
-        exception<NullPointerException> {
+        exception<NullPointerException> { call, exception ->
             call.respond(
-                JsonResponse.failure("${ErrorMessage.NULL_POINTER_ERROR} ${it.message}", HttpStatusCode.BadRequest)
+                JsonResponse.failure(
+                    "${ErrorMessage.NULL_POINTER_ERROR} ${exception.message}", HttpStatusCode.BadRequest
+                )
             )
         }
 
-        exception<UserNotExistException> {
-            call.respond(JsonResponse.failure(ErrorMessage.USER_NOT_EXIT, HttpStatusCode.BadRequest))
+        exception<UserNotExistException> { call, _ ->
+            call.respond(
+                HttpStatusCode.BadRequest, JsonResponse.failure(ErrorMessage.USER_NOT_EXIT, HttpStatusCode.BadRequest)
+            )
         }
 
-        exception<UserTypeException> {
-            call.respond(JsonResponse.failure(ErrorMessage.USER_TYPE_IS_NOT_VALID, HttpStatusCode.BadRequest))
+        exception<UserTypeException> { call, _ ->
+            call.respond(
+                HttpStatusCode.BadRequest,
+                JsonResponse.failure(ErrorMessage.USER_TYPE_IS_NOT_VALID, HttpStatusCode.BadRequest)
+            )
         }
-        exception<EmailNotExist> {
-            call.respond(JsonResponse.failure(ErrorMessage.EMAIL_NOT_EXIST, HttpStatusCode.BadRequest))
+        exception<EmailNotExist> { call, _ ->
+            call.respond(
+                HttpStatusCode.BadRequest, JsonResponse.failure(ErrorMessage.EMAIL_NOT_EXIST, HttpStatusCode.BadRequest)
+            )
         }
-        exception<NoSuchElementException> {
-            call.respond(JsonResponse.failure(ErrorMessage.USER_NOT_EXIT, HttpStatusCode.BadRequest))
+        exception<NoSuchElementException> { call, _ ->
+            call.respond(
+                HttpStatusCode.BadRequest, JsonResponse.failure(ErrorMessage.USER_NOT_EXIT, HttpStatusCode.BadRequest)
+            )
         }
-        exception<AuthenticationException> {
-            call.respond(JsonResponse.failure(it.message, HttpStatusCode.Unauthorized))
+        exception<PasswordNotMatch> { call, _ ->
+            call.respond(
+                HttpStatusCode.BadRequest,
+                JsonResponse.failure(ErrorMessage.PASSWORD_IS_WRONG, HttpStatusCode.BadRequest)
+            )
         }
-        exception<PasswordNotMatch> {
-            call.respond(JsonResponse.failure(ErrorMessage.PASSWORD_IS_WRONG, HttpStatusCode.BadRequest))
-        }
-        exception<CommonException> {
-            call.respond(JsonResponse.failure(it.message, HttpStatusCode.BadRequest))
+        exception<CommonException> { call, exception ->
+            call.respond(HttpStatusCode.BadRequest, JsonResponse.failure(exception.message, HttpStatusCode.BadRequest))
         }
     }
 }

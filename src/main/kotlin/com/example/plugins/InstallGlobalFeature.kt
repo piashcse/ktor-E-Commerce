@@ -3,39 +3,27 @@ package com.example.plugins
 import com.example.models.user.JwtTokenBody
 import com.example.utils.AppConstants
 import com.example.utils.JwtConfig
-import freemarker.cache.ClassTemplateLoader
-import io.ktor.application.*
-import io.ktor.auth.*
-import io.ktor.auth.jwt.*
 import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.*
-import io.ktor.features.*
-import io.ktor.freemarker.*
-import io.ktor.gson.*
 import io.ktor.http.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.sessions.*
+import io.ktor.serialization.gson.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.freemarker.*
+import io.ktor.server.plugins.*
 
 fun Application.installGlobalFeature() {
     install(Compression)
     install(CORS) {
         anyHost()
     }
-    install(DefaultHeaders)
     install(CallLogging)
     install(ContentNegotiation) {
         gson {
             setPrettyPrinting()
             // serializeNulls()
         }
-    }
-    install(FreeMarker) {
-        templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
     }
     install(Authentication) {
         /**

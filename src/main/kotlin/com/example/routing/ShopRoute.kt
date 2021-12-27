@@ -6,13 +6,13 @@ import com.example.models.user.JwtTokenBody
 import com.example.utils.AppConstants
 import com.example.utils.extension.nullProperties
 import com.example.utils.JsonResponse
-import io.ktor.application.*
-import io.ktor.auth.*
-import io.ktor.features.*
 import io.ktor.http.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.plugins.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 
 fun Route.shopRoute(shopController: ShopController) {
     route("shop/") {

@@ -4,7 +4,7 @@ val logback_version: String by project
 
 plugins {
     application
-    kotlin("jvm") version "1.5.30"
+    kotlin("jvm") version "1.6.0"
 }
 
 group = "com.example"
@@ -15,6 +15,7 @@ application {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
 }
 
 dependencies {
@@ -22,19 +23,20 @@ dependencies {
     implementation("io.ktor:ktor-server-host-common:$ktor_version")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
-    implementation("io.ktor:ktor-gson:$ktor_version")
-    // social login
-    implementation( "io.ktor:ktor-auth:$ktor_version")
-    //implementation( "io.ktor:ktor-server-sessions:$ktor_version")
-    implementation( "io.ktor:ktor-client-cio:$ktor_version")
-    implementation ("io.ktor:ktor-client-serialization:$ktor_version")
+    //
+    implementation("io.ktor:ktor-server-auth:$ktor_version")
+    implementation("io.ktor:ktor-server-auth-jwt:$ktor_version")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
+    implementation("io.ktor:ktor-serialization-gson:$ktor_version")
+
+    implementation("io.ktor:ktor-server-cors:$ktor_version")
+    implementation("io.ktor:ktor-server-compression:$ktor_version")
+    implementation("io.ktor:ktor-server-status-pages:$ktor_version")
+    implementation("io.ktor:ktor-server-freemarker:$ktor_version")
+    implementation("io.ktor:ktor-server-call-logging:$ktor_version")
 
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
-    testImplementation("io.ktor:ktor-gson:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
-
-    // jwt token
-    implementation( "io.ktor:ktor-auth-jwt:$ktor_version")
 
     // exposed ORM library
     implementation("org.jetbrains.exposed:exposed-core:0.36.2")
@@ -55,9 +57,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.1")
     // mail server
     implementation("org.apache.commons:commons-email:1.5")
-
-    // email template
-    implementation( "io.ktor:ktor-freemarker:$ktor_version")
 
     implementation("com.google.api-client:google-api-client:1.32.1")
     implementation("com.google.oauth-client:google-oauth-client:1.31.5")

@@ -7,7 +7,7 @@ import io.ktor.server.netty.*
 import com.example.plugins.*
 import com.example.routing.configureRouting
 import com.typesafe.config.ConfigFactory
-import io.ktor.config.*
+import io.ktor.server.config.*
 import org.slf4j.LoggerFactory
 
 fun main() {

@@ -17,15 +17,14 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.example.utils.JsonResponse
 import com.example.utils.extension.nullProperties
-import io.ktor.application.*
-import io.ktor.auth.*
-import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import kotlinx.serialization.SerialName
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.plugins.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.SimpleEmail
 import java.io.File
@@ -260,12 +259,3 @@ private fun authenticateByGoogle(idTokenString: String, clientId: String): Googl
     print("token : $idTokenString")
     return verifier.verify(idTokenString) ?: throw AuthenticationException()
 }
-
-data class UserInfo(
-    val id: String,
-    val name: String,
-    @SerialName("given_name") val givenName: String,
-    @SerialName("family_name") val familyName: String,
-    val picture: String,
-    val locale: String
-)
