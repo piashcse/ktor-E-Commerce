@@ -7,7 +7,7 @@ import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.Column
 
 object ShopCategoryTable : IdTable<String>("shop_category") {
-    override val id: Column<EntityID<String>> = ShopCategoryTable.text("id").uniqueIndex().entityId()
+    override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
     val shop_category_name = text("shop_category_name")
     override val primaryKey = PrimaryKey(id)
 }

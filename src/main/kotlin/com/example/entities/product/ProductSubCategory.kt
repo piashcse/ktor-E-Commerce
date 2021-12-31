@@ -8,11 +8,14 @@ import org.jetbrains.exposed.sql.Column
 
 object ProductSubCategoryTable : IdTable<String>("product_sub_category") {
     override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
-    val product_category_id = text("product_category_id").references(ProductCategoryTable.id)
     val product_sub_category_name = text("product_category_name")
+    val product_category_id = ProductCategoryTable.reference("product_category_id", ProductCategoryTable.id)
     override val primaryKey = PrimaryKey(id)
 }
-class ProductSubCategoryEntity(id: EntityID<String>) : Entity<String>(id)  {
+
+class ProductSubCategoryEntity(id: EntityID<String>) : Entity<String>(id) {
     companion object : EntityClass<String, ProductSubCategoryEntity>(ProductSubCategoryTable)
+
     var productSubCategoryName by ProductSubCategoryTable.product_sub_category_name
+    var product_category_id by ProductSubCategoryTable.product_category_id
 }

@@ -1,6 +1,8 @@
 package com.example.databasehelper
 
 import com.example.entities.product.*
+import com.example.entities.product.defaultvariant.ProductColorTable
+import com.example.entities.product.defaultvariant.ProductSizeTable
 import com.example.entities.shop.ShopCategoryTable
 import com.example.entities.shop.ShopTable
 import com.example.entities.user.UserHasTypeTable

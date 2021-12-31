@@ -15,7 +15,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
-import com.example.utils.JsonResponse
+import com.example.utils.CustomResponse
 import com.example.utils.extension.nullProperties
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -36,17 +36,15 @@ fun Route.userRoute(userController: UserController) {
     route("user/") {
         post("registration") {
             val userBody = call.receive<RegistrationBody>()
-            nullProperties(userBody) {
-                if (it.isNotEmpty()) {
-                    throw MissingRequestParameterException(it.toString())
-                }
+            userBody.nullProperties {
+                throw MissingRequestParameterException(it.toString())
             }
             if (AppConstants.ALL_USERS_TYPE.contains(userBody.userType).not()) {
                 throw UserTypeException()
             }
             val db = userController.registration(userBody)
             db?.let {
-                call.respond(JsonResponse.success(it, HttpStatusCode.OK))
+                call.respond(CustomResponse.success(it, HttpStatusCode.OK))
             } ?: run {
                 throw UserNotExistException()
             }
@@ -54,16 +52,14 @@ fun Route.userRoute(userController: UserController) {
 
         post("login") {
             val loginBody = call.receive<LoginBody>()
-            nullProperties(loginBody) {
-                if (it.isNotEmpty()) {
-                    throw MissingRequestParameterException(it.toString())
-                }
+            loginBody.nullProperties {
+                throw MissingRequestParameterException(it.toString())
             }
             val db = userController.login(loginBody)
             db.let {
                 val loginResponse =
                     LoginResponse(it, JwtConfig.makeToken(JwtTokenBody(db.id, db.email, db.userType.user_type_id)))
-                call.respond(JsonResponse.success(loginResponse, HttpStatusCode.OK))
+                call.respond(CustomResponse.success(loginResponse, HttpStatusCode.OK))
             }
         }
 
@@ -74,7 +70,7 @@ fun Route.userRoute(userController: UserController) {
                     val profileBody = call.receive<UserProfile>()
                     val db = userController.updateProfile(profileId, profileBody)
                     db?.let {
-                        call.respond(JsonResponse.success(db.userProfileResponse(), HttpStatusCode.OK))
+                        call.respond(CustomResponse.success(db.userProfileResponse(), HttpStatusCode.OK))
                     } ?: run {
                         throw UserNotExistException()
                     }
@@ -86,21 +82,19 @@ fun Route.userRoute(userController: UserController) {
                 val userId = call.request.queryParameters["userId"]
                 if (userId != null) {
                     val changePasswordBody = call.receive<ChangePassword>()
-                    nullProperties(changePasswordBody) {
-                        if (it.isNotEmpty()) {
-                            throw MissingRequestParameterException(it.toString())
-                        }
+                    changePasswordBody.nullProperties() {
+                        throw MissingRequestParameterException(it.toString())
                     }
                     val db = userController.changePassword(userId, changePasswordBody)
                     db?.let {
                         if (it is UsersEntity) call.respond(
-                            JsonResponse.success(
+                            CustomResponse.success(
                                 it.userResponse(),
                                 HttpStatusCode.OK
                             )
                         )
                         if (it is ChangePassword) call.respond(
-                            JsonResponse.failure(
+                            CustomResponse.failure(
                                 "Old password is wrong",
                                 HttpStatusCode.OK
                             )
@@ -128,12 +122,12 @@ fun Route.userRoute(userController: UserController) {
                             File("${AppConstants.Image.IMAGE_FOLDER_LOCATION}$fileName").writeBytes(fileBytes)
                         }
                         else -> {
-                            call.respond(JsonResponse.failure(ErrorMessage.IMAGE_UPLOAD_FAILED, HttpStatusCode.OK))
+                            call.respond(CustomResponse.failure(ErrorMessage.IMAGE_UPLOAD_FAILED, HttpStatusCode.OK))
                         }
                     }
                 }
                 call.respond(
-                    JsonResponse.success(
+                    CustomResponse.success(
                         "$fileDescription is uploaded to 'uploads/$fileName", HttpStatusCode.OK
                     )
                 )
@@ -143,10 +137,8 @@ fun Route.userRoute(userController: UserController) {
         post("forget-password") {
             try {
                 val forgetPasswordBody = call.receive<ForgetPasswordBody>()
-                nullProperties(forgetPasswordBody) {
-                    if (it.isNotEmpty()) {
-                        throw MissingRequestParameterException(it.toString())
-                    }
+                forgetPasswordBody.nullProperties() {
+                    throw MissingRequestParameterException(it.toString())
                 }
                 val db = userController.forgetPassword(forgetPasswordBody)
                 db?.let {
@@ -189,7 +181,7 @@ fun Route.userRoute(userController: UserController) {
                          send()
                      }*/
                     call.respond(
-                        JsonResponse.failure(
+                        CustomResponse.failure(
                             "${AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_SEND_TO} ${forgetPasswordBody.email}",
                             HttpStatusCode.OK
                         )
@@ -205,24 +197,22 @@ fun Route.userRoute(userController: UserController) {
         post("confirm-password") {
             try {
                 val confirmPasswordBody = call.receive<ConfirmPasswordBody>()
-                nullProperties(confirmPasswordBody) {
-                    if (it.isNotEmpty()) {
-                        throw MissingRequestParameterException(it.toString())
-                    }
+                confirmPasswordBody.nullProperties {
+                    throw MissingRequestParameterException(it.toString())
                 }
                 val db = UserController().confirmPassword(confirmPasswordBody)
                 db?.let {
                     when (it) {
                         AppConstants.DataBaseTransaction.FOUND -> {
                             call.respond(
-                                JsonResponse.success(
+                                CustomResponse.success(
                                     AppConstants.SuccessMessage.Password.PASSWORD_CHANGE_SUCCESS, HttpStatusCode.OK
                                 )
                             )
                         }
                         AppConstants.DataBaseTransaction.NOT_FOUND -> {
                             call.respond(
-                                JsonResponse.success(
+                                CustomResponse.success(
                                     AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_IS_NOT_VALID,
                                     HttpStatusCode.OK
                                 )

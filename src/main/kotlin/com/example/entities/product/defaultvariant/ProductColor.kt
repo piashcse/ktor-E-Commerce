@@ -1,4 +1,4 @@
-package com.example.entities.product
+package com.example.entities.product.defaultvariant
 
 import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass
@@ -8,10 +8,15 @@ import org.jetbrains.exposed.sql.Column
 
 object ProductColorTable : IdTable<String>("product_color") {
     override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
-    val color_name = text("color_name")
+    val name = text("name")
     override val primaryKey = PrimaryKey(id)
 }
-class ProductColorEntity(id: EntityID<String>) : Entity<String>(id)  {
+
+class ProductColorEntity(id: EntityID<String>) : Entity<String>(id) {
     companion object : EntityClass<String, ProductColorEntity>(ProductColorTable)
-    var colorName by ProductColorTable.color_name
+
+    var name by ProductColorTable.name
+    fun response() = ProductColor(id.value, name)
 }
+
+data class ProductColor(val id: String, val color: String)

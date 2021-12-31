@@ -23,7 +23,7 @@ dependencies {
     implementation("io.ktor:ktor-server-host-common:$ktor_version")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
     implementation("ch.qos.logback:logback-classic:$logback_version")
-    //
+    // authentication
     implementation("io.ktor:ktor-server-auth:$ktor_version")
     implementation("io.ktor:ktor-server-auth-jwt:$ktor_version")
     implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
@@ -39,13 +39,11 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
 
     // exposed ORM library
-    implementation("org.jetbrains.exposed:exposed-core:0.36.2")
-    implementation( "org.jetbrains.exposed:exposed-dao:0.36.2")
-    implementation( "org.jetbrains.exposed:exposed-jdbc:0.36.2")
-    implementation ("org.jetbrains.exposed:exposed-java-time:0.36.2")
-    implementation ("org.jetbrains.exposed:exposed-kotlin-datetime:0.36.2")
-
-
+    implementation("org.jetbrains.exposed:exposed-core:0.37.3")
+    implementation( "org.jetbrains.exposed:exposed-dao:0.37.3")
+    implementation( "org.jetbrains.exposed:exposed-jdbc:0.37.3")
+    implementation ("org.jetbrains.exposed:exposed-java-time:0.37.3")
+    implementation ("org.jetbrains.exposed:exposed-kotlin-datetime:0.37.3")
 
     // postgresql
     implementation( "org.postgresql:postgresql:42.3.1")

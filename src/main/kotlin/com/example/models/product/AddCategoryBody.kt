@@ -1,3 +1,3 @@
-package com.example.models.category
+package com.example.models.product
 
 data class AddCategoryBody(val userType: String, val categoryName: String)

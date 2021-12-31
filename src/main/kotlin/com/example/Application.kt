@@ -1,7 +1,6 @@
 package com.example
 
 import com.example.databasehelper.DatabaseFactory
-import com.example.plugins.installExceptionFeature
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import com.example.plugins.*
@@ -18,8 +17,9 @@ fun main() {
         log = LoggerFactory.getLogger("ktor.application")
         module {
             DatabaseFactory.init()
-            installGlobalFeature()
-            installExceptionFeature()
+            configureBasic()
+            configureStatusPage()
+            configureAuthentication()
             configureRouting()
         }
         connector {

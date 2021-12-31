@@ -8,9 +8,9 @@ import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.Column
 
 object ShopTable : IdTable<String>("shop") {
-    override val id: Column<EntityID<String>> = ShopTable.text("id").uniqueIndex().entityId()
-    val user_id = ShopTable.reference("user_id", UsersTable.id)
-    val shop_category_id = ShopTable.reference("shop_category_id", ShopCategoryTable.id)
+    override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
+    val user_id = reference("user_id", UsersTable.id)
+    val shop_category_id = reference("shop_category_id", ShopCategoryTable.id)
     val shop_name = text("shop_name")
     override val primaryKey = PrimaryKey(id)
 }

@@ -6,14 +6,16 @@ import org.jetbrains.exposed.sql.ResultRow
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
-inline fun <reified T : Any> nullProperties(data: T, callBack: (list: List<String>) -> Unit) {
+inline fun <reified T : Any> T.nullProperties(callBack: (list: List<String>) -> Unit) {
     val allNullData = mutableListOf<String>()
     for (prop in T::class.memberProperties) {
-        if (prop.get(data) == null) {
+        if (prop.get(this) == null) {
             allNullData.add(prop.name)
         }
     }
-    callBack.invoke(allNullData)
+    if (allNullData.size > 0) {
+        callBack.invoke(allNullData)
+    }
 }
 
 fun currentTimeInUTC(): LocalDateTime {

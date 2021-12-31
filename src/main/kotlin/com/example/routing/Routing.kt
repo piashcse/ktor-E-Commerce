@@ -1,6 +1,6 @@
 package com.example.routing
 
-import com.example.controller.CategoryController
+import com.example.controller.ProductController
 import com.example.controller.ShopController
 import com.example.controller.UserController
 import io.ktor.server.application.*
@@ -15,7 +15,7 @@ fun Application.configureRouting() {
             }
         }
         userRoute(UserController())
-        categoryRouter(CategoryController())
+        productCategoryRoute(ProductController())
         shopRoute(ShopController())
     }
 }

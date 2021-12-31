@@ -3,28 +3,11 @@ package com.example.plugins
 import com.example.models.user.JwtTokenBody
 import com.example.utils.AppConstants
 import com.example.utils.JwtConfig
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.gson.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.freemarker.*
-import io.ktor.server.plugins.*
 
-fun Application.installGlobalFeature() {
-    install(Compression)
-    install(CORS) {
-        anyHost()
-    }
-    install(CallLogging)
-    install(ContentNegotiation) {
-        gson {
-            setPrettyPrinting()
-            // serializeNulls()
-        }
-    }
+fun Application.configureAuthentication() {
     install(Authentication) {
         /**
          * Setup the JWT authentication to be used in [Routing].
