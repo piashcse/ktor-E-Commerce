@@ -37,4 +37,9 @@ object AppConstants {
     object Image{
         const val IMAGE_FOLDER_LOCATION = "src/main/resources/uploads/"
     }
+
+    object ProductVariant{
+        const val COLOR = "COLOR"
+        const val SIZE = "SIZE"
+    }
 }

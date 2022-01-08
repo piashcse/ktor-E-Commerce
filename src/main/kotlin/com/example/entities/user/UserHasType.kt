@@ -17,14 +17,16 @@ object UserHasTypeTable : IdTable<String>("user_has_type") {
 
 class UserHasTypeEntity(id: EntityID<String>) : Entity<String>(id) {
     companion object : EntityClass<String, UserHasTypeEntity>(UserHasTypeTable)
+
     var user_id by UserHasTypeTable.user_id
     var user_type_id by UserHasTypeTable.user_type_id
     var created_at by UserHasTypeTable.created_at
     var updated_at by UserHasTypeTable.updated_at
+
     //var users by UsersEntity referencedOn  UserHasTypeTable.user_id
     fun userHasTypeResponse() = UserHasType(id.toString(), user_type_id)
 }
 
 data class UserHasType(
-    val id: String, val user_type_id: String
+    val id: String, val userTypeId: String
 )

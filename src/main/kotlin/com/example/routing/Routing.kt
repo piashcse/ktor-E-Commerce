@@ -15,7 +15,7 @@ fun Application.configureRouting() {
             }
         }
         userRoute(UserController())
-        productCategoryRoute(ProductController())
+        productRoute(ProductController())
         shopRoute(ShopController())
     }
 }

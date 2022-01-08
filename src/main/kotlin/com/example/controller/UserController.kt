@@ -3,9 +3,7 @@ package com.example.controller
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.example.entities.user.*
 import com.example.models.user.*
-import com.example.utils.AppConstants
-import com.example.utils.PasswordNotMatch
-import com.example.utils.UserTypeException
+import com.example.utils.*
 import com.example.utils.extension.currentTimeInUTC
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -33,7 +31,9 @@ class UserController {
                 updated_at = currentTimeInUTC().toString()
             }
             RegistrationResponse(registrationBody.userName, registrationBody.email)
-        } else null
+        } else {
+            throw CommonException("${registrationBody.email} already Exist")
+        }
     }
 
     fun login(loginBody: LoginBody) = transaction {
@@ -45,7 +45,9 @@ class UserController {
             ).verified && result.userType.user_type_id == loginBody.userType
         ) {
             return@transaction result.userResponse()
-        } else throw PasswordNotMatch()
+        } else {
+            throw PasswordNotMatch()
+        }
     }
 
     fun jwtVerification(jwtTokenBody: JwtTokenBody) = transaction {
@@ -76,6 +78,8 @@ class UserController {
             val verificationCode = Random.nextInt(1000, 9999).toString()
             it.verification_code = verificationCode
             VerificationCode(verificationCode)
+        } ?: run {
+            throw CommonException("${forgetPasswordBody.email} is not exist")
         }
     }
 
@@ -89,6 +93,8 @@ class UserController {
             } else {
                 AppConstants.DataBaseTransaction.NOT_FOUND
             }
+        } ?: run {
+            throw CommonException("${confirmPasswordBody.email} is not exist")
         }
     }
 
@@ -111,7 +117,7 @@ class UserController {
             it.post_code = userProfile?.postCode ?: it.post_code
             it.gender = userProfile?.gender ?: it.gender
             it.updated_at = java.time.LocalDateTime.now()
-            it
+            it.response()
         }
     }
 

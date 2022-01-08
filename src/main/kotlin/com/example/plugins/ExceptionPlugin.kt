@@ -5,6 +5,10 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.response.*
+import org.valiktor.ConstraintViolationException
+import org.valiktor.i18n.mapToMessage
+import java.util.*
+import kotlin.NoSuchElementException
 
 fun Application.configureStatusPage() {
     install(StatusPages) {
@@ -15,6 +19,16 @@ fun Application.configureStatusPage() {
                 )
             )
         }
+        exception<ConstraintViolationException> { call, error ->
+            val errorMessage = error.constraintViolations.mapToMessage(baseName = "messages", locale = Locale.ENGLISH)
+                .map { "${it.property}: ${it.message}" }
+            call.respond(
+                HttpStatusCode.BadRequest, CustomResponse.failure(
+                    errorMessage, HttpStatusCode.BadRequest
+                )
+            )
+        }
+
         exception<MissingRequestParameterException> { call, error ->
             call.respond(
                 HttpStatusCode.BadRequest, CustomResponse.failure(
@@ -26,7 +40,7 @@ fun Application.configureStatusPage() {
             call.respond(HttpStatusCode.Unauthorized, CustomResponse.failure(ErrorMessage.UNAUTHORIZED, statusCode))
         }
         status(HttpStatusCode.BadRequest) { call, statusCode ->
-            call.respond(CustomResponse.failure(ErrorMessage.BAD_REQUEST, statusCode))
+            call.respond(HttpStatusCode.BadRequest, CustomResponse.failure(ErrorMessage.BAD_REQUEST, statusCode))
         }
         status(HttpStatusCode.InternalServerError) { call, statusCode ->
             call.respond(
@@ -61,7 +75,8 @@ fun Application.configureStatusPage() {
         }
         exception<EmailNotExist> { call, _ ->
             call.respond(
-                HttpStatusCode.BadRequest, CustomResponse.failure(ErrorMessage.EMAIL_NOT_EXIST, HttpStatusCode.BadRequest)
+                HttpStatusCode.BadRequest,
+                CustomResponse.failure(ErrorMessage.EMAIL_NOT_EXIST, HttpStatusCode.BadRequest)
             )
         }
         exception<NoSuchElementException> { call, _ ->
@@ -76,7 +91,9 @@ fun Application.configureStatusPage() {
             )
         }
         exception<CommonException> { call, exception ->
-            call.respond(HttpStatusCode.BadRequest, CustomResponse.failure(exception.message, HttpStatusCode.BadRequest))
+            call.respond(
+                HttpStatusCode.BadRequest, CustomResponse.failure(exception.message, HttpStatusCode.BadRequest)
+            )
         }
     }
 }

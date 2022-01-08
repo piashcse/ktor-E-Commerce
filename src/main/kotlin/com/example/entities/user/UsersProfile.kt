@@ -49,7 +49,7 @@ class UsersProfileEntity(id: EntityID<String>) : Entity<String>(id) {
     var gender by UsersProfileTable.gender
     var created_at by UsersProfileTable.created_at
     var updated_at by UsersProfileTable.updated_at
-    fun userProfileResponse() = UserProfile(
+    fun response() = UserProfile(
         user_id.value,
         user_profile_image,
         first_name,

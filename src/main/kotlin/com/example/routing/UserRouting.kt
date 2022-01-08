@@ -8,9 +8,7 @@ import com.example.models.*
 import com.example.models.user.*
 import com.example.plugins.ErrorMessage
 import com.example.utils.*
-import com.example.utils.EmailNotExist
 import com.example.utils.UserNotExistException
-import com.example.utils.UserTypeException
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -36,29 +34,20 @@ fun Route.userRoute(userController: UserController) {
     route("user/") {
         post("registration") {
             val userBody = call.receive<RegistrationBody>()
-            userBody.nullProperties {
-                throw MissingRequestParameterException(it.toString())
-            }
-            if (AppConstants.ALL_USERS_TYPE.contains(userBody.userType).not()) {
-                throw UserTypeException()
-            }
+            userBody.validation()
             val db = userController.registration(userBody)
-            db?.let {
+            db.let {
                 call.respond(CustomResponse.success(it, HttpStatusCode.OK))
-            } ?: run {
-                throw UserNotExistException()
             }
         }
 
         post("login") {
             val loginBody = call.receive<LoginBody>()
-            loginBody.nullProperties {
-                throw MissingRequestParameterException(it.toString())
-            }
+            loginBody.validation()
             val db = userController.login(loginBody)
             db.let {
                 val loginResponse =
-                    LoginResponse(it, JwtConfig.makeToken(JwtTokenBody(db.id, db.email, db.userType.user_type_id)))
+                    LoginResponse(it, JwtConfig.makeToken(JwtTokenBody(db.id, db.email, db.userType.userTypeId)))
                 call.respond(CustomResponse.success(loginResponse, HttpStatusCode.OK))
             }
         }
@@ -70,7 +59,7 @@ fun Route.userRoute(userController: UserController) {
                     val profileBody = call.receive<UserProfile>()
                     val db = userController.updateProfile(profileId, profileBody)
                     db?.let {
-                        call.respond(CustomResponse.success(db.userProfileResponse(), HttpStatusCode.OK))
+                        call.respond(CustomResponse.success(it, HttpStatusCode.OK))
                     } ?: run {
                         throw UserNotExistException()
                     }
@@ -89,14 +78,12 @@ fun Route.userRoute(userController: UserController) {
                     db?.let {
                         if (it is UsersEntity) call.respond(
                             CustomResponse.success(
-                                it.userResponse(),
-                                HttpStatusCode.OK
+                                it.userResponse(), HttpStatusCode.OK
                             )
                         )
                         if (it is ChangePassword) call.respond(
                             CustomResponse.failure(
-                                "Old password is wrong",
-                                HttpStatusCode.OK
+                                "Old password is wrong", HttpStatusCode.OK
                             )
                         )
                     } ?: run {
@@ -135,95 +122,81 @@ fun Route.userRoute(userController: UserController) {
 
         }
         post("forget-password") {
-            try {
-                val forgetPasswordBody = call.receive<ForgetPasswordBody>()
-                forgetPasswordBody.nullProperties() {
-                    throw MissingRequestParameterException(it.toString())
-                }
-                val db = userController.forgetPassword(forgetPasswordBody)
-                db?.let {
-                    SimpleEmail().apply {
-                        hostName = AppConstants.SmtpServer.HOST_NAME
-                        setSmtpPort(AppConstants.SmtpServer.PORT)
-                        setAuthenticator(
-                            DefaultAuthenticator(
-                                AppConstants.SmtpServer.DEFAULT_AUTHENTICATOR,
-                                AppConstants.SmtpServer.DEFAULT_AUTHENTICATOR_PASSWORD
-                            )
-                        )
-                        isSSLOnConnect = true
-                        setFrom("piash599@gmail.com")
-                        subject = AppConstants.SmtpServer.EMAIL_SUBJECT
-                        setMsg("Your verification id is : ${it.verificationCode}")
-                        addTo(forgetPasswordBody.email)
-                        send()
-                    }
-                    /* HtmlEmail().apply {
-                         hostName = AppConstants.SmtpServer.HOST_NAME
-                         setSmtpPort(AppConstants.SmtpServer.PORT)
-                         setAuthenticator(DefaultAuthenticator(AppConstants.SmtpServer.DEFAULT_AUTHENTICATOR, AppConstants.SmtpServer.DEFAULT_AUTHENTICATOR_PASSWORD))
-                         isSSLOnConnect = true
-                         setFrom("piash599@gmail.com")
-                         subject = AppConstants.SmtpServer.EMAIL_SUBJECT
-                         setHtmlMsg("<html>\n" +
-                                 "<head>\n" +
-                                 "<title>Page Title</title>\n" +
-                                 "</head>\n" +
-                                 "<body>\n" +
-                                 "\n" +
-                                 "<h1>This is a Heading</h1>\n" +
-                                 "<p>This is a paragraph.</p>\n" +
-                                 "\n" +
-                                 "</body>\n" +
-                                 "</html>")
-                         //setHtmlMsg("Your verification id is : ${it.verificationCode}")
-                         addTo(forgetPasswordBody.email)
-                         send()
-                     }*/
-                    call.respond(
-                        CustomResponse.failure(
-                            "${AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_SEND_TO} ${forgetPasswordBody.email}",
-                            HttpStatusCode.OK
+            val forgetPasswordBody = call.receive<ForgetPasswordBody>()
+            forgetPasswordBody.validation()
+            val db = userController.forgetPassword(forgetPasswordBody)
+            db.let {
+                SimpleEmail().apply {
+                    hostName = AppConstants.SmtpServer.HOST_NAME
+                    setSmtpPort(AppConstants.SmtpServer.PORT)
+                    setAuthenticator(
+                        DefaultAuthenticator(
+                            AppConstants.SmtpServer.DEFAULT_AUTHENTICATOR,
+                            AppConstants.SmtpServer.DEFAULT_AUTHENTICATOR_PASSWORD
                         )
                     )
-                } ?: run {
-                    throw EmailNotExist()
+                    isSSLOnConnect = true
+                    setFrom("piash599@gmail.com")
+                    subject = AppConstants.SmtpServer.EMAIL_SUBJECT
+                    setMsg("Your verification code is : ${it.verificationCode}")
+                    addTo(forgetPasswordBody.email)
+                    send()
                 }
-            } catch (e: Throwable) {
-                throw e
+                /* HtmlEmail().apply {
+                     hostName = AppConstants.SmtpServer.HOST_NAME
+                     setSmtpPort(AppConstants.SmtpServer.PORT)
+                     setAuthenticator(DefaultAuthenticator(AppConstants.SmtpServer.DEFAULT_AUTHENTICATOR, AppConstants.SmtpServer.DEFAULT_AUTHENTICATOR_PASSWORD))
+                     isSSLOnConnect = true
+                     setFrom("piash599@gmail.com")
+                     subject = AppConstants.SmtpServer.EMAIL_SUBJECT
+                     setHtmlMsg("<html>\n" +
+                             "<head>\n" +
+                             "<title>Page Title</title>\n" +
+                             "</head>\n" +
+                             "<body>\n" +
+                             "\n" +
+                             "<h1>This is a Heading</h1>\n" +
+                             "<p>This is a paragraph.</p>\n" +
+                             "\n" +
+                             "</body>\n" +
+                             "</html>")
+                     //setHtmlMsg("Your verification id is : ${it.verificationCode}")
+                     addTo(forgetPasswordBody.email)
+                     send()
+                 }*/
+                call.respond(
+                    CustomResponse.success(
+                        "${AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_SEND_TO} ${forgetPasswordBody.email}",
+                        HttpStatusCode.OK
+                    )
+                )
             }
         }
 
         post("confirm-password") {
-            try {
-                val confirmPasswordBody = call.receive<ConfirmPasswordBody>()
-                confirmPasswordBody.nullProperties {
-                    throw MissingRequestParameterException(it.toString())
-                }
-                val db = UserController().confirmPassword(confirmPasswordBody)
-                db?.let {
-                    when (it) {
-                        AppConstants.DataBaseTransaction.FOUND -> {
-                            call.respond(
-                                CustomResponse.success(
-                                    AppConstants.SuccessMessage.Password.PASSWORD_CHANGE_SUCCESS, HttpStatusCode.OK
-                                )
+            val confirmPasswordBody = call.receive<ConfirmPasswordBody>()
+            confirmPasswordBody.nullProperties {
+                throw MissingRequestParameterException(it.toString())
+            }
+            val db = UserController().confirmPassword(confirmPasswordBody)
+            db.let {
+                when (it) {
+                    AppConstants.DataBaseTransaction.FOUND -> {
+                        call.respond(
+                            CustomResponse.success(
+                                AppConstants.SuccessMessage.Password.PASSWORD_CHANGE_SUCCESS, HttpStatusCode.OK
                             )
-                        }
-                        AppConstants.DataBaseTransaction.NOT_FOUND -> {
-                            call.respond(
-                                CustomResponse.success(
-                                    AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_IS_NOT_VALID,
-                                    HttpStatusCode.OK
-                                )
-                            )
-                        }
+                        )
                     }
-                } ?: run {
-                    throw EmailNotExist()
+                    AppConstants.DataBaseTransaction.NOT_FOUND -> {
+                        call.respond(
+                            CustomResponse.success(
+                                AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_IS_NOT_VALID,
+                                HttpStatusCode.OK
+                            )
+                        )
+                    }
                 }
-            } catch (e: Throwable) {
-                throw e
             }
         }
         //  authenticate("auth-oauth-google") {

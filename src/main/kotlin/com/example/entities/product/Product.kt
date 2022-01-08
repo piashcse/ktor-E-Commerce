@@ -16,12 +16,24 @@ object ProductTable : IdTable<String>("product") {
     val discount_percent = text("discount_percent").nullable()
     override val primaryKey = PrimaryKey(id)
 }
-class ProductEntity(id: EntityID<String>) : Entity<String>(id)  {
+
+class ProductEntity(id: EntityID<String>) : Entity<String>(id) {
     companion object : EntityClass<String, ProductEntity>(ProductTable)
+
     var category_id by ProductTable.category_id
     var title by ProductTable.title
     var description by ProductTable.description
     var price by ProductTable.price
     var discountPrice by ProductTable.discount_price
     var discountPercentage by ProductTable.discount_percent
+    fun response() = Product(category_id, title, description, price, discountPrice, discountPercentage)
 }
+
+data class Product(
+    val categoryId: String,
+    val title: String,
+    val description: String,
+    val price: String,
+    val discountPrice: String?,
+    val discountPercentage: String?
+)

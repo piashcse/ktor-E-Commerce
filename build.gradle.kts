@@ -16,6 +16,7 @@ application {
 repositories {
     mavenCentral()
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -40,14 +41,14 @@ dependencies {
 
     // exposed ORM library
     implementation("org.jetbrains.exposed:exposed-core:0.37.3")
-    implementation( "org.jetbrains.exposed:exposed-dao:0.37.3")
-    implementation( "org.jetbrains.exposed:exposed-jdbc:0.37.3")
-    implementation ("org.jetbrains.exposed:exposed-java-time:0.37.3")
-    implementation ("org.jetbrains.exposed:exposed-kotlin-datetime:0.37.3")
+    implementation("org.jetbrains.exposed:exposed-dao:0.37.3")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.37.3")
+    implementation("org.jetbrains.exposed:exposed-java-time:0.37.3")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.37.3")
 
     // postgresql
-    implementation( "org.postgresql:postgresql:42.3.1")
-    implementation( "com.zaxxer:HikariCP:5.0.0")
+    implementation("org.postgresql:postgresql:42.3.1")
+    implementation("com.zaxxer:HikariCP:5.0.0")
 
     // password hashing
     implementation("at.favre.lib:bcrypt:0.9.0")
@@ -59,5 +60,8 @@ dependencies {
     implementation("com.google.api-client:google-api-client:1.32.1")
     implementation("com.google.oauth-client:google-oauth-client:1.31.5")
     implementation("dev.inmo:krontab:0.6.6")
+
+    // validator
+    implementation("org.valiktor:valiktor-core:0.12.0")
 
 }
