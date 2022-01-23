@@ -8,9 +8,9 @@ import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.javatime.datetime
 
-object UsersProfileTable : IdTable<String>("users_profile") {
+object UserProfileTable : IdTable<String>("users_profile") {
     override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
-    val user_id = reference("user_id", UsersTable.id)
+    val user_id = reference("user_id", UserTable.id)
     val user_profile_image = text("user_profile_image").nullable()
     val first_name = text("first_name").nullable()
     val last_name = text("last_name").nullable()
@@ -31,24 +31,24 @@ object UsersProfileTable : IdTable<String>("users_profile") {
 }
 
 class UsersProfileEntity(id: EntityID<String>) : Entity<String>(id) {
-    companion object : EntityClass<String, UsersProfileEntity>(UsersProfileTable)
-    var user_id by UsersProfileTable.user_id
-    var user_profile_image by UsersProfileTable.user_profile_image
-    var first_name by UsersProfileTable.first_name
-    var last_name by UsersProfileTable.last_name
-    var secondary_mobile_number by UsersProfileTable.secondary_mobile_number
-    var fax_number by UsersProfileTable.fax_number
-    var street_address by UsersProfileTable.street_address
-    var city by UsersProfileTable.city
-    var identification_type by UsersProfileTable.identification_type
-    var identification_no by UsersProfileTable.identification_no
-    var occupation by UsersProfileTable.occupation
-    var user_description by UsersProfileTable.user_description
-    var marital_status by UsersProfileTable.marital_status
-    var post_code by UsersProfileTable.post_code
-    var gender by UsersProfileTable.gender
-    var created_at by UsersProfileTable.created_at
-    var updated_at by UsersProfileTable.updated_at
+    companion object : EntityClass<String, UsersProfileEntity>(UserProfileTable)
+    var user_id by UserProfileTable.user_id
+    var user_profile_image by UserProfileTable.user_profile_image
+    var first_name by UserProfileTable.first_name
+    var last_name by UserProfileTable.last_name
+    var secondary_mobile_number by UserProfileTable.secondary_mobile_number
+    var fax_number by UserProfileTable.fax_number
+    var street_address by UserProfileTable.street_address
+    var city by UserProfileTable.city
+    var identification_type by UserProfileTable.identification_type
+    var identification_no by UserProfileTable.identification_no
+    var occupation by UserProfileTable.occupation
+    var user_description by UserProfileTable.user_description
+    var marital_status by UserProfileTable.marital_status
+    var post_code by UserProfileTable.post_code
+    var gender by UserProfileTable.gender
+    var created_at by UserProfileTable.created_at
+    var updated_at by UserProfileTable.updated_at
     fun response() = UserProfile(
         user_id.value,
         user_profile_image,

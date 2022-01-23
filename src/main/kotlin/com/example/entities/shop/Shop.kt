@@ -1,6 +1,6 @@
 package com.example.entities.shop
 
-import com.example.entities.user.UsersTable
+import com.example.entities.user.UserTable
 import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.id.EntityID
@@ -9,7 +9,7 @@ import org.jetbrains.exposed.sql.Column
 
 object ShopTable : IdTable<String>("shop") {
     override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
-    val user_id = reference("user_id", UsersTable.id)
+    val user_id = reference("user_id", UserTable.id)
     val shop_category_id = reference("shop_category_id", ShopCategoryTable.id)
     val shop_name = text("shop_name")
     override val primaryKey = PrimaryKey(id)

@@ -14,6 +14,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.example.utils.CustomResponse
+import com.example.utils.extension.fileExtension
 import com.example.utils.extension.nullProperties
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -78,7 +79,7 @@ fun Route.userRoute(userController: UserController) {
                     db?.let {
                         if (it is UsersEntity) call.respond(
                             CustomResponse.success(
-                                it.userResponse(), HttpStatusCode.OK
+                                it.response(), HttpStatusCode.OK
                             )
                         )
                         if (it is ChangePassword) call.respond(
@@ -95,31 +96,36 @@ fun Route.userRoute(userController: UserController) {
             }
 
             post("profile-photo") {
-                var fileDescription = ""
-                var fileName = ""
                 val multipartData = call.receiveMultipart()
+                val images = arrayListOf<String>()
                 multipartData.forEachPart { part ->
                     when (part) {
                         is PartData.FormItem -> {
-                            fileDescription = part.value
+                            println("${part.name} : ${part.value}")
                         }
                         is PartData.FileItem -> {
-                            fileName = part.originalFileName as String
+                            val fileName = part.originalFileName as String
                             val fileBytes = part.streamProvider().readBytes()
-                            File("${AppConstants.Image.IMAGE_FOLDER_LOCATION}$fileName").writeBytes(fileBytes)
+                            val fileNameInServer =
+                                "${AppConstants.Image.PROFILE_IMAGE_LOCATION}${UUID.randomUUID()}.${fileName.fileExtension()}"
+                            File(fileNameInServer).writeBytes(fileBytes)
+                            images += fileNameInServer
                         }
                         else -> {
                             call.respond(CustomResponse.failure(ErrorMessage.IMAGE_UPLOAD_FAILED, HttpStatusCode.OK))
                         }
                     }
+                    part.dispose
                 }
-                call.respond(
-                    CustomResponse.success(
-                        "$fileDescription is uploaded to 'uploads/$fileName", HttpStatusCode.OK
-                    )
-                )
+                call.principal<JwtTokenBody>()?.let {
+                    val db = userController.updateProfileImage(it.userId, images.first())
+                    db?.let {
+                        call.respond(
+                            CustomResponse.success(images.toArray(), HttpStatusCode.OK)
+                        )
+                    }
+                }
             }
-
         }
         post("forget-password") {
             val forgetPasswordBody = call.receive<ForgetPasswordBody>()

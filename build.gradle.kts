@@ -36,10 +36,14 @@ dependencies {
     implementation("io.ktor:ktor-server-freemarker:$ktor_version")
     implementation("io.ktor:ktor-server-call-logging:$ktor_version")
 
+    // ktor client
+    implementation ("io.ktor:ktor-client-apache:$ktor_version")
+
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
 
     // exposed ORM library
+    implementation("org.flywaydb:flyway-core:8.4.1")
     implementation("org.jetbrains.exposed:exposed-core:0.37.3")
     implementation("org.jetbrains.exposed:exposed-dao:0.37.3")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.37.3")
@@ -48,7 +52,7 @@ dependencies {
 
     // postgresql
     implementation("org.postgresql:postgresql:42.3.1")
-    implementation("com.zaxxer:HikariCP:5.0.0")
+    implementation("com.zaxxer:HikariCP:5.0.1")
 
     // password hashing
     implementation("at.favre.lib:bcrypt:0.9.0")
@@ -57,11 +61,13 @@ dependencies {
     // mail server
     implementation("org.apache.commons:commons-email:1.5")
 
-    implementation("com.google.api-client:google-api-client:1.32.1")
-    implementation("com.google.oauth-client:google-oauth-client:1.31.5")
-    implementation("dev.inmo:krontab:0.6.6")
+    implementation("com.google.api-client:google-api-client:1.33.0")
+    implementation("com.google.oauth-client:google-oauth-client:1.32.1")
 
     // validator
     implementation("org.valiktor:valiktor-core:0.12.0")
+
+    // file extension
+    implementation("commons-io:commons-io:2.11.0")
 
 }

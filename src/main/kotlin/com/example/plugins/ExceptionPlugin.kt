@@ -8,7 +8,6 @@ import io.ktor.server.response.*
 import org.valiktor.ConstraintViolationException
 import org.valiktor.i18n.mapToMessage
 import java.util.*
-import kotlin.NoSuchElementException
 
 fun Application.configureStatusPage() {
     install(StatusPages) {
@@ -79,11 +78,11 @@ fun Application.configureStatusPage() {
                 CustomResponse.failure(ErrorMessage.EMAIL_NOT_EXIST, HttpStatusCode.BadRequest)
             )
         }
-        exception<NoSuchElementException> { call, _ ->
+       /* exception<NoSuchElementException> { call, _ ->
             call.respond(
                 HttpStatusCode.BadRequest, CustomResponse.failure(ErrorMessage.USER_NOT_EXIT, HttpStatusCode.BadRequest)
             )
-        }
+        }*/
         exception<PasswordNotMatch> { call, _ ->
             call.respond(
                 HttpStatusCode.BadRequest,

@@ -12,7 +12,7 @@ import kotlin.random.Random
 
 class UserController {
     fun registration(registrationBody: RegistrationBody) = transaction {
-        val userEntity = UsersEntity.find { UsersTable.email eq registrationBody.email }.toList().singleOrNull()
+        val userEntity = UsersEntity.find { UserTable.email eq registrationBody.email }.toList().singleOrNull()
         return@transaction if (userEntity == null) {
             val inserted = UsersEntity.new(UUID.randomUUID().toString()) {
                 user_name = registrationBody.userName
@@ -37,21 +37,21 @@ class UserController {
     }
 
     fun login(loginBody: LoginBody) = transaction {
-        val query = UsersTable.leftJoin(UserHasTypeTable).select { UsersTable.email eq loginBody.email }
+        val query = UserTable.leftJoin(UserHasTypeTable).select { UserTable.email eq loginBody.email }
         val result = UsersEntity.wrapRows(query).first()
         if (result.userType.user_type_id != loginBody.userType) throw UserTypeException()
         if (BCrypt.verifyer().verify(
                 loginBody.password.toCharArray(), result.password
             ).verified && result.userType.user_type_id == loginBody.userType
         ) {
-            return@transaction result.userResponse()
+            return@transaction result.response()
         } else {
             throw PasswordNotMatch()
         }
     }
 
     fun jwtVerification(jwtTokenBody: JwtTokenBody) = transaction {
-        val usersEntity = UsersEntity.find { UsersTable.email eq jwtTokenBody.email }.toList().singleOrNull()
+        val usersEntity = UsersEntity.find { UserTable.email eq jwtTokenBody.email }.toList().singleOrNull()
         usersEntity?.let {
             return@transaction if (usersEntity != null) {
                 JwtTokenBody(usersEntity.id.value, usersEntity.email, usersEntity.userType.user_type_id)
@@ -60,7 +60,7 @@ class UserController {
     }
 
     fun changePassword(userId: String, changePassword: ChangePassword) = transaction {
-        val userEntity = UsersEntity.find { UsersTable.id eq userId }.toList().singleOrNull()
+        val userEntity = UsersEntity.find { UserTable.id eq userId }.toList().singleOrNull()
         return@transaction userEntity?.let {
             if (BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), it.password).verified) {
                 it.password = BCrypt.withDefaults().hashToString(12, changePassword.newPassword.toCharArray())
@@ -73,7 +73,7 @@ class UserController {
     }
 
     fun forgetPassword(forgetPasswordBody: ForgetPasswordBody) = transaction {
-        val userEntity = UsersEntity.find { UsersTable.email eq forgetPasswordBody.email }.toList().singleOrNull()
+        val userEntity = UsersEntity.find { UserTable.email eq forgetPasswordBody.email }.toList().singleOrNull()
         return@transaction userEntity?.let {
             val verificationCode = Random.nextInt(1000, 9999).toString()
             it.verification_code = verificationCode
@@ -84,7 +84,7 @@ class UserController {
     }
 
     fun confirmPassword(confirmPasswordBody: ConfirmPasswordBody) = transaction {
-        val userEntity = UsersEntity.find { UsersTable.email eq confirmPasswordBody.email }.toList().singleOrNull()
+        val userEntity = UsersEntity.find { UserTable.email eq confirmPasswordBody.email }.toList().singleOrNull()
         return@transaction userEntity?.let {
             if (confirmPasswordBody.verificationCode == it.verification_code) {
                 it.password = BCrypt.withDefaults().hashToString(12, confirmPasswordBody.password.toCharArray())
@@ -100,7 +100,7 @@ class UserController {
 
 
     fun updateProfile(userId: String, userProfile: UserProfile?) = transaction {
-        val userProfileEntity = UsersProfileEntity.find { UsersProfileTable.user_id eq userId }.toList().singleOrNull()
+        val userProfileEntity = UsersProfileEntity.find { UserProfileTable.user_id eq userId }.toList().singleOrNull()
         return@transaction userProfileEntity?.let {
             it.user_profile_image = userProfile?.userProfileImage ?: it.user_profile_image
             it.first_name = userProfile?.firstName ?: it.first_name
@@ -116,6 +116,15 @@ class UserController {
             it.marital_status = userProfile?.maritalStatus ?: it.marital_status
             it.post_code = userProfile?.postCode ?: it.post_code
             it.gender = userProfile?.gender ?: it.gender
+            it.updated_at = java.time.LocalDateTime.now()
+            it.response()
+        }
+    }
+
+    fun updateProfileImage(userId: String, profileImage: String?) = transaction {
+        val userProfileEntity = UsersProfileEntity.find { UserProfileTable.user_id eq userId }.toList().singleOrNull()
+        return@transaction userProfileEntity?.let {
+            it.user_profile_image = profileImage ?: it.user_profile_image
             it.updated_at = java.time.LocalDateTime.now()
             it.response()
         }

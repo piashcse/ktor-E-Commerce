@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.Column
 
 object UserHasTypeTable : IdTable<String>("user_has_type") {
     override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
-    val user_id = reference("user_id", UsersTable.id)
+    val user_id = reference("user_id", UserTable.id)
     val user_type_id = text("user_type_id")
     val created_at = text("created_at")
     val updated_at = text("updated_at")

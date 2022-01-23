@@ -1,4 +1,4 @@
-package com.example.entities.product
+package com.example.entities.product.defaultproductcategory
 
 import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass
@@ -9,7 +9,7 @@ import org.jetbrains.exposed.sql.Column
 object ProductSubCategoryTable : IdTable<String>("product_sub_category") {
     override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
     val product_sub_category_name = text("product_category_name")
-    val product_category_id = ProductCategoryTable.reference("product_category_id", ProductCategoryTable.id)
+    val product_category_id = reference("product_category_id", ProductCategoryTable.id)
     override val primaryKey = PrimaryKey(id)
 }
 

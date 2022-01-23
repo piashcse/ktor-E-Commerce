@@ -60,7 +60,7 @@ fun Route.shopRoute(shopController: ShopController) {
                 }
             }
         }
-        authenticate(AppConstants.RoleManagement.MERCHANT) {
+        authenticate(AppConstants.RoleManagement.MERCHANT, AppConstants.RoleManagement.ADMIN) {
             post("add-shop") {
                 val jwtTokenToUserData = call.principal<JwtTokenBody>()
                 val addShop = call.receive<AddShop>()

@@ -8,7 +8,7 @@ data class RegistrationBody(val userName: String, val email: String, val passwor
         validate(this) {
             validate(RegistrationBody::userName).isNotNull()
             validate(RegistrationBody::email).isNotNull().isEmail()
-            validate(RegistrationBody::password).isNotNull().hasSize(3, 8)
+            validate(RegistrationBody::password).isNotNull().hasSize(4, 8)
             validate(RegistrationBody::userType).isNotNull().isIn("1", "2", "3", "4")
         }
     }

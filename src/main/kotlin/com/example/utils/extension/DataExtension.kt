@@ -1,6 +1,7 @@
 package com.example.utils.extension
 
 import kotlinx.datetime.*
+import org.flywaydb.core.internal.util.StringUtils
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ResultRow
 import kotlin.reflect.full.memberProperties
@@ -39,4 +40,8 @@ fun ResultRow.toMap(): Map<String, Any?> {
         mutableMap[column.name] = dataList[entry.value]
     }
     return mutableMap
+}
+
+fun String.fileExtension(): String {
+    return StringUtils.getFileExtension(this)
 }

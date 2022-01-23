@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.javatime.datetime
 
-object UsersTable : IdTable<String>("users") {
+object UserTable : IdTable<String>("users") {
     override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
     val user_name = text("user_name")
     val email = text("email")
@@ -24,19 +24,19 @@ object UsersTable : IdTable<String>("users") {
 }
 
 class UsersEntity(id: EntityID<String>) : Entity<String>(id) {
-    companion object : EntityClass<String, UsersEntity>(UsersTable)
-    var user_name by UsersTable.user_name
-    var email by UsersTable.email
-    var password by UsersTable.password
-    var mobile_number by UsersTable.mobile_number
-    var email_verified_at by UsersTable.email_verified_at
-    var remember_token by UsersTable.remember_token
-    var verification_code by UsersTable.verification_code
-    var created_at by UsersTable.created_at
-    var updated_at by UsersTable.updated_at
-    var is_verified by UsersTable.is_verified
+    companion object : EntityClass<String, UsersEntity>(UserTable)
+    var user_name by UserTable.user_name
+    var email by UserTable.email
+    var password by UserTable.password
+    var mobile_number by UserTable.mobile_number
+    var email_verified_at by UserTable.email_verified_at
+    var remember_token by UserTable.remember_token
+    var verification_code by UserTable.verification_code
+    var created_at by UserTable.created_at
+    var updated_at by UserTable.updated_at
+    var is_verified by UserTable.is_verified
     val userType by UserHasTypeEntity backReferencedOn UserHasTypeTable.user_id
-    fun userResponse() = UsersResponse(
+    fun response() = UsersResponse(
         id.value,
         user_name,
         email,

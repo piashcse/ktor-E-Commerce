@@ -1,5 +1,6 @@
 package com.example.entities.product
 
+import com.example.entities.product.defaultproductcategory.ProductCategoryTable
 import com.example.entities.product.defaultvariant.ProductColorTable
 import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass

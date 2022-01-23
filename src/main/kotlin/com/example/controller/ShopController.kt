@@ -1,6 +1,7 @@
 package com.example.controller
 
 import com.example.entities.shop.*
+import com.example.entities.user.UserTable
 import com.example.utils.CommonException
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -49,7 +50,7 @@ class ShopController {
         val shopNameExist = ShopEntity.find { ShopTable.shop_name eq shopName }.toList().singleOrNull()
         return@transaction if (shopNameExist == null) {
             ShopEntity.new(UUID.randomUUID().toString()) {
-                user_id = EntityID(userId, ShopTable)
+                user_id = EntityID(userId, UserTable)
                 shop_category_id = EntityID(shopCategoryId, ShopTable)
                 shop_name = shopName
             }.shopResponse()

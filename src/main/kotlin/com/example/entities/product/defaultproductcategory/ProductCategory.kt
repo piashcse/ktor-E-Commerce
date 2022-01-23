@@ -1,4 +1,4 @@
-package com.example.entities.product
+package com.example.entities.product.defaultproductcategory
 
 import com.example.entities.shop.ShopTable
 import org.jetbrains.exposed.dao.Entity
@@ -10,8 +10,8 @@ import org.jetbrains.exposed.sql.Column
 object ProductCategoryTable : IdTable<String>("product_category") {
     override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
     val product_category_name = text("product_category_name")
-    val product_category_creator_type = text("product_category_creator_type")
-    val shop_id = reference("shop_id", ShopTable.id).nullable()
+    val product_category_creator_type = text("product_category_creator_type") // admin and shop owner can create category
+    val shop_id = reference("shop_id", ShopTable.id).nullable() // if shop owner creates category id
     override val primaryKey = PrimaryKey(id)
 }
 
