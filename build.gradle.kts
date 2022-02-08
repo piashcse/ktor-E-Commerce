@@ -71,3 +71,6 @@ dependencies {
     implementation("commons-io:commons-io:2.11.0")
 
 }
+tasks.create("stage") {
+    dependsOn("installDist")
+}
