@@ -34,7 +34,7 @@ object DatabaseFactory {
         // database connection is handled from hikari properties
         val config = HikariConfig("/hikari.properties")
         val ds = HikariDataSource(config)
-        runFlyway(ds)
+       // runFlyway(ds)
         Database.connect(ds)
     }
 
