@@ -1,1 +1,1 @@
-web: ./build/install/ktor-ECommerce/bin/ktor-ECommerce
+web: /build/install/ktor-ECommerce/bin/ktor-ECommerce

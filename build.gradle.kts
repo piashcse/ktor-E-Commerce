@@ -1,7 +1,6 @@
 val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project
-
 plugins {
     application
     kotlin("jvm") version "1.6.0"
@@ -17,6 +16,9 @@ repositories {
     mavenCentral()
     maven { url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap") }
     maven { url = uri("https://jitpack.io") }
+}
+tasks.create("stage") {
+    dependsOn("installDist")
 }
 
 dependencies {
@@ -70,7 +72,4 @@ dependencies {
     // file extension
     implementation("commons-io:commons-io:2.11.0")
 
-}
-tasks.create("stage") {
-    dependsOn("installDist")
 }
