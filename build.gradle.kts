@@ -51,7 +51,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.37.3")
 
     // postgresql
-    implementation("org.postgresql:postgresql:42.3.1")
+    implementation("org.postgresql:postgresql:42.3.3")
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     // password hashing
