@@ -5,12 +5,15 @@ val logback_version: String by project
 plugins {
     application
     kotlin("jvm") version "1.6.0"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
 group = "com.example"
 version = "0.0.1"
 application {
-    mainClass.set("com.example.ApplicationKt")
+    // mainClass.set("com.example.ApplicationKt")
+    project.setProperty("mainClassName", "com.example.ApplicationKt") // adding this for fatjar
+
 }
 
 repositories {

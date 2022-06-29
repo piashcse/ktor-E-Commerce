@@ -1,3 +1,5 @@
 package com.example.models.shop
 
-data class GetShopCategory(val offset: Int, val limit: Int)
+import com.papsign.ktor.openapigen.annotations.parameters.QueryParam
+
+data class GetShopCategory(@QueryParam("offset") val offset: Int, @QueryParam("limit") val limit: Int)

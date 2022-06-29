@@ -9,8 +9,7 @@ import com.example.utils.extension.nullProperties
 import com.example.utils.CustomResponse
 import com.example.utils.Response
 import com.example.utils.extension.authenticateWithJwt
-import com.papsign.ktor.openapigen.route.path.auth.post
-import com.papsign.ktor.openapigen.route.path.auth.principal
+import com.papsign.ktor.openapigen.route.path.auth.*
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.path.normal.post
 import com.papsign.ktor.openapigen.route.path.normal.route
@@ -27,7 +26,7 @@ import io.ktor.server.routing.*
 fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
     route("shop/") {
         authenticateWithJwt(AppConstants.RoleManagement.ADMIN) {
-            route("add-shop-category").post<Unit, Response, AddShopCategory, JwtTokenBody> { response, addShopCategory ->
+            route("category").post<Unit, Response, AddShopCategory, JwtTokenBody> { response, addShopCategory ->
                 addShopCategory.nullProperties {
                     throw MissingRequestParameterException(it.toString())
                 }
@@ -37,7 +36,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                 }
             }
 
-            route("shop-categories").post<Unit, Response, GetShopCategory, JwtTokenBody> { response, shopCategories ->
+            route("category").get<GetShopCategory, Response, JwtTokenBody> { shopCategories ->
                 shopCategories.nullProperties {
                     throw MissingRequestParameterException(it.toString())
                 }
@@ -47,7 +46,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                 }
             }
 
-            route("delete-shop-category").post<Unit, Response, DeleteShopCategory, JwtTokenBody> { response, deleteShopCategory ->
+            route("category").delete<DeleteShopCategory, Response, JwtTokenBody> { deleteShopCategory ->
                 deleteShopCategory.nullProperties {
                     throw MissingRequestParameterException(it.toString())
                 }
@@ -57,7 +56,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                 }
             }
 
-            route("update-shop-category").post<Unit, Response, UpdateShopCategory, JwtTokenBody> { response, updateShopCategory ->
+            route("category").put<Unit, Response, UpdateShopCategory, JwtTokenBody> { response, updateShopCategory ->
                 updateShopCategory.nullProperties {
                     throw MissingRequestParameterException(it.toString())
                 }
@@ -70,7 +69,8 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
             }
         }
         authenticateWithJwt(AppConstants.RoleManagement.MERCHANT, AppConstants.RoleManagement.ADMIN) {
-            route("add-shop").post<Unit, Response, AddShop, JwtTokenBody> { response, addShop ->
+            // shop
+            post<Unit, Response, AddShop, JwtTokenBody> { response, addShop ->
                 val jwtTokenToUserData = principal()
                 //val addShop = call.receive<AddShop>()
                 addShop.nullProperties {

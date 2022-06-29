@@ -31,7 +31,7 @@ import java.util.*
 fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
     route("product/") {
         authenticateWithJwt(AppConstants.RoleManagement.ADMIN) {
-            route("add-category").post<Unit, Response, AddCategoryBody, JwtTokenBody> { response, addCategory ->
+            route("category").post<Unit, Response, AddCategoryBody, JwtTokenBody> { response, addCategory ->
                 addCategory.validation()
                 val db = productController.createProductCategory(addCategory)
                 db.let {
@@ -39,7 +39,8 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                 }
             }
 
-            route("add-color").post<Unit, Response, VariantOptionName, JwtTokenBody> { response, addColor ->
+
+            route("color").post<Unit, Response, VariantOptionName, JwtTokenBody> { response, addColor ->
                 addColor.validation()
                 val db = productController.createDefaultColorOption(addColor.variantOptionName)
                 db.let {
@@ -48,7 +49,7 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
             }
         }
         authenticateWithJwt(AppConstants.RoleManagement.ADMIN, AppConstants.RoleManagement.MERCHANT) {
-            route("add-product").post<Unit, Response, AddProduct, JwtTokenBody> { response, addProduct ->
+            post<Unit, Response, AddProduct, JwtTokenBody> { response, addProduct ->
                 addProduct.validation()
                 val db = productController.createProduct(addProduct)
                 db.let {

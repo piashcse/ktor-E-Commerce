@@ -25,7 +25,7 @@ object UserProfileTable : IdTable<String>("users_profile") {
     val marital_status = text("marital_status").nullable()
     val post_code = text("post_code").nullable()
     val gender = text("gender").nullable()
-    val created_at = datetime("created_at").defaultExpression(CurrentDateTime()) // UTC time
+    val created_at = datetime("created_at").defaultExpression(CurrentDateTime) // UTC time
     val updated_at = datetime("updated_at")
     override val primaryKey = PrimaryKey(id)
 }

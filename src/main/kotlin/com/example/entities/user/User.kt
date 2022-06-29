@@ -17,7 +17,7 @@ object UserTable : IdTable<String>("users") {
     val email_verified_at = text("email_verified_at").nullable() // so far unkmown
     val remember_token = text("remember_token").nullable()
     val verification_code = text("verification_code").nullable() // verification_code
-    val created_at = datetime("created_at").defaultExpression(CurrentDateTime()) // UTC time
+    val created_at = datetime("created_at").defaultExpression(CurrentDateTime) // UTC time
     val updated_at = datetime("updated_at").nullable()
     val is_verified = text("is_verified").nullable() // email verified by validation code
     override val primaryKey = PrimaryKey(id)

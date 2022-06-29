@@ -1,3 +1,5 @@
 package com.example.models.shop
 
-data class DeleteShopCategory(val shopCategoryId: String)
+import com.papsign.ktor.openapigen.annotations.parameters.QueryParam
+
+data class DeleteShopCategory(@QueryParam("shopCategoryId") val shopCategoryId: String)
