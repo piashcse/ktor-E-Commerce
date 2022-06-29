@@ -150,7 +150,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                 }
             }
 
-            route("photo-upload").post<ChangePasswordQuery, Response, MultiPartOpenApi, JwtTokenBody> { params, multipartData ->
+          /*  route("photo-upload").post<ChangePasswordQuery, Response, MultiPartOpenApi, JwtTokenBody> { params, multipartData ->
                 val fileNameInServer =
                     "${AppConstants.Image.PROFILE_IMAGE_LOCATION}${UUID.randomUUID()}.${multipartData.file.name}"
                 File(fileNameInServer).writeBytes(multipartData.file.readAllBytes())
@@ -162,7 +162,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                         )
                     }
                 }
-            }
+            }*/
         }
     }
 

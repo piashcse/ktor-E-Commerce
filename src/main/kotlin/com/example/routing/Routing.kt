@@ -49,7 +49,7 @@ fun Application.configureRouting() {
         }
 
 
-      /*  apiRouting {
+        apiRouting {
             tag(Tags.USER) {
                 userRoute(UserController())
             }
@@ -59,7 +59,7 @@ fun Application.configureRouting() {
             tag(Tags.PRODUCT) {
                 productRoute(ProductController())
             }
-        }*/
+        }
     }
 }
 
