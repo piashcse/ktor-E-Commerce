@@ -93,7 +93,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                 )
             }
         }
-        route("confirm-password-by-verification-code").post<Unit, Response, ConfirmPasswordBody> { response, confirmPasswordBody ->
+        route("verify-password-change").post<Unit, Response, ConfirmPasswordBody> { response, confirmPasswordBody ->
             confirmPasswordBody.nullProperties {
                 throw MissingRequestParameterException(it.toString())
             }
