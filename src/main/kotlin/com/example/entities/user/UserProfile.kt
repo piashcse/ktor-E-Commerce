@@ -1,15 +1,13 @@
 package com.example.entities.user
 
-import org.jetbrains.exposed.dao.Entity
-import org.jetbrains.exposed.dao.EntityClass
+import com.example.entities.base.BaseIntEntity
+import com.example.entities.base.BaseIntEntityClass
+import com.example.entities.base.BaseIntIdTable
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IdTable
-import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.javatime.datetime
 
-object UserProfileTable : IdTable<String>("users_profile") {
-    override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
+object UserProfileTable : BaseIntIdTable("users_profile") {
     val user_id = reference("user_id", UserTable.id)
     val user_profile_image = text("user_profile_image").nullable()
     val first_name = text("first_name").nullable()
@@ -25,13 +23,11 @@ object UserProfileTable : IdTable<String>("users_profile") {
     val marital_status = text("marital_status").nullable()
     val post_code = text("post_code").nullable()
     val gender = text("gender").nullable()
-    val created_at = datetime("created_at").defaultExpression(CurrentDateTime) // UTC time
-    val updated_at = datetime("updated_at")
-    override val primaryKey = PrimaryKey(id)
 }
 
-class UsersProfileEntity(id: EntityID<String>) : Entity<String>(id) {
-    companion object : EntityClass<String, UsersProfileEntity>(UserProfileTable)
+class UsersProfileEntity(id: EntityID<String>) : BaseIntEntity(id, UserProfileTable) {
+    companion object : BaseIntEntityClass<UsersProfileEntity>(UserProfileTable)
+
     var user_id by UserProfileTable.user_id
     var user_profile_image by UserProfileTable.user_profile_image
     var first_name by UserProfileTable.first_name
@@ -47,8 +43,6 @@ class UsersProfileEntity(id: EntityID<String>) : Entity<String>(id) {
     var marital_status by UserProfileTable.marital_status
     var post_code by UserProfileTable.post_code
     var gender by UserProfileTable.gender
-    var created_at by UserProfileTable.created_at
-    var updated_at by UserProfileTable.updated_at
     fun response() = UserProfile(
         user_id.value,
         user_profile_image,
@@ -65,8 +59,6 @@ class UsersProfileEntity(id: EntityID<String>) : Entity<String>(id) {
         marital_status,
         post_code,
         gender,
-        created_at.toString(),
-        updated_at.toString()
     )
 }
 
@@ -85,8 +77,6 @@ data class UserProfile(
     val userDescription: String?,
     val maritalStatus: String?,
     val postCode: String?,
-    val gender: String?,
-    val createdAt: String,
-    val updatedAt: String
+    val gender: String?
 )
 

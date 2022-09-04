@@ -1,24 +1,21 @@
 package com.example.entities.product
 
+import com.example.entities.base.BaseIntEntity
+import com.example.entities.base.BaseIntEntityClass
+import com.example.entities.base.BaseIntIdTable
 import com.example.entities.product.defaultproductcategory.ProductCategoryTable
-import org.jetbrains.exposed.dao.Entity
-import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IdTable
-import org.jetbrains.exposed.sql.Column
 
-object ProductTable : IdTable<String>("product") {
-    override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
+object ProductTable : BaseIntIdTable("product") {
     val category_id = text("category_id").references(ProductCategoryTable.id)
     val title = text("title")
     val description = text("description")
     val price = double("price")
     val discount_price = text("discount_price").nullable()
-    override val primaryKey = PrimaryKey(id)
 }
 
-class ProductEntity(id: EntityID<String>) : Entity<String>(id) {
-    companion object : EntityClass<String, ProductEntity>(ProductTable)
+class ProductEntity(id: EntityID<String>) : BaseIntEntity(id, ProductTable) {
+    companion object : BaseIntEntityClass<ProductEntity>(ProductTable)
 
     var category_id by ProductTable.category_id
     var title by ProductTable.title

@@ -5,14 +5,13 @@ import com.example.entities.user.UserTable
 import com.example.utils.CommonException
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.*
 
 class ShopController {
     fun createShopCategory(shopCategoryName: String) = transaction {
         val categoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.shop_category_name eq shopCategoryName }.toList().singleOrNull()
         return@transaction if (categoryExist == null) {
-            ShopCategoryEntity.new(UUID.randomUUID().toString()) {
+            ShopCategoryEntity.new() {
                 shop_category_name = shopCategoryName
             }.shopCategoryResponse()
         } else {
@@ -49,7 +48,7 @@ class ShopController {
     fun createShop(userId: String, shopCategoryId: String, shopName: String) = transaction {
         val shopNameExist = ShopEntity.find { ShopTable.shop_name eq shopName }.toList().singleOrNull()
         return@transaction if (shopNameExist == null) {
-            ShopEntity.new(UUID.randomUUID().toString()) {
+            ShopEntity.new() {
                 user_id = EntityID(userId, UserTable)
                 shop_category_id = EntityID(shopCategoryId, ShopTable)
                 shop_name = shopName

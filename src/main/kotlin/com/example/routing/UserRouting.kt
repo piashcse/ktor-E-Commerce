@@ -13,26 +13,19 @@ import com.google.api.client.json.gson.GsonFactory
 import com.example.utils.CustomResponse
 import com.example.utils.extension.authenticateWithJwt
 import com.example.utils.extension.nullProperties
-import com.papsign.ktor.openapigen.APITag
 import com.papsign.ktor.openapigen.annotations.parameters.QueryParam
 import com.papsign.ktor.openapigen.content.type.multipart.FormDataRequest
 import com.papsign.ktor.openapigen.content.type.multipart.NamedFileInputStream
 import com.papsign.ktor.openapigen.content.type.multipart.PartEncoding
-import com.papsign.ktor.openapigen.route.info
 import com.papsign.ktor.openapigen.route.path.auth.post
-import com.papsign.ktor.openapigen.route.path.auth.principal
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.path.normal.post
 import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
-import com.papsign.ktor.openapigen.route.tag
-import com.papsign.ktor.openapigen.route.tags
 import io.ktor.http.*
-import io.ktor.http.content.*
 import io.ktor.server.plugins.*
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.SimpleEmail
-import java.io.File
 import java.util.*
 import javax.naming.AuthenticationException
 
@@ -50,25 +43,23 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
             // example for the OpenAPI data
         ) { param, requestBody ->
             requestBody.validation()
-            val db = userController.login(requestBody)
-            db.let {
+            userController.login(requestBody).let {
                 val loginResponse =
-                    LoginResponse(it, JwtConfig.makeToken(JwtTokenBody(db.id, db.email, db.userType.userTypeId)))
+                    LoginResponse(it, JwtConfig.makeToken(JwtTokenBody(it.id, it.email, it.userType.userTypeId)))
                 respond(CustomResponse.success(loginResponse, HttpStatusCode.OK))
             }
         }
 
         route("registration").post<Unit, Response, RegistrationBody>() { response, requestBody ->
             requestBody.validation()
-            val db = userController.registration(requestBody)
-            db.let {
+            userController.registration(requestBody).let {
                 respond(CustomResponse.success(it, HttpStatusCode.OK))
             }
+
         }
         route("forget-password").post<Unit, Response, ForgetPasswordBody> { response, forgetPasswordBody ->
             forgetPasswordBody.validation()
-            val db = userController.forgetPassword(forgetPasswordBody)
-            db.let {
+            userController.forgetPassword(forgetPasswordBody).let {
                 SimpleEmail().apply {
                     hostName = AppConstants.SmtpServer.HOST_NAME
                     setSmtpPort(AppConstants.SmtpServer.PORT)
@@ -94,11 +85,8 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
             }
         }
         route("verify-password-change").post<Unit, Response, ConfirmPasswordBody> { response, confirmPasswordBody ->
-            confirmPasswordBody.nullProperties {
-                throw MissingRequestParameterException(it.toString())
-            }
-            val db = UserController().confirmPassword(confirmPasswordBody)
-            db.let {
+            confirmPasswordBody.validation()
+            UserController().confirmPassword(confirmPasswordBody).let {
                 when (it) {
                     AppConstants.DataBaseTransaction.FOUND -> {
                         respond(
@@ -129,11 +117,10 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
             ) { params, requestBody ->
                 val userId = params.userId
                 if (userId != null) {
-                    requestBody.nullProperties() {
+                    requestBody.nullProperties {
                         throw MissingRequestParameterException(it.toString())
                     }
-                    val db = userController.changePassword(userId, requestBody)
-                    db?.let {
+                    userController.changePassword(userId, requestBody)?.let {
                         if (it is UsersEntity)
                         // respond(CustomResponse.success(it.response(), HttpStatusCode.OK))
                             respond(CustomResponse.success("Password hase been changed", HttpStatusCode.OK))
@@ -150,19 +137,19 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                 }
             }
 
-          /*  route("photo-upload").post<ChangePasswordQuery, Response, MultiPartOpenApi, JwtTokenBody> { params, multipartData ->
-                val fileNameInServer =
-                    "${AppConstants.Image.PROFILE_IMAGE_LOCATION}${UUID.randomUUID()}.${multipartData.file.name}"
-                File(fileNameInServer).writeBytes(multipartData.file.readAllBytes())
-                principal().let {
-                    val db = userController.updateProfileImage(it.userId, multipartData.file.name)
-                    db?.let {
-                        respond(
-                            CustomResponse.success(fileNameInServer, HttpStatusCode.OK)
-                        )
-                    }
-                }
-            }*/
+            /*  route("photo-upload").post<ChangePasswordQuery, Response, MultiPartOpenApi, JwtTokenBody> { params, multipartData ->
+                  val fileNameInServer =
+                      "${AppConstants.Image.PROFILE_IMAGE_LOCATION}${UUID.randomUUID()}.${multipartData.file.name}"
+                  File(fileNameInServer).writeBytes(multipartData.file.readAllBytes())
+                  principal().let {
+                      val db = userController.updateProfileImage(it.userId, multipartData.file.name)
+                      db?.let {
+                          respond(
+                              CustomResponse.success(fileNameInServer, HttpStatusCode.OK)
+                          )
+                      }
+                  }
+              }*/
         }
     }
 

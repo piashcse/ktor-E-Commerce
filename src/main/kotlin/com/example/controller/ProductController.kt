@@ -1,10 +1,6 @@
 package com.example.controller
 
 import com.example.entities.product.*
-import com.example.entities.product.ProductImage.image_url
-import com.example.entities.product.ProductTable.description
-import com.example.entities.product.ProductTable.price
-import com.example.entities.product.ProductTable.title
 import com.example.entities.product.defaultproductcategory.ProductCategoryEntity
 import com.example.entities.product.defaultproductcategory.ProductCategoryTable
 import com.example.entities.product.defaultvariant.ProductColorEntity
@@ -16,7 +12,6 @@ import com.example.models.product.AddProduct
 import com.example.models.product.ProductResponse
 import com.example.utils.AppConstants
 import com.example.utils.CommonException
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
@@ -26,7 +21,7 @@ class ProductController {
             ProductCategoryEntity.find { ProductCategoryTable.product_category_name eq productCategory.categoryName }
                 .toList().singleOrNull()
         return@transaction if (categoryExist == null) {
-            ProductCategoryEntity.new(UUID.randomUUID().toString()) {
+            ProductCategoryEntity.new() {
                 product_category_name = productCategory.categoryName
                 product_category_creator_type = productCategory.userType
             }.productCategoryResponse()
@@ -69,7 +64,7 @@ class ProductController {
 
     fun uploadProductImages(productImages: String) = transaction {
         return@transaction {
-            ProductImageEntity.new(UUID.randomUUID().toString()) {
+            ProductImageEntity.new() {
                 image_url = productImages
             }.response()
         }
@@ -77,7 +72,7 @@ class ProductController {
 
     fun createProduct(addProduct: AddProduct) = transaction {
         return@transaction {
-            val product = ProductEntity.new(UUID.randomUUID().toString()) {
+            val product = ProductEntity.new() {
                 category_id = addProduct.categoryId
                 title = addProduct.title
                 description = addProduct.description
@@ -88,27 +83,27 @@ class ProductController {
                     it.product_id = product.id.value
                     it.response()
                 }
-            StockEntity.new(UUID.randomUUID().toString()) {
+            StockEntity.new() {
                 product_id = product.id.value
                 shop_id = addProduct.shopId
                 quantity = addProduct.quantity
             }
             addProduct.color?.let {
-                val variant = ProductVariantEntity.new(UUID.randomUUID().toString()) {
+                val variant = ProductVariantEntity.new() {
                     product_id = product.id
                     name = AppConstants.ProductVariant.COLOR
                 }
-                ProductVariantOptionEntity.new(UUID.randomUUID().toString()) {
+                ProductVariantOptionEntity.new() {
                     product_variant_id = variant.id
                     name = addProduct.color
                 }
             }
             addProduct.size?.let {
-                val variant = ProductVariantEntity.new(UUID.randomUUID().toString()) {
+                val variant = ProductVariantEntity.new() {
                     product_id = product.id
                     name = AppConstants.ProductVariant.SIZE
                 }
-                ProductVariantOptionEntity.new(UUID.randomUUID().toString()) {
+                ProductVariantOptionEntity.new() {
                     product_variant_id = variant.id
                     name = addProduct.size
                 }

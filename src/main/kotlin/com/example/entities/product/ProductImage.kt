@@ -1,20 +1,23 @@
 package com.example.entities.product
 
+import com.example.entities.base.BaseIntEntity
+import com.example.entities.base.BaseIntEntityClass
+import com.example.entities.base.BaseIntIdTable
 import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.javatime.CurrentDateTime
+import org.jetbrains.exposed.sql.javatime.datetime
 
-object ProductImage : IdTable<String>("product_image") {
-    override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
+object ProductImage : BaseIntIdTable("product_image") {
     val product_id = text("product_id").references(ProductTable.id).nullable()
     val image_url = text("image_url") // multiple image will be saved comma seperated string
-    override val primaryKey = PrimaryKey(id)
 }
 
-class ProductImageEntity(id: EntityID<String>) : Entity<String>(id) {
-    companion object : EntityClass<String, ProductImageEntity>(ProductImage)
+class ProductImageEntity(id: EntityID<String>) : BaseIntEntity(id,ProductImage ) {
+    companion object : BaseIntEntityClass<ProductImageEntity>(ProductImage)
 
     var product_id by ProductImage.product_id
     var image_url by ProductImage.image_url

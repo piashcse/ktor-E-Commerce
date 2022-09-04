@@ -1,19 +1,25 @@
 package com.example.entities.product.defaultvariant
 
+import com.example.entities.base.BaseIntEntity
+import com.example.entities.base.BaseIntEntityClass
+import com.example.entities.base.BaseIntIdTable
+import com.example.entities.product.ProductTable
+import com.example.entities.product.ProductTable.defaultExpression
+import com.example.entities.product.ProductTable.nullable
 import org.jetbrains.exposed.dao.Entity
 import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.javatime.CurrentDateTime
+import org.jetbrains.exposed.sql.javatime.datetime
 
-object ProductColorTable : IdTable<String>("product_color") {
-    override val id: Column<EntityID<String>> = text("id").uniqueIndex().entityId()
+object ProductColorTable : BaseIntIdTable("product_color") {
     val name = text("name")
-    override val primaryKey = PrimaryKey(id)
 }
 
-class ProductColorEntity(id: EntityID<String>) : Entity<String>(id) {
-    companion object : EntityClass<String, ProductColorEntity>(ProductColorTable)
+class ProductColorEntity(id: EntityID<String>) : BaseIntEntity(id, ProductColorTable) {
+    companion object : BaseIntEntityClass<ProductColorEntity>(ProductColorTable)
 
     var name by ProductColorTable.name
     fun response() = ProductColor(id.value, name)

@@ -7,6 +7,7 @@ import com.example.utils.*
 import com.example.utils.extension.currentTimeInUTC
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.random.Random
 
@@ -14,21 +15,17 @@ class UserController {
     fun registration(registrationBody: RegistrationBody) = transaction {
         val userEntity = UsersEntity.find { UserTable.email eq registrationBody.email }.toList().singleOrNull()
         return@transaction if (userEntity == null) {
-            val inserted = UsersEntity.new(UUID.randomUUID().toString()) {
+            val inserted = UsersEntity.new {
                 user_name = registrationBody.userName
                 email = registrationBody.email
                 password = BCrypt.withDefaults().hashToString(12, registrationBody.password.toCharArray())
-                updated_at = java.time.LocalDateTime.now()
             }
-            UsersProfileEntity.new(UUID.randomUUID().toString()) {
+            UsersProfileEntity.new {
                 user_id = inserted.id
-                updated_at = java.time.LocalDateTime.now()
             }
-            UserHasTypeEntity.new(UUID.randomUUID().toString()) {
+            UserHasTypeEntity.new{
                 user_id = inserted.id
                 user_type_id = registrationBody.userType
-                created_at = currentTimeInUTC().toString()
-                updated_at = currentTimeInUTC().toString()
             }
             RegistrationResponse(registrationBody.userName, registrationBody.email)
         } else {
@@ -64,7 +61,6 @@ class UserController {
         return@transaction userEntity?.let {
             if (BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), it.password).verified) {
                 it.password = BCrypt.withDefaults().hashToString(12, changePassword.newPassword.toCharArray())
-                it.updated_at = java.time.LocalDateTime.now()
                 it
             } else {
                 return@transaction changePassword
@@ -116,7 +112,6 @@ class UserController {
             it.marital_status = userProfile?.maritalStatus ?: it.marital_status
             it.post_code = userProfile?.postCode ?: it.post_code
             it.gender = userProfile?.gender ?: it.gender
-            it.updated_at = java.time.LocalDateTime.now()
             it.response()
         }
     }
@@ -125,7 +120,6 @@ class UserController {
         val userProfileEntity = UsersProfileEntity.find { UserProfileTable.user_id eq userId }.toList().singleOrNull()
         return@transaction userProfileEntity?.let {
             it.user_profile_image = profileImage ?: it.user_profile_image
-            it.updated_at = java.time.LocalDateTime.now()
             it.response()
         }
     }

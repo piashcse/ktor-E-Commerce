@@ -46,7 +46,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
 
     // exposed ORM library
-    implementation("org.flywaydb:flyway-core:9.1.6")
+    implementation("org.flywaydb:flyway-core:9.2.0")
     implementation("org.jetbrains.exposed:exposed-core:0.39.2")
     implementation("org.jetbrains.exposed:exposed-dao:0.39.2")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.39.2")
@@ -54,7 +54,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.39.2")
 
     // postgresql
-    implementation("org.postgresql:postgresql:42.4.2")
+    implementation("org.postgresql:postgresql:42.5.0")
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     // password hashing
@@ -75,7 +75,6 @@ dependencies {
 
     //swagger
     implementation("dev.forst", "ktor-openapi-generator", "0.4.5")
-
 }
 tasks.create("stage") {
     dependsOn("installDist")
