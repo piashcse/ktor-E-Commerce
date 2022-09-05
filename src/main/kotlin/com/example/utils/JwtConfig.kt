@@ -2,7 +2,7 @@ package com.example.utils
 
 import com.auth0.jwt.*
 import com.auth0.jwt.algorithms.*
-import com.example.models.user.JwtTokenBody
+import com.example.models.user.body.JwtTokenBody
 import java.util.*
 
 object JwtConfig {

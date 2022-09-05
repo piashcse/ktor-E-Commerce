@@ -4,7 +4,7 @@ import com.example.controller.ProductController
 import com.example.models.product.AddCategoryBody
 import com.example.models.product.AddProduct
 import com.example.models.product.VariantOptionName
-import com.example.models.user.JwtTokenBody
+import com.example.models.user.body.JwtTokenBody
 import com.example.utils.AppConstants
 import com.example.utils.CustomResponse
 import com.example.utils.Response

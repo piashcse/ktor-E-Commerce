@@ -13,8 +13,8 @@ import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.javatime.datetime
 
 object OrderDetailTable : BaseIntIdTable("orders") {
-    val order_id = reference("order_id", OrdersTable.id)
-    val product_id = reference("product_id", ProductTable.id)
+    val orderId = reference("order_id", OrdersTable.id)
+    val productId = reference("product_id", ProductTable.id)
     val price = float("price")
     val city = text("city")
     val sku = text("order_email")
@@ -24,8 +24,8 @@ object OrderDetailTable : BaseIntIdTable("orders") {
 class OrderDetailEntity(id: EntityID<String>) : BaseIntEntity(id, OrdersTable) {
     companion object : BaseIntEntityClass<OrderDetailEntity>(OrdersTable)
 
-    var order_id by OrderDetailTable.order_id
-    var product_id by OrderDetailTable.product_id
+    var orderId by OrderDetailTable.orderId
+    var productId by OrderDetailTable.productId
     var price by OrderDetailTable.price
     var city by OrderDetailTable.city
     var sku by OrderDetailTable.sku

@@ -1,4 +1,4 @@
-package com.example.models.user
+package com.example.models.user.body
 
 import org.valiktor.functions.*
 import org.valiktor.validate

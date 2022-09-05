@@ -3,7 +3,8 @@ package com.example.routing
 import com.example.controller.UserController
 import com.example.entities.user.ChangePassword
 import com.example.entities.user.UsersEntity
-import com.example.models.user.*
+import com.example.models.user.body.*
+import com.example.models.user.response.LoginResponse
 import com.example.plugins.ErrorMessage
 import com.example.utils.*
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken
@@ -13,11 +14,8 @@ import com.google.api.client.json.gson.GsonFactory
 import com.example.utils.CustomResponse
 import com.example.utils.extension.authenticateWithJwt
 import com.example.utils.extension.nullProperties
-import com.papsign.ktor.openapigen.annotations.parameters.QueryParam
-import com.papsign.ktor.openapigen.content.type.multipart.FormDataRequest
-import com.papsign.ktor.openapigen.content.type.multipart.NamedFileInputStream
-import com.papsign.ktor.openapigen.content.type.multipart.PartEncoding
 import com.papsign.ktor.openapigen.route.path.auth.post
+import com.papsign.ktor.openapigen.route.path.auth.principal
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.path.normal.post
 import com.papsign.ktor.openapigen.route.response.respond
@@ -26,13 +24,9 @@ import io.ktor.http.*
 import io.ktor.server.plugins.*
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.SimpleEmail
+import java.io.File
 import java.util.*
 import javax.naming.AuthenticationException
-
-data class ChangePasswordQuery(@QueryParam("userId") val userId: String? = null)
-
-@FormDataRequest
-data class MultiPartOpenApi(@PartEncoding("image/*") val file: NamedFileInputStream)
 
 fun NormalOpenAPIRoute.userRoute(userController: UserController) {
     route("user/") {
@@ -107,9 +101,6 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
             }
         }
         authenticateWithJwt(AppConstants.RoleManagement.ADMIN, AppConstants.RoleManagement.MERCHANT) {
-            /* route("authTesting").get<Unit, String, JwtTokenBody> { params ->
-                 respond("authenticated")
-             }*/
             route("change-password").post<ChangePasswordQuery, Response, ChangePassword, JwtTokenBody>(
                 exampleRequest = ChangePassword(
                     "12345", "54321"
@@ -137,19 +128,19 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                 }
             }
 
-            /*  route("photo-upload").post<ChangePasswordQuery, Response, MultiPartOpenApi, JwtTokenBody> { params, multipartData ->
-                  val fileNameInServer =
-                      "${AppConstants.Image.PROFILE_IMAGE_LOCATION}${UUID.randomUUID()}.${multipartData.file.name}"
-                  File(fileNameInServer).writeBytes(multipartData.file.readAllBytes())
-                  principal().let {
-                      val db = userController.updateProfileImage(it.userId, multipartData.file.name)
-                      db?.let {
-                          respond(
-                              CustomResponse.success(fileNameInServer, HttpStatusCode.OK)
-                          )
-                      }
-                  }
-              }*/
+            route("photo-upload").post<ChangePasswordQuery, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
+                val fileNameInServer =
+                    "${AppConstants.Image.PROFILE_IMAGE_LOCATION}${UUID.randomUUID()}.${multipartData.file.name}"
+                File(fileNameInServer).writeBytes(multipartData.file.readAllBytes())
+                principal().let {
+                    val db = userController.updateProfileImage(it.userId, multipartData.file.name)
+                    db?.let {
+                        respond(
+                            CustomResponse.success(fileNameInServer, HttpStatusCode.OK)
+                        )
+                    }
+                }
+            }
         }
     }
 

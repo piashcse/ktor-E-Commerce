@@ -18,12 +18,12 @@ import java.util.*
 class ProductController {
     fun createProductCategory(productCategory: AddCategoryBody) = transaction {
         val categoryExist =
-            ProductCategoryEntity.find { ProductCategoryTable.product_category_name eq productCategory.categoryName }
+            ProductCategoryEntity.find { ProductCategoryTable.productCategoryName eq productCategory.categoryName }
                 .toList().singleOrNull()
         return@transaction if (categoryExist == null) {
             ProductCategoryEntity.new() {
-                product_category_name = productCategory.categoryName
-                product_category_creator_type = productCategory.userType
+                productCategoryName = productCategory.categoryName
+                productCategoryCreatorType = productCategory.userType
             }.productCategoryResponse()
         } else {
             throw CommonException("Product category name ${productCategory.categoryName} already exist")
@@ -65,7 +65,7 @@ class ProductController {
     fun uploadProductImages(productImages: String) = transaction {
         return@transaction {
             ProductImageEntity.new() {
-                image_url = productImages
+                imageUrl = productImages
             }.response()
         }
     }
@@ -73,38 +73,38 @@ class ProductController {
     fun createProduct(addProduct: AddProduct) = transaction {
         return@transaction {
             val product = ProductEntity.new() {
-                category_id = addProduct.categoryId
+                categoryId = addProduct.categoryId
                 title = addProduct.title
                 description = addProduct.description
                 price = addProduct.price
             }
             val productImage =
                 ProductImageEntity.find { ProductImage.id eq addProduct.imageId }.toList().singleOrNull()?.let {
-                    it.product_id = product.id.value
+                    it.productId = product.id.value
                     it.response()
                 }
             StockEntity.new() {
-                product_id = product.id.value
-                shop_id = addProduct.shopId
+                productId = product.id.value
+                shopId = addProduct.shopId
                 quantity = addProduct.quantity
             }
             addProduct.color?.let {
                 val variant = ProductVariantEntity.new() {
-                    product_id = product.id
+                    productId = product.id
                     name = AppConstants.ProductVariant.COLOR
                 }
                 ProductVariantOptionEntity.new() {
-                    product_variant_id = variant.id
+                    productVariantId = variant.id
                     name = addProduct.color
                 }
             }
             addProduct.size?.let {
                 val variant = ProductVariantEntity.new() {
-                    product_id = product.id
+                    productId = product.id
                     name = AppConstants.ProductVariant.SIZE
                 }
                 ProductVariantOptionEntity.new() {
-                    product_variant_id = variant.id
+                    productVariantId = variant.id
                     name = addProduct.size
                 }
             }

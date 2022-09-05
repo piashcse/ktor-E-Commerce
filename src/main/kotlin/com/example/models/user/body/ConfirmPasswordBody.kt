@@ -1,4 +1,4 @@
-package com.example.models.user
+package com.example.models.user.body
 
 import org.valiktor.functions.isEmail
 import org.valiktor.functions.isNotNull

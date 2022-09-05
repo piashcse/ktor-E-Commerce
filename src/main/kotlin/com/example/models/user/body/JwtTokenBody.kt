@@ -1,4 +1,4 @@
-package com.example.models.user
+package com.example.models.user.body
 
 import io.ktor.server.auth.*
 

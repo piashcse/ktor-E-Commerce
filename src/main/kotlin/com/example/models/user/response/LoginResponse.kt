@@ -1,4 +1,4 @@
-package com.example.models.user
+package com.example.models.user.response
 
 import com.example.entities.user.UsersResponse
 

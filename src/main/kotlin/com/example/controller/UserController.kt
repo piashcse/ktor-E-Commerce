@@ -2,13 +2,11 @@ package com.example.controller
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.example.entities.user.*
-import com.example.models.user.*
+import com.example.models.user.body.*
+import com.example.models.user.response.RegistrationResponse
 import com.example.utils.*
-import com.example.utils.extension.currentTimeInUTC
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.time.LocalDateTime
-import java.util.*
 import kotlin.random.Random
 
 class UserController {
@@ -16,16 +14,16 @@ class UserController {
         val userEntity = UsersEntity.find { UserTable.email eq registrationBody.email }.toList().singleOrNull()
         return@transaction if (userEntity == null) {
             val inserted = UsersEntity.new {
-                user_name = registrationBody.userName
+                userName = registrationBody.userName
                 email = registrationBody.email
                 password = BCrypt.withDefaults().hashToString(12, registrationBody.password.toCharArray())
             }
             UsersProfileEntity.new {
-                user_id = inserted.id
+                userId = inserted.id
             }
             UserHasTypeEntity.new{
-                user_id = inserted.id
-                user_type_id = registrationBody.userType
+                userId = inserted.id
+                userTypeId = registrationBody.userType
             }
             RegistrationResponse(registrationBody.userName, registrationBody.email)
         } else {
@@ -36,10 +34,10 @@ class UserController {
     fun login(loginBody: LoginBody) = transaction {
         val query = UserTable.leftJoin(UserHasTypeTable).select { UserTable.email eq loginBody.email }
         val result = UsersEntity.wrapRows(query).first()
-        if (result.userType.user_type_id != loginBody.userType) throw UserTypeException()
+        if (result.userType.userTypeId != loginBody.userType) throw UserTypeException()
         if (BCrypt.verifyer().verify(
                 loginBody.password.toCharArray(), result.password
-            ).verified && result.userType.user_type_id == loginBody.userType
+            ).verified && result.userType.userTypeId == loginBody.userType
         ) {
             return@transaction result.response()
         } else {
@@ -51,7 +49,7 @@ class UserController {
         val usersEntity = UsersEntity.find { UserTable.email eq jwtTokenBody.email }.toList().singleOrNull()
         usersEntity?.let {
             return@transaction if (usersEntity != null) {
-                JwtTokenBody(usersEntity.id.value, usersEntity.email, usersEntity.userType.user_type_id)
+                JwtTokenBody(usersEntity.id.value, usersEntity.email, usersEntity.userType.userTypeId)
             } else null
         }
     }
@@ -72,7 +70,7 @@ class UserController {
         val userEntity = UsersEntity.find { UserTable.email eq forgetPasswordBody.email }.toList().singleOrNull()
         return@transaction userEntity?.let {
             val verificationCode = Random.nextInt(1000, 9999).toString()
-            it.verification_code = verificationCode
+            it.verificationCode = verificationCode
             VerificationCode(verificationCode)
         } ?: run {
             throw CommonException("${forgetPasswordBody.email} is not exist")
@@ -82,9 +80,9 @@ class UserController {
     fun confirmPassword(confirmPasswordBody: ConfirmPasswordBody) = transaction {
         val userEntity = UsersEntity.find { UserTable.email eq confirmPasswordBody.email }.toList().singleOrNull()
         return@transaction userEntity?.let {
-            if (confirmPasswordBody.verificationCode == it.verification_code) {
+            if (confirmPasswordBody.verificationCode == it.verificationCode) {
                 it.password = BCrypt.withDefaults().hashToString(12, confirmPasswordBody.password.toCharArray())
-                it.verification_code = null
+                it.verificationCode = null
                 AppConstants.DataBaseTransaction.FOUND
             } else {
                 AppConstants.DataBaseTransaction.NOT_FOUND
@@ -96,30 +94,30 @@ class UserController {
 
 
     fun updateProfile(userId: String, userProfile: UserProfile?) = transaction {
-        val userProfileEntity = UsersProfileEntity.find { UserProfileTable.user_id eq userId }.toList().singleOrNull()
+        val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         return@transaction userProfileEntity?.let {
-            it.user_profile_image = userProfile?.userProfileImage ?: it.user_profile_image
-            it.first_name = userProfile?.firstName ?: it.first_name
-            it.last_name = userProfile?.lastName ?: it.last_name
-            it.secondary_mobile_number = userProfile?.secondaryMobileNumber ?: it.secondary_mobile_number
-            it.fax_number = userProfile?.faxNumber ?: it.fax_number
-            it.street_address = userProfile?.streetAddress ?: it.street_address
+            it.userProfileImage = userProfile?.userProfileImage ?: it.userProfileImage
+            it.firstName = userProfile?.firstName ?: it.firstName
+            it.lastName = userProfile?.lastName ?: it.lastName
+            it.secondaryMobileNumber = userProfile?.secondaryMobileNumber ?: it.secondaryMobileNumber
+            it.faxNumber = userProfile?.faxNumber ?: it.faxNumber
+            it.streetAddress = userProfile?.streetAddress ?: it.streetAddress
             it.city = userProfile?.city ?: it.city
-            it.identification_type = userProfile?.identificationType ?: it.identification_type
-            it.identification_no = userProfile?.identificationNo ?: it.identification_no
+            it.identificationType = userProfile?.identificationType ?: it.identificationType
+            it.identificationNo = userProfile?.identificationNo ?: it.identificationNo
             it.occupation = userProfile?.occupation ?: it.occupation
-            it.user_description = userProfile?.userDescription ?: it.user_description
-            it.marital_status = userProfile?.maritalStatus ?: it.marital_status
-            it.post_code = userProfile?.postCode ?: it.post_code
+            it.userDescription = userProfile?.userDescription ?: it.userDescription
+            it.maritalStatus = userProfile?.maritalStatus ?: it.maritalStatus
+            it.postCode = userProfile?.postCode ?: it.postCode
             it.gender = userProfile?.gender ?: it.gender
             it.response()
         }
     }
 
     fun updateProfileImage(userId: String, profileImage: String?) = transaction {
-        val userProfileEntity = UsersProfileEntity.find { UserProfileTable.user_id eq userId }.toList().singleOrNull()
+        val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         return@transaction userProfileEntity?.let {
-            it.user_profile_image = profileImage ?: it.user_profile_image
+            it.userProfileImage = profileImage ?: it.userProfileImage
             it.response()
         }
     }

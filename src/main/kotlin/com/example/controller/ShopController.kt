@@ -9,10 +9,10 @@ import org.jetbrains.exposed.sql.transactions.transaction
 class ShopController {
     fun createShopCategory(shopCategoryName: String) = transaction {
         val categoryExist =
-            ShopCategoryEntity.find { ShopCategoryTable.shop_category_name eq shopCategoryName }.toList().singleOrNull()
+            ShopCategoryEntity.find { ShopCategoryTable.shopCategoryName eq shopCategoryName }.toList().singleOrNull()
         return@transaction if (categoryExist == null) {
             ShopCategoryEntity.new() {
-                shop_category_name = shopCategoryName
+                this.shopCategoryName = shopCategoryName
             }.shopCategoryResponse()
         } else {
             throw CommonException("Category name $shopCategoryName already exist")
@@ -30,7 +30,7 @@ class ShopController {
         val shopCategoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
         return@transaction shopCategoryExist?.apply {
-            shop_category_name = shopCategoryName
+            this.shopCategoryName = shopCategoryName
         }?.shopCategoryResponse() ?: throw CommonException("Category id $shopCategoryId is not exist")
     }
 
@@ -46,12 +46,12 @@ class ShopController {
     }
 
     fun createShop(userId: String, shopCategoryId: String, shopName: String) = transaction {
-        val shopNameExist = ShopEntity.find { ShopTable.shop_name eq shopName }.toList().singleOrNull()
+        val shopNameExist = ShopEntity.find { ShopTable.shopName eq shopName }.toList().singleOrNull()
         return@transaction if (shopNameExist == null) {
             ShopEntity.new() {
-                user_id = EntityID(userId, UserTable)
-                shop_category_id = EntityID(shopCategoryId, ShopTable)
-                shop_name = shopName
+                this.userId = EntityID(userId, UserTable)
+                this.shopCategoryId = EntityID(shopCategoryId, ShopTable)
+                this.shopName = shopName
             }.shopResponse()
         } else {
             throw CommonException("Shop name $shopName already exist")

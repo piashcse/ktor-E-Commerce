@@ -13,26 +13,26 @@ import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.javatime.datetime
 
 object OrdersTable : BaseIntIdTable("orders") {
-    val user_id = reference("user_id", UserTable.id)
-    val order_amount = float("order_amount")
-    val shipping_address_1 = text("shipping_address_1")
-    val shipping_address_2 = text("shipping_address_2")
+    val userId = reference("user_id", UserTable.id)
+    val orderAmount = float("order_amount")
+    val shippingAddress1 = text("shipping_address_1")
+    val shippingAddress2 = text("shipping_address_2")
     val city = text("city")
-    val order_email = text("order_email")
-    val order_date = datetime("order_date")
-    val order_tracking_number = text("order_tracking_number")
+    val orderEmail = text("order_email")
+    val orderDate = datetime("order_date")
+    val orderTrackingNumber = text("order_tracking_number")
 }
 
 class OrdersEntity(id: EntityID<String>) : BaseIntEntity(id, OrdersTable) {
     companion object : BaseIntEntityClass<OrdersEntity>(OrdersTable)
 
-    var user_id by OrdersTable.user_id
-    var order_amount by OrdersTable.order_amount
-    var shipping_address_1 by OrdersTable.shipping_address_1
-    var shipping_address_2 by OrdersTable.shipping_address_2
+    var userId by OrdersTable.userId
+    var orderAmount by OrdersTable.orderAmount
+    var shippingAddress1 by OrdersTable.shippingAddress1
+    var shippingAddress2 by OrdersTable.shippingAddress2
     var city by OrdersTable.city
-    var order_email by OrdersTable.order_email
-    var order_date by OrdersTable.order_date
-    var order_tracking_number by OrdersTable.order_tracking_number
+    var orderEmail by OrdersTable.orderEmail
+    var orderDate by OrdersTable.orderDate
+    var orderTrackingNumber by OrdersTable.orderTrackingNumber
     // fun shopResponse() = Shop(id.value, shop_name)
 }

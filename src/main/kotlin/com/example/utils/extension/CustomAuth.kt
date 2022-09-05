@@ -1,7 +1,6 @@
 package com.example.utils.extension
 
-import com.example.models.user.JwtTokenBody
-import com.example.utils.AppConstants
+import com.example.models.user.body.JwtTokenBody
 import com.papsign.ktor.openapigen.model.Described
 import com.papsign.ktor.openapigen.model.security.HttpSecurityScheme
 import com.papsign.ktor.openapigen.model.security.SecuritySchemeModel

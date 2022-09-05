@@ -2,9 +2,8 @@ package com.example.routing
 
 import com.example.controller.ShopController
 import com.example.models.shop.*
-import com.example.models.user.JwtTokenBody
+import com.example.models.user.body.JwtTokenBody
 import com.example.utils.AppConstants
-import com.example.utils.extension.nullProperties
 import com.example.utils.CustomResponse
 import com.example.utils.Response
 import com.example.utils.extension.authenticateWithJwt
@@ -13,7 +12,6 @@ import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
 import io.ktor.http.*
-import io.ktor.server.plugins.*
 
 fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
     route("shop/") {
@@ -58,11 +56,11 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
         }
         authenticateWithJwt(AppConstants.RoleManagement.MERCHANT, AppConstants.RoleManagement.ADMIN) {
             // shop
-            post<Unit, Response, AddShop, JwtTokenBody> { response, addShop ->
+           route("addshop"). post<Unit, Response, AddShop, JwtTokenBody> { response, addShop ->
                 val jwtTokenToUserData = principal()
                 addShop.validation()
                 shopController.createShop(
-                    jwtTokenToUserData!!.userId, addShop.shopCategoryId, addShop.shopName
+                    jwtTokenToUserData.userId, addShop.shopCategoryId, addShop.shopName
                 ).let {
                     respond(CustomResponse.success(it, HttpStatusCode.OK))
                 }

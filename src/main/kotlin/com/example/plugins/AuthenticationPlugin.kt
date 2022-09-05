@@ -1,9 +1,8 @@
 package com.example.plugins
 
-import com.example.models.user.JwtTokenBody
+import com.example.models.user.body.JwtTokenBody
 import com.example.utils.AppConstants
 import com.example.utils.JwtConfig
-import com.example.utils.extension.JwtAuthProvider
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
