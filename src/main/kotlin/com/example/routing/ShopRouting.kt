@@ -16,7 +16,7 @@ import io.ktor.http.*
 fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
     route("shop/") {
         authenticateWithJwt(AppConstants.RoleManagement.ADMIN) {
-            route("category").post<Unit, Response, AddShopCategory, JwtTokenBody> { response, addShopCategory ->
+            route("category").post<Unit, Response, AddShopCategory, JwtTokenBody> { _, addShopCategory ->
                 addShopCategory.validation()
                 respond(
                     CustomResponse.success(
@@ -25,7 +25,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                 )
             }
 
-            route("category").get<GetShopCategory, Response, JwtTokenBody> { shopCategories ->
+            route("category").get<ShopCategory, Response, JwtTokenBody> { shopCategories ->
                 shopCategories.validation()
                 respond(
                     CustomResponse.success(
@@ -45,7 +45,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                 )
             }
 
-            route("category").put<Unit, Response, UpdateShopCategory, JwtTokenBody> { response, updateShopCategory ->
+            route("category").put<Unit, Response, UpdateShopCategory, JwtTokenBody> { _, updateShopCategory ->
                 updateShopCategory.validation()
                 shopController.updateShopCategory(
                     updateShopCategory.shopCategoryId, updateShopCategory.shopCategoryName
@@ -56,7 +56,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
         }
         authenticateWithJwt(AppConstants.RoleManagement.MERCHANT, AppConstants.RoleManagement.ADMIN) {
             // shop
-           route("addshop"). post<Unit, Response, AddShop, JwtTokenBody> { response, addShop ->
+           route("addshop"). post<Unit, Response, AddShop, JwtTokenBody> { _, addShop ->
                 val jwtTokenToUserData = principal()
                 addShop.validation()
                 shopController.createShop(

@@ -5,7 +5,6 @@ import com.example.entities.user.ChangePassword
 import com.example.entities.user.UsersEntity
 import com.example.models.user.body.*
 import com.example.models.user.response.LoginResponse
-import com.example.plugins.ErrorMessage
 import com.example.utils.*
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
@@ -13,15 +12,15 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.example.utils.CustomResponse
 import com.example.utils.extension.authenticateWithJwt
-import com.example.utils.extension.nullProperties
-import com.papsign.ktor.openapigen.route.path.auth.post
 import com.papsign.ktor.openapigen.route.path.auth.principal
+import com.papsign.ktor.openapigen.route.path.auth.put
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.path.normal.post
 import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
 import io.ktor.http.*
-import io.ktor.server.plugins.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.SimpleEmail
 import java.io.File
@@ -34,24 +33,21 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
             exampleRequest = LoginBody(
                 email = "piash599@gmail.com", password = "piash007", userType = "2"
             )
-            // example for the OpenAPI data
-        ) { param, requestBody ->
-            requestBody.validation()
-            userController.login(requestBody).let {
+        ) { _, loginBody ->
+            loginBody.validation()
+            userController.login(loginBody).let {
                 val loginResponse =
                     LoginResponse(it, JwtConfig.makeToken(JwtTokenBody(it.id, it.email, it.userType.userTypeId)))
                 respond(CustomResponse.success(loginResponse, HttpStatusCode.OK))
             }
         }
 
-        route("registration").post<Unit, Response, RegistrationBody>() { response, requestBody ->
-            requestBody.validation()
-            userController.registration(requestBody).let {
-                respond(CustomResponse.success(it, HttpStatusCode.OK))
-            }
+        route("registration").post<Unit, Response, RegistrationBody>() { _, registrationBody ->
+            registrationBody.validation()
+            respond(CustomResponse.success(userController.registration(registrationBody), HttpStatusCode.OK))
 
         }
-        route("forget-password").post<Unit, Response, ForgetPasswordBody> { response, forgetPasswordBody ->
+        route("forget-password").post<Unit, Response, ForgetPasswordBody> { _, forgetPasswordBody ->
             forgetPasswordBody.validation()
             userController.forgetPassword(forgetPasswordBody).let {
                 SimpleEmail().apply {
@@ -78,7 +74,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                 )
             }
         }
-        route("verify-password-change").post<Unit, Response, ConfirmPasswordBody> { response, confirmPasswordBody ->
+        route("verify-password-change").post<Unit, Response, ConfirmPasswordBody> { _, confirmPasswordBody ->
             confirmPasswordBody.validation()
             UserController().confirmPassword(confirmPasswordBody).let {
                 when (it) {
@@ -101,44 +97,40 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
             }
         }
         authenticateWithJwt(AppConstants.RoleManagement.ADMIN, AppConstants.RoleManagement.MERCHANT) {
-            route("change-password").post<ChangePasswordQuery, Response, ChangePassword, JwtTokenBody>(
+            route("change-password").put<UserId, Response, ChangePassword, JwtTokenBody>(
                 exampleRequest = ChangePassword(
                     "12345", "54321"
                 )
             ) { params, requestBody ->
-                val userId = params.userId
-                if (userId != null) {
-                    requestBody.nullProperties {
-                        throw MissingRequestParameterException(it.toString())
-                    }
-                    userController.changePassword(userId, requestBody)?.let {
-                        if (it is UsersEntity)
-                        // respond(CustomResponse.success(it.response(), HttpStatusCode.OK))
-                            respond(CustomResponse.success("Password hase been changed", HttpStatusCode.OK))
-                        if (it is ChangePassword) respond(
-                            CustomResponse.failure(
-                                "Old password is wrong", HttpStatusCode.OK
-                            )
+                params.validation()
+                userController.changePassword(params.userId, requestBody)?.let {
+                    if (it is UsersEntity) respond(
+                        CustomResponse.success(
+                            "Password hase been changed", HttpStatusCode.OK
                         )
-                    } ?: run {
-                        throw UserNotExistException()
-                    }
-                } else {
-                    throw MissingRequestParameterException(ErrorMessage.MissingParameter.USER_ID)
+                    )
+                    if (it is ChangePassword) respond(
+                        CustomResponse.failure(
+                            "Old password is wrong", HttpStatusCode.OK
+                        )
+                    )
+                } ?: run {
+                    throw UserNotExistException()
                 }
             }
 
-            route("photo-upload").post<ChangePasswordQuery, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
+            route("photo-upload").put<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
+                params.validation()
+                multipartData.validation()
                 val fileNameInServer =
                     "${AppConstants.Image.PROFILE_IMAGE_LOCATION}${UUID.randomUUID()}.${multipartData.file.name}"
-                File(fileNameInServer).writeBytes(multipartData.file.readAllBytes())
-                principal().let {
-                    val db = userController.updateProfileImage(it.userId, multipartData.file.name)
-                    db?.let {
-                        respond(
-                            CustomResponse.success(fileNameInServer, HttpStatusCode.OK)
-                        )
-                    }
+                File(fileNameInServer).writeBytes(withContext(Dispatchers.IO) {
+                    multipartData.file.readAllBytes()
+                })
+                userController.updateProfileImage(params.userId, multipartData.file.name)?.let {
+                    respond(
+                        CustomResponse.success(fileNameInServer, HttpStatusCode.OK)
+                    )
                 }
             }
         }

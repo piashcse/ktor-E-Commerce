@@ -18,19 +18,19 @@ import io.ktor.http.*
 fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
     route("product/") {
         authenticateWithJwt(AppConstants.RoleManagement.ADMIN) {
-            route("category").post<Unit, Response, AddCategoryBody, JwtTokenBody> { response, addCategory ->
+            route("category").post<Unit, Response, AddCategoryBody, JwtTokenBody> { _, addCategory ->
                 addCategory.validation()
                 respond(CustomResponse.success(productController.createProductCategory(addCategory), HttpStatusCode.OK))
             }
 
 
-            route("color").post<Unit, Response, VariantOptionName, JwtTokenBody> { response, addColor ->
+            route("color").post<Unit, Response, VariantOptionName, JwtTokenBody> { _, addColor ->
                 addColor.validation()
                 respond(CustomResponse.success(productController.createDefaultColorOption(addColor.variantOptionName), HttpStatusCode.OK))
             }
         }
         authenticateWithJwt(AppConstants.RoleManagement.ADMIN, AppConstants.RoleManagement.MERCHANT) {
-            post<Unit, Response, AddProduct, JwtTokenBody> { response, addProduct ->
+            post<Unit, Response, AddProduct, JwtTokenBody> { _, addProduct ->
                 addProduct.validation()
                 respond(CustomResponse.success(productController.createProduct(addProduct), HttpStatusCode.OK))
             }
