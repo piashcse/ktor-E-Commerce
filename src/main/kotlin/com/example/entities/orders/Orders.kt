@@ -4,12 +4,7 @@ import com.example.entities.base.BaseIntEntity
 import com.example.entities.base.BaseIntEntityClass
 import com.example.entities.base.BaseIntIdTable
 import com.example.entities.user.UserTable
-import org.jetbrains.exposed.dao.Entity
-import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IdTable
-import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.javatime.datetime
 
 object OrdersTable : BaseIntIdTable("orders") {
@@ -23,8 +18,8 @@ object OrdersTable : BaseIntIdTable("orders") {
     val orderTrackingNumber = text("order_tracking_number")
 }
 
-class OrdersEntity(id: EntityID<String>) : BaseIntEntity(id, OrdersTable) {
-    companion object : BaseIntEntityClass<OrdersEntity>(OrdersTable)
+class OrderEntity(id: EntityID<String>) : BaseIntEntity(id, OrdersTable) {
+    companion object : BaseIntEntityClass<OrderEntity>(OrdersTable)
 
     var userId by OrdersTable.userId
     var orderAmount by OrdersTable.orderAmount

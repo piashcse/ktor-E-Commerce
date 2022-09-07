@@ -27,6 +27,5 @@ fun main() {
             port = config.property("ktor.deployment.port").getString().toInt()
         }
     }
-
     embeddedServer(Netty, appEngineEnv).start(wait = true)
 }

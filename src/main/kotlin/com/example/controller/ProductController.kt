@@ -62,9 +62,10 @@ class ProductController {
         }
     }
 
-    fun uploadProductImages(productImages: String) = transaction {
+    fun uploadProductImages(productId: String, productImages: String) = transaction {
         return@transaction {
-            ProductImageEntity.new() {
+            ProductImageEntity.new {
+                this.productId = productId
                 imageUrl = productImages
             }.response()
         }
@@ -72,7 +73,7 @@ class ProductController {
 
     fun createProduct(addProduct: AddProduct) = transaction {
         return@transaction {
-            val product = ProductEntity.new() {
+            val product = ProductEntity.new {
                 categoryId = addProduct.categoryId
                 title = addProduct.title
                 description = addProduct.description
@@ -83,27 +84,27 @@ class ProductController {
                     it.productId = product.id.value
                     it.response()
                 }
-            StockEntity.new() {
+            StockEntity.new {
                 productId = product.id.value
                 shopId = addProduct.shopId
                 quantity = addProduct.quantity
             }
             addProduct.color?.let {
-                val variant = ProductVariantEntity.new() {
+                val variant = ProductVariantEntity.new {
                     productId = product.id
                     name = AppConstants.ProductVariant.COLOR
                 }
-                ProductVariantOptionEntity.new() {
+                ProductVariantOptionEntity.new {
                     productVariantId = variant.id
                     name = addProduct.color
                 }
             }
             addProduct.size?.let {
-                val variant = ProductVariantEntity.new() {
+                val variant = ProductVariantEntity.new {
                     productId = product.id
                     name = AppConstants.ProductVariant.SIZE
                 }
-                ProductVariantOptionEntity.new() {
+                ProductVariantOptionEntity.new {
                     productVariantId = variant.id
                     name = addProduct.size
                 }

@@ -39,7 +39,7 @@ fun Application.configureBasic() {
         server("http://localhost:8080/") {
             description = "Ktor for local server"
         }
-        //optional custom schema object namer
+        //optional custom schema object name
         replaceModule(DefaultSchemaNamer, object : SchemaNamer {
             val regex = Regex("[A-Za-z0-9_.]+")
             override fun get(type: KType): String {

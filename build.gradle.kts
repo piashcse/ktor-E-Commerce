@@ -46,7 +46,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
 
     // exposed ORM library
-    implementation("org.flywaydb:flyway-core:9.2.0")
+    implementation("org.flywaydb:flyway-core:9.2.2")
     implementation("org.jetbrains.exposed:exposed-core:0.39.2")
     implementation("org.jetbrains.exposed:exposed-dao:0.39.2")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.39.2")

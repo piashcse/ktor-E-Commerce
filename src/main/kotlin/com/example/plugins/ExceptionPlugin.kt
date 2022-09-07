@@ -42,7 +42,7 @@ fun Application.configureStatusPage() {
         status(HttpStatusCode.BadRequest) { call, statusCode ->
             call.respond(HttpStatusCode.BadRequest, CustomResponse.failure(ErrorMessage.BAD_REQUEST, statusCode))
         }
-        status(HttpStatusCode.InternalServerError) { call, statusCode ->
+        status(HttpStatusCode.InternalServerError) { call, _ ->
             call.respond(
                 HttpStatusCode.BadRequest,
                 CustomResponse.failure(ErrorMessage.INTERNAL_SERVER_ERROR, HttpStatusCode.BadRequest)
@@ -79,11 +79,6 @@ fun Application.configureStatusPage() {
                 CustomResponse.failure(ErrorMessage.EMAIL_NOT_EXIST, HttpStatusCode.BadRequest)
             )
         }
-       /* exception<NoSuchElementException> { call, _ ->
-            call.respond(
-                HttpStatusCode.BadRequest, CustomResponse.failure(ErrorMessage.USER_NOT_EXIT, HttpStatusCode.BadRequest)
-            )
-        }*/
         exception<PasswordNotMatch> { call, _ ->
             call.respond(
                 HttpStatusCode.BadRequest,
@@ -103,15 +98,9 @@ object ErrorMessage {
     const val INTERNAL_SERVER_ERROR = "Internal server error"
     const val BAD_REQUEST = "Parameter mismatch"
     const val USER_NOT_EXIT = "User not exist"
-    const val IMAGE_UPLOAD_FAILED = "Image upload is failed"
     const val USER_TYPE_IS_NOT_VALID = "UserType is not valid"
     const val EMAIL_NOT_EXIST = "User not exist"
     const val PASSWORD_IS_WRONG = "Password is wrong"
     const val TYPE_CAST_EXCEPTION = "Type cast exception"
     const val NULL_POINTER_ERROR = "Null pointer error : "
-
-    object MissingParameter {
-        const val PROFILE_ID = "profileId"
-        const val USER_ID = "userId"
-    }
 }

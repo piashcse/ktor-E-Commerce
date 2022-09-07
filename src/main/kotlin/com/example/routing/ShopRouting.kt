@@ -55,8 +55,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
             }
         }
         authenticateWithJwt(AppConstants.RoleManagement.MERCHANT, AppConstants.RoleManagement.ADMIN) {
-            // shop
-           route("addshop"). post<Unit, Response, AddShop, JwtTokenBody> { _, addShop ->
+           route("add-shop"). post<Unit, Response, AddShop, JwtTokenBody> { _, addShop ->
                 val jwtTokenToUserData = principal()
                 addShop.validation()
                 shopController.createShop(

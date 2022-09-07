@@ -31,14 +31,12 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
     route("user/") {
         route("login").post<Unit, Response, LoginBody>(
             exampleRequest = LoginBody(
-                email = "piash599@gmail.com", password = "piash007", userType = "2"
+                email = "piash599@gmail.com", password = "1234", userType = "2"
             )
         ) { _, loginBody ->
             loginBody.validation()
             userController.login(loginBody).let {
-                val loginResponse =
-                    LoginResponse(it, JwtConfig.makeToken(JwtTokenBody(it.id, it.email, it.userType.userTypeId)))
-                respond(CustomResponse.success(loginResponse, HttpStatusCode.OK))
+                respond(CustomResponse.success(LoginResponse(it, JwtConfig.makeToken(JwtTokenBody(it.id, it.email, it.userType.userTypeId))), HttpStatusCode.OK))
             }
         }
 
