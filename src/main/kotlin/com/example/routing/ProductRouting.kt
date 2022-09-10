@@ -10,7 +10,7 @@ import com.example.models.user.body.UserId
 import com.example.utils.AppConstants
 import com.example.utils.ApiResponse
 import com.example.utils.Response
-import com.example.utils.extension.authenticateWithJwt
+import com.example.utils.authenticateWithJwt
 import com.papsign.ktor.openapigen.route.path.auth.post
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.response.respond
@@ -28,8 +28,6 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                 addCategory.validation()
                 respond(ApiResponse.success(productController.createProductCategory(addCategory), HttpStatusCode.OK))
             }
-
-
             route("color").post<Unit, Response, VariantOptionName, JwtTokenBody> { _, addColor ->
                 addColor.validation()
                 respond(

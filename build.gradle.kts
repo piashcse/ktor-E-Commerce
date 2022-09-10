@@ -74,7 +74,7 @@ dependencies {
     implementation("commons-io:commons-io:2.11.0")
 
     //swagger
-    implementation("dev.forst", "ktor-openapi-generator", "0.4.5")
+    implementation("dev.forst", "ktor-openapi-generator", "0.4.6")
 }
 tasks.create("stage") {
     dependsOn("installDist")

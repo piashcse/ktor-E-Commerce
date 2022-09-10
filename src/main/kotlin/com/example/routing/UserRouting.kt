@@ -10,7 +10,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.example.utils.ApiResponse
-import com.example.utils.extension.authenticateWithJwt
+import com.example.utils.extension.imageExtension
 import com.papsign.ktor.openapigen.route.path.auth.put
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.path.normal.post
@@ -29,14 +29,14 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
     route("user/") {
         route("login").post<Unit, Response, LoginBody>(
             exampleRequest = LoginBody(
-                email = "piash599@gmail.com", password = "1234", userType = "2"
+                email = "piash@gmail.com", password = "1234", userType = "2"
             )
         ) { _, loginBody ->
             loginBody.validation()
             respond(ApiResponse.success(userController.login(loginBody), HttpStatusCode.OK))
         }
 
-        route("registration").post<Unit, Response, RegistrationBody>() { _, registrationBody ->
+        route("registration").post<Unit, Response, RegistrationBody> { _, registrationBody ->
             registrationBody.validation()
             respond(ApiResponse.success(userController.registration(registrationBody), HttpStatusCode.OK))
 
@@ -91,11 +91,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
             }
         }
         authenticateWithJwt(AppConstants.RoleManagement.ADMIN, AppConstants.RoleManagement.MERCHANT) {
-            route("change-password").put<UserId, Response, ChangePassword, JwtTokenBody>(
-                exampleRequest = ChangePassword(
-                    "12345", "54321"
-                )
-            ) { params, requestBody ->
+            route("change-password").put<UserId, Response, ChangePassword, JwtTokenBody> { params, requestBody ->
                 params.validation()
                 userController.changePassword(params.userId, requestBody)?.let {
                     if (it is UsersEntity) respond(
@@ -116,15 +112,23 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
             route("photo-upload").put<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
                 params.validation()
                 multipartData.validation()
-                val fileNameInServer =
-                    "${AppConstants.Image.PROFILE_IMAGE_LOCATION}${UUID.randomUUID()}.${multipartData.file.name}"
-                File(fileNameInServer).writeBytes(withContext(Dispatchers.IO) {
-                    multipartData.file.readAllBytes()
-                })
-                userController.updateProfileImage(params.userId, multipartData.file.name)?.let {
-                    respond(
-                        ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
-                    )
+
+                UUID.randomUUID()?.let { imageId ->
+                    val fileLocation = multipartData.file.name?.let {
+                        println("image extension ${it.imageExtension()}  -> $it")
+                        "${AppConstants.Image.PROFILE_IMAGE_LOCATION}$imageId${it.imageExtension()}"
+                    }
+                    fileLocation?.let {
+                        File(it).writeBytes(withContext(Dispatchers.IO) {
+                            multipartData.file.readAllBytes()
+                        })
+                    }
+                    val fileNameInServer = imageId.toString().plus(fileLocation?.imageExtension())
+                    userController.updateProfileImage(params.userId, fileNameInServer)?.let {
+                        respond(
+                            ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
+                        )
+                    }
                 }
             }
         }

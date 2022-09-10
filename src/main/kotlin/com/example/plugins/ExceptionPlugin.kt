@@ -28,7 +28,6 @@ fun Application.configureStatusPage() {
                 )
             )
         }
-
         exception<MissingRequestParameterException> { call, error ->
             call.respond(
                 HttpStatusCode.BadRequest, ApiResponse.failure(
@@ -60,13 +59,11 @@ fun Application.configureStatusPage() {
                 )
             )
         }
-
         exception<UserNotExistException> { call, _ ->
             call.respond(
                 HttpStatusCode.BadRequest, ApiResponse.failure(ErrorMessage.USER_NOT_EXIT, HttpStatusCode.BadRequest)
             )
         }
-
         exception<UserTypeException> { call, _ ->
             call.respond(
                 HttpStatusCode.BadRequest,

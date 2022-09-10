@@ -1,4 +1,4 @@
-package com.example.utils.extension
+package com.example.utils
 
 import com.example.models.user.body.JwtTokenBody
 import com.papsign.ktor.openapigen.model.Described
@@ -10,7 +10,6 @@ import com.papsign.ktor.openapigen.route.path.auth.OpenAPIAuthenticatedRoute
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-
 import io.ktor.util.pipeline.*
 
 class JwtAuthProvider(private vararg val role: String?) : AuthProvider<JwtTokenBody> {

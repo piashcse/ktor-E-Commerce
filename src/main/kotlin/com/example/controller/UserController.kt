@@ -7,6 +7,8 @@ import com.example.models.user.response.RegistrationResponse
 import com.example.utils.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.nio.file.Files
+import java.nio.file.Paths
 import kotlin.random.Random
 
 class UserController {
@@ -21,7 +23,7 @@ class UserController {
             UsersProfileEntity.new {
                 userId = inserted.id
             }
-            UserHasTypeEntity.new{
+            UserHasTypeEntity.new {
                 userId = inserted.id
                 userTypeId = registrationBody.userType
             }
@@ -116,6 +118,10 @@ class UserController {
 
     fun updateProfileImage(userId: String, profileImage: String?) = transaction {
         val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+        // delete previous file from directory as latest one replace previous one
+        userProfileEntity?.userProfileImage?.let {
+            Files.deleteIfExists(Paths.get("${AppConstants.Image.PROFILE_IMAGE_LOCATION}$it"))
+        }
         return@transaction userProfileEntity?.let {
             it.userProfileImage = profileImage ?: it.userProfileImage
             it.response()

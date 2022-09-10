@@ -1,12 +1,8 @@
 package com.example.plugins
 
-import com.auth0.jwt.exceptions.JWTDecodeException
-import com.auth0.jwt.exceptions.SignatureVerificationException
-import com.auth0.jwt.exceptions.TokenExpiredException
 import com.example.models.user.body.JwtTokenBody
 import com.example.utils.AppConstants
 import com.example.controller.JwtController
-import com.example.utils.ApiResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -21,55 +17,26 @@ fun Application.configureAuthentication() {
          * The [User] can then be accessed in each [ApplicationCall].
          */
         jwt {
-            verifier(JwtController.verifier)
-            realm = "ktor.io"
-            validate {
-                val userId = it.payload.getClaim("userId").asString()
-                val email = it.payload.getClaim("email").asString()
-                val userType = it.payload.getClaim("userType").asString()
-                if (userType == AppConstants.UserType.CUSTOMER) {
-                    JwtTokenBody(userId, email, userType)
-                } else null
-            }
+            provideJwtAuthConfig(this, AppConstants.UserType.CUSTOMER)
         }
         jwt(AppConstants.RoleManagement.ADMIN) {
-            verifier(JwtController.verifier)
-            realm = "ktor.io"
-            validate {
-                val userId = it.payload.getClaim("userId").asString()
-                val email = it.payload.getClaim("email").asString()
-                val userType = it.payload.getClaim("userType").asString()
-                if (userType == AppConstants.UserType.ADMIN) {
-                    JwtTokenBody(userId, email, userType)
-                } else null
-            }
+            provideJwtAuthConfig(this, AppConstants.UserType.ADMIN)
         }
         jwt(AppConstants.RoleManagement.MERCHANT) {
-            verifier(JwtController.verifier)
-            realm = "ktor.io"
-            validate {
-                val userId = it.payload.getClaim("userId").asString()
-                val email = it.payload.getClaim("email").asString()
-                val userType = it.payload.getClaim("userType").asString()
-                if (userType == AppConstants.UserType.MERCHANT) {
-                    JwtTokenBody(userId, email, userType)
-                } else null
-            }
+            provideJwtAuthConfig(this, AppConstants.UserType.MERCHANT)
         }
-        /*oauth("auth-oauth-google") {
-            urlProvider = { "http://localhost:8080/callback" }
-            providerLookup = {
-                OAuthServerSettings.OAuth2ServerSettings(
-                    name = "google",
-                    authorizeUrl = "https://accounts.google.com/o/oauth2/auth",
-                    accessTokenUrl = "https://accounts.google.com/o/oauth2/token",
-                    requestMethod = HttpMethod.Post,
-                    clientId = System.getenv("165959276467-pq9voon4cucgobe583vdbesnbqum7qae.apps.googleusercontent.com"),
-                    clientSecret = System.getenv("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"),
-                    defaultScopes = listOf("https://www.googleapis.com/auth/userinfo.profile"),
-                )
-            }
-            client = httpClient
-        }*/
+    }
+}
+
+fun provideJwtAuthConfig(jwtConfig: JWTAuthenticationProvider.Config, userTypeForRoleManagement: String) {
+    jwtConfig.verifier(JwtController.verifier)
+    jwtConfig.realm = "ktor.io"
+    jwtConfig.validate {
+        val userId = it.payload.getClaim("userId").asString()
+        val email = it.payload.getClaim("email").asString()
+        val userType = it.payload.getClaim("userType").asString()
+        if (userType == userTypeForRoleManagement) {
+            JwtTokenBody(userId, email, userType)
+        } else null
     }
 }

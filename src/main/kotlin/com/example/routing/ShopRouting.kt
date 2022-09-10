@@ -6,7 +6,7 @@ import com.example.models.user.body.JwtTokenBody
 import com.example.utils.AppConstants
 import com.example.utils.ApiResponse
 import com.example.utils.Response
-import com.example.utils.extension.authenticateWithJwt
+import com.example.utils.authenticateWithJwt
 import com.papsign.ktor.openapigen.route.path.auth.*
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.response.respond
@@ -24,7 +24,6 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                     )
                 )
             }
-
             route("category").get<ShopCategory, Response, JwtTokenBody> { shopCategories ->
                 shopCategories.validation()
                 respond(
@@ -35,7 +34,6 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                     )
                 )
             }
-
             route("category").delete<DeleteShopCategory, Response, JwtTokenBody> { deleteShopCategory ->
                 deleteShopCategory.validation()
                 respond(
@@ -44,7 +42,6 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                     )
                 )
             }
-
             route("category").put<Unit, Response, UpdateShopCategory, JwtTokenBody> { _, updateShopCategory ->
                 updateShopCategory.validation()
                 shopController.updateShopCategory(
