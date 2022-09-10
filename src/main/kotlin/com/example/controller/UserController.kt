@@ -39,7 +39,7 @@ class UserController {
                 loginBody.password.toCharArray(), result.password
             ).verified && result.userType.userTypeId == loginBody.userType
         ) {
-            return@transaction result.response()
+            return@transaction result.loggedInWithToken()
         } else {
             throw PasswordNotMatch()
         }

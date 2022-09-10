@@ -3,7 +3,10 @@ package com.example.entities.user
 import com.example.entities.base.BaseIntEntity
 import com.example.entities.base.BaseIntEntityClass
 import com.example.entities.base.BaseIntIdTable
+import com.example.models.user.body.JwtTokenBody
+import com.example.utils.JwtConfig
 import org.jetbrains.exposed.dao.id.EntityID
+
 object UserTable : BaseIntIdTable("users") {
     val userName = varchar("user_name", 30)
     val email = varchar("email", 50)
@@ -16,7 +19,7 @@ object UserTable : BaseIntIdTable("users") {
     override val primaryKey = PrimaryKey(id)
 }
 
-class UsersEntity(id: EntityID<String>) :BaseIntEntity(id, UserTable) {
+class UsersEntity(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
     companion object : BaseIntEntityClass<UsersEntity>(UserTable)
     var userName by UserTable.userName
     var email by UserTable.email
@@ -37,6 +40,10 @@ class UsersEntity(id: EntityID<String>) :BaseIntEntity(id, UserTable) {
         isVerified,
         userType.userHasTypeResponse()
     )
+
+    fun loggedInWithToken() = LoginResponse(
+        response(), JwtConfig.makeToken(JwtTokenBody(id.value, email, userType.userTypeId))
+    )
 }
 
 data class UsersResponse(
@@ -49,6 +56,6 @@ data class UsersResponse(
     val isVerified: Boolean?,
     var userType: UserHasType
 )
-
+data class LoginResponse(val user: UsersResponse?, val jwtToken: String)
 data class ChangePassword(val oldPassword: String, val newPassword: String)
 data class VerificationCode(val verificationCode: String)

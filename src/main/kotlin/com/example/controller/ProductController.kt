@@ -109,17 +109,19 @@ class ProductController {
                     name = addProduct.size
                 }
             }
-            ProductResponse(
-                addProduct.categoryId,
-                addProduct.title,
-                productImage!!.imageUrl.split(",").map { it.trim() },
-                addProduct.description,
-                addProduct.color,
-                addProduct.size,
-                addProduct.price,
-                addProduct.discountPrice,
-                addProduct.quantity
-            )
+            productImage?.imageUrl?.split(",")?.let {
+                ProductResponse(
+                    addProduct.categoryId,
+                    addProduct.title,
+                    it.map { it.trim() },
+                    addProduct.description,
+                    addProduct.color,
+                    addProduct.size,
+                    addProduct.price,
+                    addProduct.discountPrice,
+                    addProduct.quantity
+                )
+            }
         }
     }
 }

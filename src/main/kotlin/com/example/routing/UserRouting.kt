@@ -4,7 +4,6 @@ import com.example.controller.UserController
 import com.example.entities.user.ChangePassword
 import com.example.entities.user.UsersEntity
 import com.example.models.user.body.*
-import com.example.models.user.response.LoginResponse
 import com.example.utils.*
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
@@ -12,7 +11,6 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.example.utils.CustomResponse
 import com.example.utils.extension.authenticateWithJwt
-import com.papsign.ktor.openapigen.route.path.auth.principal
 import com.papsign.ktor.openapigen.route.path.auth.put
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.path.normal.post
@@ -35,9 +33,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
             )
         ) { _, loginBody ->
             loginBody.validation()
-            userController.login(loginBody).let {
-                respond(CustomResponse.success(LoginResponse(it, JwtConfig.makeToken(JwtTokenBody(it.id, it.email, it.userType.userTypeId))), HttpStatusCode.OK))
-            }
+            respond(CustomResponse.success(userController.login(loginBody), HttpStatusCode.OK))
         }
 
         route("registration").post<Unit, Response, RegistrationBody>() { _, registrationBody ->
