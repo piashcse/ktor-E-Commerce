@@ -27,7 +27,6 @@ fun Application.configureAuthentication() {
         }
     }
 }
-
 fun provideJwtAuthConfig(jwtConfig: JWTAuthenticationProvider.Config, userTypeForRoleManagement: String) {
     jwtConfig.verifier(JwtController.verifier)
     jwtConfig.realm = "ktor.io"

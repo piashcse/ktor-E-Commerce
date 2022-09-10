@@ -11,6 +11,7 @@ import com.example.utils.AppConstants
 import com.example.utils.ApiResponse
 import com.example.utils.Response
 import com.example.utils.authenticateWithJwt
+import com.example.utils.extension.imageExtension
 import com.papsign.ktor.openapigen.route.path.auth.post
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.response.respond
@@ -32,8 +33,7 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                 addColor.validation()
                 respond(
                     ApiResponse.success(
-                        productController.createDefaultColorOption(addColor.variantOptionName),
-                        HttpStatusCode.OK
+                        productController.createDefaultColorOption(addColor.variantOptionName), HttpStatusCode.OK
                     )
                 )
             }
@@ -41,8 +41,7 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                 addColor.validation()
                 respond(
                     ApiResponse.success(
-                        productController.createDefaultSizeOption(addColor.variantOptionName),
-                        HttpStatusCode.OK
+                        productController.createDefaultSizeOption(addColor.variantOptionName), HttpStatusCode.OK
                     )
                 )
             }
@@ -52,17 +51,26 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                 addProduct.validation()
                 respond(ApiResponse.success(productController.createProduct(addProduct), HttpStatusCode.OK))
             }
-            route("upload-image").post<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
+            route("image-upload").post<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
                 params.validation()
                 multipartData.validation()
-                val fileNameInServer =
-                    "${AppConstants.Image.PROFILE_IMAGE_LOCATION}${UUID.randomUUID()}.${multipartData.file.name}"
-                File(fileNameInServer).writeBytes(withContext(Dispatchers.IO) {
-                    multipartData.file.readAllBytes()
-                })
-                respond(
-                    ApiResponse.success(productController.uploadProductImages(params.userId, fileNameInServer), HttpStatusCode.OK)
-                )
+
+                UUID.randomUUID()?.let { imageId ->
+                    val fileLocation = multipartData.file.name?.let {
+                        "${AppConstants.Image.PRODUCT_IMAGE_LOCATION}$imageId${it.imageExtension()}"
+                    }
+                    fileLocation?.let {
+                        File(it).writeBytes(withContext(Dispatchers.IO) {
+                            multipartData.file.readAllBytes()
+                        })
+                    }
+                    val fileNameInServer = imageId.toString().plus(fileLocation?.imageExtension())
+                    respond(
+                        ApiResponse.success(
+                            productController.uploadProductImages(params.userId, fileNameInServer), HttpStatusCode.OK
+                        )
+                    )
+                }
             }
         }
     }

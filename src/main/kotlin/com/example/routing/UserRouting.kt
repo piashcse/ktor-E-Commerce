@@ -115,7 +115,6 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
 
                 UUID.randomUUID()?.let { imageId ->
                     val fileLocation = multipartData.file.name?.let {
-                        println("image extension ${it.imageExtension()}  -> $it")
                         "${AppConstants.Image.PROFILE_IMAGE_LOCATION}$imageId${it.imageExtension()}"
                     }
                     fileLocation?.let {
