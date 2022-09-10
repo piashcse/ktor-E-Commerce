@@ -1,14 +1,14 @@
 package com.example.routing
 
 import com.example.controller.ProductController
-import com.example.models.product.AddCategoryBody
-import com.example.models.product.AddProduct
-import com.example.models.product.VariantOptionName
+import com.example.models.product.reqest.AddCategoryBody
+import com.example.models.product.reqest.AddProduct
+import com.example.models.product.reqest.VariantOptionName
 import com.example.models.user.body.JwtTokenBody
 import com.example.models.user.body.MultipartImage
 import com.example.models.user.body.UserId
 import com.example.utils.AppConstants
-import com.example.utils.CustomResponse
+import com.example.utils.ApiResponse
 import com.example.utils.Response
 import com.example.utils.extension.authenticateWithJwt
 import com.papsign.ktor.openapigen.route.path.auth.post
@@ -26,14 +26,14 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
         authenticateWithJwt(AppConstants.RoleManagement.ADMIN) {
             route("category").post<Unit, Response, AddCategoryBody, JwtTokenBody> { _, addCategory ->
                 addCategory.validation()
-                respond(CustomResponse.success(productController.createProductCategory(addCategory), HttpStatusCode.OK))
+                respond(ApiResponse.success(productController.createProductCategory(addCategory), HttpStatusCode.OK))
             }
 
 
             route("color").post<Unit, Response, VariantOptionName, JwtTokenBody> { _, addColor ->
                 addColor.validation()
                 respond(
-                    CustomResponse.success(
+                    ApiResponse.success(
                         productController.createDefaultColorOption(addColor.variantOptionName),
                         HttpStatusCode.OK
                     )
@@ -42,7 +42,7 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
             route("size").post<Unit, Response, VariantOptionName, JwtTokenBody> { _, addColor ->
                 addColor.validation()
                 respond(
-                    CustomResponse.success(
+                    ApiResponse.success(
                         productController.createDefaultSizeOption(addColor.variantOptionName),
                         HttpStatusCode.OK
                     )
@@ -52,7 +52,7 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
         authenticateWithJwt(AppConstants.RoleManagement.ADMIN, AppConstants.RoleManagement.MERCHANT) {
             route("add-product").post<Unit, Response, AddProduct, JwtTokenBody> { _, addProduct ->
                 addProduct.validation()
-                respond(CustomResponse.success(productController.createProduct(addProduct), HttpStatusCode.OK))
+                respond(ApiResponse.success(productController.createProduct(addProduct), HttpStatusCode.OK))
             }
             route("upload-image").post<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
                 params.validation()
@@ -63,7 +63,7 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                     multipartData.file.readAllBytes()
                 })
                 respond(
-                    CustomResponse.success(productController.uploadProductImages(params.userId, fileNameInServer), HttpStatusCode.OK)
+                    ApiResponse.success(productController.uploadProductImages(params.userId, fileNameInServer), HttpStatusCode.OK)
                 )
             }
         }

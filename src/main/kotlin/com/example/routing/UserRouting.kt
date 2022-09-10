@@ -9,7 +9,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
-import com.example.utils.CustomResponse
+import com.example.utils.ApiResponse
 import com.example.utils.extension.authenticateWithJwt
 import com.papsign.ktor.openapigen.route.path.auth.put
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
@@ -33,12 +33,12 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
             )
         ) { _, loginBody ->
             loginBody.validation()
-            respond(CustomResponse.success(userController.login(loginBody), HttpStatusCode.OK))
+            respond(ApiResponse.success(userController.login(loginBody), HttpStatusCode.OK))
         }
 
         route("registration").post<Unit, Response, RegistrationBody>() { _, registrationBody ->
             registrationBody.validation()
-            respond(CustomResponse.success(userController.registration(registrationBody), HttpStatusCode.OK))
+            respond(ApiResponse.success(userController.registration(registrationBody), HttpStatusCode.OK))
 
         }
         route("forget-password").post<Unit, Response, ForgetPasswordBody> { _, forgetPasswordBody ->
@@ -61,7 +61,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                     send()
                 }
                 respond(
-                    CustomResponse.success(
+                    ApiResponse.success(
                         "${AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_SEND_TO} ${forgetPasswordBody.email}",
                         HttpStatusCode.OK
                     )
@@ -74,14 +74,14 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                 when (it) {
                     AppConstants.DataBaseTransaction.FOUND -> {
                         respond(
-                            CustomResponse.success(
+                            ApiResponse.success(
                                 AppConstants.SuccessMessage.Password.PASSWORD_CHANGE_SUCCESS, HttpStatusCode.OK
                             )
                         )
                     }
                     AppConstants.DataBaseTransaction.NOT_FOUND -> {
                         respond(
-                            CustomResponse.success(
+                            ApiResponse.success(
                                 AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_IS_NOT_VALID,
                                 HttpStatusCode.OK
                             )
@@ -99,12 +99,12 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                 params.validation()
                 userController.changePassword(params.userId, requestBody)?.let {
                     if (it is UsersEntity) respond(
-                        CustomResponse.success(
+                        ApiResponse.success(
                             "Password hase been changed", HttpStatusCode.OK
                         )
                     )
                     if (it is ChangePassword) respond(
-                        CustomResponse.failure(
+                        ApiResponse.failure(
                             "Old password is wrong", HttpStatusCode.OK
                         )
                     )
@@ -123,7 +123,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                 })
                 userController.updateProfileImage(params.userId, multipartData.file.name)?.let {
                     respond(
-                        CustomResponse.success(fileNameInServer, HttpStatusCode.OK)
+                        ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
                     )
                 }
             }

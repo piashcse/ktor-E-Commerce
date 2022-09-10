@@ -1,11 +1,17 @@
 package com.example.plugins
 
+import com.auth0.jwt.exceptions.JWTDecodeException
+import com.auth0.jwt.exceptions.SignatureVerificationException
+import com.auth0.jwt.exceptions.TokenExpiredException
 import com.example.models.user.body.JwtTokenBody
 import com.example.utils.AppConstants
-import com.example.utils.JwtConfig
+import com.example.controller.JwtController
+import com.example.utils.ApiResponse
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.response.*
 
 fun Application.configureAuthentication() {
     install(Authentication) {
@@ -15,7 +21,7 @@ fun Application.configureAuthentication() {
          * The [User] can then be accessed in each [ApplicationCall].
          */
         jwt {
-            verifier(JwtConfig.verifier)
+            verifier(JwtController.verifier)
             realm = "ktor.io"
             validate {
                 val userId = it.payload.getClaim("userId").asString()
@@ -27,7 +33,7 @@ fun Application.configureAuthentication() {
             }
         }
         jwt(AppConstants.RoleManagement.ADMIN) {
-            verifier(JwtConfig.verifier)
+            verifier(JwtController.verifier)
             realm = "ktor.io"
             validate {
                 val userId = it.payload.getClaim("userId").asString()
@@ -39,7 +45,7 @@ fun Application.configureAuthentication() {
             }
         }
         jwt(AppConstants.RoleManagement.MERCHANT) {
-            verifier(JwtConfig.verifier)
+            verifier(JwtController.verifier)
             realm = "ktor.io"
             validate {
                 val userId = it.payload.getClaim("userId").asString()

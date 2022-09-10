@@ -1,11 +1,11 @@
-package com.example.utils
+package com.example.controller
 
 import com.auth0.jwt.*
 import com.auth0.jwt.algorithms.*
 import com.example.models.user.body.JwtTokenBody
 import java.util.*
 
-object JwtConfig {
+object JwtController {
     private const val secret = "zAP5MBA4B4Ijz0MZaS48"
     private const val issuer = "ktor.io"
     private const val validityInMs = 36_000_00 * 24 // 24 hours
@@ -19,7 +19,7 @@ object JwtConfig {
     /**
      * Produce a token for this combination of User and Account
      */
-    fun makeToken(jwtTokenBody: JwtTokenBody): String = JWT.create()
+    fun tokenProvider(jwtTokenBody: JwtTokenBody): String = JWT.create()
         .withSubject("Authentication")
         .withIssuer(issuer)
         .withClaim("email", jwtTokenBody.email)

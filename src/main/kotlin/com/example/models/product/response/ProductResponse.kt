@@ -1,4 +1,4 @@
-package com.example.models.product
+package com.example.models.product.response
 
 data class ProductResponse(
     val categoryId: String,

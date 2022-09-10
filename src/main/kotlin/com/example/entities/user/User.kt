@@ -4,7 +4,7 @@ import com.example.entities.base.BaseIntEntity
 import com.example.entities.base.BaseIntEntityClass
 import com.example.entities.base.BaseIntIdTable
 import com.example.models.user.body.JwtTokenBody
-import com.example.utils.JwtConfig
+import com.example.controller.JwtController
 import org.jetbrains.exposed.dao.id.EntityID
 
 object UserTable : BaseIntIdTable("users") {
@@ -42,7 +42,7 @@ class UsersEntity(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
     )
 
     fun loggedInWithToken() = LoginResponse(
-        response(), JwtConfig.makeToken(JwtTokenBody(id.value, email, userType.userTypeId))
+        response(), JwtController.tokenProvider(JwtTokenBody(id.value, email, userType.userTypeId))
     )
 }
 

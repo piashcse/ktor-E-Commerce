@@ -4,7 +4,7 @@ import com.example.controller.ShopController
 import com.example.models.shop.*
 import com.example.models.user.body.JwtTokenBody
 import com.example.utils.AppConstants
-import com.example.utils.CustomResponse
+import com.example.utils.ApiResponse
 import com.example.utils.Response
 import com.example.utils.extension.authenticateWithJwt
 import com.papsign.ktor.openapigen.route.path.auth.*
@@ -19,7 +19,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
             route("category").post<Unit, Response, AddShopCategory, JwtTokenBody> { _, addShopCategory ->
                 addShopCategory.validation()
                 respond(
-                    CustomResponse.success(
+                    ApiResponse.success(
                         shopController.createShopCategory(addShopCategory.shopCategoryName), HttpStatusCode.OK
                     )
                 )
@@ -28,7 +28,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
             route("category").get<ShopCategory, Response, JwtTokenBody> { shopCategories ->
                 shopCategories.validation()
                 respond(
-                    CustomResponse.success(
+                    ApiResponse.success(
                         shopController.getShopCategories(
                             shopCategories.offset, shopCategories.limit
                         ), HttpStatusCode.OK
@@ -39,7 +39,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
             route("category").delete<DeleteShopCategory, Response, JwtTokenBody> { deleteShopCategory ->
                 deleteShopCategory.validation()
                 respond(
-                    CustomResponse.success(
+                    ApiResponse.success(
                         shopController.deleteShopCategory(deleteShopCategory.shopCategoryId), HttpStatusCode.OK
                     )
                 )
@@ -50,7 +50,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                 shopController.updateShopCategory(
                     updateShopCategory.shopCategoryId, updateShopCategory.shopCategoryName
                 ).let {
-                    respond(CustomResponse.success(it, HttpStatusCode.OK))
+                    respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
             }
         }
@@ -61,7 +61,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                 shopController.createShop(
                     jwtTokenToUserData.userId, addShop.shopCategoryId, addShop.shopName
                 ).let {
-                    respond(CustomResponse.success(it, HttpStatusCode.OK))
+                    respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
             }
         }

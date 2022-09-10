@@ -7,9 +7,9 @@ import com.example.entities.product.defaultvariant.ProductColorEntity
 import com.example.entities.product.defaultvariant.ProductColorTable
 import com.example.entities.product.defaultvariant.ProductSizeEntity
 import com.example.entities.product.defaultvariant.ProductSizeTable
-import com.example.models.product.AddCategoryBody
-import com.example.models.product.AddProduct
-import com.example.models.product.ProductResponse
+import com.example.models.product.reqest.AddCategoryBody
+import com.example.models.product.reqest.AddProduct
+import com.example.models.product.response.ProductResponse
 import com.example.utils.AppConstants
 import com.example.utils.CommonException
 import org.jetbrains.exposed.sql.transactions.transaction

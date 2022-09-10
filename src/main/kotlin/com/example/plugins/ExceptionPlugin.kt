@@ -14,7 +14,7 @@ fun Application.configureStatusPage() {
     install(StatusPages) {
         exception<Throwable> { call, error ->
             call.respond(
-                HttpStatusCode.InternalServerError, CustomResponse.failure(
+                HttpStatusCode.InternalServerError, ApiResponse.failure(
                     "${ErrorMessage.INTERNAL_SERVER_ERROR} : ${error.message}", HttpStatusCode.InternalServerError
                 )
             )
@@ -23,7 +23,7 @@ fun Application.configureStatusPage() {
             val errorMessage = error.constraintViolations.mapToMessage(baseName = "messages", locale = Locale.ENGLISH)
                 .map { "${it.property}: ${it.message}" }
             call.respond(
-                HttpStatusCode.BadRequest, CustomResponse.failure(
+                HttpStatusCode.BadRequest, ApiResponse.failure(
                     errorMessage, HttpStatusCode.BadRequest
                 )
             )
@@ -31,31 +31,31 @@ fun Application.configureStatusPage() {
 
         exception<MissingRequestParameterException> { call, error ->
             call.respond(
-                HttpStatusCode.BadRequest, CustomResponse.failure(
+                HttpStatusCode.BadRequest, ApiResponse.failure(
                     "${error.message}", HttpStatusCode.BadRequest
                 )
             )
         }
         status(HttpStatusCode.Unauthorized) { call, statusCode ->
-            call.respond(HttpStatusCode.Unauthorized, CustomResponse.failure(ErrorMessage.UNAUTHORIZED, statusCode))
+            call.respond(HttpStatusCode.Unauthorized, ApiResponse.failure(ErrorMessage.UNAUTHORIZED, statusCode))
         }
         status(HttpStatusCode.BadRequest) { call, statusCode ->
-            call.respond(HttpStatusCode.BadRequest, CustomResponse.failure(ErrorMessage.BAD_REQUEST, statusCode))
+            call.respond(HttpStatusCode.BadRequest, ApiResponse.failure(ErrorMessage.BAD_REQUEST, statusCode))
         }
         status(HttpStatusCode.InternalServerError) { call, _ ->
             call.respond(
                 HttpStatusCode.BadRequest,
-                CustomResponse.failure(ErrorMessage.INTERNAL_SERVER_ERROR, HttpStatusCode.BadRequest)
+                ApiResponse.failure(ErrorMessage.INTERNAL_SERVER_ERROR, HttpStatusCode.BadRequest)
             )
         }
         exception<TypeCastException> { call, _ ->
             call.respond(
-                CustomResponse.failure(ErrorMessage.TYPE_CAST_EXCEPTION, HttpStatusCode.BadRequest)
+                ApiResponse.failure(ErrorMessage.TYPE_CAST_EXCEPTION, HttpStatusCode.BadRequest)
             )
         }
         exception<NullPointerException> { call, exception ->
             call.respond(
-                CustomResponse.failure(
+                ApiResponse.failure(
                     "${ErrorMessage.NULL_POINTER_ERROR} ${exception.message}", HttpStatusCode.BadRequest
                 )
             )
@@ -63,31 +63,31 @@ fun Application.configureStatusPage() {
 
         exception<UserNotExistException> { call, _ ->
             call.respond(
-                HttpStatusCode.BadRequest, CustomResponse.failure(ErrorMessage.USER_NOT_EXIT, HttpStatusCode.BadRequest)
+                HttpStatusCode.BadRequest, ApiResponse.failure(ErrorMessage.USER_NOT_EXIT, HttpStatusCode.BadRequest)
             )
         }
 
         exception<UserTypeException> { call, _ ->
             call.respond(
                 HttpStatusCode.BadRequest,
-                CustomResponse.failure(ErrorMessage.USER_TYPE_IS_NOT_VALID, HttpStatusCode.BadRequest)
+                ApiResponse.failure(ErrorMessage.USER_TYPE_IS_NOT_VALID, HttpStatusCode.BadRequest)
             )
         }
         exception<EmailNotExist> { call, _ ->
             call.respond(
                 HttpStatusCode.BadRequest,
-                CustomResponse.failure(ErrorMessage.EMAIL_NOT_EXIST, HttpStatusCode.BadRequest)
+                ApiResponse.failure(ErrorMessage.EMAIL_NOT_EXIST, HttpStatusCode.BadRequest)
             )
         }
         exception<PasswordNotMatch> { call, _ ->
             call.respond(
                 HttpStatusCode.BadRequest,
-                CustomResponse.failure(ErrorMessage.PASSWORD_IS_WRONG, HttpStatusCode.BadRequest)
+                ApiResponse.failure(ErrorMessage.PASSWORD_IS_WRONG, HttpStatusCode.BadRequest)
             )
         }
         exception<CommonException> { call, exception ->
             call.respond(
-                HttpStatusCode.BadRequest, CustomResponse.failure(exception.message, HttpStatusCode.BadRequest)
+                HttpStatusCode.BadRequest, ApiResponse.failure(exception.message, HttpStatusCode.BadRequest)
             )
         }
     }
