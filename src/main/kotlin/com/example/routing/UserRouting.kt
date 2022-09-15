@@ -10,7 +10,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.example.utils.ApiResponse
-import com.example.utils.extension.imageExtension
+import com.example.utils.extension.fileExtension
 import com.papsign.ktor.openapigen.route.path.auth.put
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.path.normal.post
@@ -115,14 +115,14 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
 
                 UUID.randomUUID()?.let { imageId ->
                     val fileLocation = multipartData.file.name?.let {
-                        "${AppConstants.Image.PROFILE_IMAGE_LOCATION}$imageId${it.imageExtension()}"
+                        "${AppConstants.Image.PROFILE_IMAGE_LOCATION}$imageId${it.fileExtension()}"
                     }
                     fileLocation?.let {
                         File(it).writeBytes(withContext(Dispatchers.IO) {
                             multipartData.file.readAllBytes()
                         })
                     }
-                    val fileNameInServer = imageId.toString().plus(fileLocation?.imageExtension())
+                    val fileNameInServer = imageId.toString().plus(fileLocation?.fileExtension())
                     userController.updateProfileImage(params.userId, fileNameInServer)?.let {
                         respond(
                             ApiResponse.success(fileNameInServer, HttpStatusCode.OK)

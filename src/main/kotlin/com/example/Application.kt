@@ -15,6 +15,7 @@ fun main() {
     val appEngineEnv = applicationEngineEnvironment {
         config = HoconApplicationConfig(ConfigFactory.load(configName))
         log = LoggerFactory.getLogger("ktor.application")
+        developmentMode = false
         module {
             DatabaseFactory.init()
             configureBasic()

@@ -56,6 +56,6 @@ data class UsersResponse(
     val isVerified: Boolean?,
     var userType: UserHasType
 )
-data class LoginResponse(val user: UsersResponse?, val jwtToken: String)
+data class LoginResponse(val user: UsersResponse?, val accessToken: String)
 data class ChangePassword(val oldPassword: String, val newPassword: String)
 data class VerificationCode(val verificationCode: String)

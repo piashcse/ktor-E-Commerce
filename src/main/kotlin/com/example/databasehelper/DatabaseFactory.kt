@@ -24,7 +24,8 @@ import javax.sql.DataSource
 object DatabaseFactory {
     private val log = LoggerFactory.getLogger(this::class.java)
     fun init() {
-        initDB()
+        //initDB()
+        Database.connect(hikari())
         transaction {
             create(UserTable, UserProfileTable, UserTypeTable, UserHasTypeTable,ShopTable, ShopCategoryTable, ProductCategoryTable, ProductSubCategoryTable, ProductTable, ProductSizeTable, ProductColorTable)
         }
@@ -37,6 +38,17 @@ object DatabaseFactory {
         runFlyway(dataSource)
         Database.connect(dataSource)
     }
+    private fun hikari():HikariDataSource {
+        val config = HikariConfig()
+        config.driverClassName = System.getenv("JDBC_DRIVER")
+        config.jdbcUrl = System.getenv("JDBC_DATABASE_URL")
+        config.maximumPoolSize = 3
+        config.isAutoCommit = true
+        config.transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+        config.validate()
+        return HikariDataSource(config)
+    }
+
     // For heroku deployement
     private fun hikariForHeroku(): HikariDataSource {
         val config = HikariConfig()

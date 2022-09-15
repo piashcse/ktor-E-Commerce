@@ -12,10 +12,10 @@ import io.ktor.server.plugins.cors.routing.*
 import kotlin.reflect.KType
 
 fun Application.configureBasic() {
-    install(Compression)
+   /* install(Compression)
     install(CORS) {
         anyHost()
-    }
+    }*/
     install(CallLogging)
     install(ContentNegotiation) {
         gson {

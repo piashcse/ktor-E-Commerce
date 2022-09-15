@@ -11,7 +11,7 @@ import com.example.utils.AppConstants
 import com.example.utils.ApiResponse
 import com.example.utils.Response
 import com.example.utils.authenticateWithJwt
-import com.example.utils.extension.imageExtension
+import com.example.utils.extension.fileExtension
 import com.papsign.ktor.openapigen.route.path.auth.post
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.response.respond
@@ -57,14 +57,14 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
 
                 UUID.randomUUID()?.let { imageId ->
                     val fileLocation = multipartData.file.name?.let {
-                        "${AppConstants.Image.PRODUCT_IMAGE_LOCATION}$imageId${it.imageExtension()}"
+                        "${AppConstants.Image.PRODUCT_IMAGE_LOCATION}$imageId${it.fileExtension()}"
                     }
                     fileLocation?.let {
                         File(it).writeBytes(withContext(Dispatchers.IO) {
                             multipartData.file.readAllBytes()
                         })
                     }
-                    val fileNameInServer = imageId.toString().plus(fileLocation?.imageExtension())
+                    val fileNameInServer = imageId.toString().plus(fileLocation?.fileExtension())
                     respond(
                         ApiResponse.success(
                             productController.uploadProductImages(params.userId, fileNameInServer), HttpStatusCode.OK
