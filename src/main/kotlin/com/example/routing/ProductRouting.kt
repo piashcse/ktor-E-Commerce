@@ -51,7 +51,7 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                 addProduct.validation()
                 respond(ApiResponse.success(productController.createProduct(addProduct), HttpStatusCode.OK))
             }
-            route("image-upload").post<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
+            /*route("image-upload").post<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
                 params.validation()
                 multipartData.validation()
 
@@ -71,7 +71,7 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                         )
                     )
                 }
-            }
+            }*/
         }
     }
 }

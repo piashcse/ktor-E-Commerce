@@ -109,7 +109,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                 }
             }
 
-            route("photo-upload").put<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
+            /*route("photo-upload").put<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
                 params.validation()
                 multipartData.validation()
 
@@ -129,7 +129,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                         )
                     }
                 }
-            }
+            }*/
         }
     }
 
