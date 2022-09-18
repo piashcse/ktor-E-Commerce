@@ -11,7 +11,7 @@ class ShopController {
         val categoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.shopCategoryName eq shopCategoryName }.toList().singleOrNull()
         return@transaction if (categoryExist == null) {
-            ShopCategoryEntity.new() {
+            ShopCategoryEntity.new {
                 this.shopCategoryName = shopCategoryName
             }.shopCategoryResponse()
         } else {
@@ -37,10 +37,10 @@ class ShopController {
     fun deleteShopCategory(shopCategoryId: String) = transaction {
         val shopCategoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
-        return@transaction if (shopCategoryExist != null) {
+        return@transaction shopCategoryExist?.let {
             shopCategoryExist.delete()
             shopCategoryId
-        } else {
+        } ?: run {
             throw CommonException("Category id $shopCategoryId is not exist")
         }
     }
