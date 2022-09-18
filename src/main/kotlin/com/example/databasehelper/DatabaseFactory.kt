@@ -25,7 +25,7 @@ object DatabaseFactory {
     private val log = LoggerFactory.getLogger(this::class.java)
     fun init() {
         //initDB()
-        Database.connect("jdbc:postgresql://ec2-52-204-46-21.compute-1.amazonaws.com:5432/d5e1gb67c6rp9g", driver = "org.postgresql.Driver", user = "gogyrrsqrfjjxj", password = "5026a0cfe9e7e351b1a3cc9c4c63570cca93db006369bd0e31b3103bf3ecab61")
+        Database.connect(hikari())
         transaction {
             create(UserTable, UserProfileTable, UserTypeTable, UserHasTypeTable,ShopTable, ShopCategoryTable, ProductCategoryTable, ProductSubCategoryTable, ProductTable, ProductSizeTable, ProductColorTable)
         }
@@ -41,7 +41,7 @@ object DatabaseFactory {
     private fun hikari():HikariDataSource {
         val config = HikariConfig()
         config.driverClassName = System.getenv("JDBC_DRIVER")
-        config.jdbcUrl = System.getenv("JDBC_DATABASE_URL")
+        config.jdbcUrl = System.getenv("HEROKU_POSTGRESQL_NAVY_URL")
         config.maximumPoolSize = 3
         config.isAutoCommit = true
         config.transactionIsolation = "TRANSACTION_REPEATABLE_READ"
