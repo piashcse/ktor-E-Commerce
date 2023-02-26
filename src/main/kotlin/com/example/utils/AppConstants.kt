@@ -1,22 +1,6 @@
 package com.example.utils
 
 object AppConstants {
-    val ALL_USERS_TYPE = listOf(UserType.SUPER_ADMIN, UserType.ADMIN, UserType.MERCHANT, UserType.CUSTOMER)
-
-    object UserType {
-        const val SUPER_ADMIN = "1"
-        const val ADMIN = "2"
-        const val MERCHANT = "3"
-        const val CUSTOMER = "4"
-    }
-
-    object RoleManagement {
-        const val SUPER_ADMIN = "super_admin" // 1
-        const val ADMIN = "admin" //2
-        const val MERCHANT = "merchant" // 3
-        //const val CUSTOMER = "" default auth will be customer
-    }
-
     object SuccessMessage {
         object Password {
             const val PASSWORD_CHANGE_SUCCESS = "Password change successful"

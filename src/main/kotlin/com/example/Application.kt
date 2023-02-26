@@ -4,7 +4,6 @@ import com.example.databasehelper.DatabaseFactory
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import com.example.plugins.*
-import com.example.routing.configureRouting
 import com.typesafe.config.ConfigFactory
 import io.ktor.server.config.*
 import org.slf4j.LoggerFactory

@@ -4,15 +4,15 @@ val logback_version: String by project
 
 plugins {
     application
-    kotlin("jvm") version "1.7.10"
-    id("com.github.johnrengelman.shadow") version "6.1.0"
+    kotlin("jvm") version "1.8.10"
+  //  id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
 group = "com.example"
 version = "0.0.1"
 application {
-     //mainClass.set("com.example.ApplicationKt")
-     project.setProperty("mainClassName", "com.example.ApplicationKt") // adding this for fatjar
+     mainClass.set("com.example.ApplicationKt")
+    //project.setProperty("mainClassName", "com.example.ApplicationKt") // adding this for fatjar
 
 }
 
@@ -39,19 +39,16 @@ dependencies {
     implementation("io.ktor:ktor-server-freemarker:$ktor_version")
     implementation("io.ktor:ktor-server-call-logging:$ktor_version")
 
-    // ktor client
-    implementation ("io.ktor:ktor-client-apache:$ktor_version")
-
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
 
     // exposed ORM library
-    implementation("org.flywaydb:flyway-core:9.3.0")
-    implementation("org.jetbrains.exposed:exposed-core:0.39.2")
-    implementation("org.jetbrains.exposed:exposed-dao:0.39.2")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.39.2")
-    implementation("org.jetbrains.exposed:exposed-java-time:0.39.2")
-    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.39.2")
+    implementation("org.flywaydb:flyway-core:9.6.0")
+    implementation("org.jetbrains.exposed:exposed-core:0.40.1")
+    implementation("org.jetbrains.exposed:exposed-dao:0.40.1")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.40.1")
+    implementation("org.jetbrains.exposed:exposed-java-time:0.40.1")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.40.1")
 
     // postgresql
     implementation("org.postgresql:postgresql:42.5.0")
@@ -74,7 +71,7 @@ dependencies {
     implementation("commons-io:commons-io:2.11.0")
 
     //swagger
-    implementation("dev.forst", "ktor-openapi-generator", "0.4.6")
+    implementation("dev.forst", "ktor-openapi-generator", "0.6.1")
 }
 tasks.create("stage") {
     dependsOn("installDist")

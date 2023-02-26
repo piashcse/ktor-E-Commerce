@@ -1,5 +1,8 @@
 package com.example.controller
 
+import com.example.entities.category.CategoryEntity
+import com.example.entities.category.CategoryTable
+import com.example.entities.category.SubCategoryTable
 import com.example.entities.product.*
 import com.example.entities.product.defaultproductcategory.ProductCategoryEntity
 import com.example.entities.product.defaultproductcategory.ProductCategoryTable
@@ -7,59 +10,33 @@ import com.example.entities.product.defaultvariant.ProductColorEntity
 import com.example.entities.product.defaultvariant.ProductColorTable
 import com.example.entities.product.defaultvariant.ProductSizeEntity
 import com.example.entities.product.defaultvariant.ProductSizeTable
-import com.example.models.product.reqest.AddCategoryBody
-import com.example.models.product.reqest.AddProduct
-import com.example.models.product.response.ProductResponse
-import com.example.utils.AppConstants
+import com.example.models.PagingData
+import com.example.models.product.request.AddCategoryBody
+import com.example.models.product.request.AddProduct
+import com.example.models.product.request.DeleteProduct
+import com.example.models.product.request.ProductWithFilter
 import com.example.utils.CommonException
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
 class ProductController {
-    fun createProductCategory(productCategory: AddCategoryBody) = transaction {
-        val categoryExist =
-            ProductCategoryEntity.find { ProductCategoryTable.productCategoryName eq productCategory.categoryName }
-                .toList().singleOrNull()
-        return@transaction if (categoryExist == null) {
-            ProductCategoryEntity.new() {
-                productCategoryName = productCategory.categoryName
-                productCategoryCreatorType = productCategory.userType
-            }.productCategoryResponse()
-        } else {
-            throw CommonException("Product category name ${productCategory.categoryName} already exist")
-        }
-    }
-
-    /*    fun createVariant(colorName: String) = transaction {
-            val colorExist = ProductVariantEntity.find { ProductVariantTable.name eq colorName }.toList().singleOrNull()
-            return@transaction if (colorExist == null) {
-                ProductVariantEntity.new(UUID.randomUUID().toString()) {
-                    name = colorName
-                }.response()
-            } else {
-                throw CommonException("Color name $colorName already exist")
-            }
-        }*/
-    fun createDefaultColorOption(colorName: String) = transaction {
-        val colorExist = ProductColorEntity.find { ProductColorTable.name eq colorName }.toList().singleOrNull()
-        return@transaction if (colorExist == null) {
-            ProductColorEntity.new(UUID.randomUUID().toString()) {
-                name = colorName
-            }.response()
-        } else {
-            throw CommonException("Color name $colorName already exist")
-        }
-    }
-
-    fun createDefaultSizeOption(sizeName: String) = transaction {
-        val sizeExist = ProductSizeEntity.find { ProductSizeTable.name eq sizeName }.toList().singleOrNull()
-        return@transaction if (sizeExist == null) {
-            ProductSizeEntity.new(UUID.randomUUID().toString()) {
-                name = sizeName
-            }.response()
-        } else {
-            throw CommonException("Size name $sizeName already exist")
-        }
+    fun createProduct(addProduct: AddProduct) = transaction {
+        return@transaction ProductEntity.new {
+            categoryId = EntityID(addProduct.categoryId, ProductTable)
+            subCategoryId = EntityID(addProduct.subCategoryId, ProductTable)
+            brandId = addProduct.brandId?.let { EntityID(addProduct.brandId, ProductTable) }
+            productName = addProduct.productName
+            productCode = addProduct.productCode
+            productQuantity = addProduct.productQuantity
+            productDetail = addProduct.productDetail
+            price = addProduct.price
+            discountPrice = addProduct.discountPrice
+            status = addProduct.status
+        }.response()
     }
 
     fun uploadProductImages(productId: String, productImages: String) = transaction {
@@ -71,57 +48,87 @@ class ProductController {
         }
     }
 
-    fun createProduct(addProduct: AddProduct) = transaction {
-        return@transaction {
-            val product = ProductEntity.new {
-                categoryId = addProduct.categoryId
-                title = addProduct.title
-                description = addProduct.description
-                price = addProduct.price
-            }
-            val productImage =
-                ProductImageEntity.find { ProductImage.id eq addProduct.imageId }.toList().singleOrNull()?.let {
-                    it.productId = product.id.value
-                    it.response()
-                }
-            StockEntity.new {
-                productId = product.id.value
-                shopId = addProduct.shopId
-                quantity = addProduct.quantity
-            }
-            addProduct.color?.let {
-                val variant = ProductVariantEntity.new {
-                    productId = product.id
-                    name = AppConstants.ProductVariant.COLOR
-                }
-                ProductVariantOptionEntity.new {
-                    productVariantId = variant.id
-                    name = addProduct.color
-                }
-            }
-            addProduct.size?.let {
-                val variant = ProductVariantEntity.new {
-                    productId = product.id
-                    name = AppConstants.ProductVariant.SIZE
-                }
-                ProductVariantOptionEntity.new {
-                    productVariantId = variant.id
-                    name = addProduct.size
-                }
-            }
-            productImage?.imageUrl?.split(",")?.let {
-                ProductResponse(
-                    addProduct.categoryId,
-                    addProduct.title,
-                    it.map { it.trim() },
-                    addProduct.description,
-                    addProduct.color,
-                    addProduct.size,
-                    addProduct.price,
-                    addProduct.discountPrice,
-                    addProduct.quantity
-                )
+    fun getProduct(productQuery: ProductWithFilter) = transaction {
+        val query = ProductTable.selectAll()
+        productQuery.maxPrice?.let {
+            query.andWhere { ProductTable.price lessEq it }
+        }
+        productQuery.minPrice?.let {
+            query.andWhere {
+                ProductTable.price greaterEq it
             }
         }
+        productQuery.categoryId?.let {
+            query.adjustWhere {
+                ProductTable.categoryId eq it
+            }
+        }
+        productQuery.subCategoryId?.let {
+            query.adjustWhere {
+                ProductTable.subCategoryId eq it
+            }
+        }
+        productQuery.brandId?.let {
+            query.adjustWhere {
+                ProductTable.brandId eq it
+            }
+        }
+        return@transaction query.limit(productQuery.limit, productQuery.offset).map {
+            ProductEntity.wrapRow(it).response()
+        }
     }
+
+    fun deleteProduct(deleteProduct: DeleteProduct) = transaction {
+        val isProductExist = ProductEntity.find { ProductTable.id eq deleteProduct.productId }.toList().singleOrNull()
+        isProductExist?.delete()
+    }
+
+    /* fun createProduct(addProduct: AddProduct) = transaction {
+         return@transaction {
+             val product = ProductEntity.new {
+                 categoryId = addProduct.categoryId
+                 title = addProduct.title
+                 description = addProduct.description
+                 price = addProduct.price
+             }
+             val productImage =
+                 ProductImageEntity.find { ProductImage.id eq addProduct.imageId }.toList().singleOrNull()?.let {
+                     it.productId = product.id.value
+                     it.response()
+                 }
+             addProduct.color?.let {
+                 val variant = ProductVariantEntity.new {
+                     productId = product.id
+                     name = AppConstants.ProductVariant.COLOR
+                 }
+                 ProductVariantOptionEntity.new {
+                     productVariantId = variant.id
+                     name = addProduct.color
+                 }
+             }
+             addProduct.size?.let {
+                 val variant = ProductVariantEntity.new {
+                     productId = product.id
+                     name = AppConstants.ProductVariant.SIZE
+                 }
+                 ProductVariantOptionEntity.new {
+                     productVariantId = variant.id
+                     name = addProduct.size
+                 }
+             }
+             productImage?.imageUrl?.split(",")?.let {
+                 ProductResponse(
+                     addProduct.categoryId,
+                     addProduct.title,
+                     it.map { it.trim() },
+                     addProduct.description,
+                     addProduct.color,
+                     addProduct.size,
+                     addProduct.price,
+                     addProduct.discountPrice,
+                     addProduct.quantity
+                 )
+             }
+         }
+     }*/
 }

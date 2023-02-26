@@ -20,5 +20,5 @@ class UserHasTypeEntity(id: EntityID<String>) : BaseIntEntity(id, UserHasTypeTab
 }
 
 data class UserHasType(
-    val id: String, val userTypeId: String
+    val id: String, val userType: String
 )

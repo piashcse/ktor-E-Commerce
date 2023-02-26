@@ -9,8 +9,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 object OrderDetailsTable : BaseIntIdTable("orders") {
     val orderId = reference("order_id", OrdersTable.id)
     val productId = reference("product_id", ProductTable.id)
-    val price = float("price")
-    val city = text("city")
+    val totalPrice = float("total_price")
     val sku = text("order_email")
     val quantity = float("quantity")
 }
@@ -20,8 +19,7 @@ class OrderDetailEntity(id: EntityID<String>) : BaseIntEntity(id, OrdersTable) {
 
     var orderId by OrderDetailsTable.orderId
     var productId by OrderDetailsTable.productId
-    var price by OrderDetailsTable.price
-    var city by OrderDetailsTable.city
+    var totalPrice by OrderDetailsTable.totalPrice
     var sku by OrderDetailsTable.sku
     var quantity by OrderDetailsTable.quantity
     // fun shopResponse() = Shop(id.value, shop_name)

@@ -1,5 +1,7 @@
 package com.example.databasehelper
 
+import com.example.entities.category.CategoryTable
+import com.example.entities.category.SubCategoryTable
 import com.example.entities.product.*
 import com.example.entities.product.defaultproductcategory.ProductCategoryTable
 import com.example.entities.product.defaultproductcategory.ProductSubCategoryTable
@@ -17,6 +19,8 @@ import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.SchemaUtils.create
+import org.jetbrains.exposed.sql.StdOutSqlLogger
+import org.jetbrains.exposed.sql.addLogger
 import org.slf4j.LoggerFactory
 import java.net.URI
 import javax.sql.DataSource
@@ -24,10 +28,13 @@ import javax.sql.DataSource
 object DatabaseFactory {
     private val log = LoggerFactory.getLogger(this::class.java)
     fun init() {
-        //initDB()
-        Database.connect(hikari())
+        initDB()
+        //Database.connect(hikari())
         transaction {
+            // print sql to std-out
+            addLogger(StdOutSqlLogger)
             create(UserTable, UserProfileTable, UserTypeTable, UserHasTypeTable,ShopTable, ShopCategoryTable, ProductCategoryTable, ProductSubCategoryTable, ProductTable, ProductSizeTable, ProductColorTable)
+            create(CategoryTable, SubCategoryTable, BrandTable)
         }
     }
 

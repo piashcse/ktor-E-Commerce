@@ -4,24 +4,21 @@ import com.example.controller.UserController
 import com.example.entities.user.ChangePassword
 import com.example.entities.user.UsersEntity
 import com.example.models.user.body.*
+import com.example.plugins.RoleManagement
 import com.example.utils.*
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.example.utils.ApiResponse
-import com.example.utils.extension.fileExtension
 import com.papsign.ktor.openapigen.route.path.auth.put
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.path.normal.post
 import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
 import io.ktor.http.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.SimpleEmail
-import java.io.File
 import java.util.*
 import javax.naming.AuthenticationException
 
@@ -29,7 +26,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
     route("user/") {
         route("login").post<Unit, Response, LoginBody>(
             exampleRequest = LoginBody(
-                email = "piash@gmail.com", password = "1234", userType = "2"
+                email = "piash@gmail.com", password = "1234", userType = "seller"
             )
         ) { _, loginBody ->
             loginBody.validation()
@@ -90,7 +87,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                 }
             }
         }
-        authenticateWithJwt(AppConstants.RoleManagement.ADMIN, AppConstants.RoleManagement.MERCHANT) {
+        authenticateWithJwt(RoleManagement.ADMIN.role, RoleManagement.SELLER.role) {
             route("change-password").put<UserId, Response, ChangePassword, JwtTokenBody> { params, requestBody ->
                 params.validation()
                 userController.changePassword(params.userId, requestBody)?.let {

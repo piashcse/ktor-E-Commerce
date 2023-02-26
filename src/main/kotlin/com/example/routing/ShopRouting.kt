@@ -3,7 +3,7 @@ package com.example.routing
 import com.example.controller.ShopController
 import com.example.models.shop.*
 import com.example.models.user.body.JwtTokenBody
-import com.example.utils.AppConstants
+import com.example.plugins.RoleManagement
 import com.example.utils.ApiResponse
 import com.example.utils.Response
 import com.example.utils.authenticateWithJwt
@@ -15,7 +15,7 @@ import io.ktor.http.*
 
 fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
     route("shop/") {
-        authenticateWithJwt(AppConstants.RoleManagement.ADMIN) {
+        authenticateWithJwt(RoleManagement.ADMIN.role) {
             route("category").post<Unit, Response, AddShopCategory, JwtTokenBody> { _, addShopCategory ->
                 addShopCategory.validation()
                 respond(
@@ -51,7 +51,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                 }
             }
         }
-        authenticateWithJwt(AppConstants.RoleManagement.MERCHANT, AppConstants.RoleManagement.ADMIN) {
+        authenticateWithJwt(RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
            route("add-shop"). post<Unit, Response, AddShop, JwtTokenBody> { _, addShop ->
                 val jwtTokenToUserData = principal()
                 addShop.validation()

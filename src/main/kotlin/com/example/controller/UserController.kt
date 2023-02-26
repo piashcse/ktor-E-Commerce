@@ -16,7 +16,6 @@ class UserController {
         val userEntity = UsersEntity.find { UserTable.email eq registrationBody.email }.toList().singleOrNull()
         return@transaction if (userEntity == null) {
             val inserted = UsersEntity.new {
-                userName = registrationBody.userName
                 email = registrationBody.email
                 password = BCrypt.withDefaults().hashToString(12, registrationBody.password.toCharArray())
             }
@@ -27,7 +26,7 @@ class UserController {
                 userId = inserted.id
                 userTypeId = registrationBody.userType
             }
-            RegistrationResponse(registrationBody.userName, registrationBody.email)
+            RegistrationResponse(registrationBody.email)
         } else {
             throw CommonException("${registrationBody.email} already Exist")
         }

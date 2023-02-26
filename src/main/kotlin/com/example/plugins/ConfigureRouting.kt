@@ -1,8 +1,7 @@
-package com.example.routing
+package com.example.plugins
 
-import com.example.controller.ProductController
-import com.example.controller.ShopController
-import com.example.controller.UserController
+import com.example.controller.*
+import com.example.routing.*
 import com.papsign.ktor.openapigen.APITag
 import com.papsign.ktor.openapigen.openAPIGen
 import com.papsign.ktor.openapigen.route.apiRouting
@@ -31,10 +30,19 @@ fun Application.configureRouting() {
             tag(Tags.PRODUCT) {
                 productRoute(ProductController())
             }
+            tag(Tags.CATEGORY) {
+                categoryRoute(CategoryController())
+            }
+            tag(Tags.SUBCATEGORY) {
+                subCategoryRoute(SubCategoryController())
+            }
+            tag(Tags.BRAND) {
+                brandRouting(BrandController())
+            }
         }
     }
 }
 
 enum class Tags(override val description: String) : APITag {
-    USER(""), SHOP(""), PRODUCT("")
+    USER(""), SHOP(""), PRODUCT(""), CATEGORY(""), SUBCATEGORY(""), BRAND("")
 }

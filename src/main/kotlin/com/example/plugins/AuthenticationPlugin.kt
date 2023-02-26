@@ -1,7 +1,6 @@
 package com.example.plugins
 
 import com.example.models.user.body.JwtTokenBody
-import com.example.utils.AppConstants
 import com.example.controller.JwtController
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -17,25 +16,33 @@ fun Application.configureAuthentication() {
          * The [User] can then be accessed in each [ApplicationCall].
          */
         jwt {
-            provideJwtAuthConfig(this, AppConstants.UserType.CUSTOMER)
+            provideJwtAuthConfig(this, RoleManagement.USER)
         }
-        jwt(AppConstants.RoleManagement.ADMIN) {
-            provideJwtAuthConfig(this, AppConstants.UserType.ADMIN)
+        jwt(RoleManagement.ADMIN.role) {
+            provideJwtAuthConfig(this, RoleManagement.ADMIN)
         }
-        jwt(AppConstants.RoleManagement.MERCHANT) {
-            provideJwtAuthConfig(this, AppConstants.UserType.MERCHANT)
+        jwt(RoleManagement.SELLER.role) {
+            provideJwtAuthConfig(this, RoleManagement.SELLER)
         }
     }
 }
-fun provideJwtAuthConfig(jwtConfig: JWTAuthenticationProvider.Config, userTypeForRoleManagement: String) {
+
+fun provideJwtAuthConfig(jwtConfig: JWTAuthenticationProvider.Config, userRole: RoleManagement) {
     jwtConfig.verifier(JwtController.verifier)
     jwtConfig.realm = "ktor.io"
     jwtConfig.validate {
         val userId = it.payload.getClaim("userId").asString()
         val email = it.payload.getClaim("email").asString()
         val userType = it.payload.getClaim("userType").asString()
-        if (userType == userTypeForRoleManagement) {
+        if (userType == userRole.role) {
             JwtTokenBody(userId, email, userType)
         } else null
     }
+}
+
+enum class RoleManagement(val role: String) {
+    SUPER_ADMIN("super_admin"),
+    ADMIN("admin"),
+    SELLER("seller"),
+    USER("user")
 }

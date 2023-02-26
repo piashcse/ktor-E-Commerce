@@ -1,4 +1,4 @@
-package com.example.models.product.reqest
+package com.example.models.product.request
 
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate

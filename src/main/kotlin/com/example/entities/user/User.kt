@@ -8,7 +8,6 @@ import com.example.controller.JwtController
 import org.jetbrains.exposed.dao.id.EntityID
 
 object UserTable : BaseIntIdTable("users") {
-    val userName = varchar("user_name", 30)
     val email = varchar("email", 50)
     val password = varchar("password", 200)
     val mobileNumber = varchar("mobile_number", 50).nullable()
@@ -21,7 +20,6 @@ object UserTable : BaseIntIdTable("users") {
 
 class UsersEntity(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
     companion object : BaseIntEntityClass<UsersEntity>(UserTable)
-    var userName by UserTable.userName
     var email by UserTable.email
     var password by UserTable.password
     var mobileNumber by UserTable.mobileNumber
@@ -32,7 +30,6 @@ class UsersEntity(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
     val userType by UserHasTypeEntity backReferencedOn UserHasTypeTable.userId
     fun response() = UsersResponse(
         id.value,
-        userName,
         email,
         mobileNumber,
         emailVerifiedAt,
@@ -48,7 +45,6 @@ class UsersEntity(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
 
 data class UsersResponse(
     val id: String,
-    val userName: String,
     val email: String,
     val mobileNumber: String?,
     val emailVerifiedAt: String?,
