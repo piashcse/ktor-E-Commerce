@@ -43,7 +43,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
 
     // exposed ORM library
-    implementation("org.flywaydb:flyway-core:9.6.0")
+    implementation("org.flywaydb:flyway-core:9.16.0")
     implementation("org.jetbrains.exposed:exposed-core:0.40.1")
     implementation("org.jetbrains.exposed:exposed-dao:0.40.1")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.40.1")
@@ -51,17 +51,17 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.40.1")
 
     // postgresql
-    implementation("org.postgresql:postgresql:42.5.0")
+    implementation("org.postgresql:postgresql:42.5.4")
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     // password hashing
-    implementation("at.favre.lib:bcrypt:0.9.0")
+    implementation("at.favre.lib:bcrypt:0.10.2")
     // date time
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     // mail server
     implementation("org.apache.commons:commons-email:1.5")
 
-    implementation("com.google.api-client:google-api-client:2.0.0")
+    implementation("com.google.api-client:google-api-client:2.2.0")
     implementation("com.google.oauth-client:google-oauth-client:1.34.1")
 
     // validator
