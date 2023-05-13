@@ -4,7 +4,7 @@ val logback_version: String by project
 
 plugins {
     application
-    kotlin("jvm") version "1.8.10"
+    kotlin("jvm") version "1.8.20"
   //  id("com.github.johnrengelman.shadow") version "6.1.0"
 }
 
@@ -71,7 +71,7 @@ dependencies {
     implementation("commons-io:commons-io:2.11.0")
 
     //swagger
-    implementation("dev.forst", "ktor-openapi-generator", "0.6.1")
+    implementation("dev.forst:ktor-openapi-generator:0.6.1")
 }
 tasks.create("stage") {
     dependsOn("installDist")

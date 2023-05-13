@@ -29,7 +29,8 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                 respond(
                     ApiResponse.success(
                         shopController.getShopCategories(
-                            shopCategories.offset, shopCategories.limit
+                            shopCategories.limit,
+                            shopCategories.offset
                         ), HttpStatusCode.OK
                     )
                 )
@@ -52,7 +53,7 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
             }
         }
         authenticateWithJwt(RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-           route("add-shop"). post<Unit, Response, AddShop, JwtTokenBody> { _, addShop ->
+            route("add-shop").post<Unit, Response, AddShop, JwtTokenBody> { _, addShop ->
                 val jwtTokenToUserData = principal()
                 addShop.validation()
                 shopController.createShop(

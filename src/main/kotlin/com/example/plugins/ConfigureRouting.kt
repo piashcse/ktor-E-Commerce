@@ -39,10 +39,13 @@ fun Application.configureRouting() {
             tag(Tags.BRAND) {
                 brandRouting(BrandController())
             }
+            tag(Tags.CART){
+                cartRouting(CartController())
+            }
         }
     }
 }
 
 enum class Tags(override val description: String) : APITag {
-    USER(""), SHOP(""), PRODUCT(""), CATEGORY(""), SUBCATEGORY(""), BRAND("")
+    USER(""), SHOP(""), PRODUCT(""), CATEGORY(""), SUBCATEGORY(""), BRAND(""),CART("")
 }

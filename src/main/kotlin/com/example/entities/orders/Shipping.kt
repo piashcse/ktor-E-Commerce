@@ -5,7 +5,7 @@ import com.example.entities.base.BaseIntEntityClass
 import com.example.entities.base.BaseIntIdTable
 import org.jetbrains.exposed.dao.id.EntityID
 
-object ShippingTable : BaseIntIdTable("shipping") {
+object ShippingAddressTable : BaseIntIdTable("shipping_address") {
     val orderId = reference("order_id", OrdersTable.id)
     val shippingName = varchar("shipping_name", 50)
     val shippingPhone = integer("shipping_phone")
@@ -16,15 +16,15 @@ object ShippingTable : BaseIntIdTable("shipping") {
     val shippingCountry = float("shipping_country")
 }
 
-class ShippingEntity(id: EntityID<String>) : BaseIntEntity(id, ShippingTable) {
-    companion object : BaseIntEntityClass<ShippingEntity>(ShippingTable)
+class ShippingEntity(id: EntityID<String>) : BaseIntEntity(id, ShippingAddressTable) {
+    companion object : BaseIntEntityClass<ShippingEntity>(ShippingAddressTable)
 
-    var orderId by ShippingTable.orderId
-    var shippingName by ShippingTable.shippingName
-    var shippingPhone by ShippingTable.shippingPhone
-    var shippingEmail by ShippingTable.shippingEmail
-    var shippingAddress1 by ShippingTable.shippingAddress1
-    var shippingAddress2 by ShippingTable.shippingAddress2
-    var shippingCity by ShippingTable.shippingCity
-    var shippingCountry by ShippingTable.shippingCountry
+    var orderId by ShippingAddressTable.orderId
+    var shippingName by ShippingAddressTable.shippingName
+    var shippingPhone by ShippingAddressTable.shippingPhone
+    var shippingEmail by ShippingAddressTable.shippingEmail
+    var shippingAddress1 by ShippingAddressTable.shippingAddress1
+    var shippingAddress2 by ShippingAddressTable.shippingAddress2
+    var shippingCity by ShippingAddressTable.shippingCity
+    var shippingCountry by ShippingAddressTable.shippingCountry
 }

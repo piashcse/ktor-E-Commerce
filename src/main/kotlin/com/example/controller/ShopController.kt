@@ -19,7 +19,7 @@ class ShopController {
         }
     }
 
-    fun getShopCategories(offset: Int, limit: Int) = transaction {
+    fun getShopCategories(limit: Int, offset: Int) = transaction {
         val shopCategories = ShopCategoryEntity.all().limit(limit, offset.toLong())
         return@transaction shopCategories.map {
             it.shopCategoryResponse()
