@@ -12,6 +12,7 @@ Ktor-E-Commerce built with [ktor](https://ktor.io/docs/welcome.html) for e-comme
 </p>
 
 # Main Features
+- Role Management(Admin, Seller, User)
 - Login
 - Registration
 - Shop Registration
@@ -32,6 +33,18 @@ MVC (Model - View - Controller)
 - [Apache Commons Email](https://github.com/apache/commons-email) - Apache Commons Email aims to provide an API for sending email. It is built on top of the JavaMail API, which it aims to simplify.
 - [Ktor OpenAPI/Swagger](https://github.com/LukasForst/ktor-openapi-generator) - The Ktor OpenAPI Generator is a library to automatically generate the descriptor as you route your ktor application.
 - [Valiktor](https://github.com/valiktor/valiktor) - Valiktor is a type-safe, powerful and extensible fluent DSL to validate objects in Kotlin
+
+## Requirements
+
+- [JAVA 11](https://jdk.java.net/11/) (or latest)
+- [PostgreSQL](https://www.postgresql.org/) (latest)
+
+## How to run
+
+- `git clone git@github.com:piashcse/ktor-E-Commerce.git` 
+-  `Create a db in postgreSQL`
+-  Replace you db name in `dataSource.databaseName=ktor-1.0.0` instread of ktor-1.0.0 in hikari.properties from resource folder 
+- `run fun main()` from application class
 
 ## 👨 Developed By
 
