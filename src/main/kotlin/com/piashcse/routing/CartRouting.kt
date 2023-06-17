@@ -1,5 +1,6 @@
 package com.piashcse.routing
 
+import com.papsign.ktor.openapigen.route.path.auth.delete
 import com.piashcse.controller.CartController
 import com.piashcse.models.PagingData
 import com.piashcse.models.cart.AddCart
@@ -14,6 +15,7 @@ import com.papsign.ktor.openapigen.route.path.auth.principal
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
+import com.piashcse.models.cart.DeleteProduct
 import io.ktor.http.*
 
 fun NormalOpenAPIRoute.cartRouting(cartController: CartController) {
@@ -28,11 +30,19 @@ fun NormalOpenAPIRoute.cartRouting(cartController: CartController) {
                 )
             ) { _, cartBody ->
                 cartBody.validation()
-                respond(ApiResponse.success(cartController.createCart(principal().userId, cartBody), HttpStatusCode.OK))
+                respond(ApiResponse.success(cartController.addToCart(principal().userId, cartBody), HttpStatusCode.OK))
             }
             get<PagingData, Response, JwtTokenBody> { pagingData ->
                 pagingData.validation()
                 respond(ApiResponse.success(cartController.getCartItems(pagingData), HttpStatusCode.OK))
+            }
+            delete<DeleteProduct, Response, JwtTokenBody> { params ->
+                params.validation()
+                respond(
+                    ApiResponse.success(
+                        cartController.deleteCartItem(principal().userId, params), HttpStatusCode.OK
+                    )
+                )
             }
         }
     }

@@ -13,8 +13,8 @@ object CartItemTable : BaseIntIdTable("cart_items") {
     val quantity = integer("quantity")
 }
 
-class CartEntity(id: EntityID<String>) : BaseIntEntity(id, CartItemTable) {
-    companion object : BaseIntEntityClass<CartEntity>(CartItemTable)
+class CartItemEntity(id: EntityID<String>) : BaseIntEntity(id, CartItemTable) {
+    companion object : BaseIntEntityClass<CartItemEntity>(CartItemTable)
 
     var userId by CartItemTable.userId
     var productId by CartItemTable.productId
