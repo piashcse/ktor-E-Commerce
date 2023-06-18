@@ -21,6 +21,7 @@ Ktor-E-Commerce built with [ktor](https://ktor.io/docs/welcome.html) for e-comme
 - Product Subcategory
 - Brand 
 - Cart
+- Order
 
 ## Architecture
 MVC (Model - View - Controller)
