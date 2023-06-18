@@ -40,6 +40,19 @@ fun ResultRow.toMap(): Map<String, Any?> {
     }
     return mutableMap
 }
+
 fun String.fileExtension(): String {
-   return this.substring(this.lastIndexOf("."))
+    return this.substring(this.lastIndexOf("."))
+}
+
+fun String.orderStatusCode(): Int {
+    return when (this) {
+        "pending" -> 0
+        "confirmed" -> 1
+        "paid" -> 2
+        "delivered" -> 3
+        "canceled" -> 4
+        "received" -> 5
+        else -> 0
+    }
 }

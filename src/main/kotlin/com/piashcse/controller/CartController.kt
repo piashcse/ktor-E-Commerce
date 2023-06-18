@@ -14,7 +14,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 class CartController {
     fun addToCart(userId: String, addCart: AddCart) = transaction {
         val isProductExist =
-            CartItemEntity.find { CartItemTable.productId eq addCart.productId }.toList().singleOrNull()
+            CartItemEntity.find { CartItemTable.id eq userId and (CartItemTable.productId eq addCart.productId) }
+                .toList().singleOrNull()
         return@transaction isProductExist?.apply {
             this.totalPrice = addCart.totalPrice
             this.quantity = this.quantity + addCart.quantity
@@ -28,16 +29,23 @@ class CartController {
         }
     }
 
-    fun getCartItems(pagingData: PagingData) = transaction {
-        return@transaction CartItemEntity.all().limit(pagingData.limit, pagingData.offset).map {
-            it.cartResponse()
-        }
-    }
-
-    fun deleteCartItem(userId: String, deleteProduct: DeleteProduct) = transaction {
+    fun removeCartItem(userId: String, deleteProduct: DeleteProduct) = transaction {
         val productExist =
             CartItemEntity.find { CartItemTable.id eq userId and (CartItemTable.productId eq deleteProduct.productId) }
                 .toList().singleOrNull()
         productExist?.delete()
+    }
+
+    fun deleteCart(userId: String) = transaction {
+        return@transaction CartItemEntity.find { CartItemTable.id eq userId }.toList().forEach {
+            it.delete()
+        }
+    }
+
+    fun getCartItems(userId: String, pagingData: PagingData) = transaction {
+        return@transaction CartItemEntity.find { CartItemTable.id eq userId }.limit(pagingData.limit, pagingData.offset)
+            .map {
+                it.cartResponse()
+            }
     }
 }

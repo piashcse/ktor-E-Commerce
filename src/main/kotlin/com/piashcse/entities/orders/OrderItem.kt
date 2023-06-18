@@ -11,7 +11,7 @@ object OrderItemTable : BaseIntIdTable("order_items") {
     val productId = reference("product_id", ProductTable.id)
     val totalPrice = float("total_price")
     val singlePrice = float("single_price")
-    val quantity = float("quantity")
+    val quantity = integer("quantity")
 }
 
 class OrderItemEntity(id: EntityID<String>) : BaseIntEntity(id, OrderItemTable) {

@@ -15,10 +15,10 @@ object OrdersTable : BaseIntIdTable("orders") {
     val total = float("total")
     val shippingCharge = float("shopping_charge")
     val vat = float("vat").nullable()
-    val cancelOrder = integer("cancel_order")
+    val cancelOrder = bool("cancel_order").default(false)
     val coupon = varchar("coupon", 50).nullable()
-    val status = integer("status")
-    val statusCode = integer("status_code")
+    val status = varchar("status", 30).default("pending")
+    val statusCode = integer("status_code").default(0)
 }
 
 class OrderEntity(id: EntityID<String>) : BaseIntEntity(id, OrdersTable) {
