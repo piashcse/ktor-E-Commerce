@@ -9,7 +9,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 
 object ProductTable : BaseIntIdTable("product") {
     val categoryId = reference("category_id", CategoryTable.id)
-    val subCategoryId = reference("sub_category_id", SubCategoryTable.id)
+    val subCategoryId = reference("sub_category_id", SubCategoryTable.id).nullable()
     val brandId = reference("brand_id", BrandTable.id).nullable()
     val productName = text("product_name")
     val productCode = text("product_code")
@@ -56,7 +56,7 @@ class ProductEntity(id: EntityID<String>) : BaseIntEntity(id, ProductTable) {
     fun response() = Product(
         id.value,
         categoryId.value,
-        subCategoryId.value,
+        subCategoryId?.value,
         brandId?.value,
         productName,
         productCode,
@@ -81,7 +81,7 @@ class ProductEntity(id: EntityID<String>) : BaseIntEntity(id, ProductTable) {
 data class Product(
     val id: String,
     val categoryId: String,
-    val subCategoryId: String,
+    val subCategoryId: String?,
     val brandId: String?,
     val productName: String,
     val productCode: String,

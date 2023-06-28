@@ -14,36 +14,33 @@ import org.jetbrains.exposed.sql.transactions.transaction
 class CartController {
     fun addToCart(userId: String, addCart: AddCart) = transaction {
         val isProductExist =
-            CartItemEntity.find { CartItemTable.id eq userId and (CartItemTable.productId eq addCart.productId) }
+            CartItemEntity.find { CartItemTable.userId eq userId and (CartItemTable.productId eq addCart.productId) }
                 .toList().singleOrNull()
         return@transaction isProductExist?.apply {
-            this.totalPrice = addCart.totalPrice
             this.quantity = this.quantity + addCart.quantity
-            this.singlePrice = singlePrice
-        } ?: CartItemEntity.new {
-            this.userId = EntityID(userId, UserTable)
-            productId = EntityID(addCart.productId, ProductTable)
-            totalPrice = addCart.singlePrice * addCart.quantity
-            singlePrice = addCart.singlePrice
+        }?.cartResponse() ?: CartItemEntity.new {
+            this.userId = EntityID(userId, CartItemTable)
+            productId = EntityID(addCart.productId, CartItemTable)
             quantity = addCart.quantity
-        }
+        }.cartResponse()
     }
 
     fun removeCartItem(userId: String, deleteProduct: DeleteProduct) = transaction {
         val productExist =
-            CartItemEntity.find { CartItemTable.id eq userId and (CartItemTable.productId eq deleteProduct.productId) }
+            CartItemEntity.find { CartItemTable.userId eq userId and (CartItemTable.productId eq deleteProduct.productId) }
                 .toList().singleOrNull()
         productExist?.delete()
     }
 
     fun deleteCart(userId: String) = transaction {
-        return@transaction CartItemEntity.find { CartItemTable.id eq userId }.toList().forEach {
+        return@transaction CartItemEntity.find { CartItemTable.userId eq userId }.toList().forEach {
             it.delete()
         }
     }
 
     fun getCartItems(userId: String, pagingData: PagingData) = transaction {
-        return@transaction CartItemEntity.find { CartItemTable.id eq userId }.limit(pagingData.limit, pagingData.offset)
+        return@transaction CartItemEntity.find { CartItemTable.userId eq userId }
+            .limit(pagingData.limit, pagingData.offset)
             .map {
                 it.cartResponse()
             }

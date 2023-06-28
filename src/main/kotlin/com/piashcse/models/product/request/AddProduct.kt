@@ -5,7 +5,7 @@ import org.valiktor.validate
 
 data class AddProduct(
     val categoryId: String,
-    val subCategoryId: String,
+    val subCategoryId: String?,
     val brandId: String?,
     val productName: String,
     val productCode: String,
@@ -35,22 +35,3 @@ data class AddProduct(
         }
     }
 }
-
-/*data class AddProduct(val map: Map<String?, PartData>) {
-    val categoryId: PartData.FormItem by map
-    val title: PartData.FormItem by map
-    val description: PartData.FormItem by map
-    val price: PartData.FormItem by map
-    val discountPrice: PartData.FormItem by map
-    val quantity: PartData.FormItem by map
-    val shopId: PartData.FormItem by map
-    val color: PartData.FormItem by map
-    val size: PartData.FormItem by map
-    fun validation() {
-        validate(this) {
-            validate(AddProduct::categoryId).isNotNull()
-            validate(AddProduct::title).isNotNull()
-            validate(AddProduct::price).isNotNull()
-        }
-    }
-}*/

@@ -13,6 +13,7 @@ import com.google.api.client.json.gson.GsonFactory
 import com.piashcse.utils.ApiResponse
 import com.papsign.ktor.openapigen.route.path.auth.put
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
+import com.papsign.ktor.openapigen.route.path.normal.get
 import com.papsign.ktor.openapigen.route.path.normal.post
 import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
@@ -24,15 +25,10 @@ import javax.naming.AuthenticationException
 
 fun NormalOpenAPIRoute.userRoute(userController: UserController) {
     route("user/") {
-        route("login").post<Unit, Response, LoginBody>(
-            exampleRequest = LoginBody(
-                email = "piash@gmail.com", password = "1234", userType = "seller"
-            )
-        ) { _, loginBody ->
+        route("login").get<LoginBody, Response> { loginBody ->
             loginBody.validation()
             respond(ApiResponse.success(userController.login(loginBody), HttpStatusCode.OK))
         }
-
         route("registration").post<Unit, Response, RegistrationBody> { _, registrationBody ->
             registrationBody.validation()
             respond(ApiResponse.success(userController.registration(registrationBody), HttpStatusCode.OK))
@@ -87,7 +83,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
                 }
             }
         }
-        authenticateWithJwt(RoleManagement.ADMIN.role, RoleManagement.SELLER.role) {
+        authenticateWithJwt(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.USER.role) {
             route("change-password").put<UserId, Response, ChangePassword, JwtTokenBody> { params, requestBody ->
                 params.validation()
                 userController.changePassword(params.userId, requestBody)?.let {

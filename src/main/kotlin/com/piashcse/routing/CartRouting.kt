@@ -24,9 +24,7 @@ fun NormalOpenAPIRoute.cartRouting(cartController: CartController) {
             route("/add").post<Unit, Response, AddCart, JwtTokenBody>(
                 exampleRequest = AddCart(
                     "",
-                    100f,
-                    100f,
-                    2,
+                    1,
                 )
             ) { _, cartBody ->
                 cartBody.validation()

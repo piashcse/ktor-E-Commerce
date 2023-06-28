@@ -13,7 +13,7 @@ class ProductController {
     fun createProduct(addProduct: AddProduct) = transaction {
         return@transaction ProductEntity.new {
             categoryId = EntityID(addProduct.categoryId, ProductTable)
-            subCategoryId = EntityID(addProduct.subCategoryId, ProductTable)
+            subCategoryId = addProduct.subCategoryId?.let { EntityID(addProduct.subCategoryId, ProductTable) }
             brandId = addProduct.brandId?.let { EntityID(addProduct.brandId, ProductTable) }
             productName = addProduct.productName
             productCode = addProduct.productCode

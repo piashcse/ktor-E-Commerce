@@ -17,14 +17,16 @@ import io.ktor.http.*
 
 fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
     route("product") {
+        authenticateWithJwt(RoleManagement.USER.role, RoleManagement.SELLER.role) {
+            get<ProductWithFilter, Response, JwtTokenBody> { pagingData ->
+                pagingData.validation()
+                respond(ApiResponse.success(productController.getProduct(pagingData), HttpStatusCode.OK))
+            }
+        }
         authenticateWithJwt(RoleManagement.SELLER.role) {
             post<Unit, Response, AddProduct, JwtTokenBody> { _, addProduct ->
                 addProduct.validation()
                 respond(ApiResponse.success(productController.createProduct(addProduct), HttpStatusCode.OK))
-            }
-            get<ProductWithFilter, Response, JwtTokenBody> { pagingData ->
-                pagingData.validation()
-                respond(ApiResponse.success(productController.getProduct(pagingData), HttpStatusCode.OK))
             }
             delete<DeleteProduct, Response, JwtTokenBody> { deleteProduct ->
                 deleteProduct.validation()

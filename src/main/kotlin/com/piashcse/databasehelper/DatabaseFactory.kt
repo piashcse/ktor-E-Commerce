@@ -2,6 +2,7 @@ package com.piashcse.databasehelper
 
 import com.piashcse.entities.category.CategoryTable
 import com.piashcse.entities.category.SubCategoryTable
+import com.piashcse.entities.orders.CartItemTable
 import com.piashcse.entities.product.*
 import com.piashcse.entities.product.defaultproductcategory.ProductCategoryTable
 import com.piashcse.entities.product.defaultproductcategory.ProductSubCategoryTable
@@ -34,7 +35,7 @@ object DatabaseFactory {
             // print sql to std-out
             addLogger(StdOutSqlLogger)
             create(UserTable, UserProfileTable, UserTypeTable, UserHasTypeTable,ShopTable, ShopCategoryTable, ProductCategoryTable, ProductSubCategoryTable, ProductTable, ProductSizeTable, ProductColorTable)
-            create(CategoryTable, SubCategoryTable, BrandTable)
+            create(CategoryTable, SubCategoryTable, BrandTable, CartItemTable)
         }
     }
 
