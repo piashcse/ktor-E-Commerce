@@ -26,11 +26,11 @@ fun NormalOpenAPIRoute.subCategoryRoute(subCategoryController: SubCategoryContro
                 exampleRequest = AddSubCategory(
                     categoryId = "8eabd62f-fbb2-4fad-b440-3060f2e12dbc", subCategoryName = "Shirt"
                 )
-            ) { _, addSubCategoryBody ->
-                addSubCategoryBody.validation()
+            ) { _, subCategoryBody ->
+                subCategoryBody.validation()
                 respond(
                     ApiResponse.success(
-                        subCategoryController.createSubCategory(addSubCategoryBody), HttpStatusCode.OK
+                        subCategoryController.createSubCategory(subCategoryBody), HttpStatusCode.OK
                     )
                 )
             }
@@ -38,15 +38,15 @@ fun NormalOpenAPIRoute.subCategoryRoute(subCategoryController: SubCategoryContro
                 pagingData.validation()
                 respond(ApiResponse.success(subCategoryController.getSubCategory(pagingData), HttpStatusCode.OK))
             }
-            put<UpdateSubCategory, Response, Unit, JwtTokenBody> { updateParams, _ ->
-                updateParams.validation()
-                respond(ApiResponse.success(subCategoryController.updateSubCategory(updateParams), HttpStatusCode.OK))
+            put<UpdateSubCategory, Response, Unit, JwtTokenBody> { params, _ ->
+                params.validation()
+                respond(ApiResponse.success(subCategoryController.updateSubCategory(params), HttpStatusCode.OK))
             }
-            delete<DeleteSubCategory, Response, JwtTokenBody> { deleteParams ->
-                deleteParams.validation()
+            delete<DeleteSubCategory, Response, JwtTokenBody> { params ->
+                params.validation()
                 respond(
                     ApiResponse.success(
-                        subCategoryController.deleteSubCategory(deleteParams.subCategoryId), HttpStatusCode.OK
+                        subCategoryController.deleteSubCategory(params.subCategoryId), HttpStatusCode.OK
                     )
                 )
             }

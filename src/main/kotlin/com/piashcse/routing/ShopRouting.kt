@@ -16,48 +16,48 @@ import io.ktor.http.*
 fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
     route("shop/") {
         authenticateWithJwt(RoleManagement.ADMIN.role) {
-            route("category").post<Unit, Response, AddShopCategory, JwtTokenBody> { _, addShopCategory ->
-                addShopCategory.validation()
+            route("category").post<Unit, Response, AddShopCategory, JwtTokenBody> { _, shopCategoryBody ->
+                shopCategoryBody.validation()
                 respond(
                     ApiResponse.success(
-                        shopController.createShopCategory(addShopCategory.shopCategoryName), HttpStatusCode.OK
+                        shopController.createShopCategory(shopCategoryBody.shopCategoryName), HttpStatusCode.OK
                     )
                 )
             }
-            route("category").get<ShopCategory, Response, JwtTokenBody> { shopCategories ->
-                shopCategories.validation()
+            route("category").get<ShopCategory, Response, JwtTokenBody> { params ->
+                params.validation()
                 respond(
                     ApiResponse.success(
                         shopController.getShopCategories(
-                            shopCategories.limit,
-                            shopCategories.offset
+                            params.limit,
+                            params.offset
                         ), HttpStatusCode.OK
                     )
                 )
             }
-            route("category").delete<DeleteShopCategory, Response, JwtTokenBody> { deleteShopCategory ->
-                deleteShopCategory.validation()
+            route("category").delete<DeleteShopCategory, Response, JwtTokenBody> { params ->
+                params.validation()
                 respond(
                     ApiResponse.success(
-                        shopController.deleteShopCategory(deleteShopCategory.shopCategoryId), HttpStatusCode.OK
+                        shopController.deleteShopCategory(params.shopCategoryId), HttpStatusCode.OK
                     )
                 )
             }
-            route("category").put<Unit, Response, UpdateShopCategory, JwtTokenBody> { _, updateShopCategory ->
-                updateShopCategory.validation()
+            route("category").put<Unit, Response, UpdateShopCategory, JwtTokenBody> { _, shopCategoryBody ->
+                shopCategoryBody.validation()
                 shopController.updateShopCategory(
-                    updateShopCategory.shopCategoryId, updateShopCategory.shopCategoryName
+                    shopCategoryBody.shopCategoryId, shopCategoryBody.shopCategoryName
                 ).let {
                     respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
             }
         }
         authenticateWithJwt(RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            route("add-shop").post<Unit, Response, AddShop, JwtTokenBody> { _, addShop ->
+            route("add-shop").post<Unit, Response, AddShop, JwtTokenBody> { _, shopBody ->
                 val jwtTokenToUserData = principal()
-                addShop.validation()
+                shopBody.validation()
                 shopController.createShop(
-                    jwtTokenToUserData.userId, addShop.shopCategoryId, addShop.shopName
+                    jwtTokenToUserData.userId, shopBody.shopCategoryId, shopBody.shopName
                 ).let {
                     respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }

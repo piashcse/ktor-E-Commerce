@@ -3,6 +3,8 @@ package com.piashcse.databasehelper
 import com.piashcse.entities.category.CategoryTable
 import com.piashcse.entities.category.SubCategoryTable
 import com.piashcse.entities.orders.CartItemTable
+import com.piashcse.entities.orders.OrderItemTable
+import com.piashcse.entities.orders.OrdersTable
 import com.piashcse.entities.product.*
 import com.piashcse.entities.product.defaultproductcategory.ProductCategoryTable
 import com.piashcse.entities.product.defaultproductcategory.ProductSubCategoryTable
@@ -35,7 +37,7 @@ object DatabaseFactory {
             // print sql to std-out
             addLogger(StdOutSqlLogger)
             create(UserTable, UserProfileTable, UserTypeTable, UserHasTypeTable,ShopTable, ShopCategoryTable, ProductCategoryTable, ProductSubCategoryTable, ProductTable, ProductSizeTable, ProductColorTable)
-            create(CategoryTable, SubCategoryTable, BrandTable, CartItemTable)
+            create(CategoryTable, SubCategoryTable, BrandTable, CartItemTable, OrdersTable, OrderItemTable)
         }
     }
 
@@ -57,7 +59,7 @@ object DatabaseFactory {
         return HikariDataSource(config)
     }
 
-    // For heroku deployement
+    // For heroku deployment
     private fun hikariForHeroku(): HikariDataSource {
         val config = HikariConfig()
         config.driverClassName = System.getenv("JDBC_DRIVER")

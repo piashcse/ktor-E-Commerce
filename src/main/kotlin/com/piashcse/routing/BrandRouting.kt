@@ -38,13 +38,13 @@ fun NormalOpenAPIRoute.brandRouting(brandController: BrandController) {
                 pagingData.validation()
                 respond(ApiResponse.success(brandController.getBrand(pagingData), HttpStatusCode.OK))
             }
-            put<UpdateBrand, Response, Unit, JwtTokenBody> { updateParams, _ ->
-                updateParams.validation()
-                respond(ApiResponse.success(brandController.updateBrand(updateParams), HttpStatusCode.OK))
+            put<UpdateBrand, Response, Unit, JwtTokenBody> { params, _ ->
+                params.validation()
+                respond(ApiResponse.success(brandController.updateBrand(params), HttpStatusCode.OK))
             }
-            delete<DeleteBrand, Response, JwtTokenBody> { deleteParams ->
-                deleteParams.validation()
-                respond(ApiResponse.success(brandController.deleteBrand(deleteParams), HttpStatusCode.OK))
+            delete<DeleteBrand, Response, JwtTokenBody> { params ->
+                params.validation()
+                respond(ApiResponse.success(brandController.deleteBrand(params), HttpStatusCode.OK))
             }
         }
     }

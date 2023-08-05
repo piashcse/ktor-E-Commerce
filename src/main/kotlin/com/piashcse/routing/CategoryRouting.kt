@@ -34,15 +34,15 @@ fun NormalOpenAPIRoute.categoryRoute(categoryController: CategoryController) {
                 pagingData.validation()
                 respond(ApiResponse.success(categoryController.getCategory(pagingData), HttpStatusCode.OK))
             }
-            put<UpdateCategory, Response, Unit, JwtTokenBody> { categoryParams, _ ->
-                categoryParams.validation()
-                respond(ApiResponse.success(categoryController.updateCategory(categoryParams), HttpStatusCode.OK))
+            put<UpdateCategory, Response, Unit, JwtTokenBody> { params, _ ->
+                params.validation()
+                respond(ApiResponse.success(categoryController.updateCategory(params), HttpStatusCode.OK))
             }
-            delete<DeleteCategory, Response, JwtTokenBody> { categoryParams ->
-                categoryParams.validation()
+            delete<DeleteCategory, Response, JwtTokenBody> { params ->
+                params.validation()
                 respond(
                     ApiResponse.success(
-                        categoryController.deleteCategory(categoryParams), HttpStatusCode.OK
+                        categoryController.deleteCategory(params), HttpStatusCode.OK
                     )
                 )
             }

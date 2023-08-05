@@ -44,14 +44,14 @@ dependencies {
 
     // exposed ORM library
     implementation("org.flywaydb:flyway-core:9.16.0")
-    implementation("org.jetbrains.exposed:exposed-core:0.40.1")
-    implementation("org.jetbrains.exposed:exposed-dao:0.40.1")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.40.1")
-    implementation("org.jetbrains.exposed:exposed-java-time:0.40.1")
-    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.40.1")
+    implementation("org.jetbrains.exposed:exposed-core:0.42.0")
+    implementation("org.jetbrains.exposed:exposed-dao:0.42.0")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.42.0")
+    implementation("org.jetbrains.exposed:exposed-java-time:0.42.0")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.42.0")
 
     // postgresql
-    implementation("org.postgresql:postgresql:42.5.4")
+    implementation("org.postgresql:postgresql:42.6.0")
     implementation("com.zaxxer:HikariCP:5.0.1")
 
     // password hashing

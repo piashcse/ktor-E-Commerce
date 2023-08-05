@@ -93,11 +93,16 @@ class UserController {
         }
     }
 
+    fun getProfile(userId: String) = transaction {
+        val profile = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+        profile?.let {
+            it.response()
+        }
+    }
 
-    fun updateProfile(userId: String, userProfile: UserProfile?) = transaction {
+    fun updateProfile(userId: String, userProfile: UserProfileBody?) = transaction {
         val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         return@transaction userProfileEntity?.let {
-            it.userProfileImage = userProfile?.userProfileImage ?: it.userProfileImage
             it.firstName = userProfile?.firstName ?: it.firstName
             it.lastName = userProfile?.lastName ?: it.lastName
             it.secondaryMobileNumber = userProfile?.secondaryMobileNumber ?: it.secondaryMobileNumber

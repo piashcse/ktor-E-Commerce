@@ -47,12 +47,15 @@ fun String.fileExtension(): String {
 
 fun String.orderStatusCode(): Int {
     return when (this) {
-        "pending" -> 0
-        "confirmed" -> 1
-        "paid" -> 2
-        "delivered" -> 3
-        "canceled" -> 4
-        "received" -> 5
+        OrderStatus.PENDING.name.lowercase() -> 0
+        OrderStatus.CONFIRMED.name.lowercase() -> 1
+        OrderStatus.PAID.name.lowercase() -> 2
+        OrderStatus.DELIVERED.name.lowercase() -> 3
+        OrderStatus.CANCELED.name.lowercase() -> 4
+        OrderStatus.RECEIVED.name.lowercase() -> 5
         else -> 0
     }
+}
+enum class OrderStatus {
+    PENDING, CONFIRMED, PAID, DELIVERED, CANCELED, RECEIVED
 }

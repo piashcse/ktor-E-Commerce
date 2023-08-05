@@ -24,13 +24,13 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
             }
         }
         authenticateWithJwt(RoleManagement.SELLER.role) {
-            post<Unit, Response, AddProduct, JwtTokenBody> { _, addProduct ->
-                addProduct.validation()
-                respond(ApiResponse.success(productController.createProduct(addProduct), HttpStatusCode.OK))
+            post<Unit, Response, AddProduct, JwtTokenBody> { _, addProductBody ->
+                addProductBody.validation()
+                respond(ApiResponse.success(productController.createProduct(addProductBody), HttpStatusCode.OK))
             }
-            delete<DeleteProduct, Response, JwtTokenBody> { deleteProduct ->
-                deleteProduct.validation()
-                respond(ApiResponse.success(productController.deleteProduct(deleteProduct), HttpStatusCode.OK))
+            delete<DeleteProduct, Response, JwtTokenBody> { params ->
+                params.validation()
+                respond(ApiResponse.success(productController.deleteProduct(params), HttpStatusCode.OK))
             }
             /*route("image-upload").post<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
                 params.validation()
