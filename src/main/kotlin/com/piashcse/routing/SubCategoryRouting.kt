@@ -34,9 +34,9 @@ fun NormalOpenAPIRoute.subCategoryRoute(subCategoryController: SubCategoryContro
                     )
                 )
             }
-            get<PagingData, Response, JwtTokenBody> { pagingData ->
-                pagingData.validation()
-                respond(ApiResponse.success(subCategoryController.getSubCategory(pagingData), HttpStatusCode.OK))
+            get<PagingData, Response, JwtTokenBody> { params ->
+                params.validation()
+                respond(ApiResponse.success(subCategoryController.getSubCategory(params), HttpStatusCode.OK))
             }
             put<UpdateSubCategory, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()

@@ -39,11 +39,11 @@ fun NormalOpenAPIRoute.orderRouting(orderController: OrderController) {
                     )
                 )
             }
-            route("/payment").put<Unit, Response, OrderId, JwtTokenBody> { _, queryParams ->
-                queryParams.validation()
+            route("/payment").put<Unit, Response, OrderId, JwtTokenBody> { _, params ->
+                params.validation()
                 respond(
                     ApiResponse.success(
-                        orderController.updateOrder(principal().userId, queryParams, OrderStatus.PAID),
+                        orderController.updateOrder(principal().userId, params, OrderStatus.PAID),
                         HttpStatusCode.OK
                     )
                 )

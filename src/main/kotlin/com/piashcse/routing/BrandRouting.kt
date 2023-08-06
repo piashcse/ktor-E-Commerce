@@ -26,17 +26,17 @@ fun NormalOpenAPIRoute.brandRouting(brandController: BrandController) {
                 exampleRequest = AddBrand(
                     brandName = "Easy"
                 )
-            ) { _, brandBody ->
-                brandBody.validation()
+            ) { _, brandRequestBody ->
+                brandRequestBody.validation()
                 respond(
                     ApiResponse.success(
-                        brandController.createBrand(brandBody), HttpStatusCode.OK
+                        brandController.createBrand(brandRequestBody), HttpStatusCode.OK
                     )
                 )
             }
-            get<PagingData, Response, JwtTokenBody> { pagingData ->
-                pagingData.validation()
-                respond(ApiResponse.success(brandController.getBrand(pagingData), HttpStatusCode.OK))
+            get<PagingData, Response, JwtTokenBody> { params ->
+                params.validation()
+                respond(ApiResponse.success(brandController.getBrand(params), HttpStatusCode.OK))
             }
             put<UpdateBrand, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()

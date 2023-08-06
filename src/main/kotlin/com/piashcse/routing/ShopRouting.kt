@@ -16,11 +16,11 @@ import io.ktor.http.*
 fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
     route("shop/") {
         authenticateWithJwt(RoleManagement.ADMIN.role) {
-            route("category").post<Unit, Response, AddShopCategory, JwtTokenBody> { _, shopCategoryBody ->
-                shopCategoryBody.validation()
+            route("category").post<Unit, Response, AddShopCategory, JwtTokenBody> { _, shopCategoryRequestBody ->
+                shopCategoryRequestBody.validation()
                 respond(
                     ApiResponse.success(
-                        shopController.createShopCategory(shopCategoryBody.shopCategoryName), HttpStatusCode.OK
+                        shopController.createShopCategory(shopCategoryRequestBody.shopCategoryName), HttpStatusCode.OK
                     )
                 )
             }
@@ -43,10 +43,10 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                     )
                 )
             }
-            route("category").put<Unit, Response, UpdateShopCategory, JwtTokenBody> { _, shopCategoryBody ->
-                shopCategoryBody.validation()
+            route("category").put<Unit, Response, UpdateShopCategory, JwtTokenBody> { _, shopCategoryRequestBody ->
+                shopCategoryRequestBody.validation()
                 shopController.updateShopCategory(
-                    shopCategoryBody.shopCategoryId, shopCategoryBody.shopCategoryName
+                    shopCategoryRequestBody.shopCategoryId, shopCategoryRequestBody.shopCategoryName
                 ).let {
                     respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }

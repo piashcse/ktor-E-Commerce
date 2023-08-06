@@ -26,13 +26,13 @@ fun NormalOpenAPIRoute.categoryRoute(categoryController: CategoryController) {
                 exampleRequest = AddCategory(
                     categoryName = "Mens Cloth"
                 )
-            ) { _, addCategoryBody ->
-                addCategoryBody.validation()
-                respond(ApiResponse.success(categoryController.createCategory(addCategoryBody), HttpStatusCode.OK))
+            ) { _, categoryRequestBody ->
+                categoryRequestBody.validation()
+                respond(ApiResponse.success(categoryController.createCategory(categoryRequestBody), HttpStatusCode.OK))
             }
-            get<PagingData, Response, JwtTokenBody> { pagingData ->
-                pagingData.validation()
-                respond(ApiResponse.success(categoryController.getCategory(pagingData), HttpStatusCode.OK))
+            get<PagingData, Response, JwtTokenBody> { params ->
+                params.validation()
+                respond(ApiResponse.success(categoryController.getCategory(params), HttpStatusCode.OK))
             }
             put<UpdateCategory, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()

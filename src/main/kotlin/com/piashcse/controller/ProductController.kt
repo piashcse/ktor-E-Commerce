@@ -3,6 +3,7 @@ package com.piashcse.controller
 import com.piashcse.entities.product.*
 import com.piashcse.models.product.request.AddProduct
 import com.piashcse.models.product.request.DeleteProduct
+import com.piashcse.models.product.request.ProductDetail
 import com.piashcse.models.product.request.ProductWithFilter
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
@@ -61,6 +62,13 @@ class ProductController {
         }
         return@transaction query.limit(productQuery.limit, productQuery.offset).map {
             ProductEntity.wrapRow(it).response()
+        }
+    }
+
+    fun productDetail(productDetail: ProductDetail) = transaction {
+        val isProductExist = ProductEntity.find { ProductTable.id eq productDetail.productId }.toList().singleOrNull()
+        isProductExist?.let {
+            it.response()
         }
     }
 
