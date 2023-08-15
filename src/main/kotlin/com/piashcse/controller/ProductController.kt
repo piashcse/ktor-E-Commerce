@@ -2,7 +2,7 @@ package com.piashcse.controller
 
 import com.piashcse.entities.product.*
 import com.piashcse.models.product.request.AddProduct
-import com.piashcse.models.product.request.DeleteProduct
+import com.piashcse.models.product.request.ProductId
 import com.piashcse.models.product.request.ProductDetail
 import com.piashcse.models.product.request.ProductWithFilter
 import org.jetbrains.exposed.dao.id.EntityID
@@ -72,7 +72,7 @@ class ProductController {
         }
     }
 
-    fun deleteProduct(deleteProduct: DeleteProduct) = transaction {
+    fun deleteProduct(deleteProduct: ProductId) = transaction {
         val isProductExist = ProductEntity.find { ProductTable.id eq deleteProduct.productId }.toList().singleOrNull()
         isProductExist?.delete()
     }

@@ -45,10 +45,13 @@ fun Application.configureRouting() {
             tag(Tags.ORDER) {
                 orderRouting(OrderController())
             }
+            tag(Tags.WISHLIST) {
+                wishListRoute(WishListController())
+            }
         }
     }
 }
 
 enum class Tags(override val description: String) : APITag {
-    USER(""), SHOP(""), PRODUCT(""), CATEGORY(""), SUBCATEGORY(""), BRAND(""), CART(""), ORDER("")
+    USER(""), SHOP(""), PRODUCT(""), CATEGORY(""), SUBCATEGORY(""), BRAND(""), CART(""), ORDER(""), WISHLIST("")
 }

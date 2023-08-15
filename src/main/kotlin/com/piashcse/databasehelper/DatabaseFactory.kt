@@ -37,7 +37,7 @@ object DatabaseFactory {
             // print sql to std-out
             addLogger(StdOutSqlLogger)
             create(UserTable, UserProfileTable, UserTypeTable, UserHasTypeTable,ShopTable, ShopCategoryTable, ProductCategoryTable, ProductSubCategoryTable, ProductTable, ProductSizeTable, ProductColorTable)
-            create(CategoryTable, SubCategoryTable, BrandTable, CartItemTable, OrdersTable, OrderItemTable)
+            create(CategoryTable, SubCategoryTable, BrandTable, CartItemTable, OrdersTable, OrderItemTable, WishListTable)
         }
     }
 

@@ -32,7 +32,7 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                 productRequestBody.validation()
                 respond(ApiResponse.success(productController.createProduct(productRequestBody), HttpStatusCode.OK))
             }
-            delete<DeleteProduct, Response, JwtTokenBody> { params ->
+            delete<ProductId, Response, JwtTokenBody> { params ->
                 params.validation()
                 respond(ApiResponse.success(productController.deleteProduct(params), HttpStatusCode.OK))
             }
