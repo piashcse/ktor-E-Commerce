@@ -55,9 +55,9 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
             )
         }
     }
-    route("verify-change-password").post<Unit, Response, ConfirmPasswordBody> { _, requestBody ->
-        requestBody.validation()
-        UserController().confirmPassword(requestBody).let {
+    route("verify-change-password").get<ConfirmPassword, Response> { params ->
+        params.validation()
+        UserController().confirmPassword(params).let {
             when (it) {
                 AppConstants.DataBaseTransaction.FOUND -> {
                     respond(

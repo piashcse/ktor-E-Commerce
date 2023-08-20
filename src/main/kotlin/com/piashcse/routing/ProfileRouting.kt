@@ -1,6 +1,7 @@
 package com.piashcse.routing
 
 import com.papsign.ktor.openapigen.route.path.auth.get
+import com.papsign.ktor.openapigen.route.path.auth.post
 import com.papsign.ktor.openapigen.route.path.auth.principal
 import com.papsign.ktor.openapigen.route.path.auth.put
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
@@ -40,8 +41,7 @@ fun NormalOpenAPIRoute.profileRouting(profileController: ProfileController) {
             )
         }
 
-        route("user-photo-upload").put<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
-            params.validation()
+        route("user-photo-upload").post<Unit, Response, MultipartImage, JwtTokenBody> { _, multipartData ->
             multipartData.validation()
 
             UUID.randomUUID()?.let { imageId ->
@@ -54,7 +54,7 @@ fun NormalOpenAPIRoute.profileRouting(profileController: ProfileController) {
                     })
                 }
                 val fileNameInServer = imageId.toString().plus(fileLocation?.fileExtension())
-                profileController.updateProfileImage(params.userId, fileNameInServer)?.let {
+                profileController.updateProfileImage(principal().userId, fileNameInServer)?.let {
                     respond(
                         ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
                     )

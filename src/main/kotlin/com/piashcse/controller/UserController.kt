@@ -7,8 +7,6 @@ import com.piashcse.models.user.response.RegistrationResponse
 import com.piashcse.utils.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.nio.file.Files
-import java.nio.file.Paths
 import kotlin.random.Random
 
 class UserController {
@@ -78,7 +76,7 @@ class UserController {
         }
     }
 
-    fun confirmPassword(confirmPasswordBody: ConfirmPasswordBody) = transaction {
+    fun confirmPassword(confirmPasswordBody: ConfirmPassword) = transaction {
         val userEntity = UsersEntity.find { UserTable.email eq confirmPasswordBody.email }.toList().singleOrNull()
         return@transaction userEntity?.let {
             if (confirmPasswordBody.verificationCode == it.verificationCode) {
