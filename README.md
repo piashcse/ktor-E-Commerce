@@ -1,10 +1,10 @@
-# ktor-E-Commerce Api for Backend. 
+# Ktor-E-Commerce Api for Backend. 
 [![Ktor](https://img.shields.io/badge/ktor-2.3.3-blue.svg)](https://github.com/ktorio/ktor)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
 <a href="https://github.com/piashcse"><img alt="License" src="https://img.shields.io/static/v1?label=GitHub&message=piashcse&color=C51162"/></a>
 
-Ktor-E-Commerce built with [ktor](https://ktor.io/docs/welcome.html) for e-commerce api development.
+Ktor-E-Commerce backend built with [ktor](https://ktor.io/docs/welcome.html) framework for e-commerce api development.
 
 ## Swagger View
 
