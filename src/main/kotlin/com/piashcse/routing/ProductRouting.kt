@@ -28,9 +28,9 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
             }
         }
         authenticateWithJwt(RoleManagement.SELLER.role) {
-            post<Unit, Response, AddProduct, JwtTokenBody> { _, productRequestBody ->
-                productRequestBody.validation()
-                respond(ApiResponse.success(productController.createProduct(productRequestBody), HttpStatusCode.OK))
+            post<Unit, Response, AddProduct, JwtTokenBody> { _, requestBody ->
+                requestBody.validation()
+                respond(ApiResponse.success(productController.addProduct(requestBody), HttpStatusCode.OK))
             }
             delete<ProductId, Response, JwtTokenBody> { params ->
                 params.validation()

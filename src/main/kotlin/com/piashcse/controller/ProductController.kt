@@ -11,7 +11,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class ProductController {
-    fun createProduct(addProduct: AddProduct) = transaction {
+    fun addProduct(addProduct: AddProduct) = transaction {
         return@transaction ProductEntity.new {
             categoryId = EntityID(addProduct.categoryId, ProductTable)
             subCategoryId = addProduct.subCategoryId?.let { EntityID(addProduct.subCategoryId, ProductTable) }

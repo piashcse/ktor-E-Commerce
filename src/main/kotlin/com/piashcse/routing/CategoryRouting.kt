@@ -26,9 +26,9 @@ fun NormalOpenAPIRoute.categoryRoute(categoryController: CategoryController) {
                 exampleRequest = AddCategory(
                     categoryName = "Mens Cloth"
                 )
-            ) { _, categoryRequestBody ->
-                categoryRequestBody.validation()
-                respond(ApiResponse.success(categoryController.createCategory(categoryRequestBody), HttpStatusCode.OK))
+            ) { _, requestBody ->
+                requestBody.validation()
+                respond(ApiResponse.success(categoryController.createCategory(requestBody), HttpStatusCode.OK))
             }
             get<PagingData, Response, JwtTokenBody> { params ->
                 params.validation()

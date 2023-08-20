@@ -24,6 +24,9 @@ fun Application.configureRouting() {
             tag(Tags.USER) {
                 userRoute(UserController())
             }
+            tag(Tags.PROFILE) {
+                profileRouting(ProfileController())
+            }
             tag(Tags.SHOP) {
                 shopRoute(ShopController())
             }
@@ -37,21 +40,29 @@ fun Application.configureRouting() {
                 subCategoryRoute(SubCategoryController())
             }
             tag(Tags.BRAND) {
-                brandRouting(BrandController())
+                brandRoute(BrandController())
             }
             tag(Tags.CART) {
-                cartRouting(CartController())
+                cartRoute(CartController())
             }
             tag(Tags.ORDER) {
-                orderRouting(OrderController())
+                orderRoute(OrderController())
             }
             tag(Tags.WISHLIST) {
                 wishListRoute(WishListController())
+            }
+            tag(Tags.SHIPPING) {
+                shippingRoute(ShippingController())
             }
         }
     }
 }
 
 enum class Tags(override val description: String) : APITag {
-    USER(""), SHOP(""), PRODUCT(""), CATEGORY(""), SUBCATEGORY(""), BRAND(""), CART(""), ORDER(""), WISHLIST("")
+    USER(""), PROFILE(""), SHOP(""), PRODUCT(""), CATEGORY(""), SUBCATEGORY(""), BRAND(""), CART(""), ORDER(""), WISHLIST(
+        ""
+    ),
+    SHIPPING(
+        ""
+    )
 }

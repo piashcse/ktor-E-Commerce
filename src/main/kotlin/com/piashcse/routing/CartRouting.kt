@@ -14,7 +14,7 @@ import com.papsign.ktor.openapigen.route.route
 import com.piashcse.models.cart.*
 import io.ktor.http.*
 
-fun NormalOpenAPIRoute.cartRouting(cartController: CartController) {
+fun NormalOpenAPIRoute.cartRoute(cartController: CartController) {
     route("cart") {
         authenticateWithJwt(RoleManagement.USER.role) {
             route("/add").post<Unit, Response, AddCart, JwtTokenBody>(
@@ -22,9 +22,9 @@ fun NormalOpenAPIRoute.cartRouting(cartController: CartController) {
                     "",
                     1,
                 )
-            ) { _, cartBody ->
-                cartBody.validation()
-                respond(ApiResponse.success(cartController.addToCart(principal().userId, cartBody), HttpStatusCode.OK))
+            ) { _, requestBody ->
+                requestBody.validation()
+                respond(ApiResponse.success(cartController.addToCart(principal().userId, requestBody), HttpStatusCode.OK))
             }
             route("/{productId}").delete<DeleteProduct, Response, JwtTokenBody> { params ->
                 params.validation()
@@ -34,7 +34,7 @@ fun NormalOpenAPIRoute.cartRouting(cartController: CartController) {
                     )
                 )
             }
-            route("/{productId}").put<UpdateCart, Response, Unit, JwtTokenBody> { params, body ->
+            route("/{productId}").put<UpdateCart, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()
                 respond(
                     ApiResponse.success(

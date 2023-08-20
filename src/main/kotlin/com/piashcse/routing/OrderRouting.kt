@@ -9,7 +9,6 @@ import com.papsign.ktor.openapigen.route.route
 import com.piashcse.controller.OrderController
 import com.piashcse.models.order.AddOrder
 import com.piashcse.models.order.OrderId
-import com.piashcse.models.order.UpdateOrder
 import com.piashcse.models.orderitem.OrderItem
 import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.plugins.RoleManagement
@@ -19,7 +18,7 @@ import com.piashcse.utils.authenticateWithJwt
 import com.piashcse.utils.extension.OrderStatus
 import io.ktor.http.*
 
-fun NormalOpenAPIRoute.orderRouting(orderController: OrderController) {
+fun NormalOpenAPIRoute.orderRoute(orderController: OrderController) {
     route("order") {
         authenticateWithJwt(RoleManagement.USER.role) {
             post<Unit, Response, AddOrder, JwtTokenBody>(
@@ -48,7 +47,7 @@ fun NormalOpenAPIRoute.orderRouting(orderController: OrderController) {
                     )
                 )
             }
-            route("/cancel").put<OrderId, Response, Unit, JwtTokenBody> { params, body ->
+            route("/cancel").put<OrderId, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()
                 respond(
                     ApiResponse.success(
@@ -56,7 +55,7 @@ fun NormalOpenAPIRoute.orderRouting(orderController: OrderController) {
                     )
                 )
             }
-            route("/receive").put<OrderId, Response, Unit, JwtTokenBody> { params, body ->
+            route("/receive").put<OrderId, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()
                 respond(
                     ApiResponse.success(
@@ -66,7 +65,7 @@ fun NormalOpenAPIRoute.orderRouting(orderController: OrderController) {
             }
         }
         authenticateWithJwt(RoleManagement.SELLER.role) {
-            route("/confirm").put<OrderId, Response, Unit, JwtTokenBody> { params, body ->
+            route("/confirm").put<OrderId, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()
                 respond(
                     ApiResponse.success(
@@ -75,7 +74,7 @@ fun NormalOpenAPIRoute.orderRouting(orderController: OrderController) {
                     )
                 )
             }
-            route("/deliver").put<OrderId, Response, Unit, JwtTokenBody> { params, body ->
+            route("/deliver").put<OrderId, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()
                 respond(
                     ApiResponse.success(

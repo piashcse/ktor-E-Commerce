@@ -19,7 +19,7 @@ import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
 import io.ktor.http.*
 
-fun NormalOpenAPIRoute.brandRouting(brandController: BrandController) {
+fun NormalOpenAPIRoute.brandRoute(brandController: BrandController) {
     route("brand") {
         authenticateWithJwt(RoleManagement.SELLER.role) {
             post<Unit, Response, AddBrand, JwtTokenBody>(

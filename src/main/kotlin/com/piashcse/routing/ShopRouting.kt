@@ -16,11 +16,11 @@ import io.ktor.http.*
 fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
     route("shop/") {
         authenticateWithJwt(RoleManagement.ADMIN.role) {
-            route("category").post<Unit, Response, AddShopCategory, JwtTokenBody> { _, shopCategoryRequestBody ->
-                shopCategoryRequestBody.validation()
+            route("category").post<Unit, Response, AddShopCategory, JwtTokenBody> { _, requestBody ->
+                requestBody.validation()
                 respond(
                     ApiResponse.success(
-                        shopController.createShopCategory(shopCategoryRequestBody.shopCategoryName), HttpStatusCode.OK
+                        shopController.createShopCategory(requestBody.shopCategoryName), HttpStatusCode.OK
                     )
                 )
             }
@@ -43,21 +43,21 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                     )
                 )
             }
-            route("category").put<Unit, Response, UpdateShopCategory, JwtTokenBody> { _, shopCategoryRequestBody ->
-                shopCategoryRequestBody.validation()
+            route("category").put<Unit, Response, UpdateShopCategory, JwtTokenBody> { _, requestBody ->
+                requestBody.validation()
                 shopController.updateShopCategory(
-                    shopCategoryRequestBody.shopCategoryId, shopCategoryRequestBody.shopCategoryName
+                    requestBody.shopCategoryId, requestBody.shopCategoryName
                 ).let {
                     respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
             }
         }
         authenticateWithJwt(RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            route("add-shop").post<Unit, Response, AddShop, JwtTokenBody> { _, shopBody ->
+            route("add-shop").post<Unit, Response, AddShop, JwtTokenBody> { _, requestBody ->
                 val jwtTokenToUserData = principal()
-                shopBody.validation()
+                requestBody.validation()
                 shopController.createShop(
-                    jwtTokenToUserData.userId, shopBody.shopCategoryId, shopBody.shopName
+                    jwtTokenToUserData.userId, requestBody.shopCategoryId, requestBody.shopName
                 ).let {
                     respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
