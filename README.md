@@ -1,4 +1,4 @@
-# ktor-E-Commerce Backend for Api
+# ktor-E-Commerce Api for Backend. 
 [![Ktor](https://img.shields.io/badge/ktor-2.3.3-blue.svg)](https://github.com/ktorio/ktor)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
@@ -27,9 +27,9 @@ Ktor-E-Commerce built with [ktor](https://ktor.io/docs/welcome.html) for e-comme
 MVC (Model - View - Controller)
 
 ## Built With 🛠
-- [Ktor](https://ktor.io/docs/welcome.html) - Ktor is a framework to easily build connected applications – web applications, HTTP services, mobile and browser applications. Modern connected applications need to be asynchronous to provide the best experience to users, and Kotlin coroutines provide awesome facilities to do it in an easy and straightforward way.
+- [Ktor](https://ktor.io/docs/welcome.html) - Ktor is a framework to easily build connected applications – web applications, HTTP services, mobile and browser applications. Modern connected applications need to be asynchronous to provide the best experience to users, and Kotlin Coroutines provide awesome facilities to do it in an easy and straightforward way.
 - [Exposed](https://github.com/JetBrains/Exposed) - Exposed is a lightweight SQL library on top of JDBC driver for Kotlin language. Exposed has two flavors of database access: typesafe SQL wrapping DSL and lightweight Data Access Objects (DAO).
-- [PostgreSQL](https://www.postgresql.org/) - PostgreSQL is a powerful, open source object-relational database system that uses and extends the SQL language combined with many features that safely store and scale the most complicated data workloads. 
+- [PostgreSQL](https://www.postgresql.org/) - PostgreSQL is a powerful, open-source object-relational database system that uses and extends the SQL language combined with many features that safely store and scale the most complicated data workloads. 
 - [Kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime) - A multiplatform Kotlin library for working with date and time.
 - [Bcrypt](https://github.com/patrickfav/bcrypt) - A Java standalone implementation of the bcrypt password hash function. Based on the Blowfish cipher it is the default password hash algorithm for OpenBSD and other systems including some Linux distributions.
 - [Apache Commons Email](https://github.com/apache/commons-email) - Apache Commons Email aims to provide an API for sending email. It is built on top of the JavaMail API, which it aims to simplify.
@@ -45,7 +45,7 @@ MVC (Model - View - Controller)
 
 - `git clone git@github.com:piashcse/ktor-E-Commerce.git` 
 -  `Create a db in postgreSQL`
--  Replace you db name in `dataSource.databaseName=ktor-1.0.0` instread of ktor-1.0.0 in hikari.properties from resource folder 
+-  Replace your db name in `dataSource.databaseName=ktor-1.0.0` instead of ktor-1.0.0 in the hikari.properties from the resource folder 
 - `run fun main()` from application class
 
 ## 👨 Developed By
