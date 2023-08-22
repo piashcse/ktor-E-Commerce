@@ -48,6 +48,84 @@ MVC (Model - View - Controller)
 -  Replace your db name in `dataSource.databaseName=ktor-1.0.0` instead of ktor-1.0.0 in the hikari.properties from the resource folder 
 - `run fun main()` from application class
 
+## Detail Api Documentation
+
+<details>
+  
+<summary> <h4> <code> GET /login</h4></code></summary>
+
+### Curl
+
+    curl -X 'GET' \ 'http://localhost:8080/login?email=piash599%40gmail.com&password=p1234&userType=user' \ 
+    -H 'accept: application/json'
+
+### Request URL
+
+    http://localhost:8080/login?email=piash599%40gmail.com&password=p1234&userType=user
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statsCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "user": {
+      "id": "a9a662a7-50fe-4f13-8eab-0e0810fb9909",
+      "email": "piash599@gmail.com",
+      "userType": {
+        "id": "04d85ebe-a667-4f80-94c8-0f68a3b3d96d",
+        "userType": "user"
+      }
+    },
+    "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5Mjc2NTM0MX0.8GscAPCxFWOhN2bmy5bsoz5V311O4g72XqlEUWoz_y0wADkTzdgOVfG5CKJba5VUvwNiVE3MmQPmNt-fq6hyyw"
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <h4> <code> POST /registration</h4></code></summary>
+
+### Curl
+
+```
+  curl -X 'POST' \
+  'http://localhost:8080/registration' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "piash88@gmail.com",
+  "password": "piash956",
+  "userType": "admin"
+}'
+``` 
+
+### Request URL
+
+    http://localhost:8080/registration
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statsCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "email": "piash88@gmail.com"
+  }
+}
+
+```   
+</details>
+
 ## 👨 Developed By
 
 <a href="https://twitter.com/piashcse" target="_blank">
