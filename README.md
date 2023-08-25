@@ -126,6 +126,81 @@ MVC (Model - View - Controller)
 ```   
 </details>
 
+
+<details>
+  
+<summary> <h4> <code> GET /forget-password</h4></code></summary>
+
+### Curl
+
+```
+ curl -X 'GET' \
+  'http://localhost:8080/forget-password?email=piash599%40gmail.com' \
+  -H 'accept: application/json'
+``` 
+
+### Request URL
+
+```
+[ curl -X 'GET' \
+  'http://localhost:8080/forget-password?email=piash599%40gmail.com' \
+  -H 'accept: application/json'](http://localhost:8080/forget-password?email=piash599%40gmail.com
+)
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statsCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "verification code send to piash599@gmail.com"
+}
+
+```   
+</details>
+
+<details>
+  
+<summary> <h4> <code> GET /verify-change-password</h4></code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/verify-change-password?email=piash599%40gmail.com&verificationCode=9889&password=p1234' \
+  -H 'accept: application/json'
+``` 
+
+### Request URL
+
+```
+[curl -X 'GET' \
+  'http://localhost:8080/verify-change-password?email=piash599%40gmail.com&verificationCode=9889&password=p1234' \
+  -H 'accept: application/json'](http://localhost:8080/verify-change-password?email=piash599%40gmail.com&verificationCode=9889&password=p1234
+)
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statsCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "Password change successful"
+}
+
+```   
+</details>
+
+
+
 ## 👨 Developed By
 
 <a href="https://twitter.com/piashcse" target="_blank">
