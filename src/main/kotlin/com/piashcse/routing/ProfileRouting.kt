@@ -10,7 +10,6 @@ import com.papsign.ktor.openapigen.route.route
 import com.piashcse.controller.ProfileController
 import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.models.user.body.MultipartImage
-import com.piashcse.models.user.body.UserId
 import com.piashcse.models.user.body.UserProfileBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
@@ -41,7 +40,7 @@ fun NormalOpenAPIRoute.profileRouting(profileController: ProfileController) {
             )
         }
 
-        route("user-photo-upload").post<Unit, Response, MultipartImage, JwtTokenBody> { _, multipartData ->
+        route("profile-photo-upload").post<Unit, Response, MultipartImage, JwtTokenBody> { _, multipartData ->
             multipartData.validation()
 
             UUID.randomUUID()?.let { imageId ->

@@ -1,7 +1,7 @@
 package com.piashcse.controller
 
-import com.piashcse.entities.category.CategoryEntity
-import com.piashcse.entities.category.CategoryTable
+import com.piashcse.entities.product.category.CategoryEntity
+import com.piashcse.entities.product.category.CategoryTable
 import com.piashcse.models.PagingData
 import com.piashcse.models.category.AddCategory
 import com.piashcse.models.category.DeleteCategory

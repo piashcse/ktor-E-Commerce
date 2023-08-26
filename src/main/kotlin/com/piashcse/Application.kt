@@ -1,6 +1,6 @@
 package com.piashcse
 
-import com.piashcse.databasehelper.DatabaseFactory
+import com.piashcse.dbhelper.DatabaseFactory
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import com.piashcse.plugins.*

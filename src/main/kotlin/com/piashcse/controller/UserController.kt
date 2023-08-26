@@ -76,11 +76,11 @@ class UserController {
         }
     }
 
-    fun confirmPassword(confirmPasswordBody: ConfirmPassword) = transaction {
+    fun changeForgetPasswordByVerificationCode(confirmPasswordBody: ConfirmPassword) = transaction {
         val userEntity = UsersEntity.find { UserTable.email eq confirmPasswordBody.email }.toList().singleOrNull()
         return@transaction userEntity?.let {
             if (confirmPasswordBody.verificationCode == it.verificationCode) {
-                it.password = BCrypt.withDefaults().hashToString(12, confirmPasswordBody.password.toCharArray())
+                it.password = BCrypt.withDefaults().hashToString(12, confirmPasswordBody.newPassword.toCharArray())
                 it.verificationCode = null
                 AppConstants.DataBaseTransaction.FOUND
             } else {

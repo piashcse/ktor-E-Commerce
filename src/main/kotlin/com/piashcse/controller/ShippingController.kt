@@ -27,6 +27,7 @@ class ShippingController {
                 shipPhone = addShipping.shipPhone
                 shipName = addShipping.shipName
                 shipEmail = addShipping.shipEmail
+                shipCountry = addShipping.shipCountry
 
             }
         }
@@ -52,6 +53,7 @@ class ShippingController {
             it.shipPhone = updateShipping.shipPhone ?: it.shipPhone
             it.shipName = updateShipping.shipName ?: it.shipName
             it.shipEmail = updateShipping.shipEmail ?: it.shipEmail
+            it.shipCountry = updateShipping.shipCountry ?: it.shipCountry
         } ?: run {
             throw CommonException("Not exist")
         }

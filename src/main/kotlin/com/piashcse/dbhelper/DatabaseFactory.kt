@@ -1,15 +1,12 @@
-package com.piashcse.databasehelper
+package com.piashcse.dbhelper
 
-import com.piashcse.entities.category.CategoryTable
-import com.piashcse.entities.category.SubCategoryTable
+import com.piashcse.entities.ShippingTable
+import com.piashcse.entities.product.category.CategoryTable
+import com.piashcse.entities.product.category.SubCategoryTable
 import com.piashcse.entities.orders.CartItemTable
 import com.piashcse.entities.orders.OrderItemTable
 import com.piashcse.entities.orders.OrdersTable
 import com.piashcse.entities.product.*
-import com.piashcse.entities.product.defaultproductcategory.ProductCategoryTable
-import com.piashcse.entities.product.defaultproductcategory.ProductSubCategoryTable
-import com.piashcse.entities.product.defaultvariant.ProductColorTable
-import com.piashcse.entities.product.defaultvariant.ProductSizeTable
 import com.piashcse.entities.shop.ShopCategoryTable
 import com.piashcse.entities.shop.ShopTable
 import com.piashcse.entities.user.UserHasTypeTable
@@ -36,8 +33,23 @@ object DatabaseFactory {
         transaction {
             // print sql to std-out
             addLogger(StdOutSqlLogger)
-            create(UserTable, UserProfileTable, UserTypeTable, UserHasTypeTable,ShopTable, ShopCategoryTable, ProductCategoryTable, ProductSubCategoryTable, ProductTable, ProductSizeTable, ProductColorTable)
-            create(CategoryTable, SubCategoryTable, BrandTable, CartItemTable, OrdersTable, OrderItemTable, WishListTable)
+            create(
+                UserTable,
+                UserProfileTable,
+                UserTypeTable,
+                UserHasTypeTable,
+                ShopTable,
+                ShopCategoryTable,
+                ProductTable,
+                CategoryTable,
+                SubCategoryTable,
+                BrandTable,
+                CartItemTable,
+                OrdersTable,
+                OrderItemTable,
+                WishListTable,
+                ShippingTable
+            )
         }
     }
 
@@ -48,7 +60,8 @@ object DatabaseFactory {
         runFlyway(dataSource)
         Database.connect(dataSource)
     }
-    private fun hikari():HikariDataSource {
+
+    private fun hikari(): HikariDataSource {
         val config = HikariConfig()
         config.driverClassName = System.getenv("JDBC_DRIVER")
         config.jdbcUrl = System.getenv("HEROKU_POSTGRESQL_NAVY_URL")

@@ -11,7 +11,8 @@ data class AddShipping(
     val shipCity: String,
     val shipPhone: Int,
     val shipName: String?,
-    val shipEmail: String?
+    val shipEmail: String?,
+    val shipCountry: String?
 ) {
     fun validation() {
         validate(this) {
@@ -19,7 +20,6 @@ data class AddShipping(
             validate(AddShipping::shipAddress).isNotNull()
             validate(AddShipping::shipCity).isNotNull()
             validate(AddShipping::shipPhone).isNotNull()
-            validate(AddShipping::shipName)
             validate(AddShipping::shipEmail).isEmail()
         }
     }

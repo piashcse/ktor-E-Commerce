@@ -8,13 +8,13 @@ import org.valiktor.validate
 data class ConfirmPassword(
     @QueryParam("email") val email: String,
     @QueryParam("verificationCode") val verificationCode: String,
-    @QueryParam("password") val password: String
+    @QueryParam("newPassword") val newPassword: String
 ) {
     fun validation() {
         validate(this) {
             validate(ConfirmPassword::email).isNotNull().isEmail()
             validate(ConfirmPassword::verificationCode).isNotNull()
-            validate(ConfirmPassword::password).isNotNull()
+            validate(ConfirmPassword::newPassword).isNotNull()
         }
     }
 }

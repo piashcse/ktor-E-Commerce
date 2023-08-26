@@ -1,9 +1,9 @@
 package com.piashcse.controller
 
-import com.piashcse.entities.category.CategoryEntity
-import com.piashcse.entities.category.CategoryTable
-import com.piashcse.entities.category.SubCategoryEntity
-import com.piashcse.entities.category.SubCategoryTable
+import com.piashcse.entities.product.category.CategoryEntity
+import com.piashcse.entities.product.category.CategoryTable
+import com.piashcse.entities.product.category.SubCategoryEntity
+import com.piashcse.entities.product.category.SubCategoryTable
 import com.piashcse.models.PagingData
 import com.piashcse.models.subcategory.AddSubCategory
 import com.piashcse.models.subcategory.UpdateSubCategory
