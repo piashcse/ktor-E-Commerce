@@ -8,8 +8,8 @@ Ktor-E-Commerce backend built with [ktor](https://ktor.io/docs/welcome.html) fra
 
 ## Swagger View
 
-<p float="left">
-  <img width="100%" height="50%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/Screenshot-2023-05-13.png" />
+<p align="center">
+  <img width="100%" height="40%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/Screenshot-2023-05-13.png" />
 </p>
 
 # Main Features
@@ -24,10 +24,15 @@ Ktor-E-Commerce backend built with [ktor](https://ktor.io/docs/welcome.html) fra
 - Order
 
 ## Architecture
-MVC (Model - View - Controller)
+<p align="center">
+  <img width="40%" height="25%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/mvc.png" />
+</p>
+<p align="center">
+<b>Fig.  MVC (Model - View - Controller) design pattern.</b>
+</p>
 
 ## Built With 🛠
-- [Ktor](https://ktor.io/docs/welcome.html) - Ktor is a framework to easily build connected applications – web applications, HTTP services, mobile and browser applications. Modern connected applications need to be asynchronous to provide the best experience to users, and Kotlin Coroutines provide awesome facilities to do it in an easy and straightforward way.
+- [Ktor](https://ktor.io/docs/welcome.html) - Ktor is a framework to easily build connected applications – web applications, HTTP services, mobile and browser applications. Modern connected applications need to be asynchronous to provide the best experience to users, and Kotlin Coroutines provides awesome facilities to do it in an easy and straightforward way.
 - [Exposed](https://github.com/JetBrains/Exposed) - Exposed is a lightweight SQL library on top of JDBC driver for Kotlin language. Exposed has two flavors of database access: typesafe SQL wrapping DSL and lightweight Data Access Objects (DAO).
 - [PostgreSQL](https://www.postgresql.org/) - PostgreSQL is a powerful, open-source object-relational database system that uses and extends the SQL language combined with many features that safely store and scale the most complicated data workloads. 
 - [Kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime) - A multiplatform Kotlin library for working with date and time.
