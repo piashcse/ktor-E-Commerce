@@ -21,6 +21,12 @@ import io.ktor.http.*
 
 fun NormalOpenAPIRoute.subCategoryRoute(subCategoryController: SubCategoryController) {
     route("sub-category") {
+        authenticateWithJwt(RoleManagement.USER.role) {
+            get<PagingData, Response, JwtTokenBody> { params ->
+                params.validation()
+                respond(ApiResponse.success(subCategoryController.getSubCategory(params), HttpStatusCode.OK))
+            }
+        }
         authenticateWithJwt(RoleManagement.SELLER.role) {
             post<Unit, Response, AddSubCategory, JwtTokenBody>(
                 exampleRequest = AddSubCategory(

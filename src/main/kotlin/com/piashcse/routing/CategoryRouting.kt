@@ -21,6 +21,12 @@ import io.ktor.http.*
 
 fun NormalOpenAPIRoute.categoryRoute(categoryController: CategoryController) {
     route("category") {
+        authenticateWithJwt(RoleManagement.USER.role){
+            get<PagingData, Response, JwtTokenBody> { params ->
+                params.validation()
+                respond(ApiResponse.success(categoryController.getCategory(params), HttpStatusCode.OK))
+            }
+        }
         authenticateWithJwt(RoleManagement.SELLER.role) {
             post<Unit, Response, AddCategory, JwtTokenBody>(
                 exampleRequest = AddCategory(
@@ -47,5 +53,6 @@ fun NormalOpenAPIRoute.categoryRoute(categoryController: CategoryController) {
                 )
             }
         }
+
     }
 }
