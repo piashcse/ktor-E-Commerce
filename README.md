@@ -55,9 +55,10 @@ Ktor-E-Commerce backend built with [ktor](https://ktor.io/docs/welcome.html) fra
 
 ## Detail Api Documentation
 
+### USER
 <details>
   
-<summary> <h4> <code> GET /login</h4></code></summary>
+<summary> <code>GET </code> <code>/login</code></summary>
 
 ### Curl
 
@@ -94,7 +95,7 @@ Ktor-E-Commerce backend built with [ktor](https://ktor.io/docs/welcome.html) fra
 
 <details>
   
-<summary> <h4> <code> POST /registration</h4></code></summary>
+<summary> <code>POST</code> <code>/registration</code></summary>
 
 ### Curl
 
@@ -134,7 +135,7 @@ Ktor-E-Commerce backend built with [ktor](https://ktor.io/docs/welcome.html) fra
 
 <details>
   
-<summary> <h4> <code> GET /forget-password</h4></code></summary>
+<summary><code>GET </code> <code>/forget-password</code></summary>
 
 ### Curl
 
@@ -168,7 +169,7 @@ http://localhost:8080/forget-password?email=piash599%40gmail.com
 
 <details>
   
-<summary> <h4> <code> GET /verify-change-password</h4></code></summary>
+<summary><code>GET </code> <code>/verify-change-password</code></summary>
 
 ### Curl
 
@@ -201,7 +202,7 @@ http://localhost:8080/verify-change-password?email=piash599%40gmail.com&verifica
 
 <details>
   
-<summary> <h4> <code>PUT /change-password</h4></code></summary>
+<summary> <code>PUT </code> <code>/change-password</code></summary>
 
 ### Curl
 
@@ -223,7 +224,7 @@ http://localhost:8080/change-password?oldPassword=p1234&newPassword=p1234
 ```
 {
   "isSuccess": true,
-  "statsCode": {
+  "statusCode": {
     "value": 200,
     "description": "OK"
   },
@@ -231,6 +232,147 @@ http://localhost:8080/change-password?oldPassword=p1234&newPassword=p1234
 }
 ```   
 </details>
+
+### PROFILE
+<details>
+  
+<summary> <code>GET </code> <code>/profile</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/profile' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/profile
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statsCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "userId": "a9a662a7-50fe-4f13-8eab-0e0810fb9909",
+    "userProfileImage": "708196a2-1529-45d4-ab8e-585c248e434f.jpeg",
+    "firstName": "Mehedi Hassan Piash",
+    "lastName": "string",
+    "secondaryMobileNumber": "string",
+    "faxNumber": "string",
+    "streetAddress": "string",
+    "city": "string",
+    "identificationType": "string",
+    "identificationNo": "string",
+    "occupation": "string",
+    "userDescription": "string",
+    "maritalStatus": "string",
+    "postCode": "string",
+    "gender": "string"
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>PUT </code> <code>/profile</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/profile' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "firstName": "Mehedi Hassan",
+  "lastName": "Piash"
+}'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/profile
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statsCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "userId": "a9a662a7-50fe-4f13-8eab-0e0810fb9909",
+    "userProfileImage": "708196a2-1529-45d4-ab8e-585c248e434f.jpeg",
+    "firstName": "Mehedi Hassan Piash",
+    "lastName": "string",
+    "secondaryMobileNumber": "string",
+    "faxNumber": "string",
+    "streetAddress": "string",
+    "city": "string",
+    "identificationType": "string",
+    "identificationNo": "string",
+    "occupation": "string",
+    "userDescription": "string",
+    "maritalStatus": "string",
+    "postCode": "string",
+    "gender": "string"
+  }
+}
+```   
+</details>
+
+
+<details>
+  
+<summary> <code>POST</code> <code>/profile</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/profile-photo-upload' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@piash.jpeg;type=image/jpeg'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/profile-photo-upload
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statsCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "37a1453d-1b76-4052-8f58-56eddeaeadca.jpeg"
+}
+```   
+</details>
+
 
 
 
