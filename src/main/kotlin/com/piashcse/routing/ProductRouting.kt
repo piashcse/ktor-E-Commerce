@@ -44,7 +44,7 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                 params.validation()
                 respond(ApiResponse.success(productController.deleteProduct(params), HttpStatusCode.OK))
             }
-            route("product-photo-upload").post<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
+            route("photo-upload").post<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
                 params.validation()
                 multipartData.validation()
 
