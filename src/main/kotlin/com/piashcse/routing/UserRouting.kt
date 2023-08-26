@@ -49,7 +49,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
             }
             respond(
                 ApiResponse.success(
-                    "${AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_SEND_TO} ${params.email}",
+                    "${AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_SENT_TO} ${params.email}",
                     HttpStatusCode.OK
                 )
             )
@@ -78,11 +78,11 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
         }
     }
     authenticateWithJwt(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.USER.role) {
-        route("change-password").put<Unit, Response, ChangePassword, JwtTokenBody> { _, requestBody ->
-            userController.changePassword(principal().userId, requestBody)?.let {
+        route("change-password").put<ChangePassword, Response, Unit, JwtTokenBody> { params, _ ->
+            userController.changePassword(principal().userId, params)?.let {
                 if (it is UsersEntity) respond(
                     ApiResponse.success(
-                        "Password hase been changed", HttpStatusCode.OK
+                        "Password has been changed", HttpStatusCode.OK
                     )
                 )
                 if (it is ChangePassword) respond(

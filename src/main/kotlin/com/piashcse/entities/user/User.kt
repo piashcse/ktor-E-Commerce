@@ -1,5 +1,6 @@
 package com.piashcse.entities.user
 
+import com.papsign.ktor.openapigen.annotations.parameters.QueryParam
 import com.piashcse.entities.base.BaseIntEntity
 import com.piashcse.entities.base.BaseIntEntityClass
 import com.piashcse.entities.base.BaseIntIdTable
@@ -53,5 +54,5 @@ data class UsersResponse(
     var userType: UserHasType
 )
 data class LoginResponse(val user: UsersResponse?, val accessToken: String)
-data class ChangePassword(val oldPassword: String, val newPassword: String)
+data class ChangePassword(@QueryParam("oldPassword") val oldPassword: String, @QueryParam("newPassword") val newPassword: String)
 data class VerificationCode(val verificationCode: String)
