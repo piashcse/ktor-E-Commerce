@@ -7,5 +7,5 @@ fun String.isNotExistException(): CommonException {
 }
 
 fun String.alreadyExistException(): CommonException {
-    throw CommonException("$this is not Exist")
+    throw CommonException("$this is already Exist")
 }
