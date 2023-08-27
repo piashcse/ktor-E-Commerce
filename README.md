@@ -53,7 +53,7 @@ Ktor-E-Commerce backend built with [ktor](https://ktor.io/docs/welcome.html) fra
 -  Replace your db name in `dataSource.databaseName=ktor-1.0.0` instead of ktor-1.0.0 in the hikari.properties from the resource folder 
 - `run fun main()` from application class
 
-## Detail Api Documentation
+## Api Documentation
 
 ### USER
 <details>
