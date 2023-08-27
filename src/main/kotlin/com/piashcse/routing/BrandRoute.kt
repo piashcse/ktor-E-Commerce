@@ -18,9 +18,16 @@ import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
 import io.ktor.http.*
+import javax.management.relation.Role
 
 fun NormalOpenAPIRoute.brandRoute(brandController: BrandController) {
     route("brand") {
+        authenticateWithJwt(RoleManagement.USER.role, RoleManagement.SELLER.role) {
+            get<PagingData, Response, JwtTokenBody> { params ->
+                params.validation()
+                respond(ApiResponse.success(brandController.getBrand(params), HttpStatusCode.OK))
+            }
+        }
         authenticateWithJwt(RoleManagement.SELLER.role) {
             post<Unit, Response, AddBrand, JwtTokenBody>(
                 exampleRequest = AddBrand(
@@ -33,10 +40,6 @@ fun NormalOpenAPIRoute.brandRoute(brandController: BrandController) {
                         brandController.createBrand(brandRequestBody), HttpStatusCode.OK
                     )
                 )
-            }
-            get<PagingData, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(ApiResponse.success(brandController.getBrand(params), HttpStatusCode.OK))
             }
             put<UpdateBrand, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()

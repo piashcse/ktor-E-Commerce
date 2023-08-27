@@ -27,7 +27,12 @@ fun NormalOpenAPIRoute.subCategoryRoute(subCategoryController: SubCategoryContro
                 respond(ApiResponse.success(subCategoryController.getSubCategory(params), HttpStatusCode.OK))
             }
         }
-        authenticateWithJwt(RoleManagement.SELLER.role) {
+
+        authenticateWithJwt(RoleManagement.ADMIN.role) {
+            get<PagingData, Response, JwtTokenBody> { params ->
+                params.validation()
+                respond(ApiResponse.success(subCategoryController.getSubCategory(params), HttpStatusCode.OK))
+            }
             post<Unit, Response, AddSubCategory, JwtTokenBody>(
                 exampleRequest = AddSubCategory(
                     categoryId = "8eabd62f-fbb2-4fad-b440-3060f2e12dbc", subCategoryName = "Shirt"
@@ -39,10 +44,6 @@ fun NormalOpenAPIRoute.subCategoryRoute(subCategoryController: SubCategoryContro
                         subCategoryController.createSubCategory(requestBody), HttpStatusCode.OK
                     )
                 )
-            }
-            get<PagingData, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(ApiResponse.success(subCategoryController.getSubCategory(params), HttpStatusCode.OK))
             }
             put<UpdateSubCategory, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()

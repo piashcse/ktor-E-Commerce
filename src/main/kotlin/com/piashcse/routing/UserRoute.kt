@@ -30,7 +30,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
     }
     route("forget-password").get<ForgetPasswordEmail, Response> { params ->
         params.validation()
-        userController.forgetPassword(params).let {
+        userController.forgetPassword(params)?.let {
             SimpleEmail().apply {
                 hostName = AppConstants.SmtpServer.HOST_NAME
                 setSmtpPort(AppConstants.SmtpServer.PORT)

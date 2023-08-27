@@ -21,13 +21,17 @@ import io.ktor.http.*
 
 fun NormalOpenAPIRoute.categoryRoute(categoryController: CategoryController) {
     route("category") {
-        authenticateWithJwt(RoleManagement.USER.role){
+        authenticateWithJwt(RoleManagement.USER.role) {
             get<PagingData, Response, JwtTokenBody> { params ->
                 params.validation()
                 respond(ApiResponse.success(categoryController.getCategory(params), HttpStatusCode.OK))
             }
         }
-        authenticateWithJwt(RoleManagement.SELLER.role) {
+        authenticateWithJwt(RoleManagement.ADMIN.role) {
+            get<PagingData, Response, JwtTokenBody> { params ->
+                params.validation()
+                respond(ApiResponse.success(categoryController.getCategory(params), HttpStatusCode.OK))
+            }
             post<Unit, Response, AddCategory, JwtTokenBody>(
                 exampleRequest = AddCategory(
                     categoryName = "Mens Cloth"
@@ -35,10 +39,6 @@ fun NormalOpenAPIRoute.categoryRoute(categoryController: CategoryController) {
             ) { _, requestBody ->
                 requestBody.validation()
                 respond(ApiResponse.success(categoryController.createCategory(requestBody), HttpStatusCode.OK))
-            }
-            get<PagingData, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(ApiResponse.success(categoryController.getCategory(params), HttpStatusCode.OK))
             }
             put<UpdateCategory, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()
@@ -53,6 +53,5 @@ fun NormalOpenAPIRoute.categoryRoute(categoryController: CategoryController) {
                 )
             }
         }
-
     }
 }

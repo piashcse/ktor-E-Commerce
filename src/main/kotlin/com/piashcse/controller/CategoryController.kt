@@ -7,24 +7,27 @@ import com.piashcse.models.category.AddCategory
 import com.piashcse.models.category.DeleteCategory
 import com.piashcse.models.category.UpdateCategory
 import com.piashcse.utils.CommonException
+import com.piashcse.utils.extension.alreadyExistException
+import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class CategoryController {
     fun createCategory(addCategory: AddCategory) = transaction {
         val categoryExist =
             CategoryEntity.find { CategoryTable.categoryName eq addCategory.categoryName }.toList().singleOrNull()
-        return@transaction if (categoryExist == null) {
+
+        if (categoryExist == null) {
             CategoryEntity.new {
                 categoryName = addCategory.categoryName
             }.categoryResponse()
         } else {
-            throw CommonException("${addCategory.categoryName} already exist")
+            addCategory.categoryName.alreadyExistException()
         }
     }
 
     fun getCategory(paging: PagingData) = transaction {
         val categories = CategoryEntity.all().limit(paging.limit, paging.offset)
-        return@transaction categories.map {
+        categories.map {
             it.categoryResponse()
         }
     }
@@ -37,7 +40,7 @@ class CategoryController {
             // return category response
             it.categoryResponse()
         } ?: run {
-            throw CommonException("Category not  exist")
+            updateCategory.categoryId.isNotExistException()
         }
     }
 

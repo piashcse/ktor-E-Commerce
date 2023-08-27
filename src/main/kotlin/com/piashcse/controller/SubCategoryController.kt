@@ -8,13 +8,15 @@ import com.piashcse.models.PagingData
 import com.piashcse.models.subcategory.AddSubCategory
 import com.piashcse.models.subcategory.UpdateSubCategory
 import com.piashcse.utils.CommonException
+import com.piashcse.utils.extension.alreadyExistException
+import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class SubCategoryController {
     fun createSubCategory(subCategory: AddSubCategory) = transaction {
         val categoryIdExist = CategoryEntity.find { CategoryTable.id eq subCategory.categoryId }.toList().singleOrNull()
-        return@transaction if (categoryIdExist != null) {
+        if (categoryIdExist != null) {
             val subCategoryExist =
                 SubCategoryEntity.find { SubCategoryTable.subCategoryName eq subCategory.subCategoryName }.toList()
                     .singleOrNull()
@@ -24,16 +26,16 @@ class SubCategoryController {
                     subCategoryName = subCategory.subCategoryName
                 }.subCategoryResponse()
             } else {
-                throw CommonException("SubCategory name ${subCategory.subCategoryName} already exist")
+                subCategory.subCategoryName.alreadyExistException()
             }
         } else {
-            throw CommonException("CategoryId ${subCategory.categoryId} not exist")
+            subCategory.categoryId.isNotExistException()
         }
     }
 
     fun getSubCategory(paging: PagingData) = transaction {
         val subCategoryExist = SubCategoryEntity.all().limit(paging.limit, paging.offset)
-        return@transaction subCategoryExist.map {
+        subCategoryExist.map {
             it.subCategoryResponse()
         }
     }
@@ -44,7 +46,7 @@ class SubCategoryController {
         suCategoryExist?.let {
             it.subCategoryName = updateSubCategory.subCategoryName
         } ?: run {
-            throw CommonException("Category not  exist")
+            updateSubCategory.subCategoryId.isNotExistException()
         }
     }
 

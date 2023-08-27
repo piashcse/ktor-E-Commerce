@@ -3,6 +3,8 @@ package com.piashcse.controller
 import com.piashcse.entities.shop.*
 import com.piashcse.entities.user.UserTable
 import com.piashcse.utils.CommonException
+import com.piashcse.utils.extension.alreadyExistException
+import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -10,18 +12,18 @@ class ShopController {
     fun createShopCategory(shopCategoryName: String) = transaction {
         val categoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.shopCategoryName eq shopCategoryName }.toList().singleOrNull()
-        return@transaction if (categoryExist == null) {
+        if (categoryExist == null) {
             ShopCategoryEntity.new {
                 this.shopCategoryName = shopCategoryName
             }.shopCategoryResponse()
         } else {
-            throw CommonException("Category name $shopCategoryName already exist")
+            shopCategoryName.alreadyExistException()
         }
     }
 
     fun getShopCategories(limit: Int, offset: Int) = transaction {
         val shopCategories = ShopCategoryEntity.all().limit(limit, offset.toLong())
-        return@transaction shopCategories.map {
+        shopCategories.map {
             it.shopCategoryResponse()
         }
     }
@@ -29,32 +31,32 @@ class ShopController {
     fun updateShopCategory(shopCategoryId: String, shopCategoryName: String) = transaction {
         val shopCategoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
-        return@transaction shopCategoryExist?.apply {
+        shopCategoryExist?.apply {
             this.shopCategoryName = shopCategoryName
-        }?.shopCategoryResponse() ?: throw CommonException("Category id $shopCategoryId is not exist")
+        }?.shopCategoryResponse() ?: shopCategoryId.isNotExistException()
     }
 
     fun deleteShopCategory(shopCategoryId: String) = transaction {
         val shopCategoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
-        return@transaction shopCategoryExist?.let {
+        shopCategoryExist?.let {
             shopCategoryExist.delete()
             shopCategoryId
         } ?: run {
-            throw CommonException("Category id $shopCategoryId is not exist")
+            shopCategoryId.isNotExistException()
         }
     }
 
     fun createShop(userId: String, shopCategoryId: String, shopName: String) = transaction {
         val shopNameExist = ShopEntity.find { ShopTable.shopName eq shopName }.toList().singleOrNull()
-        return@transaction if (shopNameExist == null) {
-            ShopEntity.new() {
+        if (shopNameExist == null) {
+            ShopEntity.new {
                 this.userId = EntityID(userId, UserTable)
                 this.shopCategoryId = EntityID(shopCategoryId, ShopTable)
                 this.shopName = shopName
             }.shopResponse()
         } else {
-            throw CommonException("Shop name $shopName already exist")
+            shopName.alreadyExistException()
         }
     }
 }

@@ -10,7 +10,9 @@ import com.piashcse.utils.authenticateWithJwt
 import com.papsign.ktor.openapigen.route.path.auth.delete
 import com.papsign.ktor.openapigen.route.path.auth.get
 import com.papsign.ktor.openapigen.route.path.auth.post
+import com.papsign.ktor.openapigen.route.path.auth.principal
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
+import com.papsign.ktor.openapigen.route.path.auth.put
 import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
 import com.piashcse.models.user.body.MultipartImage
@@ -25,24 +27,52 @@ import java.util.*
 
 fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
     route("product") {
-        authenticateWithJwt(RoleManagement.USER.role, RoleManagement.SELLER.role) {
-            get<ProductWithFilter, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(ApiResponse.success(productController.getProduct(params), HttpStatusCode.OK))
-            }
+        authenticateWithJwt(RoleManagement.USER.role) {
             route("/{productId}").get<ProductDetail, Response, JwtTokenBody> { params ->
                 params.validation()
                 respond(ApiResponse.success(productController.productDetail(params), HttpStatusCode.OK))
             }
+            get<ProductWithFilter, Response, JwtTokenBody> { params ->
+                params.validation()
+                respond(
+                    ApiResponse.success(
+                        productController.getProductById(principal().userId, params), HttpStatusCode.OK
+                    )
+                )
+            }
         }
         authenticateWithJwt(RoleManagement.SELLER.role) {
+            get<ProductWithFilter, Response, JwtTokenBody> { params ->
+                params.validation()
+                respond(
+                    ApiResponse.success(
+                        productController.getProductById(principal().userId, params), HttpStatusCode.OK
+                    )
+                )
+            }
             post<Unit, Response, AddProduct, JwtTokenBody> { _, requestBody ->
                 requestBody.validation()
-                respond(ApiResponse.success(productController.addProduct(requestBody), HttpStatusCode.OK))
+                respond(
+                    ApiResponse.success(
+                        productController.addProduct(principal().userId, requestBody), HttpStatusCode.OK
+                    )
+                )
+            }
+            route("/{productId}").put<ProductIdPathParam, Response, UpdateProduct, JwtTokenBody> { params, requestBody ->
+                respond(
+                    ApiResponse.success(
+                        productController.updateProduct(principal().userId, params.productId, requestBody),
+                        HttpStatusCode.OK
+                    )
+                )
             }
             delete<ProductId, Response, JwtTokenBody> { params ->
                 params.validation()
-                respond(ApiResponse.success(productController.deleteProduct(params), HttpStatusCode.OK))
+                respond(
+                    ApiResponse.success(
+                        productController.deleteProduct(principal().userId, params), HttpStatusCode.OK
+                    )
+                )
             }
             route("photo-upload").post<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
                 params.validation()
@@ -60,7 +90,8 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                     val fileNameInServer = imageId.toString().plus(fileLocation?.fileExtension())
                     respond(
                         ApiResponse.success(
-                            productController.uploadProductImages(params.userId, fileNameInServer), HttpStatusCode.OK
+                            productController.uploadProductImages(principal().userId, params.userId, fileNameInServer),
+                            HttpStatusCode.OK
                         )
                     )
                 }

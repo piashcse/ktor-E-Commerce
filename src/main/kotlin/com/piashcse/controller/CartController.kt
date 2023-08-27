@@ -16,7 +16,7 @@ class CartController {
         val isProductExist =
             CartItemEntity.find { CartItemTable.userId eq userId and (CartItemTable.productId eq addCart.productId) }
                 .toList().singleOrNull()
-        return@transaction isProductExist?.apply {
+        isProductExist?.apply {
             this.quantity = this.quantity + addCart.quantity
         }?.cartResponse() ?: CartItemEntity.new {
             this.userId = EntityID(userId, CartItemTable)
@@ -26,8 +26,7 @@ class CartController {
     }
 
     fun getCartItems(userId: String, pagingData: PagingData) = transaction {
-        return@transaction CartItemEntity.find { CartItemTable.userId eq userId }
-            .limit(pagingData.limit, pagingData.offset).map {
+        CartItemEntity.find { CartItemTable.userId eq userId }.limit(pagingData.limit, pagingData.offset).map {
                 it.cartResponse(ProductEntity.find { ProductTable.id eq it.productId }.first().response())
             }
     }
@@ -55,7 +54,7 @@ class CartController {
     }
 
     fun deleteAllFromCart(userId: String) = transaction {
-        return@transaction CartItemEntity.find { CartItemTable.userId eq userId }.toList().forEach {
+        CartItemEntity.find { CartItemTable.userId eq userId }.toList().forEach {
             it.delete()
         }
     }

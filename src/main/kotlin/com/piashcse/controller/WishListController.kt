@@ -5,6 +5,8 @@ import com.piashcse.entities.product.ProductTable
 import com.piashcse.entities.product.WishListEntity
 import com.piashcse.entities.product.WishListTable
 import com.piashcse.utils.CommonException
+import com.piashcse.utils.extension.alreadyExistException
+import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -20,12 +22,12 @@ class WishListController {
                 this.productId = EntityID(productId, WishListTable)
             }.response(ProductEntity.find { ProductTable.id eq productId }.first().response())
         } else {
-            throw CommonException("$productId already exist")
+            productId.alreadyExistException()
         }
     }
 
     fun getWishList(userId: String) = transaction {
-        return@transaction WishListEntity.find { WishListTable.userId eq userId }.toList().map {
+        WishListEntity.find { WishListTable.userId eq userId }.toList().map {
             ProductEntity.find { ProductTable.id eq it.productId }.first().response()
         }
     }
@@ -38,7 +40,7 @@ class WishListController {
             it.delete()
             ProductEntity.find { ProductTable.id eq it.productId }.first().response()
         } ?: run {
-            throw CommonException("$productId is not exist")
+            productId.isNotExistException()
         }
     }
 }

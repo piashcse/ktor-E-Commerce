@@ -7,6 +7,8 @@ import com.piashcse.entities.user.UserTable
 import com.piashcse.models.shipping.AddShipping
 import com.piashcse.models.shipping.UpdateShipping
 import com.piashcse.utils.CommonException
+import com.piashcse.utils.extension.alreadyExistException
+import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -17,7 +19,7 @@ class ShippingController {
             UserTable.id eq userId and (OrdersTable.id eq addShipping.orderId)
         }.toList().singleOrNull()
         isExist?.let {
-            throw CommonException("already exist")
+            addShipping.orderId.alreadyExistException()
         } ?: run {
             ShippingEntity.new {
                 this.userId = EntityID(userId, ShippingTable)
@@ -38,7 +40,7 @@ class ShippingController {
             UserTable.id eq userId and (OrdersTable.id eq orderId)
         }.toList().singleOrNull()
         isExist?.response() ?: run {
-            throw CommonException("Not exist")
+            orderId.isNotExistException()
         }
     }
 
@@ -55,7 +57,7 @@ class ShippingController {
             it.shipEmail = updateShipping.shipEmail ?: it.shipEmail
             it.shipCountry = updateShipping.shipCountry ?: it.shipCountry
         } ?: run {
-            throw CommonException("Not exist")
+            updateShipping.orderId.isNotExistException()
         }
     }
 
@@ -63,8 +65,6 @@ class ShippingController {
         val isExist = ShippingEntity.find {
             UserTable.id eq userId and (OrdersTable.id eq orderId)
         }.toList().singleOrNull()
-        isExist?.delete() ?: run {
-            throw CommonException("Not exist")
-        }
+        isExist?.delete() ?: orderId.isNotExistException()
     }
 }

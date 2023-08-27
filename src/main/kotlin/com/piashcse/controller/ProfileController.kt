@@ -18,7 +18,7 @@ class ProfileController {
 
     fun updateProfile(userId: String, userProfile: UserProfileBody?) = transaction {
         val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
-        return@transaction userProfileEntity?.let {
+        userProfileEntity?.let {
             it.firstName = userProfile?.firstName ?: it.firstName
             it.lastName = userProfile?.lastName ?: it.lastName
             it.secondaryMobileNumber = userProfile?.secondaryMobileNumber ?: it.secondaryMobileNumber
@@ -42,7 +42,7 @@ class ProfileController {
         userProfileEntity?.userProfileImage?.let {
             Files.deleteIfExists(Paths.get("${AppConstants.Image.PROFILE_IMAGE_LOCATION}$it"))
         }
-        return@transaction userProfileEntity?.let {
+        userProfileEntity?.let {
             it.userProfileImage = profileImage ?: it.userProfileImage
             it.response()
         }

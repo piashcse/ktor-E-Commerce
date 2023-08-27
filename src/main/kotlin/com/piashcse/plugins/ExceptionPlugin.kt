@@ -72,8 +72,7 @@ fun Application.configureStatusPage() {
         }
         exception<EmailNotExist> { call, _ ->
             call.respond(
-                HttpStatusCode.BadRequest,
-                ApiResponse.failure(ErrorMessage.EMAIL_NOT_EXIST, HttpStatusCode.BadRequest)
+                HttpStatusCode.BadRequest, ApiResponse.failure(ErrorMessage.EMAIL_NOT_EXIST, HttpStatusCode.BadRequest)
             )
         }
         exception<PasswordNotMatch> { call, _ ->
@@ -85,6 +84,11 @@ fun Application.configureStatusPage() {
         exception<CommonException> { call, exception ->
             call.respond(
                 HttpStatusCode.BadRequest, ApiResponse.failure(exception.message, HttpStatusCode.BadRequest)
+            )
+        }
+        status(HttpStatusCode.NotFound) { call, data ->
+            call.respond(
+                HttpStatusCode.NotFound, ApiResponse.failure(data.description, HttpStatusCode.NotFound)
             )
         }
     }

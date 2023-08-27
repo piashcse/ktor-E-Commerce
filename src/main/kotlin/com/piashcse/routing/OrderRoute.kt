@@ -29,7 +29,7 @@ fun NormalOpenAPIRoute.orderRoute(orderController: OrderController) {
                     2f,
                     orderStatus = "pending",
                     mutableListOf(OrderItem("productId", 1)),
-                )
+                ),
             ) { _, orderBody ->
                 orderBody.validation()
                 respond(

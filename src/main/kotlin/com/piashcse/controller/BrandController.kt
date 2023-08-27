@@ -7,6 +7,8 @@ import com.piashcse.models.bands.AddBrand
 import com.piashcse.models.bands.DeleteBrand
 import com.piashcse.models.bands.UpdateBrand
 import com.piashcse.utils.CommonException
+import com.piashcse.utils.extension.alreadyExistException
+import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class BrandController {
@@ -17,7 +19,7 @@ class BrandController {
                 brandName = addBand.brandName
             }.brandResponse()
         } else {
-            throw CommonException("${addBand.brandName} already exist")
+            addBand.brandName.alreadyExistException()
         }
     }
 
@@ -35,7 +37,7 @@ class BrandController {
             // return category response
             it.brandResponse()
         } ?: run {
-            throw CommonException("Brand not  exist")
+            updateBrand.brandId.isNotExistException()
         }
     }
 

@@ -5,6 +5,8 @@ import com.piashcse.entities.user.*
 import com.piashcse.models.user.body.*
 import com.piashcse.models.user.response.RegistrationResponse
 import com.piashcse.utils.*
+import com.piashcse.utils.extension.alreadyExistException
+import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.random.Random
@@ -12,7 +14,7 @@ import kotlin.random.Random
 class UserController {
     fun registration(registrationBody: RegistrationBody) = transaction {
         val userEntity = UsersEntity.find { UserTable.email eq registrationBody.email }.toList().singleOrNull()
-        return@transaction if (userEntity == null) {
+        if (userEntity == null) {
             val inserted = UsersEntity.new {
                 email = registrationBody.email
                 password = BCrypt.withDefaults().hashToString(12, registrationBody.password.toCharArray())
@@ -26,7 +28,7 @@ class UserController {
             }
             RegistrationResponse(registrationBody.email)
         } else {
-            throw CommonException("${registrationBody.email} already Exist")
+            registrationBody.email.alreadyExistException()
         }
     }
 
@@ -38,7 +40,7 @@ class UserController {
                 loginBody.password.toCharArray(), result.password
             ).verified && result.userType.userTypeId == loginBody.userType
         ) {
-            return@transaction result.loggedInWithToken()
+            result.loggedInWithToken()
         } else {
             throw PasswordNotMatch()
         }
@@ -47,38 +49,34 @@ class UserController {
     fun jwtVerification(jwtTokenBody: JwtTokenBody) = transaction {
         val usersEntity = UsersEntity.find { UserTable.email eq jwtTokenBody.email }.toList().singleOrNull()
         usersEntity?.let {
-            return@transaction if (usersEntity != null) {
-                JwtTokenBody(usersEntity.id.value, usersEntity.email, usersEntity.userType.userTypeId)
-            } else null
+            JwtTokenBody(usersEntity.id.value, usersEntity.email, usersEntity.userType.userTypeId)
         }
     }
 
     fun changePassword(userId: String, changePassword: ChangePassword) = transaction {
         val userEntity = UsersEntity.find { UserTable.id eq userId }.toList().singleOrNull()
-        return@transaction userEntity?.let {
+        userEntity?.let {
             if (BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), it.password).verified) {
                 it.password = BCrypt.withDefaults().hashToString(12, changePassword.newPassword.toCharArray())
                 it
             } else {
-                return@transaction changePassword
+                changePassword
             }
         }
     }
 
     fun forgetPassword(forgetPasswordBody: ForgetPasswordEmail) = transaction {
         val userEntity = UsersEntity.find { UserTable.email eq forgetPasswordBody.email }.toList().singleOrNull()
-        return@transaction userEntity?.let {
+        userEntity?.let {
             val verificationCode = Random.nextInt(1000, 9999).toString()
             it.verificationCode = verificationCode
             VerificationCode(verificationCode)
-        } ?: run {
-            throw CommonException("${forgetPasswordBody.email} is not exist")
         }
     }
 
     fun changeForgetPasswordByVerificationCode(confirmPasswordBody: ConfirmPassword) = transaction {
         val userEntity = UsersEntity.find { UserTable.email eq confirmPasswordBody.email }.toList().singleOrNull()
-        return@transaction userEntity?.let {
+        userEntity?.let {
             if (confirmPasswordBody.verificationCode == it.verificationCode) {
                 it.password = BCrypt.withDefaults().hashToString(12, confirmPasswordBody.newPassword.toCharArray())
                 it.verificationCode = null
@@ -87,7 +85,7 @@ class UserController {
                 AppConstants.DataBaseTransaction.NOT_FOUND
             }
         } ?: run {
-            throw CommonException("${confirmPasswordBody.email} is not exist")
+            confirmPasswordBody.email.isNotExistException()
         }
     }
 
