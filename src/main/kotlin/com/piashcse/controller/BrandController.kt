@@ -6,7 +6,6 @@ import com.piashcse.models.PagingData
 import com.piashcse.models.bands.AddBrand
 import com.piashcse.models.bands.DeleteBrand
 import com.piashcse.models.bands.UpdateBrand
-import com.piashcse.utils.CommonException
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -36,9 +35,8 @@ class BrandController {
             it.brandName = updateBrand.brandName
             // return category response
             it.brandResponse()
-        } ?: run {
-            updateBrand.brandId.isNotExistException()
-        }
+        } ?: updateBrand.brandId.isNotExistException()
+
     }
 
     fun deleteBrand(deleteBrand: DeleteBrand) = transaction {

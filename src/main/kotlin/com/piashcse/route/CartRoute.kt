@@ -1,4 +1,4 @@
-package com.piashcse.routing
+package com.piashcse.route
 
 import com.papsign.ktor.openapigen.route.path.auth.*
 import com.piashcse.controller.CartController

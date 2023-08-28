@@ -11,6 +11,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 object UserTable : BaseIntIdTable("users") {
     val email = varchar("email", 50)
     val password = varchar("password", 200)
+    val userType = varchar("user_type", 100)
     val mobileNumber = varchar("mobile_number", 50).nullable()
     val emailVerifiedAt = text("email_verified_at").nullable() // so far unkmown
     val rememberToken = varchar("remember_token", 50).nullable()
@@ -23,12 +24,12 @@ class UsersEntity(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
     companion object : BaseIntEntityClass<UsersEntity>(UserTable)
     var email by UserTable.email
     var password by UserTable.password
+    var userType by UserTable.userType
     var mobileNumber by UserTable.mobileNumber
     var emailVerifiedAt by UserTable.emailVerifiedAt
     var rememberToken by UserTable.rememberToken
     var verificationCode by UserTable.verificationCode
     var isVerified by UserTable.isVerified
-    val userType by UserHasTypeEntity backReferencedOn UserHasTypeTable.userId
     fun response() = UsersResponse(
         id.value,
         email,
@@ -36,11 +37,11 @@ class UsersEntity(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
         emailVerifiedAt,
         rememberToken,
         isVerified,
-        userType.userHasTypeResponse()
+        userType
     )
 
     fun loggedInWithToken() = LoginResponse(
-        response(), JwtController.tokenProvider(JwtTokenBody(id.value, email, userType.userTypeId))
+        response(), JwtController.tokenProvider(JwtTokenBody(id.value, email, userType))
     )
 }
 
@@ -51,7 +52,7 @@ data class UsersResponse(
     val emailVerifiedAt: String?,
     val rememberToken: String?,
     val isVerified: Boolean?,
-    var userType: UserHasType
+    var userType: String
 )
 data class LoginResponse(val user: UsersResponse?, val accessToken: String)
 data class ChangePassword(@QueryParam("oldPassword") val oldPassword: String, @QueryParam("newPassword") val newPassword: String)

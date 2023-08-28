@@ -9,8 +9,6 @@ import com.piashcse.entities.orders.OrdersTable
 import com.piashcse.entities.product.*
 import com.piashcse.entities.shop.ShopCategoryTable
 import com.piashcse.entities.shop.ShopTable
-import com.piashcse.entities.user.UserHasTypeTable
-import com.piashcse.entities.user.UserTypeTable
 import com.piashcse.entities.user.UserProfileTable
 import com.piashcse.entities.user.UserTable
 import com.zaxxer.hikari.HikariConfig
@@ -36,8 +34,6 @@ object DatabaseFactory {
             create(
                 UserTable,
                 UserProfileTable,
-                UserTypeTable,
-                UserHasTypeTable,
                 ShopTable,
                 ShopCategoryTable,
                 ProductTable,

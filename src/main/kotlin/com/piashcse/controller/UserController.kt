@@ -13,44 +13,37 @@ import kotlin.random.Random
 
 class UserController {
     fun registration(registrationBody: RegistrationBody) = transaction {
-        val userEntity = UsersEntity.find { UserTable.email eq registrationBody.email }.toList().singleOrNull()
-        if (userEntity == null) {
-            val inserted = UsersEntity.new {
-                email = registrationBody.email
-                password = BCrypt.withDefaults().hashToString(12, registrationBody.password.toCharArray())
-            }
-            UsersProfileEntity.new {
-                userId = inserted.id
-            }
-            UserHasTypeEntity.new {
-                userId = inserted.id
-                userTypeId = registrationBody.userType
-            }
-            RegistrationResponse(registrationBody.email)
-        } else {
-            registrationBody.email.alreadyExistException()
+        val userEntity =
+            UsersEntity.find { UserTable.email eq registrationBody.email and (UserTable.userType eq registrationBody.userType) }
+                .toList().singleOrNull()
+        userEntity?.let {
+            it.id.value.alreadyExistException("as ${it.userType}")
         }
+        val inserted = UsersEntity.new {
+            email = registrationBody.email
+            password = BCrypt.withDefaults().hashToString(12, registrationBody.password.toCharArray())
+            userType = registrationBody.userType
+        }
+        UsersProfileEntity.new {
+            userId = inserted.id
+        }
+        RegistrationResponse(inserted.id.value, registrationBody.email)
     }
 
     fun login(loginBody: LoginBody) = transaction {
-        val query = UserTable.leftJoin(UserHasTypeTable).select { UserTable.email eq loginBody.email }
-        val result = UsersEntity.wrapRows(query).first()
-        if (result.userType.userTypeId != loginBody.userType) throw UserTypeException()
-        if (BCrypt.verifyer().verify(
-                loginBody.password.toCharArray(), result.password
-            ).verified && result.userType.userTypeId == loginBody.userType
-        ) {
-            result.loggedInWithToken()
-        } else {
-            throw PasswordNotMatch()
-        }
-    }
-
-    fun jwtVerification(jwtTokenBody: JwtTokenBody) = transaction {
-        val usersEntity = UsersEntity.find { UserTable.email eq jwtTokenBody.email }.toList().singleOrNull()
-        usersEntity?.let {
-            JwtTokenBody(usersEntity.id.value, usersEntity.email, usersEntity.userType.userTypeId)
-        }
+        val userEntity =
+            UsersEntity.find { UserTable.email eq loginBody.email and (UserTable.userType eq loginBody.userType) }
+                .toList().singleOrNull()
+        userEntity?.let {
+            if (BCrypt.verifyer().verify(
+                    loginBody.password.toCharArray(), it.password
+                ).verified
+            ) {
+                it.loggedInWithToken()
+            } else {
+                throw PasswordNotMatch()
+            }
+        } ?: loginBody.email.isNotExistException()
     }
 
     fun changePassword(userId: String, changePassword: ChangePassword) = transaction {

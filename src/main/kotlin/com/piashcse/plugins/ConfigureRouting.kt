@@ -1,7 +1,7 @@
 package com.piashcse.plugins
 
 import com.piashcse.controller.*
-import com.piashcse.routing.*
+import com.piashcse.route.*
 import com.papsign.ktor.openapigen.APITag
 import com.papsign.ktor.openapigen.openAPIGen
 import com.papsign.ktor.openapigen.route.apiRouting

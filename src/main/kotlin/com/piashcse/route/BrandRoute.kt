@@ -1,4 +1,4 @@
-package com.piashcse.routing
+package com.piashcse.route
 
 import com.piashcse.controller.BrandController
 import com.piashcse.models.PagingData
@@ -18,7 +18,6 @@ import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
 import io.ktor.http.*
-import javax.management.relation.Role
 
 fun NormalOpenAPIRoute.brandRoute(brandController: BrandController) {
     route("brand") {

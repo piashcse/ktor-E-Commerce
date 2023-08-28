@@ -1,4 +1,4 @@
-package com.piashcse.routing
+package com.piashcse.route
 
 import com.piashcse.controller.SubCategoryController
 import com.piashcse.models.PagingData
