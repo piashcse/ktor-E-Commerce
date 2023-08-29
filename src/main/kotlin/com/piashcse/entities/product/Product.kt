@@ -3,8 +3,8 @@ package com.piashcse.entities.product
 import com.piashcse.entities.base.BaseIntEntity
 import com.piashcse.entities.base.BaseIntEntityClass
 import com.piashcse.entities.base.BaseIntIdTable
-import com.piashcse.entities.product.category.CategoryTable
-import com.piashcse.entities.product.category.SubCategoryTable
+import com.piashcse.entities.product.category.ProductCategoryTable
+import com.piashcse.entities.product.category.ProductSubCategoryTable
 import com.piashcse.entities.user.UserTable
 import org.jetbrains.exposed.dao.id.EntityID
 
@@ -13,8 +13,8 @@ object ProductTable : BaseIntIdTable("product") {
     val productName = text("product_name")
     val price = double("price")
     val productDetail = text("product_detail")
-    val categoryId = reference("category_id", CategoryTable.id)
-    val subCategoryId = reference("sub_category_id", SubCategoryTable.id).nullable()
+    val categoryId = reference("category_id", ProductCategoryTable.id)
+    val subCategoryId = reference("sub_category_id", ProductSubCategoryTable.id).nullable()
     val brandId = reference("brand_id", BrandTable.id).nullable()
     val productCode = text("product_code").nullable()
     val productQuantity = integer("product_quantity")

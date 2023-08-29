@@ -1,6 +1,6 @@
 package com.piashcse.route
 
-import com.piashcse.controller.SubCategoryController
+import com.piashcse.controller.ProductSubCategoryController
 import com.piashcse.models.PagingData
 import com.piashcse.models.subcategory.AddSubCategory
 import com.piashcse.models.subcategory.DeleteSubCategory
@@ -19,9 +19,9 @@ import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
 import io.ktor.http.*
 
-fun NormalOpenAPIRoute.productSubCategoryRoute(subCategoryController: SubCategoryController) {
+fun NormalOpenAPIRoute.productSubCategoryRoute(subCategoryController: ProductSubCategoryController) {
     route("product-sub-category") {
-        authenticateWithJwt(RoleManagement.USER.role) {
+        authenticateWithJwt(RoleManagement.USER.role,RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
             get<PagingData, Response, JwtTokenBody> { params ->
                 params.validation()
                 respond(ApiResponse.success(subCategoryController.getSubCategory(params), HttpStatusCode.OK))
@@ -29,10 +29,6 @@ fun NormalOpenAPIRoute.productSubCategoryRoute(subCategoryController: SubCategor
         }
 
         authenticateWithJwt(RoleManagement.ADMIN.role) {
-            get<PagingData, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(ApiResponse.success(subCategoryController.getSubCategory(params), HttpStatusCode.OK))
-            }
             post<Unit, Response, AddSubCategory, JwtTokenBody>(
                 exampleRequest = AddSubCategory(
                     categoryId = "8eabd62f-fbb2-4fad-b440-3060f2e12dbc", subCategoryName = "Shirt"

@@ -27,7 +27,7 @@ import java.util.*
 
 fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
     route("product") {
-        authenticateWithJwt(RoleManagement.USER.role) {
+        authenticateWithJwt(RoleManagement.USER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
             route("/{productId}").get<ProductDetail, Response, JwtTokenBody> { params ->
                 params.validation()
                 respond(ApiResponse.success(productController.productDetail(params), HttpStatusCode.OK))
@@ -74,7 +74,7 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                     )
                 )
             }
-            route("photo-upload").post<UserId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
+            route("photo-upload").post<ProductId, Response, MultipartImage, JwtTokenBody> { params, multipartData ->
                 params.validation()
                 multipartData.validation()
 
@@ -90,7 +90,7 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                     val fileNameInServer = imageId.toString().plus(fileLocation?.fileExtension())
                     respond(
                         ApiResponse.success(
-                            productController.uploadProductImages(principal().userId, params.userId, fileNameInServer),
+                            productController.uploadProductImages(principal().userId, params.productId, fileNameInServer),
                             HttpStatusCode.OK
                         )
                     )

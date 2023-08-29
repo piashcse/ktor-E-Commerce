@@ -1,6 +1,6 @@
 package com.piashcse.route
 
-import com.piashcse.controller.CategoryController
+import com.piashcse.controller.ProductCategoryController
 import com.piashcse.models.PagingData
 import com.piashcse.models.category.AddCategory
 import com.piashcse.models.category.DeleteCategory
@@ -19,19 +19,15 @@ import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
 import io.ktor.http.*
 
-fun NormalOpenAPIRoute.productCategoryRoute(categoryController: CategoryController) {
+fun NormalOpenAPIRoute.productCategoryRoute(categoryController: ProductCategoryController) {
     route("product-category") {
-        authenticateWithJwt(RoleManagement.USER.role) {
+        authenticateWithJwt(RoleManagement.USER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
             get<PagingData, Response, JwtTokenBody> { params ->
                 params.validation()
                 respond(ApiResponse.success(categoryController.getCategory(params), HttpStatusCode.OK))
             }
         }
         authenticateWithJwt(RoleManagement.ADMIN.role) {
-            get<PagingData, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(ApiResponse.success(categoryController.getCategory(params), HttpStatusCode.OK))
-            }
             post<Unit, Response, AddCategory, JwtTokenBody>(
                 exampleRequest = AddCategory(
                     categoryName = "Mens Cloth"

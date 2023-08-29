@@ -34,10 +34,10 @@ fun Application.configureRouting() {
                 productRoute(ProductController())
             }
             tag(Tags.PRODUCT_CATEGORY) {
-                productCategoryRoute(CategoryController())
+                productCategoryRoute(ProductCategoryController())
             }
             tag(Tags.PRODUCT_SUB_CATEGORY) {
-                productSubCategoryRoute(SubCategoryController())
+                productSubCategoryRoute(ProductSubCategoryController())
             }
             tag(Tags.BRAND) {
                 brandRoute(BrandController())

@@ -33,16 +33,6 @@ class ProductController {
             imageTwo = addProduct.imageTwo
         }.response()
     }
-
-    fun uploadProductImages(userId: String, productId: String, productImages: String) = transaction {
-        ProductImageEntity.new {
-            this.userId = EntityID(userId, ProductTable)
-            this.productId = EntityID(productId, ProductTable)
-            imageUrl = productImages
-        }.response()
-
-    }
-
     fun updateProduct(userId: String, productId: String, updateProduct: UpdateProduct) = transaction {
         val isProductExist =
             ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.toList()
@@ -57,7 +47,7 @@ class ProductController {
             productName = updateProduct.productName ?: productName
             productCode = updateProduct.productCode ?: productCode
             productQuantity = updateProduct.productQuantity ?: productQuantity
-            productDetail = updateProduct.productDetail
+            productDetail = updateProduct.productDetail ?: productDetail
             price = updateProduct.price ?: price
             discountPrice = updateProduct.discountPrice ?: discountPrice
             status = updateProduct.status ?: status
@@ -149,5 +139,15 @@ class ProductController {
             ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq deleteProduct.productId) }
                 .toList().singleOrNull()
         isProductExist?.delete()
+        deleteProduct.productId
+    }
+
+    fun uploadProductImages(userId: String, productId: String, productImages: String) = transaction {
+        ProductImageEntity.new {
+            this.userId = EntityID(userId, ProductTable)
+            this.productId = EntityID(productId, ProductTable)
+            this.imageUrl = productImages
+        }.response()
+
     }
 }

@@ -1,8 +1,8 @@
 package com.piashcse.dbhelper
 
 import com.piashcse.entities.ShippingTable
-import com.piashcse.entities.product.category.CategoryTable
-import com.piashcse.entities.product.category.SubCategoryTable
+import com.piashcse.entities.product.category.ProductCategoryTable
+import com.piashcse.entities.product.category.ProductSubCategoryTable
 import com.piashcse.entities.orders.CartItemTable
 import com.piashcse.entities.orders.OrderItemTable
 import com.piashcse.entities.orders.OrdersTable
@@ -37,8 +37,9 @@ object DatabaseFactory {
                 ShopTable,
                 ShopCategoryTable,
                 ProductTable,
-                CategoryTable,
-                SubCategoryTable,
+                ProductImageTable,
+                ProductCategoryTable,
+                ProductSubCategoryTable,
                 BrandTable,
                 CartItemTable,
                 OrdersTable,
