@@ -33,11 +33,11 @@ fun Application.configureRouting() {
             tag(Tags.PRODUCT) {
                 productRoute(ProductController())
             }
-            tag(Tags.CATEGORY) {
-                categoryRoute(CategoryController())
+            tag(Tags.PRODUCT_CATEGORY) {
+                productCategoryRoute(CategoryController())
             }
-            tag(Tags.SUBCATEGORY) {
-                subCategoryRoute(SubCategoryController())
+            tag(Tags.PRODUCT_SUB_CATEGORY) {
+                productSubCategoryRoute(SubCategoryController())
             }
             tag(Tags.BRAND) {
                 brandRoute(BrandController())
@@ -59,7 +59,7 @@ fun Application.configureRouting() {
 }
 
 enum class Tags(override val description: String) : APITag {
-    USER(""), PROFILE(""), SHOP(""), PRODUCT(""), CATEGORY(""), SUBCATEGORY(""), BRAND(""), CART(""), ORDER(""), WISHLIST(
+    USER(""), PROFILE(""), SHOP(""), PRODUCT(""), PRODUCT_CATEGORY(""), PRODUCT_SUB_CATEGORY(""), BRAND(""), CART(""), ORDER(""), WISHLIST(
         ""
     ),
     SHIPPING(
