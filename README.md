@@ -560,6 +560,285 @@ http://localhost:8080/shop/add-shop?shopName=Royal%20Shop&shopCategoryId=5e67ec9
 ```   
 </details>
 
+### PRODUCT 
+
+<details>
+  
+<summary> <code>POST</code> <code>/product</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/product' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzY5OTcyfQ.QF530JiVfrYSz1m4aDAcTqOkvJ2zLy68MGiYkBQlzWamxF1O2BfqTYBWofRM0LWspCMXQt2HQTRijmjLW7dglQ' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "bestRated": "string",
+  "buyOneGetOne": "string",
+  "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
+  "discountPrice": 0,
+  "hotDeal": "string",
+  "hotNew": "string",
+  "imageOne": "string",
+  "imageTwo": "string",
+  "mainSlider": "string",
+  "midSlider": "string",
+  "price": 10,
+  "productCode": "string",
+  "productDetail": "string",
+  "productName": "string",
+  "productQuantity": 5,
+  "status": 0,
+  "trend": "string",
+  "videoLink": "string"
+}'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d",
+    "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
+    "productName": "string",
+    "productCode": "string",
+    "productQuantity": 5,
+    "productDetail": "string",
+    "price": 10,
+    "discountPrice": 0,
+    "status": 0,
+    "videoLink": "string",
+    "mainSlider": "string",
+    "hotDeal": "string",
+    "bestRated": "string",
+    "midSlider": "string",
+    "hotNew": "string",
+    "trend": "string",
+    "buyOneGetOne": "string",
+    "imageOne": "string",
+    "imageTwo": "string"
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>GET</code> <code>/product/{productId}</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d",
+    "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
+    "productName": "string",
+    "productCode": "string",
+    "productQuantity": 5,
+    "productDetail": "string",
+    "price": 10,
+    "discountPrice": 0,
+    "status": 0,
+    "videoLink": "string",
+    "mainSlider": "string",
+    "hotDeal": "string",
+    "bestRated": "string",
+    "midSlider": "string",
+    "hotNew": "string",
+    "trend": "string",
+    "buyOneGetOne": "string",
+    "imageOne": "string",
+    "imageTwo": "string"
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>PUT </code> <code>/product/{productId}</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA' \
+  -H 'Content-Type: application/json' \
+  -d '{
+ 
+  "productName": "Smartch watch",
+   "productDetail":"Xiaomi Smart Watch"
+  
+}'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d",
+    "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
+    "productName": "Smartch watch",
+    "productCode": "string",
+    "productQuantity": 5,
+    "productDetail": "Xiaomi Smart Watch",
+    "price": 10,
+    "discountPrice": 0,
+    "status": 0,
+    "videoLink": "string",
+    "mainSlider": "string",
+    "hotDeal": "string",
+    "bestRated": "string",
+    "midSlider": "string",
+    "hotNew": "string",
+    "trend": "string",
+    "buyOneGetOne": "string",
+    "imageOne": "string",
+    "imageTwo": "string"
+  }
+}
+```   
+</details>
+
+
+<details>
+  
+<summary> <code>GET </code> <code>/product</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/product?limit=10&offset=0&maxPrice=100&minPrice=0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product?limit=10&offset=0&maxPrice=100&minPrice=0
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d",
+      "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
+      "productName": "Smartch watch",
+      "productCode": "string",
+      "productQuantity": 5,
+      "productDetail": "Xiaomi Smart Watch",
+      "price": 10,
+      "discountPrice": 0,
+      "status": 0,
+      "videoLink": "string",
+      "mainSlider": "string",
+      "hotDeal": "string",
+      "bestRated": "string",
+      "midSlider": "string",
+      "hotNew": "string",
+      "trend": "string",
+      "buyOneGetOne": "string",
+      "imageOne": "string",
+      "imageTwo": "string"
+    }
+  ]
+}
+```   
+</details>
+
+
+<details>
+  
+<summary> <code>DELETE</code> <code>/product</code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/product?productId=79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product?productId=79a97389-78d5-4dff-a1f7-13bc7ae10a8d
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d"
+}
+```   
+</details>
+
 
 ## 👨 Developed By
 
