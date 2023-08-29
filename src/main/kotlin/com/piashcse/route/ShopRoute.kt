@@ -11,20 +11,21 @@ import com.papsign.ktor.openapigen.route.path.auth.*
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
+import com.piashcse.models.PagingData
 import io.ktor.http.*
 
 fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
     route("shop/") {
         authenticateWithJwt(RoleManagement.ADMIN.role) {
-            route("category").post<Unit, Response, AddShopCategory, JwtTokenBody> { _, requestBody ->
-                requestBody.validation()
+            route("category").post<AddShopCategory, Response, Unit, JwtTokenBody> { params, _ ->
+                params.validation()
                 respond(
                     ApiResponse.success(
-                        shopController.createShopCategory(requestBody.shopCategoryName), HttpStatusCode.OK
+                        shopController.createShopCategory(params.shopCategoryName), HttpStatusCode.OK
                     )
                 )
             }
-            route("category").get<ShopCategory, Response, JwtTokenBody> { params ->
+            route("category").get<PagingData, Response, JwtTokenBody> { params ->
                 params.validation()
                 respond(
                     ApiResponse.success(
@@ -42,21 +43,20 @@ fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
                     )
                 )
             }
-            route("category").put<Unit, Response, UpdateShopCategory, JwtTokenBody> { _, requestBody ->
-                requestBody.validation()
+            route("category").put<UpdateShopCategory, Response, Unit, JwtTokenBody> { params, _ ->
+                params.validation()
                 shopController.updateShopCategory(
-                    requestBody.shopCategoryId, requestBody.shopCategoryName
+                    params.shopCategoryId, params.shopCategoryName
                 ).let {
                     respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
             }
         }
         authenticateWithJwt(RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            route("add-shop").post<Unit, Response, AddShop, JwtTokenBody> { _, requestBody ->
-                val jwtTokenToUserData = principal()
-                requestBody.validation()
+            route("add-shop").post<AddShop, Response, Unit, JwtTokenBody> { params, _ ->
+                params.validation()
                 shopController.createShop(
-                    jwtTokenToUserData.userId, requestBody.shopCategoryId, requestBody.shopName
+                    principal().userId, params.shopCategoryId, params.shopName
                 ).let {
                     respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
