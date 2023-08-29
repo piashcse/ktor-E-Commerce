@@ -373,7 +373,192 @@ http://localhost:8080/profile-photo-upload
 ```   
 </details>
 
+### SHOP
+<details>
+  
+<summary> <code>POST</code> <code>/shop/category</code></summary>
 
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/shop/category?shopCategoryName=BD%20Shop' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ' \
+  -d ''
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/shop/category?shopCategoryName=BD%20Shop
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "2a17da31-7517-41db-b7d3-f77d0ddd52a5",
+    "shopName": "BD Shop"
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>GET </code> <code>/shop/category</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/shop/category?limit=10&offset=0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/shop/category?limit=10&offset=0
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
+      "shopName": "Royal shop"
+    },
+    {
+      "id": "2a17da31-7517-41db-b7d3-f77d0ddd52a5",
+      "shopName": "BD Shop"
+    }
+  ]
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>DELETE</code> <code>/shop/category</code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/shop/category?shopCategoryId=2a17da31-7517-41db-b7d3-f77d0ddd52a5' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/shop/category?shopCategoryId=2a17da31-7517-41db-b7d3-f77d0ddd52a5
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "2a17da31-7517-41db-b7d3-f77d0ddd52a5"
+}
+```   
+</details>
+
+
+<details>
+  
+<summary> <code>PUT </code> <code>/shop/category</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/shop/category?shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&shopCategoryName=BD%20Shop' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/shop/category?shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&shopCategoryName=BD%20Shop
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
+    "shopName": "BD Shop"
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>PUT </code> <code>/shop/add-shop</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/shop/add-shop?shopName=Royal%20Shop&shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ' \
+  -d ''
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/shop/add-shop?shopName=Royal%20Shop&shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "cbfdcfa3-fb65-4fa3-9078-e0f8cc63ddbc",
+    "shopName": "Royal Shop"
+  }
+}
+```   
+</details>
 
 
 ## 👨 Developed By
