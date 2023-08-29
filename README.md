@@ -525,7 +525,7 @@ http://localhost:8080/shop/category?shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163f
 
 <details>
   
-<summary> <code>PUT </code> <code>/shop/add-shop</code></summary>
+<summary> <code>POST</code> <code>/shop/add-shop</code></summary>
 
 ### Curl
 
