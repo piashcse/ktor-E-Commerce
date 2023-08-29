@@ -839,6 +839,45 @@ http://localhost:8080/product?productId=79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 ```   
 </details>
 
+<details>
+  
+<summary> <code>POST</code> <code>/product/photo-upload</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/product/photo-upload?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjEyYzA5OGFhLTYzMWYtNDJlZC05MjAzLTFkMjdlMDA0MmY4YSIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzc3NTMyfQ.GeBDEnWNm84mHPhCxTCXUwRSmRo7KjkJ6AfuEXZNiiqKVGtof1xNi8tsBp53L9jbyYwK49HQnDpe6tb0nVwhHA' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@307116353_3302565903398527_525569142260037778_n.png;type=image/png'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product/photo-upload?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "cc38e31e-3a7f-435c-9e86-293daf0d6877",
+    "imageUrl": "bf68a3f9-d131-4bee-bbbc-80264a3da437.png"
+  }
+}
+```   
+</details>
+
+
 
 ## 👨 Developed By
 
