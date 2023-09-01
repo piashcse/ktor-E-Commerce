@@ -50,8 +50,8 @@ Ktor-E-Commerce backend built with [ktor](https://ktor.io/docs/welcome.html) fra
 ## How to run
 
 - `git clone git@github.com:piashcse/ktor-E-Commerce.git` 
--  `Create a db in postgreSQL`
--  Replace your db name in `dataSource.databaseName=ktor-1.0.0` instead of ktor-1.0.0 in the hikari.properties from the resource folder 
+-  Create a database in postgreSQL
+-  Change your db name in `resources/hikari.properties` and replace the name in `dataSource.databaseName=ktor-1.0.0` instead of `ktor-1.0.0` in the hikari.properties from the resource folder 
 - `run fun main()` from application class
 
 ## Api Documentation
