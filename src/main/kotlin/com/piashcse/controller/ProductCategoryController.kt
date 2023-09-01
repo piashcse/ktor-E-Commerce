@@ -46,6 +46,10 @@ class ProductCategoryController {
     fun deleteCategory(deleteCategory: DeleteCategory) = transaction {
         val categoryExist =
             ProductCategoryEntity.find { ProductCategoryTable.id eq deleteCategory.categoryId }.toList().singleOrNull()
-        categoryExist?.delete()
+        categoryExist?.let {
+            categoryExist.delete()
+            deleteCategory.categoryId
+        }
+
     }
 }

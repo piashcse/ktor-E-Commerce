@@ -28,13 +28,9 @@ fun NormalOpenAPIRoute.productCategoryRoute(categoryController: ProductCategoryC
             }
         }
         authenticateWithJwt(RoleManagement.ADMIN.role) {
-            post<Unit, Response, AddCategory, JwtTokenBody>(
-                exampleRequest = AddCategory(
-                    categoryName = "Mens Cloth"
-                )
-            ) { _, requestBody ->
-                requestBody.validation()
-                respond(ApiResponse.success(categoryController.createCategory(requestBody), HttpStatusCode.OK))
+            post<AddCategory, Response, Unit, JwtTokenBody>{ params, _ ->
+                params.validation()
+                respond(ApiResponse.success(categoryController.createCategory(params), HttpStatusCode.OK))
             }
             put<UpdateCategory, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()

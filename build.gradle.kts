@@ -1,5 +1,6 @@
 val ktor_version: String by project
 val kotlin_version: String by project
+val exposed_version: String by project
 val logback_version: String by project
 
 plugins {
@@ -44,11 +45,11 @@ dependencies {
 
     // exposed ORM library
     implementation("org.flywaydb:flyway-core:9.16.0")
-    implementation("org.jetbrains.exposed:exposed-core:0.42.0")
-    implementation("org.jetbrains.exposed:exposed-dao:0.42.0")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.42.0")
-    implementation("org.jetbrains.exposed:exposed-java-time:0.42.0")
-    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.42.0")
+    implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposed_version")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
+    implementation("org.jetbrains.exposed:exposed-java-time:$exposed_version")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposed_version")
 
     // postgresql
     implementation("org.postgresql:postgresql:42.6.0")
@@ -60,9 +61,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     // mail server
     implementation("org.apache.commons:commons-email:1.5")
-
-    implementation("com.google.api-client:google-api-client:2.2.0")
-    implementation("com.google.oauth-client:google-oauth-client:1.34.1")
 
     // validator
     implementation("org.valiktor:valiktor-core:0.12.0")
