@@ -877,6 +877,162 @@ http://localhost:8080/product/photo-upload?productId=71b26dd9-b4b5-4f87-a84d-c8d
 ```   
 </details>
 
+### PRODUCT CATEGORY
+
+<details>
+  
+<summary> <code>POST</code> <code>/product-category</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/product-category?categoryName=Kids' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ' \
+  -d ''
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product-category?categoryName=Kids
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "75b44e08-2c94-438f-b500-b204c7c90cca",
+    "categoryName": "Kids",
+    "subCategories": []
+  }
+}
+```   
+</details>
+
+
+<details>
+  
+<summary> <code>GET </code> <code>/product-category</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/product-category?limit=10&offset=0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product-category?limit=10&offset=0
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "58f5c085-d04a-47de-beab-1d476b6ce432",
+      "categoryName": "Mens Cloth",
+      "subCategories": []
+    },
+    {
+      "id": "75b44e08-2c94-438f-b500-b204c7c90cca",
+      "categoryName": "Kids",
+      "subCategories": []
+    }
+  ]
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>PUT </code> <code>/product-category</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/product-category?categoryId=58f5c085-d04a-47de-beab-1d476b6ce432&categoryName=Sports' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product-category?categoryId=58f5c085-d04a-47de-beab-1d476b6ce432&categoryName=Sports
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "58f5c085-d04a-47de-beab-1d476b6ce432",
+    "categoryName": "Sports",
+    "subCategories": []
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>DELETE</code> <code>/product-category</code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/product-category?categoryId=75b44e08-2c94-438f-b500-b204c7c90cca' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product-category?categoryId=75b44e08-2c94-438f-b500-b204c7c90cca
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "75b44e08-2c94-438f-b500-b204c7c90cca"
+}
+```   
+</details>
+
+
 
 
 ## 👨 Developed By
