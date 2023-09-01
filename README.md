@@ -1033,8 +1033,155 @@ http://localhost:8080/product-category?categoryId=75b44e08-2c94-438f-b500-b204c7
 ```   
 </details>
 
+### PRODUCT SUB CATEGORY
+
+<details>
+  
+<summary> <code>POST </code> <code>/product-sub-category</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/product-sub-category?categoryId=58f5c085-d04a-47de-beab-1d476b6ce432&subCategoryName=Cricket%20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2MzAyNjR9.lutSpglUtRQxkAQY4z94OIH6j-A1-TvF2L2_6zj7YA4VL6pnaZbMq-_uPZu4CnULYXVIRnwx4vzP9CWzyrc5Mw' \
+  -d ''
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product-sub-category?categoryId=58f5c085-d04a-47de-beab-1d476b6ce432&subCategoryName=Cricket%20
+``` 
 
 
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "978c50c1-70d7-405c-b323-c0d11eef714b",
+    "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
+    "subCategoryName": "Cricket "
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>GET </code> <code>/product-sub-category/{categoryId}</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/product-sub-category/{categoryId}?categoryId=58f5c085-d04a-47de-beab-1d476b6ce432&limit=10&offset=0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2MzA2ODl9.EQrEn_nAbTIH85sPOZdb1EY0y0n2gu97oRYC6QTSEDVNmqlouqR7KUx5bGqHsYVTkm9orimn8slqa0FONWyVuA'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product-sub-category/{categoryId}?categoryId=58f5c085-d04a-47de-beab-1d476b6ce432&limit=10&offset=0
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "978c50c1-70d7-405c-b323-c0d11eef714b",
+      "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
+      "subCategoryName": "Cricket "
+    }
+  ]
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>PUT </code> <code>/product-sub-category</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/product-sub-category?subCategoryId=978c50c1-70d7-405c-b323-c0d11eef714b&subCategoryName=Football' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2MzA2ODl9.EQrEn_nAbTIH85sPOZdb1EY0y0n2gu97oRYC6QTSEDVNmqlouqR7KUx5bGqHsYVTkm9orimn8slqa0FONWyVuA'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product-sub-category?subCategoryId=978c50c1-70d7-405c-b323-c0d11eef714b&subCategoryName=Football
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "978c50c1-70d7-405c-b323-c0d11eef714b",
+    "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
+    "subCategoryName": "Football"
+  }
+}
+```   
+</details>
+
+
+<details>
+  
+<summary> <code>DELETE </code> <code>/product-sub-category</code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/product-sub-category?subCategoryId=978c50c1-70d7-405c-b323-c0d11eef714b' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2MzA2ODl9.EQrEn_nAbTIH85sPOZdb1EY0y0n2gu97oRYC6QTSEDVNmqlouqR7KUx5bGqHsYVTkm9orimn8slqa0FONWyVuA'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/product-sub-category?subCategoryId=978c50c1-70d7-405c-b323-c0d11eef714b
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "978c50c1-70d7-405c-b323-c0d11eef714b"
+}
+```   
+</details>
 
 ## 👨 Developed By
 
