@@ -5,14 +5,14 @@ import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
-data class UpdateSubCategory(
+data class UpdateProductSubCategory(
     @QueryParam("subCategoryId") val subCategoryId: String,
     @QueryParam("subCategoryName") val subCategoryName: String
 ) {
     fun validation() {
         validate(this) {
-            validate(UpdateSubCategory::subCategoryId).isNotNull().isNotEmpty()
-            validate(UpdateSubCategory::subCategoryName).isNotNull().isNotEmpty()
+            validate(UpdateProductSubCategory::subCategoryId).isNotNull().isNotEmpty()
+            validate(UpdateProductSubCategory::subCategoryName).isNotNull().isNotEmpty()
         }
     }
 }

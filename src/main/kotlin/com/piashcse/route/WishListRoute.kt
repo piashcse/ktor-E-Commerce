@@ -19,15 +19,11 @@ import io.ktor.http.*
 fun NormalOpenAPIRoute.wishListRoute(wishlistController: WishListController) {
     route("wishlist") {
         authenticateWithJwt(RoleManagement.USER.role) {
-            post<Unit, Response, ProductId, JwtTokenBody>(
-                exampleRequest = ProductId(
-                    productId = "8eabd62f-fbb2-4fad-b440-3060f2e12dbc"
-                )
-            ) { _, requestBody ->
-                requestBody.validation()
+            post<ProductId, Response, Unit, JwtTokenBody> { params, _ ->
+                params.validation()
                 respond(
                     ApiResponse.success(
-                        wishlistController.addToWishList(principal().userId, requestBody.productId), HttpStatusCode.OK
+                        wishlistController.addToWishList(principal().userId, params.productId), HttpStatusCode.OK
                     )
                 )
             }

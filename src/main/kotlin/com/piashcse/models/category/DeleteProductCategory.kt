@@ -5,10 +5,10 @@ import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
-data class AddCategory(@QueryParam("categoryName") val categoryName: String) {
+data class DeleteProductCategory(@QueryParam("categoryId") val categoryId: String) {
     fun validation() {
         validate(this) {
-            validate(AddCategory::categoryName).isNotNull().isNotEmpty()
+            validate(DeleteProductCategory::categoryId).isNotNull().isNotEmpty()
         }
     }
 }

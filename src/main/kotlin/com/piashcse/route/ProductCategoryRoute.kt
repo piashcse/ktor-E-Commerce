@@ -2,9 +2,9 @@ package com.piashcse.route
 
 import com.piashcse.controller.ProductCategoryController
 import com.piashcse.models.PagingData
-import com.piashcse.models.category.AddCategory
-import com.piashcse.models.category.DeleteCategory
-import com.piashcse.models.category.UpdateCategory
+import com.piashcse.models.category.AddProductCategory
+import com.piashcse.models.category.DeleteProductCategory
+import com.piashcse.models.category.UpdateProductCategory
 import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
@@ -19,28 +19,28 @@ import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
 import io.ktor.http.*
 
-fun NormalOpenAPIRoute.productCategoryRoute(categoryController: ProductCategoryController) {
+fun NormalOpenAPIRoute.productCategoryRoute(productCategoryController: ProductCategoryController) {
     route("product-category") {
         authenticateWithJwt(RoleManagement.USER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
             get<PagingData, Response, JwtTokenBody> { params ->
                 params.validation()
-                respond(ApiResponse.success(categoryController.getCategory(params), HttpStatusCode.OK))
+                respond(ApiResponse.success(productCategoryController.getProductCategory(params), HttpStatusCode.OK))
             }
         }
         authenticateWithJwt(RoleManagement.ADMIN.role) {
-            post<AddCategory, Response, Unit, JwtTokenBody>{ params, _ ->
+            post<AddProductCategory, Response, Unit, JwtTokenBody>{ params, _ ->
                 params.validation()
-                respond(ApiResponse.success(categoryController.createCategory(params), HttpStatusCode.OK))
+                respond(ApiResponse.success(productCategoryController.createProductCategory(params), HttpStatusCode.OK))
             }
-            put<UpdateCategory, Response, Unit, JwtTokenBody> { params, _ ->
+            put<UpdateProductCategory, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()
-                respond(ApiResponse.success(categoryController.updateCategory(params), HttpStatusCode.OK))
+                respond(ApiResponse.success(productCategoryController.updateProductCategory(params), HttpStatusCode.OK))
             }
-            delete<DeleteCategory, Response, JwtTokenBody> { params ->
+            delete<DeleteProductCategory, Response, JwtTokenBody> { params ->
                 params.validation()
                 respond(
                     ApiResponse.success(
-                        categoryController.deleteCategory(params), HttpStatusCode.OK
+                        productCategoryController.deleteProductCategory(params), HttpStatusCode.OK
                     )
                 )
             }

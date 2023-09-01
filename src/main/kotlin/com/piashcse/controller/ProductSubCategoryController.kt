@@ -5,52 +5,57 @@ import com.piashcse.entities.product.category.ProductCategoryTable
 import com.piashcse.entities.product.category.ProductSubCategoryEntity
 import com.piashcse.entities.product.category.ProductSubCategoryTable
 import com.piashcse.models.PagingData
-import com.piashcse.models.subcategory.AddSubCategory
-import com.piashcse.models.subcategory.UpdateSubCategory
+import com.piashcse.models.subcategory.AddProductSubCategory
+import com.piashcse.models.subcategory.PagingDataWithCategoryId
+import com.piashcse.models.subcategory.UpdateProductSubCategory
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class ProductSubCategoryController {
-    fun createSubCategory(subCategory: AddSubCategory) = transaction {
-        val categoryIdExist = ProductCategoryEntity.find { ProductCategoryTable.id eq subCategory.categoryId }.toList().singleOrNull()
+    fun createProductSubCategory(productSubCategory: AddProductSubCategory) = transaction {
+        val categoryIdExist = ProductCategoryEntity.find { ProductCategoryTable.id eq productSubCategory.categoryId }.toList().singleOrNull()
         if (categoryIdExist != null) {
             val subCategoryExist =
-                ProductSubCategoryEntity.find { ProductSubCategoryTable.subCategoryName eq subCategory.subCategoryName }.toList()
+                ProductSubCategoryEntity.find { ProductSubCategoryTable.subCategoryName eq productSubCategory.subCategoryName }.toList()
                     .singleOrNull()
             if (subCategoryExist == null) {
                 ProductSubCategoryEntity.new {
-                    categoryId = EntityID(subCategory.categoryId, ProductSubCategoryTable)
-                    subCategoryName = subCategory.subCategoryName
+                    categoryId = EntityID(productSubCategory.categoryId, ProductSubCategoryTable)
+                    subCategoryName = productSubCategory.subCategoryName
                 }.response()
             } else {
-                subCategory.subCategoryName.alreadyExistException()
+                productSubCategory.subCategoryName.alreadyExistException()
             }
         } else {
-            subCategory.categoryId.isNotExistException()
+            productSubCategory.categoryId.isNotExistException()
         }
     }
 
-    fun getSubCategory(paging: PagingData) = transaction {
-        val subCategoryExist = ProductSubCategoryEntity.all().limit(paging.limit, paging.offset)
+    fun getProductSubCategory(paging: PagingDataWithCategoryId) = transaction {
+        val subCategoryExist = ProductSubCategoryEntity.find { ProductSubCategoryTable.categoryId eq paging.categoryId }.limit(paging.limit, paging.offset)
         subCategoryExist.map {
             it.response()
         }
     }
 
-    fun updateSubCategory(updateSubCategory: UpdateSubCategory) = transaction {
+    fun updateProductSubCategory(updateProductSubCategory: UpdateProductSubCategory) = transaction {
         val suCategoryExist =
-            ProductSubCategoryEntity.find { ProductSubCategoryTable.id eq updateSubCategory.subCategoryId }.toList().singleOrNull()
+            ProductSubCategoryEntity.find { ProductSubCategoryTable.id eq updateProductSubCategory.subCategoryId }.toList().singleOrNull()
         suCategoryExist?.let {
-            it.subCategoryName = updateSubCategory.subCategoryName
+            it.subCategoryName = updateProductSubCategory.subCategoryName
+            it.response()
         } ?: run {
-            updateSubCategory.subCategoryId.isNotExistException()
+            updateProductSubCategory.subCategoryId.isNotExistException()
         }
     }
 
-    fun deleteSubCategory(subCategoryId: String) = transaction {
-        val subCategoryExist = ProductSubCategoryEntity.find { ProductSubCategoryTable.id eq subCategoryId }.toList().singleOrNull()
-        subCategoryExist?.delete()
+    fun deleteProductSubCategory(productSubCategoryId: String) = transaction {
+        val subCategoryExist = ProductSubCategoryEntity.find { ProductSubCategoryTable.id eq productSubCategoryId }.toList().singleOrNull()
+        subCategoryExist?.let {
+            subCategoryExist.delete()
+            productSubCategoryId
+        }
     }
 }
