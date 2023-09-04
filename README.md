@@ -54,7 +54,18 @@ Ktor E-Commerce Backend, a high-performance backend solution for your e-commerce
 -  Change your db name in `resources/hikari.properties` and replace your database name in `dataSource.databaseName=ktor-1.0.0` instead of `ktor-1.0.0`.
 - `run fun main()` from application class
 
-## API Documentation
+## Documentation
+
+### ROLE MANAGEMENT
+<details>
+<summary>Admin, Seller, User </summary>
+
+- <b> User Role:</b> Users can browse products, make purchases, and manage their accounts.
+- <b> Seller Role:</b>  Sellers can list products, manage their inventory, and view order details.
+- <b> Admin Role:</b>  Admins have full access to manage users, roles, and system settings.
+
+</details>
+
 
 ### USER
 <details>
