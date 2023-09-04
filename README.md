@@ -1,5 +1,5 @@
 # Ktor-E-Commerce Api for Backend. 
-[![Ktor](https://img.shields.io/badge/ktor-2.3.3-blue.svg)](https://github.com/ktorio/ktor)
+[![Ktor](https://img.shields.io/badge/ktor-2.3.4-blue.svg)](https://github.com/ktorio/ktor)
 [![Exposed](https://img.shields.io/badge/Exposed-0.43.0-blue.svg)](https://github.com/JetBrains/Exposed)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
@@ -51,10 +51,10 @@ Ktor-E-Commerce backend built with [ktor](https://ktor.io/docs/welcome.html) fra
 
 - `git clone git@github.com:piashcse/ktor-E-Commerce.git` 
 -  Create a database in postgreSQL
--  Change your db name in `resources/hikari.properties` and replace the name in `dataSource.databaseName=ktor-1.0.0` instead of `ktor-1.0.0` in the hikari.properties from the resource folder 
+-  Change your db name in `resources/hikari.properties` and replace your database name in `dataSource.databaseName=ktor-1.0.0` instead of `ktor-1.0.0`.
 - `run fun main()` from application class
 
-## Api Documentation
+## API Documentation
 
 ### USER
 <details>
