@@ -44,6 +44,16 @@ Ktor E-Commerce Backend, a high-performance backend solution for your e-commerce
 - **Order Processing**: Handle order creation, status updates, and order history.
 - **Payment Integration**: Integrate with popular payment gateways for seamless transactions.
 
+### 6. Scalability and Performance
+
+- **Asynchronous Processing**: Leverage Ktor's async capabilities for high performance.
+- **Load Balancing**: Easily scale your application to accommodate increased traffic.
+
+## 7. Security
+
+- **JWT Tokens**: Implement JSON Web Tokens for secure authentication.
+- **Input Validation**: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).
+
 ## Architecture
 <p align="center">
   <img width="40%" height="25%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/mvc.png" />
