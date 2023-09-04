@@ -21,22 +21,18 @@ import io.ktor.http.*
 
 fun NormalOpenAPIRoute.brandRoute(brandController: BrandController) {
     route("brand") {
-        authenticateWithJwt(RoleManagement.USER.role, RoleManagement.SELLER.role) {
+        authenticateWithJwt(RoleManagement.USER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
             get<PagingData, Response, JwtTokenBody> { params ->
                 params.validation()
                 respond(ApiResponse.success(brandController.getBrand(params), HttpStatusCode.OK))
             }
         }
-        authenticateWithJwt(RoleManagement.SELLER.role) {
-            post<Unit, Response, AddBrand, JwtTokenBody>(
-                exampleRequest = AddBrand(
-                    brandName = "Easy"
-                )
-            ) { _, brandRequestBody ->
-                brandRequestBody.validation()
+        authenticateWithJwt(RoleManagement.ADMIN.role) {
+            post<AddBrand, Response, Unit, JwtTokenBody> { params, _ ->
+                params.validation()
                 respond(
                     ApiResponse.success(
-                        brandController.createBrand(brandRequestBody), HttpStatusCode.OK
+                        brandController.createBrand(params), HttpStatusCode.OK
                     )
                 )
             }

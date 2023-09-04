@@ -41,6 +41,9 @@ class BrandController {
 
     fun deleteBrand(deleteBrand: DeleteBrand) = transaction {
         val isBrandExist = BrandEntity.find { BrandTable.id eq deleteBrand.brandId }.toList().singleOrNull()
-        isBrandExist?.delete()
+        isBrandExist?.let {
+            it.delete()
+            deleteBrand.brandId
+        } ?: deleteBrand.brandId.isNotExistException()
     }
 }

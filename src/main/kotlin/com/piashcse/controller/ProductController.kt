@@ -2,6 +2,7 @@ package com.piashcse.controller
 
 import com.piashcse.entities.product.*
 import com.piashcse.models.product.request.*
+import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -33,6 +34,7 @@ class ProductController {
             imageTwo = addProduct.imageTwo
         }.response()
     }
+
     fun updateProduct(userId: String, productId: String, updateProduct: UpdateProduct) = transaction {
         val isProductExist =
             ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.toList()
@@ -138,8 +140,10 @@ class ProductController {
         val isProductExist =
             ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq deleteProduct.productId) }
                 .toList().singleOrNull()
-        isProductExist?.delete()
-        deleteProduct.productId
+        isProductExist?.let {
+            it.delete()
+            deleteProduct.productId
+        } ?: deleteProduct.productId.isNotExistException()
     }
 
     fun uploadProductImages(userId: String, productId: String, productImages: String) = transaction {
