@@ -1183,6 +1183,155 @@ http://localhost:8080/product-sub-category?subCategoryId=978c50c1-70d7-405c-b323
 ```   
 </details>
 
+### BRAND
+<details>
+  
+<summary> <code>POST </code> <code>/brand </code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/brand?brandName=Nike' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg' \
+  -d ''
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/brand?brandName=Nike
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "brandName": "Nike"
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>GET </code> <code>/brand </code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/brand?limit=10&offset=0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/brand?limit=10&offset=0
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "brandName": "Nike"
+    },
+    {
+      "id": "19dd1021-432c-473c-8b19-0f56d19af9ad",
+      "brandName": "PUMA"
+    }
+  ]
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>PUT </code> <code>/brand </code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/brand?brandId=6c5078d3-f8e3-4c88-9afe-48b5423c664f&brandName=Addidas' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/brand?brandId=6c5078d3-f8e3-4c88-9afe-48b5423c664f&brandName=Addidas
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "brandName": "Addidas"
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>DELETE</code> <code>/brand </code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/brand?brandId=19dd1021-432c-473c-8b19-0f56d19af9ad' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/brand?brandId=19dd1021-432c-473c-8b19-0f56d19af9ad
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "19dd1021-432c-473c-8b19-0f56d19af9ad"
+}
+```   
+</details>
+
 ## 👨 Developed By
 
 <a href="https://twitter.com/piashcse" target="_blank">
