@@ -13,16 +13,36 @@ Ktor E-Commerce Backend, a high-performance backend solution for your e-commerce
   <img width="100%" height="40%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/Screenshot-2023-05-13.png" />
 </p>
 
+
 # Main Features
-- Role Management(Admin, Seller, User)
-- Login
-- Registration
-- Shop Registration
-- Product Category
-- Product Subcategory
-- Brand 
-- Cart
-- Order
+
+### 1. Role-Based Access Control
+
+- **User Role**: Shoppers with basic access to browse and make purchases.
+- **Seller Role**: Vendors can list products and manage their inventory.
+- **Admin Role**: Administrators have full control over the platform.
+  
+### 2. User Accounts and Authentication
+
+- **User Registration**: Allow customers to create accounts.
+- **User Authentication**: Implement JWT-based authentication for user sessions.
+- **User Profiles**: Enable users to view and update their profiles.
+
+### 3. Product Management
+
+- **Product Listings**: Create, update, and delete product listings.
+- **Categories**: Organize products into categories and brands for easy navigation.
+- **Inventory Control**: Keep track of product availability and stock levels.
+  
+### 4. Shopping Cart and Checkout
+
+- **Shopping Cart**: Add and remove products, update quantities, and calculate totals.
+- **Checkout**: Streamline the checkout process for quick and secure payments.
+
+### 5. Order Management
+
+- **Order Processing**: Handle order creation, status updates, and order history.
+- **Payment Integration**: Integrate with popular payment gateways for seamless transactions.
 
 ## Architecture
 <p align="center">
