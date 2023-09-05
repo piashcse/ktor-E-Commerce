@@ -5,7 +5,7 @@
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
 <a href="https://github.com/piashcse"><img alt="License" src="https://img.shields.io/static/v1?label=GitHub&message=piashcse&color=C51162"/></a>
 
-Ktor E-Commerce Backend, a high-performance backend solution for your e-commerce application built with Ktor [ktor](https://ktor.io/docs/welcome.html).
+Ktor E-Commerce Backend, a high-performance backend solution for your e-commerce application built with [ktor](https://ktor.io/docs/welcome.html).
 
 ## Swagger View
 
@@ -14,7 +14,7 @@ Ktor E-Commerce Backend, a high-performance backend solution for your e-commerce
 </p>
 
 
-# Main Features
+# Features
 
 ### 1. Role-Based Access Control
 
@@ -49,7 +49,7 @@ Ktor E-Commerce Backend, a high-performance backend solution for your e-commerce
 - **Asynchronous Processing**: Leverage Ktor's async capabilities for high performance.
 - **Load Balancing**: Easily scale your application to accommodate increased traffic.
 
-## 7. Security
+### 7. Security
 
 - **JWT Tokens**: Implement JSON Web Tokens for secure authentication.
 - **Input Validation**: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).
