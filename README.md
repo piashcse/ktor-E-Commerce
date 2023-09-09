@@ -1517,6 +1517,258 @@ http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
 ```   
 </details>
 
+### CART
+
+<details>
+  
+<summary> <code>POST</code> <code>/cart </code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ' \
+  -d ''
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+    "quantity": 1
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>GET </code> <code>/cart </code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/cart?limit=10&offset=0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/cart?limit=10&offset=0
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "productId": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
+      "quantity": 3,
+      "product": {
+        "id": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
+        "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
+        "productName": "Smartch watch",
+        "productCode": "string",
+        "productQuantity": 5,
+        "productDetail": "Xiaomi Smart Watch",
+        "price": 10,
+        "discountPrice": 0,
+        "status": 0,
+        "videoLink": "string",
+        "mainSlider": "string",
+        "hotDeal": "string",
+        "bestRated": "string",
+        "midSlider": "string",
+        "hotNew": "string",
+        "trend": "string",
+        "buyOneGetOne": "string",
+        "imageOne": "string",
+        "imageTwo": "string"
+      }
+    },
+    {
+      "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+      "quantity": 1,
+      "product": {
+        "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+        "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
+        "productName": "Polo T Shirt",
+        "productCode": "string",
+        "productQuantity": 1,
+        "productDetail": "Chinese polo T-shirt",
+        "price": 100,
+        "discountPrice": 0,
+        "status": 0,
+        "hotDeal": "string",
+        "bestRated": "string",
+        "buyOneGetOne": "string"
+      }
+    }
+  ]
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>PUT </code> <code>/cart/{productId} </code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/cart/5b24d429-c981-47c8-9318-f4d61dd2c1a4?quantity=1' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/cart/5b24d429-c981-47c8-9318-f4d61dd2c1a4?quantity=1
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+    "quantity": 2,
+    "product": {
+      "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+      "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
+      "productName": "Polo T Shirt",
+      "productCode": "string",
+      "productQuantity": 1,
+      "productDetail": "Chinese polo T-shirt",
+      "price": 100,
+      "discountPrice": 0,
+      "status": 0,
+      "hotDeal": "string",
+      "bestRated": "string",
+      "buyOneGetOne": "string"
+    }
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>DELETE </code> <code>/cart/{productId} </code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/cart/71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/cart/71b26dd9-b4b5-4f87-a84d-c8daa506018a
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
+    "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
+    "productName": "Smartch watch",
+    "productCode": "string",
+    "productQuantity": 5,
+    "productDetail": "Xiaomi Smart Watch",
+    "price": 10,
+    "discountPrice": 0,
+    "status": 0,
+    "videoLink": "string",
+    "mainSlider": "string",
+    "hotDeal": "string",
+    "bestRated": "string",
+    "midSlider": "string",
+    "hotNew": "string",
+    "trend": "string",
+    "buyOneGetOne": "string",
+    "imageOne": "string",
+    "imageTwo": "string"
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>DELETE </code> <code>/cart/all </code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/cart/all' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NzU3MX0.rRj8mHIqG-d78t_H54HjiWl7GBzgH4KOWUKAWsDveolmBcxTfyCJKzWd4K8Jwq5MKvJ3xa8J1vf0E34DSHA4sw'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/cart/all
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": true
+}
+```   
+</details>
+
 ## 👨 Developed By
 
 <a href="https://twitter.com/piashcse" target="_blank">
