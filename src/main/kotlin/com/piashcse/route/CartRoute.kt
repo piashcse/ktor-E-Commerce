@@ -17,14 +17,9 @@ import io.ktor.http.*
 fun NormalOpenAPIRoute.cartRoute(cartController: CartController) {
     route("cart") {
         authenticateWithJwt(RoleManagement.USER.role) {
-            route("/add").post<Unit, Response, AddCart, JwtTokenBody>(
-                exampleRequest = AddCart(
-                    "",
-                    1,
-                )
-            ) { _, requestBody ->
-                requestBody.validation()
-                respond(ApiResponse.success(cartController.addToCart(principal().userId, requestBody), HttpStatusCode.OK))
+            post<AddCart, Response, Unit, JwtTokenBody> { params, _ ->
+                params.validation()
+                respond(ApiResponse.success(cartController.addToCart(principal().userId, params), HttpStatusCode.OK))
             }
             route("/{productId}").delete<DeleteProduct, Response, JwtTokenBody> { params ->
                 params.validation()
@@ -51,8 +46,7 @@ fun NormalOpenAPIRoute.cartRoute(cartController: CartController) {
                     )
                 )
             }
-            route("/all").delete<DeleteProduct, Response, JwtTokenBody> { params ->
-                params.validation()
+            route("/all").delete<Unit, Response, JwtTokenBody> { _ ->
                 respond(
                     ApiResponse.success(
                         cartController.deleteAllFromCart(principal().userId), HttpStatusCode.OK

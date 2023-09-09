@@ -36,13 +36,13 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
                 params.validation()
                 respond(
                     ApiResponse.success(
-                        productController.getProductById(principal().userId, params), HttpStatusCode.OK
+                        productController.getProduct(params), HttpStatusCode.OK
                     )
                 )
             }
         }
         authenticateWithJwt(RoleManagement.SELLER.role) {
-            get<ProductWithFilter, Response, JwtTokenBody> { params ->
+            route("seller").get<ProductWithFilter, Response, JwtTokenBody> { params ->
                 params.validation()
                 respond(
                     ApiResponse.success(
