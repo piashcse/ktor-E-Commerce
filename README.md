@@ -1373,6 +1373,150 @@ http://localhost:8080/brand?brandId=19dd1021-432c-473c-8b19-0f56d19af9ad
 ```   
 </details>
 
+### WISHLIST
+<details>
+  
+<summary> <code>POST</code> <code>/wishlist </code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NDUzNH0.ggdIuRpAGr6rfPWK0dH1wP_s4LGa-XQZqB3SoWyqV6lYatiHtoheNOPGocRfXG5c0zxc6MwgGX3C7rDK9_3ABQ' \
+  -d ''
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "product": {
+      "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+      "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
+      "productName": "Polo T Shirt",
+      "productCode": "string",
+      "productQuantity": 1,
+      "productDetail": "Chinese polo T-shirt",
+      "price": 100,
+      "discountPrice": 0,
+      "status": 0,
+      "hotDeal": "string",
+      "bestRated": "string",
+      "buyOneGetOne": "string"
+    }
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>GET </code> <code>/wishlist </code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/wishlist' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NDUzNH0.ggdIuRpAGr6rfPWK0dH1wP_s4LGa-XQZqB3SoWyqV6lYatiHtoheNOPGocRfXG5c0zxc6MwgGX3C7rDK9_3ABQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/wishlist
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+      "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
+      "productName": "Polo T Shirt",
+      "productCode": "string",
+      "productQuantity": 1,
+      "productDetail": "Chinese polo T-shirt",
+      "price": 100,
+      "discountPrice": 0,
+      "status": 0,
+      "hotDeal": "string",
+      "bestRated": "string",
+      "buyOneGetOne": "string"
+    }
+  ]
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>DELETE </code> <code>/wishlist </code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NDUzNH0.ggdIuRpAGr6rfPWK0dH1wP_s4LGa-XQZqB3SoWyqV6lYatiHtoheNOPGocRfXG5c0zxc6MwgGX3C7rDK9_3ABQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+    "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
+    "productName": "Polo T Shirt",
+    "productCode": "string",
+    "productQuantity": 1,
+    "productDetail": "Chinese polo T-shirt",
+    "price": 100,
+    "discountPrice": 0,
+    "status": 0,
+    "hotDeal": "string",
+    "bestRated": "string",
+    "buyOneGetOne": "string"
+  }
+}
+```   
+</details>
+
 ## 👨 Developed By
 
 <a href="https://twitter.com/piashcse" target="_blank">
