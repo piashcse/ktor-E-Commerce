@@ -2,7 +2,6 @@ package com.piashcse.route
 
 import com.papsign.ktor.openapigen.route.path.auth.*
 import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
-import com.papsign.ktor.openapigen.route.path.normal.get
 import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
 import com.piashcse.controller.OrderController
@@ -42,7 +41,7 @@ fun NormalOpenAPIRoute.orderRoute(orderController: OrderController) {
                 params.validation()
                 respond(ApiResponse.success(orderController.getOrders(principal().userId, params), HttpStatusCode.OK))
             }
-            route("/payment").put<Unit, Response, OrderId, JwtTokenBody> { _, params ->
+            route("/payment").put<OrderId, Response, Unit, JwtTokenBody> { params,_  ->
                 params.validation()
                 respond(
                     ApiResponse.success(

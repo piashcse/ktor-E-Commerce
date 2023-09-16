@@ -25,9 +25,9 @@ fun Application.configureBasic() {
     install(OpenAPIGen) {
         // basic info
         info {
-            version = "0.0.1"
-            title = "Ktor Ecommerce"
-            description = "Api Documentation for Ktor Ecommerce App"
+            version = "1.0.0"
+            title = "Ktor E-Commerce"
+            description = "API Documentation for Ktor Ecommerce App"
             contact {
                 name = "PLabs Corporation"
                 email = "piash599@gmail.com"
@@ -35,7 +35,7 @@ fun Application.configureBasic() {
         }
         // describe the server, add as many as you want
         server("http://localhost:8080/") {
-            description = "Ktor for local server"
+            description = "Base URL"
         }
         //optional custom schema object name
         replaceModule(DefaultSchemaNamer, object : SchemaNamer {
