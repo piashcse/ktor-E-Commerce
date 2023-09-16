@@ -1883,6 +1883,48 @@ http://localhost:8080/order?limit=10&offset=0
 ```   
 </details>
 
+<details>
+  
+<summary> <code>PUT </code> <code>/order/paymment </code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/order/payment?orderId=04675b54-a9df-4200-a526-0b15f6a85930' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDk1OTMwMn0.0KN6NpFd7kZALAm6jiT44isutsEQ_r84YnfKczjbPjQSdlkBNU_M2yey4wySRnYtf2m4UsaA4ogAVbJEXlv1wA'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/order/payment?orderId=04675b54-a9df-4200-a526-0b15f6a85930
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "orderId": "04675b54-a9df-4200-a526-0b15f6a85930",
+    "quantity": 1,
+    "subTotal": 10,
+    "total": 10,
+    "shippingCharge": 100,
+    "cancelOrder": false,
+    "status": "paid",
+    "statusCode": 2
+  }
+}
+```   
+</details>
+
 ## 👨 Developed By
 
 <a href="https://twitter.com/piashcse" target="_blank">
