@@ -42,14 +42,14 @@ fun Application.configureRouting() {
             tag(Tags.BRAND) {
                 brandRoute(BrandController())
             }
+            tag(Tags.WISHLIST) {
+                wishListRoute(WishListController())
+            }
             tag(Tags.CART) {
                 cartRoute(CartController())
             }
             tag(Tags.ORDER) {
                 orderRoute(OrderController())
-            }
-            tag(Tags.WISHLIST) {
-                wishListRoute(WishListController())
             }
             tag(Tags.SHIPPING) {
                 shippingRoute(ShippingController())

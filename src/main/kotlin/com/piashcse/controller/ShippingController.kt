@@ -6,7 +6,6 @@ import com.piashcse.entities.orders.OrdersTable
 import com.piashcse.entities.user.UserTable
 import com.piashcse.models.shipping.AddShipping
 import com.piashcse.models.shipping.UpdateShipping
-import com.piashcse.utils.CommonException
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.dao.id.EntityID
@@ -24,12 +23,12 @@ class ShippingController {
             ShippingEntity.new {
                 this.userId = EntityID(userId, ShippingTable)
                 this.orderId = EntityID(userId, ShippingTable)
-                shipAddress = addShipping.shipAddress
-                shipCity = addShipping.shipCity
-                shipPhone = addShipping.shipPhone
-                shipName = addShipping.shipName
-                shipEmail = addShipping.shipEmail
-                shipCountry = addShipping.shipCountry
+                shippingAddress = addShipping.shipAddress
+                shippingCity = addShipping.shipCity
+                shippingPhone = addShipping.shipPhone
+                shippingName = addShipping.shipName
+                shippingEmail = addShipping.shipEmail
+                shippingCountry = addShipping.shipCountry
 
             }
         }
@@ -50,12 +49,12 @@ class ShippingController {
         }.toList().singleOrNull()
 
         isExist?.let {
-            it.shipAddress = updateShipping.shipAddress ?: it.shipAddress
-            it.shipCity = updateShipping.shipCity ?: it.shipCity
-            it.shipPhone = updateShipping.shipPhone ?: it.shipPhone
-            it.shipName = updateShipping.shipName ?: it.shipName
-            it.shipEmail = updateShipping.shipEmail ?: it.shipEmail
-            it.shipCountry = updateShipping.shipCountry ?: it.shipCountry
+            it.shippingAddress = updateShipping.shipAddress ?: it.shippingAddress
+            it.shippingCity = updateShipping.shipCity ?: it.shippingCity
+            it.shippingPhone = updateShipping.shipPhone ?: it.shippingPhone
+            it.shippingName = updateShipping.shipName ?: it.shippingName
+            it.shippingEmail = updateShipping.shipEmail ?: it.shippingEmail
+            it.shippingCountry = updateShipping.shipCountry ?: it.shippingCountry
         } ?: run {
             updateShipping.orderId.isNotExistException()
         }
