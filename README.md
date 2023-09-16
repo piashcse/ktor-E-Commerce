@@ -1769,6 +1769,120 @@ http://localhost:8080/cart/all
 ```   
 </details>
 
+### ORDER
+<details>
+  
+<summary> <code>POST</code> <code>/order </code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/order' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDk1NjIzNX0.Go4nLzsiOruUKTtETn1Yc35BNjlo79_3Vs8LfW9LJG1nvogqIR0mG9JQOUxP8YclsVBzGV0j0IIv7svTaDMxTg' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "quantity": 1,
+  "subTotal": 10,
+  "total": 10,
+  "shippingCharge": 5,
+  "orderStatus": "pending",
+  "orderItems": [
+    {
+      "productId": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
+      "quantity": 1
+    }
+  ]
+}'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/order
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "orderId": "b177431f-22f2-4c01-8ad6-da5319e2c7b9"
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>GET </code> <code>/order </code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/order?limit=10&offset=0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDk1NjIzNX0.Go4nLzsiOruUKTtETn1Yc35BNjlo79_3Vs8LfW9LJG1nvogqIR0mG9JQOUxP8YclsVBzGV0j0IIv7svTaDMxTg'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/order?limit=10&offset=0
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "orderId": "04675b54-a9df-4200-a526-0b15f6a85930",
+      "quantity": 1,
+      "subTotal": 10,
+      "total": 10,
+      "shippingCharge": 100,
+      "cancelOrder": false,
+      "status": "pending",
+      "statusCode": 0
+    },
+    {
+      "orderId": "f88ab61d-5e52-431b-82e8-48e5b607085c",
+      "quantity": 1,
+      "subTotal": 10,
+      "total": 10,
+      "shippingCharge": 100,
+      "cancelOrder": false,
+      "status": "pending",
+      "statusCode": 0
+    },
+    {
+      "orderId": "b177431f-22f2-4c01-8ad6-da5319e2c7b9",
+      "quantity": 1,
+      "subTotal": 10,
+      "total": 10,
+      "shippingCharge": 5,
+      "cancelOrder": false,
+      "status": "pending",
+      "statusCode": 0
+    }
+  ]
+}
+```   
+</details>
+
 ## 👨 Developed By
 
 <a href="https://twitter.com/piashcse" target="_blank">
