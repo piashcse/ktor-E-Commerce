@@ -1,15 +1,13 @@
 package com.piashcse.controller
 
 import com.piashcse.entities.orders.*
-import com.piashcse.entities.user.UserTable
+import com.piashcse.models.PagingData
 import com.piashcse.models.order.AddOrder
 import com.piashcse.models.order.OrderId
-import com.piashcse.models.order.UpdateOrder
 import com.piashcse.utils.extension.OrderStatus
 import com.piashcse.utils.extension.orderStatusCode
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class OrderController {
@@ -35,7 +33,13 @@ class OrderController {
             productExist?.delete()
 
         }
-        order.response()
+        order.orderCreatedResponse()
+    }
+
+    fun getOrders(userId: String, pagingData: PagingData) = transaction {
+        OrderEntity.find { OrdersTable.userId eq userId }.limit(pagingData.limit, pagingData.offset).map {
+            it.response()
+        }
     }
 
     fun updateOrder(userId: String, orderId: OrderId, orderStatus: OrderStatus) = transaction {
