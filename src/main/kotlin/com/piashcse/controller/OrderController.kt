@@ -5,6 +5,7 @@ import com.piashcse.models.PagingData
 import com.piashcse.models.order.AddOrder
 import com.piashcse.models.order.OrderId
 import com.piashcse.utils.extension.OrderStatus
+import com.piashcse.utils.extension.isNotExistException
 import com.piashcse.utils.extension.orderStatusCode
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
@@ -46,9 +47,10 @@ class OrderController {
         val orderExist =
             OrderEntity.find { OrdersTable.userId eq userId and (OrdersTable.id eq orderId.orderId) }.toList()
                 .singleOrNull()
-        orderExist?.apply {
-            this.status = orderStatus.name.lowercase()
-            this.statusCode = orderStatus.name.lowercase().orderStatusCode()
-        }
+        orderExist?.let {
+            it.status = orderStatus.name.lowercase()
+            it.statusCode = orderStatus.name.lowercase().orderStatusCode()
+            it.response()
+        }?: "".isNotExistException()
     }
 }
