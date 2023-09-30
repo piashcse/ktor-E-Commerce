@@ -1,5 +1,6 @@
 package com.piashcse.controller
 
+import com.piashcse.dbhelper.query
 import com.piashcse.entities.orders.*
 import com.piashcse.models.PagingData
 import com.piashcse.models.order.AddOrder
@@ -12,7 +13,7 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class OrderController {
-    fun createOrder(userId: String, addOrder: AddOrder) = transaction {
+    suspend fun createOrder(userId: String, addOrder: AddOrder) = query {
         val order = OrderEntity.new {
             this.userId = EntityID(userId, OrdersTable)
             this.quantity = addOrder.quantity
@@ -37,13 +38,13 @@ class OrderController {
         order.orderCreatedResponse()
     }
 
-    fun getOrders(userId: String, pagingData: PagingData) = transaction {
+   suspend fun getOrders(userId: String, pagingData: PagingData) = query {
         OrderEntity.find { OrdersTable.userId eq userId }.limit(pagingData.limit, pagingData.offset).map {
             it.response()
         }
     }
 
-    fun updateOrder(userId: String, orderId: OrderId, orderStatus: OrderStatus) = transaction {
+    suspend fun updateOrder(userId: String, orderId: OrderId, orderStatus: OrderStatus) = query {
         val orderExist =
             OrderEntity.find { OrdersTable.userId eq userId and (OrdersTable.id eq orderId.orderId) }.toList()
                 .singleOrNull()

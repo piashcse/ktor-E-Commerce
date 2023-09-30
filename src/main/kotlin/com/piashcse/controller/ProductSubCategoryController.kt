@@ -1,5 +1,6 @@
 package com.piashcse.controller
 
+import com.piashcse.dbhelper.query
 import com.piashcse.entities.product.category.ProductCategoryEntity
 import com.piashcse.entities.product.category.ProductCategoryTable
 import com.piashcse.entities.product.category.ProductSubCategoryEntity
@@ -14,7 +15,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class ProductSubCategoryController {
-    fun createProductSubCategory(productSubCategory: AddProductSubCategory) = transaction {
+    suspend fun createProductSubCategory(productSubCategory: AddProductSubCategory) = query {
         val categoryIdExist = ProductCategoryEntity.find { ProductCategoryTable.id eq productSubCategory.categoryId }.toList().singleOrNull()
         if (categoryIdExist != null) {
             val subCategoryExist =
@@ -33,14 +34,14 @@ class ProductSubCategoryController {
         }
     }
 
-    fun getProductSubCategory(paging: PagingDataWithCategoryId) = transaction {
+    suspend fun getProductSubCategory(paging: PagingDataWithCategoryId) = query {
         val subCategoryExist = ProductSubCategoryEntity.find { ProductSubCategoryTable.categoryId eq paging.categoryId }.limit(paging.limit, paging.offset)
         subCategoryExist.map {
             it.response()
         }
     }
 
-    fun updateProductSubCategory(updateProductSubCategory: UpdateProductSubCategory) = transaction {
+    suspend fun updateProductSubCategory(updateProductSubCategory: UpdateProductSubCategory) = query {
         val suCategoryExist =
             ProductSubCategoryEntity.find { ProductSubCategoryTable.id eq updateProductSubCategory.subCategoryId }.toList().singleOrNull()
         suCategoryExist?.let {
@@ -51,7 +52,7 @@ class ProductSubCategoryController {
         }
     }
 
-    fun deleteProductSubCategory(productSubCategoryId: String) = transaction {
+    suspend fun deleteProductSubCategory(productSubCategoryId: String) = query {
         val subCategoryExist = ProductSubCategoryEntity.find { ProductSubCategoryTable.id eq productSubCategoryId }.toList().singleOrNull()
         subCategoryExist?.let {
             subCategoryExist.delete()

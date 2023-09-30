@@ -1,5 +1,6 @@
 package com.piashcse.controller
 
+import com.piashcse.dbhelper.query
 import com.piashcse.entities.product.ProductEntity
 import com.piashcse.entities.product.ProductTable
 import com.piashcse.entities.product.WishListEntity
@@ -12,7 +13,7 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class WishListController {
-    fun addToWishList(userId: String, productId: String) = transaction {
+    suspend fun addToWishList(userId: String, productId: String) = query {
         val isExits =
             WishListEntity.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }.toList()
                 .singleOrNull()
@@ -26,13 +27,13 @@ class WishListController {
         }
     }
 
-    fun getWishList(userId: String) = transaction {
+    suspend fun getWishList(userId: String) = query {
         WishListEntity.find { WishListTable.userId eq userId }.toList().map {
             ProductEntity.find { ProductTable.id eq it.productId }.first().response()
         }
     }
 
-    fun deleteFromWishList(userId: String, productId: String) = transaction {
+    suspend fun deleteFromWishList(userId: String, productId: String) = query {
         val isExits =
             WishListEntity.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }.toList()
                 .singleOrNull()

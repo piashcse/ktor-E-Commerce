@@ -1,5 +1,6 @@
 package com.piashcse.controller
 
+import com.piashcse.dbhelper.query
 import com.piashcse.entities.user.UserProfileTable
 import com.piashcse.entities.user.UsersProfileEntity
 import com.piashcse.models.user.body.UserProfileBody
@@ -9,14 +10,14 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 class ProfileController {
-    fun getProfile(userId: String) = transaction {
+    suspend fun getProfile(userId: String) = query {
         val profile = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         profile?.let {
             it.response()
         }
     }
 
-    fun updateProfile(userId: String, userProfile: UserProfileBody?) = transaction {
+    suspend fun updateProfile(userId: String, userProfile: UserProfileBody?) = query {
         val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         userProfileEntity?.let {
             it.firstName = userProfile?.firstName ?: it.firstName
@@ -36,7 +37,7 @@ class ProfileController {
         }
     }
 
-    fun updateProfileImage(userId: String, profileImage: String?) = transaction {
+    suspend fun updateProfileImage(userId: String, profileImage: String?) = query {
         val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         // delete previous file from directory as latest one replace previous one
         userProfileEntity?.userProfileImage?.let {

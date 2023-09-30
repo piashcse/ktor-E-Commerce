@@ -1,5 +1,6 @@
 package com.piashcse.controller
 
+import com.piashcse.dbhelper.query
 import com.piashcse.entities.ShippingEntity
 import com.piashcse.entities.ShippingTable
 import com.piashcse.entities.orders.OrdersTable
@@ -13,7 +14,7 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class ShippingController {
-    fun addShipping(userId: String, addShipping: AddShipping) = transaction {
+   suspend fun addShipping(userId: String, addShipping: AddShipping) = query {
         val isExist = ShippingEntity.find {
             UserTable.id eq userId and (OrdersTable.id eq addShipping.orderId)
         }.toList().singleOrNull()
@@ -34,7 +35,7 @@ class ShippingController {
         }
     }
 
-    fun getShipping(userId: String, orderId: String) = transaction {
+    suspend fun getShipping(userId: String, orderId: String) = query {
         val isExist = ShippingEntity.find {
             UserTable.id eq userId and (OrdersTable.id eq orderId)
         }.toList().singleOrNull()
@@ -43,7 +44,7 @@ class ShippingController {
         }
     }
 
-    fun updateShipping(userId: String, updateShipping: UpdateShipping) = transaction {
+    suspend fun updateShipping(userId: String, updateShipping: UpdateShipping) = query {
         val isExist = ShippingEntity.find {
             UserTable.id eq userId and (OrdersTable.id eq updateShipping.orderId)
         }.toList().singleOrNull()
@@ -60,7 +61,7 @@ class ShippingController {
         }
     }
 
-    fun deleteShipping(userId: String, orderId: String) = transaction {
+    suspend fun deleteShipping(userId: String, orderId: String) = query {
         val isExist = ShippingEntity.find {
             UserTable.id eq userId and (OrdersTable.id eq orderId)
         }.toList().singleOrNull()

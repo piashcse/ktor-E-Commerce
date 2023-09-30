@@ -1,5 +1,6 @@
 package com.piashcse.controller
 
+import com.piashcse.dbhelper.query
 import com.piashcse.entities.product.BrandEntity
 import com.piashcse.entities.product.BrandTable
 import com.piashcse.models.PagingData
@@ -11,9 +12,9 @@ import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class BrandController {
-    fun createBrand(addBand: AddBrand) = transaction {
+    suspend fun createBrand(addBand: AddBrand) = query {
         val brandExist = BrandEntity.find { BrandTable.brandName eq addBand.brandName }.toList().singleOrNull()
-        return@transaction if (brandExist == null) {
+         if (brandExist == null) {
             BrandEntity.new {
                 brandName = addBand.brandName
             }.brandResponse()
@@ -22,14 +23,14 @@ class BrandController {
         }
     }
 
-    fun getBrand(paging: PagingData) = transaction {
+    suspend fun getBrand(paging: PagingData) = query {
         val brands = BrandEntity.all().limit(paging.limit, paging.offset)
-        return@transaction brands.map {
+        brands.map {
             it.brandResponse()
         }
     }
 
-    fun updateBrand(updateBrand: UpdateBrand) = transaction {
+    suspend fun updateBrand(updateBrand: UpdateBrand) = query {
         val isBrandExist = BrandEntity.find { BrandTable.id eq updateBrand.brandId }.toList().singleOrNull()
         isBrandExist?.let {
             it.brandName = updateBrand.brandName
@@ -39,7 +40,7 @@ class BrandController {
 
     }
 
-    fun deleteBrand(deleteBrand: DeleteBrand) = transaction {
+   suspend fun deleteBrand(deleteBrand: DeleteBrand) = query {
         val isBrandExist = BrandEntity.find { BrandTable.id eq deleteBrand.brandId }.toList().singleOrNull()
         isBrandExist?.let {
             it.delete()

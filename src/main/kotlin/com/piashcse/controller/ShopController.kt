@@ -1,5 +1,6 @@
 package com.piashcse.controller
 
+import com.piashcse.dbhelper.query
 import com.piashcse.entities.shop.*
 import com.piashcse.entities.user.UserTable
 import com.piashcse.utils.CommonException
@@ -9,7 +10,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class ShopController {
-    fun createShopCategory(shopCategoryName: String) = transaction {
+    suspend fun createShopCategory(shopCategoryName: String) = query {
         val categoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.shopCategoryName eq shopCategoryName }.toList().singleOrNull()
         if (categoryExist == null) {
@@ -21,14 +22,14 @@ class ShopController {
         }
     }
 
-    fun getShopCategories(limit: Int, offset: Long) = transaction {
+    suspend fun getShopCategories(limit: Int, offset: Long) = query {
         val shopCategories = ShopCategoryEntity.all().limit(limit, offset)
         shopCategories.map {
             it.shopCategoryResponse()
         }
     }
 
-    fun updateShopCategory(shopCategoryId: String, shopCategoryName: String) = transaction {
+    suspend fun updateShopCategory(shopCategoryId: String, shopCategoryName: String) = query {
         val shopCategoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
         shopCategoryExist?.apply {
@@ -36,7 +37,7 @@ class ShopController {
         }?.shopCategoryResponse() ?: shopCategoryId.isNotExistException()
     }
 
-    fun deleteShopCategory(shopCategoryId: String) = transaction {
+    suspend fun deleteShopCategory(shopCategoryId: String) = query {
         val shopCategoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
         shopCategoryExist?.let {
@@ -47,7 +48,7 @@ class ShopController {
         }
     }
 
-    fun createShop(userId: String, shopCategoryId: String, shopName: String) = transaction {
+    suspend fun createShop(userId: String, shopCategoryId: String, shopName: String) = query {
         val shopNameExist = ShopEntity.find { ShopTable.shopName eq shopName }.toList().singleOrNull()
         if (shopNameExist == null) {
             ShopEntity.new {

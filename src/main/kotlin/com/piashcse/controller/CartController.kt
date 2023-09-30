@@ -1,5 +1,6 @@
 package com.piashcse.controller
 
+import com.piashcse.dbhelper.query
 import com.piashcse.entities.orders.CartItemEntity
 import com.piashcse.entities.orders.CartItemTable
 import com.piashcse.entities.product.ProductEntity
@@ -14,7 +15,7 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class CartController {
-    fun addToCart(userId: String, addCart: AddCart) = transaction {
+   suspend fun addToCart(userId: String, addCart: AddCart) = query {
         val isProductExist =
             CartItemEntity.find { CartItemTable.userId eq userId and (CartItemTable.productId eq addCart.productId) }
                 .toList().singleOrNull()
@@ -27,13 +28,13 @@ class CartController {
         }.cartResponse()
     }
 
-    fun getCartItems(userId: String, pagingData: PagingData) = transaction {
+    suspend fun getCartItems(userId: String, pagingData: PagingData) = query {
         CartItemEntity.find { CartItemTable.userId eq userId }.limit(pagingData.limit, pagingData.offset).map {
             it.cartResponse(ProductEntity.find { ProductTable.id eq it.productId }.first().response())
         }
     }
 
-    fun updateCartQuantity(userId: String, updateCart: UpdateCart) = transaction {
+    suspend fun updateCartQuantity(userId: String, updateCart: UpdateCart) = query {
         val productExist =
             CartItemEntity.find { CartItemTable.userId eq userId and (CartItemTable.productId eq updateCart.productId) }
                 .toList().singleOrNull()
@@ -44,7 +45,7 @@ class CartController {
         }
     }
 
-    fun removeCartItem(userId: String, deleteProduct: DeleteProduct) = transaction {
+    suspend fun removeCartItem(userId: String, deleteProduct: DeleteProduct) = query {
         val productExist =
             CartItemEntity.find { CartItemTable.userId eq userId and (CartItemTable.productId eq deleteProduct.productId) }
                 .toList().singleOrNull()
@@ -55,7 +56,7 @@ class CartController {
 
     }
 
-    fun deleteAllFromCart(userId: String) = transaction {
+    suspend fun deleteAllFromCart(userId: String) = query {
         val isEmpty = CartItemEntity.find { CartItemTable.userId eq userId }.toList()
         if (isEmpty.isEmpty()) {
             "".isNotExistException()

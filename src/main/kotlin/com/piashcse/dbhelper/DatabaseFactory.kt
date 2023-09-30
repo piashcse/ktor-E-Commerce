@@ -13,6 +13,8 @@ import com.piashcse.entities.user.UserProfileTable
 import com.piashcse.entities.user.UserTable
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -86,20 +88,6 @@ object DatabaseFactory {
         config.validate()
         return HikariDataSource(config)
     }
-
-
-    // database connection for h2
-    private fun hikariForH2(): HikariDataSource {
-        val config = HikariConfig()
-        config.driverClassName = "org.h2.Driver"
-        config.jdbcUrl = "jdbc:h2:file:~/documents/db/h2db"
-        config.maximumPoolSize = 3
-        config.isAutoCommit = false
-        config.transactionIsolation = "TRANSACTION_REPEATABLE_READ"
-        config.validate()
-        return HikariDataSource(config)
-    }
-
     private fun runFlyway(datasource: DataSource) {
         val flyway = Flyway.configure().dataSource(datasource).load()
         try {
@@ -110,5 +98,11 @@ object DatabaseFactory {
             throw e
         }
         log.info("Flyway migration has finished")
+    }
+}
+
+suspend fun <T> query(block: () -> T): T = withContext(Dispatchers.IO) {
+    transaction {
+        block()
     }
 }

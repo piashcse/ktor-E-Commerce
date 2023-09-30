@@ -1,5 +1,6 @@
 package com.piashcse.controller
 
+import com.piashcse.dbhelper.query
 import com.piashcse.entities.product.category.ProductCategoryEntity
 import com.piashcse.entities.product.category.ProductCategoryTable
 import com.piashcse.models.PagingData
@@ -11,7 +12,7 @@ import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class ProductCategoryController {
-    fun createProductCategory(addProductCategory: AddProductCategory) = transaction {
+   suspend fun createProductCategory(addProductCategory: AddProductCategory) = query {
         val categoryExist =
             ProductCategoryEntity.find { ProductCategoryTable.categoryName eq addProductCategory.categoryName }.toList().singleOrNull()
 
@@ -24,14 +25,14 @@ class ProductCategoryController {
         }
     }
 
-    fun getProductCategory(paging: PagingData) = transaction {
+    suspend fun getProductCategory(paging: PagingData) = query {
         val categories = ProductCategoryEntity.all().limit(paging.limit, paging.offset)
         categories.map {
             it.response()
         }
     }
 
-    fun updateProductCategory(updateProductCategory: UpdateProductCategory) = transaction {
+   suspend fun updateProductCategory(updateProductCategory: UpdateProductCategory) = query {
         val categoryExist =
             ProductCategoryEntity.find { ProductCategoryTable.id eq updateProductCategory.categoryId }.toList().singleOrNull()
         categoryExist?.let {
@@ -43,13 +44,12 @@ class ProductCategoryController {
         }
     }
 
-    fun deleteProductCategory(deleteProductCategory: DeleteProductCategory) = transaction {
+   suspend fun deleteProductCategory(deleteProductCategory: DeleteProductCategory) = query {
         val categoryExist =
             ProductCategoryEntity.find { ProductCategoryTable.id eq deleteProductCategory.categoryId }.toList().singleOrNull()
         categoryExist?.let {
             categoryExist.delete()
             deleteProductCategory.categoryId
         }
-
     }
 }

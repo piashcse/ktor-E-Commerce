@@ -1,6 +1,7 @@
 package com.piashcse.controller
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.piashcse.dbhelper.query
 import com.piashcse.entities.user.*
 import com.piashcse.models.user.body.*
 import com.piashcse.models.user.response.RegistrationResponse
@@ -12,7 +13,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.random.Random
 
 class UserController {
-    fun registration(registrationBody: RegistrationBody) = transaction {
+    suspend fun registration(registrationBody: RegistrationBody) = query {
         val userEntity =
             UsersEntity.find { UserTable.email eq registrationBody.email and (UserTable.userType eq registrationBody.userType) }
                 .toList().singleOrNull()
@@ -30,7 +31,7 @@ class UserController {
         RegistrationResponse(inserted.id.value, registrationBody.email)
     }
 
-    fun login(loginBody: LoginBody) = transaction {
+   suspend fun login(loginBody: LoginBody) = query {
         val userEntity =
             UsersEntity.find { UserTable.email eq loginBody.email and (UserTable.userType eq loginBody.userType) }
                 .toList().singleOrNull()
@@ -46,7 +47,7 @@ class UserController {
         } ?: loginBody.email.isNotExistException()
     }
 
-    fun changePassword(userId: String, changePassword: ChangePassword) = transaction {
+    suspend fun changePassword(userId: String, changePassword: ChangePassword) = query {
         val userEntity = UsersEntity.find { UserTable.id eq userId }.toList().singleOrNull()
         userEntity?.let {
             if (BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), it.password).verified) {
@@ -58,7 +59,7 @@ class UserController {
         }
     }
 
-    fun forgetPassword(forgetPasswordBody: ForgetPasswordEmail) = transaction {
+    suspend fun forgetPassword(forgetPasswordBody: ForgetPasswordEmail) = query {
         val userEntity = UsersEntity.find { UserTable.email eq forgetPasswordBody.email }.toList().singleOrNull()
         userEntity?.let {
             val verificationCode = Random.nextInt(1000, 9999).toString()
@@ -67,7 +68,7 @@ class UserController {
         }
     }
 
-    fun changeForgetPasswordByVerificationCode(confirmPasswordBody: ConfirmPassword) = transaction {
+   suspend fun changeForgetPasswordByVerificationCode(confirmPasswordBody: ConfirmPassword) = query {
         val userEntity = UsersEntity.find { UserTable.email eq confirmPasswordBody.email }.toList().singleOrNull()
         userEntity?.let {
             if (confirmPasswordBody.verificationCode == it.verificationCode) {

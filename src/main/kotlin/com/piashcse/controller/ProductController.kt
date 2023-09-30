@@ -1,5 +1,6 @@
 package com.piashcse.controller
 
+import com.piashcse.dbhelper.query
 import com.piashcse.entities.product.*
 import com.piashcse.models.product.request.*
 import com.piashcse.utils.extension.isNotExistException
@@ -9,7 +10,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class ProductController {
-    fun addProduct(userId: String, addProduct: AddProduct) = transaction {
+    suspend fun addProduct(userId: String, addProduct: AddProduct) = query {
         ProductEntity.new {
             this.userId = EntityID(userId, ProductTable)
             categoryId = EntityID(addProduct.categoryId, ProductTable)
@@ -35,7 +36,7 @@ class ProductController {
         }.response()
     }
 
-    fun updateProduct(userId: String, productId: String, updateProduct: UpdateProduct) = transaction {
+    suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProduct) = query {
         val isProductExist =
             ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.toList()
                 .singleOrNull()
@@ -66,7 +67,7 @@ class ProductController {
         }?.response()
     }
 
-    fun getProduct(productQuery: ProductWithFilter) = transaction {
+    suspend fun getProduct(productQuery: ProductWithFilter) = query {
         val query = ProductTable.selectAll()
         productQuery.maxPrice?.let {
             query.andWhere { ProductTable.price lessEq it }
@@ -96,7 +97,7 @@ class ProductController {
         }
     }
 
-    fun getProductById(userId: String, productQuery: ProductWithFilter) = transaction {
+    suspend fun getProductById(userId: String, productQuery: ProductWithFilter) = query {
         val query = ProductTable.selectAll()
         query.andWhere { ProductTable.userId eq userId }
 
@@ -131,12 +132,12 @@ class ProductController {
         }
     }
 
-    fun productDetail(productDetail: ProductDetail) = transaction {
+    suspend fun productDetail(productDetail: ProductDetail) = query {
         val isProductExist = ProductEntity.find { ProductTable.id eq productDetail.productId }.toList().singleOrNull()
         isProductExist?.response()
     }
 
-    fun deleteProduct(userId: String, deleteProduct: ProductId) = transaction {
+    suspend fun deleteProduct(userId: String, deleteProduct: ProductId) = query {
         val isProductExist =
             ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq deleteProduct.productId) }
                 .toList().singleOrNull()
@@ -146,12 +147,11 @@ class ProductController {
         } ?: deleteProduct.productId.isNotExistException()
     }
 
-    fun uploadProductImages(userId: String, productId: String, productImages: String) = transaction {
+    suspend fun uploadProductImages(userId: String, productId: String, productImages: String) = query {
         ProductImageEntity.new {
             this.userId = EntityID(userId, ProductTable)
             this.productId = EntityID(productId, ProductTable)
             this.imageUrl = productImages
         }.response()
-
     }
 }
