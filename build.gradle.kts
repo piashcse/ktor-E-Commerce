@@ -61,13 +61,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     // mail server
     implementation("org.apache.commons:commons-email:1.5")
-
     // validator
     implementation("org.valiktor:valiktor-core:0.12.0")
-
     // file extension
     implementation("commons-io:commons-io:2.11.0")
-
     //swagger
     implementation("dev.forst:ktor-openapi-generator:0.6.1")
 }
