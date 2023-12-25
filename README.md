@@ -89,9 +89,9 @@ Ktor E-Commerce Backend, a high-performance backend solution for your e-commerce
 
 ### ROLE MANAGEMENT
 <details>
-<summary>Admin, Seller, User </summary>
+<summary>Admin, Seller, Customer </summary>
 
-- <b> User Role:</b> Users can browse products, make purchases, and manage their accounts.
+- <b> Customer Role:</b> Customers can browse products, make purchases, and manage their accounts.
 - <b> Seller Role:</b>  Sellers can list products, manage their inventory, and view order details.
 - <b> Admin Role:</b>  Admins have full access to manage users, roles, and system settings.
 
