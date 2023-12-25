@@ -1,7 +1,6 @@
 package com.piashcse.route
 
 import com.piashcse.controller.ProductSubCategoryController
-import com.piashcse.models.PagingData
 import com.piashcse.models.subcategory.AddProductSubCategory
 import com.piashcse.models.subcategory.DeleteSubCategory
 import com.piashcse.models.subcategory.UpdateProductSubCategory
@@ -22,7 +21,7 @@ import io.ktor.http.*
 
 fun NormalOpenAPIRoute.productSubCategoryRoute(subCategoryController: ProductSubCategoryController) {
     route("product-sub-category") {
-        authenticateWithJwt(RoleManagement.USER.role,RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
+        authenticateWithJwt(RoleManagement.CUSTOMER.role,RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
             route("/{categoryId}").get<PagingDataWithCategoryId, Response, JwtTokenBody> { params ->
                 params.validation()
                 respond(ApiResponse.success(subCategoryController.getProductSubCategory(params), HttpStatusCode.OK))

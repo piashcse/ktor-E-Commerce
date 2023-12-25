@@ -19,7 +19,7 @@ import io.ktor.http.*
 
 fun NormalOpenAPIRoute.orderRoute(orderController: OrderController) {
     route("order") {
-        authenticateWithJwt(RoleManagement.USER.role) {
+        authenticateWithJwt(RoleManagement.CUSTOMER.role) {
             post<Unit, Response, AddOrder, JwtTokenBody>(
                 exampleRequest = AddOrder(
                     1,

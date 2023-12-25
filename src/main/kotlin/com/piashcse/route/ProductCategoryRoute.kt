@@ -21,7 +21,7 @@ import io.ktor.http.*
 
 fun NormalOpenAPIRoute.productCategoryRoute(productCategoryController: ProductCategoryController) {
     route("product-category") {
-        authenticateWithJwt(RoleManagement.USER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
+        authenticateWithJwt(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
             get<PagingData, Response, JwtTokenBody> { params ->
                 params.validation()
                 respond(ApiResponse.success(productCategoryController.getProductCategory(params), HttpStatusCode.OK))

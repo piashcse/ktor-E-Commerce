@@ -16,7 +16,6 @@ import com.papsign.ktor.openapigen.route.path.auth.put
 import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
 import com.piashcse.models.user.body.MultipartImage
-import com.piashcse.models.user.body.UserId
 import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.fileExtension
 import io.ktor.http.*
@@ -27,7 +26,7 @@ import java.util.*
 
 fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
     route("product") {
-        authenticateWithJwt(RoleManagement.USER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
+        authenticateWithJwt(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
             route("/{productId}").get<ProductDetail, Response, JwtTokenBody> { params ->
                 params.validation()
                 respond(ApiResponse.success(productController.productDetail(params), HttpStatusCode.OK))

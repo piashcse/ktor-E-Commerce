@@ -10,7 +10,7 @@ data class RegistrationBody(val email: String, val password: String, val userTyp
             validate(RegistrationBody::email).isNotNull().isEmail()
             validate(RegistrationBody::password).isNotNull().hasSize(4, 15)
             validate(RegistrationBody::userType).isNotNull()
-                .isIn(RoleManagement.ADMIN.role, RoleManagement.USER.role, RoleManagement.SELLER.role)
+                .isIn(RoleManagement.ADMIN.role, RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role)
         }
     }
 }

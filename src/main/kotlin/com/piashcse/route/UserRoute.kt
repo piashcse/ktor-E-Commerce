@@ -77,7 +77,7 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
             }
         }
     }
-    authenticateWithJwt(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.USER.role) {
+    authenticateWithJwt(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
         route("change-password").put<ChangePassword, Response, Unit, JwtTokenBody> { params, _ ->
             userController.changePassword(principal().userId, params)?.let {
                 if (it is UsersEntity) respond(

@@ -16,7 +16,7 @@ import io.ktor.http.*
 
 fun NormalOpenAPIRoute.cartRoute(cartController: CartController) {
     route("cart") {
-        authenticateWithJwt(RoleManagement.USER.role) {
+        authenticateWithJwt(RoleManagement.CUSTOMER.role) {
             post<AddCart, Response, Unit, JwtTokenBody> { params, _ ->
                 params.validation()
                 respond(ApiResponse.success(cartController.addToCart(principal().userId, params), HttpStatusCode.OK))

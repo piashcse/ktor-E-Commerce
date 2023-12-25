@@ -24,7 +24,7 @@ import java.io.File
 import java.util.*
 
 fun NormalOpenAPIRoute.profileRouting(profileController: ProfileController) {
-    authenticateWithJwt(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.USER.role) {
+    authenticateWithJwt(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
         route("profile").get<Unit, Response, JwtTokenBody> { _ ->
             respond(
                 ApiResponse.success(

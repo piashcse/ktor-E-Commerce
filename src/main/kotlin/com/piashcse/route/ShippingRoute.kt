@@ -17,7 +17,7 @@ import io.ktor.http.*
 
 fun NormalOpenAPIRoute.shippingRoute(shippingController: ShippingController) {
     route("shipping") {
-        authenticateWithJwt(RoleManagement.USER.role) {
+        authenticateWithJwt(RoleManagement.CUSTOMER.role) {
             post<Unit, Response, AddShipping, JwtTokenBody> { _, requestBody ->
                 requestBody.validation()
                 respond(

@@ -15,7 +15,7 @@ data class LoginBody(
             validate(LoginBody::email).isNotNull().isEmail()
             validate(LoginBody::password).isNotNull().hasSize(4, 10)
             validate(LoginBody::userType).isNotNull()
-                .isIn(RoleManagement.ADMIN.role, RoleManagement.USER.role, RoleManagement.SELLER.role)
+                .isIn(RoleManagement.ADMIN.role, RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role)
         }
     }
 }

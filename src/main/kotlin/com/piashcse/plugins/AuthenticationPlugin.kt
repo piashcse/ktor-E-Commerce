@@ -15,8 +15,8 @@ fun Application.configureAuthentication() {
          * If the token is valid, the corresponding [User] is fetched from the database.
          * The [User] can then be accessed in each [ApplicationCall].
          */
-        jwt (RoleManagement.USER.role){
-            provideJwtAuthConfig(this, RoleManagement.USER)
+        jwt (RoleManagement.CUSTOMER.role){
+            provideJwtAuthConfig(this, RoleManagement.CUSTOMER)
         }
         jwt(RoleManagement.ADMIN.role) {
             provideJwtAuthConfig(this, RoleManagement.ADMIN)
@@ -47,5 +47,5 @@ enum class RoleManagement(val role: String) {
     SUPER_ADMIN("super_admin"),
     ADMIN("admin"),
     SELLER("seller"),
-    USER("user")
+    CUSTOMER("customer")
 }
