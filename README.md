@@ -19,7 +19,7 @@ Ktor E-Commerce Backend, a high-performance backend solution for your e-commerce
 
 ### 1. Role-Based Access Control
 
-- **User Role**: Shoppers with basic access to browse and make purchases.
+- **Customer Role**: Shoppers with basic access to browse and make purchases.
 - **Seller Role**: Vendors can list products and manage their inventory.
 - **Admin Role**: Administrators have full control over the platform.
   
