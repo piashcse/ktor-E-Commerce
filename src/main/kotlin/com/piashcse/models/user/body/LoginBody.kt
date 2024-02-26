@@ -13,7 +13,7 @@ data class LoginBody(
     fun validation() {
         validate(this) {
             validate(LoginBody::email).isNotNull().isEmail()
-            validate(LoginBody::password).isNotNull().hasSize(4, 10)
+            validate(LoginBody::password).isNotNull().hasSize(4, 15)
             validate(LoginBody::userType).isNotNull()
                 .isIn(RoleManagement.ADMIN.role, RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role)
         }
