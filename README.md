@@ -1,8 +1,8 @@
 # Ktor-E-Commerce Api for Backend. 
-[![Ktor](https://img.shields.io/badge/ktor-2.3.7-blue.svg)](https://github.com/ktorio/ktor)
-[![Exposed](https://img.shields.io/badge/Exposed-0.45.0-blue.svg)](https://github.com/JetBrains/Exposed)
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
-[![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-42.6.0-336791?logo=postgresql)](https://www.postgresql.org/)
+[![Ktor](https://img.shields.io/badge/ktor-2.3.9-blue.svg)](https://github.com/ktorio/ktor)
+[![Exposed](https://img.shields.io/badge/Exposed-0.49.0-blue.svg)](https://github.com/JetBrains/Exposed)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.23-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+[![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-42.7.0-336791?logo=postgresql)](https://www.postgresql.org/)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
 <a href="https://github.com/piashcse"><img alt="License" src="https://img.shields.io/static/v1?label=GitHub&message=piashcse&color=C51162"/></a>
 
