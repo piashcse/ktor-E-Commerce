@@ -218,7 +218,7 @@ http://localhost:8080/forget-password?email=piash599%40gmail.com
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/verify-change-password?email=piash599%40gmail.com&verificationCode=9889&password=p1234' \
+  'http://localhost:8080/verify-change-password?email=piash599%40gmail.com&verificationCode=9889&newPassword=p1234' \
   -H 'accept: application/json'
 ``` 
 
