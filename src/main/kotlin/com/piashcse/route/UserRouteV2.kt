@@ -8,6 +8,7 @@ import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.*
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
+import io.github.smiley4.ktorswaggerui.dsl.routing.put
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -162,7 +163,7 @@ fun Route.userRouteV2(userController: UserController) {
             }
     }
     authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
-        get("change-password", {
+        put("change-password", {
             tags("User")
             protected = true
             request {
