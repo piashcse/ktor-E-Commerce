@@ -18,6 +18,7 @@ import io.ktor.http.*
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.SimpleEmail
 
+/*
 fun NormalOpenAPIRoute.userRoute(userController: UserController) {
     route("login").get<LoginBody, Response> { requestBody ->
         requestBody.validation()
@@ -96,3 +97,4 @@ fun NormalOpenAPIRoute.userRoute(userController: UserController) {
         }
     }
 }
+*/

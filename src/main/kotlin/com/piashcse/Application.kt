@@ -17,10 +17,10 @@ fun main() {
         developmentMode = false
         module {
             DatabaseFactory.init()
+            configureAuthentication()
             configureBasic()
             configureStatusPage()
-            configureAuthentication()
-            configureRouting()
+            configureRouting2()
         }
         connector {
             host = config.property("ktor.deployment.host").getString()

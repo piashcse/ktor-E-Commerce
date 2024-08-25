@@ -22,7 +22,7 @@ fun Application.configureRouting() {
         // Api routing
         apiRouting {
             tag(Tags.USER) {
-                userRoute(UserController())
+                //userRoute(UserController())
             }
             tag(Tags.PROFILE) {
                 profileRouting(ProfileController())
