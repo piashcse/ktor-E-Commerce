@@ -3,7 +3,11 @@ package com.piashcse.plugins
 import io.github.smiley4.ktorswaggerui.SwaggerUI
 import io.github.smiley4.ktorswaggerui.data.AuthScheme
 import io.github.smiley4.ktorswaggerui.data.AuthType
+import io.github.smiley4.ktorswaggerui.dsl.routing.route
+import io.github.smiley4.ktorswaggerui.routing.openApiSpec
+import io.github.smiley4.ktorswaggerui.routing.swaggerUI
 import io.ktor.server.application.*
+import io.ktor.server.routing.*
 import io.swagger.v3.oas.models.media.Schema
 import java.io.File
 
@@ -45,6 +49,16 @@ fun Application.configureSwagger() {
                 it.type = "string"
                 it.format = "binary"
             })
+        }
+        routing {
+            // Create a route for the openapi-spec file.
+            route("api.json") {
+                openApiSpec()
+            }
+            // Create a route for the swagger-ui using the openapi-spec at "/api.json".
+            route("swagger") {
+                swaggerUI("/api.json")
+            }
         }
     }
 }
