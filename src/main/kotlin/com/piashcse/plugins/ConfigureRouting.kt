@@ -25,7 +25,7 @@ fun Application.configureRouting() {
                 //userRoute(UserController())
             }
             tag(Tags.PROFILE) {
-                profileRouting(ProfileController())
+                profileRoute(ProfileController())
             }
             tag(Tags.SHOP) {
                 shopRoute(ShopController())

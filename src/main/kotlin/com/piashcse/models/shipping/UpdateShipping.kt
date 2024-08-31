@@ -8,7 +8,7 @@ import org.valiktor.validate
 
 data class UpdateShipping(
     @PathParam("orderId") val orderId: String,
-    @QueryParam("shipAddress") val shipAddress: String?,
+    @QueryParam("shipAddress") val shipAddress: String,
     @QueryParam("shipCity") val shipCity: String?,
     @QueryParam("shipPhone") val shipPhone: Int?,
     @QueryParam("shipName") val shipName: String?,

@@ -18,8 +18,16 @@ fun Application.configureRouting2() {
         route("swagger") {
             swaggerUI("/api.json")
         }
-        route{
-            userRouteV2(UserController())
+        route {
+            userRoute(UserController())
+            profileRoute(ProfileController())
+            shopRoute(ShopController())
+            brandRoute(BrandController())
+            cartRoute(CartController())
+            wishListRoute(WishListController())
+            shippingRoute(ShippingController())
+            productCategoryRoute(ProductCategoryController())
+            productSubCategoryRoute(ProductSubCategoryController())
         }
     }
 }

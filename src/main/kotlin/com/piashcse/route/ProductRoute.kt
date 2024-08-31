@@ -1,5 +1,6 @@
 package com.piashcse.route
 
+import com.papsign.ktor.openapigen.annotations.parameters.QueryParam
 import com.piashcse.controller.ProductController
 import com.piashcse.models.product.request.*
 import com.piashcse.models.user.body.JwtTokenBody
@@ -17,13 +18,69 @@ import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
 import com.piashcse.models.user.body.MultipartImage
 import com.piashcse.utils.AppConstants
+import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.fileExtension
+import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
 
+fun Route.productRoute(productController: ProductController) {
+    route("product") {
+        authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
+            get("{productId}", {
+                tags("Product")
+                request {
+                    pathParameter<String>("productId"){
+                        required = true
+                    }
+                }
+                apiResponse()
+            }) {
+                val requiredParams = listOf("productId")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (productId) = requiredParams.map { call.parameters[it]!! }
+                call.respond(ApiResponse.success(productController.productDetail(productId), HttpStatusCode.OK))
+            }
+            get("", {
+                tags("Product")
+                request {
+                    queryParameter<Int>("limit")
+                    queryParameter<Long>("offset")
+                    queryParameter<Double>("maxPrice")
+                    queryParameter<Double>("minPrice")
+                    queryParameter<String>("categoryId")
+                    queryParameter<String>("subCategoryId")
+                    queryParameter<String>("brandId")
+                }
+                apiResponse()
+            }) {
+                val requiredParams = listOf("limit", "offset")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (productId) = requiredParams.map { call.parameters[it]!! }
+                call.respond(ApiResponse.success(productController.productDetail(productId), HttpStatusCode.OK))
+            }
+        }
+    }
+}
+/*@QueryParam("limit") val limit: Int,
+@QueryParam("offset") val offset: Long,
+@QueryParam("maxPrice") val maxPrice: Double?,
+@QueryParam("minPrice") val minPrice: Double?,
+@QueryParam("categoryId") val categoryId: String?,
+@QueryParam("subCategoryId") val subCategoryId: String?,
+@QueryParam("brandId") val brandId: String?,*/
+/*
 fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
     route("product") {
         authenticateWithJwt(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
@@ -97,4 +154,4 @@ fun NormalOpenAPIRoute.productRoute(productController: ProductController) {
             }
         }
     }
-}
+}*/

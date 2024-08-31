@@ -1,11 +1,10 @@
 package com.piashcse.controller
 
-import com.piashcse.dbhelper.query
+import com.piashcse.database.query
 import com.piashcse.entities.user.UserProfileTable
 import com.piashcse.entities.user.UsersProfileEntity
 import com.piashcse.models.user.body.UserProfileBody
 import com.piashcse.utils.AppConstants
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.nio.file.Files
 import java.nio.file.Paths
 

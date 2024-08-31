@@ -1,13 +1,12 @@
 package com.piashcse.controller
 
-import com.piashcse.dbhelper.query
+import com.piashcse.database.query
 import com.piashcse.entities.product.*
 import com.piashcse.models.product.request.*
 import com.piashcse.utils.extension.isNotExistException
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.transactions.transaction
 
 class ProductController {
     suspend fun addProduct(userId: String, addProduct: AddProduct) = query {
@@ -132,8 +131,8 @@ class ProductController {
         }
     }
 
-    suspend fun productDetail(productDetail: ProductDetail) = query {
-        val isProductExist = ProductEntity.find { ProductTable.id eq productDetail.productId }.toList().singleOrNull()
+    suspend fun productDetail(productId: String) = query {
+        val isProductExist = ProductEntity.find { ProductTable.id eq productId }.toList().singleOrNull()
         isProductExist?.response()
     }
 

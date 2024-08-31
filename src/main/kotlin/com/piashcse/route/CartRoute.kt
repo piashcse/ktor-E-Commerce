@@ -1,19 +1,136 @@
 package com.piashcse.route
 
-import com.papsign.ktor.openapigen.route.path.auth.*
 import com.piashcse.controller.CartController
-import com.piashcse.models.PagingData
 import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.Response
-import com.piashcse.utils.authenticateWithJwt
-import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
-import com.papsign.ktor.openapigen.route.response.respond
-import com.papsign.ktor.openapigen.route.route
-import com.piashcse.models.cart.*
+import com.piashcse.utils.extension.apiResponse
+import io.github.smiley4.ktorswaggerui.dsl.routing.delete
+import io.github.smiley4.ktorswaggerui.dsl.routing.post
+import io.github.smiley4.ktorswaggerui.dsl.routing.put
+import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 
+fun Route.cartRoute(cartController: CartController) {
+    route("cart") {
+        authenticate(RoleManagement.CUSTOMER.role) {
+            post("", {
+                tags("Cart")
+                request {
+                    queryParameter<String>("productId")
+                    queryParameter<String>("quantity")
+                }
+                apiResponse()
+            }) {
+                val loginUser = call.principal<JwtTokenBody>()
+                val requiredParams = listOf("productId", "quantity")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (productId, quantity) = requiredParams.map { call.parameters[it]!! }
+                call.respond(
+                    ApiResponse.success(
+                        cartController.addToCart(
+                            loginUser?.userId!!,
+                            productId,
+                            quantity.toInt()
+                        ), HttpStatusCode.OK
+                    )
+                )
+            }
+            get("", {
+                tags("Cart")
+                request {
+                    queryParameter<String>("limit")
+                    queryParameter<String>("offset")
+                }
+                apiResponse()
+            }) {
+                val loginUser = call.principal<JwtTokenBody>()
+                val requiredParams = listOf("limit", "offset")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (limit, offset) = requiredParams.map { call.parameters[it]!! }
+                call.respond(
+                    ApiResponse.success(
+                        cartController.getCartItems(
+                            loginUser?.userId!!,
+                            limit.toInt(),
+                            offset.toLong()
+                        ), HttpStatusCode.OK
+                    )
+                )
+            }
+            delete("{productId}", {
+                tags("Cart")
+                request {
+                    pathParameter<String>("productId")
+                }
+                apiResponse()
+            }) {
+                val loginUser = call.principal<JwtTokenBody>()
+                val requiredParams = listOf("productId")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (productId) = requiredParams.map { call.parameters[it]!! }
+                call.respond(
+                    ApiResponse.success(
+                        cartController.removeCartItem(loginUser?.userId!!, productId),
+                        HttpStatusCode.OK
+                    )
+                )
+            }
+            put("{productId}", {
+                tags("Cart")
+                request {
+                    pathParameter<String>("productId")
+                    queryParameter<String>("quantity")
+                }
+                apiResponse()
+            }) {
+                val loginUser = call.principal<JwtTokenBody>()
+                val requiredParams = listOf("productId", "quantity")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (productId, quantity) = requiredParams.map { call.parameters[it]!! }
+                call.respond(
+                    ApiResponse.success(
+                        cartController.updateCartQuantity(loginUser?.userId!!, productId, quantity.toInt()),
+                        HttpStatusCode.OK
+                    )
+                )
+            }
+            delete("all", {
+                tags("Cart")
+                request {
+                    pathParameter<String>("productId")
+                    queryParameter<String>("quantity")
+                }
+                apiResponse()
+            }) {
+                val loginUser = call.principal<JwtTokenBody>()
+                val requiredParams = listOf("productId", "quantity")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (productId, quantity) = requiredParams.map { call.parameters[it]!! }
+                call.respond(
+                    ApiResponse.success(
+                        cartController.deleteAllFromCart(loginUser?.userId!!), HttpStatusCode.OK
+                    )
+                )
+            }
+        }
+    }
+}
+/*
 fun NormalOpenAPIRoute.cartRoute(cartController: CartController) {
     route("cart") {
         authenticateWithJwt(RoleManagement.CUSTOMER.role) {
@@ -55,4 +172,4 @@ fun NormalOpenAPIRoute.cartRoute(cartController: CartController) {
             }
         }
     }
-}
+}*/

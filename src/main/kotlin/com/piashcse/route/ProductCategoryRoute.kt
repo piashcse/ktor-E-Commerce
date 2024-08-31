@@ -1,24 +1,138 @@
 package com.piashcse.route
 
 import com.piashcse.controller.ProductCategoryController
-import com.piashcse.models.PagingData
-import com.piashcse.models.category.AddProductCategory
-import com.piashcse.models.category.DeleteProductCategory
-import com.piashcse.models.category.UpdateProductCategory
-import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.Response
-import com.piashcse.utils.authenticateWithJwt
-import com.papsign.ktor.openapigen.route.path.auth.delete
-import com.papsign.ktor.openapigen.route.path.auth.get
-import com.papsign.ktor.openapigen.route.path.auth.post
-import com.papsign.ktor.openapigen.route.path.auth.put
-import com.papsign.ktor.openapigen.route.path.normal.*
-import com.papsign.ktor.openapigen.route.response.respond
-import com.papsign.ktor.openapigen.route.route
+import com.piashcse.utils.extension.apiResponse
+import io.github.smiley4.ktorswaggerui.dsl.routing.post
+import io.github.smiley4.ktorswaggerui.dsl.routing.get
+import io.github.smiley4.ktorswaggerui.dsl.routing.put
+import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 
+fun Route.productCategoryRoute(productCategoryController: ProductCategoryController) {
+    route("product-category") {
+        authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
+            get("", {
+                tags("Product Category")
+                request {
+                    queryParameter<String>("limit") {
+                        required = true
+                    }
+                    queryParameter<String>("offset") {
+                        required = true
+                    }
+                }
+                apiResponse()
+            }) {
+                val requiredParams = listOf("limit", "offset")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(
+                        ApiResponse.success(
+                            "Missing parameters: $it", HttpStatusCode.OK
+                        )
+                    )
+                }
+                val (limit, offset) = requiredParams.map { call.parameters[it]!! }
+                call.respond(
+                    ApiResponse.success(
+                        productCategoryController.getProductCategory(
+                            limit.toInt(), offset.toLong()
+                        ), HttpStatusCode.OK
+                    )
+                )
+            }
+        }
+
+        authenticate(RoleManagement.ADMIN.role) {
+            post("", {
+                tags("Product Category")
+                request {
+                    queryParameter<String>("categoryName") {
+                        required = true
+                    }
+                }
+                apiResponse()
+            }) {
+                val requiredParams = listOf("categoryName")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(
+                        ApiResponse.success(
+                            "Missing parameters: $it", HttpStatusCode.OK
+                        )
+                    )
+                }
+                val (categoryName) = requiredParams.map { call.parameters[it]!! }
+                call.respond(
+                    ApiResponse.success(
+                        productCategoryController.createProductCategory(
+                            categoryName
+                        ), HttpStatusCode.OK
+                    )
+                )
+            }
+            put("", {
+                tags("Product Category")
+                request {
+                    queryParameter<String>("categoryId") {
+                        required = true
+                    }
+                    queryParameter<String>("categoryName") {
+                        required = true
+                    }
+                }
+                apiResponse()
+            }) {
+                val requiredParams = listOf("categoryId", "categoryName")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(
+                        ApiResponse.success(
+                            "Missing parameters: $it", HttpStatusCode.OK
+                        )
+                    )
+                }
+                val (categoryId, categoryName) = requiredParams.map { call.parameters[it]!! }
+                call.respond(
+                    ApiResponse.success(
+                        productCategoryController.updateProductCategory(
+                            categoryId, categoryName
+                        ), HttpStatusCode.OK
+                    )
+                )
+            }
+            delete("", {
+                tags("Product Category")
+                request {
+                    queryParameter<String>("categoryId") {
+                        required = true
+                    }
+                }
+                apiResponse()
+            }) {
+                val requiredParams = listOf("categoryId")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(
+                        ApiResponse.success(
+                            "Missing parameters: $it", HttpStatusCode.OK
+                        )
+                    )
+                }
+                val (categoryId) = requiredParams.map { call.parameters[it]!! }
+                call.respond(
+                    ApiResponse.success(
+                        productCategoryController.deleteProductCategory(
+                            categoryId
+                        ), HttpStatusCode.OK
+                    )
+                )
+            }
+        }
+    }
+}/*
 fun NormalOpenAPIRoute.productCategoryRoute(productCategoryController: ProductCategoryController) {
     route("product-category") {
         authenticateWithJwt(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
@@ -46,4 +160,4 @@ fun NormalOpenAPIRoute.productCategoryRoute(productCategoryController: ProductCa
             }
         }
     }
-}
+}*/

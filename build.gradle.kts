@@ -68,6 +68,8 @@ dependencies {
     //swagger
     implementation("dev.forst:ktor-openapi-generator:0.6.1")
     implementation("io.github.smiley4:ktor-swagger-ui:3.3.0")
+    implementation("io.swagger.parser.v3:swagger-parser:2.1.22")
+
 }
 tasks.create("stage") {
     dependsOn("installDist")

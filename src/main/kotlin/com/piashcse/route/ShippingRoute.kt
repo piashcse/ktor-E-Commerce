@@ -1,20 +1,112 @@
 package com.piashcse.route
 
-import com.papsign.ktor.openapigen.route.path.auth.*
-import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
-import com.papsign.ktor.openapigen.route.response.respond
-import com.papsign.ktor.openapigen.route.route
 import com.piashcse.controller.ShippingController
 import com.piashcse.models.shipping.AddShipping
-import com.piashcse.models.shipping.OrderId
-import com.piashcse.models.shipping.UpdateShipping
 import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.Response
-import com.piashcse.utils.authenticateWithJwt
+import com.piashcse.utils.extension.apiResponse
+import io.github.smiley4.ktorswaggerui.dsl.routing.get
+import io.github.smiley4.ktorswaggerui.dsl.routing.post
+import io.github.smiley4.ktorswaggerui.dsl.routing.put
+import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 
+fun Route.shippingRoute(shippingController: ShippingController) {
+    route("/shipping") {
+        authenticate(RoleManagement.CUSTOMER.role) {
+            post("", {
+                tags("Shipping")
+                request {
+                    body<AddShipping>()
+                }
+                apiResponse()
+            }) {
+                val loginUser = call.principal<JwtTokenBody>()
+                val requestBody = call.receive<AddShipping>()
+                call.respond(
+                    ApiResponse.success(
+                        shippingController.addShipping(loginUser?.userId!!, requestBody), HttpStatusCode.OK
+                    )
+                )
+            }
+            get("", {
+                tags("Shipping")
+                request {
+                    queryParameter<String>("orderId") {
+                        required = true
+                    }
+                }
+                apiResponse()
+            }) {
+                val loginUser = call.principal<JwtTokenBody>()
+                val requiredParams = listOf("orderId")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (orderId) = requiredParams.map { call.parameters[it]!! }
+                call.respond(
+                    ApiResponse.success(
+                        shippingController.getShipping(loginUser?.userId!!, orderId), HttpStatusCode.OK
+                    )
+                )
+            }
+            put("", {
+                tags("Shipping")
+                request {
+                    queryParameter<String>("orderId") {
+                        required = true
+                    }
+                    queryParameter<String>("shipAddress")
+                    queryParameter<String?>("shipCity")
+                    queryParameter<String?>("shipPhone")
+                    queryParameter<String?>("shipName")
+                    queryParameter<String?>("shipEmail")
+                    queryParameter<String?>("shipCountry")
+                }
+                apiResponse()
+            }) {
+                val loginUser = call.principal<JwtTokenBody>()
+                val requiredParams = listOf("orderId", "shipAddress")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (orderId, shipAddress) = requiredParams.map { call.parameters[it]!! }
+                /*call.respond(
+                    ApiResponse.success(
+                        shippingController.updateShipping(loginUser?.userId!!, orderId), HttpStatusCode.OK
+                    )
+                )*/
+            }
+            delete("", {
+                tags("Shipping")
+                request {
+                    queryParameter<String>("orderId") {
+                        required = true
+                    }
+                }
+                apiResponse()
+            }) {
+                val loginUser = call.principal<JwtTokenBody>()
+                val requiredParams = listOf("orderId")
+                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (orderId) = requiredParams.map { call.parameters[it]!! }
+                call.respond(
+                    ApiResponse.success(
+                        shippingController.deleteShipping(loginUser?.userId!!, orderId), HttpStatusCode.OK
+                    )
+                )
+            }
+        }
+    }
+}/*
 fun NormalOpenAPIRoute.shippingRoute(shippingController: ShippingController) {
     route("shipping") {
         authenticateWithJwt(RoleManagement.CUSTOMER.role) {
@@ -51,4 +143,4 @@ fun NormalOpenAPIRoute.shippingRoute(shippingController: ShippingController) {
             }
         }
     }
-}
+}*/

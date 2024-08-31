@@ -1,32 +1,13 @@
 package com.piashcse.plugins
 
-import com.papsign.ktor.openapigen.route.tags
-import com.piashcse.controller.UserController
-import com.piashcse.route.userRouteV2
-import com.piashcse.utils.Response
 import io.github.smiley4.ktorswaggerui.SwaggerUI
 import io.github.smiley4.ktorswaggerui.data.AuthScheme
 import io.github.smiley4.ktorswaggerui.data.AuthType
-import io.github.smiley4.ktorswaggerui.dsl.routing.route
-import io.github.smiley4.ktorswaggerui.dsl.routing.get
-import io.github.smiley4.ktorswaggerui.routing.openApiSpec
-import io.github.smiley4.ktorswaggerui.routing.swaggerUI
-import io.ktor.http.*
-import io.ktor.serialization.gson.*
 import io.ktor.server.application.*
-import io.ktor.server.plugins.callloging.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.swagger.v3.oas.models.media.Schema
+import java.io.File
 
-fun Application.configureBasic() {
-    install(CallLogging)
-    install(ContentNegotiation) {
-        gson {
-            setPrettyPrinting()
-            // serializeNulls()
-        }
-    }
+fun Application.configureSwagger() {
     install(SwaggerUI) {
         security {
             // configure a basic-auth security scheme
@@ -38,7 +19,7 @@ fun Application.configureBasic() {
             defaultSecuritySchemeNames("jwtToken")
             // if no other response is documented for "401 Unauthorized", this information is used instead
             defaultUnauthorizedResponse {
-                description = "Username or password is invalid"
+                description = "Unauthorized access"
             }
         }
         info {
@@ -57,6 +38,13 @@ fun Application.configureBasic() {
         server {
             url = "http://ktorecommerce.com/"
             description = "Production Server"
+        }
+        schemas {
+            // overwrite type "File" with custom schema for binary data / multipart form file
+            overwrite<File>(Schema<Any>().also {
+                it.type = "string"
+                it.format = "binary"
+            })
         }
     }
 }

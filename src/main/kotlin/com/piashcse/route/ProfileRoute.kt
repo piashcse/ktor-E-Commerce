@@ -1,28 +1,110 @@
 package com.piashcse.route
 
-import com.papsign.ktor.openapigen.route.path.auth.get
-import com.papsign.ktor.openapigen.route.path.auth.post
-import com.papsign.ktor.openapigen.route.path.auth.principal
-import com.papsign.ktor.openapigen.route.path.auth.put
-import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
-import com.papsign.ktor.openapigen.route.response.respond
-import com.papsign.ktor.openapigen.route.route
 import com.piashcse.controller.ProfileController
 import com.piashcse.models.user.body.JwtTokenBody
-import com.piashcse.models.user.body.MultipartImage
 import com.piashcse.models.user.body.UserProfileBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.AppConstants
-import com.piashcse.utils.Response
-import com.piashcse.utils.authenticateWithJwt
+import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.fileExtension
+import io.github.smiley4.ktorswaggerui.dsl.routing.get
+import io.github.smiley4.ktorswaggerui.dsl.routing.post
+import io.github.smiley4.ktorswaggerui.dsl.routing.put
 import io.ktor.http.*
+import io.ktor.http.content.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
 
+fun Route.profileRoute(profileController: ProfileController) {
+    authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
+        get("profile", {
+            tags("User")
+            apiResponse()
+        }) {
+            val loginUser = call.principal<JwtTokenBody>()
+            call.respond(
+                ApiResponse.success(
+                    profileController.getProfile(loginUser?.userId!!), HttpStatusCode.OK
+                )
+            )
+        }
+        put("profile", {
+            tags("User")
+            request {
+                body<UserProfileBody>()
+            }
+            apiResponse()
+        }) {
+            val loginUser = call.principal<JwtTokenBody>()
+            val requestBody = call.receive<UserProfileBody>()
+            call.respond(
+                ApiResponse.success(
+                    profileController.updateProfile(loginUser?.userId!!, requestBody), HttpStatusCode.OK
+                )
+            )
+        }
+
+        post("profile", {
+            tags("User")
+            request {
+                multipartBody {
+                    mediaTypes = setOf(ContentType.MultiPart.FormData)
+                    part<File>("image") {
+                        mediaTypes = setOf(
+                            ContentType.Image.PNG, ContentType.Image.JPEG, ContentType.Image.SVG
+                        )
+                    }
+                }
+
+            }
+           apiResponse()
+        }) {
+            val loginUser = call.principal<JwtTokenBody>()
+            val multipartData = call.receiveMultipart()
+
+            multipartData.forEachPart { part ->
+                when (part) {
+                    is PartData.FormItem -> {
+                        val fileDescription = part.value
+                    }
+
+                    is PartData.FileItem -> {
+                        UUID.randomUUID()?.let { imageId ->
+                            val fileName = part.originalFileName as String
+                            val fileLocation = fileName.let {
+                                "${AppConstants.Image.PROFILE_IMAGE_LOCATION}$imageId${it.fileExtension()}"
+                            }
+                            fileLocation.let {
+                                File(it).writeBytes(withContext(Dispatchers.IO) {
+                                    part.streamProvider().readBytes()
+                                })
+                            }
+                            val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
+                            profileController.updateProfileImage(loginUser?.userId!!, fileNameInServer)?.let {
+                                call.respond(
+                                    ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
+                                )
+                            }
+                        }
+                    }
+
+                    else -> {}
+                }
+                part.dispose()
+            }
+        }
+    }
+}
+
+/*
 fun NormalOpenAPIRoute.profileRouting(profileController: ProfileController) {
     authenticateWithJwt(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
         route("profile").get<Unit, Response, JwtTokenBody> { _ ->
@@ -61,4 +143,4 @@ fun NormalOpenAPIRoute.profileRouting(profileController: ProfileController) {
             }
         }
     }
-}
+}*/
