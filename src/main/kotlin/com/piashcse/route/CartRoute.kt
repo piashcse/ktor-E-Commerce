@@ -42,8 +42,12 @@ fun Route.cartRoute(cartController: CartController) {
             get("", {
                 tags("Cart")
                 request {
-                    queryParameter<String>("limit")
-                    queryParameter<String>("offset")
+                    queryParameter<Int>("limit"){
+                        required = true
+                    }
+                    queryParameter<Long>("offset"){
+                        required = true
+                    }
                 }
                 apiResponse()
             }) {
@@ -62,18 +66,16 @@ fun Route.cartRoute(cartController: CartController) {
                     )
                 )
             }
-            delete("{productId}", {
+            delete("", {
                 tags("Cart")
                 request {
-                    pathParameter<String>("productId")
+                    queryParameter<String>("productId"){
+                        required = true
+                    }
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("productId")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (productId) = requiredParams.map { call.parameters[it]!! }
+                val productId = call.parameters["productId"]!!
                 call.respond(
                     ApiResponse.success(
                         cartController.removeCartItem(getCurrentUser().userId, productId),
@@ -81,11 +83,15 @@ fun Route.cartRoute(cartController: CartController) {
                     )
                 )
             }
-            put("{productId}", {
+            put("", {
                 tags("Cart")
                 request {
-                    pathParameter<String>("productId")
-                    queryParameter<String>("quantity")
+                    queryParameter<String>("productId"){
+                        required = true
+                    }
+                    queryParameter<String>("quantity"){
+                        required = true
+                    }
                 }
                 apiResponse()
             }) {
@@ -114,46 +120,3 @@ fun Route.cartRoute(cartController: CartController) {
         }
     }
 }
-/*
-fun NormalOpenAPIRoute.cartRoute(cartController: CartController) {
-    route("cart") {
-        authenticateWithJwt(RoleManagement.CUSTOMER.role) {
-            post<AddCart, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                respond(ApiResponse.success(cartController.addToCart(principal().userId, params), HttpStatusCode.OK))
-            }
-            route("/{productId}").delete<DeleteProduct, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        cartController.removeCartItem(principal().userId, params), HttpStatusCode.OK
-                    )
-                )
-            }
-            route("/{productId}").put<UpdateCart, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        cartController.updateCartQuantity(principal().userId, params), HttpStatusCode.OK
-                    )
-                )
-            }
-            get<PagingData, Response, JwtTokenBody> { pagingData ->
-                pagingData.validation()
-                respond(
-                    ApiResponse.success(
-                        cartController.getCartItems(principal().userId, pagingData),
-                        HttpStatusCode.OK
-                    )
-                )
-            }
-            route("/all").delete<Unit, Response, JwtTokenBody> { _ ->
-                respond(
-                    ApiResponse.success(
-                        cartController.deleteAllFromCart(principal().userId), HttpStatusCode.OK
-                    )
-                )
-            }
-        }
-    }
-}*/

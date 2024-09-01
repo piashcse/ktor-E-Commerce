@@ -34,7 +34,6 @@ class CartController {
         val productExist =
             CartItemEntity.find { CartItemTable.userId eq userId and (CartItemTable.productId eq productId) }
                 .toList().singleOrNull()
-
         productExist?.let {
             it.quantity = it.quantity + quantity
             it.cartResponse(ProductEntity.find { ProductTable.id eq it.productId }.first().response())

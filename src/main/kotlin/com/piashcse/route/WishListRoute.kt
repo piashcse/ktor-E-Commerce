@@ -66,29 +66,4 @@ fun Route.wishListRoute(wishlistController: WishListController) {
             }
         }
     }
-}/*
-fun NormalOpenAPIRoute.wishListRoute(wishlistController: WishListController) {
-    route("wishlist") {
-        authenticateWithJwt(RoleManagement.CUSTOMER.role) {
-            post<ProductId, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        wishlistController.addToWishList(principal().userId, params.productId), HttpStatusCode.OK
-                    )
-                )
-            }
-            get<Unit, Response, JwtTokenBody> { _ ->
-                respond(ApiResponse.success(wishlistController.getWishList(principal().userId), HttpStatusCode.OK))
-            }
-            delete<ProductId, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        wishlistController.deleteFromWishList(principal().userId, params.productId), HttpStatusCode.OK
-                    )
-                )
-            }
-        }
-    }
-}*/
+}
