@@ -16,7 +16,6 @@ import com.papsign.ktor.openapigen.route.path.normal.NormalOpenAPIRoute
 import com.papsign.ktor.openapigen.route.path.auth.put
 import com.papsign.ktor.openapigen.route.response.respond
 import com.papsign.ktor.openapigen.route.route
-import com.piashcse.models.user.body.MultipartImage
 import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.fileExtension
