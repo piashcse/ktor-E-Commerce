@@ -1,6 +1,7 @@
 package com.piashcse.route
 
 import com.piashcse.controller.CartController
+import com.piashcse.models.cart.AddCart
 import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
@@ -12,6 +13,7 @@ import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -21,23 +23,19 @@ fun Route.cartRoute(cartController: CartController) {
             post("", {
                 tags("Cart")
                 request {
-                    queryParameter<String>("productId")
-                    queryParameter<String>("quantity")
+                    body<AddCart>()
                 }
                 apiResponse()
             }) {
                 val loginUser = call.principal<JwtTokenBody>()
-                val requiredParams = listOf("productId", "quantity")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (productId, quantity) = requiredParams.map { call.parameters[it]!! }
+                val requestBody = call.receive<AddCart>()
+                requestBody.validation()
                 call.respond(
                     ApiResponse.success(
                         cartController.addToCart(
                             loginUser?.userId!!,
-                            productId,
-                            quantity.toInt()
+                            requestBody.productId,
+                            requestBody.quantity
                         ), HttpStatusCode.OK
                     )
                 )

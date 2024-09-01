@@ -1,6 +1,8 @@
 package com.piashcse.route
 
 import com.piashcse.controller.ProductCategoryController
+import com.piashcse.models.category.AddProductCategory
+import com.piashcse.models.product.request.AddProduct
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -11,6 +13,7 @@ import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -52,25 +55,16 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
             post("", {
                 tags("Product Category")
                 request {
-                    queryParameter<String>("categoryName") {
-                        required = true
-                    }
+                    body<AddProductCategory>()
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("categoryName")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(
-                        ApiResponse.success(
-                            "Missing parameters: $it", HttpStatusCode.OK
-                        )
-                    )
-                }
-                val (categoryName) = requiredParams.map { call.parameters[it]!! }
+                val requestBody = call.receive<AddProductCategory>()
+                requestBody.validation()
                 call.respond(
                     ApiResponse.success(
                         productCategoryController.createProductCategory(
-                            categoryName
+                            requestBody.categoryName
                         ), HttpStatusCode.OK
                     )
                 )

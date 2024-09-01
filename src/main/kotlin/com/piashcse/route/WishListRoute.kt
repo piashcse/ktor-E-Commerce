@@ -1,6 +1,7 @@
 package com.piashcse.route
 
 import com.piashcse.controller.WishListController
+import com.piashcse.models.AddWisList
 import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
@@ -11,6 +12,7 @@ import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -20,21 +22,16 @@ fun Route.wishListRoute(wishlistController: WishListController) {
             post("", {
                 tags("WishList")
                 request {
-                    queryParameter<String>("productId") {
-                        required = true
-                    }
+                    body<AddWisList>()
                 }
                 apiResponse()
             }) {
                 val loginUser = call.principal<JwtTokenBody>()
-                val requiredParams = listOf("productId")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (productId) = requiredParams.map { call.parameters[it]!! }
+                val requestBody = call.receive<AddWisList>()
+                requestBody.validation()
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.addToWishList(loginUser?.userId!!, productId), HttpStatusCode.OK
+                        wishlistController.addToWishList(loginUser?.userId!!, requestBody.productId), HttpStatusCode.OK
                     )
                 )
             }
