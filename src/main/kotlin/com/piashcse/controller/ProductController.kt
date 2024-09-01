@@ -2,11 +2,13 @@ package com.piashcse.controller
 
 import com.piashcse.entities.product.*
 import com.piashcse.models.product.request.*
+import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.isNotExistException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import java.io.File
 
 class ProductController {
     suspend fun addProduct(userId: String, addProduct: AddProduct) = query {
@@ -146,11 +148,19 @@ class ProductController {
         } ?: productId.isNotExistException()
     }
 
-    suspend fun uploadProductImages(userId: String, productId: String, productImages: String) = query {
-        ProductImageEntity.new {
-            this.userId = EntityID(userId, ProductTable)
-            this.productId = EntityID(productId, ProductTable)
-            this.imageUrl = productImages
-        }.response()
-    }
+    suspend fun uploadProductImage(userId: String, productId: String, productImage: String) = query {
+            val isImageExist = ProductImageEntity.find { ProductImageTable.productId eq productId }
+                    .toList().singleOrNull()
+            isImageExist?.let {
+                File("${AppConstants.Image.PRODUCT_IMAGE_LOCATION}${it.imageUrl}").delete()
+                it.imageUrl = productImage
+                it.response()
+            } ?: run {
+                ProductImageEntity.new {
+                    this.userId = EntityID(userId, ProductTable)
+                    this.productId = EntityID(productId, ProductTable)
+                    this.imageUrl = productImage
+                }.response()
+            }
+        }
 }

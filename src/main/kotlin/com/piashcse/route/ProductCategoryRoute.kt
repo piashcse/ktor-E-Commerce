@@ -125,32 +125,4 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
             }
         }
     }
-}/*
-fun NormalOpenAPIRoute.productCategoryRoute(productCategoryController: ProductCategoryController) {
-    route("product-category") {
-        authenticateWithJwt(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            get<PagingData, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(ApiResponse.success(productCategoryController.getProductCategory(params), HttpStatusCode.OK))
-            }
-        }
-        authenticateWithJwt(RoleManagement.ADMIN.role) {
-            post<AddProductCategory, Response, Unit, JwtTokenBody>{ params, _ ->
-                params.validation()
-                respond(ApiResponse.success(productCategoryController.createProductCategory(params), HttpStatusCode.OK))
-            }
-            put<UpdateProductCategory, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                respond(ApiResponse.success(productCategoryController.updateProductCategory(params), HttpStatusCode.OK))
-            }
-            delete<DeleteProductCategory, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        productCategoryController.deleteProductCategory(params), HttpStatusCode.OK
-                    )
-                )
-            }
-        }
-    }
-}*/
+}

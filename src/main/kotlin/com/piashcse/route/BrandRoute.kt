@@ -22,8 +22,12 @@ fun Route.brandRoute(brandController: BrandController) {
             get("", {
                 tags("Brand")
                 request {
-                    queryParameter<Int>("limit")
-                    queryParameter<Long>("offset")
+                    queryParameter<Int>("limit"){
+                        required = true
+                    }
+                    queryParameter<Long>("offset"){
+                        required = true
+                    }
                 }
                 apiResponse()
             }) {
@@ -43,7 +47,7 @@ fun Route.brandRoute(brandController: BrandController) {
             post("", {
                 tags("Brand")
                 request {
-                    body<AddBrand> {}
+                    body<AddBrand>()
                 }
                 apiResponse()
             }) {
@@ -58,8 +62,12 @@ fun Route.brandRoute(brandController: BrandController) {
             put("", {
                 tags("Brand")
                 request {
-                    queryParameter<String>("brandId")
-                    queryParameter<String>("brandName")
+                    queryParameter<String>("brandId"){
+                        required = true
+                    }
+                    queryParameter<String>("brandName"){
+                        required = true
+                    }
                 }
                 apiResponse()
             }) {
@@ -77,7 +85,9 @@ fun Route.brandRoute(brandController: BrandController) {
             delete("", {
                 tags("Brand")
                 request {
-                    queryParameter<String>("brandId")
+                    queryParameter<String>("brandId"){
+                        required = true
+                    }
                 }
                 apiResponse()
             }) {
@@ -94,32 +104,4 @@ fun Route.brandRoute(brandController: BrandController) {
             }
         }
     }
-}/*
-fun NormalOpenAPIRoute.brandRoute(brandController: BrandController) {
-    route("brand") {
-        authenticateWithJwt(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            get<PagingData, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(ApiResponse.success(brandController.getBrand(params), HttpStatusCode.OK))
-            }
-        }
-        authenticateWithJwt(RoleManagement.ADMIN.role) {
-            post<AddBrand, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        brandController.createBrand(params), HttpStatusCode.OK
-                    )
-                )
-            }
-            put<UpdateBrand, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                respond(ApiResponse.success(brandController.updateBrand(params), HttpStatusCode.OK))
-            }
-            delete<DeleteBrand, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(ApiResponse.success(brandController.deleteBrand(params), HttpStatusCode.OK))
-            }
-        }
-    }
-}*/
+}
