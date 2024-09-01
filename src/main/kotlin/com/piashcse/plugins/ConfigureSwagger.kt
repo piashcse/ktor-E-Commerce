@@ -60,7 +60,7 @@ fun Application.configureSwagger() {
             route("swagger-ui") {
                 swaggerUI("/api.json")
             }
-            get("/") {
+            get {
                 call.respondRedirect("/swagger-ui/index.html?url=/openapi.json", true)
             }
         }
