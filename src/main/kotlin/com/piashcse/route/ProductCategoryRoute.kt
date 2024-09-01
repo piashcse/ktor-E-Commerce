@@ -2,7 +2,6 @@ package com.piashcse.route
 
 import com.piashcse.controller.ProductCategoryController
 import com.piashcse.models.category.AddProductCategory
-import com.piashcse.models.product.request.AddProduct
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse

@@ -6,6 +6,7 @@ import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
+import com.piashcse.utils.extension.getCurrentUser
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
@@ -117,11 +118,10 @@ fun Route.shopRoute(shopController: ShopController) {
                 }
                 apiResponse()
             }) {
-                val loginUser = call.principal<JwtTokenBody>()
                 val requestBody = call.receive<AddShop>()
                 requestBody.validation()
                 shopController.createShop(
-                    loginUser?.userId!!, requestBody.shopCategoryId, requestBody.shopName
+                    getCurrentUser().userId, requestBody.shopCategoryId, requestBody.shopName
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }

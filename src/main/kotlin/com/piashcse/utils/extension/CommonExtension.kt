@@ -1,9 +1,13 @@
 package com.piashcse.utils.extension
 
+import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.utils.CommonException
 import com.piashcse.utils.Response
 import io.github.smiley4.ktorswaggerui.dsl.routes.OpenApiRoute
 import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.util.pipeline.*
 
 fun String.isNotExistException(): CommonException {
     throw CommonException("$this is not Exist")
@@ -16,7 +20,7 @@ fun String.alreadyExistException(secondaryInfo: String = ""): CommonException {
         throw CommonException("$this $secondaryInfo is already Exist")
 }
 
-fun OpenApiRoute.apiResponse(){
+fun OpenApiRoute.apiResponse() {
     return response {
         HttpStatusCode.OK to {
             description = "Successful"
@@ -27,4 +31,8 @@ fun OpenApiRoute.apiResponse(){
         }
         HttpStatusCode.InternalServerError
     }
+}
+
+fun PipelineContext<Unit, ApplicationCall>.getCurrentUser(): JwtTokenBody {
+    return call.principal<JwtTokenBody>()!!
 }

@@ -6,6 +6,7 @@ import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
+import com.piashcse.utils.extension.getCurrentUser
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
@@ -27,13 +28,12 @@ fun Route.cartRoute(cartController: CartController) {
                 }
                 apiResponse()
             }) {
-                val loginUser = call.principal<JwtTokenBody>()
                 val requestBody = call.receive<AddCart>()
                 requestBody.validation()
                 call.respond(
                     ApiResponse.success(
                         cartController.addToCart(
-                            loginUser?.userId!!,
+                            getCurrentUser().userId,
                             requestBody.productId,
                             requestBody.quantity
                         ), HttpStatusCode.OK
@@ -48,7 +48,6 @@ fun Route.cartRoute(cartController: CartController) {
                 }
                 apiResponse()
             }) {
-                val loginUser = call.principal<JwtTokenBody>()
                 val requiredParams = listOf("limit", "offset")
                 requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
@@ -57,7 +56,7 @@ fun Route.cartRoute(cartController: CartController) {
                 call.respond(
                     ApiResponse.success(
                         cartController.getCartItems(
-                            loginUser?.userId!!,
+                            getCurrentUser().userId,
                             limit.toInt(),
                             offset.toLong()
                         ), HttpStatusCode.OK
@@ -71,7 +70,6 @@ fun Route.cartRoute(cartController: CartController) {
                 }
                 apiResponse()
             }) {
-                val loginUser = call.principal<JwtTokenBody>()
                 val requiredParams = listOf("productId")
                 requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
@@ -79,7 +77,7 @@ fun Route.cartRoute(cartController: CartController) {
                 val (productId) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        cartController.removeCartItem(loginUser?.userId!!, productId),
+                        cartController.removeCartItem(getCurrentUser().userId, productId),
                         HttpStatusCode.OK
                     )
                 )
@@ -92,7 +90,6 @@ fun Route.cartRoute(cartController: CartController) {
                 }
                 apiResponse()
             }) {
-                val loginUser = call.principal<JwtTokenBody>()
                 val requiredParams = listOf("productId", "quantity")
                 requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
@@ -100,28 +97,18 @@ fun Route.cartRoute(cartController: CartController) {
                 val (productId, quantity) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        cartController.updateCartQuantity(loginUser?.userId!!, productId, quantity.toInt()),
+                        cartController.updateCartQuantity(getCurrentUser().userId, productId, quantity.toInt()),
                         HttpStatusCode.OK
                     )
                 )
             }
             delete("all", {
                 tags("Cart")
-                request {
-                    pathParameter<String>("productId")
-                    queryParameter<String>("quantity")
-                }
                 apiResponse()
             }) {
-                val loginUser = call.principal<JwtTokenBody>()
-                val requiredParams = listOf("productId", "quantity")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (productId, quantity) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        cartController.deleteAllFromCart(loginUser?.userId!!), HttpStatusCode.OK
+                        cartController.deleteAllFromCart(getCurrentUser().userId), HttpStatusCode.OK
                     )
                 )
             }

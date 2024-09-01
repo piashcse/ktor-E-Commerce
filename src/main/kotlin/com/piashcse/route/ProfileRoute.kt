@@ -8,6 +8,7 @@ import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.fileExtension
+import com.piashcse.utils.extension.getCurrentUser
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
@@ -29,10 +30,9 @@ fun Route.profileRoute(profileController: ProfileController) {
             tags("User")
             apiResponse()
         }) {
-            val loginUser = call.principal<JwtTokenBody>()
             call.respond(
                 ApiResponse.success(
-                    profileController.getProfile(loginUser?.userId!!), HttpStatusCode.OK
+                    profileController.getProfile(getCurrentUser().userId), HttpStatusCode.OK
                 )
             )
         }
@@ -43,11 +43,10 @@ fun Route.profileRoute(profileController: ProfileController) {
             }
             apiResponse()
         }) {
-            val loginUser = call.principal<JwtTokenBody>()
             val requestBody = call.receive<UserProfileBody>()
             call.respond(
                 ApiResponse.success(
-                    profileController.updateProfile(loginUser?.userId!!, requestBody), HttpStatusCode.OK
+                    profileController.updateProfile(getCurrentUser().userId, requestBody), HttpStatusCode.OK
                 )
             )
         }
@@ -67,7 +66,6 @@ fun Route.profileRoute(profileController: ProfileController) {
             }
            apiResponse()
         }) {
-            val loginUser = call.principal<JwtTokenBody>()
             val multipartData = call.receiveMultipart()
 
             multipartData.forEachPart { part ->
@@ -88,7 +86,7 @@ fun Route.profileRoute(profileController: ProfileController) {
                                 })
                             }
                             val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
-                            profileController.updateProfileImage(loginUser?.userId!!, fileNameInServer)?.let {
+                            profileController.updateProfileImage(getCurrentUser().userId, fileNameInServer)?.let {
                                 call.respond(
                                     ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
                                 )

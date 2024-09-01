@@ -6,6 +6,7 @@ import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
+import com.piashcse.utils.extension.getCurrentUser
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
@@ -27,11 +28,10 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 }
                 apiResponse()
             }) {
-                val loginUser = call.principal<JwtTokenBody>()
                 val requestBody = call.receive<AddShipping>()
                 call.respond(
                     ApiResponse.success(
-                        shippingController.addShipping(loginUser?.userId!!, requestBody), HttpStatusCode.OK
+                        shippingController.addShipping(getCurrentUser().userId, requestBody), HttpStatusCode.OK
                     )
                 )
             }
@@ -44,7 +44,6 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 }
                 apiResponse()
             }) {
-                val loginUser = call.principal<JwtTokenBody>()
                 val requiredParams = listOf("orderId")
                 requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
@@ -52,7 +51,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 val (orderId) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        shippingController.getShipping(loginUser?.userId!!, orderId), HttpStatusCode.OK
+                        shippingController.getShipping(getCurrentUser().userId, orderId), HttpStatusCode.OK
                     )
                 )
             }
@@ -63,11 +62,11 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                         required = true
                     }
                     queryParameter<String>("shipAddress")
-                    queryParameter<String?>("shipCity")
-                    queryParameter<String?>("shipPhone")
-                    queryParameter<String?>("shipName")
-                    queryParameter<String?>("shipEmail")
-                    queryParameter<String?>("shipCountry")
+                    queryParameter<String>("shipCity")
+                    queryParameter<String>("shipPhone")
+                    queryParameter<String>("shipName")
+                    queryParameter<String>("shipEmail")
+                    queryParameter<String>("shipCountry")
                 }
                 apiResponse()
             }) {
@@ -92,7 +91,6 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 }
                 apiResponse()
             }) {
-                val loginUser = call.principal<JwtTokenBody>()
                 val requiredParams = listOf("orderId")
                 requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
@@ -100,7 +98,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 val (orderId) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        shippingController.deleteShipping(loginUser?.userId!!, orderId), HttpStatusCode.OK
+                        shippingController.deleteShipping(getCurrentUser().userId, orderId), HttpStatusCode.OK
                     )
                 )
             }
