@@ -13,12 +13,13 @@ fun Application.configureRouting2() {
             profileRoute(ProfileController())
             shopRoute(ShopController())
             brandRoute(BrandController())
+            productCategoryRoute(ProductCategoryController())
+            productSubCategoryRoute(ProductSubCategoryController())
+            productRoute(ProductController())
             cartRoute(CartController())
             wishListRoute(WishListController())
             shippingRoute(ShippingController())
-            productRoute(ProductController())
-            productCategoryRoute(ProductCategoryController())
-            productSubCategoryRoute(ProductSubCategoryController())
+            orderRoute(OrderController())
         }
     }
 }

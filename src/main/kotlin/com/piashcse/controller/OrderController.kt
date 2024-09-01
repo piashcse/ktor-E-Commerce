@@ -37,15 +37,15 @@ class OrderController {
         order.orderCreatedResponse()
     }
 
-   suspend fun getOrders(userId: String, pagingData: PagingData) = query {
-        OrderEntity.find { OrdersTable.userId eq userId }.limit(pagingData.limit, pagingData.offset).map {
+   suspend fun getOrders(userId: String, limit: Int, offset:Long) = query {
+        OrderEntity.find { OrdersTable.userId eq userId }.limit(limit, offset).map {
             it.response()
         }
     }
 
-    suspend fun updateOrder(userId: String, orderId: OrderId, orderStatus: OrderStatus) = query {
+    suspend fun updateOrder(userId: String, orderId: String, orderStatus: OrderStatus) = query {
         val orderExist =
-            OrderEntity.find { OrdersTable.userId eq userId and (OrdersTable.id eq orderId.orderId) }.toList()
+            OrderEntity.find { OrdersTable.userId eq userId and (OrdersTable.id eq orderId) }.toList()
                 .singleOrNull()
         orderExist?.let {
             it.status = orderStatus.name.lowercase()
