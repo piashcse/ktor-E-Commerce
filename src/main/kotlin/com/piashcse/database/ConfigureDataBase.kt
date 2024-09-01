@@ -26,7 +26,6 @@ import javax.sql.DataSource
 fun configureDataBase() {
     initDB()
     transaction {
-        // print sql to std-out
         addLogger(StdOutSqlLogger)
         create(
             UserTable,

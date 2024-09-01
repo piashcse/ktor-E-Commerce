@@ -2,7 +2,7 @@ package com.piashcse.route
 
 import com.piashcse.controller.ShippingController
 import com.piashcse.models.shipping.AddShipping
-import com.piashcse.models.user.body.JwtTokenBody
+import com.piashcse.models.shipping.UpdateShipping
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -70,17 +70,21 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 }
                 apiResponse()
             }) {
-                val loginUser = call.principal<JwtTokenBody>()
-                val requiredParams = listOf("orderId", "shipAddress")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (orderId, shipAddress) = requiredParams.map { call.parameters[it]!! }
-                /*call.respond(
+                val params = UpdateShipping(
+                    orderId = call.parameters["orderId"] ?: "",
+                    shipAddress = call.parameters["shipAddress"] ?: "",
+                    shipCity = call.parameters["shipCity"],
+                    shipPhone = call.parameters["shipPhone"]?.toInt(),
+                    shipName = call.parameters["shipName"],
+                    shipEmail = call.parameters["shipEmail"],
+                    shipCountry = call.parameters["shipCountry"],
+                )
+
+                call.respond(
                     ApiResponse.success(
-                        shippingController.updateShipping(loginUser?.userId!!, orderId), HttpStatusCode.OK
+                        shippingController.updateShipping(getCurrentUser().userId, params), HttpStatusCode.OK
                     )
-                )*/
+                )
             }
             delete("", {
                 tags("Shipping")

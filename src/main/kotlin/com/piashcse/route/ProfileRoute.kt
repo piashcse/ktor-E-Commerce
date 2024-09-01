@@ -1,7 +1,6 @@
 package com.piashcse.route
 
 import com.piashcse.controller.ProfileController
-import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.models.user.body.UserProfileBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse

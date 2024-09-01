@@ -1,6 +1,5 @@
 package com.piashcse.models.user.body
 
-import com.papsign.ktor.openapigen.annotations.parameters.QueryParam
 import com.piashcse.plugins.RoleManagement
 import org.valiktor.functions.*
 import org.valiktor.validate

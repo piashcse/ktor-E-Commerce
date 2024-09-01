@@ -2,7 +2,6 @@ package com.piashcse.route
 
 import com.piashcse.controller.WishListController
 import com.piashcse.models.AddWisList
-import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse

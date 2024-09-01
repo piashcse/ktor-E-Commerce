@@ -16,6 +16,7 @@ fun Application.configureRouting2() {
             cartRoute(CartController())
             wishListRoute(WishListController())
             shippingRoute(ShippingController())
+            productRoute(ProductController())
             productCategoryRoute(ProductCategoryController())
             productSubCategoryRoute(ProductSubCategoryController())
         }

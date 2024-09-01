@@ -136,14 +136,14 @@ class ProductController {
         isProductExist?.response()
     }
 
-    suspend fun deleteProduct(userId: String, deleteProduct: ProductId) = query {
+    suspend fun deleteProduct(userId: String, productId: String) = query {
         val isProductExist =
-            ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq deleteProduct.productId) }
+            ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }
                 .toList().singleOrNull()
         isProductExist?.let {
             it.delete()
-            deleteProduct.productId
-        } ?: deleteProduct.productId.isNotExistException()
+            productId
+        } ?: productId.isNotExistException()
     }
 
     suspend fun uploadProductImages(userId: String, productId: String, productImages: String) = query {
