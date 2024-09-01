@@ -1,10 +1,10 @@
 package com.piashcse.controller
 
-import com.piashcse.database.query
 import com.piashcse.entities.product.BrandEntity
 import com.piashcse.entities.product.BrandTable
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.query
 
 class BrandController {
     suspend fun createBrand(brandName: String) = query {

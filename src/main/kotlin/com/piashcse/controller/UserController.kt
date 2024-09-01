@@ -1,13 +1,13 @@
 package com.piashcse.controller
 
 import at.favre.lib.crypto.bcrypt.BCrypt
-import com.piashcse.database.query
 import com.piashcse.entities.user.*
 import com.piashcse.models.user.body.*
 import com.piashcse.models.user.response.RegistrationResponse
 import com.piashcse.utils.*
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.sql.*
 import kotlin.random.Random
 

@@ -1,12 +1,12 @@
 package com.piashcse.controller
 
-import com.piashcse.database.query
 import com.piashcse.entities.product.ProductEntity
 import com.piashcse.entities.product.ProductTable
 import com.piashcse.entities.product.WishListEntity
 import com.piashcse.entities.product.WishListTable
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
 

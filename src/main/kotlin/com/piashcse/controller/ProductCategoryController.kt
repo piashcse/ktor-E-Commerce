@@ -1,14 +1,10 @@
 package com.piashcse.controller
 
-import com.piashcse.database.query
 import com.piashcse.entities.product.category.ProductCategoryEntity
 import com.piashcse.entities.product.category.ProductCategoryTable
-import com.piashcse.models.PagingData
-import com.piashcse.models.category.AddProductCategory
-import com.piashcse.models.category.DeleteProductCategory
-import com.piashcse.models.category.UpdateProductCategory
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.query
 
 class ProductCategoryController {
     suspend fun createProductCategory(categoryName: String) = query {

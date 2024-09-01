@@ -147,10 +147,10 @@ fun Route.userRoute(userController: UserController) {
             tags("User")
             protected = true
             request {
-                queryParameter<String>("oldPassword"){
+                queryParameter<String>("oldPassword") {
                     required = true
                 }
-                queryParameter<String>("newPassword"){
+                queryParameter<String>("newPassword") {
                     required = true
                 }
             }
@@ -178,8 +178,7 @@ fun Route.userRoute(userController: UserController) {
             }
         }
     }
-}
-/*
+}/*
 fun NormalOpenAPIRoute.userRoute(userController: UserController) {
     route("login").get<LoginBody, Response> { requestBody ->
         requestBody.validation()

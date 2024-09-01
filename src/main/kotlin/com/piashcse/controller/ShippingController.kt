@@ -1,6 +1,5 @@
 package com.piashcse.controller
 
-import com.piashcse.database.query
 import com.piashcse.entities.ShippingEntity
 import com.piashcse.entities.ShippingTable
 import com.piashcse.entities.orders.OrdersTable
@@ -9,6 +8,7 @@ import com.piashcse.models.shipping.AddShipping
 import com.piashcse.models.shipping.UpdateShipping
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
 

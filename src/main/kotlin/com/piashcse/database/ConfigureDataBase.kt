@@ -95,9 +95,3 @@ private fun runFlyway(datasource: DataSource) {
         throw e
     }
 }
-
-suspend fun <T> query(block: () -> T): T = withContext(Dispatchers.IO) {
-    transaction {
-        block()
-    }
-}

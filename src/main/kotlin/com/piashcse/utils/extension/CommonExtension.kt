@@ -8,6 +8,9 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.util.pipeline.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.sql.transactions.transaction
 
 fun String.isNotExistException(): CommonException {
     throw CommonException("$this is not Exist")
@@ -30,6 +33,12 @@ fun OpenApiRoute.apiResponse() {
             }
         }
         HttpStatusCode.InternalServerError
+    }
+}
+
+suspend fun <T> query(block: () -> T): T = withContext(Dispatchers.IO) {
+    transaction {
+        block()
     }
 }
 
