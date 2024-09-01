@@ -19,10 +19,10 @@ import io.ktor.server.routing.*
 fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryController) {
     route("product-sub-category") {
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            get("{categoryId}", {
+            get("", {
                 tags("Product SubCategory")
                 request {
-                    pathParameter<String>("categoryId") {
+                    queryParameter<String>("categoryId") {
                         required = true
                     }
                     queryParameter<String>("limit") {
@@ -102,7 +102,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
                 requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
                 }
-                val (subCategoryId, subCategoryName) = requiredParams.map { call.parameters[it]!! }
+                val (subCategoryId) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
                         subCategoryController.deleteProductSubCategory(

@@ -53,12 +53,12 @@ class ProductSubCategoryController {
         }
     }
 
-    suspend fun deleteProductSubCategory(productSubCategoryId: String) = query {
+    suspend fun deleteProductSubCategory(subCategoryId: String) = query {
         val subCategoryExist =
-            ProductSubCategoryEntity.find { ProductSubCategoryTable.id eq productSubCategoryId }.toList().singleOrNull()
+            ProductSubCategoryEntity.find { ProductSubCategoryTable.id eq subCategoryId }.toList().singleOrNull()
         subCategoryExist?.let {
             subCategoryExist.delete()
-            productSubCategoryId
+            subCategoryId
         }
     }
 }
