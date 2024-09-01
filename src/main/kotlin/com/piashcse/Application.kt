@@ -1,6 +1,6 @@
 package com.piashcse
 
-import com.piashcse.dbhelper.DatabaseFactory
+import com.piashcse.database.configureDataBase
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import com.piashcse.plugins.*
@@ -16,11 +16,12 @@ fun main() {
         log = LoggerFactory.getLogger("ktor.application")
         developmentMode = false
         module {
-            DatabaseFactory.init()
+            configureDataBase()
             configureBasic()
-            configureStatusPage()
             configureAuthentication()
-            configureRouting()
+            configureSwagger()
+            configureStatusPage()
+            configureRouting2()
         }
         connector {
             host = config.property("ktor.deployment.host").getString()

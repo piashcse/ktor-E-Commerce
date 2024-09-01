@@ -1,13 +1,14 @@
 package com.piashcse.controller
 
-import com.piashcse.dbhelper.query
 import com.piashcse.entities.product.*
 import com.piashcse.models.product.request.*
+import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.transactions.transaction
+import java.io.File
 
 class ProductController {
     suspend fun addProduct(userId: String, addProduct: AddProduct) = query {
@@ -132,26 +133,34 @@ class ProductController {
         }
     }
 
-    suspend fun productDetail(productDetail: ProductDetail) = query {
-        val isProductExist = ProductEntity.find { ProductTable.id eq productDetail.productId }.toList().singleOrNull()
+    suspend fun productDetail(productId: String) = query {
+        val isProductExist = ProductEntity.find { ProductTable.id eq productId }.toList().singleOrNull()
         isProductExist?.response()
     }
 
-    suspend fun deleteProduct(userId: String, deleteProduct: ProductId) = query {
+    suspend fun deleteProduct(userId: String, productId: String) = query {
         val isProductExist =
-            ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq deleteProduct.productId) }
+            ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }
                 .toList().singleOrNull()
         isProductExist?.let {
             it.delete()
-            deleteProduct.productId
-        } ?: deleteProduct.productId.isNotExistException()
+            productId
+        } ?: productId.isNotExistException()
     }
 
-    suspend fun uploadProductImages(userId: String, productId: String, productImages: String) = query {
-        ProductImageEntity.new {
-            this.userId = EntityID(userId, ProductTable)
-            this.productId = EntityID(productId, ProductTable)
-            this.imageUrl = productImages
-        }.response()
-    }
+    suspend fun uploadProductImage(userId: String, productId: String, productImage: String) = query {
+            val isImageExist = ProductImageEntity.find { ProductImageTable.productId eq productId }
+                    .toList().singleOrNull()
+            isImageExist?.let {
+                File("${AppConstants.Image.PRODUCT_IMAGE_LOCATION}${it.imageUrl}").delete()
+                it.imageUrl = productImage
+                it.response()
+            } ?: run {
+                ProductImageEntity.new {
+                    this.userId = EntityID(userId, ProductTable)
+                    this.productId = EntityID(productId, ProductTable)
+                    this.imageUrl = productImage
+                }.response()
+            }
+        }
 }

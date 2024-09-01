@@ -1,16 +1,14 @@
 package com.piashcse.controller
 
-import com.piashcse.dbhelper.query
 import com.piashcse.entities.product.ProductEntity
 import com.piashcse.entities.product.ProductTable
 import com.piashcse.entities.product.WishListEntity
 import com.piashcse.entities.product.WishListTable
-import com.piashcse.utils.CommonException
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.transactions.transaction
 
 class WishListController {
     suspend fun addToWishList(userId: String, productId: String) = query {

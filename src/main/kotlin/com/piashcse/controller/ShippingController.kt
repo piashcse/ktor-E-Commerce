@@ -1,22 +1,19 @@
 package com.piashcse.controller
 
-import com.piashcse.dbhelper.query
 import com.piashcse.entities.ShippingEntity
 import com.piashcse.entities.ShippingTable
-import com.piashcse.entities.orders.OrdersTable
-import com.piashcse.entities.user.UserTable
 import com.piashcse.models.shipping.AddShipping
 import com.piashcse.models.shipping.UpdateShipping
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.transactions.transaction
 
 class ShippingController {
    suspend fun addShipping(userId: String, addShipping: AddShipping) = query {
         val isExist = ShippingEntity.find {
-            UserTable.id eq userId and (OrdersTable.id eq addShipping.orderId)
+            ShippingTable.userId eq userId and (ShippingTable.orderId eq addShipping.orderId)
         }.toList().singleOrNull()
         isExist?.let {
             addShipping.orderId.alreadyExistException()
@@ -37,7 +34,7 @@ class ShippingController {
 
     suspend fun getShipping(userId: String, orderId: String) = query {
         val isExist = ShippingEntity.find {
-            UserTable.id eq userId and (OrdersTable.id eq orderId)
+            ShippingTable.userId eq userId and (ShippingTable.orderId eq orderId)
         }.toList().singleOrNull()
         isExist?.response() ?: run {
             orderId.isNotExistException()
@@ -46,7 +43,7 @@ class ShippingController {
 
     suspend fun updateShipping(userId: String, updateShipping: UpdateShipping) = query {
         val isExist = ShippingEntity.find {
-            UserTable.id eq userId and (OrdersTable.id eq updateShipping.orderId)
+            ShippingTable.userId eq userId and (ShippingTable.orderId eq updateShipping.orderId)
         }.toList().singleOrNull()
 
         isExist?.let {
@@ -63,7 +60,7 @@ class ShippingController {
 
     suspend fun deleteShipping(userId: String, orderId: String) = query {
         val isExist = ShippingEntity.find {
-            UserTable.id eq userId and (OrdersTable.id eq orderId)
+            ShippingTable.userId eq userId and (ShippingTable.orderId eq orderId)
         }.toList().singleOrNull()
         isExist?.delete() ?: orderId.isNotExistException()
     }

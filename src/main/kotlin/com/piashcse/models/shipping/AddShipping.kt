@@ -18,8 +18,8 @@ data class AddShipping(
         validate(this) {
             validate(AddShipping::orderId).isNotNull()
             validate(AddShipping::shipAddress).isNotNull()
-            validate(AddShipping::shipCity).isNotNull()
-            validate(AddShipping::shipPhone).isNotNull()
+            validate(AddShipping::shipCity)
+            validate(AddShipping::shipPhone)
             validate(AddShipping::shipEmail).isEmail()
         }
     }

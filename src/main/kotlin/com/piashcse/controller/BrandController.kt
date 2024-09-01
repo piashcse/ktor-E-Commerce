@@ -1,50 +1,45 @@
 package com.piashcse.controller
 
-import com.piashcse.dbhelper.query
 import com.piashcse.entities.product.BrandEntity
 import com.piashcse.entities.product.BrandTable
-import com.piashcse.models.PagingData
-import com.piashcse.models.bands.AddBrand
-import com.piashcse.models.bands.DeleteBrand
-import com.piashcse.models.bands.UpdateBrand
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
-import org.jetbrains.exposed.sql.transactions.transaction
+import com.piashcse.utils.extension.query
 
 class BrandController {
-    suspend fun createBrand(addBand: AddBrand) = query {
-        val brandExist = BrandEntity.find { BrandTable.brandName eq addBand.brandName }.toList().singleOrNull()
-         if (brandExist == null) {
+    suspend fun createBrand(brandName: String) = query {
+        val brandExist = BrandEntity.find { BrandTable.brandName eq brandName }.toList().singleOrNull()
+        if (brandExist == null) {
             BrandEntity.new {
-                brandName = addBand.brandName
+                this.brandName = brandName
             }.brandResponse()
         } else {
-            addBand.brandName.alreadyExistException()
+            brandName.alreadyExistException()
         }
     }
 
-    suspend fun getBrand(paging: PagingData) = query {
-        val brands = BrandEntity.all().limit(paging.limit, paging.offset)
+    suspend fun getBrand(limit: Int, offset: Long) = query {
+        val brands = BrandEntity.all().limit(limit, offset)
         brands.map {
             it.brandResponse()
         }
     }
 
-    suspend fun updateBrand(updateBrand: UpdateBrand) = query {
-        val isBrandExist = BrandEntity.find { BrandTable.id eq updateBrand.brandId }.toList().singleOrNull()
+    suspend fun updateBrand(brandId: String, brandName:String) = query {
+        val isBrandExist = BrandEntity.find { BrandTable.id eq brandId }.toList().singleOrNull()
         isBrandExist?.let {
-            it.brandName = updateBrand.brandName
+            it.brandName = brandName
             // return category response
             it.brandResponse()
-        } ?: updateBrand.brandId.isNotExistException()
+        } ?: brandId.isNotExistException()
 
     }
 
-   suspend fun deleteBrand(deleteBrand: DeleteBrand) = query {
-        val isBrandExist = BrandEntity.find { BrandTable.id eq deleteBrand.brandId }.toList().singleOrNull()
+    suspend fun deleteBrand(brandId: String) = query {
+        val isBrandExist = BrandEntity.find { BrandTable.id eq brandId }.toList().singleOrNull()
         isBrandExist?.let {
             it.delete()
-            deleteBrand.brandId
-        } ?: deleteBrand.brandId.isNotExistException()
+            brandId
+        } ?: brandId.isNotExistException()
     }
 }

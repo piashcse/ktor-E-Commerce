@@ -1,55 +1,52 @@
 package com.piashcse.controller
 
-import com.piashcse.dbhelper.query
 import com.piashcse.entities.product.category.ProductCategoryEntity
 import com.piashcse.entities.product.category.ProductCategoryTable
-import com.piashcse.models.PagingData
-import com.piashcse.models.category.AddProductCategory
-import com.piashcse.models.category.DeleteProductCategory
-import com.piashcse.models.category.UpdateProductCategory
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
-import org.jetbrains.exposed.sql.transactions.transaction
+import com.piashcse.utils.extension.query
 
 class ProductCategoryController {
-   suspend fun createProductCategory(addProductCategory: AddProductCategory) = query {
+    suspend fun createProductCategory(categoryName: String) = query {
         val categoryExist =
-            ProductCategoryEntity.find { ProductCategoryTable.categoryName eq addProductCategory.categoryName }.toList().singleOrNull()
+            ProductCategoryEntity.find { ProductCategoryTable.categoryName eq categoryName }.toList().singleOrNull()
 
         if (categoryExist == null) {
             ProductCategoryEntity.new {
-                categoryName = addProductCategory.categoryName
+                this.categoryName = categoryName
             }.response()
         } else {
-            addProductCategory.categoryName.alreadyExistException()
+            categoryName.alreadyExistException()
         }
     }
 
-    suspend fun getProductCategory(paging: PagingData) = query {
-        val categories = ProductCategoryEntity.all().limit(paging.limit, paging.offset)
+    suspend fun getProductCategory(limit: Int, offset: Long) = query {
+        val categories = ProductCategoryEntity.all().limit(limit, offset)
         categories.map {
             it.response()
         }
     }
 
-   suspend fun updateProductCategory(updateProductCategory: UpdateProductCategory) = query {
+    suspend fun updateProductCategory(categoryId: String, categoryName: String) = query {
         val categoryExist =
-            ProductCategoryEntity.find { ProductCategoryTable.id eq updateProductCategory.categoryId }.toList().singleOrNull()
+            ProductCategoryEntity.find { ProductCategoryTable.id eq categoryId }.toList()
+                .singleOrNull()
         categoryExist?.let {
-            it.categoryName = updateProductCategory.categoryName
+            it.categoryName = categoryName
             // return category response
             it.response()
         } ?: run {
-            updateProductCategory.categoryId.isNotExistException()
+            categoryId.isNotExistException()
         }
     }
 
-   suspend fun deleteProductCategory(deleteProductCategory: DeleteProductCategory) = query {
+    suspend fun deleteProductCategory(categoryId: String) = query {
         val categoryExist =
-            ProductCategoryEntity.find { ProductCategoryTable.id eq deleteProductCategory.categoryId }.toList().singleOrNull()
+            ProductCategoryEntity.find { ProductCategoryTable.id eq categoryId }.toList()
+                .singleOrNull()
         categoryExist?.let {
             categoryExist.delete()
-            deleteProductCategory.categoryId
+            categoryId
         }
     }
 }
