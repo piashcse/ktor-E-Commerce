@@ -99,7 +99,7 @@ fun Route.shopRoute(shopController: ShopController) {
                 val (shopCategoryId, shopCategoryName) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        shopController.deleteShopCategory(shopCategoryId), HttpStatusCode.OK
+                        shopController.updateShopCategory(shopCategoryId, shopCategoryName), HttpStatusCode.OK
                     )
                 )
                 shopController.updateShopCategory(
@@ -110,7 +110,7 @@ fun Route.shopRoute(shopController: ShopController) {
             }
         }
         authenticate(RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            post("category", {
+            post("add-shop", {
                 tags("Shop")
                 request {
                     body<AddShop>()
@@ -128,54 +128,3 @@ fun Route.shopRoute(shopController: ShopController) {
         }
     }
 }
-/*
-fun NormalOpenAPIRoute.shopRoute(shopController: ShopController) {
-    route("shop/") {
-        authenticateWithJwt(RoleManagement.ADMIN.role) {
-            route("category").post<AddShopCategory, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        shopController.createShopCategory(params.shopCategoryName), HttpStatusCode.OK
-                    )
-                )
-            }
-            route("category").get<PagingData, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        shopController.getShopCategories(
-                            params.limit, params.offset
-                        ), HttpStatusCode.OK
-                    )
-                )
-            }
-            route("category").delete<DeleteShopCategory, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        shopController.deleteShopCategory(params.shopCategoryId), HttpStatusCode.OK
-                    )
-                )
-            }
-            route("category").put<UpdateShopCategory, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                shopController.updateShopCategory(
-                    params.shopCategoryId, params.shopCategoryName
-                ).let {
-                    respond(ApiResponse.success(it, HttpStatusCode.OK))
-                }
-            }
-        }
-        authenticateWithJwt(RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            route("add-shop").post<AddShop, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                shopController.createShop(
-                    principal().userId, params.shopCategoryId, params.shopName
-                ).let {
-                    respond(ApiResponse.success(it, HttpStatusCode.OK))
-                }
-            }
-        }
-    }
-}*/
