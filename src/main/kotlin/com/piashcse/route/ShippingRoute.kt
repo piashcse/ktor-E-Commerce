@@ -108,41 +108,4 @@ fun Route.shippingRoute(shippingController: ShippingController) {
             }
         }
     }
-}/*
-fun NormalOpenAPIRoute.shippingRoute(shippingController: ShippingController) {
-    route("shipping") {
-        authenticateWithJwt(RoleManagement.CUSTOMER.role) {
-            post<Unit, Response, AddShipping, JwtTokenBody> { _, requestBody ->
-                requestBody.validation()
-                respond(
-                    ApiResponse.success(
-                        shippingController.addShipping(principal().userId, requestBody), HttpStatusCode.OK
-                    )
-                )
-            }
-            get<OrderId, Response, JwtTokenBody> { params ->
-                respond(
-                    ApiResponse.success(
-                        shippingController.getShipping(principal().userId, params.orderId), HttpStatusCode.OK
-                    )
-                )
-            }
-            route("/{orderId}").put<UpdateShipping, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                shippingController.updateShipping(
-                    principal().userId, params
-                ).let {
-                    respond(ApiResponse.success(it, HttpStatusCode.OK))
-                }
-            }
-            delete<OrderId, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        shippingController.deleteShipping(principal().userId, params.orderId), HttpStatusCode.OK
-                    )
-                )
-            }
-        }
-    }
-}*/
+}
