@@ -101,17 +101,17 @@ Ktor E-Commerce Backend is a high-performance backend solution designed for e-co
 ### USER
 <details>
   
-<summary> <code>GET </code> <code>/login</code></summary>
+<summary> <code>GET </code> <code>/user/login</code></summary>
 
 ### Curl
 
-    curl -X 'GET' \ 'http://localhost:8080/login?email=piash599%40gmail.com&password=p1234&userType=user' \ 
-    -H 'accept: application/json'
+    curl -X 'GET' \
+  'http://localhost:8080/user/Login?email=customer@gmail.com&password=p1234&userType=customer' \
+  -H 'accept: application/json'
 
 ### Request URL
 
-    http://localhost:8080/login?email=piash599%40gmail.com&password=p1234&userType=user
-
+    http://localhost:8080/user/Login?email=customer@gmail.com&password=p1234&userType=customer
 
 ### Response
 ```
@@ -123,14 +123,11 @@ Ktor E-Commerce Backend is a high-performance backend solution designed for e-co
   },
   "data": {
     "user": {
-      "id": "a9a662a7-50fe-4f13-8eab-0e0810fb9909",
-      "email": "piash599@gmail.com",
-      "userType": {
-        "id": "04d85ebe-a667-4f80-94c8-0f68a3b3d96d",
-        "userType": "user"
-      }
+      "id": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+      "email": "customer@gmail.com",
+      "userType": "customer"
     },
-    "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5Mjc2NTM0MX0.8GscAPCxFWOhN2bmy5bsoz5V311O4g72XqlEUWoz_y0wADkTzdgOVfG5CKJba5VUvwNiVE3MmQPmNt-fq6hyyw"
+    "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImN1c3RvbWVyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImE2N2ZkMGNjLTNkOTItNDI1OS1iYmQ0LTFlMGJhNDlkZWNlNCIsInVzZXJUeXBlIjoiY3VzdG9tZXIiLCJleHAiOjE3MjUzNjg3OTl9.mnH0GyxcGNMNKVG0jbO1w9Njj42Mvwus6ihAu6glCwh5bAZZLFXpCVfsjXSoAz4QfAgKFXDWSdihZYiFBXuBhA"
   }
 }
 ```   
@@ -138,25 +135,25 @@ Ktor E-Commerce Backend is a high-performance backend solution designed for e-co
 
 <details>
   
-<summary> <code>POST</code> <code>/registration</code></summary>
+<summary> <code>POST</code> <code>/user/registration</code></summary>
 
 ### Curl
 
 ```
-  curl -X 'POST' \
-  'http://localhost:8080/registration' \
+curl -X 'POST' \
+  'http://localhost:8080/user/registration' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
-  "email": "piash88@gmail.com",
-  "password": "piash956",
+  "email": "piash@gmail.com",
+  "password": "p1234",
   "userType": "admin"
 }'
 ``` 
 
 ### Request URL
 
-    http://localhost:8080/registration
+    http://localhost:8080/user/registration
 
 
 ### Response
@@ -168,7 +165,8 @@ Ktor E-Commerce Backend is a high-performance backend solution designed for e-co
     "description": "OK"
   },
   "data": {
-    "email": "piash88@gmail.com"
+    "id": "f48ec4f9-5482-4a23-9e49-e69f97bd20a6",
+    "email": "piash@gmail.com"
   }
 }
 
@@ -178,20 +176,20 @@ Ktor E-Commerce Backend is a high-performance backend solution designed for e-co
 
 <details>
   
-<summary><code>GET </code> <code>/forget-password</code></summary>
+<summary><code>GET </code> <code>/user/forget-password</code></summary>
 
 ### Curl
 
 ```
  curl -X 'GET' \
-  'http://localhost:8080/forget-password?email=piash599%40gmail.com' \
+  'http://localhost:8080/user/forget-password?email=piash@gmail.com' \
   -H 'accept: application/json'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/forget-password?email=piash599%40gmail.com
+http://localhost:8080/user/forget-password?email=piash@gmail.com
 
 ``` 
 
@@ -204,7 +202,7 @@ http://localhost:8080/forget-password?email=piash599%40gmail.com
     "value": 200,
     "description": "OK"
   },
-  "data": "verification code sent to piash599@gmail.com"
+  "data": "verification code sent to piash@gmail.com"
 }
 
 ```   
@@ -212,20 +210,20 @@ http://localhost:8080/forget-password?email=piash599%40gmail.com
 
 <details>
   
-<summary><code>GET </code> <code>/verify-change-password</code></summary>
+<summary><code>GET </code> <code>/user/verify-password-change</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/verify-change-password?email=piash599%40gmail.com&verificationCode=9889&password=p1234' \
+  'http://localhost:8080/verify-password-change?email=piash599%40gmail.com&verificationCode=9889&password=p1234' \
   -H 'accept: application/json'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/verify-change-password?email=piash599%40gmail.com&verificationCode=9189&newPassword=p1234
+http://localhost:8080/verify-password-change?email=piash599%40gmail.com&verificationCode=9189&newPassword=p1234
 ``` 
 
 
@@ -245,13 +243,13 @@ http://localhost:8080/verify-change-password?email=piash599%40gmail.com&verifica
 
 <details>
   
-<summary> <code>PUT </code> <code>/change-password</code></summary>
+<summary> <code>PUT </code> <code>/user/change-password</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/change-password?oldPassword=p1234&newPassword=p1234' \
+  'http://localhost:8080/user/change-password?oldPassword=p1234&newPassword=p1234' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g'
 ``` 
@@ -259,7 +257,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/change-password?oldPassword=p1234&newPassword=p1234
+http://localhost:8080/user/change-password?oldPassword=p1234&newPassword=p1234
 ``` 
 
 
@@ -279,13 +277,13 @@ http://localhost:8080/change-password?oldPassword=p1234&newPassword=p1234
 ### PROFILE
 <details>
   
-<summary> <code>GET </code> <code>/profile</code></summary>
+<summary> <code>GET </code> <code>/user</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/profile' \
+  'http://localhost:8080/user' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g'
 ``` 
@@ -293,7 +291,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/profile
+http://localhost:8080/user
 ``` 
 
 
@@ -328,13 +326,13 @@ http://localhost:8080/profile
 
 <details>
   
-<summary> <code>PUT </code> <code>/profile</code></summary>
+<summary> <code>PUT </code> <code>/user</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/profile' \
+  'http://localhost:8080/user' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g' \
   -H 'Content-Type: application/json' \
@@ -347,7 +345,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/profile
+http://localhost:8080/user
 ``` 
 
 
@@ -383,13 +381,13 @@ http://localhost:8080/profile
 
 <details>
   
-<summary> <code>POST</code> <code>/profile</code></summary>
+<summary> <code>POST</code> <code>/user/profile-photo-upload</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/profile-photo-upload' \
+  'http://localhost:8080/user/profile-photo-upload' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g' \
   -H 'Content-Type: multipart/form-data' \
@@ -399,7 +397,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/profile-photo-upload
+http://localhost:8080/user/profile-photo-upload
 ``` 
 
 
