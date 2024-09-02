@@ -39,7 +39,7 @@ fun Route.productRoute(productController: ProductController) {
                 val productId = call.parameters["productId"]!!
                 call.respond(ApiResponse.success(productController.productDetail(productId), HttpStatusCode.OK))
             }
-            get("", {
+            get( {
                 tags("Product")
                 request {
                     queryParameter<Int>("limit") {
@@ -101,7 +101,7 @@ fun Route.productRoute(productController: ProductController) {
                     )
                 )
             }
-            post("", {
+            post({
                 tags("Product")
                 request {
                     body<AddProduct>()

@@ -19,13 +19,13 @@ import io.ktor.server.routing.*
 fun Route.brandRoute(brandController: BrandController) {
     route("brand") {
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            get("", {
+            get({
                 tags("Brand")
                 request {
-                    queryParameter<Int>("limit"){
+                    queryParameter<Int>("limit") {
                         required = true
                     }
-                    queryParameter<Long>("offset"){
+                    queryParameter<Long>("offset") {
                         required = true
                     }
                 }
@@ -44,7 +44,7 @@ fun Route.brandRoute(brandController: BrandController) {
             }
         }
         authenticate(RoleManagement.ADMIN.role) {
-            post("", {
+            post({
                 tags("Brand")
                 request {
                     body<AddBrand>()
@@ -59,13 +59,13 @@ fun Route.brandRoute(brandController: BrandController) {
                     )
                 )
             }
-            put("", {
+            put({
                 tags("Brand")
                 request {
-                    queryParameter<String>("id"){
+                    queryParameter<String>("id") {
                         required = true
                     }
-                    queryParameter<String>("brandName"){
+                    queryParameter<String>("brandName") {
                         required = true
                     }
                 }
@@ -82,10 +82,10 @@ fun Route.brandRoute(brandController: BrandController) {
                     )
                 )
             }
-            delete("", {
+            delete({
                 tags("Brand")
                 request {
-                    queryParameter<String>("id"){
+                    queryParameter<String>("id") {
                         required = true
                     }
                 }

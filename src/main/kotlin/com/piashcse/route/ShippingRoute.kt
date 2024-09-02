@@ -21,7 +21,7 @@ import io.ktor.server.routing.*
 fun Route.shippingRoute(shippingController: ShippingController) {
     route("/shipping") {
         authenticate(RoleManagement.CUSTOMER.role) {
-            post("", {
+            post({
                 tags("Shipping")
                 request {
                     body<AddShipping>()
@@ -35,7 +35,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                     )
                 )
             }
-            get("", {
+            get({
                 tags("Shipping")
                 request {
                     queryParameter<String>("orderId") {
@@ -55,7 +55,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                     )
                 )
             }
-            put("", {
+            put({
                 tags("Shipping")
                 request {
                     queryParameter<String>("orderId") {
@@ -86,7 +86,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                     )
                 )
             }
-            delete("", {
+            delete({
                 tags("Shipping")
                 request {
                     queryParameter<String>("orderId") {

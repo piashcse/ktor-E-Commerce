@@ -19,7 +19,7 @@ import io.ktor.server.routing.*
 fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryController) {
     route("product-sub-category") {
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            get("", {
+            get({
                 tags("Product SubCategory")
                 request {
                     queryParameter<String>("categoryId") {
@@ -48,7 +48,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
             }
         }
         authenticate(RoleManagement.ADMIN.role) {
-            post("", {
+            post({
                 tags("Product SubCategory")
                 request {
                     body<AddProductSubCategory>()
@@ -63,7 +63,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
                     )
                 )
             }
-            put("", {
+            put({
                 tags("Product SubCategory")
                 request {
                     queryParameter<String>("subCategoryId") {
@@ -89,7 +89,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
                 )
 
             }
-            delete("", {
+            delete({
                 tags("Product SubCategory")
                 request {
                     queryParameter<String>("subCategoryId") {

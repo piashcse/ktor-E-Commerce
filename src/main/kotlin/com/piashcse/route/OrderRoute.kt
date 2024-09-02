@@ -20,7 +20,7 @@ import io.ktor.server.routing.*
 fun Route.orderRoute(orderController: OrderController) {
     route("order") {
         authenticate(RoleManagement.CUSTOMER.role) {
-            post("", {
+            post( {
                 tags("Order")
                 request {
                     body<AddOrder>()
@@ -35,7 +35,7 @@ fun Route.orderRoute(orderController: OrderController) {
                     )
                 )
             }
-            get("", {
+            get( {
                 tags("Order")
                 request {
                     queryParameter<String>("limit") {
@@ -171,76 +171,4 @@ fun Route.orderRoute(orderController: OrderController) {
             }
         }
     }
-}/*
-fun NormalOpenAPIRoute.orderRoute(orderController: OrderController) {
-    route("order") {
-        authenticateWithJwt(RoleManagement.CUSTOMER.role) {
-            post<Unit, Response, AddOrder, JwtTokenBody>(
-                exampleRequest = AddOrder(
-                    1,
-                    100f,
-                    100f,
-                    2f,
-                    orderStatus = "pending",
-                    mutableListOf(OrderItem("productId", 1)),
-                ),
-            ) { _, orderBody ->
-                orderBody.validation()
-                respond(
-                    ApiResponse.success(
-                        orderController.createOrder(principal().userId, orderBody), HttpStatusCode.OK
-                    )
-                )
-            }
-            get<PagingData, Response, JwtTokenBody> { params ->
-                params.validation()
-                respond(ApiResponse.success(orderController.getOrders(principal().userId, params), HttpStatusCode.OK))
-            }
-            route("/payment").put<OrderId, Response, Unit, JwtTokenBody> { params,_  ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        orderController.updateOrder(principal().userId, params, OrderStatus.PAID),
-                        HttpStatusCode.OK
-                    )
-                )
-            }
-            route("/cancel").put<OrderId, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        orderController.updateOrder(principal().userId, params, OrderStatus.CANCELED), HttpStatusCode.OK
-                    )
-                )
-            }
-            route("/receive").put<OrderId, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        orderController.updateOrder(principal().userId, params, OrderStatus.RECEIVED), HttpStatusCode.OK
-                    )
-                )
-            }
-        }
-        authenticateWithJwt(RoleManagement.SELLER.role) {
-            route("/confirm").put<OrderId, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        orderController.updateOrder(principal().userId, params, OrderStatus.CONFIRMED),
-                        HttpStatusCode.OK
-                    )
-                )
-            }
-            route("/deliver").put<OrderId, Response, Unit, JwtTokenBody> { params, _ ->
-                params.validation()
-                respond(
-                    ApiResponse.success(
-                        orderController.updateOrder(principal().userId, params, OrderStatus.DELIVERED),
-                        HttpStatusCode.OK
-                    )
-                )
-            }
-        }
-    }
-}*/
+}

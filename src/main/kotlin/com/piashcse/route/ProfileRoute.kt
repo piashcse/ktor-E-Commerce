@@ -25,78 +25,81 @@ import java.util.*
 
 fun Route.profileRoute(profileController: ProfileController) {
     authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
-        get("profile", {
-            tags("User")
-            apiResponse()
-        }) {
-            call.respond(
-                ApiResponse.success(
-                    profileController.getProfile(getCurrentUser().userId), HttpStatusCode.OK
+        route("profile") {
+            get({
+                tags("User")
+                apiResponse()
+            }) {
+                call.respond(
+                    ApiResponse.success(
+                        profileController.getProfile(getCurrentUser().userId), HttpStatusCode.OK
+                    )
                 )
-            )
-        }
-        put("profile", {
-            tags("User")
-            request {
-                body<UserProfileBody>()
             }
-            apiResponse()
-        }) {
-            val requestBody = call.receive<UserProfileBody>()
-            call.respond(
-                ApiResponse.success(
-                    profileController.updateProfile(getCurrentUser().userId, requestBody), HttpStatusCode.OK
-                )
-            )
-        }
-
-        post("profile", {
-            tags("User")
-            request {
-                multipartBody {
-                    mediaTypes = setOf(ContentType.MultiPart.FormData)
-                    part<File>("image") {
-                        mediaTypes = setOf(
-                            ContentType.Image.PNG, ContentType.Image.JPEG, ContentType.Image.SVG
-                        )
-                    }
+            put({
+                tags("User")
+                request {
+                    body<UserProfileBody>()
                 }
-
+                apiResponse()
+            }) {
+                val requestBody = call.receive<UserProfileBody>()
+                call.respond(
+                    ApiResponse.success(
+                        profileController.updateProfile(getCurrentUser().userId, requestBody), HttpStatusCode.OK
+                    )
+                )
             }
-           apiResponse()
-        }) {
-            val multipartData = call.receiveMultipart()
 
-            multipartData.forEachPart { part ->
-                when (part) {
-                    is PartData.FormItem -> {
-                        val fileDescription = part.value
-                    }
-
-                    is PartData.FileItem -> {
-                        UUID.randomUUID()?.let { imageId ->
-                            val fileName = part.originalFileName as String
-                            val fileLocation = fileName.let {
-                                "${AppConstants.Image.PROFILE_IMAGE_LOCATION}$imageId${it.fileExtension()}"
-                            }
-                            fileLocation.let {
-                                File(it).writeBytes(withContext(Dispatchers.IO) {
-                                    part.streamProvider().readBytes()
-                                })
-                            }
-                            val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
-                            profileController.updateProfileImage(getCurrentUser().userId, fileNameInServer)?.let {
-                                call.respond(
-                                    ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
-                                )
-                            }
+            post( {
+                tags("User")
+                request {
+                    multipartBody {
+                        mediaTypes = setOf(ContentType.MultiPart.FormData)
+                        part<File>("image") {
+                            mediaTypes = setOf(
+                                ContentType.Image.PNG, ContentType.Image.JPEG, ContentType.Image.SVG
+                            )
                         }
                     }
 
-                    else -> {}
                 }
-                part.dispose()
+                apiResponse()
+            }) {
+                val multipartData = call.receiveMultipart()
+
+                multipartData.forEachPart { part ->
+                    when (part) {
+                        is PartData.FormItem -> {
+                            val fileDescription = part.value
+                        }
+
+                        is PartData.FileItem -> {
+                            UUID.randomUUID()?.let { imageId ->
+                                val fileName = part.originalFileName as String
+                                val fileLocation = fileName.let {
+                                    "${AppConstants.Image.PROFILE_IMAGE_LOCATION}$imageId${it.fileExtension()}"
+                                }
+                                fileLocation.let {
+                                    File(it).writeBytes(withContext(Dispatchers.IO) {
+                                        part.streamProvider().readBytes()
+                                    })
+                                }
+                                val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
+                                profileController.updateProfileImage(getCurrentUser().userId, fileNameInServer)?.let {
+                                    call.respond(
+                                        ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
+                                    )
+                                }
+                            }
+                        }
+
+                        else -> {}
+                    }
+                    part.dispose()
+                }
             }
         }
+
     }
 }

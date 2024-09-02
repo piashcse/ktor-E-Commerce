@@ -20,7 +20,7 @@ import io.ktor.server.routing.*
 fun Route.cartRoute(cartController: CartController) {
     route("cart") {
         authenticate(RoleManagement.CUSTOMER.role) {
-            post("", {
+            post({
                 tags("Cart")
                 request {
                     body<AddCart>()
@@ -39,13 +39,13 @@ fun Route.cartRoute(cartController: CartController) {
                     )
                 )
             }
-            get("", {
+            get({
                 tags("Cart")
                 request {
-                    queryParameter<Int>("limit"){
+                    queryParameter<Int>("limit") {
                         required = true
                     }
-                    queryParameter<Long>("offset"){
+                    queryParameter<Long>("offset") {
                         required = true
                     }
                 }
@@ -66,30 +66,13 @@ fun Route.cartRoute(cartController: CartController) {
                     )
                 )
             }
-            delete("", {
+            put({
                 tags("Cart")
                 request {
-                    queryParameter<String>("productId"){
+                    queryParameter<String>("productId") {
                         required = true
                     }
-                }
-                apiResponse()
-            }) {
-                val productId = call.parameters["productId"]!!
-                call.respond(
-                    ApiResponse.success(
-                        cartController.removeCartItem(getCurrentUser().userId, productId),
-                        HttpStatusCode.OK
-                    )
-                )
-            }
-            put("", {
-                tags("Cart")
-                request {
-                    queryParameter<String>("productId"){
-                        required = true
-                    }
-                    queryParameter<String>("quantity"){
+                    queryParameter<String>("quantity") {
                         required = true
                     }
                 }
@@ -103,6 +86,23 @@ fun Route.cartRoute(cartController: CartController) {
                 call.respond(
                     ApiResponse.success(
                         cartController.updateCartQuantity(getCurrentUser().userId, productId, quantity.toInt()),
+                        HttpStatusCode.OK
+                    )
+                )
+            }
+            delete({
+                tags("Cart")
+                request {
+                    queryParameter<String>("productId") {
+                        required = true
+                    }
+                }
+                apiResponse()
+            }) {
+                val productId = call.parameters["productId"]!!
+                call.respond(
+                    ApiResponse.success(
+                        cartController.removeCartItem(getCurrentUser().userId, productId),
                         HttpStatusCode.OK
                     )
                 )

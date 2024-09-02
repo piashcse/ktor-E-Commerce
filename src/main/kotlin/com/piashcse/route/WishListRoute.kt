@@ -19,7 +19,7 @@ import io.ktor.server.routing.*
 fun Route.wishListRoute(wishlistController: WishListController) {
     route("wishlist") {
         authenticate(RoleManagement.CUSTOMER.role) {
-            post("", {
+            post({
                 tags("WishList")
                 request {
                     body<AddWisList>()
@@ -34,7 +34,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                     )
                 )
             }
-            get("", {
+            get({
                 tags("WishList")
                 apiResponse()
             }) {
@@ -44,7 +44,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                     )
                 )
             }
-            delete("", {
+            delete({
                 tags("WishList")
                 request {
                     queryParameter<String>("productId") {
