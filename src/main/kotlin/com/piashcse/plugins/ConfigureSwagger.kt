@@ -61,7 +61,7 @@ fun Application.configureSwagger() {
                 swaggerUI("/api.json")
             }
             get {
-                call.respondRedirect("/swagger-ui/index.html?url=/openapi.json", true)
+                call.respondRedirect("/swagger-ui/index.html?url=/api.json", true)
             }
         }
     }
