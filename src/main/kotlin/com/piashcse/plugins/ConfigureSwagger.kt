@@ -57,11 +57,11 @@ fun Application.configureSwagger() {
                 openApiSpec()
             }
             // Create a route for the swagger-ui using the openapi-spec at "/api.json".
-            route("swagger-ui") {
+            route("swagger") {
                 swaggerUI("/api.json")
             }
             get {
-                call.respondRedirect("/swagger-ui/index.html?url=/api.json", true)
+                call.respondRedirect("/swagger/index.html?url=/api.json", true)
             }
         }
     }
