@@ -381,13 +381,13 @@ http://localhost:8080/user
 
 <details>
   
-<summary> <code>POST</code> <code>/user/profile-photo-upload</code></summary>
+<summary> <code>POST</code> <code>/user/photo-upload</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/user/profile-photo-upload' \
+  'http://localhost:8080/user/photo-upload' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g' \
   -H 'Content-Type: multipart/form-data' \
@@ -397,7 +397,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/user/profile-photo-upload
+http://localhost:8080/user/photo-upload
 ``` 
 
 
