@@ -1,11 +1,12 @@
 package com.piashcse.database
 
 import com.piashcse.entities.ShippingTable
+import com.piashcse.entities.WishListTable
 import com.piashcse.entities.product.category.ProductCategoryTable
 import com.piashcse.entities.product.category.ProductSubCategoryTable
 import com.piashcse.entities.orders.CartItemTable
 import com.piashcse.entities.orders.OrderItemTable
-import com.piashcse.entities.orders.OrdersTable
+import com.piashcse.entities.orders.OrderTable
 import com.piashcse.entities.product.*
 import com.piashcse.entities.shop.ShopCategoryTable
 import com.piashcse.entities.shop.ShopTable
@@ -38,7 +39,7 @@ fun configureDataBase() {
             ProductSubCategoryTable,
             BrandTable,
             CartItemTable,
-            OrdersTable,
+            OrderTable,
             OrderItemTable,
             WishListTable,
             ShippingTable

@@ -5,7 +5,7 @@ import com.piashcse.entities.base.BaseIntEntityClass
 import com.piashcse.entities.base.BaseIntIdTable
 import org.jetbrains.exposed.dao.id.EntityID
 
-object SettingTable : BaseIntIdTable("settings") {
+object SettingTable : BaseIntIdTable("setting") {
     val shippingCharge = integer("shipping_charge")
     val shopName = text("shop_name")
     val email = varchar("email", 50)

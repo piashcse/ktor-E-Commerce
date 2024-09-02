@@ -8,7 +8,7 @@ import com.piashcse.entities.product.ProductTable
 import com.piashcse.entities.user.UserTable
 import org.jetbrains.exposed.dao.id.EntityID
 
-object CartItemTable : BaseIntIdTable("cart_items") {
+object CartItemTable : BaseIntIdTable("cart_item") {
     val userId = reference("user_id", UserTable.id)
     val productId = reference("product_id", ProductTable.id)
     val quantity = integer("quantity")

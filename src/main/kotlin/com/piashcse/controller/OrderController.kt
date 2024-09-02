@@ -12,7 +12,7 @@ import org.jetbrains.exposed.sql.and
 class OrderController {
     suspend fun createOrder(userId: String, addOrder: AddOrder) = query {
         val order = OrderEntity.new {
-            this.userId = EntityID(userId, OrdersTable)
+            this.userId = EntityID(userId, OrderTable)
             this.quantity = addOrder.quantity
             this.shippingCharge = addOrder.shippingCharge
             this.subTotal = addOrder.subTotal
@@ -36,14 +36,14 @@ class OrderController {
     }
 
    suspend fun getOrders(userId: String, limit: Int, offset:Long) = query {
-        OrderEntity.find { OrdersTable.userId eq userId }.limit(limit, offset).map {
+        OrderEntity.find { OrderTable.userId eq userId }.limit(limit, offset).map {
             it.response()
         }
     }
 
     suspend fun updateOrder(userId: String, orderId: String, orderStatus: OrderStatus) = query {
         val orderExist =
-            OrderEntity.find { OrdersTable.userId eq userId and (OrdersTable.id eq orderId) }.toList()
+            OrderEntity.find { OrderTable.userId eq userId and (OrderTable.id eq orderId) }.toList()
                 .singleOrNull()
         orderExist?.let {
             it.status = orderStatus.name.lowercase()

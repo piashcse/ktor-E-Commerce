@@ -7,7 +7,7 @@ import com.piashcse.models.user.body.JwtTokenBody
 import com.piashcse.controller.JwtController
 import org.jetbrains.exposed.dao.id.EntityID
 
-object UserTable : BaseIntIdTable("users") {
+object UserTable : BaseIntIdTable("user") {
     val email = varchar("email", 50)
     val password = varchar("password", 200)
     val userType = varchar("user_type", 100)

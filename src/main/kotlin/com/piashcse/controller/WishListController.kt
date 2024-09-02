@@ -2,8 +2,8 @@ package com.piashcse.controller
 
 import com.piashcse.entities.product.ProductEntity
 import com.piashcse.entities.product.ProductTable
-import com.piashcse.entities.product.WishListEntity
-import com.piashcse.entities.product.WishListTable
+import com.piashcse.entities.WishListEntity
+import com.piashcse.entities.WishListTable
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
 import com.piashcse.utils.extension.query
