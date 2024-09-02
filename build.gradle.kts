@@ -66,7 +66,7 @@ dependencies {
     // file extension
     implementation("commons-io:commons-io:2.11.0")
     //swagger
-    implementation("io.github.smiley4:ktor-swagger-ui:3.3.0")
+    implementation("io.github.smiley4:ktor-swagger-ui:3.3.1")
     implementation("io.swagger.parser.v3:swagger-parser:2.1.22")
 
 }
