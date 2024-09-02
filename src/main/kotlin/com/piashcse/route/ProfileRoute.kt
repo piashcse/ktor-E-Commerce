@@ -51,7 +51,7 @@ fun Route.profileRoute(profileController: ProfileController) {
                 )
             }
 
-            post({
+            post("photo-upload",{
                 tags("User")
                 request {
                     multipartBody {
