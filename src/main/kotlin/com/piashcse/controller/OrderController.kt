@@ -10,7 +10,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
 
 class OrderController {
-    suspend fun createOrder(userId: String, addOrder: AddOrder) = query {
+    suspend fun addOrder(userId: String, addOrder: AddOrder) = query {
         val order = OrderEntity.new {
             this.userId = EntityID(userId, OrderTable)
             this.quantity = addOrder.quantity

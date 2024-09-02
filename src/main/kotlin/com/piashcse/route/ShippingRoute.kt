@@ -29,6 +29,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 apiResponse()
             }) {
                 val requestBody = call.receive<AddShipping>()
+                requestBody.validation()
                 call.respond(
                     ApiResponse.success(
                         shippingController.addShipping(getCurrentUser().userId, requestBody), HttpStatusCode.OK

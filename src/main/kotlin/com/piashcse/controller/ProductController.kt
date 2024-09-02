@@ -152,7 +152,7 @@ class ProductController {
             val isImageExist = ProductImageEntity.find { ProductImageTable.productId eq productId }
                     .toList().singleOrNull()
             isImageExist?.let {
-                File("${AppConstants.Image.PRODUCT_IMAGE_LOCATION}${it.imageUrl}").delete()
+                File("${AppConstants.ImageFolder.PRODUCT_IMAGE_LOCATION}${it.imageUrl}").delete()
                 it.imageUrl = productImage
                 it.response()
             } ?: run {

@@ -27,19 +27,19 @@ import java.util.*
 fun Route.productRoute(productController: ProductController) {
     route("product") {
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            get("{productId}", {
+            get("{id}", {
                 tags("Product")
                 request {
-                    pathParameter<String>("productId") {
+                    pathParameter<String>("id") {
                         required = true
                     }
                 }
                 apiResponse()
             }) {
-                val productId = call.parameters["productId"]!!
+                val productId = call.parameters["id"]!!
                 call.respond(ApiResponse.success(productController.productDetail(productId), HttpStatusCode.OK))
             }
-            get( {
+            get({
                 tags("Product")
                 request {
                     queryParameter<Int>("limit") {
@@ -116,10 +116,10 @@ fun Route.productRoute(productController: ProductController) {
                     )
                 )
             }
-            put("{productId}", {
+            put("{id}", {
                 tags("Product")
                 request {
-                    pathParameter<String>("productId") {
+                    pathParameter<String>("id") {
                         required = true
                     }
                     queryParameter<String>("categoryId")
@@ -167,30 +167,21 @@ fun Route.productRoute(productController: ProductController) {
                     imageOne = call.request.queryParameters["imageOne"],
                     imageTwo = call.request.queryParameters["imageTwo"],
                 )
-                val productId = call.parameters["productId"]!!
+                val productId = call.parameters["id"]!!
                 call.respond(
                     ApiResponse.success(
-                        productController.updateProduct(getCurrentUser().userId, productId, params),
-                        HttpStatusCode.OK
+                        productController.updateProduct(getCurrentUser().userId, productId, params), HttpStatusCode.OK
                     )
                 )
             }
-            delete("{productId}", {
+            delete("{id}", {
                 tags("Product")
                 request {
-                    body<AddProduct>()
+                    pathParameter<String>("id")
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("productId")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(
-                        ApiResponse.success(
-                            "Missing parameters: $it", HttpStatusCode.OK
-                        )
-                    )
-                }
-                val (productId) = requiredParams.map { call.parameters[it]!! }
+                val productId = call.parameters["id"]!!
                 call.respond(
                     ApiResponse.success(
                         productController.deleteProduct(getCurrentUser().userId, productId), HttpStatusCode.OK
@@ -200,7 +191,7 @@ fun Route.productRoute(productController: ProductController) {
             post("photo-upload", {
                 tags("Product")
                 request {
-                    queryParameter<String>("productId") {
+                    queryParameter<String>("id") {
                         required = true
                     }
                     multipartBody {
@@ -214,7 +205,7 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("productId")
+                val requiredParams = listOf("id")
                 requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(
                         ApiResponse.success(
@@ -222,7 +213,7 @@ fun Route.productRoute(productController: ProductController) {
                         )
                     )
                 }
-                val (productId) = requiredParams.map { call.parameters[it]!! }
+                val (id) = requiredParams.map { call.parameters[it]!! }
 
                 val multipartData = call.receiveMultipart()
                 multipartData.forEachPart { part ->
@@ -235,7 +226,7 @@ fun Route.productRoute(productController: ProductController) {
                             UUID.randomUUID()?.let { imageId ->
                                 val fileName = part.originalFileName as String
                                 val fileLocation = fileName.let {
-                                    "${AppConstants.Image.PRODUCT_IMAGE_LOCATION}$imageId${it.fileExtension()}"
+                                    "${AppConstants.ImageFolder.PRODUCT_IMAGE_LOCATION}$imageId${it.fileExtension()}"
                                 }
                                 fileLocation.let {
                                     File(it).writeBytes(withContext(Dispatchers.IO) {
@@ -245,7 +236,7 @@ fun Route.productRoute(productController: ProductController) {
                                 val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
                                 productController.uploadProductImage(
                                     getCurrentUser().userId,
-                                    productId,
+                                    id,
                                     fileNameInServer,
                                 ).let {
                                     call.respond(

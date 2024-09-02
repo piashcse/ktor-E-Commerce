@@ -40,7 +40,7 @@ class ProfileController {
         val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         // delete previous file from directory as latest one replace previous one
         userProfileEntity?.userProfileImage?.let {
-            Files.deleteIfExists(Paths.get("${AppConstants.Image.PROFILE_IMAGE_LOCATION}$it"))
+            Files.deleteIfExists(Paths.get("${AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION}$it"))
         }
         userProfileEntity?.let {
             it.userProfileImage = profileImage ?: it.userProfileImage

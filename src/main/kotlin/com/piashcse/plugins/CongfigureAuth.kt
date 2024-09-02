@@ -8,7 +8,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 
-fun Application.configureAuthentication() {
+fun Application.configureAuth() {
     install(Authentication) {
         /**
          * Setup the JWT authentication to be used in [Routing].

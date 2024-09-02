@@ -18,157 +18,133 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.orderRoute(orderController: OrderController) {
-    route("order") {
-        authenticate(RoleManagement.CUSTOMER.role) {
-            post( {
-                tags("Order")
-                request {
-                    body<AddOrder>()
-                }
-                apiResponse()
-            }) {
-                val requestBody = call.receive<AddOrder>()
-                requestBody.validation()
-                call.respond(
-                    ApiResponse.success(
-                        orderController.createOrder(getCurrentUser().userId, requestBody), HttpStatusCode.OK
-                    )
-                )
+    authenticate(RoleManagement.CUSTOMER.role) {
+        post("order", {
+            tags("Order")
+            request {
+                body<AddOrder>()
             }
-            get( {
-                tags("Order")
-                request {
-                    queryParameter<String>("limit") {
-                        required = true
-                    }
-                    queryParameter<String>("offset") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
-                val requiredParams = listOf("limit", "offset")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (limit, offset) = requiredParams.map { call.parameters[it]!! }
-                call.respond(
-                    ApiResponse.success(
-                        orderController.getOrders(
-                            getCurrentUser().userId,
-                            limit.toInt(),
-                            offset.toLong()
-                        ), HttpStatusCode.OK
-                    )
+            apiResponse()
+        }) {
+            val requestBody = call.receive<AddOrder>()
+            requestBody.validation()
+            call.respond(
+                ApiResponse.success(
+                    orderController.addOrder(getCurrentUser().userId, requestBody), HttpStatusCode.OK
                 )
-            }
-            get("payment", {
-                tags("Order")
-                request {
-                    queryParameter<String>("orderId") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
-                val requiredParams = listOf("orderId")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (orderId) = requiredParams.map { call.parameters[it]!! }
-                call.respond(
-                    ApiResponse.success(
-                        orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.PAID),
-                        HttpStatusCode.OK
-                    )
-                )
-            }
-            get("cancel", {
-                tags("Order")
-                request {
-                    queryParameter<String>("orderId") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
-                val requiredParams = listOf("orderId")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (orderId) = requiredParams.map { call.parameters[it]!! }
-                call.respond(
-                    ApiResponse.success(
-                        orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.CANCELED),
-                        HttpStatusCode.OK
-                    )
-                )
-            }
-            get("receive", {
-                tags("Order")
-                request {
-                    queryParameter<String>("orderId") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
-                val requiredParams = listOf("orderId")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (orderId) = requiredParams.map { call.parameters[it]!! }
-                call.respond(
-                    ApiResponse.success(
-                        orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.RECEIVED),
-                        HttpStatusCode.OK
-                    )
-                )
-            }
+            )
         }
-        authenticate(RoleManagement.SELLER.role) {
-            get("confirm", {
-                tags("Order")
-                request {
-                    queryParameter<String>("orderId") {
-                        required = true
-                    }
+        get("order", {
+            tags("Order")
+            request {
+                queryParameter<String>("limit") {
+                    required = true
                 }
-                apiResponse()
-            }) {
-                val requiredParams = listOf("orderId")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                queryParameter<String>("offset") {
+                    required = true
                 }
-                val (orderId) = requiredParams.map { call.parameters[it]!! }
-                call.respond(
-                    ApiResponse.success(
-                        orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.CANCELED),
-                        HttpStatusCode.OK
-                    )
-                )
             }
-            get("deliver", {
-                tags("Order")
-                request {
-                    queryParameter<String>("orderId") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
-                val requiredParams = listOf("orderId")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (orderId) = requiredParams.map { call.parameters[it]!! }
-                call.respond(
-                    ApiResponse.success(
-                        orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.DELIVERED),
-                        HttpStatusCode.OK
-                    )
-                )
+            apiResponse()
+        }) {
+            val requiredParams = listOf("limit", "offset")
+            requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
             }
+            val (limit, offset) = requiredParams.map { call.parameters[it]!! }
+            call.respond(
+                ApiResponse.success(
+                    orderController.getOrders(
+                        getCurrentUser().userId, limit.toInt(), offset.toLong()
+                    ), HttpStatusCode.OK
+                )
+            )
+        }
+        get("{id}/order-payment", {
+            tags("Order")
+            request {
+                queryParameter<String>("id") {
+                    required = true
+                }
+            }
+            apiResponse()
+        }) {
+            val orderId = call.parameters["id"]!!
+            call.respond(
+                ApiResponse.success(
+                    orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.PAID),
+                    HttpStatusCode.OK
+                )
+            )
+        }
+        get("{id}/order-cancel", {
+            tags("Order")
+            request {
+                pathParameter<String>("id") {
+                    required = true
+                }
+            }
+            apiResponse()
+        }) {
+            val orderId = call.parameters["id"]!!
+            call.respond(
+                ApiResponse.success(
+                    orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.CANCELED),
+                    HttpStatusCode.OK
+                )
+            )
+        }
+        get("{id}/order-receive", {
+            tags("Order")
+            request {
+                pathParameter<String>("id") {
+                    required = true
+                }
+            }
+            apiResponse()
+        }) {
+            val orderId = call.parameters["id"]!!
+            call.respond(
+                ApiResponse.success(
+                    orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.RECEIVED),
+                    HttpStatusCode.OK
+                )
+            )
+        }
+    }
+    authenticate(RoleManagement.SELLER.role) {
+        get("{id}/order-confirm", {
+            tags("Order")
+            request {
+                pathParameter<String>("id") {
+                    required = true
+                }
+            }
+            apiResponse()
+        }) {
+            val orderId = call.parameters["id"]!!
+            call.respond(
+                ApiResponse.success(
+                    orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.CANCELED),
+                    HttpStatusCode.OK
+                )
+            )
+        }
+        get("{id}/order-deliver", {
+            tags("Order")
+            request {
+                pathParameter<String>("id") {
+                    required = true
+                }
+            }
+            apiResponse()
+        }) {
+            val orderId = call.parameters["id"]!!
+            call.respond(
+                ApiResponse.success(
+                    orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.DELIVERED),
+                    HttpStatusCode.OK
+                )
+            )
         }
     }
 }

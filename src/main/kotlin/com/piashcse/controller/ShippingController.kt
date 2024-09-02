@@ -2,6 +2,7 @@ package com.piashcse.controller
 
 import com.piashcse.entities.ShippingEntity
 import com.piashcse.entities.ShippingTable
+import com.piashcse.entities.orders.OrderTable
 import com.piashcse.models.shipping.AddShipping
 import com.piashcse.models.shipping.UpdateShipping
 import com.piashcse.utils.extension.alreadyExistException
@@ -15,12 +16,15 @@ class ShippingController {
         val isExist = ShippingEntity.find {
             ShippingTable.userId eq userId and (ShippingTable.orderId eq addShipping.orderId)
         }.toList().singleOrNull()
-        isExist?.let {
+       isExist?.response() ?: run {
+           addShipping.orderId.isNotExistException()
+       }
+       /* isExist?.let {
             addShipping.orderId.alreadyExistException()
         } ?: run {
             ShippingEntity.new {
                 this.userId = EntityID(userId, ShippingTable)
-                this.orderId = EntityID(userId, ShippingTable)
+                this.orderId = EntityID(addShipping.orderId, ShippingTable)
                 shippingAddress = addShipping.shipAddress
                 shippingCity = addShipping.shipCity
                 shippingPhone = addShipping.shipPhone
@@ -29,7 +33,7 @@ class ShippingController {
                 shippingCountry = addShipping.shipCountry
 
             }
-        }
+        }*/
     }
 
     suspend fun getShipping(userId: String, orderId: String) = query {

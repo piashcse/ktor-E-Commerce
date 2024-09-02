@@ -17,101 +17,92 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryController) {
-    route("product-sub-category") {
-        authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            get({
-                tags("Product SubCategory")
-                request {
-                    queryParameter<String>("categoryId") {
-                        required = true
-                    }
-                    queryParameter<String>("limit") {
-                        required = true
-                    }
-                    queryParameter<String>("offset") {
-                        required = true
-                    }
+    authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
+        get("subcategory", {
+            tags("Product SubCategory")
+            request {
+                queryParameter<String>("categoryId") {
+                    required = true
                 }
-                apiResponse()
-            }) {
-                val requiredParams = listOf("categoryId", "limit", "offset")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                queryParameter<String>("limit") {
+                    required = true
                 }
-                val (categoryId, limit, offset) = requiredParams.map { call.parameters[it]!! }
-                call.respond(
-                    ApiResponse.success(
-                        subCategoryController.getProductSubCategory(categoryId, limit.toInt(), offset.toLong()),
-                        HttpStatusCode.OK
-                    )
-                )
+                queryParameter<String>("offset") {
+                    required = true
+                }
             }
+            apiResponse()
+        }) {
+            val requiredParams = listOf("categoryId", "limit", "offset")
+            requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+            }
+            val (categoryId, limit, offset) = requiredParams.map { call.parameters[it]!! }
+            call.respond(
+                ApiResponse.success(
+                    subCategoryController.getProductSubCategory(categoryId, limit.toInt(), offset.toLong()),
+                    HttpStatusCode.OK
+                )
+            )
         }
-        authenticate(RoleManagement.ADMIN.role) {
-            post({
-                tags("Product SubCategory")
-                request {
-                    body<AddProductSubCategory>()
-                }
-                apiResponse()
-            }) {
-                val requestBody = call.receive<AddProductSubCategory>()
-                requestBody.validation()
-                call.respond(
-                    ApiResponse.success(
-                        subCategoryController.createProductSubCategory(requestBody), HttpStatusCode.OK
-                    )
-                )
+    }
+    authenticate(RoleManagement.ADMIN.role) {
+        post("subcategory", {
+            tags("Product SubCategory")
+            request {
+                body<AddProductSubCategory>()
             }
-            put({
-                tags("Product SubCategory")
-                request {
-                    queryParameter<String>("subCategoryId") {
-                        required = true
-                    }
-                    queryParameter<String>("subCategoryName") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
-                val requiredParams = listOf("subCategoryId", "subCategoryName")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (subCategoryId, subCategoryName) = requiredParams.map { call.parameters[it]!! }
-                call.respond(
-                    ApiResponse.success(
-                        subCategoryController.updateProductSubCategory(
-                            subCategoryId, subCategoryName
-                        ), HttpStatusCode.OK
-                    )
+            apiResponse()
+        }) {
+            val requestBody = call.receive<AddProductSubCategory>()
+            requestBody.validation()
+            call.respond(
+                ApiResponse.success(
+                    subCategoryController.addProductSubCategory(requestBody), HttpStatusCode.OK
                 )
+            )
+        }
+        put("subcategory/{id}", {
+            tags("Product SubCategory")
+            request {
+                pathParameter<String>("id") {
+                    required = true
+                }
+                queryParameter<String>("name") {
+                    required = true
+                }
+            }
+            apiResponse()
+        }) {
+            val subCategoryId = call.parameters["id"]!!
+            val subCategoryName = call.parameters["name"]!!
+            call.respond(
+                ApiResponse.success(
+                    subCategoryController.updateProductSubCategory(
+                        subCategoryId, subCategoryName
+                    ), HttpStatusCode.OK
+                )
+            )
 
+        }
+        delete("subcategory/{id}", {
+            tags("Product SubCategory")
+            request {
+                queryParameter<String>("id") {
+                    required = true
+                }
             }
-            delete({
-                tags("Product SubCategory")
-                request {
-                    queryParameter<String>("subCategoryId") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
-                val requiredParams = listOf("subCategoryId")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (subCategoryId) = requiredParams.map { call.parameters[it]!! }
-                call.respond(
-                    ApiResponse.success(
-                        subCategoryController.deleteProductSubCategory(
-                            subCategoryId
-                        ), HttpStatusCode.OK
-                    )
+            apiResponse()
+        }) {
+            val subCategoryId = call.parameters["id"]!!
+            call.respond(
+                ApiResponse.success(
+                    subCategoryController.deleteProductSubCategory(
+                        subCategoryId
+                    ), HttpStatusCode.OK
                 )
+            )
 
-            }
         }
     }
 }

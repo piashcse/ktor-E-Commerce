@@ -25,13 +25,8 @@ object AppConstants {
         const val EMAIL_SUBJECT = "Forget Password"
     }
 
-    object Image {
+    object ImageFolder {
         const val PROFILE_IMAGE_LOCATION = "src/main/resources/profile-image/"
         const val PRODUCT_IMAGE_LOCATION = "src/main/resources/product-image/"
-    }
-
-    object ProductVariant {
-        const val COLOR = "COLOR"
-        const val SIZE = "SIZE"
     }
 }

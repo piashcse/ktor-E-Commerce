@@ -6,7 +6,7 @@ import io.github.smiley4.ktorswaggerui.dsl.routing.route
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 
-fun Application.configureRouting2() {
+fun Application.configureRoute() {
     routing {
         route {
             userRoute(UserController())

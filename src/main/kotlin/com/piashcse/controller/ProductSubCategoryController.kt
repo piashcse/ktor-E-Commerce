@@ -11,7 +11,7 @@ import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
 
 class ProductSubCategoryController {
-    suspend fun createProductSubCategory(productSubCategory: AddProductSubCategory) = query {
+    suspend fun addProductSubCategory(productSubCategory: AddProductSubCategory) = query {
         val categoryIdExist =
             ProductCategoryEntity.find { ProductCategoryTable.id eq productSubCategory.categoryId }.toList()
                 .singleOrNull()

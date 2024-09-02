@@ -8,7 +8,7 @@ import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
 
 class ShopController {
-    suspend fun createShopCategory(shopCategoryName: String) = query {
+    suspend fun addShopCategory(shopCategoryName: String) = query {
         val categoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.shopCategoryName eq shopCategoryName }.toList().singleOrNull()
         if (categoryExist == null) {

@@ -12,7 +12,7 @@ import org.jetbrains.exposed.sql.*
 import kotlin.random.Random
 
 class UserController {
-    suspend fun registration(registrationBody: RegistrationBody) = query {
+    suspend fun addUser(registrationBody: RegistrationBody) = query {
         val userEntity =
             UsersEntity.find { UserTable.email eq registrationBody.email and (UserTable.userType eq registrationBody.userType) }
                 .toList().singleOrNull()

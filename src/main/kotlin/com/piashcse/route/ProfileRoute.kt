@@ -25,7 +25,7 @@ import java.util.*
 
 fun Route.profileRoute(profileController: ProfileController) {
     authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
-        route("profile") {
+        route("user") {
             get({
                 tags("User")
                 apiResponse()
@@ -51,7 +51,7 @@ fun Route.profileRoute(profileController: ProfileController) {
                 )
             }
 
-            post( {
+            post({
                 tags("User")
                 request {
                     multipartBody {
@@ -78,7 +78,7 @@ fun Route.profileRoute(profileController: ProfileController) {
                             UUID.randomUUID()?.let { imageId ->
                                 val fileName = part.originalFileName as String
                                 val fileLocation = fileName.let {
-                                    "${AppConstants.Image.PROFILE_IMAGE_LOCATION}$imageId${it.fileExtension()}"
+                                    "${AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION}$imageId${it.fileExtension()}"
                                 }
                                 fileLocation.let {
                                     File(it).writeBytes(withContext(Dispatchers.IO) {

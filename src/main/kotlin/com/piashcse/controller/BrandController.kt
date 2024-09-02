@@ -7,7 +7,7 @@ import com.piashcse.utils.extension.isNotExistException
 import com.piashcse.utils.extension.query
 
 class BrandController {
-    suspend fun createBrand(brandName: String) = query {
+    suspend fun addBrand(brandName: String) = query {
         val brandExist = BrandEntity.find { BrandTable.brandName eq brandName }.toList().singleOrNull()
         if (brandExist == null) {
             BrandEntity.new {

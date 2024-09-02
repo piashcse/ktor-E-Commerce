@@ -18,113 +18,106 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.shopRoute(shopController: ShopController) {
-    route("shop") {
-        authenticate(RoleManagement.ADMIN.role) {
-            post("category", {
-                tags("Shop")
-                request {
-                    body<AddShopCategory>()
-                }
-                apiResponse()
-            }) {
-                val requestBody = call.receive<AddShopCategory>()
-                requestBody.validation()
-                call.respond(
-                    ApiResponse.success(
-                        shopController.createShopCategory(requestBody.shopCategoryName), HttpStatusCode.OK
-                    )
-                )
+    authenticate(RoleManagement.ADMIN.role) {
+        post("shop-category", {
+            tags("Shop")
+            request {
+                body<AddShopCategory>()
             }
-            get("category", {
-                tags("Shop")
-                request {
-                    queryParameter<Int>("limit") {
-                        required = true
-                    }
-                    queryParameter<Long>("offset") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
-                val requiredParams = listOf("limit", "offset")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (limit, offset) = requiredParams.map { call.parameters[it]!! }
-                call.respond(
-                    ApiResponse.success(
-                        shopController.getShopCategories(
-                            limit.toInt(), offset.toLong()
-                        ), HttpStatusCode.OK
-                    )
+            apiResponse()
+        }) {
+            val requestBody = call.receive<AddShopCategory>()
+            requestBody.validation()
+            call.respond(
+                ApiResponse.success(
+                    shopController.addShopCategory(requestBody.name), HttpStatusCode.OK
                 )
-            }
-            delete("category", {
-                tags("Shop")
-                request {
-                    queryParameter<String>("shopCategoryId"){
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
-                val requiredParams = listOf("shopCategoryId")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (shopCategoryId) = requiredParams.map { call.parameters[it]!! }
-                call.respond(
-                    ApiResponse.success(
-                        shopController.deleteShopCategory(shopCategoryId), HttpStatusCode.OK
-                    )
-                )
-            }
-            put("category", {
-                tags("Shop")
-                request {
-                    queryParameter<String>("shopCategoryId"){
-                        required = true
-                    }
-                    queryParameter<String>("shopCategoryName"){
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
-                val requiredParams = listOf("shopCategoryId", "shopCategoryName")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (shopCategoryId, shopCategoryName) = requiredParams.map { call.parameters[it]!! }
-                call.respond(
-                    ApiResponse.success(
-                        shopController.updateShopCategory(shopCategoryId, shopCategoryName), HttpStatusCode.OK
-                    )
-                )
-                shopController.updateShopCategory(
-                    shopCategoryId, shopCategoryName
-                ).let {
-                    call.respond(ApiResponse.success(it, HttpStatusCode.OK))
-                }
-            }
+            )
         }
-        authenticate(RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            post("add-shop", {
-                tags("Shop")
-                request {
-                    body<AddShop>()
+        get("shop-category", {
+            tags("Shop")
+            request {
+                queryParameter<Int>("limit") {
+                    required = true
                 }
-                apiResponse()
-            }) {
-                val requestBody = call.receive<AddShop>()
-                requestBody.validation()
-                shopController.createShop(
-                    getCurrentUser().userId, requestBody.shopCategoryId, requestBody.shopName
-                ).let {
-                    call.respond(ApiResponse.success(it, HttpStatusCode.OK))
+                queryParameter<Long>("offset") {
+                    required = true
                 }
+            }
+            apiResponse()
+        }) {
+            val requiredParams = listOf("limit", "offset")
+            requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+            }
+            val (limit, offset) = requiredParams.map { call.parameters[it]!! }
+            call.respond(
+                ApiResponse.success(
+                    shopController.getShopCategories(
+                        limit.toInt(), offset.toLong()
+                    ), HttpStatusCode.OK
+                )
+            )
+        }
+        delete("shop-category/{id}", {
+            tags("Shop")
+            request {
+                pathParameter<String>("id") {
+                    required = true
+                }
+            }
+            apiResponse()
+        }) {
+            val shopCategoryId = call.parameters["id"]!!
+            call.respond(
+                ApiResponse.success(
+                    shopController.deleteShopCategory(shopCategoryId), HttpStatusCode.OK
+                )
+            )
+        }
+        put("shop-category/{id}", {
+            tags("Shop")
+            request {
+                pathParameter<String>("id") {
+                    required = true
+                }
+                queryParameter<String>("name") {
+                    required = true
+                }
+            }
+            apiResponse()
+        }) {
+            val shopCategoryId = call.parameters["id"]!!
+            val shopCategoryName = call.parameters["name"]!!
+
+            call.respond(
+                ApiResponse.success(
+                    shopController.updateShopCategory(shopCategoryId, shopCategoryName), HttpStatusCode.OK
+                )
+            )
+            shopController.updateShopCategory(
+                shopCategoryId, shopCategoryName
+            ).let {
+                call.respond(ApiResponse.success(it, HttpStatusCode.OK))
             }
         }
     }
+    authenticate(RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
+        post("shop", {
+            tags("Shop")
+            request {
+                body<AddShop>()
+            }
+            apiResponse()
+        }) {
+            val requestBody = call.receive<AddShop>()
+            requestBody.validation()
+            shopController.createShop(
+                getCurrentUser().userId, requestBody.shopCategoryId, requestBody.shopName
+            ).let {
+                call.respond(ApiResponse.success(it, HttpStatusCode.OK))
+            }
+        }
+    }
+
 }

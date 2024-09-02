@@ -7,7 +7,7 @@ import com.piashcse.utils.extension.isNotExistException
 import com.piashcse.utils.extension.query
 
 class ProductCategoryController {
-    suspend fun createProductCategory(categoryName: String) = query {
+    suspend fun addProductCategory(categoryName: String) = query {
         val categoryExist =
             ProductCategoryEntity.find { ProductCategoryTable.categoryName eq categoryName }.toList().singleOrNull()
 

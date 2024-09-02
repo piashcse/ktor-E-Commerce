@@ -9,7 +9,6 @@ import io.ktor.server.config.*
 import org.slf4j.LoggerFactory
 
 fun main() {
-    //val environment = System.getenv("KTOR_ENVIRONMENT") ?: "development"
     val configName = "application.conf"
     val appEngineEnv = applicationEngineEnvironment {
         config = HoconApplicationConfig(ConfigFactory.load(configName))
@@ -18,10 +17,10 @@ fun main() {
         module {
             configureDataBase()
             configureBasic()
-            configureAuthentication()
+            configureAuth()
             configureSwagger()
             configureStatusPage()
-            configureRouting2()
+            configureRoute()
         }
         connector {
             host = config.property("ktor.deployment.host").getString()
