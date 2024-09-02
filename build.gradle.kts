@@ -53,12 +53,12 @@ dependencies {
 
     // postgresql
     implementation("org.postgresql:postgresql:42.7.4")
-    implementation("com.zaxxer:HikariCP:5.0.1")
+    implementation("com.zaxxer:HikariCP:5.1.0")
 
     // password hashing
     implementation("at.favre.lib:bcrypt:0.10.2")
     // date time
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
     // mail server
     implementation("org.apache.commons:commons-email:1.5")
     // validator
