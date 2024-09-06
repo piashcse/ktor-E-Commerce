@@ -88,7 +88,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
         delete("subcategory/{id}", {
             tags("Product SubCategory")
             request {
-                queryParameter<String>("id") {
+                pathParameter<String>("id") {
                     required = true
                 }
             }
