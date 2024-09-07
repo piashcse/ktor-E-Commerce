@@ -20,7 +20,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
     route("wishlist") {
         authenticate(RoleManagement.CUSTOMER.role) {
             post({
-                tags("WishList")
+                tags("Wish List")
                 request {
                     body<AddWisList>()
                 }
@@ -34,7 +34,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 )
             }
             get({
-                tags("WishList")
+                tags("Wish List")
                 apiResponse()
             }) {
                 call.respond(
@@ -44,7 +44,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 )
             }
             delete({
-                tags("WishList")
+                tags("Wish List")
                 request {
                     queryParameter<String>("productId") {
                         required = true

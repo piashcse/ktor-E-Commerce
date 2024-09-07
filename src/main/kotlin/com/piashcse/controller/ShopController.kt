@@ -6,46 +6,9 @@ import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.isNotExistException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.and
 
 class ShopController {
-    suspend fun addShopCategory(shopCategoryName: String) = query {
-        val categoryExist =
-            ShopCategoryEntity.find { ShopCategoryTable.shopCategoryName eq shopCategoryName }.toList().singleOrNull()
-        if (categoryExist == null) {
-            ShopCategoryEntity.new {
-                this.shopCategoryName = shopCategoryName
-            }.shopCategoryResponse()
-        } else {
-            shopCategoryName.alreadyExistException()
-        }
-    }
-
-    suspend fun getShopCategories(limit: Int, offset: Long) = query {
-        val shopCategories = ShopCategoryEntity.all().limit(limit, offset)
-        shopCategories.map {
-            it.shopCategoryResponse()
-        }
-    }
-
-    suspend fun updateShopCategory(shopCategoryId: String, shopCategoryName: String) = query {
-        val shopCategoryExist =
-            ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
-        shopCategoryExist?.apply {
-            this.shopCategoryName = shopCategoryName
-        }?.shopCategoryResponse() ?: shopCategoryId.isNotExistException()
-    }
-
-    suspend fun deleteShopCategory(shopCategoryId: String) = query {
-        val shopCategoryExist =
-            ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
-        shopCategoryExist?.let {
-            shopCategoryExist.delete()
-            shopCategoryId
-        } ?: run {
-            shopCategoryId.isNotExistException()
-        }
-    }
-
     suspend fun createShop(userId: String, shopCategoryId: String, shopName: String) = query {
         val shopNameExist = ShopEntity.find { ShopTable.shopName eq shopName }.toList().singleOrNull()
         if (shopNameExist == null) {
@@ -57,5 +20,30 @@ class ShopController {
         } else {
             shopName.alreadyExistException()
         }
+    }
+
+    suspend fun getShop(userId: String, limit: Int, offset: Long) = query {
+        val isExist = ShopEntity.find { ShopTable.userId eq userId }.limit(limit, offset).toList()
+        isExist.map {
+            it.shopResponse()
+        }
+    }
+
+    suspend fun updateShop(userId: String, shopId: String, shopName: String) = query {
+        val shopNameExist =
+            ShopEntity.find { ShopTable.userId eq userId and (ShopTable.id eq shopId) }.toList().singleOrNull()
+        shopNameExist?.let {
+            it.shopName = shopName
+            it.shopResponse()
+        } ?: shopName.isNotExistException()
+    }
+
+    suspend fun deleteShop(userId: String, shopId: String) = query {
+        val shopNameExist =
+            ShopEntity.find { ShopTable.userId eq userId and (ShopTable.id eq shopId) }.toList().singleOrNull()
+        shopNameExist?.let {
+            it.delete()
+            shopId
+        } ?: shopId.isNotExistException()
     }
 }

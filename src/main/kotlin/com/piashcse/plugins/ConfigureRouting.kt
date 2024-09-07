@@ -11,6 +11,7 @@ fun Application.configureRoute() {
         route {
             userRoute(UserController())
             profileRoute(ProfileController())
+            shopCategoryRoute(ShopCategoryController())
             shopRoute(ShopController())
             brandRoute(BrandController())
             productCategoryRoute(ProductCategoryController())

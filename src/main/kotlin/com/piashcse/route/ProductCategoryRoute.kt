@@ -18,7 +18,7 @@ import io.ktor.server.routing.*
 
 fun Route.productCategoryRoute(productCategoryController: ProductCategoryController) {
     authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-        get("category", {
+        get("product-category", {
             tags("Product Category")
             request {
                 queryParameter<String>("limit") {
@@ -50,7 +50,7 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
     }
 
     authenticate(RoleManagement.ADMIN.role) {
-        post("category", {
+        post("product-category", {
             tags("Product Category")
             request {
                 body<AddProductCategory>()
@@ -66,7 +66,7 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
                 )
             )
         }
-        put("category/{id}", {
+        put("product-category/{id}", {
             tags("Product Category")
             request {
                 pathParameter<String>("id") {
@@ -88,7 +88,7 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
                 )
             )
         }
-        delete("category/{id}", {
+        delete("product-category/{id}", {
             tags("Product Category")
             request {
                 pathParameter<String>("id") {

@@ -18,7 +18,7 @@ class ShopEntity(id: EntityID<String>) : BaseIntEntity(id, ShopTable) {
     var userId by ShopTable.userId
     var shopCategoryId by ShopTable.shopCategoryId
     var shopName by ShopTable.shopName
-    fun shopResponse() = Shop(id.value, shopName)
+    fun shopResponse() = Shop(id.value, shopName, shopCategoryId.value)
 }
 
-data class Shop(val id: String, val shopName: String)
+data class Shop(val id: String, val shopName: String, val shopCategoryId: String)
