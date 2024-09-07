@@ -273,11 +273,8 @@ http://localhost:8080/user/change-password?oldPassword=p1234&newPassword=p1234
 }
 ```   
 </details>
-
-### PROFILE
 <details>
-  
-<summary> <code>GET </code> <code>/user</code></summary>
+  <summary> <code>GET </code> <code>/user</code></summary>
 
 ### Curl
 
