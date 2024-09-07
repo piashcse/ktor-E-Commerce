@@ -29,7 +29,7 @@ fun Application.configureSwagger() {
         }
         info {
             title = "Ktor Ecommerce"
-            version = "latest"
+            version = "1.0.0"
             description = "API documentation for Ktor Ecommerce App"
             contact {
                 name = "PLabs corporation"

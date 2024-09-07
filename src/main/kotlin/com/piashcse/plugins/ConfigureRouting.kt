@@ -10,7 +10,7 @@ fun Application.configureRoute() {
     routing {
         route {
             userRoute(UserController())
-            profileRoute(ProfileController())
+            userProfileRoute(userProfileController())
             shopCategoryRoute(ShopCategoryController())
             shopRoute(ShopController())
             brandRoute(BrandController())

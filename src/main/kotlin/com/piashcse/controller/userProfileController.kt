@@ -8,7 +8,7 @@ import com.piashcse.utils.extension.query
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class ProfileController {
+class userProfileController {
     suspend fun getProfile(userId: String) = query {
         val profile = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         profile?.let {

@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "com.piashcse"
-version = "0.0.1"
+version = "1.0.0"
 application {
      mainClass.set("com.piashcse.ApplicationKt")
      project.setProperty("mainClassName", "com.piashcse.ApplicationKt") // adding this for fatjar

@@ -1,6 +1,6 @@
 package com.piashcse.route
 
-import com.piashcse.controller.ProfileController
+import com.piashcse.controller.userProfileController
 import com.piashcse.models.user.body.UserProfileBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
 
-fun Route.profileRoute(profileController: ProfileController) {
+fun Route.userProfileRoute(profileController: userProfileController) {
     authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
         route("user") {
             get({
