@@ -561,7 +561,7 @@ http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Pi
 </details>
 
 
-### Shop
+### SHOP
 <details>
 <summary> <code>POST</code> <code>/shop</code></summary>
 
