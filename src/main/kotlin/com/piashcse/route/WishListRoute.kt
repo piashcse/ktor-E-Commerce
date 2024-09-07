@@ -27,7 +27,6 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 apiResponse()
             }) {
                 val requestBody = call.receive<AddWisList>()
-                requestBody.validation()
                 call.respond(
                     ApiResponse.success(
                         wishlistController.addToWishList(getCurrentUser().userId, requestBody.productId), HttpStatusCode.OK

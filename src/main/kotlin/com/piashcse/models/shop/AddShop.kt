@@ -1,5 +1,6 @@
 package com.piashcse.models.shop
 
+import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
@@ -9,8 +10,8 @@ data class AddShop(
 ) {
     fun validation() {
         validate(this) {
-            validate(AddShop::shopName).isNotNull()
-            validate(AddShop::shopCategoryId).isNotNull()
+            validate(AddShop::shopName).isNotNull().isNotEmpty()
+            validate(AddShop::shopCategoryId).isNotNull().isNotEmpty()
         }
     }
 }

@@ -17,6 +17,7 @@ fun main() {
         module {
             configureDataBase()
             configureBasic()
+            configureRequestValidation()
             configureAuth()
             configureSwagger()
             configureStatusPage()

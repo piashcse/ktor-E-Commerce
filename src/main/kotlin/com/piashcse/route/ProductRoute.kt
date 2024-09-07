@@ -109,7 +109,6 @@ fun Route.productRoute(productController: ProductController) {
                 apiResponse()
             }) {
                 val requestBody = call.receive<AddProduct>()
-                requestBody.validation()
                 call.respond(
                     ApiResponse.success(
                         productController.addProduct(getCurrentUser().userId, requestBody), HttpStatusCode.OK

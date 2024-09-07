@@ -27,7 +27,6 @@ fun Route.orderRoute(orderController: OrderController) {
             apiResponse()
         }) {
             val requestBody = call.receive<AddOrder>()
-            requestBody.validation()
             call.respond(
                 ApiResponse.success(
                     orderController.addOrder(getCurrentUser().userId, requestBody), HttpStatusCode.OK

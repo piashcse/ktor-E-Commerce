@@ -1,5 +1,6 @@
 package com.piashcse.models.subcategory
 
+import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
@@ -9,8 +10,8 @@ data class AddProductSubCategory(
 ) {
     fun validation() {
         validate(this) {
-            validate(AddProductSubCategory::categoryId).isNotNull()
-            validate(AddProductSubCategory::subCategoryName).isNotNull()
+            validate(AddProductSubCategory::categoryId).isNotNull().isNotEmpty()
+            validate(AddProductSubCategory::subCategoryName).isNotNull().isNotEmpty()
         }
     }
 }

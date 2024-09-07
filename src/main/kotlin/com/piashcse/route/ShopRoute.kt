@@ -27,7 +27,6 @@ fun Route.shopRoute(shopController: ShopController) {
             apiResponse()
         }) {
             val requestBody = call.receive<AddShopCategory>()
-            requestBody.validation()
             call.respond(
                 ApiResponse.success(
                     shopController.addShopCategory(requestBody.name), HttpStatusCode.OK

@@ -58,7 +58,6 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
             apiResponse()
         }) {
             val requestBody = call.receive<AddProductCategory>()
-            requestBody.validation()
             call.respond(
                 ApiResponse.success(
                     productCategoryController.addProductCategory(

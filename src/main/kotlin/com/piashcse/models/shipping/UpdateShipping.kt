@@ -1,5 +1,6 @@
 package com.piashcse.models.shipping
 
+import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
@@ -15,8 +16,8 @@ data class UpdateShipping(
 ) {
     fun validation() {
         validate(this) {
-            validate(UpdateShipping::orderId).isNotNull()
-            validate(UpdateShipping::shipAddress).isNotNull()
+            validate(UpdateShipping::orderId).isNotNull().isNotEmpty()
+            validate(UpdateShipping::shipAddress).isNotNull().isNotEmpty()
         }
     }
 }

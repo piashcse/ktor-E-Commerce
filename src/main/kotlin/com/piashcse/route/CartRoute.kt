@@ -28,7 +28,6 @@ fun Route.cartRoute(cartController: CartController) {
                 apiResponse()
             }) {
                 val requestBody = call.receive<AddCart>()
-                requestBody.validation()
                 call.respond(
                     ApiResponse.success(
                         cartController.addToCart(

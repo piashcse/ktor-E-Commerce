@@ -52,7 +52,6 @@ fun Route.brandRoute(brandController: BrandController) {
                 apiResponse()
             }) {
                 val requestBody = call.receive<AddBrand>()
-                requestBody.validation()
                 call.respond(
                     ApiResponse.success(
                         brandController.addBrand(requestBody.brandName), HttpStatusCode.OK
