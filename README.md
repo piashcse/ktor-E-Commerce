@@ -411,25 +411,28 @@ http://localhost:8080/user/photo-upload
 ```   
 </details>
 
-### SHOP
+### SHOP CATEGORY
 <details>
   
-<summary> <code>POST</code> <code>/shop/category</code></summary>
+<summary> <code>POST</code> <code>/shop-category</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/shop/category?shopCategoryName=BD%20Shop' \
+  'http://localhost:8080/shop-category' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ' \
-  -d ''
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "New digital Shop"
+}'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/shop/category?shopCategoryName=BD%20Shop
+http://localhost:8080/shop-category
 ``` 
 
 
@@ -442,8 +445,8 @@ http://localhost:8080/shop/category?shopCategoryName=BD%20Shop
     "description": "OK"
   },
   "data": {
-    "id": "2a17da31-7517-41db-b7d3-f77d0ddd52a5",
-    "shopName": "BD Shop"
+    "id": "28918963-f932-425b-884b-a34d8ae69b2a",
+    "shopName": "New digital Shop"
   }
 }
 ```   
@@ -451,21 +454,21 @@ http://localhost:8080/shop/category?shopCategoryName=BD%20Shop
 
 <details>
   
-<summary> <code>GET </code> <code>/shop/category</code></summary>
+<summary> <code>GET </code> <code>/shop-category</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/shop/category?limit=10&offset=0' \
+  'http://localhost:8080/shop-category?limit=10&offset=0' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/shop/category?limit=10&offset=0
+http://localhost:8080/shop-category?limit=10&offset=0
 ``` 
 
 
@@ -479,12 +482,8 @@ http://localhost:8080/shop/category?limit=10&offset=0
   },
   "data": [
     {
-      "id": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
-      "shopName": "Royal shop"
-    },
-    {
-      "id": "2a17da31-7517-41db-b7d3-f77d0ddd52a5",
-      "shopName": "BD Shop"
+      "id": "9c95c44c-3767-4ca2-9486-e28e390b3741",
+      "shopName": "New Electronics"
     }
   ]
 }
@@ -493,13 +492,13 @@ http://localhost:8080/shop/category?limit=10&offset=0
 
 <details>
   
-<summary> <code>DELETE</code> <code>/shop/category</code></summary>
+<summary> <code>DELETE</code> <code>/shop-category/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/shop/category?shopCategoryId=2a17da31-7517-41db-b7d3-f77d0ddd52a5' \
+  'http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ'
 ``` 
@@ -507,7 +506,7 @@ curl -X 'DELETE' \
 ### Request URL
 
 ```
-http://localhost:8080/shop/category?shopCategoryId=2a17da31-7517-41db-b7d3-f77d0ddd52a5
+http://localhost:8080/shop-category/2a17da31-7517-41db-b7d3-f77d0ddd52a5
 ``` 
 
 
@@ -527,21 +526,21 @@ http://localhost:8080/shop/category?shopCategoryId=2a17da31-7517-41db-b7d3-f77d0
 
 <details>
   
-<summary> <code>PUT </code> <code>/shop/category</code></summary>
+<summary> <code>PUT </code> <code>/shop-category/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/shop/category?shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&shopCategoryName=BD%20Shop' \
+  'http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/shop/category?shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&shopCategoryName=BD%20Shop
+http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop
 ``` 
 
 
@@ -554,22 +553,23 @@ http://localhost:8080/shop/category?shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163f
     "description": "OK"
   },
   "data": {
-    "id": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
-    "shopName": "BD Shop"
+    "id": "9c95c44c-3767-4ca2-9486-e28e390b3741",
+    "shopName": "Piash Digital shop"
   }
 }
 ```   
 </details>
 
+
+### Shop
 <details>
-  
-<summary> <code>POST</code> <code>/shop/add-shop</code></summary>
+<summary> <code>POST</code> <code>/add-shop</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/shop/add-shop?shopName=Royal%20Shop&shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
+  'http://localhost:8080/add-shop?name=Royal%20Shop&shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ' \
   -d ''
@@ -578,7 +578,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/shop/add-shop?shopName=Royal%20Shop&shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb
+http://localhost:8080/add-shop?name=Royal%20Shop&shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb
 ``` 
 
 
@@ -592,7 +592,7 @@ http://localhost:8080/shop/add-shop?shopName=Royal%20Shop&shopCategoryId=5e67ec9
   },
   "data": {
     "id": "cbfdcfa3-fb65-4fa3-9078-e0f8cc63ddbc",
-    "shopName": "Royal Shop"
+    "name": "Royal Shop"
   }
 }
 ```   
