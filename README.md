@@ -11,7 +11,7 @@ Ktor E-Commerce Backend is a high-performance backend solution designed for e-co
 ## Swagger View
 
 <p align="center">
-  <img width="100%" height="40%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/ktor_commerce_gif.gif" />
+  <img width="100%" height="40%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/ktor_ecommerce_gif.gif" />
 </p>
 
 
