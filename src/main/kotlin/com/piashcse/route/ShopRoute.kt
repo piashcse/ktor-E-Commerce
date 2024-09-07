@@ -75,21 +75,21 @@ fun Route.shopRoute(shopController: ShopController) {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
             }
-        }
-        delete("{id}", {
-            tags("Shop")
-            request {
-                pathParameter<String>("id"){
-                    required = true
+            delete("{id}", {
+                tags("Shop")
+                request {
+                    pathParameter<String>("id"){
+                        required = true
+                    }
                 }
-            }
-            apiResponse()
-        }) {
-            val shopId = call.parameters["id"]!!
-            shopController.deleteShop(
-                getCurrentUser().userId, shopId
-            ).let {
-                call.respond(ApiResponse.success(it, HttpStatusCode.OK))
+                apiResponse()
+            }) {
+                val shopId = call.parameters["id"]!!
+                shopController.deleteShop(
+                    getCurrentUser().userId, shopId
+                ).let {
+                    call.respond(ApiResponse.success(it, HttpStatusCode.OK))
+                }
             }
         }
     }
