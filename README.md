@@ -1188,16 +1188,20 @@ http://localhost:8080/product-category?categoryId=75b44e08-2c94-438f-b500-b204c7
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/product-sub-category?categoryId=58f5c085-d04a-47de-beab-1d476b6ce432&subCategoryName=Cricket%20' \
+  'http://localhost:8080/product-subcategory' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2MzAyNjR9.lutSpglUtRQxkAQY4z94OIH6j-A1-TvF2L2_6zj7YA4VL6pnaZbMq-_uPZu4CnULYXVIRnwx4vzP9CWzyrc5Mw' \
-  -d ''
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4NjUyMDJ9.q3w-4G4bMJwdwB-kCv7KhR6JlTjsbUungkAMWFYTwVRpDLezumFsW_6kU7AJ2MqyQn1zAoEW7-Qtp68JZlHYgQ' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
+  "subCategoryName": "Paper"
+}'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/product-sub-category?categoryId=58f5c085-d04a-47de-beab-1d476b6ce432&subCategoryName=Cricket%20
+http://localhost:8080/product-subcategory
 ``` 
 
 
@@ -1210,9 +1214,9 @@ http://localhost:8080/product-sub-category?categoryId=58f5c085-d04a-47de-beab-1d
     "description": "OK"
   },
   "data": {
-    "id": "978c50c1-70d7-405c-b323-c0d11eef714b",
-    "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-    "subCategoryName": "Cricket "
+    "id": "751cef10-f98a-4ecc-ae03-4173830a626d",
+    "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
+    "subCategoryName": "Paper"
   }
 }
 ```   
@@ -1226,15 +1230,15 @@ http://localhost:8080/product-sub-category?categoryId=58f5c085-d04a-47de-beab-1d
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/product-sub-category/{categoryId}?categoryId=58f5c085-d04a-47de-beab-1d476b6ce432&limit=10&offset=0' \
+  'http://localhost:8080/product-subcategory?categoryId=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10&offset=0' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2MzA2ODl9.EQrEn_nAbTIH85sPOZdb1EY0y0n2gu97oRYC6QTSEDVNmqlouqR7KUx5bGqHsYVTkm9orimn8slqa0FONWyVuA'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4NjUyMDJ9.q3w-4G4bMJwdwB-kCv7KhR6JlTjsbUungkAMWFYTwVRpDLezumFsW_6kU7AJ2MqyQn1zAoEW7-Qtp68JZlHYgQ'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/product-sub-category/{categoryId}?categoryId=58f5c085-d04a-47de-beab-1d476b6ce432&limit=10&offset=0
+http://localhost:8080/product-subcategory?categoryId=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10&offset=0
 ``` 
 
 
@@ -1248,9 +1252,9 @@ http://localhost:8080/product-sub-category/{categoryId}?categoryId=58f5c085-d04a
   },
   "data": [
     {
-      "id": "978c50c1-70d7-405c-b323-c0d11eef714b",
-      "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-      "subCategoryName": "Cricket "
+      "id": "751cef10-f98a-4ecc-ae03-4173830a626d",
+      "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
+      "subCategoryName": "Paper"
     }
   ]
 }
@@ -1259,21 +1263,21 @@ http://localhost:8080/product-sub-category/{categoryId}?categoryId=58f5c085-d04a
 
 <details>
   
-<summary> <code>PUT </code> <code>/product-sub-category</code></summary>
+<summary> <code>PUT </code> <code>/product-sub-category/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/product-sub-category?subCategoryId=978c50c1-70d7-405c-b323-c0d11eef714b&subCategoryName=Football' \
+  'http://localhost:8080/product-subcategory/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Pencil' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2MzA2ODl9.EQrEn_nAbTIH85sPOZdb1EY0y0n2gu97oRYC6QTSEDVNmqlouqR7KUx5bGqHsYVTkm9orimn8slqa0FONWyVuA'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4NjUyMDJ9.q3w-4G4bMJwdwB-kCv7KhR6JlTjsbUungkAMWFYTwVRpDLezumFsW_6kU7AJ2MqyQn1zAoEW7-Qtp68JZlHYgQ'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/product-sub-category?subCategoryId=978c50c1-70d7-405c-b323-c0d11eef714b&subCategoryName=Football
+http://localhost:8080/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d?name=Pencil
 ``` 
 
 
@@ -1286,9 +1290,9 @@ http://localhost:8080/product-sub-category?subCategoryId=978c50c1-70d7-405c-b323
     "description": "OK"
   },
   "data": {
-    "id": "978c50c1-70d7-405c-b323-c0d11eef714b",
-    "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-    "subCategoryName": "Football"
+    "id": "751cef10-f98a-4ecc-ae03-4173830a626d",
+    "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
+    "subCategoryName": "Pencil"
   }
 }
 ```   
@@ -1297,21 +1301,21 @@ http://localhost:8080/product-sub-category?subCategoryId=978c50c1-70d7-405c-b323
 
 <details>
   
-<summary> <code>DELETE </code> <code>/product-sub-category</code></summary>
+<summary> <code>DELETE </code> <code>/product-sub-category{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/product-sub-category?subCategoryId=978c50c1-70d7-405c-b323-c0d11eef714b' \
+  'http://localhost:8080/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2MzA2ODl9.EQrEn_nAbTIH85sPOZdb1EY0y0n2gu97oRYC6QTSEDVNmqlouqR7KUx5bGqHsYVTkm9orimn8slqa0FONWyVuA'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4NjUyMDJ9.q3w-4G4bMJwdwB-kCv7KhR6JlTjsbUungkAMWFYTwVRpDLezumFsW_6kU7AJ2MqyQn1zAoEW7-Qtp68JZlHYgQ'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/product-sub-category?subCategoryId=978c50c1-70d7-405c-b323-c0d11eef714b
+http://localhost:8080/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d
 ``` 
 
 
@@ -1323,7 +1327,7 @@ http://localhost:8080/product-sub-category?subCategoryId=978c50c1-70d7-405c-b323
     "value": 200,
     "description": "OK"
   },
-  "data": "978c50c1-70d7-405c-b323-c0d11eef714b"
+  "data": "751cef10-f98a-4ecc-ae03-4173830a626d"
 }
 ```   
 </details>
@@ -1410,13 +1414,13 @@ http://localhost:8080/brand?limit=10&offset=0
 
 <details>
   
-<summary> <code>PUT </code> <code>/brand </code></summary>
+<summary> <code>PUT </code> <code>/brand/{id} </code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/brand?brandId=6c5078d3-f8e3-4c88-9afe-48b5423c664f&brandName=Addidas' \
+  'http://localhost:8080/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
 ``` 
@@ -1424,7 +1428,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/brand?brandId=6c5078d3-f8e3-4c88-9afe-48b5423c664f&brandName=Addidas
+http://localhost:8080/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas
 ``` 
 
 
@@ -1446,13 +1450,13 @@ http://localhost:8080/brand?brandId=6c5078d3-f8e3-4c88-9afe-48b5423c664f&brandNa
 
 <details>
   
-<summary> <code>DELETE</code> <code>/brand </code></summary>
+<summary> <code>DELETE</code> <code>/brand/{id} </code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/brand?brandId=19dd1021-432c-473c-8b19-0f56d19af9ad' \
+  'http://localhost:8080/brand/19dd1021-432c-473c-8b19-0f56d19af9ad' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
 ``` 
@@ -1460,7 +1464,7 @@ curl -X 'DELETE' \
 ### Request URL
 
 ```
-http://localhost:8080/brand?brandId=19dd1021-432c-473c-8b19-0f56d19af9ad
+http://localhost:8080/brand/19dd1021-432c-473c-8b19-0f56d19af9ad
 ``` 
 
 
