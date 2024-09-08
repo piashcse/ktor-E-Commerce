@@ -64,14 +64,14 @@ fun Route.brandRoute(brandController: BrandController) {
                     pathParameter<String>("id") {
                         required = true
                     }
-                    queryParameter<String>("brandName") {
+                    queryParameter<String>("name") {
                         required = true
                     }
                 }
                 apiResponse()
             }) {
                 val id = call.parameters["id"]!!
-                val brandName = call.parameters["brandName"]!!
+                val brandName = call.parameters["name"]!!
                 call.respond(
                     ApiResponse.success(
                         brandController.updateBrand(id, brandName), HttpStatusCode.OK
