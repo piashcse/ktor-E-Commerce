@@ -1224,7 +1224,7 @@ http://localhost:8080/product-subcategory
 
 <details>
   
-<summary> <code>GET </code> <code>/product-sub-category/{categoryId}</code></summary>
+<summary> <code>GET </code> <code>/product-sub-category</code></summary>
 
 ### Curl
 
@@ -1301,7 +1301,7 @@ http://localhost:8080/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d?n
 
 <details>
   
-<summary> <code>DELETE </code> <code>/product-sub-category{id}</code></summary>
+<summary> <code>DELETE </code> <code>/product-sub-category/{id}</code></summary>
 
 ### Curl
 
