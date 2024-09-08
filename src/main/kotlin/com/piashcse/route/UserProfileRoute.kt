@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
 
-fun Route.userProfileRoute(profileController: userProfileController) {
+fun Route.userProfileRoute(userProfileController: userProfileController) {
     authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
         route("user") {
             get({
@@ -32,7 +32,7 @@ fun Route.userProfileRoute(profileController: userProfileController) {
             }) {
                 call.respond(
                     ApiResponse.success(
-                        profileController.getProfile(getCurrentUser().userId), HttpStatusCode.OK
+                        userProfileController.getProfile(getCurrentUser().userId), HttpStatusCode.OK
                     )
                 )
             }
@@ -46,7 +46,7 @@ fun Route.userProfileRoute(profileController: userProfileController) {
                 val requestBody = call.receive<UserProfileBody>()
                 call.respond(
                     ApiResponse.success(
-                        profileController.updateProfile(getCurrentUser().userId, requestBody), HttpStatusCode.OK
+                        userProfileController.updateProfile(getCurrentUser().userId, requestBody), HttpStatusCode.OK
                     )
                 )
             }
@@ -86,7 +86,7 @@ fun Route.userProfileRoute(profileController: userProfileController) {
                                     })
                                 }
                                 val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
-                                profileController.updateProfileImage(getCurrentUser().userId, fileNameInServer)?.let {
+                                userProfileController.updateProfileImage(getCurrentUser().userId, fileNameInServer)?.let {
                                     call.respond(
                                         ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
                                     )
