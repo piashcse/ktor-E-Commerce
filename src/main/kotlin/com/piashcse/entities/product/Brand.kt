@@ -15,7 +15,7 @@ class BrandEntity(id: EntityID<String>) : BaseIntEntity(id, BrandTable) {
 
     var brandName by BrandTable.brandName
     var brandLogo by BrandTable.brandLogo
-    fun brandResponse() = Brand(id.value, brandName, brandLogo)
+    fun response() = Brand(id.value, brandName, brandLogo)
 }
 
 data class Brand(val id: String, val brandName: String, val brandLogo: String?)

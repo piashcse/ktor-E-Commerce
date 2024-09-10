@@ -112,7 +112,7 @@ fun Route.cartRoute(cartController: CartController) {
             }) {
                 call.respond(
                     ApiResponse.success(
-                        cartController.deleteAllFromCart(getCurrentUser().userId), HttpStatusCode.OK
+                        cartController.deleteAllItemsOfCart(getCurrentUser().userId), HttpStatusCode.OK
                     )
                 )
             }

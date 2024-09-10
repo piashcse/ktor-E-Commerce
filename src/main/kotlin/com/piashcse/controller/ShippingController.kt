@@ -1,27 +1,23 @@
 package com.piashcse.controller
 
+import com.piashcse.entities.Shipping
 import com.piashcse.entities.ShippingEntity
 import com.piashcse.entities.ShippingTable
-import com.piashcse.entities.orders.OrderTable
 import com.piashcse.models.shipping.AddShipping
 import com.piashcse.models.shipping.UpdateShipping
+import com.piashcse.repository.ShippingRepo
 import com.piashcse.utils.extension.alreadyExistException
-import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
 
-class ShippingController {
-   suspend fun addShipping(userId: String, addShipping: AddShipping) = query {
-        val isExist = ShippingEntity.find {
+class ShippingController : ShippingRepo {
+    override suspend fun addShipping(userId: String, addShipping: AddShipping): Shipping = query {
+        val isShippingExist = ShippingEntity.find {
             ShippingTable.userId eq userId and (ShippingTable.orderId eq addShipping.orderId)
         }.toList().singleOrNull()
-       isExist?.response() ?: run {
-           addShipping.orderId.isNotExistException()
-       }
-       /* isExist?.let {
-            addShipping.orderId.alreadyExistException()
-        } ?: run {
+        isShippingExist?.let {
             ShippingEntity.new {
                 this.userId = EntityID(userId, ShippingTable)
                 this.orderId = EntityID(addShipping.orderId, ShippingTable)
@@ -32,40 +28,40 @@ class ShippingController {
                 shippingEmail = addShipping.shipEmail
                 shippingCountry = addShipping.shipCountry
 
-            }
-        }*/
+            }.response()
+        } ?: throw addShipping.orderId.alreadyExistException()
     }
 
-    suspend fun getShipping(userId: String, orderId: String) = query {
-        val isExist = ShippingEntity.find {
+    override suspend fun getShipping(userId: String, orderId: String): Shipping = query {
+        val isShippingExist = ShippingEntity.find {
             ShippingTable.userId eq userId and (ShippingTable.orderId eq orderId)
         }.toList().singleOrNull()
-        isExist?.response() ?: run {
-            orderId.isNotExistException()
-        }
+        isShippingExist?.response() ?: throw orderId.notFoundException()
     }
 
-    suspend fun updateShipping(userId: String, updateShipping: UpdateShipping) = query {
-        val isExist = ShippingEntity.find {
+    override suspend fun updateShipping(userId: String, updateShipping: UpdateShipping): Shipping = query {
+        val isShippingExist = ShippingEntity.find {
             ShippingTable.userId eq userId and (ShippingTable.orderId eq updateShipping.orderId)
         }.toList().singleOrNull()
 
-        isExist?.let {
+        isShippingExist?.let {
             it.shippingAddress = updateShipping.shipAddress ?: it.shippingAddress
             it.shippingCity = updateShipping.shipCity ?: it.shippingCity
             it.shippingPhone = updateShipping.shipPhone ?: it.shippingPhone
             it.shippingName = updateShipping.shipName ?: it.shippingName
             it.shippingEmail = updateShipping.shipEmail ?: it.shippingEmail
             it.shippingCountry = updateShipping.shipCountry ?: it.shippingCountry
-        } ?: run {
-            updateShipping.orderId.isNotExistException()
-        }
+            it.response()
+        } ?: throw updateShipping.orderId.alreadyExistException()
     }
 
-    suspend fun deleteShipping(userId: String, orderId: String) = query {
-        val isExist = ShippingEntity.find {
+    override suspend fun deleteShipping(userId: String, orderId: String): String = query {
+        val isShippingExist = ShippingEntity.find {
             ShippingTable.userId eq userId and (ShippingTable.orderId eq orderId)
         }.toList().singleOrNull()
-        isExist?.delete() ?: orderId.isNotExistException()
+        isShippingExist?.let {
+            it.delete()
+            userId
+        } ?: throw orderId.notFoundException()
     }
 }

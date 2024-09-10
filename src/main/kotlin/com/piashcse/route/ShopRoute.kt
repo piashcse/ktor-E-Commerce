@@ -29,7 +29,7 @@ fun Route.shopRoute(shopController: ShopController) {
             }) {
                 val requestBody = call.receive<AddShop>()
                 requestBody.validation()
-                shopController.createShop(
+                shopController.addShop(
                     getCurrentUser().userId, requestBody.shopCategoryId, requestBody.shopName
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))

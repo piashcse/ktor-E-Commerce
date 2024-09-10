@@ -17,7 +17,7 @@ class ProductSubCategoryEntity(id: EntityID<String>) : BaseIntEntity(id, Product
     var categoryId by ProductSubCategoryTable.categoryId
     var subCategoryName by ProductSubCategoryTable.subCategoryName
     var image by ProductSubCategoryTable.image
-    fun response() = ProductSubCategoryResponse(id.value, categoryId.value, subCategoryName, image)
+    fun response() = ProductSubCategory(id.value, categoryId.value, subCategoryName, image)
 }
 
-data class ProductSubCategoryResponse(val id: String, val categoryId: String, val subCategoryName: String, val image: String?)
+data class ProductSubCategory(val id: String, val categoryId: String, val subCategoryName: String, val image: String?)

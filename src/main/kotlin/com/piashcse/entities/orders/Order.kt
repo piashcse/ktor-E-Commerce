@@ -36,8 +36,7 @@ class OrderEntity(id: EntityID<String>) : BaseIntEntity(id, OrderTable) {
     var coupon by OrderTable.coupon
     var status by OrderTable.status
     var statusCode by OrderTable.statusCode
-    fun orderCreatedResponse() = OrderCreatedPayload(id.value)
-    fun response() = OrderPayload(
+    fun response() = Order(
         id.value,
         paymentId,
         paymentType,
@@ -52,9 +51,7 @@ class OrderEntity(id: EntityID<String>) : BaseIntEntity(id, OrderTable) {
         statusCode
     )
 }
-
-data class OrderCreatedPayload(val orderId: String)
-data class OrderPayload(
+data class Order(
     val orderId: String,
     val paymentId: String?,
     val paymentType: String?,

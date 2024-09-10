@@ -2,16 +2,17 @@ package com.piashcse.controller
 
 import com.piashcse.entities.product.*
 import com.piashcse.models.product.request.*
+import com.piashcse.repository.ProductRepo
 import com.piashcse.utils.AppConstants
-import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.io.File
 
-class ProductController {
-    suspend fun addProduct(userId: String, addProduct: AddProduct) = query {
+class ProductController : ProductRepo {
+    override suspend fun addProduct(userId: String, addProduct: AddProduct): Product = query {
         ProductEntity.new {
             this.userId = EntityID(userId, ProductTable)
             categoryId = EntityID(addProduct.categoryId, ProductTable)
@@ -37,38 +38,39 @@ class ProductController {
         }.response()
     }
 
-    suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProduct) = query {
-        val isProductExist =
-            ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.toList()
-                .singleOrNull()
-        isProductExist?.apply {
-            this.userId = EntityID(userId, ProductTable)
-            categoryId =
-                updateProduct.categoryId?.let { EntityID(updateProduct.categoryId, ProductTable) } ?: categoryId
-            subCategoryId = updateProduct.subCategoryId?.let { EntityID(updateProduct.subCategoryId, ProductTable) }
-                ?: subCategoryId
-            brandId = updateProduct.brandId?.let { EntityID(updateProduct.brandId, ProductTable) } ?: brandId
-            productName = updateProduct.productName ?: productName
-            productCode = updateProduct.productCode ?: productCode
-            productQuantity = updateProduct.productQuantity ?: productQuantity
-            productDetail = updateProduct.productDetail ?: productDetail
-            price = updateProduct.price ?: price
-            discountPrice = updateProduct.discountPrice ?: discountPrice
-            status = updateProduct.status ?: status
-            videoLink = updateProduct.videoLink ?: videoLink
-            mainSlider = updateProduct.mainSlider ?: mainSlider
-            hotDeal = updateProduct.hotDeal ?: hotDeal
-            bestRated = updateProduct.bestRated ?: bestRated
-            midSlider = updateProduct.midSlider ?: midSlider
-            hotNew = updateProduct.hotNew ?: hotNew
-            trend = updateProduct.trend ?: trend
-            buyOneGetOne = updateProduct.buyOneGetOne ?: buyOneGetOne
-            imageOne = updateProduct.imageOne ?: imageOne
-            imageTwo = updateProduct.imageTwo ?: imageTwo
-        }?.response()
-    }
+    override suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProduct): Product =
+        query {
+            val isProductExist =
+                ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.toList()
+                    .singleOrNull()
+            isProductExist?.apply {
+                this.userId = EntityID(userId, ProductTable)
+                categoryId =
+                    updateProduct.categoryId?.let { EntityID(updateProduct.categoryId, ProductTable) } ?: categoryId
+                subCategoryId = updateProduct.subCategoryId?.let { EntityID(updateProduct.subCategoryId, ProductTable) }
+                    ?: subCategoryId
+                brandId = updateProduct.brandId?.let { EntityID(updateProduct.brandId, ProductTable) } ?: brandId
+                productName = updateProduct.productName ?: productName
+                productCode = updateProduct.productCode ?: productCode
+                productQuantity = updateProduct.productQuantity ?: productQuantity
+                productDetail = updateProduct.productDetail ?: productDetail
+                price = updateProduct.price ?: price
+                discountPrice = updateProduct.discountPrice ?: discountPrice
+                status = updateProduct.status ?: status
+                videoLink = updateProduct.videoLink ?: videoLink
+                mainSlider = updateProduct.mainSlider ?: mainSlider
+                hotDeal = updateProduct.hotDeal ?: hotDeal
+                bestRated = updateProduct.bestRated ?: bestRated
+                midSlider = updateProduct.midSlider ?: midSlider
+                hotNew = updateProduct.hotNew ?: hotNew
+                trend = updateProduct.trend ?: trend
+                buyOneGetOne = updateProduct.buyOneGetOne ?: buyOneGetOne
+                imageOne = updateProduct.imageOne ?: imageOne
+                imageTwo = updateProduct.imageTwo ?: imageTwo
+            }?.response() ?: throw productId.notFoundException()
+        }
 
-    suspend fun getProduct(productQuery: ProductWithFilter) = query {
+    override suspend fun getProducts(productQuery: ProductWithFilter): List<Product> = query {
         val query = ProductTable.selectAll()
         productQuery.maxPrice?.let {
             query.andWhere { ProductTable.price lessEq it }
@@ -98,7 +100,7 @@ class ProductController {
         }
     }
 
-    suspend fun getProductById(userId: String, productQuery: ProductWithFilter) = query {
+    override suspend fun getProductById(userId: String, productQuery: ProductWithFilter): List<Product> = query {
         val query = ProductTable.selectAll()
         query.andWhere { ProductTable.userId eq userId }
 
@@ -133,34 +135,32 @@ class ProductController {
         }
     }
 
-    suspend fun productDetail(productId: String) = query {
+    override suspend fun productDetail(productId: String): Product = query {
         val isProductExist = ProductEntity.find { ProductTable.id eq productId }.toList().singleOrNull()
-        isProductExist?.response()
+        isProductExist?.response() ?: throw productId.notFoundException()
     }
 
-    suspend fun deleteProduct(userId: String, productId: String) = query {
+    override suspend fun deleteProduct(userId: String, productId: String): String = query {
         val isProductExist =
-            ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }
-                .toList().singleOrNull()
+            ProductEntity.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.toList()
+                .singleOrNull()
         isProductExist?.let {
             it.delete()
             productId
-        } ?: productId.isNotExistException()
+        } ?: throw productId.notFoundException()
     }
 
-    suspend fun uploadProductImage(userId: String, productId: String, productImage: String) = query {
-            val isImageExist = ProductImageEntity.find { ProductImageTable.productId eq productId }
-                    .toList().singleOrNull()
-            isImageExist?.let {
-                File("${AppConstants.ImageFolder.PRODUCT_IMAGE_LOCATION}${it.imageUrl}").delete()
-                it.imageUrl = productImage
-                it.response()
-            } ?: run {
-                ProductImageEntity.new {
-                    this.userId = EntityID(userId, ProductTable)
-                    this.productId = EntityID(productId, ProductTable)
-                    this.imageUrl = productImage
-                }.response()
-            }
-        }
+    override suspend fun uploadProductImage(userId: String, productId: String, productImage: String): ImageUrl = query {
+        val isImageExist = ProductImageEntity.find { ProductImageTable.productId eq productId }.toList().singleOrNull()
+        isImageExist?.let {
+            File("${AppConstants.ImageFolder.PRODUCT_IMAGE_LOCATION}${it.imageUrl}").delete()
+            it.imageUrl = productImage
+            it.response()
+        } ?: ProductImageEntity.new {
+            this.userId = EntityID(userId, ProductTable)
+            this.productId = EntityID(productId, ProductTable)
+            this.imageUrl = productImage
+        }.response()
+
+    }
 }
