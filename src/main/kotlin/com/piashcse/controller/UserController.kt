@@ -68,7 +68,7 @@ class UserController : UserRepo {
         } ?: throw forgetPasswordBody.email.notFoundException()
     }
 
-    override suspend fun forgetPasswordByVerificationCode(confirmPasswordBody: ConfirmPassword): Int = query {
+    override suspend fun forgetPasswordVerificationCode(confirmPasswordBody: ConfirmPassword): Int = query {
         val userEntity = UsersEntity.find { UserTable.email eq confirmPasswordBody.email }.toList().singleOrNull()
         userEntity?.let {
             if (confirmPasswordBody.verificationCode == it.verificationCode) {

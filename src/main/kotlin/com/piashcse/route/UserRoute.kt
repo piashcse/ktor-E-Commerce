@@ -2,7 +2,6 @@ package com.piashcse.route
 
 import com.piashcse.controller.UserController
 import com.piashcse.entities.user.ChangePassword
-import com.piashcse.entities.user.UsersEntity
 import com.piashcse.models.user.body.*
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.*
@@ -121,7 +120,7 @@ fun Route.userRoute(userController: UserController) {
             }
             val (email, verificationCode, newPassword) = requiredParams.map { call.parameters[it]!! }
 
-            UserController().forgetPasswordByVerificationCode(
+            UserController().forgetPasswordVerificationCode(
                 ConfirmPassword(
                     email, verificationCode, newPassword
                 )

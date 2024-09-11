@@ -14,5 +14,5 @@ interface UserRepo {
     suspend fun login(loginBody: LoginBody): LoginResponse
     suspend fun changePassword(userId: String, changePassword: ChangePassword): Boolean
     suspend fun forgetPasswordSendCode(forgetPasswordBody: ForgetPasswordEmail): VerificationCode
-    suspend fun forgetPasswordByVerificationCode(confirmPasswordBody: ConfirmPassword): Int
+    suspend fun forgetPasswordVerificationCode(confirmPasswordBody: ConfirmPassword): Int
 }
