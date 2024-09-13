@@ -57,7 +57,7 @@ class CartController : CartRepo {
     override suspend fun deleteAllItemsOfCart(userId: String): Boolean = query {
         val isCartExist = CartItemEntity.find { CartItemTable.userId eq userId }.toList()
         if (isCartExist.isEmpty()) {
-            throw "".notFoundException()
+            true
         } else {
             isCartExist.forEach {
                 it.delete()
