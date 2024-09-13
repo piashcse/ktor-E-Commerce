@@ -23,6 +23,7 @@ object AppConstants {
         const val DEFAULT_AUTHENTICATOR = "piashofficial599@gmail.com"
         const val DEFAULT_AUTHENTICATOR_PASSWORD = "qfzjsvdborylnaqh"
         const val EMAIL_SUBJECT = "Forget Password"
+        const val SENDING_EMAIL = "piashofficial599@gmail.com"
     }
 
     object ImageFolder {

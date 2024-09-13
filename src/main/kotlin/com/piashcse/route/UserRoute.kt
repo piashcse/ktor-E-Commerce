@@ -74,22 +74,7 @@ fun Route.userRoute(userController: UserController) {
             val (email) = requiredParams.map { call.parameters[it]!! }
             val requestBody = ForgetPasswordEmail(email)
             userController.forgetPasswordSendCode(requestBody).let {
-                SimpleEmail().apply {
-                    hostName = AppConstants.SmtpServer.HOST_NAME
-                    setSmtpPort(AppConstants.SmtpServer.PORT)
-                    setAuthenticator(
-                        DefaultAuthenticator(
-                            AppConstants.SmtpServer.DEFAULT_AUTHENTICATOR,
-                            AppConstants.SmtpServer.DEFAULT_AUTHENTICATOR_PASSWORD
-                        )
-                    )
-                    isSSLOnConnect = true
-                    setFrom("piash599@gmail.com")
-                    subject = AppConstants.SmtpServer.EMAIL_SUBJECT
-                    setMsg("Your verification code is : ${it.verificationCode}")
-                    addTo(requestBody.email)
-                    send()
-                }
+                sendEmail(requestBody.email, it.verificationCode)
                 call.respond(
 
                     ApiResponse.success(
@@ -170,7 +155,7 @@ fun Route.userRoute(userController: UserController) {
                         ApiResponse.success(
                             "Password has been changed", HttpStatusCode.OK
                         )
-                    )else call.respond(
+                    ) else call.respond(
                         ApiResponse.failure(
                             "Old password is wrong", HttpStatusCode.OK
                         )
