@@ -1,4 +1,8 @@
 package com.piashcse.utils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.EmailException
 import org.apache.commons.mail.SimpleEmail
@@ -14,19 +18,21 @@ fun sendEmail(
     smtpPassword: String = AppConstants.SmtpServer.DEFAULT_AUTHENTICATOR_PASSWORD
 ) {
     try {
-        SimpleEmail().apply {
-            hostName = smtpHost
-            setSmtpPort(smtpPort)
-            setAuthenticator(DefaultAuthenticator(smtpUser, smtpPassword))
-            isSSLOnConnect = true
-            setFrom(fromEmail)
-            this.subject = subject
-            setMsg("Your verification code is: $verificationCode")
-            addTo(toEmail)
-            send()
+        CoroutineScope(Dispatchers.IO).launch {
+            SimpleEmail().apply {
+                hostName = smtpHost
+                setSmtpPort(smtpPort)
+                setAuthenticator(DefaultAuthenticator(smtpUser, smtpPassword))
+                isSSLOnConnect = true
+                setFrom(fromEmail)
+                this.subject = subject
+                setMsg("Your verification code is: $verificationCode")
+                addTo(toEmail)
+                send()
+            }
         }
     } catch (e: EmailException) {
-        e.printStackTrace()
+        throw CommonException("Sending email failed")
         // Handle the exception or log it as per your need
     }
 }
