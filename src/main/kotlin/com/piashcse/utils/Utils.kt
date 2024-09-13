@@ -2,7 +2,6 @@ package com.piashcse.utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.EmailException
 import org.apache.commons.mail.SimpleEmail
@@ -33,6 +32,5 @@ fun sendEmail(
         }
     } catch (e: EmailException) {
         throw CommonException("Sending email failed")
-        // Handle the exception or log it as per your need
     }
 }
