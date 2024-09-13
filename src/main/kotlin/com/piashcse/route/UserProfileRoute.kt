@@ -1,6 +1,6 @@
 package com.piashcse.route
 
-import com.piashcse.controller.userProfileController
+import com.piashcse.controller.UserProfileController
 import com.piashcse.models.user.body.UserProfileBody
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
 
-fun Route.userProfileRoute(userProfileController: userProfileController) {
+fun Route.userProfileRoute(userProfileController: UserProfileController) {
     authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
         route("user") {
             get({
@@ -86,7 +86,7 @@ fun Route.userProfileRoute(userProfileController: userProfileController) {
                                     })
                                 }
                                 val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
-                                userProfileController.updateProfileImage(getCurrentUser().userId, fileNameInServer)?.let {
+                                userProfileController.updateProfileImage(getCurrentUser().userId, fileNameInServer).let {
                                     call.respond(
                                         ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
                                     )

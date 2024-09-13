@@ -2,7 +2,6 @@ package com.piashcse.route
 
 import com.piashcse.controller.UserController
 import com.piashcse.entities.user.ChangePassword
-import com.piashcse.entities.user.UsersEntity
 import com.piashcse.models.user.body.*
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.*
@@ -74,7 +73,7 @@ fun Route.userRoute(userController: UserController) {
             }
             val (email) = requiredParams.map { call.parameters[it]!! }
             val requestBody = ForgetPasswordEmail(email)
-            userController.forgetPassword(requestBody)?.let {
+            userController.forgetPasswordSendCode(requestBody).let {
                 SimpleEmail().apply {
                     hostName = AppConstants.SmtpServer.HOST_NAME
                     setSmtpPort(AppConstants.SmtpServer.PORT)
@@ -121,7 +120,7 @@ fun Route.userRoute(userController: UserController) {
             }
             val (email, verificationCode, newPassword) = requiredParams.map { call.parameters[it]!! }
 
-            UserController().changeForgetPasswordByVerificationCode(
+            UserController().forgetPasswordVerificationCode(
                 ConfirmPassword(
                     email, verificationCode, newPassword
                 )
@@ -167,18 +166,15 @@ fun Route.userRoute(userController: UserController) {
                 val (oldPassword, newPassword) = requiredParams.map { call.parameters[it]!! }
                 val loginUser = call.principal<JwtTokenBody>()
                 userController.changePassword(loginUser?.userId!!, ChangePassword(oldPassword, newPassword))?.let {
-                    if (it is UsersEntity) call.respond(
+                    if (it) call.respond(
                         ApiResponse.success(
                             "Password has been changed", HttpStatusCode.OK
                         )
-                    )
-                    if (it is ChangePassword) call.respond(
+                    )else call.respond(
                         ApiResponse.failure(
                             "Old password is wrong", HttpStatusCode.OK
                         )
                     )
-                } ?: run {
-                    throw UserNotExistException()
                 }
             }
         }

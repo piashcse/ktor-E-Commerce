@@ -2,15 +2,16 @@ package com.piashcse.controller
 
 import com.piashcse.entities.orders.*
 import com.piashcse.models.order.AddOrder
+import com.piashcse.repository.OrderRepo
 import com.piashcse.utils.extension.OrderStatus
-import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.orderStatusCode
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
 
-class OrderController {
-    suspend fun addOrder(userId: String, addOrder: AddOrder) = query {
+class OrderController : OrderRepo {
+    override suspend fun addOrder(userId: String, addOrder: AddOrder): Order = query {
         val order = OrderEntity.new {
             this.userId = EntityID(userId, OrderTable)
             this.quantity = addOrder.quantity
@@ -32,23 +33,22 @@ class OrderController {
             productExist?.delete()
 
         }
-        order.orderCreatedResponse()
+        order.response()
     }
 
-   suspend fun getOrders(userId: String, limit: Int, offset:Long) = query {
+    override suspend fun getOrders(userId: String, limit: Int, offset: Long): List<Order> = query {
         OrderEntity.find { OrderTable.userId eq userId }.limit(limit, offset).map {
             it.response()
         }
     }
 
-    suspend fun updateOrder(userId: String, orderId: String, orderStatus: OrderStatus) = query {
-        val orderExist =
-            OrderEntity.find { OrderTable.userId eq userId and (OrderTable.id eq orderId) }.toList()
-                .singleOrNull()
-        orderExist?.let {
+    override suspend fun updateOrder(userId: String, orderId: String, orderStatus: OrderStatus): Order = query {
+        val isOrderExist =
+            OrderEntity.find { OrderTable.userId eq userId and (OrderTable.id eq orderId) }.toList().singleOrNull()
+        isOrderExist?.let {
             it.status = orderStatus.name.lowercase()
             it.statusCode = orderStatus.name.lowercase().orderStatusCode()
             it.response()
-        }?: "".isNotExistException()
+        } ?: throw userId.notFoundException()
     }
 }

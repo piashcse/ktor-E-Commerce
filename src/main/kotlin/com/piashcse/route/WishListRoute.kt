@@ -35,11 +35,21 @@ fun Route.wishListRoute(wishlistController: WishListController) {
             }
             get({
                 tags("Wish List")
+                request {
+                    queryParameter<String>("limit") {
+                        required = true
+                    }
+                    queryParameter<String>("offset") {
+                        required = true
+                    }
+                }
                 apiResponse()
             }) {
+                val limit = call.parameters["limit"]!!
+                val offset = call.parameters["offset"]!!
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.getWishList(getCurrentUser().userId), HttpStatusCode.OK
+                        wishlistController.getWishList(getCurrentUser().userId, limit.toInt(), offset.toLong()), HttpStatusCode.OK
                     )
                 )
             }
@@ -59,7 +69,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 val (productId) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.deleteFromWishList(getCurrentUser().userId, productId), HttpStatusCode.OK
+                        wishlistController.deleteWishList(getCurrentUser().userId, productId), HttpStatusCode.OK
                     )
                 )
             }

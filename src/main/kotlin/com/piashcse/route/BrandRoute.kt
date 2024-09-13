@@ -38,7 +38,7 @@ fun Route.brandRoute(brandController: BrandController) {
                 val (limit, offset) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        brandController.getBrand(limit.toInt(), offset.toLong()), HttpStatusCode.OK
+                        brandController.getBrands(limit.toInt(), offset.toLong()), HttpStatusCode.OK
                     )
                 )
             }

@@ -12,15 +12,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.transactions.transaction
 
-fun String.isNotExistException(): CommonException {
-    throw CommonException("$this is not Exist")
+fun String.notFoundException(): CommonException {
+    return CommonException("$this is not Exist")
 }
 
 fun String.alreadyExistException(secondaryInfo: String = ""): CommonException {
-    if (secondaryInfo.isEmpty())
-        throw CommonException("$this is already Exist")
-    else
-        throw CommonException("$this $secondaryInfo is already Exist")
+    return if (secondaryInfo.isEmpty()) CommonException("$this is already Exist")
+    else CommonException("$this $secondaryInfo is already Exist")
 }
 
 fun OpenApiRoute.apiResponse() {

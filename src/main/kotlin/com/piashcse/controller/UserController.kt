@@ -3,16 +3,17 @@ package com.piashcse.controller
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.entities.user.*
 import com.piashcse.models.user.body.*
-import com.piashcse.models.user.response.RegistrationResponse
+import com.piashcse.models.user.response.RegistrationSuccessResponse
+import com.piashcse.repository.UserRepo
 import com.piashcse.utils.*
 import com.piashcse.utils.extension.alreadyExistException
-import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.sql.*
 import kotlin.random.Random
 
-class UserController {
-    suspend fun addUser(registrationBody: RegistrationBody) = query {
+class UserController : UserRepo {
+    override suspend fun addUser(registrationBody: RegistrationBody): RegistrationSuccessResponse = query {
         val userEntity =
             UsersEntity.find { UserTable.email eq registrationBody.email and (UserTable.userType eq registrationBody.userType) }
                 .toList().singleOrNull()
@@ -27,10 +28,10 @@ class UserController {
         UsersProfileEntity.new {
             userId = inserted.id
         }
-        RegistrationResponse(inserted.id.value, registrationBody.email)
+        RegistrationSuccessResponse(inserted.id.value, registrationBody.email)
     }
 
-   suspend fun login(loginBody: LoginBody) = query {
+    override suspend fun login(loginBody: LoginBody): LoginResponse = query {
         val userEntity =
             UsersEntity.find { UserTable.email eq loginBody.email and (UserTable.userType eq loginBody.userType) }
                 .toList().singleOrNull()
@@ -43,31 +44,31 @@ class UserController {
             } else {
                 throw PasswordNotMatch()
             }
-        } ?: loginBody.email.isNotExistException()
+        } ?: throw loginBody.email.notFoundException()
     }
 
-    suspend fun changePassword(userId: String, changePassword: ChangePassword) = query {
+    override suspend fun changePassword(userId: String, changePassword: ChangePassword): Boolean = query {
         val userEntity = UsersEntity.find { UserTable.id eq userId }.toList().singleOrNull()
         userEntity?.let {
             if (BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), it.password).verified) {
                 it.password = BCrypt.withDefaults().hashToString(12, changePassword.newPassword.toCharArray())
-                it
+                true
             } else {
-                changePassword
+                false
             }
-        }
+        } ?: throw UserNotExistException()
     }
 
-    suspend fun forgetPassword(forgetPasswordBody: ForgetPasswordEmail) = query {
+    override suspend fun forgetPasswordSendCode(forgetPasswordBody: ForgetPasswordEmail): VerificationCode = query {
         val userEntity = UsersEntity.find { UserTable.email eq forgetPasswordBody.email }.toList().singleOrNull()
         userEntity?.let {
             val verificationCode = Random.nextInt(1000, 9999).toString()
             it.verificationCode = verificationCode
             VerificationCode(verificationCode)
-        }
+        } ?: throw forgetPasswordBody.email.notFoundException()
     }
 
-   suspend fun changeForgetPasswordByVerificationCode(confirmPasswordBody: ConfirmPassword) = query {
+    override suspend fun forgetPasswordVerificationCode(confirmPasswordBody: ConfirmPassword): Int = query {
         val userEntity = UsersEntity.find { UserTable.email eq confirmPasswordBody.email }.toList().singleOrNull()
         userEntity?.let {
             if (confirmPasswordBody.verificationCode == it.verificationCode) {
@@ -77,9 +78,7 @@ class UserController {
             } else {
                 AppConstants.DataBaseTransaction.NOT_FOUND
             }
-        } ?: run {
-            confirmPasswordBody.email.isNotExistException()
-        }
+        } ?: throw confirmPasswordBody.email.notFoundException()
     }
 
 }

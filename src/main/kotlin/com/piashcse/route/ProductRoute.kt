@@ -65,7 +65,7 @@ fun Route.productRoute(productController: ProductController) {
                     subCategoryId = call.request.queryParameters["subCategoryId"],
                     brandId = call.request.queryParameters["brandId"],
                 )
-                call.respond(ApiResponse.success(productController.getProduct(params), HttpStatusCode.OK))
+                call.respond(ApiResponse.success(productController.getProducts(params), HttpStatusCode.OK))
             }
         }
         authenticate(RoleManagement.SELLER.role) {

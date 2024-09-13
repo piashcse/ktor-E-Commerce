@@ -1,45 +1,44 @@
 package com.piashcse.controller
 
+import com.piashcse.entities.product.Brand
 import com.piashcse.entities.product.BrandEntity
 import com.piashcse.entities.product.BrandTable
+import com.piashcse.repository.BrandRepo
 import com.piashcse.utils.extension.alreadyExistException
-import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 
-class BrandController {
-    suspend fun addBrand(brandName: String) = query {
-        val brandExist = BrandEntity.find { BrandTable.brandName eq brandName }.toList().singleOrNull()
-        if (brandExist == null) {
-            BrandEntity.new {
-                this.brandName = brandName
-            }.brandResponse()
-        } else {
-            brandName.alreadyExistException()
+class BrandController : BrandRepo {
+    override suspend fun addBrand(brandName: String): Brand = query {
+        val isBrandExist = BrandEntity.find { BrandTable.brandName eq brandName }.toList().singleOrNull()
+        isBrandExist?.let {
+            throw brandName.alreadyExistException()
+
+        } ?: BrandEntity.new {
+            this.brandName = brandName
+        }.response()
+    }
+
+    override suspend fun getBrands(limit: Int, offset: Long): List<Brand> = query {
+        BrandEntity.all().limit(limit, offset).map {
+            it.response()
         }
     }
 
-    suspend fun getBrand(limit: Int, offset: Long) = query {
-        val brands = BrandEntity.all().limit(limit, offset)
-        brands.map {
-            it.brandResponse()
-        }
-    }
-
-    suspend fun updateBrand(brandId: String, brandName:String) = query {
+    override suspend fun updateBrand(brandId: String, brandName: String): Brand = query {
         val isBrandExist = BrandEntity.find { BrandTable.id eq brandId }.toList().singleOrNull()
         isBrandExist?.let {
             it.brandName = brandName
-            // return category response
-            it.brandResponse()
-        } ?: brandId.isNotExistException()
+            it.response()
+        } ?: throw brandId.notFoundException()
 
     }
 
-    suspend fun deleteBrand(brandId: String) = query {
+    override suspend fun deleteBrand(brandId: String): String = query {
         val isBrandExist = BrandEntity.find { BrandTable.id eq brandId }.toList().singleOrNull()
         isBrandExist?.let {
             it.delete()
             brandId
-        } ?: brandId.isNotExistException()
+        } ?: throw brandId.notFoundException()
     }
 }

@@ -1,52 +1,46 @@
 package com.piashcse.controller
 
+import com.piashcse.entities.product.category.ProductCategory
 import com.piashcse.entities.product.category.ProductCategoryEntity
 import com.piashcse.entities.product.category.ProductCategoryTable
+import com.piashcse.repository.ProductCategoryRepo
 import com.piashcse.utils.extension.alreadyExistException
-import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 
-class ProductCategoryController {
-    suspend fun addProductCategory(categoryName: String) = query {
-        val categoryExist =
+class ProductCategoryController : ProductCategoryRepo {
+    override suspend fun addProductCategory(categoryName: String): ProductCategory = query {
+        val isCategoryExist =
             ProductCategoryEntity.find { ProductCategoryTable.categoryName eq categoryName }.toList().singleOrNull()
-
-        if (categoryExist == null) {
-            ProductCategoryEntity.new {
-                this.categoryName = categoryName
-            }.response()
-        } else {
-            categoryName.alreadyExistException()
-        }
+        isCategoryExist?.let {
+            throw categoryName.alreadyExistException()
+        } ?: ProductCategoryEntity.new {
+            this.categoryName = categoryName
+        }.response()
     }
 
-    suspend fun getProductCategory(limit: Int, offset: Long) = query {
+    override suspend fun getProductCategory(limit: Int, offset: Long): List<ProductCategory> = query {
         val categories = ProductCategoryEntity.all().limit(limit, offset)
         categories.map {
             it.response()
         }
     }
 
-    suspend fun updateProductCategory(categoryId: String, categoryName: String) = query {
-        val categoryExist =
-            ProductCategoryEntity.find { ProductCategoryTable.id eq categoryId }.toList()
-                .singleOrNull()
-        categoryExist?.let {
+    override suspend fun updateProductCategory(categoryId: String, categoryName: String): ProductCategory = query {
+        val isCategoryExist =
+            ProductCategoryEntity.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
+        isCategoryExist?.let {
             it.categoryName = categoryName
-            // return category response
             it.response()
-        } ?: run {
-            categoryId.isNotExistException()
-        }
+        } ?: throw categoryId.notFoundException()
     }
 
-    suspend fun deleteProductCategory(categoryId: String) = query {
-        val categoryExist =
-            ProductCategoryEntity.find { ProductCategoryTable.id eq categoryId }.toList()
-                .singleOrNull()
-        categoryExist?.let {
-            categoryExist.delete()
+    override suspend fun deleteProductCategory(categoryId: String): String = query {
+        val isCategoryExist =
+            ProductCategoryEntity.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
+        isCategoryExist?.let {
+            isCategoryExist.delete()
             categoryId
-        }
+        } ?: throw categoryId.notFoundException()
     }
 }

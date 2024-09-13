@@ -13,7 +13,7 @@ class ShopCategoryEntity(id: EntityID<String>) : BaseIntEntity(id,ShopCategoryTa
     companion object : BaseIntEntityClass< ShopCategoryEntity>(ShopCategoryTable)
 
     var shopCategoryName by ShopCategoryTable.shopCategoryName
-    fun shopCategoryResponse() = ShopCategory(id.value, shopCategoryName)
+    fun response() = ShopCategory(id.value, shopCategoryName)
 }
 
 data class ShopCategory(val id: String, val shopName: String)

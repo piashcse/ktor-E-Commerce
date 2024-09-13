@@ -1,48 +1,44 @@
 package com.piashcse.controller
 
 import com.piashcse.entities.shop.*
-import com.piashcse.entities.user.UserTable
+import com.piashcse.repository.ShopCategoryRepo
 import com.piashcse.utils.extension.alreadyExistException
-import com.piashcse.utils.extension.isNotExistException
+import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
-import org.jetbrains.exposed.dao.id.EntityID
 
-class ShopCategoryController {
-    suspend fun addShopCategory(shopCategoryName: String) = query {
-        val categoryExist =
+class ShopCategoryController : ShopCategoryRepo {
+    override suspend fun addShopCategory(shopCategoryName: String): ShopCategory = query {
+        val isExistShopCategory =
             ShopCategoryEntity.find { ShopCategoryTable.shopCategoryName eq shopCategoryName }.toList().singleOrNull()
-        if (categoryExist == null) {
-            ShopCategoryEntity.new {
-                this.shopCategoryName = shopCategoryName
-            }.shopCategoryResponse()
-        } else {
-            shopCategoryName.alreadyExistException()
-        }
+        isExistShopCategory?.let {
+            throw shopCategoryName.alreadyExistException()
+        } ?: ShopCategoryEntity.new {
+            this.shopCategoryName = shopCategoryName
+        }.response()
     }
 
-    suspend fun getShopCategories(limit: Int, offset: Long) = query {
+    override suspend fun getShopCategories(limit: Int, offset: Long): List<ShopCategory> = query {
         val shopCategories = ShopCategoryEntity.all().limit(limit, offset)
         shopCategories.map {
-            it.shopCategoryResponse()
+            it.response()
         }
     }
 
-    suspend fun updateShopCategory(shopCategoryId: String, shopCategoryName: String) = query {
-        val shopCategoryExist =
+    override suspend fun updateShopCategory(shopCategoryId: String, shopCategoryName: String): ShopCategory = query {
+        val isShopCategoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
-        shopCategoryExist?.apply {
-            this.shopCategoryName = shopCategoryName
-        }?.shopCategoryResponse() ?: shopCategoryId.isNotExistException()
+        isShopCategoryExist?.let {
+            it.shopCategoryName = shopCategoryName
+            it.response()
+        } ?: throw shopCategoryId.notFoundException()
     }
 
-    suspend fun deleteShopCategory(shopCategoryId: String) = query {
+    override suspend fun deleteShopCategory(shopCategoryId: String): String = query {
         val shopCategoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
         shopCategoryExist?.let {
-            shopCategoryExist.delete()
+            it.delete()
             shopCategoryId
-        } ?: run {
-            shopCategoryId.isNotExistException()
-        }
+        } ?: throw shopCategoryId.notFoundException()
     }
 }

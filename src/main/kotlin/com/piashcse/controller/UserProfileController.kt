@@ -1,22 +1,23 @@
 package com.piashcse.controller
 
+import com.piashcse.entities.user.UserProfile
 import com.piashcse.entities.user.UserProfileTable
 import com.piashcse.entities.user.UsersProfileEntity
 import com.piashcse.models.user.body.UserProfileBody
+import com.piashcse.repository.UserProfileRepo
 import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.query
+import io.ktor.server.plugins.*
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class userProfileController {
-    suspend fun getProfile(userId: String) = query {
-        val profile = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
-        profile?.let {
-            it.response()
-        }
+class UserProfileController : UserProfileRepo {
+    override suspend fun getProfile(userId: String): UserProfile = query {
+        val isProfileExist = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+        isProfileExist?.response() ?: throw NotFoundException("User not found")
     }
 
-    suspend fun updateProfile(userId: String, userProfile: UserProfileBody?) = query {
+    override suspend fun updateProfile(userId: String, userProfile: UserProfileBody?): UserProfile = query {
         val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         userProfileEntity?.let {
             it.firstName = userProfile?.firstName ?: it.firstName
@@ -33,10 +34,10 @@ class userProfileController {
             it.postCode = userProfile?.postCode ?: it.postCode
             it.gender = userProfile?.gender ?: it.gender
             it.response()
-        }
+        } ?: throw NotFoundException("User not found")
     }
 
-    suspend fun updateProfileImage(userId: String, profileImage: String?) = query {
+    override suspend fun updateProfileImage(userId: String, profileImage: String?): UserProfile = query {
         val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         // delete previous file from directory as latest one replace previous one
         userProfileEntity?.userProfileImage?.let {
@@ -45,6 +46,6 @@ class userProfileController {
         userProfileEntity?.let {
             it.userProfileImage = profileImage ?: it.userProfileImage
             it.response()
-        }
+        } ?: throw NotFoundException("User not found")
     }
 }

@@ -17,12 +17,12 @@ class ProductCategoryEntity(id: EntityID<String>) : BaseIntEntity(id, ProductCat
     private val subCategories by ProductSubCategoryEntity referrersOn ProductSubCategoryTable.categoryId
     var image by ProductCategoryTable.image
     fun response() =
-        ProductCategoryResponse(id.value, categoryName, subCategories.map { it.response() }, image)
+        ProductCategory(id.value, categoryName, subCategories.map { it.response() }, image)
 }
 
-data class ProductCategoryResponse(
+data class ProductCategory(
     val id: String,
     val categoryName: String,
-    val subCategories: List<ProductSubCategoryResponse>,
+    val subCategories: List<ProductSubCategory>,
     val image: String?
 )
