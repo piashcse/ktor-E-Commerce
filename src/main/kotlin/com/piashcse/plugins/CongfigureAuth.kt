@@ -32,7 +32,7 @@ fun Application.configureAuth() {
 
 fun provideJwtAuthConfig(jwtConfig: JWTAuthenticationProvider.Config, userRole: RoleManagement) {
     jwtConfig.verifier(JwtController.verifier)
-    jwtConfig.realm = "ktor.io"
+    jwtConfig.realm = "piashcse"
     jwtConfig.validate {
         val userId = it.payload.getClaim("userId").asString()
         val email = it.payload.getClaim("email").asString()

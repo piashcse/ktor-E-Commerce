@@ -7,31 +7,32 @@ import com.piashcse.models.user.body.JwtTokenBody
 import java.util.*
 
 object JwtController {
-    private const val secret = "zAP5MBA4B4Ijz0MZaS48"
-    private const val issuer = "ktor.io"
-    private const val validityInMs = 36_000_00 * 24 // 24 hours
-    private val algorithm = Algorithm.HMAC512(secret)
+    private const val SECRET = "zAP5MBA4B4Ijz0MZaS48"
+    private const val ISSUER = "piashcse"
+    private const val VALIDITY_MS = 24 * 60 * 60 * 1000L // 24 hours in milliseconds
+    private val ALGORITHM = Algorithm.HMAC512(SECRET)
 
-    val verifier: JWTVerifier = JWT
-        .require(algorithm)
-        .withIssuer(issuer)
-        .build()
+    val verifier: JWTVerifier by lazy {
+        JWT
+            .require(ALGORITHM)
+            .withIssuer(ISSUER)
+            .build()
+    }
 
     /**
-     * Produce a token for this combination of User and Account
+     * Produce a token for the given JwtTokenBody
      */
     fun tokenProvider(jwtTokenBody: JwtTokenBody): String = JWT.create()
         .withSubject("Authentication")
-        .withIssuer(issuer)
+        .withIssuer(ISSUER)
         .withClaim("email", jwtTokenBody.email)
         .withClaim("userId", jwtTokenBody.userId)
         .withClaim("userType", jwtTokenBody.userType)
         .withExpiresAt(getExpiration())
-        .sign(algorithm)
+        .sign(ALGORITHM)
 
     /**
      * Calculate the expiration Date based on current time + the given validity
      */
-    private fun getExpiration() = Date(System.currentTimeMillis() + validityInMs)
-
+    private fun getExpiration() = Date(System.currentTimeMillis() + VALIDITY_MS)
 }
