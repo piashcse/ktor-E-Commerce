@@ -1,7 +1,10 @@
 package com.piashcse.models.user.body
 
 import com.piashcse.plugins.RoleManagement
-import org.valiktor.functions.*
+import org.valiktor.functions.hasSize
+import org.valiktor.functions.isEmail
+import org.valiktor.functions.isIn
+import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
 data class LoginBody(

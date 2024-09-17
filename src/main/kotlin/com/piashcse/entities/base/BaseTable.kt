@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.util.UUID
+import java.util.*
 
 abstract class BaseIntIdTable(name: String) : IdTable<String>(name) {
     override val id: Column<EntityID<String>> = varchar("id", 50).clientDefault { UUID.randomUUID().toString() }.uniqueIndex().entityId()

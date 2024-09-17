@@ -5,10 +5,10 @@ import com.piashcse.models.bands.AddBrand
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
+import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
-import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

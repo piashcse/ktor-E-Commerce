@@ -4,9 +4,10 @@ import com.piashcse.controller.UserController
 import com.piashcse.entities.user.ChangePassword
 import com.piashcse.models.user.body.*
 import com.piashcse.plugins.RoleManagement
-import com.piashcse.utils.*
 import com.piashcse.utils.ApiResponse
+import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.apiResponse
+import com.piashcse.utils.sendEmail
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
@@ -16,8 +17,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.apache.commons.mail.DefaultAuthenticator
-import org.apache.commons.mail.SimpleEmail
 
 fun Route.userRoute(userController: UserController) {
     route("user") {

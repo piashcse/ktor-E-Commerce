@@ -1,6 +1,8 @@
 package com.piashcse.models.product.request
 
-import org.valiktor.functions.*
+import org.valiktor.functions.isGreaterThan
+import org.valiktor.functions.isNotEmpty
+import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
 data class AddProduct(

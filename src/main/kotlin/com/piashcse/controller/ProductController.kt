@@ -1,14 +1,18 @@
 package com.piashcse.controller
 
 import com.piashcse.entities.product.*
-import com.piashcse.models.product.request.*
+import com.piashcse.models.product.request.AddProduct
+import com.piashcse.models.product.request.ProductWithFilter
+import com.piashcse.models.product.request.UpdateProduct
 import com.piashcse.repository.ProductRepo
 import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.selectAll
 import java.io.File
 
 class ProductController : ProductRepo {

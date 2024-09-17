@@ -2,12 +2,14 @@ package com.piashcse.database
 
 import com.piashcse.entities.ShippingTable
 import com.piashcse.entities.WishListTable
-import com.piashcse.entities.product.category.ProductCategoryTable
-import com.piashcse.entities.product.category.ProductSubCategoryTable
 import com.piashcse.entities.orders.CartItemTable
 import com.piashcse.entities.orders.OrderItemTable
 import com.piashcse.entities.orders.OrderTable
-import com.piashcse.entities.product.*
+import com.piashcse.entities.product.BrandTable
+import com.piashcse.entities.product.ProductImageTable
+import com.piashcse.entities.product.ProductTable
+import com.piashcse.entities.product.category.ProductCategoryTable
+import com.piashcse.entities.product.category.ProductSubCategoryTable
 import com.piashcse.entities.shop.ShopCategoryTable
 import com.piashcse.entities.shop.ShopTable
 import com.piashcse.entities.user.UserProfileTable
@@ -16,11 +18,10 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.SchemaUtils.create
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
-import java.net.URI
+import org.jetbrains.exposed.sql.transactions.transaction
 import javax.sql.DataSource
 
 
@@ -53,35 +54,6 @@ private fun initDB() {
     val dataSource = HikariDataSource(config)
     runFlyway(dataSource)
     Database.connect(dataSource)
-}
-
-private fun hikari(): HikariDataSource {
-    val config = HikariConfig()
-    config.driverClassName = System.getenv("JDBC_DRIVER")
-    config.jdbcUrl = System.getenv("HEROKU_POSTGRESQL_NAVY_URL")
-    config.maximumPoolSize = 3
-    config.isAutoCommit = true
-    config.transactionIsolation = "TRANSACTION_REPEATABLE_READ"
-    config.validate()
-    return HikariDataSource(config)
-}
-
-// For heroku deployment
-private fun hikariForHeroku(): HikariDataSource {
-    val config = HikariConfig()
-    config.driverClassName = System.getenv("JDBC_DRIVER")
-    config.isAutoCommit = false
-    config.transactionIsolation = "TRANSACTION_REPEATABLE_READ"
-
-    val uri = URI(System.getenv("DATABASE_URL"))
-    val username = uri.userInfo.split(":").toTypedArray()[0]
-    val password = uri.userInfo.split(":").toTypedArray()[1]
-
-    config.jdbcUrl =
-        "jdbc:postgresql://" + uri.host + ":" + uri.port + uri.path + "?sslmode=require" + "&user=$username&password=$password"
-
-    config.validate()
-    return HikariDataSource(config)
 }
 
 private fun runFlyway(datasource: DataSource) {

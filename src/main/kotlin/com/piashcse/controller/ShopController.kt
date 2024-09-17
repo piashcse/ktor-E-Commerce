@@ -1,6 +1,8 @@
 package com.piashcse.controller
 
-import com.piashcse.entities.shop.*
+import com.piashcse.entities.shop.Shop
+import com.piashcse.entities.shop.ShopEntity
+import com.piashcse.entities.shop.ShopTable
 import com.piashcse.entities.user.UserTable
 import com.piashcse.repository.ShopRepo
 import com.piashcse.utils.extension.alreadyExistException

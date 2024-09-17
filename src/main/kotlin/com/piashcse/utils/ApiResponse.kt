@@ -1,6 +1,6 @@
 package com.piashcse.utils
 
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.*
 
 data class Response(
     val isSuccess: Boolean,

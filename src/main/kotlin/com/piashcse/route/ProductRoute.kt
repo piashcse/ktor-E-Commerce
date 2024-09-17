@@ -1,7 +1,9 @@
 package com.piashcse.route
 
 import com.piashcse.controller.ProductController
-import com.piashcse.models.product.request.*
+import com.piashcse.models.product.request.AddProduct
+import com.piashcse.models.product.request.ProductWithFilter
+import com.piashcse.models.product.request.UpdateProduct
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.AppConstants
