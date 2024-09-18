@@ -55,6 +55,9 @@ dependencies {
 
     implementation(libs.ktor.swagger.ui)
     implementation(libs.swagger.parser)
+    testImplementation(libs.mockk)
+    testImplementation(libs.coroutine.test)
+    testImplementation(libs.ktor.client.mock)
 }
 tasks.create("stage") {
     dependsOn("installDist")
