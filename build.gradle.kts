@@ -55,6 +55,10 @@ dependencies {
 
     implementation(libs.ktor.swagger.ui)
     implementation(libs.swagger.parser)
+
+    implementation(libs.koin.ktor)
+    implementation(libs.koin.core)
+    implementation(libs.koin.logger)
 }
 tasks.create("stage") {
     dependsOn("installDist")

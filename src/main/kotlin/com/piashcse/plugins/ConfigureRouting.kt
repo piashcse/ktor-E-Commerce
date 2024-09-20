@@ -5,22 +5,35 @@ import com.piashcse.route.*
 import io.github.smiley4.ktorswaggerui.dsl.routing.route
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 fun Application.configureRoute() {
+    val userController: UserController by inject()
+    val userProfileController: UserProfileController by inject()
+    val shopCategoryController: ShopCategoryController by inject()
+    val shopController: ShopController by inject()
+    val brandController: BrandController by inject()
+    val productCategoryController: ProductCategoryController by inject()
+    val productSubCategoryController: ProductSubCategoryController by inject()
+    val productController: ProductController by inject()
+    val cartController: CartController by inject()
+    val wishListController: WishListController by inject()
+    val shippingController: ShippingController by inject()
+    val orderController: OrderController by inject()
     routing {
         route {
-            userRoute(UserController())
-            userProfileRoute(UserProfileController())
-            shopCategoryRoute(ShopCategoryController())
-            shopRoute(ShopController())
-            brandRoute(BrandController())
-            productCategoryRoute(ProductCategoryController())
-            productSubCategoryRoute(ProductSubCategoryController())
-            productRoute(ProductController())
-            cartRoute(CartController())
-            wishListRoute(WishListController())
-            shippingRoute(ShippingController())
-            orderRoute(OrderController())
+            userRoute(userController)
+            userProfileRoute(userProfileController)
+            shopCategoryRoute(shopCategoryController)
+            shopRoute(shopController)
+            brandRoute(brandController)
+            productCategoryRoute(productCategoryController)
+            productSubCategoryRoute(productSubCategoryController)
+            productRoute(productController)
+            cartRoute(cartController)
+            wishListRoute(wishListController)
+            shippingRoute(shippingController)
+            orderRoute(orderController)
         }
     }
 }
