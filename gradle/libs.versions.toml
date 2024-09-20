@@ -14,6 +14,7 @@ commons-io-version = "2.11.0"
 ktor-swagger-ui-version = "3.4.0"
 swagger-parser-version = "2.1.22"
 shadow-version = "8.1.1"
+koin = "3.5.0"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
@@ -46,6 +47,9 @@ valiktor-core = { module = "org.valiktor:valiktor-core", version.ref = "valiktor
 commons-io = { module = "commons-io:commons-io", version.ref = "commons-io-version" }
 ktor-swagger-ui = { module = "io.github.smiley4:ktor-swagger-ui", version.ref = "ktor-swagger-ui-version" }
 swagger-parser= { module = "io.swagger.parser.v3:swagger-parser", version.ref = "swagger-parser-version" }
+koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-logger = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
