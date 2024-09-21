@@ -17,7 +17,7 @@ fun Application.configureAuthTest() {
             validate { credential ->
                 // Accepting multiple roles
                 val role = credential.payload.getClaim("role").asString()
-                if (role in listOf("CUSTOMER", "SELLER", "ADMIN")) {
+                if (role in listOf("ADMIN")) {
                     UserIdPrincipal(credential.payload.subject)
                 } else {
                     null
@@ -32,7 +32,7 @@ fun Application.configureAuthTest() {
             validate { credential ->
                 // Accepting multiple roles
                 val role = credential.payload.getClaim("role").asString()
-                if (role in listOf("CUSTOMER", "SELLER", "ADMIN")) {
+                if (role in listOf("SELLER")) {
                     UserIdPrincipal(credential.payload.subject)
                 } else {
                     null
@@ -47,7 +47,7 @@ fun Application.configureAuthTest() {
             validate { credential ->
                 // Accepting multiple roles
                 val role = credential.payload.getClaim("role").asString()
-                if (role in listOf("CUSTOMER", "SELLER", "ADMIN")) {
+                if (role in listOf("CUSTOMER")) {
                     UserIdPrincipal(credential.payload.subject)
                 } else {
                     null
