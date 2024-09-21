@@ -15,6 +15,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import com.piashcse.configureAuthTest
 import com.piashcse.generateJwtToken
+import com.piashcse.plugins.RoleManagement
 
 class BrandRouteTest {
     private fun Application.testModule(brandController: BrandController) {
@@ -68,7 +69,7 @@ class BrandRouteTest {
                             val token = authHeader.removePrefix("Bearer ")
 
                             // Here, you can dynamically generate tokens for different roles
-                            val validRoles = listOf("ADMIN", "CUSTOMER", "SELLER")
+                            val validRoles = listOf(RoleManagement.ADMIN.role, RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role)
 
                             // Loop through valid roles and check if the provided token matches any valid one
                             val isValidToken = validRoles.any { role ->
@@ -94,9 +95,9 @@ class BrandRouteTest {
             }
         }
 
-        validateBrandResponse("CUSTOMER", client)
-        validateBrandResponse("ADMIN", client)
-        validateBrandResponse("SELLER", client)
+        validateBrandResponse(RoleManagement.ADMIN.role, client)
+        validateBrandResponse(RoleManagement.SELLER.role, client)
+        validateBrandResponse(RoleManagement.CUSTOMER.role, client)
     }
 
 
@@ -125,7 +126,7 @@ class BrandRouteTest {
 
                             // For simplicity, you can check if the token matches a pre-generated token
                             // In a real-world scenario, you could mock the token validation logic.
-                            val validToken = generateJwtToken("ADMIN") // Assuming a valid token for the test case
+                            val validToken = generateJwtToken(RoleManagement.ADMIN.role) // Assuming a valid token for the test case
 
                             if (token == validToken) {
                                 respond(
@@ -145,7 +146,7 @@ class BrandRouteTest {
             }
         }
 
-        val jwtToken = generateJwtToken("ADMIN") // Generate JWT token for ADMIN role
+        val jwtToken = generateJwtToken(RoleManagement.ADMIN.role) // Generate JWT token for ADMIN role
         val response: HttpResponse = client.post("/brand") {
             header(HttpHeaders.Authorization, "Bearer $jwtToken")
             contentType(ContentType.Application.Json)
@@ -186,7 +187,7 @@ class BrandRouteTest {
                             val token = authHeader.removePrefix("Bearer ")
 
                             // Mock token validation logic
-                            val sellerToken = generateJwtToken("ADMIN")
+                            val sellerToken = generateJwtToken(RoleManagement.ADMIN.role)
 
                             if (token == sellerToken) {
                                 respond(
@@ -207,7 +208,7 @@ class BrandRouteTest {
         }
 
         // Generate the JWT token for SELLER
-        val jwtToken = generateJwtToken("ADMIN")
+        val jwtToken = generateJwtToken(RoleManagement.ADMIN.role)
 
         // Perform PUT request to update the brand
         val response: HttpResponse = client.put("/brand/1") {
@@ -247,7 +248,7 @@ class BrandRouteTest {
                             val token = authHeader.removePrefix("Bearer ")
 
                             // Mock token validation logic
-                            val adminToken = generateJwtToken("ADMIN")
+                            val adminToken = generateJwtToken(RoleManagement.ADMIN.role)
 
                             if (token == adminToken) {
                                 respond(
@@ -268,7 +269,7 @@ class BrandRouteTest {
         }
 
         // Generate the JWT token for ADMIN
-        val jwtToken = generateJwtToken("ADMIN")
+        val jwtToken = generateJwtToken(RoleManagement.ADMIN.role)
 
         // Perform DELETE request to delete the brand
         val response: HttpResponse = client.delete("/brand/1") {
