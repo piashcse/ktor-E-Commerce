@@ -7,7 +7,6 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
@@ -21,9 +20,7 @@ class BrandRouteTest {
     private fun Application.testModule(brandController: BrandController) {
         configureAuthTest()
         routing {
-            authenticate("admin", "customer", "seller") {
-                brandRoute(brandController)
-            }
+            brandRoute(brandController)
         }
     }
 
