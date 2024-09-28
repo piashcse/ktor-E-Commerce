@@ -1,6 +1,7 @@
 package com.piashcse.plugins
 
 import com.piashcse.models.AddWisList
+import com.piashcse.models.AddPayment
 import com.piashcse.models.bands.AddBrand
 import com.piashcse.models.cart.AddCart
 import com.piashcse.models.category.AddProductCategory
@@ -53,6 +54,10 @@ fun Application.configureRequestValidation() {
         }
         validate<AddWisList> { wishlist ->
             wishlist.validation()
+            ValidationResult.Valid
+        }
+        validate<AddPayment> { payment ->
+            payment.validation()
             ValidationResult.Valid
         }
     }

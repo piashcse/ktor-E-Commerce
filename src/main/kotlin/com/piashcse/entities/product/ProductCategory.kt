@@ -1,4 +1,4 @@
-package com.piashcse.entities.product.category
+package com.piashcse.entities.product
 
 import com.piashcse.entities.base.BaseIntEntity
 import com.piashcse.entities.base.BaseIntEntityClass

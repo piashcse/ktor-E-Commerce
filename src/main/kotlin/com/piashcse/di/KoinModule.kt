@@ -17,4 +17,5 @@ val controllerModule = module {
     single { UserController() }
     single { UserProfileController() }
     single { WishListController() }
+    single { PaymentController() }
 }

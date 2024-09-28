@@ -58,23 +58,6 @@ fun Route.orderRoute(orderController: OrderController) {
                 )
             )
         }
-        get("{id}/order-payment", {
-            tags("Order")
-            request {
-                queryParameter<String>("id") {
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
-            val orderId = call.parameters["id"]!!
-            call.respond(
-                ApiResponse.success(
-                    orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.PAID),
-                    HttpStatusCode.OK
-                )
-            )
-        }
         get("{id}/order-cancel", {
             tags("Order")
             request {

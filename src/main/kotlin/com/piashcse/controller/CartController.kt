@@ -1,8 +1,8 @@
 package com.piashcse.controller
 
-import com.piashcse.entities.orders.Cart
-import com.piashcse.entities.orders.CartItemEntity
-import com.piashcse.entities.orders.CartItemTable
+import com.piashcse.entities.Cart
+import com.piashcse.entities.CartItemEntity
+import com.piashcse.entities.CartItemTable
 import com.piashcse.entities.product.Product
 import com.piashcse.entities.product.ProductEntity
 import com.piashcse.entities.product.ProductTable
