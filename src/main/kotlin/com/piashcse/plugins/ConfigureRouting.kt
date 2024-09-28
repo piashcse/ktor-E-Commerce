@@ -20,6 +20,7 @@ fun Application.configureRoute() {
     val wishListController: WishListController by inject()
     val shippingController: ShippingController by inject()
     val orderController: OrderController by inject()
+    val paymentController: PaymentController by inject()
     routing {
         route {
             userRoute(userController)
@@ -34,6 +35,7 @@ fun Application.configureRoute() {
             wishListRoute(wishListController)
             shippingRoute(shippingController)
             orderRoute(orderController)
+            paymentRoute(paymentController)
         }
     }
 }

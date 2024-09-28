@@ -2,14 +2,15 @@ package com.piashcse.database
 
 import com.piashcse.entities.ShippingTable
 import com.piashcse.entities.WishListTable
-import com.piashcse.entities.orders.CartItemTable
+import com.piashcse.entities.CartItemTable
+import com.piashcse.entities.PaymentTable
 import com.piashcse.entities.orders.OrderItemTable
 import com.piashcse.entities.orders.OrderTable
 import com.piashcse.entities.product.BrandTable
 import com.piashcse.entities.product.ProductImageTable
 import com.piashcse.entities.product.ProductTable
-import com.piashcse.entities.product.category.ProductCategoryTable
-import com.piashcse.entities.product.category.ProductSubCategoryTable
+import com.piashcse.entities.product.ProductCategoryTable
+import com.piashcse.entities.product.ProductSubCategoryTable
 import com.piashcse.entities.shop.ShopCategoryTable
 import com.piashcse.entities.shop.ShopTable
 import com.piashcse.entities.user.UserProfileTable
@@ -43,7 +44,8 @@ fun configureDataBase() {
             OrderTable,
             OrderItemTable,
             WishListTable,
-            ShippingTable
+            ShippingTable,
+            PaymentTable
         )
     }
 }

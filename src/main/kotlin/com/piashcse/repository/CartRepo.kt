@@ -1,6 +1,6 @@
 package com.piashcse.repository
 
-import com.piashcse.entities.orders.Cart
+import com.piashcse.entities.Cart
 import com.piashcse.entities.product.Product
 
 interface CartRepo {

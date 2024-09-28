@@ -1,8 +1,8 @@
 package com.piashcse.controller
 
-import com.piashcse.entities.product.category.ProductCategory
-import com.piashcse.entities.product.category.ProductCategoryEntity
-import com.piashcse.entities.product.category.ProductCategoryTable
+import com.piashcse.entities.product.ProductCategory
+import com.piashcse.entities.product.ProductCategoryEntity
+import com.piashcse.entities.product.ProductCategoryTable
 import com.piashcse.repository.ProductCategoryRepo
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException

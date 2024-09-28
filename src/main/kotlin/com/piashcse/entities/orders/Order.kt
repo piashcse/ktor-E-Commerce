@@ -8,8 +8,6 @@ import org.jetbrains.exposed.dao.id.EntityID
 
 object OrderTable : BaseIntIdTable("order") {
     val userId = reference("user_id", UserTable.id)
-    val paymentId = varchar("payment_id", 50).nullable()
-    val paymentType = varchar("payment_type", 50).nullable()
     val quantity = integer("quantity") // total number of items
     val subTotal = float("sub_total")
     val total = float("total")
@@ -25,8 +23,6 @@ class OrderEntity(id: EntityID<String>) : BaseIntEntity(id, OrderTable) {
     companion object : BaseIntEntityClass<OrderEntity>(OrderTable)
 
     var userId by OrderTable.userId
-    var paymentId by OrderTable.paymentId
-    var paymentType by OrderTable.paymentType
     var quantity by OrderTable.quantity
     var subTotal by OrderTable.subTotal
     var total by OrderTable.total
@@ -38,8 +34,6 @@ class OrderEntity(id: EntityID<String>) : BaseIntEntity(id, OrderTable) {
     var statusCode by OrderTable.statusCode
     fun response() = Order(
         id.value,
-        paymentId,
-        paymentType,
         quantity,
         subTotal,
         total,
@@ -53,8 +47,6 @@ class OrderEntity(id: EntityID<String>) : BaseIntEntity(id, OrderTable) {
 }
 data class Order(
     val orderId: String,
-    val paymentId: String?,
-    val paymentType: String?,
     val quantity: Int,
     val subTotal: Float,
     val total: Float,

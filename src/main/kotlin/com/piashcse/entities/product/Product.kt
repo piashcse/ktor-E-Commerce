@@ -3,8 +3,6 @@ package com.piashcse.entities.product
 import com.piashcse.entities.base.BaseIntEntity
 import com.piashcse.entities.base.BaseIntEntityClass
 import com.piashcse.entities.base.BaseIntIdTable
-import com.piashcse.entities.product.category.ProductCategoryTable
-import com.piashcse.entities.product.category.ProductSubCategoryTable
 import com.piashcse.entities.user.UserTable
 import org.jetbrains.exposed.dao.id.EntityID
 
