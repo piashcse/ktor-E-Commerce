@@ -40,13 +40,38 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
                 tags("User")
                 request {
                     body<UserProfileBody>()
+                    queryParameter<String>("firstName")
+                    queryParameter<String>("lastName")
+                    queryParameter<String>("secondaryMobileNumber")
+                    queryParameter<String>("faxNumber")
+                    queryParameter<String>("streetAddress")
+                    queryParameter<String>("city")
+                    queryParameter<String>("identificationType")
+                    queryParameter<String>("identificationNo")
+                    queryParameter<String>("occupation")
+                    queryParameter<String>("userDescription")
+                    queryParameter<String>("postCode")
+                    queryParameter<String>("gender")
                 }
                 apiResponse()
             }) {
-                val requestBody = call.receive<UserProfileBody>()
+                val params = UserProfileBody(
+                    firstName = call.request.queryParameters["firstName"],
+                    lastName = call.request.queryParameters["lastName"],
+                    secondaryMobileNumber = call.request.queryParameters["secondaryMobileNumber"],
+                    faxNumber = call.request.queryParameters["faxNumber"],
+                    streetAddress = call.request.queryParameters["streetAddress"],
+                    city = call.request.queryParameters["city"],
+                    identificationType = call.request.queryParameters["identificationType"],
+                    identificationNo = call.request.queryParameters["identificationNo"],
+                    occupation = call.request.queryParameters["occupation"],
+                    userDescription = call.request.queryParameters["description"],
+                    postCode = call.request.queryParameters["postCode"],
+                    gender = call.request.queryParameters["gender"],
+                )
                 call.respond(
                     ApiResponse.success(
-                        userProfileController.updateProfile(getCurrentUser().userId, requestBody), HttpStatusCode.OK
+                        userProfileController.updateProfile(getCurrentUser().userId, params), HttpStatusCode.OK
                     )
                 )
             }

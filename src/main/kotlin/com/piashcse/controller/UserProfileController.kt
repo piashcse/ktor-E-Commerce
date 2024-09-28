@@ -6,15 +6,15 @@ import com.piashcse.entities.user.UsersProfileEntity
 import com.piashcse.models.user.body.UserProfileBody
 import com.piashcse.repository.UserProfileRepo
 import com.piashcse.utils.AppConstants
+import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
-import io.ktor.server.plugins.*
 import java.nio.file.Files
 import java.nio.file.Paths
 
 class UserProfileController : UserProfileRepo {
     override suspend fun getProfile(userId: String): UserProfile = query {
         val isProfileExist = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
-        isProfileExist?.response() ?: throw NotFoundException("User not found")
+        isProfileExist?.response() ?: throw userId.notFoundException()
     }
 
     override suspend fun updateProfile(userId: String, userProfile: UserProfileBody?): UserProfile = query {
@@ -30,11 +30,10 @@ class UserProfileController : UserProfileRepo {
             it.identificationNo = userProfile?.identificationNo ?: it.identificationNo
             it.occupation = userProfile?.occupation ?: it.occupation
             it.userDescription = userProfile?.userDescription ?: it.userDescription
-            it.maritalStatus = userProfile?.maritalStatus ?: it.maritalStatus
             it.postCode = userProfile?.postCode ?: it.postCode
             it.gender = userProfile?.gender ?: it.gender
             it.response()
-        } ?: throw NotFoundException("User not found")
+        } ?: throw userId.notFoundException()
     }
 
     override suspend fun updateProfileImage(userId: String, profileImage: String?): UserProfile = query {
@@ -46,6 +45,6 @@ class UserProfileController : UserProfileRepo {
         userProfileEntity?.let {
             it.userProfileImage = profileImage ?: it.userProfileImage
             it.response()
-        } ?: throw NotFoundException("User not found")
+        } ?: throw userId.notFoundException()
     }
 }

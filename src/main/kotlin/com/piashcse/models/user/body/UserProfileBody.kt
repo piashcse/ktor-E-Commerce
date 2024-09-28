@@ -11,7 +11,6 @@ data class UserProfileBody(
     val identificationNo: String?,
     val occupation: String?,
     val userDescription: String?,
-    val maritalStatus: String?,
     val postCode: String?,
     val gender: String?
 )

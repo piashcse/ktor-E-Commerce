@@ -18,7 +18,6 @@ object UserProfileTable : BaseIntIdTable("users_profile") {
     val identificationNo = text("identification_no").nullable()
     val occupation = text("occupation").nullable()
     val userDescription = text("user_description").nullable()
-    val maritalStatus = text("marital_status").nullable()
     val postCode = text("post_code").nullable()
     val gender = text("gender").nullable()
 }
@@ -38,7 +37,6 @@ class UsersProfileEntity(id: EntityID<String>) : BaseIntEntity(id, UserProfileTa
     var identificationNo by UserProfileTable.identificationNo
     var occupation by UserProfileTable.occupation
     var userDescription by UserProfileTable.userDescription
-    var maritalStatus by UserProfileTable.maritalStatus
     var postCode by UserProfileTable.postCode
     var gender by UserProfileTable.gender
     fun response() = UserProfile(
@@ -54,7 +52,6 @@ class UsersProfileEntity(id: EntityID<String>) : BaseIntEntity(id, UserProfileTa
         identificationNo,
         occupation,
         userDescription,
-        maritalStatus,
         postCode,
         gender,
     )
@@ -73,7 +70,6 @@ data class UserProfile(
     val identificationNo: String?,
     val occupation: String?,
     val userDescription: String?,
-    val maritalStatus: String?,
     val postCode: String?,
     val gender: String?
 )
