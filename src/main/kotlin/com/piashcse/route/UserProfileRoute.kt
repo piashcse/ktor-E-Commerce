@@ -39,7 +39,6 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
             put({
                 tags("User")
                 request {
-                    body<UserProfileBody>()
                     queryParameter<String>("firstName")
                     queryParameter<String>("lastName")
                     queryParameter<String>("secondaryMobileNumber")
