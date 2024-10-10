@@ -23,7 +23,6 @@ fun Application.configureRoute() {
     val orderController: OrderController by inject()
     val paymentController: PaymentController by inject()
     routing {
-        route {
             userRoute(userController)
             userProfileRoute(userProfileController)
             shopCategoryRoute(shopCategoryController)
@@ -38,6 +37,5 @@ fun Application.configureRoute() {
             shippingRoute(shippingController)
             orderRoute(orderController)
             paymentRoute(paymentController)
-        }
     }
 }
