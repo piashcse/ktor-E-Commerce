@@ -96,6 +96,31 @@ dataSource.user=postgres
 dataSource.password=p123
 dataSource.databaseName=ktor-1.0.0
 ```
+## PgAdmin Setup
+
+On Terminal
+
+```
+brew install --cask pgadmin4
+```
+
+Open PgAdmin
+
+In the "Create - Server" dialog that appears, fill in the following information:
+
+General tab:
+
+- Name: Give your server a name (e.g., "Ktor Ecommerce App")
+
+Connection tab:
+
+- Host name/address: localhost (if your PostgreSQL server is on the same machine)
+- Port: 5432 (default PostgreSQL port)
+- Maintenance database: postgres (default database)
+- Username: piashcse (the user you created for your application)
+- Password: p123 (the password you set for piashcse)
+
+![server1](screenshots/ktor-postgres.png)
 
 ## Run the project
 
