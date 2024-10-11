@@ -80,12 +80,30 @@ Ktor E-Commerce Backend is a high-performance backend solution designed for e-co
 - [JAVA 11](https://jdk.java.net/11/) (or latest)
 - [PostgreSQL](https://www.postgresql.org/) (latest)
 
-## How to run
+## Clone the repository
 
-- `git clone git@github.com:piashcse/ktor-E-Commerce.git` 
+```bash
+git clone git@github.com:piashcse/ktor-E-Commerce.git
+```
+
+Note: some installation instructions are for mac, for windows/linux please install accordingly.
+
+## Postgres Setup
 -  Create a database in postgreSQL
--  Change your db name in `resources/hikari.properties` and replace your database name in `dataSource.databaseName=ktor-1.0.0` instead of `ktor-1.0.0`.
-- `run fun main()` from application class
+-  Change your db name, user, and password in `resources/hikari.properties` and replace them accordingly.
+```bash
+dataSource.user=postgres
+dataSource.password=p123
+dataSource.databaseName=ktor-1.0.0
+```
+
+## Run the project
+
+On Terminal
+
+```
+./gradlew run
+```
 
 ## Documentation
 
