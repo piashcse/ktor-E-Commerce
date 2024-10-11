@@ -81,5 +81,8 @@ fun Application.configureStatusPage() {
                 }
             }
         }
+        status(HttpStatusCode.Unauthorized) { call, statusCode ->
+            call.respond(HttpStatusCode.Unauthorized, ApiResponse.failure("Unauthorized api call", statusCode))
+        }
     }
 }
