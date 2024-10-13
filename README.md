@@ -1670,6 +1670,166 @@ http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
 ```   
 </details>
 
+### REVIEW-RATING
+
+<details>
+  
+<summary> <code>GET</code> <code>/review-rating </code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10&offset=0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10&offset=0
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "70ac842b-7a81-4976-9564-d440880d1736",
+      "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+      "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+      "reviewText": "Good product",
+      "rating": 2
+    }
+  ]
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>POST</code> <code>/review-rating </code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/review-rating' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+  "rating": 2,
+  "reviewText": "Good product"
+}'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/review-rating
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "70ac842b-7a81-4976-9564-d440880d1736",
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+    "reviewText": "Good product",
+    "rating": 2
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>PUT</code> <code>/review-rating/{reviewId} </code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&rating=5' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&rating=5
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "70ac842b-7a81-4976-9564-d440880d1736",
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+    "reviewText": "Product review edited",
+    "rating": 5
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>DELETE</code> <code>/review-rating/{reviewId} </code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "70ac842b-7a81-4976-9564-d440880d1736"
+}
+```   
+</details>
+
 ### CART
 
 <details>
