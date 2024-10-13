@@ -2038,21 +2038,21 @@ http://localhost:8080/order?limit=10&offset=0
 
 <details>
   
-<summary> <code>PUT </code> <code>/order/paymment </code></summary>
+<summary> <code>PUT </code> <code>/order/{id}/cancel </code></summary>
 
 ### Curl
 
 ```
-curl -X 'PUT' \
-  'http://localhost:8080/order/payment?orderId=04675b54-a9df-4200-a526-0b15f6a85930' \
+curl -X 'GET' \
+  'http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/cancel' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDk1OTMwMn0.0KN6NpFd7kZALAm6jiT44isutsEQ_r84YnfKczjbPjQSdlkBNU_M2yey4wySRnYtf2m4UsaA4ogAVbJEXlv1wA'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTA5NDYxfQ.KU7eVxmkq0zg1sQy9RsAVAxuwtGcuGlB9pqMnc-eUI9If-dycduIhn7xv8np0yFVtULAF2_ns59u38gsR237eQ'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/order/payment?orderId=04675b54-a9df-4200-a526-0b15f6a85930
+http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/cancel
 ``` 
 
 
@@ -2065,14 +2065,136 @@ http://localhost:8080/order/payment?orderId=04675b54-a9df-4200-a526-0b15f6a85930
     "description": "OK"
   },
   "data": {
-    "orderId": "04675b54-a9df-4200-a526-0b15f6a85930",
-    "quantity": 1,
-    "subTotal": 10,
-    "total": 10,
-    "shippingCharge": 100,
+    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
+    "quantity": 1073741824,
+    "subTotal": 0.1,
+    "total": 0.1,
+    "shippingCharge": 0.1,
     "cancelOrder": false,
-    "status": "paid",
-    "statusCode": 2
+    "status": "canceled",
+    "statusCode": 4
+  }
+}
+```   
+</details>
+<details>
+<summary> <code>PUT </code> <code>/order/{id}/receive </code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/receive' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTA5NDYxfQ.KU7eVxmkq0zg1sQy9RsAVAxuwtGcuGlB9pqMnc-eUI9If-dycduIhn7xv8np0yFVtULAF2_ns59u38gsR237eQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/receive
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
+    "quantity": 1073741824,
+    "subTotal": 0.1,
+    "total": 0.1,
+    "shippingCharge": 0.1,
+    "cancelOrder": false,
+    "status": "received",
+    "statusCode": 4
+  }
+}
+```   
+</details>
+
+<details>
+<summary> <code>PUT </code> <code>/order/{id}/confirm </code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/confirm' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTA5NDYxfQ.KU7eVxmkq0zg1sQy9RsAVAxuwtGcuGlB9pqMnc-eUI9If-dycduIhn7xv8np0yFVtULAF2_ns59u38gsR237eQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/confirm
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
+    "quantity": 1073741824,
+    "subTotal": 0.1,
+    "total": 0.1,
+    "shippingCharge": 0.1,
+    "cancelOrder": false,
+    "status": "confirmed",
+    "statusCode": 4
+  }
+}
+```   
+</details>
+
+<details>
+<summary> <code>PUT </code> <code>/order/{id}/deliver </code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/deliver' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTA5NDYxfQ.KU7eVxmkq0zg1sQy9RsAVAxuwtGcuGlB9pqMnc-eUI9If-dycduIhn7xv8np0yFVtULAF2_ns59u38gsR237eQ'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/deliver
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
+    "quantity": 1073741824,
+    "subTotal": 0.1,
+    "total": 0.1,
+    "shippingCharge": 0.1,
+    "cancelOrder": false,
+    "status": "delivered",
+    "statusCode": 4
   }
 }
 ```   
