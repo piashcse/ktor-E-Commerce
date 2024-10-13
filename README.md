@@ -1788,13 +1788,13 @@ http://localhost:8080/cart?limit=10&offset=0
 
 <details>
   
-<summary> <code>PUT </code> <code>/cart/{productId} </code></summary>
+<summary> <code>PUT </code> <code>/cart </code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/cart/5b24d429-c981-47c8-9318-f4d61dd2c1a4?quantity=1' \
+  'http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
 ``` 
@@ -1802,7 +1802,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/cart/5b24d429-c981-47c8-9318-f4d61dd2c1a4?quantity=1
+http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1
 ``` 
 
 
@@ -1838,13 +1838,13 @@ http://localhost:8080/cart/5b24d429-c981-47c8-9318-f4d61dd2c1a4?quantity=1
 
 <details>
   
-<summary> <code>DELETE </code> <code>/cart/{productId} </code></summary>
+<summary> <code>DELETE </code> <code>/cart </code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/cart/71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
+  'http://localhost:8080/cart?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
 ``` 
