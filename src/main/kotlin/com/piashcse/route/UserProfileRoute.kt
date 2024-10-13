@@ -70,7 +70,7 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
                 )
                 call.respond(
                     ApiResponse.success(
-                        userProfileController.updateProfile(getCurrentUser().userId, params), HttpStatusCode.OK
+                        userProfileController.updateProfileInfo(getCurrentUser().userId, params), HttpStatusCode.OK
                     )
                 )
             }

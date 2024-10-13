@@ -101,7 +101,7 @@ fun Route.cartRoute(cartController: CartController) {
                 val productId = call.parameters["productId"]!!
                 call.respond(
                     ApiResponse.success(
-                        cartController.removeCartItem(getCurrentUser().userId, productId),
+                        cartController.deleteCartItem(getCurrentUser().userId, productId),
                         HttpStatusCode.OK
                     )
                 )

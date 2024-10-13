@@ -11,7 +11,6 @@ fun main() {
     val configName = "application.conf"
     val appEngineEnv = applicationEngineEnvironment {
         config = HoconApplicationConfig(ConfigFactory.load(configName))
-        developmentMode = false
         module {
             configureDataBase()
             configureBasic()

@@ -17,7 +17,7 @@ class UserProfileController : UserProfileRepo {
         isProfileExist?.response() ?: throw userId.notFoundException()
     }
 
-    override suspend fun updateProfile(userId: String, userProfile: UserProfileBody?): UserProfile = query {
+    override suspend fun updateProfileInfo(userId: String, userProfile: UserProfileBody?): UserProfile = query {
         val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         userProfileEntity?.let {
             it.firstName = userProfile?.firstName ?: it.firstName

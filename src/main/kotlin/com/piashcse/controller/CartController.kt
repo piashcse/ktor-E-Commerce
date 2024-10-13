@@ -43,7 +43,7 @@ class CartController : CartRepo {
         } ?: throw productId.notFoundException()
     }
 
-    override suspend fun removeCartItem(userId: String, productId: String): Product = query {
+    override suspend fun deleteCartItem(userId: String, productId: String): Product = query {
         val isProductExist =
             CartItemEntity.find { CartItemTable.userId eq userId and (CartItemTable.productId eq productId) }
                 .toList().singleOrNull()
