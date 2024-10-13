@@ -1,8 +1,8 @@
 package com.piashcse.controller
 
-import com.piashcse.entities.product.Brand
-import com.piashcse.entities.product.BrandEntity
-import com.piashcse.entities.product.BrandTable
+import com.piashcse.entities.Brand
+import com.piashcse.entities.BrandEntity
+import com.piashcse.entities.BrandTable
 import com.piashcse.repository.BrandRepo
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException

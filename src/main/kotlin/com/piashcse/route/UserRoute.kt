@@ -1,7 +1,7 @@
 package com.piashcse.route
 
 import com.piashcse.controller.UserController
-import com.piashcse.entities.user.ChangePassword
+import com.piashcse.entities.ChangePassword
 import com.piashcse.models.user.body.*
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse

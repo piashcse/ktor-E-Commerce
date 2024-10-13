@@ -1,9 +1,8 @@
-package com.piashcse.entities.orders
+package com.piashcse.entities
 
 import com.piashcse.entities.base.BaseIntEntity
 import com.piashcse.entities.base.BaseIntEntityClass
 import com.piashcse.entities.base.BaseIntIdTable
-import com.piashcse.entities.product.ProductTable
 import org.jetbrains.exposed.dao.id.EntityID
 
 object OrderItemTable : BaseIntIdTable("order_items") {

@@ -1,6 +1,6 @@
 package com.piashcse.repository
 
-import com.piashcse.entities.shop.Shop
+import com.piashcse.entities.Shop
 
 interface ShopRepo {
     suspend fun addShop(userId: String, shopCategoryId: String, shopName: String): Shop

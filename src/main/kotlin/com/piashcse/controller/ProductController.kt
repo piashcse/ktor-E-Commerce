@@ -1,6 +1,6 @@
 package com.piashcse.controller
 
-import com.piashcse.entities.product.*
+import com.piashcse.entities.*
 import com.piashcse.models.product.request.AddProduct
 import com.piashcse.models.product.request.ProductWithFilter
 import com.piashcse.models.product.request.UpdateProduct

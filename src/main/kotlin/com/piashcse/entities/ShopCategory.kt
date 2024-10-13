@@ -1,4 +1,4 @@
-package com.piashcse.entities.shop
+package com.piashcse.entities
 
 import com.piashcse.entities.base.BaseIntEntity
 import com.piashcse.entities.base.BaseIntEntityClass
@@ -9,8 +9,8 @@ object ShopCategoryTable : BaseIntIdTable("shop_category") {
     val shopCategoryName = text("shop_category_name")
 }
 
-class ShopCategoryEntity(id: EntityID<String>) : BaseIntEntity(id,ShopCategoryTable) {
-    companion object : BaseIntEntityClass< ShopCategoryEntity>(ShopCategoryTable)
+class ShopCategoryEntity(id: EntityID<String>) : BaseIntEntity(id, ShopCategoryTable) {
+    companion object : BaseIntEntityClass<ShopCategoryEntity>(ShopCategoryTable)
 
     var shopCategoryName by ShopCategoryTable.shopCategoryName
     fun response() = ShopCategory(id.value, shopCategoryName)

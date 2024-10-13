@@ -1,6 +1,6 @@
 package com.piashcse.controller
 
-import com.piashcse.entities.product.*
+import com.piashcse.entities.*
 import com.piashcse.models.subcategory.AddProductSubCategory
 import com.piashcse.repository.ProductSubCategoryRepo
 import com.piashcse.utils.extension.alreadyExistException

@@ -1,6 +1,6 @@
 package com.piashcse.repository
 
-import com.piashcse.entities.product.ProductSubCategory
+import com.piashcse.entities.ProductSubCategory
 import com.piashcse.models.subcategory.AddProductSubCategory
 
 interface ProductSubCategoryRepo {
