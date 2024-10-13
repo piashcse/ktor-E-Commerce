@@ -2200,6 +2200,90 @@ http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/deliver
 ```   
 </details>
 
+### PAYMENT
+
+<details>
+<summary> <code>POST </code> <code>/payment </code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/payment' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "amount": 500,
+  "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
+  "paymentMethod": "Bkash",
+  "status": "COMPLETED"
+}'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/payment
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "4b68917d-4452-4d18-9012-47e843f05c15",
+    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
+    "amount": 500,
+    "status": "COMPLETED",
+    "paymentMethod": "Bkash"
+  }
+}
+```   
+</details>
+<details>
+<summary> <code>GET </code> <code>/payment/{id} </code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "4b68917d-4452-4d18-9012-47e843f05c15",
+    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
+    "amount": 500,
+    "status": "COMPLETED",
+    "paymentMethod": "Bkash"
+  }
+}
+```   
+</details>
+
 ## 👨 Developed By
 
 <a href="https://twitter.com/piashcse" target="_blank">
