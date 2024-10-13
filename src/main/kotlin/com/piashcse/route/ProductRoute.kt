@@ -216,10 +216,6 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 val (id) = requiredParams.map { call.parameters[it]!! }
 
-                if (!File(AppConstants.ImageFolder.PRODUCT_IMAGE_LOCATION).exists()) {
-                    File(AppConstants.ImageFolder.PRODUCT_IMAGE_LOCATION).mkdirs()
-                }
-
                 val multipartData = call.receiveMultipart()
                 multipartData.forEachPart { part ->
                     when (part) {

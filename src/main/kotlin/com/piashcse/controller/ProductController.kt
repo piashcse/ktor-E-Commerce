@@ -16,6 +16,12 @@ import org.jetbrains.exposed.sql.selectAll
 import java.io.File
 
 class ProductController : ProductRepo {
+    init {
+        if (!File(AppConstants.ImageFolder.PRODUCT_IMAGE_LOCATION).exists()) {
+            File(AppConstants.ImageFolder.PRODUCT_IMAGE_LOCATION).mkdirs()
+        }
+    }
+
     override suspend fun addProduct(userId: String, addProduct: AddProduct): Product = query {
         ProductEntity.new {
             this.userId = EntityID(userId, ProductTable)

@@ -8,10 +8,17 @@ import com.piashcse.repository.UserProfileRepo
 import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
 class UserProfileController : UserProfileRepo {
+    init {
+        if (!File(AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION).exists()) {
+            File(AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION).mkdirs()
+        }
+    }
+
     override suspend fun getProfile(userId: String): UserProfile = query {
         val isProfileExist = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         isProfileExist?.response() ?: throw userId.notFoundException()
