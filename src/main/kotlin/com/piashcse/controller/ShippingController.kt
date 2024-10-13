@@ -18,18 +18,17 @@ class ShippingController : ShippingRepo {
             ShippingTable.userId eq userId and (ShippingTable.orderId eq addShipping.orderId)
         }.toList().singleOrNull()
         isShippingExist?.let {
-            ShippingEntity.new {
-                this.userId = EntityID(userId, ShippingTable)
-                this.orderId = EntityID(addShipping.orderId, ShippingTable)
-                shippingAddress = addShipping.shipAddress
-                shippingCity = addShipping.shipCity
-                shippingPhone = addShipping.shipPhone
-                shippingName = addShipping.shipName
-                shippingEmail = addShipping.shipEmail
-                shippingCountry = addShipping.shipCountry
-
-            }.response()
-        } ?: throw addShipping.orderId.alreadyExistException()
+            throw addShipping.orderId.alreadyExistException()
+        } ?: ShippingEntity.new {
+            this.userId = EntityID(userId, ShippingTable)
+            this.orderId = EntityID(addShipping.orderId, ShippingTable)
+            shippingAddress = addShipping.shipAddress
+            shippingCity = addShipping.shipCity
+            shippingPhone = addShipping.shipPhone
+            shippingName = addShipping.shipName
+            shippingEmail = addShipping.shipEmail
+            shippingCountry = addShipping.shipCountry
+        }.response()
     }
 
     override suspend fun getShipping(userId: String, orderId: String): Shipping = query {
@@ -41,7 +40,7 @@ class ShippingController : ShippingRepo {
 
     override suspend fun updateShipping(userId: String, updateShipping: UpdateShipping): Shipping = query {
         val isShippingExist = ShippingEntity.find {
-            ShippingTable.userId eq userId and (ShippingTable.orderId eq updateShipping.orderId)
+            ShippingTable.userId eq userId and (ShippingTable.id eq updateShipping.id)
         }.toList().singleOrNull()
 
         isShippingExist?.let {
@@ -52,16 +51,16 @@ class ShippingController : ShippingRepo {
             it.shippingEmail = updateShipping.shipEmail ?: it.shippingEmail
             it.shippingCountry = updateShipping.shipCountry ?: it.shippingCountry
             it.response()
-        } ?: throw updateShipping.orderId.alreadyExistException()
+        } ?: throw updateShipping.id.alreadyExistException()
     }
 
-    override suspend fun deleteShipping(userId: String, orderId: String): String = query {
+    override suspend fun deleteShipping(userId: String, id: String): String = query {
         val isShippingExist = ShippingEntity.find {
-            ShippingTable.userId eq userId and (ShippingTable.orderId eq orderId)
+            ShippingTable.userId eq userId and (ShippingTable.id eq id)
         }.toList().singleOrNull()
         isShippingExist?.let {
             it.delete()
-            userId
-        } ?: throw orderId.notFoundException()
+            id
+        } ?: throw id.notFoundException()
     }
 }

@@ -32,11 +32,11 @@ class ShippingEntity(id: EntityID<String>) : BaseIntEntity(id, ShippingTable) {
 
 
     fun response() =
-        Shipping(userId.value, orderId.value, shippingAddress, shippingCity, shippingPhone, shippingName, shippingEmail, shippingCountry)
+        Shipping(id.value, orderId.value, shippingAddress, shippingCity, shippingPhone, shippingName, shippingEmail, shippingCountry)
 }
 
 data class Shipping(
-    var userId: String,
+    val id:String,
     var orderId: String,
     var shipAddress: String,
     var shipCity: String,
