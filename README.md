@@ -149,10 +149,11 @@ On Terminal
 <summary> <code>GET </code> <code>/user/login</code></summary>
 
 ### Curl
-
+```
     curl -X 'GET' \
   'http://localhost:8080/user/Login?email=customer@gmail.com&password=p1234&userType=customer' \
   -H 'accept: application/json'
+```
 
 ### Request URL
 
@@ -1670,6 +1671,177 @@ http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
 ```   
 </details>
 
+### SHIPPING 
+<details>
+  
+<summary> <code>GET </code> <code>/shipping </code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "5489a8b4-7a16-4854-b157-396a8a731032",
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+    "orderId": "c7f38846-4f63-460f-b956-f2b6758dbffd",
+    "shipAddress": "update address",
+    "shipCity": "Dhaka",
+    "shipPhone": 1073741824,
+    "shipName": "paperfly",
+    "shipEmail": "customer@gmail.com",
+    "shipCountry": "Bangladesh"
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>POST </code> <code>/shipping </code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/shipping' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
+  "shipAddress": "Dhaka Bangladesh",
+  "shipCity": "Dhaka",
+  "shipCountry": "Bangladesh",
+  "shipEmail": "customer@gmail.com",
+  "shipName": "string",
+  "shipPhone": 1073741824
+}'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/shipping
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "471ebc82-80e7-4da0-a472-d1c8835f57b8",
+    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
+    "shipAddress": "Dhaka Bangladesh",
+    "shipCity": "Dhaka",
+    "shipPhone": 1073741824,
+    "shipName": "string",
+    "shipEmail": "customer@gmail.com",
+    "shipCountry": "Bangladesh"
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>PUT </code> <code>/shipping/{id} </code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=Updated%20shipping%20address' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=Updated%20shipping%20address
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "5489a8b4-7a16-4854-b157-396a8a731032",
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+    "orderId": "c7f38846-4f63-460f-b956-f2b6758dbffd",
+    "shipAddress": "Updated shipping address",
+    "shipCity": "Dhaka",
+    "shipPhone": 1073741824,
+    "shipName": "paperfly",
+    "shipEmail": "customer@gmail.com",
+    "shipCountry": "Bangladesh"
+  }
+}
+```   
+</details>
+
+<details>
+  
+<summary> <code>DELETE </code> <code>/shipping/{id} </code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8
+``` 
+
+
+### Response
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "471ebc82-80e7-4da0-a472-d1c8835f57b8"
+}
+```   
+</details>
 ### REVIEW-RATING
 
 <details>
