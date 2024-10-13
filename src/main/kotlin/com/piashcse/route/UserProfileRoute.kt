@@ -92,6 +92,10 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
             }) {
                 val multipartData = call.receiveMultipart()
 
+                if (!File(AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION).exists()){
+                    File(AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION).mkdirs()
+                }
+
                 multipartData.forEachPart { part ->
                     when (part) {
                         is PartData.FormItem -> {
