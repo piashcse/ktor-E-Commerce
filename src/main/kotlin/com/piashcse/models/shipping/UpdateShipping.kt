@@ -6,8 +6,8 @@ import org.valiktor.validate
 
 
 data class UpdateShipping(
-    val orderId: String,
-    val shipAddress: String,
+    val id: String,
+    val shipAddress: String?,
     val shipCity: String?,
     val shipPhone: Int?,
     val shipName: String?,
@@ -16,8 +16,7 @@ data class UpdateShipping(
 ) {
     fun validation() {
         validate(this) {
-            validate(UpdateShipping::orderId).isNotNull().isNotEmpty()
-            validate(UpdateShipping::shipAddress).isNotNull().isNotEmpty()
+            validate(UpdateShipping::id).isNotNull().isNotEmpty()
         }
     }
 }

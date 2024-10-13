@@ -31,7 +31,7 @@ fun Route.paymentRoute(paymentController: PaymentController) {
                     )
                 )
             }
-            get("{id}",{
+            get("{id}", {
                 tags("Payment")
                 request {
                     pathParameter<String>("id") {

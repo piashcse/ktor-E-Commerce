@@ -55,12 +55,13 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                     )
                 )
             }
-            put({
+            put("{id}", {
                 tags("Shipping")
                 request {
-                    queryParameter<String>("orderId") {
+                    pathParameter<String>("id") {
                         required = true
                     }
+                    queryParameter<String>("orderId")
                     queryParameter<String>("shipAddress")
                     queryParameter<String>("shipCity")
                     queryParameter<String>("shipPhone")
@@ -70,9 +71,10 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 }
                 apiResponse()
             }) {
+                val id = call.parameters["id"]!!
                 val params = UpdateShipping(
-                    orderId = call.parameters["orderId"] ?: "",
-                    shipAddress = call.parameters["shipAddress"] ?: "",
+                    id = id,
+                    shipAddress = call.parameters["shipAddress"],
                     shipCity = call.parameters["shipCity"],
                     shipPhone = call.parameters["shipPhone"]?.toInt(),
                     shipName = call.parameters["shipName"],
@@ -86,23 +88,19 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                     )
                 )
             }
-            delete({
+            delete("{id}", {
                 tags("Shipping")
                 request {
-                    queryParameter<String>("orderId") {
+                    pathParameter<String>("id") {
                         required = true
                     }
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("orderId")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (orderId) = requiredParams.map { call.parameters[it]!! }
+                val id = call.parameters["id"]!!
                 call.respond(
                     ApiResponse.success(
-                        shippingController.deleteShipping(getCurrentUser().userId, orderId), HttpStatusCode.OK
+                        shippingController.deleteShipping(getCurrentUser().userId, id), HttpStatusCode.OK
                     )
                 )
             }
