@@ -1155,21 +1155,21 @@ http://localhost:8080/product-category?limit=10&offset=0
 
 <details>
   
-<summary> <code>PUT </code> <code>/product-category</code></summary>
+<summary> <code>PUT </code> <code>/product-category/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/product-category?categoryId=58f5c085-d04a-47de-beab-1d476b6ce432&categoryName=Sports' \
+  'http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?categoryName=Education%203.0' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiIzYTRhZTAzMi02ODAxLTQ3NWItOTUxYS0yNjE0ZjA0YTliYjAiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTExNTEyfQ._VBrVUeHJ2gOpCvmNHLhkjn5RMZUpf0B35uy_0k1cAQMMuDG7EDgGHzG3eq6PWpNYjMKBeNRrIByGG0lWSYpjg'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/product-category?categoryId=58f5c085-d04a-47de-beab-1d476b6ce432&categoryName=Sports
+http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?categoryName=Education%203.0
 ``` 
 
 
@@ -1182,8 +1182,8 @@ http://localhost:8080/product-category?categoryId=58f5c085-d04a-47de-beab-1d476b
     "description": "OK"
   },
   "data": {
-    "id": "58f5c085-d04a-47de-beab-1d476b6ce432",
-    "categoryName": "Sports",
+    "id": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
+    "categoryName": "Education 3.0",
     "subCategories": []
   }
 }
@@ -1192,13 +1192,13 @@ http://localhost:8080/product-category?categoryId=58f5c085-d04a-47de-beab-1d476b
 
 <details>
   
-<summary> <code>DELETE</code> <code>/product-category</code></summary>
+<summary> <code>DELETE</code> <code>/product-category/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/product-category?categoryId=75b44e08-2c94-438f-b500-b204c7c90cca' \
+  'http://localhost:8080/product-category/75b44e08-2c94-438f-b500-b204c7c90cca' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ'
 ``` 
@@ -1206,7 +1206,7 @@ curl -X 'DELETE' \
 ### Request URL
 
 ```
-http://localhost:8080/product-category?categoryId=75b44e08-2c94-438f-b500-b204c7c90cca
+http://localhost:8080/product-category/75b44e08-2c94-438f-b500-b204c7c90cca
 ``` 
 
 
