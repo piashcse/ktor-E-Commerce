@@ -75,9 +75,9 @@ fun Route.shopRoute(shopController: ShopController) {
                 requiredParams.filterNot { call.parameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
                 }
-                val (shopId, shopName) = requiredParams.map { call.parameters[it]!! }
+                val (id, shopName) = requiredParams.map { call.parameters[it]!! }
                 shopController.updateShop(
-                    getCurrentUser().userId, shopId, shopName
+                    getCurrentUser().userId, id, shopName
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
