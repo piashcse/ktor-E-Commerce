@@ -1,11 +1,6 @@
 package com.piashcse.controller
 
-import com.piashcse.entities.WishList
-import com.piashcse.entities.WishListEntity
-import com.piashcse.entities.WishListTable
-import com.piashcse.entities.Product
-import com.piashcse.entities.ProductEntity
-import com.piashcse.entities.ProductTable
+import com.piashcse.entities.*
 import com.piashcse.repository.WishListRepo
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException

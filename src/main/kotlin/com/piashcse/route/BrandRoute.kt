@@ -32,7 +32,7 @@ fun Route.brandRoute(brandController: BrandController) {
                 apiResponse()
             }) {
                 val requiredParams = listOf("limit", "offset")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
                 }
                 val (limit, offset) = requiredParams.map { call.parameters[it]!! }
@@ -58,7 +58,7 @@ fun Route.brandRoute(brandController: BrandController) {
                     )
                 )
             }
-            put("{id}",{
+            put("{id}", {
                 tags("Brand")
                 request {
                     pathParameter<String>("id") {
@@ -70,15 +70,18 @@ fun Route.brandRoute(brandController: BrandController) {
                 }
                 apiResponse()
             }) {
-                val id = call.parameters["id"]!!
-                val brandName = call.parameters["name"]!!
+                val requiredParams = listOf("id", "name")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (id, name) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        brandController.updateBrand(id, brandName), HttpStatusCode.OK
+                        brandController.updateBrand(id, name), HttpStatusCode.OK
                     )
                 )
             }
-            delete("{id}",{
+            delete("{id}", {
                 tags("Brand")
                 request {
                     pathParameter<String>("id") {
@@ -87,7 +90,11 @@ fun Route.brandRoute(brandController: BrandController) {
                 }
                 apiResponse()
             }) {
-                val id = call.parameters["id"]!!
+                val requiredParams = listOf("id")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
                         brandController.deleteBrand(id), HttpStatusCode.OK

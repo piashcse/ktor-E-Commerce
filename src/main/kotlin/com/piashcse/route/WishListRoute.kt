@@ -45,8 +45,13 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 }
                 apiResponse()
             }) {
-                val limit = call.parameters["limit"]!!
-                val offset = call.parameters["offset"]!!
+                val requiredParams = listOf("limit", "offset")
+
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (limit, offset) = requiredParams.map { call.parameters[it]!! }
+
                 call.respond(
                     ApiResponse.success(
                         wishlistController.getWishList(getCurrentUser().userId, limit.toInt(), offset.toLong()), HttpStatusCode.OK
@@ -63,7 +68,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 apiResponse()
             }) {
                 val requiredParams = listOf("productId")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
                 }
                 val (productId) = requiredParams.map { call.parameters[it]!! }

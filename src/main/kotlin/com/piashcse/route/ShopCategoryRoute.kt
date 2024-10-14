@@ -45,7 +45,7 @@ fun Route.shopCategoryRoute(shopCategoryController: ShopCategoryController) {
             apiResponse()
         }) {
             val requiredParams = listOf("limit", "offset")
-            requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+            requiredParams.filterNot { call.parameters.contains(it) }.let {
                 if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
             }
             val (limit, offset) = requiredParams.map { call.parameters[it]!! }
@@ -66,10 +66,14 @@ fun Route.shopCategoryRoute(shopCategoryController: ShopCategoryController) {
             }
             apiResponse()
         }) {
-            val shopCategoryId = call.parameters["id"]!!
+            val requiredParams = listOf("id")
+            requiredParams.filterNot { call.parameters.contains(it) }.let {
+                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+            }
+            val (id) = requiredParams.map { call.parameters[it]!! }
             call.respond(
                 ApiResponse.success(
-                    shopCategoryController.deleteShopCategory(shopCategoryId), HttpStatusCode.OK
+                    shopCategoryController.deleteShopCategory(id), HttpStatusCode.OK
                 )
             )
         }
@@ -85,19 +89,17 @@ fun Route.shopCategoryRoute(shopCategoryController: ShopCategoryController) {
             }
             apiResponse()
         }) {
-            val shopCategoryId = call.parameters["id"]!!
-            val shopCategoryName = call.parameters["name"]!!
+            val requiredParams = listOf("id", "name")
+            requiredParams.filterNot { call.parameters.contains(it) }.let {
+                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+            }
+            val (id, name) = requiredParams.map { call.parameters[it]!! }
 
             call.respond(
                 ApiResponse.success(
-                    shopCategoryController.updateShopCategory(shopCategoryId, shopCategoryName), HttpStatusCode.OK
+                    shopCategoryController.updateShopCategory(id, name), HttpStatusCode.OK
                 )
             )
-            shopCategoryController.updateShopCategory(
-                shopCategoryId, shopCategoryName
-            ).let {
-                call.respond(ApiResponse.success(it, HttpStatusCode.OK))
-            }
         }
     }
 }

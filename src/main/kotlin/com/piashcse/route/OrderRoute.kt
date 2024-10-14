@@ -48,7 +48,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 apiResponse()
             }) {
                 val requiredParams = listOf("limit", "offset")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
                 }
                 val (limit, offset) = requiredParams.map { call.parameters[it]!! }
@@ -69,10 +69,14 @@ fun Route.orderRoute(orderController: OrderController) {
                 }
                 apiResponse()
             }) {
-                val orderId = call.parameters["id"]!!
+                val requiredParams = listOf("id")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.CANCELED),
+                        orderController.updateOrder(getCurrentUser().userId, id, OrderStatus.CANCELED),
                         HttpStatusCode.OK
                     )
                 )
@@ -86,10 +90,14 @@ fun Route.orderRoute(orderController: OrderController) {
                 }
                 apiResponse()
             }) {
-                val orderId = call.parameters["id"]!!
+                val requiredParams = listOf("id")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.RECEIVED),
+                        orderController.updateOrder(getCurrentUser().userId, id, OrderStatus.RECEIVED),
                         HttpStatusCode.OK
                     )
                 )
@@ -105,10 +113,14 @@ fun Route.orderRoute(orderController: OrderController) {
                 }
                 apiResponse()
             }) {
-                val orderId = call.parameters["id"]!!
+                val requiredParams = listOf("id")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.CANCELED),
+                        orderController.updateOrder(getCurrentUser().userId, id, OrderStatus.CANCELED),
                         HttpStatusCode.OK
                     )
                 )
@@ -122,10 +134,14 @@ fun Route.orderRoute(orderController: OrderController) {
                 }
                 apiResponse()
             }) {
-                val orderId = call.parameters["id"]!!
+                val requiredParams = listOf("id")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(getCurrentUser().userId, orderId, OrderStatus.DELIVERED),
+                        orderController.updateOrder(getCurrentUser().userId, id, OrderStatus.DELIVERED),
                         HttpStatusCode.OK
                     )
                 )

@@ -55,18 +55,18 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
                 apiResponse()
             }) {
                 val params = UserProfileBody(
-                    firstName = call.request.queryParameters["firstName"],
-                    lastName = call.request.queryParameters["lastName"],
-                    secondaryMobileNumber = call.request.queryParameters["secondaryMobileNumber"],
-                    faxNumber = call.request.queryParameters["faxNumber"],
-                    streetAddress = call.request.queryParameters["streetAddress"],
-                    city = call.request.queryParameters["city"],
-                    identificationType = call.request.queryParameters["identificationType"],
-                    identificationNo = call.request.queryParameters["identificationNo"],
-                    occupation = call.request.queryParameters["occupation"],
-                    userDescription = call.request.queryParameters["description"],
-                    postCode = call.request.queryParameters["postCode"],
-                    gender = call.request.queryParameters["gender"],
+                    firstName = call.parameters["firstName"],
+                    lastName = call.parameters["lastName"],
+                    secondaryMobileNumber = call.parameters["secondaryMobileNumber"],
+                    faxNumber = call.parameters["faxNumber"],
+                    streetAddress = call.parameters["streetAddress"],
+                    city = call.parameters["city"],
+                    identificationType = call.parameters["identificationType"],
+                    identificationNo = call.parameters["identificationNo"],
+                    occupation = call.parameters["occupation"],
+                    userDescription = call.parameters["description"],
+                    postCode = call.parameters["postCode"],
+                    gender = call.parameters["gender"],
                 )
                 call.respond(
                     ApiResponse.success(

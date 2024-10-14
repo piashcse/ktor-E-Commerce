@@ -40,7 +40,11 @@ fun Route.paymentRoute(paymentController: PaymentController) {
                 }
                 apiResponse()
             }) {
-                val id = call.parameters["id"]!!
+                val requiredParams = listOf("id")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
                         paymentController.getPayment(

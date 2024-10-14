@@ -38,17 +38,21 @@ fun Route.shopRoute(shopController: ShopController) {
             get({
                 tags("Shop")
                 request {
-                    queryParameter<Int>("limit"){
+                    queryParameter<Int>("limit") {
                         required = true
                     }
-                    queryParameter<Long>("offset"){
+                    queryParameter<Long>("offset") {
                         required = true
                     }
                 }
                 apiResponse()
             }) {
-                val limit = call.parameters["limit"]!!
-                val offset = call.parameters["offset"]!!
+                val requiredParams = listOf("limit", "offset")
+
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (limit, offset) = requiredParams.map { call.parameters[it]!! }
                 shopController.getShop(
                     getCurrentUser().userId, limit.toInt(), offset.toLong()
                 ).let {
@@ -58,17 +62,20 @@ fun Route.shopRoute(shopController: ShopController) {
             put("{id}", {
                 tags("Shop")
                 request {
-                    pathParameter<String>("id"){
+                    pathParameter<String>("id") {
                         required = true
                     }
-                    queryParameter<String>("shopName"){
+                    queryParameter<String>("shopName") {
                         required = true
                     }
                 }
                 apiResponse()
             }) {
-                val shopId = call.parameters["id"]!!
-                val shopName = call.parameters["shopName"]!!
+                val requiredParams = listOf("id", "shopName")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (shopId, shopName) = requiredParams.map { call.parameters[it]!! }
                 shopController.updateShop(
                     getCurrentUser().userId, shopId, shopName
                 ).let {
@@ -78,15 +85,20 @@ fun Route.shopRoute(shopController: ShopController) {
             delete("{id}", {
                 tags("Shop")
                 request {
-                    pathParameter<String>("id"){
+                    pathParameter<String>("id") {
                         required = true
                     }
                 }
                 apiResponse()
             }) {
-                val shopId = call.parameters["id"]!!
+                val requiredParams = listOf("id")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (id) = requiredParams.map { call.parameters[it]!! }
+
                 shopController.deleteShop(
-                    getCurrentUser().userId, shopId
+                    getCurrentUser().userId, id
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }

@@ -36,7 +36,7 @@ fun Route.userRoute(userController: UserController) {
             apiResponse()
         }) {
             val requiredParams = listOf("email", "password", "userType")
-            requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+            requiredParams.filterNot { call.parameters.contains(it) }.let {
                 if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
             }
             val (email, password, userType) = requiredParams.map { call.parameters[it]!! }
@@ -67,7 +67,7 @@ fun Route.userRoute(userController: UserController) {
             apiResponse()
         }) {
             val requiredParams = listOf("email")
-            requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+            requiredParams.filterNot { call.parameters.contains(it) }.let {
                 if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
             }
             val (email) = requiredParams.map { call.parameters[it]!! }
@@ -99,7 +99,7 @@ fun Route.userRoute(userController: UserController) {
             apiResponse()
         }) {
             val requiredParams = listOf("email", "verificationCode", "newPassword")
-            requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+            requiredParams.filterNot { call.parameters.contains(it) }.let {
                 if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
             }
             val (email, verificationCode, newPassword) = requiredParams.map { call.parameters[it]!! }
@@ -144,7 +144,7 @@ fun Route.userRoute(userController: UserController) {
                 apiResponse()
             }) {
                 val requiredParams = listOf("oldPassword", "newPassword")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
                 }
                 val (oldPassword, newPassword) = requiredParams.map { call.parameters[it]!! }

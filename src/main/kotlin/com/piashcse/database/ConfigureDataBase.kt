@@ -1,17 +1,6 @@
 package com.piashcse.database
 
 import com.piashcse.entities.*
-import com.piashcse.entities.OrderItemTable
-import com.piashcse.entities.OrderTable
-import com.piashcse.entities.BrandTable
-import com.piashcse.entities.ProductImageTable
-import com.piashcse.entities.ProductTable
-import com.piashcse.entities.ProductCategoryTable
-import com.piashcse.entities.ProductSubCategoryTable
-import com.piashcse.entities.ShopCategoryTable
-import com.piashcse.entities.ShopTable
-import com.piashcse.entities.UserProfileTable
-import com.piashcse.entities.UserTable
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway

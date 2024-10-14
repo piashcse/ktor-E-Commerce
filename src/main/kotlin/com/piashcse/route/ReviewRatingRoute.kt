@@ -36,13 +36,14 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
                 apiResponse()
             }) {
                 val requiredParams = listOf("productId", "limit", "offset")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
                 }
                 val (productId, limit, offset) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        reviewRatingController.getReviewRating(productId, limit.toInt(), offset.toLong()), HttpStatusCode.OK
+                        reviewRatingController.getReviewRating(productId, limit.toInt(), offset.toLong()),
+                        HttpStatusCode.OK
                     )
                 )
             }
@@ -77,12 +78,11 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
                 }
                 apiResponse()
             }) {
-                val reviewId = call.parameters["reviewId"]!!
-                val requiredParams = listOf("review", "rating")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                val requiredParams = listOf("reviewId", "review", "rating")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
                 }
-                val (review, rating) = requiredParams.map { call.parameters[it]!! }
+                val (reviewId, review, rating) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
                         reviewRatingController.updateReviewRating(
