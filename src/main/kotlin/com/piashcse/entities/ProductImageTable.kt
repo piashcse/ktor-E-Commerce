@@ -1,9 +1,8 @@
-package com.piashcse.entities.product
+package com.piashcse.entities
 
 import com.piashcse.entities.base.BaseIntEntity
 import com.piashcse.entities.base.BaseIntEntityClass
 import com.piashcse.entities.base.BaseIntIdTable
-import com.piashcse.entities.user.UserTable
 import org.jetbrains.exposed.dao.id.EntityID
 
 object ProductImageTable : BaseIntIdTable("product_image") {

@@ -1,6 +1,6 @@
 package com.piashcse.repository
 
-import com.piashcse.entities.user.UserProfile
+import com.piashcse.entities.UserProfile
 import com.piashcse.models.user.body.UserProfileBody
 
 interface UserProfileRepo {

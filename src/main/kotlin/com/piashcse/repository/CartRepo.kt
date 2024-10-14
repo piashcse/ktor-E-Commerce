@@ -1,7 +1,7 @@
 package com.piashcse.repository
 
 import com.piashcse.entities.Cart
-import com.piashcse.entities.product.Product
+import com.piashcse.entities.Product
 
 interface CartRepo {
     suspend fun addToCart(userId: String, productId: String, quantity: Int): Cart

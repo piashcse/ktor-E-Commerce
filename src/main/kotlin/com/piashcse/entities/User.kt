@@ -1,4 +1,4 @@
-package com.piashcse.entities.user
+package com.piashcse.entities
 
 import com.piashcse.controller.JwtController
 import com.piashcse.entities.base.BaseIntEntity

@@ -1,6 +1,6 @@
 package com.piashcse.repository
 
-import com.piashcse.entities.orders.Order
+import com.piashcse.entities.Order
 import com.piashcse.models.order.AddOrder
 import com.piashcse.utils.extension.OrderStatus
 

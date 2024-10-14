@@ -1,6 +1,6 @@
 package com.piashcse.repository
 
-import com.piashcse.entities.shop.ShopCategory
+import com.piashcse.entities.ShopCategory
 
 interface ShopCategoryRepo {
     suspend fun addShopCategory(shopCategoryName: String): ShopCategory

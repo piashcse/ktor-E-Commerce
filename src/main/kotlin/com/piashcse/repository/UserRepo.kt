@@ -1,8 +1,8 @@
 package com.piashcse.repository
 
-import com.piashcse.entities.user.ChangePassword
-import com.piashcse.entities.user.LoginResponse
-import com.piashcse.entities.user.VerificationCode
+import com.piashcse.entities.ChangePassword
+import com.piashcse.entities.LoginResponse
+import com.piashcse.entities.VerificationCode
 import com.piashcse.models.user.body.ConfirmPassword
 import com.piashcse.models.user.body.ForgetPasswordEmail
 import com.piashcse.models.user.body.LoginBody

@@ -3,7 +3,6 @@ package com.piashcse.entities
 import com.piashcse.entities.base.BaseIntEntity
 import com.piashcse.entities.base.BaseIntEntityClass
 import com.piashcse.entities.base.BaseIntIdTable
-import com.piashcse.entities.orders.OrderTable
 import org.jetbrains.exposed.dao.id.EntityID
 
 object PaymentTable : BaseIntIdTable("payment") {

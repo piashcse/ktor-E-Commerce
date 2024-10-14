@@ -1,7 +1,7 @@
 package com.piashcse.controller
 
 import at.favre.lib.crypto.bcrypt.BCrypt
-import com.piashcse.entities.user.*
+import com.piashcse.entities.*
 import com.piashcse.models.user.body.ConfirmPassword
 import com.piashcse.models.user.body.ForgetPasswordEmail
 import com.piashcse.models.user.body.LoginBody

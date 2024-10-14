@@ -1,8 +1,8 @@
 package com.piashcse.controller
 
-import com.piashcse.entities.user.UserProfile
-import com.piashcse.entities.user.UserProfileTable
-import com.piashcse.entities.user.UsersProfileEntity
+import com.piashcse.entities.UserProfile
+import com.piashcse.entities.UserProfileTable
+import com.piashcse.entities.UsersProfileEntity
 import com.piashcse.models.user.body.UserProfileBody
 import com.piashcse.repository.UserProfileRepo
 import com.piashcse.utils.AppConstants

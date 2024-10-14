@@ -1,6 +1,6 @@
 package com.piashcse.repository
 
-import com.piashcse.entities.product.Brand
+import com.piashcse.entities.Brand
 
 interface BrandRepo {
     suspend fun addBrand(brandName: String): Brand

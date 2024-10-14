@@ -1,7 +1,7 @@
 package com.piashcse.repository
 
 import com.piashcse.entities.WishList
-import com.piashcse.entities.product.Product
+import com.piashcse.entities.Product
 
 interface WishListRepo {
     suspend fun addToWishList(userId: String, productId: String): WishList
