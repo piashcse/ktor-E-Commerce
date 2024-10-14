@@ -45,7 +45,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 apiResponse()
             }) {
                 val requiredParams = listOf("orderId")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
                 }
                 val (orderId) = requiredParams.map { call.parameters[it]!! }
@@ -71,7 +71,11 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 }
                 apiResponse()
             }) {
-                val id = call.parameters["id"]!!
+                val requiredParams = listOf("id")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (id) = requiredParams.map { call.parameters[it]!! }
                 val params = UpdateShipping(
                     id = id,
                     shipAddress = call.parameters["shipAddress"],
@@ -97,7 +101,11 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 }
                 apiResponse()
             }) {
-                val id = call.parameters["id"]!!
+                val requiredParams = listOf("id")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
                         shippingController.deleteShipping(getCurrentUser().userId, id), HttpStatusCode.OK

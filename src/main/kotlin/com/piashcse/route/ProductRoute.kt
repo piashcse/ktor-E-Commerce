@@ -59,13 +59,13 @@ fun Route.productRoute(productController: ProductController) {
                 apiResponse()
             }) {
                 val params = ProductWithFilter(
-                    limit = call.request.queryParameters["limit"]?.toInt() ?: 0,
-                    offset = call.request.queryParameters["offset"]?.toLong() ?: 0L,
-                    maxPrice = call.request.queryParameters["maxPrice"]?.toDoubleOrNull(),
-                    minPrice = call.request.queryParameters["minPrice"]?.toDoubleOrNull(),
-                    categoryId = call.request.queryParameters["categoryId"],
-                    subCategoryId = call.request.queryParameters["subCategoryId"],
-                    brandId = call.request.queryParameters["brandId"],
+                    limit = call.parameters["limit"]?.toInt() ?: 0,
+                    offset = call.parameters["offset"]?.toLong() ?: 0L,
+                    maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
+                    minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
+                    categoryId = call.parameters["categoryId"],
+                    subCategoryId = call.parameters["subCategoryId"],
+                    brandId = call.parameters["brandId"],
                 )
                 call.respond(ApiResponse.success(productController.getProducts(params), HttpStatusCode.OK))
             }
@@ -89,13 +89,13 @@ fun Route.productRoute(productController: ProductController) {
                 apiResponse()
             }) {
                 val params = ProductWithFilter(
-                    limit = call.request.queryParameters["limit"]?.toInt() ?: 0,
-                    offset = call.request.queryParameters["offset"]?.toLong() ?: 0L,
-                    maxPrice = call.request.queryParameters["maxPrice"]?.toDoubleOrNull(),
-                    minPrice = call.request.queryParameters["minPrice"]?.toDoubleOrNull(),
-                    categoryId = call.request.queryParameters["categoryId"],
-                    subCategoryId = call.request.queryParameters["subCategoryId"],
-                    brandId = call.request.queryParameters["brandId"],
+                    limit = call.parameters["limit"]?.toInt() ?: 0,
+                    offset = call.parameters["offset"]?.toLong() ?: 0L,
+                    maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
+                    minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
+                    categoryId = call.parameters["categoryId"],
+                    subCategoryId = call.parameters["subCategoryId"],
+                    brandId = call.parameters["brandId"],
                 )
                 call.respond(
                     ApiResponse.success(
@@ -147,31 +147,35 @@ fun Route.productRoute(productController: ProductController) {
                 apiResponse()
             }) {
                 val params = UpdateProduct(
-                    categoryId = call.request.queryParameters["categoryId"],
-                    subCategoryId = call.request.queryParameters["subCategoryId"],
-                    brandId = call.request.queryParameters["brandId"],
-                    productName = call.request.queryParameters["productName"],
-                    productCode = call.request.queryParameters["productCode"],
-                    productQuantity = call.request.queryParameters["productQuantity"]?.toIntOrNull(),
-                    productDetail = call.request.queryParameters["productDetail"] ?: "",
-                    price = call.request.queryParameters["price"]?.toDoubleOrNull(),
-                    discountPrice = call.request.queryParameters["discountPrice"]?.toDoubleOrNull(),
-                    status = call.request.queryParameters["status"]?.toIntOrNull(),
-                    videoLink = call.request.queryParameters["videoLink"],
-                    mainSlider = call.request.queryParameters["mainSlider"],
-                    hotDeal = call.request.queryParameters["hotDeal"],
-                    bestRated = call.request.queryParameters["bestRated"],
-                    midSlider = call.request.queryParameters["midSlider"],
-                    hotNew = call.request.queryParameters["hotNew"],
-                    trend = call.request.queryParameters["trend"],
-                    buyOneGetOne = call.request.queryParameters["buyOneGetOne"],
-                    imageOne = call.request.queryParameters["imageOne"],
-                    imageTwo = call.request.queryParameters["imageTwo"],
+                    categoryId = call.parameters["categoryId"],
+                    subCategoryId = call.parameters["subCategoryId"],
+                    brandId = call.parameters["brandId"],
+                    productName = call.parameters["productName"],
+                    productCode = call.parameters["productCode"],
+                    productQuantity = call.parameters["productQuantity"]?.toIntOrNull(),
+                    productDetail = call.parameters["productDetail"] ?: "",
+                    price = call.parameters["price"]?.toDoubleOrNull(),
+                    discountPrice = call.parameters["discountPrice"]?.toDoubleOrNull(),
+                    status = call.parameters["status"]?.toIntOrNull(),
+                    videoLink = call.parameters["videoLink"],
+                    mainSlider = call.parameters["mainSlider"],
+                    hotDeal = call.parameters["hotDeal"],
+                    bestRated = call.parameters["bestRated"],
+                    midSlider = call.parameters["midSlider"],
+                    hotNew = call.parameters["hotNew"],
+                    trend = call.parameters["trend"],
+                    buyOneGetOne = call.parameters["buyOneGetOne"],
+                    imageOne = call.parameters["imageOne"],
+                    imageTwo = call.parameters["imageTwo"],
                 )
-                val productId = call.parameters["id"]!!
+                val requiredParams = listOf("id")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        productController.updateProduct(getCurrentUser().userId, productId, params), HttpStatusCode.OK
+                        productController.updateProduct(getCurrentUser().userId, id, params), HttpStatusCode.OK
                     )
                 )
             }
@@ -182,10 +186,14 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
-                val productId = call.parameters["id"]!!
+                val requiredParams = listOf("id")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        productController.deleteProduct(getCurrentUser().userId, productId), HttpStatusCode.OK
+                        productController.deleteProduct(getCurrentUser().userId, id), HttpStatusCode.OK
                     )
                 )
             }
@@ -207,7 +215,7 @@ fun Route.productRoute(productController: ProductController) {
                 apiResponse()
             }) {
                 val requiredParams = listOf("id")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(
                         ApiResponse.success(
                             "Missing parameters: $it", HttpStatusCode.OK

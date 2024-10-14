@@ -34,7 +34,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
             apiResponse()
         }) {
             val requiredParams = listOf("categoryId", "limit", "offset")
-            requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+            requiredParams.filterNot { call.parameters.contains(it) }.let {
                 if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
             }
             val (categoryId, limit, offset) = requiredParams.map { call.parameters[it]!! }
@@ -73,12 +73,15 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
             }
             apiResponse()
         }) {
-            val subCategoryId = call.parameters["id"]!!
-            val subCategoryName = call.parameters["name"]!!
+            val requiredParams = listOf("id", "name")
+            requiredParams.filterNot { call.parameters.contains(it) }.let {
+                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+            }
+            val (id, name) = requiredParams.map { call.parameters[it]!! }
             call.respond(
                 ApiResponse.success(
                     subCategoryController.updateProductSubCategory(
-                        subCategoryId, subCategoryName
+                        id, name
                     ), HttpStatusCode.OK
                 )
             )
@@ -93,11 +96,15 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
             }
             apiResponse()
         }) {
-            val subCategoryId = call.parameters["id"]!!
+            val requiredParams = listOf("id")
+            requiredParams.filterNot { call.parameters.contains(it) }.let {
+                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+            }
+            val (id) = requiredParams.map { call.parameters[it]!! }
             call.respond(
                 ApiResponse.success(
                     subCategoryController.deleteProductSubCategory(
-                        subCategoryId
+                        id
                     ), HttpStatusCode.OK
                 )
             )

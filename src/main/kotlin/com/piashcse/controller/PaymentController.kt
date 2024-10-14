@@ -1,10 +1,6 @@
 package com.piashcse.controller
 
-import com.piashcse.entities.Payment
-import com.piashcse.entities.PaymentEntity
-import com.piashcse.entities.PaymentTable
-import com.piashcse.entities.OrderEntity
-import com.piashcse.entities.OrderTable
+import com.piashcse.entities.*
 import com.piashcse.models.AddPayment
 import com.piashcse.repository.PaymentRepo
 import com.piashcse.utils.extension.notFoundException

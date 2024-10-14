@@ -2,7 +2,6 @@ package com.piashcse.plugins
 
 import com.piashcse.controller.*
 import com.piashcse.route.*
-import io.github.smiley4.ktorswaggerui.dsl.routing.route
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject

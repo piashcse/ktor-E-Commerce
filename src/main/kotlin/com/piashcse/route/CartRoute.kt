@@ -51,7 +51,7 @@ fun Route.cartRoute(cartController: CartController) {
                 apiResponse()
             }) {
                 val requiredParams = listOf("limit", "offset")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
                 }
                 val (limit, offset) = requiredParams.map { call.parameters[it]!! }
@@ -78,7 +78,7 @@ fun Route.cartRoute(cartController: CartController) {
                 apiResponse()
             }) {
                 val requiredParams = listOf("productId", "quantity")
-                requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
                     if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
                 }
                 val (productId, quantity) = requiredParams.map { call.parameters[it]!! }
@@ -98,7 +98,11 @@ fun Route.cartRoute(cartController: CartController) {
                 }
                 apiResponse()
             }) {
-                val productId = call.parameters["productId"]!!
+                val requiredParams = listOf("productId")
+                requiredParams.filterNot { call.parameters.contains(it) }.let {
+                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+                }
+                val (productId) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
                         cartController.deleteCartItem(getCurrentUser().userId, productId),

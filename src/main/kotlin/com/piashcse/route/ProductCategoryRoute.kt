@@ -31,7 +31,7 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
             apiResponse()
         }) {
             val requiredParams = listOf("limit", "offset")
-            requiredParams.filterNot { call.request.queryParameters.contains(it) }.let {
+            requiredParams.filterNot { call.parameters.contains(it) }.let {
                 if (it.isNotEmpty()) call.respond(
                     ApiResponse.success(
                         "Missing parameters: $it", HttpStatusCode.OK
@@ -78,12 +78,15 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
             }
             apiResponse()
         }) {
-            val categoryId = call.parameters["id"]!!
-            val categoryName = call.parameters["categoryName"]!!
+            val requiredParams = listOf("id", "categoryName")
+            requiredParams.filterNot { call.parameters.contains(it) }.let {
+                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+            }
+            val (id, categoryName) = requiredParams.map { call.parameters[it]!! }
             call.respond(
                 ApiResponse.success(
                     productCategoryController.updateProductCategory(
-                        categoryId, categoryName
+                        id, categoryName
                     ), HttpStatusCode.OK
                 )
             )
@@ -97,11 +100,16 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
             }
             apiResponse()
         }) {
-            val categoryId = call.parameters["id"]!!
+            val requiredParams = listOf("id")
+            requiredParams.filterNot { call.parameters.contains(it) }.let {
+                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
+            }
+            val (id) = requiredParams.map { call.parameters[it]!! }
+
             call.respond(
                 ApiResponse.success(
                     productCategoryController.deleteProductCategory(
-                        categoryId
+                        id
                     ), HttpStatusCode.OK
                 )
             )
