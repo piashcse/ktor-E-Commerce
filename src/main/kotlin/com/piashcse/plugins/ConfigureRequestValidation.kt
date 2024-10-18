@@ -11,11 +11,16 @@ import com.piashcse.models.shipping.AddShipping
 import com.piashcse.models.shop.AddShop
 import com.piashcse.models.shop.AddShopCategory
 import com.piashcse.models.subcategory.AddProductSubCategory
+import com.piashcse.models.user.body.LoginBody
 import io.ktor.server.application.*
 import io.ktor.server.plugins.requestvalidation.*
 
 fun Application.configureRequestValidation() {
     install(RequestValidation) {
+        validate<LoginBody> { login ->
+            login.validate()
+            ValidationResult.Valid
+        }
         validate<AddProductCategory> { productCategory ->
             productCategory.validation()
             ValidationResult.Valid
