@@ -20,29 +20,18 @@ import io.ktor.server.routing.*
 
 fun Route.userRoute(userController: UserController) {
     route("user") {
-        get("Login", {
+        post("Login", {
             tags("User")
             request {
-                queryParameter<String>("email") {
-                    required = true
-                }
-                queryParameter<String>("password") {
-                    required = true
-                }
-                queryParameter<String>("userType") {
-                    required = true
-                }
+                body<LoginBody>()
             }
             apiResponse()
         }) {
-            val requiredParams = listOf("email", "password", "userType")
-            requiredParams.filterNot { call.parameters.contains(it) }.let {
-                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-            }
-            val (email, password, userType) = requiredParams.map { call.parameters[it]!! }
+            val requestBody = call.receive<LoginBody>()
             call.respond(
                 ApiResponse.success(
-                    userController.login(LoginBody(email, password, userType)), HttpStatusCode.OK
+                    userController.login(LoginBody(requestBody.email, requestBody.password, requestBody.userType)),
+                    HttpStatusCode.OK
                 )
             )
         }

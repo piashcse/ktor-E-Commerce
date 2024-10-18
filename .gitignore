@@ -1,4 +1,5 @@
 # Project exclude paths
 /.gradle/
 /build/
+/.idea/
 /src/main/resources/hikari.properties
