@@ -197,7 +197,7 @@ fun Route.productRoute(productController: ProductController) {
                     )
                 )
             }
-            post("photo-upload", {
+            post("image-upload", {
                 tags("Product")
                 request {
                     queryParameter<String>("id") {

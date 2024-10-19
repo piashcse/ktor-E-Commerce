@@ -30,7 +30,7 @@ fun Route.userRoute(userController: UserController) {
             val requestBody = call.receive<LoginBody>()
             call.respond(
                 ApiResponse.success(
-                    userController.login(LoginBody(requestBody.email, requestBody.password, requestBody.userType)),
+                    userController.login(requestBody),
                     HttpStatusCode.OK
                 )
             )

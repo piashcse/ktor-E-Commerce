@@ -12,7 +12,7 @@ data class LoginBody(
    val password: String,
    val userType: String
 ) {
-    fun validate() {
+    fun validation() {
         validate(this) {
             validate(LoginBody::email).isNotNull().isEmail()
             validate(LoginBody::password).isNotNull().hasSize(4, 10)
