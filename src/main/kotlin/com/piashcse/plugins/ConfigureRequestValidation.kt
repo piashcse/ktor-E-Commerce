@@ -18,7 +18,7 @@ import io.ktor.server.plugins.requestvalidation.*
 fun Application.configureRequestValidation() {
     install(RequestValidation) {
         validate<LoginBody> { login ->
-            login.validate()
+            login.validation()
             ValidationResult.Valid
         }
         validate<AddProductCategory> { productCategory ->
