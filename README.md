@@ -146,18 +146,25 @@ On Terminal
 ### USER
 <details>
   
-<summary> <code>GET </code> <code>/user/login</code></summary>
+<summary> <code>POST </code> <code>/user/login</code></summary>
 
 ### Curl
 ```
-    curl -X 'GET' \
-  'http://localhost:8080/user/Login?email=customer@gmail.com&password=p1234&userType=customer' \
-  -H 'accept: application/json'
+curl -X 'POST' \
+  'http://localhost:8080/user/Login' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "customer@gmail.com",
+  "password": "p1234",
+  "userType": "customer"
+}'
 ```
 
 ### Request URL
-
-    http://localhost:8080/user/Login?email=customer@gmail.com&password=p1234&userType=customer
+```
+  http://localhost:8080/user/Login
+``` 
 
 ### Response
 ```
@@ -169,11 +176,11 @@ On Terminal
   },
   "data": {
     "user": {
-      "id": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+      "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
       "email": "customer@gmail.com",
       "userType": "customer"
     },
-    "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImN1c3RvbWVyQGdtYWlsLmNvbSIsInVzZXJJZCI6ImE2N2ZkMGNjLTNkOTItNDI1OS1iYmQ0LTFlMGJhNDlkZWNlNCIsInVzZXJUeXBlIjoiY3VzdG9tZXIiLCJleHAiOjE3MjUzNjg3OTl9.mnH0GyxcGNMNKVG0jbO1w9Njj42Mvwus6ihAu6glCwh5bAZZLFXpCVfsjXSoAz4QfAgKFXDWSdihZYiFBXuBhA"
+    "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJjZTU2Mzc3NC1kM2Q1LTQ0MmUtYWQxYS1iODg0YmIwYTUzZjAiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI5NTkzMjQ5fQ.XWWEO1NFN3Gysb1Tghm1l1BcQ2NsYexXE2YmgeIvBv_Wq-DXgmihDed1zt3_TAJevM631vtMQ7LtwOXbYhKF9A"
   }
 }
 ```   
@@ -198,9 +205,9 @@ curl -X 'POST' \
 ``` 
 
 ### Request URL
-
+```
     http://localhost:8080/user/registration
-
+``` 
 
 ### Response
 ```
@@ -424,13 +431,13 @@ http://localhost:8080/user
 
 <details>
   
-<summary> <code>POST</code> <code>/user/photo-upload</code></summary>
+<summary> <code>POST</code> <code>/user/image-upload</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/user/photo-upload' \
+  'http://localhost:8080/user/image-upload' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g' \
   -H 'Content-Type: multipart/form-data' \
@@ -440,7 +447,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/user/photo-upload
+http://localhost:8080/user/image-upload
 ``` 
 
 
@@ -1033,7 +1040,7 @@ http://localhost:8080/product?productId=79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 
 <details>
   
-<summary> <code>POST</code> <code>/product/photo-upload</code></summary>
+<summary> <code>POST</code> <code>/product/image-upload</code></summary>
 
 ### Curl
 
@@ -1049,7 +1056,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/product/photo-upload?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a
+http://localhost:8080/product/image-upload?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a
 ``` 
 
 
