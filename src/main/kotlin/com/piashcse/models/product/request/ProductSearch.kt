@@ -1,5 +1,6 @@
 package com.piashcse.models.product.request
 
+import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.functions.isNotZero
 import org.valiktor.validate
@@ -16,7 +17,7 @@ data class ProductSearch(
         validate(this) {
             validate(ProductSearch::limit).isNotNull().isNotZero()
             validate(ProductSearch::offset).isNotNull()
-            validate(ProductSearch::productName).isNotNull()
+            validate(ProductSearch::productName).isNotNull().isNotEmpty()
         }
     }
 }

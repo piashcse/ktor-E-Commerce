@@ -80,7 +80,9 @@ fun Route.productRoute(productController: ProductController) {
                     queryParameter<Long>("offset") {
                         required = true
                     }
-                    queryParameter<String>("productName")
+                    queryParameter<String>("productName"){
+                        required = true
+                    }
                     queryParameter<String>("categoryId")
                     queryParameter<Double>("maxPrice")
                     queryParameter<Double>("minPrice")
@@ -90,7 +92,7 @@ fun Route.productRoute(productController: ProductController) {
                 val queryParams = ProductSearch(
                     limit = call.parameters["limit"]?.toInt() ?: 0,
                     offset = call.parameters["offset"]?.toLong() ?: 0L,
-                    productName = call.parameters["productName"] ?: "",
+                    productName = call.parameters["productName"]!!,
                     maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
                     minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
                     categoryId = call.parameters["categoryId"],

@@ -7,6 +7,7 @@ import com.piashcse.models.cart.AddCart
 import com.piashcse.models.category.AddProductCategory
 import com.piashcse.models.order.AddOrder
 import com.piashcse.models.product.request.AddProduct
+import com.piashcse.models.product.request.ProductSearch
 import com.piashcse.models.shipping.AddShipping
 import com.piashcse.models.shop.AddShop
 import com.piashcse.models.shop.AddShopCategory
@@ -19,6 +20,10 @@ fun Application.configureRequestValidation() {
     install(RequestValidation) {
         validate<LoginBody> { login ->
             login.validation()
+            ValidationResult.Valid
+        }
+        validate<ProductSearch> { search ->
+            search.validation()
             ValidationResult.Valid
         }
         validate<AddProductCategory> { productCategory ->
