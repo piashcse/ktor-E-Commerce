@@ -2,6 +2,7 @@ package com.piashcse.controller
 
 import com.piashcse.entities.*
 import com.piashcse.models.product.request.AddProduct
+import com.piashcse.models.product.request.ProductSearch
 import com.piashcse.models.product.request.ProductWithFilter
 import com.piashcse.models.product.request.UpdateProduct
 import com.piashcse.repository.ProductRepo
@@ -9,6 +10,7 @@ import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.andWhere
@@ -172,5 +174,28 @@ class ProductController : ProductRepo {
             this.imageUrl = productImage
         }.response()
 
+    }
+
+    override suspend fun searchProduct(productQuery: ProductSearch): List<Product> = query {
+        ProductEntity.find {
+            // Apply filters dynamically based on query parameters
+            val conditions = mutableListOf<Op<Boolean>>()
+
+            if (productQuery.productName.isNotEmpty()) {
+                conditions.add(ProductTable.productName like "%$productQuery.productName%")
+            }
+            if (!productQuery.categoryId.isNullOrEmpty()) {
+                conditions.add(ProductTable.categoryId eq productQuery.categoryId)
+            }
+            if (productQuery.maxPrice != null) {
+                conditions.add(ProductTable.price greaterEq productQuery.maxPrice)
+            }
+            if (productQuery.minPrice != null) {
+                conditions.add(ProductTable.price lessEq productQuery.minPrice )
+            }
+
+            // Combine all conditions with AND logic
+            if (conditions.isEmpty()) Op.TRUE else conditions.reduce { acc, op -> acc and op }
+        }.map { it.response() }
     }
 }

@@ -2,6 +2,7 @@ package com.piashcse.route
 
 import com.piashcse.controller.ProductController
 import com.piashcse.models.product.request.AddProduct
+import com.piashcse.models.product.request.ProductSearch
 import com.piashcse.models.product.request.ProductWithFilter
 import com.piashcse.models.product.request.UpdateProduct
 import com.piashcse.plugins.RoleManagement
@@ -69,6 +70,34 @@ fun Route.productRoute(productController: ProductController) {
                 )
                 call.respond(ApiResponse.success(productController.getProducts(params), HttpStatusCode.OK))
             }
+
+            get("search", {
+                tags("Product")
+                request {
+                    queryParameter<Int>("limit") {
+                        required = true
+                    }
+                    queryParameter<Long>("offset") {
+                        required = true
+                    }
+                    queryParameter<String>("productName")
+                    queryParameter<String>("categoryId")
+                    queryParameter<Double>("maxPrice")
+                    queryParameter<Double>("minPrice")
+                }
+                apiResponse()
+            }) {
+                val queryParams = ProductSearch(
+                    limit = call.parameters["limit"]?.toInt() ?: 0,
+                    offset = call.parameters["offset"]?.toLong() ?: 0L,
+                    productName = call.parameters["productName"] ?: "",
+                    maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
+                    minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
+                    categoryId = call.parameters["categoryId"],
+                )
+                call.respond(ApiResponse.success(productController.searchProduct(queryParams), HttpStatusCode.OK))
+            }
+
         }
         authenticate(RoleManagement.SELLER.role) {
             get("seller", {
