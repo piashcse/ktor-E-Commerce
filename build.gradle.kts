@@ -9,8 +9,10 @@ group = "com.piashcse"
 version = "1.0.0"
 application {
     mainClass.set("com.piashcse.ApplicationKt")
-    project.setProperty("mainClassName", "com.piashcse.ApplicationKt") // adding this for fatjar
-
+    // adding this for fatjar
+    project.setProperty("mainClassName", "com.piashcse.ApplicationKt")
+    val isDevelopment: Boolean = project.ext.has("development")
+    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
 repositories {
@@ -60,6 +62,22 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.logger)
 }
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+tasks.withType<JavaCompile> {
+    sourceCompatibility = "17"
+    targetCompatibility = "17"
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 tasks.create("stage") {
     dependsOn("installDist")
 }

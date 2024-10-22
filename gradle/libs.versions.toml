@@ -1,19 +1,19 @@
 [versions]
 ktor-version = "2.3.12"
-kotlin-version = "2.0.20"
-logback-version = "1.4.14"
+kotlin-version = "2.0.21"
+logback-version = "1.5.11"
 exposed-version = "0.54.0"
 flyway-version = "9.22.3"
 postgresql-version = "42.7.4"
-hikari-version = "5.1.0"
+hikari-version = "6.0.0"
 bcrypt-version = "0.10.2"
 kotlinx-datetime-version = "0.6.1"
 commons-email-version ="1.5"
 valiktor-core-version = "0.12.0"
-commons-io-version = "2.11.0"
+commons-io-version = "2.17.0"
 ktor-swagger-ui-version = "3.6.0"
 swagger-parser-version = "2.1.22"
-shadow-version = "8.1.1"
+shadow-version = "8.3.3"
 koin = "4.0.0"
 
 [libraries]
@@ -55,4 +55,4 @@ koin-logger = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor-version" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version" }
-shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow-version" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow-version" }
