@@ -11,7 +11,6 @@ import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -59,7 +58,7 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
                 val requestBody = call.receive<AddReviewRating>()
                 call.respond(
                     ApiResponse.success(
-                        reviewRatingController.addReviewRating(getCurrentUser().userId, requestBody), HttpStatusCode.OK
+                        reviewRatingController.addReviewRating(call.getCurrentUser().userId, requestBody), HttpStatusCode.OK
                     )
                 )
             }

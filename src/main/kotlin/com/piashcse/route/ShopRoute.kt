@@ -11,7 +11,6 @@ import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -30,7 +29,7 @@ fun Route.shopRoute(shopController: ShopController) {
                 val requestBody = call.receive<AddShop>()
                 requestBody.validation()
                 shopController.addShop(
-                    getCurrentUser().userId, requestBody.shopCategoryId, requestBody.shopName
+                    call.getCurrentUser().userId, requestBody.shopCategoryId, requestBody.shopName
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
@@ -54,7 +53,7 @@ fun Route.shopRoute(shopController: ShopController) {
                 }
                 val (limit, offset) = requiredParams.map { call.parameters[it]!! }
                 shopController.getShop(
-                    getCurrentUser().userId, limit.toInt(), offset.toLong()
+                    call.getCurrentUser().userId, limit.toInt(), offset.toLong()
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
@@ -77,7 +76,7 @@ fun Route.shopRoute(shopController: ShopController) {
                 }
                 val (id, shopName) = requiredParams.map { call.parameters[it]!! }
                 shopController.updateShop(
-                    getCurrentUser().userId, id, shopName
+                    call.getCurrentUser().userId, id, shopName
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
@@ -98,7 +97,7 @@ fun Route.shopRoute(shopController: ShopController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
 
                 shopController.deleteShop(
-                    getCurrentUser().userId, id
+                    call.getCurrentUser().userId, id
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }

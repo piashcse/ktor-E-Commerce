@@ -10,7 +10,6 @@ import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -29,7 +28,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 val requestBody = call.receive<AddWisList>()
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.addToWishList(getCurrentUser().userId, requestBody.productId), HttpStatusCode.OK
+                        wishlistController.addToWishList(call.getCurrentUser().userId, requestBody.productId), HttpStatusCode.OK
                     )
                 )
             }
@@ -54,7 +53,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
 
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.getWishList(getCurrentUser().userId, limit.toInt(), offset.toLong()), HttpStatusCode.OK
+                        wishlistController.getWishList(call.getCurrentUser().userId, limit.toInt(), offset.toLong()), HttpStatusCode.OK
                     )
                 )
             }
@@ -74,7 +73,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 val (productId) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.deleteWishList(getCurrentUser().userId, productId), HttpStatusCode.OK
+                        wishlistController.deleteWishList(call.getCurrentUser().userId, productId), HttpStatusCode.OK
                     )
                 )
             }

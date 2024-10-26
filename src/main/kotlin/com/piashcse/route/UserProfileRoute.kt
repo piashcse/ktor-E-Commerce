@@ -13,7 +13,6 @@ import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
 import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -32,7 +31,7 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
             }) {
                 call.respond(
                     ApiResponse.success(
-                        userProfileController.getProfile(getCurrentUser().userId), HttpStatusCode.OK
+                        userProfileController.getProfile(call.getCurrentUser().userId), HttpStatusCode.OK
                     )
                 )
             }
@@ -70,7 +69,7 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
                 )
                 call.respond(
                     ApiResponse.success(
-                        userProfileController.updateProfileInfo(getCurrentUser().userId, params), HttpStatusCode.OK
+                        userProfileController.updateProfileInfo(call.getCurrentUser().userId, params), HttpStatusCode.OK
                     )
                 )
             }
@@ -110,7 +109,7 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
                                     })
                                 }
                                 val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
-                                userProfileController.updateProfileImage(getCurrentUser().userId, fileNameInServer).let {
+                                userProfileController.updateProfileImage(call.getCurrentUser().userId, fileNameInServer).let {
                                     call.respond(
                                         ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
                                     )

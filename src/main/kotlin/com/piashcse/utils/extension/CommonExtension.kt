@@ -7,7 +7,6 @@ import io.github.smiley4.ktorswaggerui.dsl.routes.OpenApiRoute
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.util.pipeline.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -39,7 +38,6 @@ suspend fun <T> query(block: () -> T): T = withContext(Dispatchers.IO) {
         block()
     }
 }
-
-fun PipelineContext<Unit, ApplicationCall>.getCurrentUser(): JwtTokenBody {
-    return call.principal<JwtTokenBody>()!!
+fun ApplicationCall.getCurrentUser(): JwtTokenBody {
+    return this.principal<JwtTokenBody>() ?: throw IllegalStateException("No authenticated user found")
 }

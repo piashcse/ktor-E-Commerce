@@ -8,23 +8,17 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 
 fun main() {
-    val configName = "application.conf"
-    val appEngineEnv = applicationEngineEnvironment {
-        config = HoconApplicationConfig(ConfigFactory.load(configName))
-        module {
-            configureDataBase()
-            configureBasic()
-            configureKoin()
-            configureRequestValidation()
-            configureAuth()
-            configureSwagger()
-            configureStatusPage()
-            configureRoute()
-        }
-        connector {
-            host = config.property("ktor.deployment.host").getString()
-            port = config.property("ktor.deployment.port").getString().toInt()
-        }
-    }
-    embeddedServer(Netty, appEngineEnv).start(wait = true)
+    val config = HoconApplicationConfig(ConfigFactory.load("application.conf"))
+    val port = config.property("ktor.deployment.port").getString().toInt()
+    val host = config.property("ktor.deployment.host").getString()
+    embeddedServer(Netty, port = port, host = host) {
+        configureDataBase()
+        configureBasic()
+        configureKoin()
+        configureRequestValidation()
+        configureAuth()
+        configureSwagger()
+        configureStatusPage()
+        configureRoute()
+    }.start(wait = true)
 }
