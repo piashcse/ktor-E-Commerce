@@ -12,7 +12,6 @@ import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -31,7 +30,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 val requestBody = call.receive<AddShipping>()
                 call.respond(
                     ApiResponse.success(
-                        shippingController.addShipping(getCurrentUser().userId, requestBody), HttpStatusCode.OK
+                        shippingController.addShipping(call.getCurrentUser().userId, requestBody), HttpStatusCode.OK
                     )
                 )
             }
@@ -51,7 +50,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 val (orderId) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        shippingController.getShipping(getCurrentUser().userId, orderId), HttpStatusCode.OK
+                        shippingController.getShipping(call.getCurrentUser().userId, orderId), HttpStatusCode.OK
                     )
                 )
             }
@@ -88,7 +87,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
 
                 call.respond(
                     ApiResponse.success(
-                        shippingController.updateShipping(getCurrentUser().userId, params), HttpStatusCode.OK
+                        shippingController.updateShipping(call.getCurrentUser().userId, params), HttpStatusCode.OK
                     )
                 )
             }
@@ -108,7 +107,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        shippingController.deleteShipping(getCurrentUser().userId, id), HttpStatusCode.OK
+                        shippingController.deleteShipping(call.getCurrentUser().userId, id), HttpStatusCode.OK
                     )
                 )
             }

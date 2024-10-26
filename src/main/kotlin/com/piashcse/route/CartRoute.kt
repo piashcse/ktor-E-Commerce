@@ -11,7 +11,6 @@ import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -31,7 +30,7 @@ fun Route.cartRoute(cartController: CartController) {
                 call.respond(
                     ApiResponse.success(
                         cartController.addToCart(
-                            getCurrentUser().userId,
+                            call.getCurrentUser().userId,
                             requestBody.productId,
                             requestBody.quantity
                         ), HttpStatusCode.OK
@@ -58,7 +57,7 @@ fun Route.cartRoute(cartController: CartController) {
                 call.respond(
                     ApiResponse.success(
                         cartController.getCartItems(
-                            getCurrentUser().userId,
+                            call.getCurrentUser().userId,
                             limit.toInt(),
                             offset.toLong()
                         ), HttpStatusCode.OK
@@ -84,7 +83,7 @@ fun Route.cartRoute(cartController: CartController) {
                 val (productId, quantity) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        cartController.updateCartQuantity(getCurrentUser().userId, productId, quantity.toInt()),
+                        cartController.updateCartQuantity(call.getCurrentUser().userId, productId, quantity.toInt()),
                         HttpStatusCode.OK
                     )
                 )
@@ -105,7 +104,7 @@ fun Route.cartRoute(cartController: CartController) {
                 val (productId) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        cartController.deleteCartItem(getCurrentUser().userId, productId),
+                        cartController.deleteCartItem(call.getCurrentUser().userId, productId),
                         HttpStatusCode.OK
                     )
                 )
@@ -116,7 +115,7 @@ fun Route.cartRoute(cartController: CartController) {
             }) {
                 call.respond(
                     ApiResponse.success(
-                        cartController.deleteAllItemsOfCart(getCurrentUser().userId), HttpStatusCode.OK
+                        cartController.deleteAllItemsOfCart(call.getCurrentUser().userId), HttpStatusCode.OK
                     )
                 )
             }

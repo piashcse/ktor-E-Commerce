@@ -12,7 +12,6 @@ import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -31,7 +30,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val requestBody = call.receive<AddOrder>()
                 call.respond(
                     ApiResponse.success(
-                        orderController.addOrder(getCurrentUser().userId, requestBody), HttpStatusCode.OK
+                        orderController.addOrder(call.getCurrentUser().userId, requestBody), HttpStatusCode.OK
                     )
                 )
             }
@@ -55,7 +54,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 call.respond(
                     ApiResponse.success(
                         orderController.getOrders(
-                            getCurrentUser().userId, limit.toInt(), offset.toLong()
+                            call.getCurrentUser().userId, limit.toInt(), offset.toLong()
                         ), HttpStatusCode.OK
                     )
                 )
@@ -76,7 +75,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(getCurrentUser().userId, id, OrderStatus.CANCELED),
+                        orderController.updateOrder(call.getCurrentUser().userId, id, OrderStatus.CANCELED),
                         HttpStatusCode.OK
                     )
                 )
@@ -97,7 +96,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(getCurrentUser().userId, id, OrderStatus.RECEIVED),
+                        orderController.updateOrder(call.getCurrentUser().userId, id, OrderStatus.RECEIVED),
                         HttpStatusCode.OK
                     )
                 )
@@ -120,7 +119,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(getCurrentUser().userId, id, OrderStatus.CANCELED),
+                        orderController.updateOrder(call.getCurrentUser().userId, id, OrderStatus.CANCELED),
                         HttpStatusCode.OK
                     )
                 )
@@ -141,7 +140,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(getCurrentUser().userId, id, OrderStatus.DELIVERED),
+                        orderController.updateOrder(call.getCurrentUser().userId, id, OrderStatus.DELIVERED),
                         HttpStatusCode.OK
                     )
                 )
