@@ -38,6 +38,6 @@ suspend fun <T> query(block: () -> T): T = withContext(Dispatchers.IO) {
         block()
     }
 }
-fun ApplicationCall.getCurrentUser(): JwtTokenBody {
+fun ApplicationCall.currentUser(): JwtTokenBody {
     return this.principal<JwtTokenBody>() ?: throw IllegalStateException("No authenticated user found")
 }

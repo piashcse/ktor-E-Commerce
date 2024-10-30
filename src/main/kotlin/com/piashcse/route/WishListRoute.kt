@@ -5,7 +5,7 @@ import com.piashcse.models.AddWisList
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
-import com.piashcse.utils.extension.getCurrentUser
+import com.piashcse.utils.extension.currentUser
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -28,7 +28,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 val requestBody = call.receive<AddWisList>()
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.addToWishList(call.getCurrentUser().userId, requestBody.productId), HttpStatusCode.OK
+                        wishlistController.addToWishList(call.currentUser().userId, requestBody.productId), HttpStatusCode.OK
                     )
                 )
             }
@@ -53,7 +53,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
 
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.getWishList(call.getCurrentUser().userId, limit.toInt(), offset.toLong()), HttpStatusCode.OK
+                        wishlistController.getWishList(call.currentUser().userId, limit.toInt(), offset.toLong()), HttpStatusCode.OK
                     )
                 )
             }
@@ -73,7 +73,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 val (productId) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.deleteWishList(call.getCurrentUser().userId, productId), HttpStatusCode.OK
+                        wishlistController.deleteWishList(call.currentUser().userId, productId), HttpStatusCode.OK
                     )
                 )
             }

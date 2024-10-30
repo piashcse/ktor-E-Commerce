@@ -7,7 +7,7 @@ import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.fileExtension
-import com.piashcse.utils.extension.getCurrentUser
+import com.piashcse.utils.extension.currentUser
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
@@ -31,7 +31,7 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
             }) {
                 call.respond(
                     ApiResponse.success(
-                        userProfileController.getProfile(call.getCurrentUser().userId), HttpStatusCode.OK
+                        userProfileController.getProfile(call.currentUser().userId), HttpStatusCode.OK
                     )
                 )
             }
@@ -69,7 +69,7 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
                 )
                 call.respond(
                     ApiResponse.success(
-                        userProfileController.updateProfileInfo(call.getCurrentUser().userId, params), HttpStatusCode.OK
+                        userProfileController.updateProfileInfo(call.currentUser().userId, params), HttpStatusCode.OK
                     )
                 )
             }
@@ -109,7 +109,7 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
                                     })
                                 }
                                 val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
-                                userProfileController.updateProfileImage(call.getCurrentUser().userId, fileNameInServer).let {
+                                userProfileController.updateProfileImage(call.currentUser().userId, fileNameInServer).let {
                                     call.respond(
                                         ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
                                     )

@@ -5,7 +5,7 @@ import com.piashcse.models.AddReviewRating
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
-import com.piashcse.utils.extension.getCurrentUser
+import com.piashcse.utils.extension.currentUser
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -58,7 +58,7 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
                 val requestBody = call.receive<AddReviewRating>()
                 call.respond(
                     ApiResponse.success(
-                        reviewRatingController.addReviewRating(call.getCurrentUser().userId, requestBody), HttpStatusCode.OK
+                        reviewRatingController.addReviewRating(call.currentUser().userId, requestBody), HttpStatusCode.OK
                     )
                 )
             }

@@ -6,7 +6,7 @@ import com.piashcse.models.shipping.UpdateShipping
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
-import com.piashcse.utils.extension.getCurrentUser
+import com.piashcse.utils.extension.currentUser
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -30,7 +30,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 val requestBody = call.receive<AddShipping>()
                 call.respond(
                     ApiResponse.success(
-                        shippingController.addShipping(call.getCurrentUser().userId, requestBody), HttpStatusCode.OK
+                        shippingController.addShipping(call.currentUser().userId, requestBody), HttpStatusCode.OK
                     )
                 )
             }
@@ -50,7 +50,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 val (orderId) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        shippingController.getShipping(call.getCurrentUser().userId, orderId), HttpStatusCode.OK
+                        shippingController.getShipping(call.currentUser().userId, orderId), HttpStatusCode.OK
                     )
                 )
             }
@@ -87,7 +87,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
 
                 call.respond(
                     ApiResponse.success(
-                        shippingController.updateShipping(call.getCurrentUser().userId, params), HttpStatusCode.OK
+                        shippingController.updateShipping(call.currentUser().userId, params), HttpStatusCode.OK
                     )
                 )
             }
@@ -107,7 +107,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        shippingController.deleteShipping(call.getCurrentUser().userId, id), HttpStatusCode.OK
+                        shippingController.deleteShipping(call.currentUser().userId, id), HttpStatusCode.OK
                     )
                 )
             }

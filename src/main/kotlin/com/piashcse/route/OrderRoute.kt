@@ -7,7 +7,7 @@ import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.OrderStatus
 import com.piashcse.utils.extension.apiResponse
-import com.piashcse.utils.extension.getCurrentUser
+import com.piashcse.utils.extension.currentUser
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
@@ -30,7 +30,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val requestBody = call.receive<AddOrder>()
                 call.respond(
                     ApiResponse.success(
-                        orderController.addOrder(call.getCurrentUser().userId, requestBody), HttpStatusCode.OK
+                        orderController.addOrder(call.currentUser().userId, requestBody), HttpStatusCode.OK
                     )
                 )
             }
@@ -54,7 +54,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 call.respond(
                     ApiResponse.success(
                         orderController.getOrders(
-                            call.getCurrentUser().userId, limit.toInt(), offset.toLong()
+                            call.currentUser().userId, limit.toInt(), offset.toLong()
                         ), HttpStatusCode.OK
                     )
                 )
@@ -75,7 +75,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(call.getCurrentUser().userId, id, OrderStatus.CANCELED),
+                        orderController.updateOrder(call.currentUser().userId, id, OrderStatus.CANCELED),
                         HttpStatusCode.OK
                     )
                 )
@@ -96,7 +96,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(call.getCurrentUser().userId, id, OrderStatus.RECEIVED),
+                        orderController.updateOrder(call.currentUser().userId, id, OrderStatus.RECEIVED),
                         HttpStatusCode.OK
                     )
                 )
@@ -119,7 +119,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(call.getCurrentUser().userId, id, OrderStatus.CANCELED),
+                        orderController.updateOrder(call.currentUser().userId, id, OrderStatus.CANCELED),
                         HttpStatusCode.OK
                     )
                 )
@@ -140,7 +140,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(call.getCurrentUser().userId, id, OrderStatus.DELIVERED),
+                        orderController.updateOrder(call.currentUser().userId, id, OrderStatus.DELIVERED),
                         HttpStatusCode.OK
                     )
                 )

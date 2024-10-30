@@ -10,7 +10,7 @@ import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.fileExtension
-import com.piashcse.utils.extension.getCurrentUser
+import com.piashcse.utils.extension.currentUser
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -129,7 +129,7 @@ fun Route.productRoute(productController: ProductController) {
                 )
                 call.respond(
                     ApiResponse.success(
-                        productController.getProductById(call.getCurrentUser().userId, params), HttpStatusCode.OK
+                        productController.getProductById(call.currentUser().userId, params), HttpStatusCode.OK
                     )
                 )
             }
@@ -143,7 +143,7 @@ fun Route.productRoute(productController: ProductController) {
                 val requestBody = call.receive<AddProduct>()
                 call.respond(
                     ApiResponse.success(
-                        productController.addProduct(call.getCurrentUser().userId, requestBody), HttpStatusCode.OK
+                        productController.addProduct(call.currentUser().userId, requestBody), HttpStatusCode.OK
                     )
                 )
             }
@@ -205,7 +205,7 @@ fun Route.productRoute(productController: ProductController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        productController.updateProduct(call.getCurrentUser().userId, id, params), HttpStatusCode.OK
+                        productController.updateProduct(call.currentUser().userId, id, params), HttpStatusCode.OK
                     )
                 )
             }
@@ -223,7 +223,7 @@ fun Route.productRoute(productController: ProductController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
                 call.respond(
                     ApiResponse.success(
-                        productController.deleteProduct(call.getCurrentUser().userId, id), HttpStatusCode.OK
+                        productController.deleteProduct(call.currentUser().userId, id), HttpStatusCode.OK
                     )
                 )
             }
@@ -274,7 +274,7 @@ fun Route.productRoute(productController: ProductController) {
                                 }
                                 val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
                                 productController.uploadProductImage(
-                                    call.getCurrentUser().userId,
+                                    call.currentUser().userId,
                                     id,
                                     fileNameInServer,
                                 ).let {

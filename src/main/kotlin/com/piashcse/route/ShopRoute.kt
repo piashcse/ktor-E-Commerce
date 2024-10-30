@@ -5,7 +5,7 @@ import com.piashcse.models.shop.AddShop
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
-import com.piashcse.utils.extension.getCurrentUser
+import com.piashcse.utils.extension.currentUser
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -29,7 +29,7 @@ fun Route.shopRoute(shopController: ShopController) {
                 val requestBody = call.receive<AddShop>()
                 requestBody.validation()
                 shopController.addShop(
-                    call.getCurrentUser().userId, requestBody.shopCategoryId, requestBody.shopName
+                    call.currentUser().userId, requestBody.shopCategoryId, requestBody.shopName
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
@@ -53,7 +53,7 @@ fun Route.shopRoute(shopController: ShopController) {
                 }
                 val (limit, offset) = requiredParams.map { call.parameters[it]!! }
                 shopController.getShop(
-                    call.getCurrentUser().userId, limit.toInt(), offset.toLong()
+                    call.currentUser().userId, limit.toInt(), offset.toLong()
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
@@ -76,7 +76,7 @@ fun Route.shopRoute(shopController: ShopController) {
                 }
                 val (id, shopName) = requiredParams.map { call.parameters[it]!! }
                 shopController.updateShop(
-                    call.getCurrentUser().userId, id, shopName
+                    call.currentUser().userId, id, shopName
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
@@ -97,7 +97,7 @@ fun Route.shopRoute(shopController: ShopController) {
                 val (id) = requiredParams.map { call.parameters[it]!! }
 
                 shopController.deleteShop(
-                    call.getCurrentUser().userId, id
+                    call.currentUser().userId, id
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
