@@ -1,8 +1,8 @@
 [versions]
-ktor-version = "3.0.0"
+ktor-version = "3.0.1"
 kotlin-version = "2.0.21"
 logback-version = "1.5.11"
-exposed-version = "0.54.0"
+exposed-version = "0.56.0"
 flyway-version = "9.22.3"
 postgresql-version = "42.7.4"
 hikari-version = "6.0.0"
