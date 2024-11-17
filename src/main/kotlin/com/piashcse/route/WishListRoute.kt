@@ -6,6 +6,7 @@ import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.requiredParameters
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -28,7 +29,8 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 val requestBody = call.receive<AddWisList>()
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.addToWishList(call.currentUser().userId, requestBody.productId), HttpStatusCode.OK
+                        wishlistController.addToWishList(call.currentUser().userId, requestBody.productId),
+                        HttpStatusCode.OK
                     )
                 )
             }
@@ -44,16 +46,11 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("limit", "offset")
-
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (limit, offset) = requiredParams.map { call.parameters[it]!! }
-
+                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.getWishList(call.currentUser().userId, limit.toInt(), offset.toLong()), HttpStatusCode.OK
+                        wishlistController.getWishList(call.currentUser().userId, limit.toInt(), offset.toLong()),
+                        HttpStatusCode.OK
                     )
                 )
             }
@@ -66,11 +63,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("productId")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (productId) = requiredParams.map { call.parameters[it]!! }
+                val (productId) = call.requiredParameters("productId") ?: return@delete
                 call.respond(
                     ApiResponse.success(
                         wishlistController.deleteWishList(call.currentUser().userId, productId), HttpStatusCode.OK

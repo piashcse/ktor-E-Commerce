@@ -6,6 +6,7 @@ import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.requiredParameters
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -49,11 +50,7 @@ fun Route.cartRoute(cartController: CartController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("limit", "offset")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (limit, offset) = requiredParams.map { call.parameters[it]!! }
+                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
                 call.respond(
                     ApiResponse.success(
                         cartController.getCartItems(
@@ -76,11 +73,7 @@ fun Route.cartRoute(cartController: CartController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("productId", "quantity")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (productId, quantity) = requiredParams.map { call.parameters[it]!! }
+                val (productId, quantity) = call.requiredParameters("productId", "quantity") ?: return@put
                 call.respond(
                     ApiResponse.success(
                         cartController.updateCartQuantity(call.currentUser().userId, productId, quantity.toInt()),
@@ -97,11 +90,7 @@ fun Route.cartRoute(cartController: CartController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("productId")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (productId) = requiredParams.map { call.parameters[it]!! }
+                val (productId) = call.requiredParameters("productId") ?: return@delete
                 call.respond(
                     ApiResponse.success(
                         cartController.deleteCartItem(call.currentUser().userId, productId),

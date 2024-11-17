@@ -93,10 +93,6 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
 
                 multipartData.forEachPart { part ->
                     when (part) {
-                        is PartData.FormItem -> {
-                            val fileDescription = part.value
-                        }
-
                         is PartData.FileItem -> {
                             UUID.randomUUID()?.let { imageId ->
                                 val fileName = part.originalFileName as String

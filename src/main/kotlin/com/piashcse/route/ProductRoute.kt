@@ -11,6 +11,7 @@ import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.fileExtension
 import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.requiredParameters
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -79,7 +80,7 @@ fun Route.productRoute(productController: ProductController) {
                     queryParameter<Long>("offset") {
                         required = true
                     }
-                    queryParameter<String>("productName"){
+                    queryParameter<String>("productName") {
                         required = true
                     }
                     queryParameter<String>("categoryId")
@@ -198,11 +199,7 @@ fun Route.productRoute(productController: ProductController) {
                     imageOne = call.parameters["imageOne"],
                     imageTwo = call.parameters["imageTwo"],
                 )
-                val requiredParams = listOf("id")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (id) = requiredParams.map { call.parameters[it]!! }
+                val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
                         productController.updateProduct(call.currentUser().userId, id, params), HttpStatusCode.OK
@@ -216,11 +213,7 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("id")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (id) = requiredParams.map { call.parameters[it]!! }
+                val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(
                         productController.deleteProduct(call.currentUser().userId, id), HttpStatusCode.OK
@@ -244,23 +237,10 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("id")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(
-                        ApiResponse.success(
-                            "Missing parameters: $it", HttpStatusCode.OK
-                        )
-                    )
-                }
-                val (id) = requiredParams.map { call.parameters[it]!! }
-
+                val (id) = call.requiredParameters("id") ?: return@post
                 val multipartData = call.receiveMultipart()
                 multipartData.forEachPart { part ->
                     when (part) {
-                        is PartData.FormItem -> {
-                            val fileDescription = part.value
-                        }
-
                         is PartData.FileItem -> {
                             UUID.randomUUID()?.let { imageId ->
                                 val fileName = part.originalFileName as String

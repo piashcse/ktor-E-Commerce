@@ -8,6 +8,7 @@ import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.OrderStatus
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.requiredParameters
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.github.smiley4.ktorswaggerui.dsl.routing.put
@@ -46,11 +47,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("limit", "offset")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (limit, offset) = requiredParams.map { call.parameters[it]!! }
+                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
                 call.respond(
                     ApiResponse.success(
                         orderController.getOrders(
@@ -68,11 +65,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("id")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (id) = requiredParams.map { call.parameters[it]!! }
+                val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
                         orderController.updateOrder(call.currentUser().userId, id, OrderStatus.CANCELED),
@@ -89,11 +82,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("id")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (id) = requiredParams.map { call.parameters[it]!! }
+                val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
                         orderController.updateOrder(call.currentUser().userId, id, OrderStatus.RECEIVED),
@@ -112,11 +101,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("id")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (id) = requiredParams.map { call.parameters[it]!! }
+                val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
                         orderController.updateOrder(call.currentUser().userId, id, OrderStatus.CANCELED),
@@ -133,11 +118,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("id")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (id) = requiredParams.map { call.parameters[it]!! }
+                val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
                         orderController.updateOrder(call.currentUser().userId, id, OrderStatus.DELIVERED),

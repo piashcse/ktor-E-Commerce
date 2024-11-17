@@ -7,6 +7,7 @@ import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.apiResponse
+import com.piashcse.utils.extension.requiredParameters
 import com.piashcse.utils.sendEmail
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -29,8 +30,7 @@ fun Route.userRoute(userController: UserController) {
             val requestBody = call.receive<LoginBody>()
             call.respond(
                 ApiResponse.success(
-                    userController.login(requestBody),
-                    HttpStatusCode.OK
+                    userController.login(requestBody), HttpStatusCode.OK
                 )
             )
         }
@@ -54,11 +54,7 @@ fun Route.userRoute(userController: UserController) {
             }
             apiResponse()
         }) {
-            val requiredParams = listOf("email")
-            requiredParams.filterNot { call.parameters.contains(it) }.let {
-                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-            }
-            val (email) = requiredParams.map { call.parameters[it]!! }
+            val (email) = call.requiredParameters("email") ?: return@get
             val requestBody = ForgetPasswordEmail(email)
             userController.forgetPasswordSendCode(requestBody).let {
                 sendEmail(requestBody.email, it.verificationCode)
@@ -86,11 +82,9 @@ fun Route.userRoute(userController: UserController) {
             }
             apiResponse()
         }) {
-            val requiredParams = listOf("email", "verificationCode", "newPassword")
-            requiredParams.filterNot { call.parameters.contains(it) }.let {
-                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-            }
-            val (email, verificationCode, newPassword) = requiredParams.map { call.parameters[it]!! }
+            val (email, verificationCode, newPassword) = call.requiredParameters(
+                "email", "verificationCode", "newPassword"
+            ) ?: return@get
 
             UserController().forgetPasswordVerificationCode(
                 ConfirmPassword(
@@ -131,13 +125,9 @@ fun Route.userRoute(userController: UserController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("oldPassword", "newPassword")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (oldPassword, newPassword) = requiredParams.map { call.parameters[it]!! }
+                val (oldPassword, newPassword) = call.requiredParameters("oldPassword", "newPassword") ?: return@put
                 val loginUser = call.principal<JwtTokenBody>()
-                userController.changePassword(loginUser?.userId!!, ChangePassword(oldPassword, newPassword))?.let {
+                userController.changePassword(loginUser?.userId!!, ChangePassword(oldPassword, newPassword)).let {
                     if (it) call.respond(
                         ApiResponse.success(
                             "Password has been changed", HttpStatusCode.OK

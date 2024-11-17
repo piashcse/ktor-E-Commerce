@@ -5,6 +5,7 @@ import com.piashcse.models.subcategory.AddProductSubCategory
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
+import com.piashcse.utils.extension.requiredParameters
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -32,11 +33,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
             }
             apiResponse()
         }) {
-            val requiredParams = listOf("categoryId", "limit", "offset")
-            requiredParams.filterNot { call.parameters.contains(it) }.let {
-                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-            }
-            val (categoryId, limit, offset) = requiredParams.map { call.parameters[it]!! }
+            val (categoryId, limit, offset) = call.requiredParameters("categoryId", "limit", "offset") ?: return@get
             call.respond(
                 ApiResponse.success(
                     subCategoryController.getProductSubCategory(categoryId, limit.toInt(), offset.toLong()),
@@ -72,11 +69,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
             }
             apiResponse()
         }) {
-            val requiredParams = listOf("id", "name")
-            requiredParams.filterNot { call.parameters.contains(it) }.let {
-                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-            }
-            val (id, name) = requiredParams.map { call.parameters[it]!! }
+            val (id, name) = call.requiredParameters("id", "name") ?: return@put
             call.respond(
                 ApiResponse.success(
                     subCategoryController.updateProductSubCategory(
@@ -95,11 +88,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
             }
             apiResponse()
         }) {
-            val requiredParams = listOf("id")
-            requiredParams.filterNot { call.parameters.contains(it) }.let {
-                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-            }
-            val (id) = requiredParams.map { call.parameters[it]!! }
+            val (id) = call.requiredParameters("id") ?: return@delete
             call.respond(
                 ApiResponse.success(
                     subCategoryController.deleteProductSubCategory(

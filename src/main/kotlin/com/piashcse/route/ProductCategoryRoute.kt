@@ -5,6 +5,7 @@ import com.piashcse.models.category.AddProductCategory
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
+import com.piashcse.utils.extension.requiredParameters
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -29,15 +30,7 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
             }
             apiResponse()
         }) {
-            val requiredParams = listOf("limit", "offset")
-            requiredParams.filterNot { call.parameters.contains(it) }.let {
-                if (it.isNotEmpty()) call.respond(
-                    ApiResponse.success(
-                        "Missing parameters: $it", HttpStatusCode.OK
-                    )
-                )
-            }
-            val (limit, offset) = requiredParams.map { call.parameters[it]!! }
+            val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
             call.respond(
                 ApiResponse.success(
                     productCategoryController.getProductCategory(
@@ -77,11 +70,7 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
             }
             apiResponse()
         }) {
-            val requiredParams = listOf("id", "categoryName")
-            requiredParams.filterNot { call.parameters.contains(it) }.let {
-                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-            }
-            val (id, categoryName) = requiredParams.map { call.parameters[it]!! }
+            val (id, categoryName) = call.requiredParameters("id", "categoryName") ?: return@put
             call.respond(
                 ApiResponse.success(
                     productCategoryController.updateProductCategory(
@@ -99,12 +88,7 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
             }
             apiResponse()
         }) {
-            val requiredParams = listOf("id")
-            requiredParams.filterNot { call.parameters.contains(it) }.let {
-                if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-            }
-            val (id) = requiredParams.map { call.parameters[it]!! }
-
+            val (id) = call.requiredParameters("id") ?: return@delete
             call.respond(
                 ApiResponse.success(
                     productCategoryController.deleteProductCategory(

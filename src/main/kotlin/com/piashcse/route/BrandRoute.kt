@@ -5,6 +5,7 @@ import com.piashcse.models.bands.AddBrand
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
+import com.piashcse.utils.extension.requiredParameters
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -30,11 +31,7 @@ fun Route.brandRoute(brandController: BrandController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("limit", "offset")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (limit, offset) = requiredParams.map { call.parameters[it]!! }
+                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
                 call.respond(
                     ApiResponse.success(
                         brandController.getBrands(limit.toInt(), offset.toLong()), HttpStatusCode.OK
@@ -69,11 +66,7 @@ fun Route.brandRoute(brandController: BrandController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("id", "name")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (id, name) = requiredParams.map { call.parameters[it]!! }
+                val (id, name) = call.requiredParameters("id", "name") ?: return@put
                 call.respond(
                     ApiResponse.success(
                         brandController.updateBrand(id, name), HttpStatusCode.OK
@@ -89,11 +82,7 @@ fun Route.brandRoute(brandController: BrandController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("id")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (id) = requiredParams.map { call.parameters[it]!! }
+                val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(
                         brandController.deleteBrand(id), HttpStatusCode.OK

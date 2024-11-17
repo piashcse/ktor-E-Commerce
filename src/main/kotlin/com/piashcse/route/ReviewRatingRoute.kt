@@ -6,6 +6,7 @@ import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.requiredParameters
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -34,11 +35,7 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("productId", "limit", "offset")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (productId, limit, offset) = requiredParams.map { call.parameters[it]!! }
+                val (productId, limit, offset) = call.requiredParameters("productId", "limit", "offset") ?: return@get
                 call.respond(
                     ApiResponse.success(
                         reviewRatingController.getReviewRating(productId, limit.toInt(), offset.toLong()),
@@ -58,7 +55,8 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
                 val requestBody = call.receive<AddReviewRating>()
                 call.respond(
                     ApiResponse.success(
-                        reviewRatingController.addReviewRating(call.currentUser().userId, requestBody), HttpStatusCode.OK
+                        reviewRatingController.addReviewRating(call.currentUser().userId, requestBody),
+                        HttpStatusCode.OK
                     )
                 )
             }
@@ -77,11 +75,7 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("reviewId", "review", "rating")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (reviewId, review, rating) = requiredParams.map { call.parameters[it]!! }
+                val (reviewId, review, rating) = call.requiredParameters("reviewId", "review", "rating") ?: return@put
                 call.respond(
                     ApiResponse.success(
                         reviewRatingController.updateReviewRating(
@@ -101,11 +95,7 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("reviewId")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (reviewId) = requiredParams.map { call.parameters[it]!! }
+                val (reviewId) = call.requiredParameters("reviewId") ?: return@delete
                 call.respond(
                     ApiResponse.success(
                         reviewRatingController.deleteReviewRating(reviewId), HttpStatusCode.OK
