@@ -5,6 +5,7 @@ import com.piashcse.models.AddPayment
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
+import com.piashcse.utils.extension.requiredParameters
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
 import io.ktor.http.*
@@ -39,11 +40,7 @@ fun Route.paymentRoute(paymentController: PaymentController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("id")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (id) = requiredParams.map { call.parameters[it]!! }
+                val (id) = call.requiredParameters("id") ?: return@get
                 call.respond(
                     ApiResponse.success(
                         paymentController.getPayment(

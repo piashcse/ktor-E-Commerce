@@ -7,6 +7,7 @@ import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.requiredParameters
 import io.github.smiley4.ktorswaggerui.dsl.routing.delete
 import io.github.smiley4.ktorswaggerui.dsl.routing.get
 import io.github.smiley4.ktorswaggerui.dsl.routing.post
@@ -43,11 +44,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("orderId")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (orderId) = requiredParams.map { call.parameters[it]!! }
+                val (orderId) = call.requiredParameters("orderId") ?: return@get
                 call.respond(
                     ApiResponse.success(
                         shippingController.getShipping(call.currentUser().userId, orderId), HttpStatusCode.OK
@@ -70,11 +67,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("id")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (id) = requiredParams.map { call.parameters[it]!! }
+                val (id) = call.requiredParameters("id") ?: return@put
                 val params = UpdateShipping(
                     id = id,
                     shipAddress = call.parameters["shipAddress"],
@@ -100,11 +93,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 }
                 apiResponse()
             }) {
-                val requiredParams = listOf("id")
-                requiredParams.filterNot { call.parameters.contains(it) }.let {
-                    if (it.isNotEmpty()) call.respond(ApiResponse.success("Missing parameters: $it", HttpStatusCode.OK))
-                }
-                val (id) = requiredParams.map { call.parameters[it]!! }
+                val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(
                         shippingController.deleteShipping(call.currentUser().userId, id), HttpStatusCode.OK
