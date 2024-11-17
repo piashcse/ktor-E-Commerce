@@ -39,7 +39,7 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
-                val productId = call.parameters["id"]!!
+                val (productId) = call.requiredParameters("productId") ?: return@get
                 call.respond(ApiResponse.success(productController.productDetail(productId), HttpStatusCode.OK))
             }
             get({
@@ -59,9 +59,10 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
+                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
                 val params = ProductWithFilter(
-                    limit = call.parameters["limit"]?.toInt() ?: 0,
-                    offset = call.parameters["offset"]?.toLong() ?: 0L,
+                    limit = limit.toInt(),
+                    offset = offset.toLong(),
                     maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
                     minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
                     categoryId = call.parameters["categoryId"],
@@ -89,9 +90,10 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
+                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
                 val queryParams = ProductSearch(
-                    limit = call.parameters["limit"]?.toInt() ?: 0,
-                    offset = call.parameters["offset"]?.toLong() ?: 0L,
+                    limit = limit.toInt(),
+                    offset = offset.toLong(),
                     productName = call.parameters["productName"]!!,
                     maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
                     minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
@@ -119,9 +121,10 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
+                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
                 val params = ProductWithFilter(
-                    limit = call.parameters["limit"]?.toInt() ?: 0,
-                    offset = call.parameters["offset"]?.toLong() ?: 0L,
+                    limit = limit.toInt(),
+                    offset = offset.toLong(),
                     maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
                     minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
                     categoryId = call.parameters["categoryId"],
