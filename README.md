@@ -1,5 +1,5 @@
 # Ktor-E-Commerce API for Backend. 
-[![Ktor](https://img.shields.io/badge/ktor-3.0.1-blue.svg)](https://github.com/ktorio/ktor)
+[![Ktor](https://img.shields.io/badge/ktor-3.0.2-blue.svg)](https://github.com/ktorio/ktor)
 [![Exposed](https://img.shields.io/badge/Exposed-0.56.0-blue.svg)](https://github.com/JetBrains/Exposed)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 ![Koin](https://img.shields.io/badge/Koin-4.0.0-29BEB0?logo=koin&logoColor=white)
