@@ -1,7 +1,7 @@
 [versions]
-ktor-version = "3.0.2"
+ktor-version = "3.0.3"
 kotlin-version = "2.1.0"
-logback-version = "1.5.12"
+logback-version = "1.5.13"
 exposed-version = "0.57.0"
 flyway-version = "9.22.3"
 postgresql-version = "42.7.4"
