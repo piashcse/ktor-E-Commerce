@@ -11,8 +11,7 @@ kotlinx-datetime-version = "0.6.2"
 commons-email-version ="1.5"
 valiktor-core-version = "0.12.0"
 commons-io-version = "2.17.0"
-ktor-swagger-ui-version = "4.1.2"
-swagger-parser-version = "2.1.22"
+ktor-swagger-ui-version = "5.0.1"
 shadow-version = "8.3.6"
 koin = "4.0.2"
 
@@ -46,7 +45,7 @@ commons-email = { module = "org.apache.commons:commons-email", version.ref = "co
 valiktor-core = { module = "org.valiktor:valiktor-core", version.ref = "valiktor-core-version" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons-io-version" }
 ktor-swagger-ui = { module = "io.github.smiley4:ktor-swagger-ui", version.ref = "ktor-swagger-ui-version" }
-swagger-parser= { module = "io.swagger.parser.v3:swagger-parser", version.ref = "swagger-parser-version" }
+ktor-open-api = { module = "io.github.smiley4:ktor-openapi", version.ref = "ktor-swagger-ui-version" }
 koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-logger = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
