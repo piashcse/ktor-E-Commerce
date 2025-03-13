@@ -56,7 +56,7 @@ dependencies {
     implementation(libs.commons.io)
 
     implementation(libs.ktor.swagger.ui)
-    implementation(libs.swagger.parser)
+    implementation(libs.ktor.open.api)
 
     implementation(libs.koin.ktor)
     implementation(libs.koin.core)

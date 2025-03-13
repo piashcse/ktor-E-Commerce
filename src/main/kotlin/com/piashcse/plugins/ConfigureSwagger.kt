@@ -1,19 +1,17 @@
 package com.piashcse.plugins
 
-import io.github.smiley4.ktorswaggerui.SwaggerUI
-import io.github.smiley4.ktorswaggerui.data.AuthScheme
-import io.github.smiley4.ktorswaggerui.data.AuthType
-import io.github.smiley4.ktorswaggerui.dsl.routing.route
-import io.github.smiley4.ktorswaggerui.routing.openApiSpec
-import io.github.smiley4.ktorswaggerui.routing.swaggerUI
+import io.github.smiley4.ktoropenapi.OpenApi
+import io.github.smiley4.ktoropenapi.config.AuthScheme
+import io.github.smiley4.ktoropenapi.config.AuthType
+import io.github.smiley4.ktoropenapi.config.SchemaGenerator
+import io.github.smiley4.ktoropenapi.openApi
+import io.github.smiley4.ktorswaggerui.swaggerUI
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.swagger.v3.oas.models.media.Schema
-import java.io.File
 
 fun Application.configureSwagger() {
-    install(SwaggerUI) {
+    install(OpenApi) {
         security {
             // configure a basic-auth security scheme
             securityScheme("jwtToken") {
@@ -25,6 +23,12 @@ fun Application.configureSwagger() {
             // if no other response is documented for "401 Unauthorized", this information is used instead
             defaultUnauthorizedResponse {
                 description = "Unauthorized access"
+            }
+        }
+        schemas {
+            // overwrite type "File" with custom schema for binary data
+            generator = SchemaGenerator.reflection {
+                overwrite(SchemaGenerator.TypeOverwrites.File())
             }
         }
         info {
@@ -44,17 +48,10 @@ fun Application.configureSwagger() {
             url = "http://ktorecommerce.com/"
             description = "Production Server"
         }
-        schemas {
-            // overwrite type "File" with custom schema for binary data / multipart form file
-            overwrite<File>(Schema<Any>().also {
-                it.type = "string"
-                it.format = "binary"
-            })
-        }
         routing {
             // Create a route for the openapi-spec file.
             route("api.json") {
-                openApiSpec()
+                openApi()
             }
             // Create a route for the swagger-ui using the openapi-spec at "/api.json".
             route("swagger") {
