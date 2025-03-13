@@ -1,20 +1,20 @@
 [versions]
-ktor-version = "3.0.3"
-kotlin-version = "2.1.0"
-logback-version = "1.5.13"
-exposed-version = "0.57.0"
+ktor-version = "3.1.1"
+kotlin-version = "2.1.10"
+logback-version = "1.5.17"
+exposed-version = "0.58.0"
 flyway-version = "9.22.3"
 postgresql-version = "42.7.4"
-hikari-version = "6.0.0"
+hikari-version = "6.2.1"
 bcrypt-version = "0.10.2"
-kotlinx-datetime-version = "0.6.1"
+kotlinx-datetime-version = "0.6.2"
 commons-email-version ="1.5"
 valiktor-core-version = "0.12.0"
 commons-io-version = "2.17.0"
 ktor-swagger-ui-version = "4.1.2"
 swagger-parser-version = "2.1.22"
-shadow-version = "8.3.5"
-koin = "4.0.0"
+shadow-version = "8.3.6"
+koin = "4.0.2"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
