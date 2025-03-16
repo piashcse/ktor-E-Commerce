@@ -7,7 +7,6 @@ import org.valiktor.validate
 
 data class ProductSearch(
     val limit: Int,
-    val offset: Long,
     val productName: String,
     val maxPrice: Double?,
     val minPrice: Double?,
@@ -16,7 +15,6 @@ data class ProductSearch(
     fun validation() {
         validate(this) {
             validate(ProductSearch::limit).isNotNull().isNotZero()
-            validate(ProductSearch::offset).isNotNull()
             validate(ProductSearch::productName).isNotNull().isNotEmpty()
         }
     }

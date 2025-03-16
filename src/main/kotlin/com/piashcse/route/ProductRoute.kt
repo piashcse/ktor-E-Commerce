@@ -48,9 +48,6 @@ fun Route.productRoute(productController: ProductController) {
                     queryParameter<Int>("limit") {
                         required = true
                     }
-                    queryParameter<Long>("offset") {
-                        required = true
-                    }
                     queryParameter<Double>("maxPrice")
                     queryParameter<Double>("minPrice")
                     queryParameter<String>("categoryId")
@@ -59,10 +56,9 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
-                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
+                val (limit) = call.requiredParameters("limit") ?: return@get
                 val params = ProductWithFilter(
                     limit = limit.toInt(),
-                    offset = offset.toLong(),
                     maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
                     minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
                     categoryId = call.parameters["categoryId"],
@@ -78,9 +74,6 @@ fun Route.productRoute(productController: ProductController) {
                     queryParameter<Int>("limit") {
                         required = true
                     }
-                    queryParameter<Long>("offset") {
-                        required = true
-                    }
                     queryParameter<String>("productName") {
                         required = true
                     }
@@ -90,10 +83,9 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
-                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
+                val (limit) = call.requiredParameters("limit") ?: return@get
                 val queryParams = ProductSearch(
                     limit = limit.toInt(),
-                    offset = offset.toLong(),
                     productName = call.parameters["productName"]!!,
                     maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
                     minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
@@ -110,9 +102,6 @@ fun Route.productRoute(productController: ProductController) {
                     queryParameter<Int>("limit") {
                         required = true
                     }
-                    queryParameter<Long>("offset") {
-                        required = true
-                    }
                     queryParameter<Double>("maxPrice")
                     queryParameter<Double>("minPrice")
                     queryParameter<String>("categoryId")
@@ -121,10 +110,9 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
-                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
+                val (limit) = call.requiredParameters("limit") ?: return@get
                 val params = ProductWithFilter(
                     limit = limit.toInt(),
-                    offset = offset.toLong(),
                     maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
                     minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
                     categoryId = call.parameters["categoryId"],
