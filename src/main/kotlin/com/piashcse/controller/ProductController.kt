@@ -107,7 +107,7 @@ class ProductController : ProductRepo {
                 ProductTable.brandId eq it
             }
         }
-        query.limit(productQuery.limit, productQuery.offset).map {
+        query.limit(productQuery.limit).map {
             ProductEntity.wrapRow(it).response()
         }
     }
@@ -127,12 +127,12 @@ class ProductController : ProductRepo {
                 ProductTable.price greaterEq it
             }
         }
-        productQuery.categoryId?.let {
+        productQuery.categoryId.let {
             query.adjustWhere {
                 ProductTable.categoryId eq it
             }
         }
-        productQuery.subCategoryId?.let {
+        productQuery.subCategoryId.let {
             query.adjustWhere {
                 ProductTable.subCategoryId eq it
             }
@@ -142,7 +142,7 @@ class ProductController : ProductRepo {
                 ProductTable.brandId eq it
             }
         }
-        query.limit(productQuery.limit, productQuery.offset).map {
+        query.limit(productQuery.limit).map {
             ProductEntity.wrapRow(it).response()
         }
     }

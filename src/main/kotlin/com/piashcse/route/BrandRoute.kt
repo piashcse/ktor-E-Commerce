@@ -31,10 +31,10 @@ fun Route.brandRoute(brandController: BrandController) {
                 }
                 apiResponse()
             }) {
-                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
+                val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
-                        brandController.getBrands(limit.toInt(), offset.toLong()), HttpStatusCode.OK
+                        brandController.getBrands(limit.toInt()), HttpStatusCode.OK
                     )
                 )
             }

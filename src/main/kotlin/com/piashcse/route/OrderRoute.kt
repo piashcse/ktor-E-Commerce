@@ -41,17 +41,14 @@ fun Route.orderRoute(orderController: OrderController) {
                     queryParameter<String>("limit") {
                         required = true
                     }
-                    queryParameter<String>("offset") {
-                        required = true
-                    }
                 }
                 apiResponse()
             }) {
-                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
+                val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
                         orderController.getOrders(
-                            call.currentUser().userId, limit.toInt(), offset.toLong()
+                            call.currentUser().userId, limit.toInt()
                         ), HttpStatusCode.OK
                     )
                 )

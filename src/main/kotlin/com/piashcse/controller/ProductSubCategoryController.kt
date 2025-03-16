@@ -27,10 +27,10 @@ class ProductSubCategoryController : ProductSubCategoryRepo {
         } ?: throw productSubCategory.categoryId.notFoundException()
     }
 
-    override suspend fun getProductSubCategory(categoryId: String, limit: Int, offset: Long): List<ProductSubCategory> =
+    override suspend fun getProductSubCategory(categoryId: String, limit: Int): List<ProductSubCategory> =
         query {
             val subCategoryExist = ProductSubCategoryEntity.find { ProductSubCategoryTable.categoryId eq categoryId }
-                .limit(limit, offset)
+                .limit(limit)
             subCategoryExist.map {
                 it.response()
             }

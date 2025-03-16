@@ -29,16 +29,13 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
                     queryParameter<String>("limit") {
                         required = true
                     }
-                    queryParameter<String>("offset") {
-                        required = true
-                    }
                 }
                 apiResponse()
             }) {
-                val (productId, limit, offset) = call.requiredParameters("productId", "limit", "offset") ?: return@get
+                val (productId, limit) = call.requiredParameters("productId", "limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
-                        reviewRatingController.getReviewRating(productId, limit.toInt(), offset.toLong()),
+                        reviewRatingController.getReviewRating(productId, limit.toInt()),
                         HttpStatusCode.OK
                     )
                 )

@@ -38,17 +38,14 @@ fun Route.shopCategoryRoute(shopCategoryController: ShopCategoryController) {
                 queryParameter<Int>("limit") {
                     required = true
                 }
-                queryParameter<Long>("offset") {
-                    required = true
-                }
             }
             apiResponse()
         }) {
-            val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
+            val (limit) = call.requiredParameters("limit") ?: return@get
             call.respond(
                 ApiResponse.success(
                     shopCategoryController.getShopCategories(
-                        limit.toInt(), offset.toLong()
+                        limit.toInt()
                     ), HttpStatusCode.OK
                 )
             )

@@ -36,8 +36,8 @@ class OrderController : OrderRepo {
         order.response()
     }
 
-    override suspend fun getOrders(userId: String, limit: Int, offset: Long): List<Order> = query {
-        OrderEntity.find { OrderTable.userId eq userId }.limit(limit, offset).map {
+    override suspend fun getOrders(userId: String, limit: Int): List<Order> = query {
+        OrderEntity.find { OrderTable.userId eq userId }.limit(limit).map {
             it.response()
         }
     }

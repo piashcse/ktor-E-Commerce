@@ -19,8 +19,8 @@ class ShopCategoryController : ShopCategoryRepo {
         }.response()
     }
 
-    override suspend fun getShopCategories(limit: Int, offset: Long): List<ShopCategory> = query {
-        val shopCategories = ShopCategoryEntity.all().limit(limit, offset)
+    override suspend fun getShopCategories(limit: Int): List<ShopCategory> = query {
+        val shopCategories = ShopCategoryEntity.all().limit(limit)
         shopCategories.map {
             it.response()
         }

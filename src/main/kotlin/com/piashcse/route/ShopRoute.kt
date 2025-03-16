@@ -41,15 +41,12 @@ fun Route.shopRoute(shopController: ShopController) {
                     queryParameter<Int>("limit") {
                         required = true
                     }
-                    queryParameter<Long>("offset") {
-                        required = true
-                    }
                 }
                 apiResponse()
             }) {
-                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
+                val (limit, offset) = call.requiredParameters("limit") ?: return@get
                 shopController.getShop(
-                    call.currentUser().userId, limit.toInt(), offset.toLong()
+                    call.currentUser().userId, limit.toInt()
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }

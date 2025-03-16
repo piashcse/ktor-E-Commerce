@@ -13,11 +13,11 @@ import org.jetbrains.exposed.sql.and
 
 class ReviewRatingController : ReviewRatingRepo {
     override suspend fun getReviewRating(
-        productId: String, limit: Int, offset: Long
+        productId: String, limit: Int
     ): List<ReviewRating> = query {
         val isProductIdExist =
             ReviewRatingEntity.find { ReviewRatingTable.productId eq productId }
-                .limit(limit, offset)
+                .limit(limit)
         isProductIdExist.map {
             it.response()
         }
