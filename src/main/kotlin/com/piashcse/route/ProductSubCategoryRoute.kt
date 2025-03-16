@@ -27,16 +27,13 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
                 queryParameter<String>("limit") {
                     required = true
                 }
-                queryParameter<String>("offset") {
-                    required = true
-                }
             }
             apiResponse()
         }) {
-            val (categoryId, limit, offset) = call.requiredParameters("categoryId", "limit", "offset") ?: return@get
+            val (categoryId, limit) = call.requiredParameters("categoryId", "limit") ?: return@get
             call.respond(
                 ApiResponse.success(
-                    subCategoryController.getProductSubCategory(categoryId, limit.toInt(), offset.toLong()),
+                    subCategoryController.getProductSubCategory(categoryId, limit.toInt()),
                     HttpStatusCode.OK
                 )
             )

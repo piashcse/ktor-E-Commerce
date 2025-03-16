@@ -22,8 +22,8 @@ class CartController : CartRepo {
         }.response()
     }
 
-    override suspend fun getCartItems(userId: String, limit: Int, offset: Long): List<Cart> = query {
-        CartItemEntity.find { CartItemTable.userId eq userId }.limit(limit, offset).map {
+    override suspend fun getCartItems(userId: String, limit: Int): List<Cart> = query {
+        CartItemEntity.find { CartItemTable.userId eq userId }.limit(limit).map {
             it.response(ProductEntity.find { ProductTable.id eq it.productId }.first().response())
         }
     }

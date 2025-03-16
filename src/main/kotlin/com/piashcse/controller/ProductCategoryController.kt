@@ -19,8 +19,8 @@ class ProductCategoryController : ProductCategoryRepo {
         }.response()
     }
 
-    override suspend fun getProductCategory(limit: Int, offset: Long): List<ProductCategory> = query {
-        val categories = ProductCategoryEntity.all().limit(limit, offset)
+    override suspend fun getProductCategory(limit: Int): List<ProductCategory> = query {
+        val categories = ProductCategoryEntity.all().limit(limit)
         categories.map {
             it.response()
         }

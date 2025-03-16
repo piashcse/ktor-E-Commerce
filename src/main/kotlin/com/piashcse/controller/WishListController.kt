@@ -23,8 +23,8 @@ class WishListController : WishListRepo {
         }
     }
 
-    override suspend fun getWishList(userId: String, limit: Int, offset: Long): List<Product> = query {
-        WishListEntity.find { WishListTable.userId eq userId }.limit(limit, offset).map {
+    override suspend fun getWishList(userId: String, limit: Int): List<Product> = query {
+        WishListEntity.find { WishListTable.userId eq userId }.limit(limit).map {
             ProductEntity.find { ProductTable.id eq it.productId }.first().response()
         }
     }

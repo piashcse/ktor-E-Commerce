@@ -2,7 +2,7 @@
 ktor-version = "3.1.1"
 kotlin-version = "2.1.10"
 logback-version = "1.5.17"
-exposed-version = "0.58.0"
+exposed-version = "0.60.0"
 flyway-version = "9.22.3"
 postgresql-version = "42.7.4"
 hikari-version = "6.2.1"

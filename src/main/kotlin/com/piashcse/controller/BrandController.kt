@@ -19,8 +19,8 @@ class BrandController : BrandRepo {
         }.response()
     }
 
-    override suspend fun getBrands(limit: Int, offset: Long): List<Brand> = query {
-        BrandEntity.all().limit(limit, offset).map {
+    override suspend fun getBrands(limit: Int): List<Brand> = query {
+        BrandEntity.all().limit(limit).map {
             it.response()
         }
     }

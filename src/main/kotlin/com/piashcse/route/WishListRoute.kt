@@ -40,16 +40,13 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                     queryParameter<String>("limit") {
                         required = true
                     }
-                    queryParameter<String>("offset") {
-                        required = true
-                    }
                 }
                 apiResponse()
             }) {
-                val (limit, offset) = call.requiredParameters("limit", "offset") ?: return@get
+                val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.getWishList(call.currentUser().userId, limit.toInt(), offset.toLong()),
+                        wishlistController.getWishList(call.currentUser().userId, limit.toInt()),
                         HttpStatusCode.OK
                     )
                 )

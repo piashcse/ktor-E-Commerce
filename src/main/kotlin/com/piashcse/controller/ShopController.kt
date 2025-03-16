@@ -25,8 +25,8 @@ class ShopController : ShopRepo {
         }
     }
 
-    override suspend fun getShop(userId: String, limit: Int, offset: Long): List<Shop> = query {
-        val isExist = ShopEntity.find { ShopTable.userId eq userId }.limit(limit, offset).toList()
+    override suspend fun getShop(userId: String, limit: Int): List<Shop> = query {
+        val isExist = ShopEntity.find { ShopTable.userId eq userId }.limit(limit).toList()
         isExist.map {
             it.shopResponse()
         }
