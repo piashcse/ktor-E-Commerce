@@ -25,9 +25,6 @@ fun Route.brandRoute(brandController: BrandController) {
                     queryParameter<Int>("limit") {
                         required = true
                     }
-                    queryParameter<Long>("offset") {
-                        required = true
-                    }
                 }
                 apiResponse()
             }) {

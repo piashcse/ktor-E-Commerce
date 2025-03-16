@@ -6,7 +6,6 @@ import org.valiktor.validate
 
 data class ProductWithFilter(
     val limit: Int,
-    val offset: Long,
     val maxPrice: Double?,
     val minPrice: Double?,
     val categoryId: String?,
@@ -16,7 +15,6 @@ data class ProductWithFilter(
     fun validation() {
         validate(this) {
             validate(ProductWithFilter::limit).isNotNull().isNotZero()
-            validate(ProductWithFilter::offset).isNotNull()
         }
     }
 }
