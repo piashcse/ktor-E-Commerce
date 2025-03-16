@@ -1,6 +1,6 @@
 # Ktor-E-Commerce API for Backend. 
 [![Ktor](https://img.shields.io/badge/ktor-3.1.1-blue.svg)](https://github.com/ktorio/ktor)
-[![Exposed](https://img.shields.io/badge/Exposed-0.58.0-blue.svg)](https://github.com/JetBrains/Exposed)
+[![Exposed](https://img.shields.io/badge/Exposed-0.60.0-blue.svg)](https://github.com/JetBrains/Exposed)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.10-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 ![Koin](https://img.shields.io/badge/Koin-4.0.2-29BEB0?logo=koin&logoColor=white)
 [![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-42.7.4-336791?logo=postgresql)](https://www.postgresql.org/)
@@ -513,7 +513,7 @@ http://localhost:8080/shop-category
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/shop-category?limit=10&offset=0' \
+  'http://localhost:8080/shop-category?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
 ``` 
@@ -521,7 +521,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/shop-category?limit=10&offset=0
+http://localhost:8080/shop-category?limit=10
 ``` 
 
 
@@ -658,7 +658,7 @@ http://localhost:8080/shop?name=Royal%20Shop&shopCategoryId=5e67ec97-9ed6-48ee-9
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/shop?limit=10&offset=0' \
+  'http://localhost:8080/shop?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
 ``` 
@@ -666,7 +666,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/shop?limit=10&offset=0
+http://localhost:8080/shop?limit=10
 ``` 
 
 
@@ -957,7 +957,7 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/product?limit=10&offset=0&maxPrice=100&minPrice=0' \
+  'http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
 ``` 
@@ -965,7 +965,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/product?limit=10&offset=0&maxPrice=100&minPrice=0
+http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
 ``` 
 
 
@@ -1125,7 +1125,7 @@ http://localhost:8080/product-category?categoryName=Kids
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/product-category?limit=10&offset=0' \
+  'http://localhost:8080/product-category?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ'
 ``` 
@@ -1133,7 +1133,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/product-category?limit=10&offset=0
+http://localhost:8080/product-category?limit=10
 ``` 
 
 
@@ -1283,7 +1283,7 @@ http://localhost:8080/product-subcategory
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/product-subcategory?categoryId=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10&offset=0' \
+  'http://localhost:8080/product-subcategory?categoryId=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4NjUyMDJ9.q3w-4G4bMJwdwB-kCv7KhR6JlTjsbUungkAMWFYTwVRpDLezumFsW_6kU7AJ2MqyQn1zAoEW7-Qtp68JZlHYgQ'
 ``` 
@@ -1291,7 +1291,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/product-subcategory?categoryId=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10&offset=0
+http://localhost:8080/product-subcategory?categoryId=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10
 ``` 
 
 
@@ -1431,7 +1431,7 @@ http://localhost:8080/brand?brandName=Nike
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/brand?limit=10&offset=0' \
+  'http://localhost:8080/brand?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
 ``` 
@@ -1439,7 +1439,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/brand?limit=10&offset=0
+http://localhost:8080/brand?limit=10
 ``` 
 
 
@@ -1860,7 +1860,7 @@ http://localhost:8080/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10&offset=0' \
+  'http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
 ``` 
@@ -1868,7 +1868,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10&offset=0
+http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10
 ``` 
 
 
@@ -2057,7 +2057,7 @@ http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quanti
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/cart?limit=10&offset=0' \
+  'http://localhost:8080/cart?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
 ``` 
@@ -2065,7 +2065,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/cart?limit=10&offset=0
+http://localhost:8080/cart?limit=10
 ``` 
 
 
@@ -2320,7 +2320,7 @@ http://localhost:8080/order
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/order?limit=10&offset=0' \
+  'http://localhost:8080/order?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDk1NjIzNX0.Go4nLzsiOruUKTtETn1Yc35BNjlo79_3Vs8LfW9LJG1nvogqIR0mG9JQOUxP8YclsVBzGV0j0IIv7svTaDMxTg'
 ``` 
@@ -2328,7 +2328,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/order?limit=10&offset=0
+http://localhost:8080/order?limit=10
 ``` 
 
 
