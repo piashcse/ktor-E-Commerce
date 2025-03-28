@@ -1,6 +1,6 @@
 [versions]
-ktor-version = "3.1.1"
-kotlin-version = "2.1.10"
+ktor-version = "3.1.2"
+kotlin-version = "2.1.20"
 logback-version = "1.5.17"
 exposed-version = "0.60.0"
 flyway-version = "9.22.3"
