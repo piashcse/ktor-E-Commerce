@@ -143,7 +143,7 @@ On Terminal
 </details>
 
 
-### USER
+### AUTH
 <details>
   
 <summary> <code>POST </code> <code>/auth/login</code></summary>
