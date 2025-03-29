@@ -1,6 +1,6 @@
 package com.piashcse.route
 
-import com.piashcse.controller.UserController
+import com.piashcse.controller.AuthController
 import com.piashcse.entities.ChangePassword
 import com.piashcse.models.user.body.*
 import com.piashcse.plugins.RoleManagement
@@ -18,7 +18,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.userRoute(userController: UserController) {
+fun Route.authRoute(authController: AuthController) {
     route("auth") {
         post("login", {
             tags("Auth")
@@ -30,7 +30,7 @@ fun Route.userRoute(userController: UserController) {
             val requestBody = call.receive<LoginBody>()
             call.respond(
                 ApiResponse.success(
-                    userController.login(requestBody), HttpStatusCode.OK
+                    authController.login(requestBody), HttpStatusCode.OK
                 )
             )
         }
@@ -42,7 +42,7 @@ fun Route.userRoute(userController: UserController) {
             apiResponse()
         }) {
             val requestBody = call.receive<RegistrationBody>()
-            call.respond(ApiResponse.success(userController.addUser(requestBody), HttpStatusCode.OK))
+            call.respond(ApiResponse.success(authController.register(requestBody), HttpStatusCode.OK))
         }
         get("forget-password", {
             tags("Auth")
@@ -55,7 +55,7 @@ fun Route.userRoute(userController: UserController) {
         }) {
             val (email) = call.requiredParameters("email") ?: return@get
             val requestBody = ForgetPasswordEmail(email)
-            userController.forgetPasswordSendCode(requestBody).let {
+            authController.forgetPasswordSendCode(requestBody).let {
                 sendEmail(requestBody.email, it.verificationCode)
                 call.respond(
 
@@ -85,7 +85,7 @@ fun Route.userRoute(userController: UserController) {
                 "email", "otp", "newPassword"
             ) ?: return@get
 
-            UserController().forgetPasswordVerificationCode(
+            AuthController().forgetPasswordVerificationCode(
                 ConfirmPassword(
                     email, verificationCode, newPassword
                 )
@@ -126,7 +126,7 @@ fun Route.userRoute(userController: UserController) {
             }) {
                 val (oldPassword, newPassword) = call.requiredParameters("oldPassword", "newPassword") ?: return@put
                 val loginUser = call.principal<JwtTokenBody>()
-                userController.changePassword(loginUser?.userId!!, ChangePassword(oldPassword, newPassword)).let {
+                authController.changePassword(loginUser?.userId!!, ChangePassword(oldPassword, newPassword)).let {
                     if (it) call.respond(
                         ApiResponse.success(
                             "Password has been changed", HttpStatusCode.OK
