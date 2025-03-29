@@ -5,7 +5,7 @@ import com.piashcse.entities.base.BaseIntEntityClass
 import com.piashcse.entities.base.BaseIntIdTable
 import org.jetbrains.exposed.dao.id.EntityID
 
-object UserProfileTable : BaseIntIdTable("users_profile") {
+object UserProfileTable : BaseIntIdTable("user_profile") {
     val userId = reference("user_id", UserTable.id)
     val userProfileImage = text("user_profile_image").nullable()
     val firstName = text("first_name").nullable()
