@@ -146,12 +146,12 @@ On Terminal
 ### USER
 <details>
   
-<summary> <code>POST </code> <code>/user/login</code></summary>
+<summary> <code>POST </code> <code>/auth/login</code></summary>
 
 ### Curl
 ```
 curl -X 'POST' \
-  'http://localhost:8080/user/Login' \
+  'http://localhost:8080/auth/Login' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -163,7 +163,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```
-  http://localhost:8080/user/Login
+  http://localhost:8080/auth/Login
 ``` 
 
 ### Response
@@ -188,13 +188,13 @@ curl -X 'POST' \
 
 <details>
   
-<summary> <code>POST</code> <code>/user/registration</code></summary>
+<summary> <code>POST</code> <code>/auth/register</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/user/registration' \
+  'http://localhost:8080/auth/register' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -206,7 +206,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```
-    http://localhost:8080/user/registration
+    http://localhost:8080/auth/register
 ``` 
 
 ### Response
@@ -229,20 +229,20 @@ curl -X 'POST' \
 
 <details>
   
-<summary><code>GET </code> <code>/user/forget-password</code></summary>
+<summary><code>GET </code> <code>/auth/forget-password</code></summary>
 
 ### Curl
 
 ```
  curl -X 'GET' \
-  'http://localhost:8080/user/forget-password?email=piash@gmail.com' \
+  'http://localhost:8080/auth/forget-password?email=piash@gmail.com' \
   -H 'accept: application/json'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/user/forget-password?email=piash@gmail.com
+http://localhost:8080/auth/forget-password?email=piash@gmail.com
 
 ``` 
 
@@ -263,20 +263,20 @@ http://localhost:8080/user/forget-password?email=piash@gmail.com
 
 <details>
   
-<summary><code>GET </code> <code>/user/verify-password-change</code></summary>
+<summary><code>GET </code> <code>/auth/reset-password</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/verify-password-change?email=piash599%40gmail.com&verificationCode=9889&password=p1234' \
+  'http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&verificationCode=9889&password=p1234' \
   -H 'accept: application/json'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/verify-password-change?email=piash599%40gmail.com&verificationCode=9189&newPassword=p1234
+http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&verificationCode=9189&newPassword=p1234
 ``` 
 
 
@@ -296,13 +296,13 @@ http://localhost:8080/verify-password-change?email=piash599%40gmail.com&verifica
 
 <details>
   
-<summary> <code>PUT </code> <code>/user/change-password</code></summary>
+<summary> <code>PUT </code> <code>/auth/change-password</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/user/change-password?oldPassword=p1234&newPassword=p1234' \
+  'http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g'
 ``` 
@@ -310,7 +310,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/user/change-password?oldPassword=p1234&newPassword=p1234
+http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234
 ``` 
 
 
@@ -326,118 +326,16 @@ http://localhost:8080/user/change-password?oldPassword=p1234&newPassword=p1234
 }
 ```   
 </details>
-<details>
-  <summary> <code>GET </code> <code>/user</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/user' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g'
-``` 
-
-### Request URL
-
-```
-http://localhost:8080/user
-``` 
-
-
-### Response
-```
-{
-  "isSuccess": true,
-  "statsCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
-    "userId": "a9a662a7-50fe-4f13-8eab-0e0810fb9909",
-    "userProfileImage": "708196a2-1529-45d4-ab8e-585c248e434f.jpeg",
-    "firstName": "Mehedi Hassan Piash",
-    "lastName": "string",
-    "secondaryMobileNumber": "string",
-    "faxNumber": "string",
-    "streetAddress": "string",
-    "city": "string",
-    "identificationType": "string",
-    "identificationNo": "string",
-    "occupation": "string",
-    "userDescription": "string",
-    "maritalStatus": "string",
-    "postCode": "string",
-    "gender": "string"
-  }
-}
-```   
-</details>
 
 <details>
   
-<summary> <code>PUT </code> <code>/user</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/user' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "firstName": "Mehedi Hassan",
-  "lastName": "Piash"
-}'
-``` 
-
-### Request URL
-
-```
-http://localhost:8080/user
-``` 
-
-
-### Response
-```
-{
-  "isSuccess": true,
-  "statsCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
-    "userId": "a9a662a7-50fe-4f13-8eab-0e0810fb9909",
-    "userProfileImage": "708196a2-1529-45d4-ab8e-585c248e434f.jpeg",
-    "firstName": "Mehedi Hassan Piash",
-    "lastName": "string",
-    "secondaryMobileNumber": "string",
-    "faxNumber": "string",
-    "streetAddress": "string",
-    "city": "string",
-    "identificationType": "string",
-    "identificationNo": "string",
-    "occupation": "string",
-    "userDescription": "string",
-    "maritalStatus": "string",
-    "postCode": "string",
-    "gender": "string"
-  }
-}
-```   
-</details>
-
-
-<details>
-  
-<summary> <code>POST</code> <code>/user/image-upload</code></summary>
+<summary> <code>POST</code> <code>/auth/image-upload</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/user/image-upload' \
+  'http://localhost:8080/auth/image-upload' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g' \
   -H 'Content-Type: multipart/form-data' \
@@ -447,7 +345,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/user/image-upload
+http://localhost:8080/auth/image-upload
 ``` 
 
 
