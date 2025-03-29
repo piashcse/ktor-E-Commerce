@@ -19,9 +19,9 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.userRoute(userController: UserController) {
-    route("user") {
-        post("Login", {
-            tags("User")
+    route("auth") {
+        post("login", {
+            tags("Auth")
             request {
                 body<LoginBody>()
             }
@@ -34,19 +34,18 @@ fun Route.userRoute(userController: UserController) {
                 )
             )
         }
-        post("registration", {
-            tags("User")
+        post("register", {
+            tags("Auth")
             request {
                 body<RegistrationBody>()
             }
             apiResponse()
         }) {
             val requestBody = call.receive<RegistrationBody>()
-            requestBody.validation()
             call.respond(ApiResponse.success(userController.addUser(requestBody), HttpStatusCode.OK))
         }
         get("forget-password", {
-            tags("User")
+            tags("Auth")
             request {
                 queryParameter<String>("email") {
                     required = true
@@ -67,13 +66,13 @@ fun Route.userRoute(userController: UserController) {
                 )
             }
         }
-        get("verify-password-change", {
-            tags("User")
+        get("reset-password", {
+            tags("Auth")
             request {
                 queryParameter<String>("email") {
                     required = true
                 }
-                queryParameter<String>("verificationCode") {
+                queryParameter<String>("otp") {
                     required = true
                 }
                 queryParameter<String>("newPassword") {
@@ -83,7 +82,7 @@ fun Route.userRoute(userController: UserController) {
             apiResponse()
         }) {
             val (email, verificationCode, newPassword) = call.requiredParameters(
-                "email", "verificationCode", "newPassword"
+                "email", "otp", "newPassword"
             ) ?: return@get
 
             UserController().forgetPasswordVerificationCode(
@@ -113,7 +112,7 @@ fun Route.userRoute(userController: UserController) {
         }
         authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
             put("change-password", {
-                tags("User")
+                tags("Auth")
                 protected = true
                 request {
                     queryParameter<String>("oldPassword") {

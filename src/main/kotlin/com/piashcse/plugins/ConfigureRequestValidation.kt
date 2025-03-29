@@ -13,6 +13,7 @@ import com.piashcse.models.shop.AddShop
 import com.piashcse.models.shop.AddShopCategory
 import com.piashcse.models.subcategory.AddProductSubCategory
 import com.piashcse.models.user.body.LoginBody
+import com.piashcse.models.user.body.RegistrationBody
 import io.ktor.server.application.*
 import io.ktor.server.plugins.requestvalidation.*
 
@@ -20,6 +21,10 @@ fun Application.configureRequestValidation() {
     install(RequestValidation) {
         validate<LoginBody> { login ->
             login.validation()
+            ValidationResult.Valid
+        }
+        validate<RegistrationBody> { register ->
+            register.validation()
             ValidationResult.Valid
         }
         validate<ProductSearch> { search ->
