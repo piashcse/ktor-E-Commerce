@@ -327,15 +327,16 @@ http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234
 ```   
 </details>
 
+### PROFILE
 <details>
   
-<summary> <code>POST</code> <code>/auth/image-upload</code></summary>
+<summary> <code>POST</code> <code>/profile/image-upload</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/auth/image-upload' \
+  'http://localhost:8080/profile/image-upload' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g' \
   -H 'Content-Type: multipart/form-data' \
@@ -345,7 +346,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/auth/image-upload
+http://localhost:8080/profile/image-upload
 ``` 
 
 

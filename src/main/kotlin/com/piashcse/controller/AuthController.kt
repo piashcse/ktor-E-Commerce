@@ -7,7 +7,7 @@ import com.piashcse.models.user.body.ForgetPasswordEmail
 import com.piashcse.models.user.body.LoginBody
 import com.piashcse.models.user.body.RegistrationBody
 import com.piashcse.models.user.response.RegistrationResponse
-import com.piashcse.repository.UserRepo
+import com.piashcse.repository.authRepo
 import com.piashcse.utils.AppConstants
 import com.piashcse.utils.PasswordNotMatch
 import com.piashcse.utils.UserNotExistException
@@ -17,8 +17,8 @@ import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.sql.and
 import kotlin.random.Random
 
-class UserController : UserRepo {
-    override suspend fun addUser(registrationBody: RegistrationBody): RegistrationResponse = query {
+class AuthController : authRepo {
+    override suspend fun register(registrationBody: RegistrationBody): RegistrationResponse = query {
         val userEntity =
             UsersEntity.find { UserTable.email eq registrationBody.email and (UserTable.userType eq registrationBody.userType) }
                 .toList().singleOrNull()

@@ -7,7 +7,7 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Application.configureRoute() {
-    val userController: UserController by inject()
+    val authController: AuthController by inject()
     val userProfileController: UserProfileController by inject()
     val shopCategoryController: ShopCategoryController by inject()
     val shopController: ShopController by inject()
@@ -22,19 +22,19 @@ fun Application.configureRoute() {
     val orderController: OrderController by inject()
     val paymentController: PaymentController by inject()
     routing {
-            userRoute(userController)
-            userProfileRoute(userProfileController)
-            shopCategoryRoute(shopCategoryController)
-            shopRoute(shopController)
-            brandRoute(brandController)
-            productCategoryRoute(productCategoryController)
-            productSubCategoryRoute(productSubCategoryController)
-            productRoute(productController)
-            reviewRatingRoute(reviewRatingController)
-            cartRoute(cartController)
-            wishListRoute(wishListController)
-            shippingRoute(shippingController)
-            orderRoute(orderController)
-            paymentRoute(paymentController)
+        authRoute(authController)
+        userProfileRoute(userProfileController)
+        shopCategoryRoute(shopCategoryController)
+        shopRoute(shopController)
+        brandRoute(brandController)
+        productCategoryRoute(productCategoryController)
+        productSubCategoryRoute(productSubCategoryController)
+        productRoute(productController)
+        reviewRatingRoute(reviewRatingController)
+        cartRoute(cartController)
+        wishListRoute(wishListController)
+        shippingRoute(shippingController)
+        orderRoute(orderController)
+        paymentRoute(paymentController)
     }
 }

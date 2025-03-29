@@ -24,9 +24,9 @@ import java.util.*
 
 fun Route.userProfileRoute(userProfileController: UserProfileController) {
     authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
-        route("user") {
+        route("profile") {
             get({
-                tags("User")
+                tags("Profile")
                 apiResponse()
             }) {
                 call.respond(
@@ -36,7 +36,7 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
                 )
             }
             put({
-                tags("User")
+                tags("Profile")
                 request {
                     queryParameter<String>("firstName")
                     queryParameter<String>("lastName")
@@ -75,7 +75,7 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
             }
 
             post("image-upload",{
-                tags("User")
+                tags("Profile")
                 request {
                     multipartBody {
                         mediaTypes = setOf(ContentType.MultiPart.FormData)
