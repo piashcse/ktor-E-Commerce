@@ -7,7 +7,7 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Application.configureRoute() {
-    val userController: AuthController by inject()
+    val authController: AuthController by inject()
     val userProfileController: UserProfileController by inject()
     val shopCategoryController: ShopCategoryController by inject()
     val shopController: ShopController by inject()
@@ -22,7 +22,7 @@ fun Application.configureRoute() {
     val orderController: OrderController by inject()
     val paymentController: PaymentController by inject()
     routing {
-        authRoute(userController)
+        authRoute(authController)
         userProfileRoute(userProfileController)
         shopCategoryRoute(shopCategoryController)
         shopRoute(shopController)
