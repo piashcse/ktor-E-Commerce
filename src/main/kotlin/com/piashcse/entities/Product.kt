@@ -7,9 +7,9 @@ import org.jetbrains.exposed.dao.id.EntityID
 
 object ProductTable : BaseIntIdTable("product") {
     val userId = reference("user_id", UserTable.id)
-    val productName = text("product_name")
+    val name = text("name")
     val price = double("price")
-    val productDetail = text("product_detail")
+    val detail = text("detail")
     val categoryId = reference("category_id", ProductCategoryTable.id)
     val subCategoryId = reference("sub_category_id", ProductSubCategoryTable.id).nullable()
     val brandId = reference("brand_id", BrandTable.id).nullable()
@@ -36,10 +36,10 @@ class ProductEntity(id: EntityID<String>) : BaseIntEntity(id, ProductTable) {
     var categoryId by ProductTable.categoryId
     var subCategoryId by ProductTable.subCategoryId
     var brandId by ProductTable.brandId
-    var productName by ProductTable.productName
+    var name by ProductTable.name
     var productCode by ProductTable.productCode
     var productQuantity by ProductTable.productQuantity
-    var productDetail by ProductTable.productDetail
+    var detail by ProductTable.detail
     var price by ProductTable.price
     var discountPrice by ProductTable.discountPrice
     var status by ProductTable.status
@@ -58,10 +58,10 @@ class ProductEntity(id: EntityID<String>) : BaseIntEntity(id, ProductTable) {
         categoryId.value,
         subCategoryId?.value,
         brandId?.value,
-        productName,
+        name,
         productCode,
         productQuantity,
-        productDetail,
+        detail,
         price,
         discountPrice,
         status,
@@ -83,10 +83,10 @@ data class Product(
     val categoryId: String,
     val subCategoryId: String?,
     val brandId: String?,
-    val productName: String,
+    val name: String,
     val productCode: String?,
     val productQuantity: Int,
-    val productDetail: String,
+    val detail: String,
     val price: Double,
     val discountPrice: Double?,
     val status: Int?,

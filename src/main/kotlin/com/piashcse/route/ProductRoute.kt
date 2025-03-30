@@ -114,7 +114,7 @@ fun Route.productRoute(productController: ProductController) {
                     queryParameter<Int>("limit") {
                         required = true
                     }
-                    queryParameter<String>("productName") {
+                    queryParameter<String>("name") {
                         required = true
                     }
                     queryParameter<String>("categoryId")
@@ -126,7 +126,7 @@ fun Route.productRoute(productController: ProductController) {
                 val (limit) = call.requiredParameters("limit") ?: return@get
                 val queryParams = ProductSearchRequest(
                     limit = limit.toInt(),
-                    productName = call.parameters["productName"]!!,
+                    name = call.parameters["name"]!!,
                     maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
                     minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
                     categoryId = call.parameters["categoryId"]
@@ -219,10 +219,10 @@ fun Route.productRoute(productController: ProductController) {
                     queryParameter<String>("categoryId")
                     queryParameter<String>("subCategoryId")
                     queryParameter<String>("brandId")
-                    queryParameter<String>("productName")
+                    queryParameter<String>("name")
                     queryParameter<String>("productCode")
                     queryParameter<Int>("productQuantity")
-                    queryParameter<String>("productDetail")
+                    queryParameter<String>("detail")
                     queryParameter<Double>("price")
                     queryParameter<Double>("discountPrice")
                     queryParameter<String>("status")
@@ -243,10 +243,10 @@ fun Route.productRoute(productController: ProductController) {
                     categoryId = call.parameters["categoryId"],
                     subCategoryId = call.parameters["subCategoryId"],
                     brandId = call.parameters["brandId"],
-                    productName = call.parameters["productName"],
+                    name = call.parameters["name"],
                     productCode = call.parameters["productCode"],
                     productQuantity = call.parameters["productQuantity"]?.toIntOrNull(),
-                    productDetail = call.parameters["productDetail"] ?: "",
+                    detail = call.parameters["detail"] ?: "",
                     price = call.parameters["price"]?.toDoubleOrNull(),
                     discountPrice = call.parameters["discountPrice"]?.toDoubleOrNull(),
                     status = call.parameters["status"]?.toIntOrNull(),

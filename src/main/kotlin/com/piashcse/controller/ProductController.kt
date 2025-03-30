@@ -44,10 +44,10 @@ class ProductController : ProductRepo {
             categoryId = EntityID(productRequest.categoryId, ProductTable)
             subCategoryId = productRequest.subCategoryId?.let { EntityID(productRequest.subCategoryId, ProductTable) }
             brandId = productRequest.brandId?.let { EntityID(productRequest.brandId, ProductTable) }
-            productName = productRequest.productName
+            name = productRequest.name
             productCode = productRequest.productCode
             productQuantity = productRequest.productQuantity
-            productDetail = productRequest.productDetail
+            detail = productRequest.detail
             price = productRequest.price
             discountPrice = productRequest.discountPrice
             status = productRequest.status
@@ -85,10 +85,10 @@ class ProductController : ProductRepo {
                 subCategoryId = updateProduct.subCategoryId?.let { EntityID(updateProduct.subCategoryId, ProductTable) }
                     ?: subCategoryId
                 brandId = updateProduct.brandId?.let { EntityID(updateProduct.brandId, ProductTable) } ?: brandId
-                productName = updateProduct.productName ?: productName
+                name = updateProduct.name ?: detail
                 productCode = updateProduct.productCode ?: productCode
                 productQuantity = updateProduct.productQuantity ?: productQuantity
-                productDetail = updateProduct.productDetail ?: productDetail
+                name = updateProduct.detail ?: detail
                 price = updateProduct.price ?: price
                 discountPrice = updateProduct.discountPrice ?: discountPrice
                 status = updateProduct.status ?: status
@@ -245,8 +245,8 @@ class ProductController : ProductRepo {
             // Apply filters dynamically based on query parameters
             val conditions = mutableListOf<Op<Boolean>>()
 
-            if (productQuery.productName.isNotEmpty()) {
-                conditions.add(ProductTable.productName like "%$productQuery.productName%")
+            if (productQuery.name.isNotEmpty()) {
+                conditions.add(ProductTable.name like "%$productQuery.productName%")
             }
             if (!productQuery.categoryId.isNullOrEmpty()) {
                 conditions.add(ProductTable.categoryId eq productQuery.categoryId)
@@ -255,7 +255,7 @@ class ProductController : ProductRepo {
                 conditions.add(ProductTable.price greaterEq productQuery.maxPrice)
             }
             if (productQuery.minPrice != null) {
-                conditions.add(ProductTable.price lessEq productQuery.minPrice )
+                conditions.add(ProductTable.price lessEq productQuery.minPrice)
             }
 
             // Combine all conditions with AND logic

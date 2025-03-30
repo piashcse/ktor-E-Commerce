@@ -16,17 +16,17 @@ class ShopCategoryController : ShopCategoryRepo {
     /**
      * Creates a new shop category. If a category with the same name already exists, an exception is thrown.
      *
-     * @param categoryName The name of the category to be created.
+     * @param name The name of the category to be created.
      * @return The created shop category.
      * @throws alreadyExistException If a category with the same name already exists.
      */
-    override suspend fun createCategory(categoryName: String): ShopCategory = query {
+    override suspend fun createCategory(name: String): ShopCategory = query {
         val isExistShopCategory =
-            ShopCategoryEntity.find { ShopCategoryTable.categoryName eq categoryName }.toList().singleOrNull()
+            ShopCategoryEntity.find { ShopCategoryTable.name eq name }.toList().singleOrNull()
         isExistShopCategory?.let {
-            throw categoryName.alreadyExistException()
+            throw name.alreadyExistException()
         } ?: ShopCategoryEntity.new {
-            this.categoryName = categoryName
+            this.name = name
         }.response()
     }
 
@@ -47,15 +47,15 @@ class ShopCategoryController : ShopCategoryRepo {
      * Updates an existing shop category's name. If the category does not exist, an exception is thrown.
      *
      * @param categoryId The ID of the category to be updated.
-     * @param categoryName The new name of the category.
+     * @param name The new name of the category.
      * @return The updated shop category.
      * @throws categoryId.notFoundException If the category with the specified ID is not found.
      */
-    override suspend fun updateCategory(categoryId: String, categoryName: String): ShopCategory = query {
+    override suspend fun updateCategory(categoryId: String, name: String): ShopCategory = query {
         val isShopCategoryExist =
             ShopCategoryEntity.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
         isShopCategoryExist?.let {
-            it.categoryName = categoryName
+            it.name = name
             it.response()
         } ?: throw categoryId.notFoundException()
     }

@@ -75,7 +75,7 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
             call.respond(
                 ApiResponse.success(
                     productCategoryController.createCategory(
-                        requestBody.categoryName
+                        requestBody.name
                     ), HttpStatusCode.OK
                 )
             )
@@ -87,7 +87,7 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
          * Accessible by admins only.
          *
          * @param id The ID of the category to update.
-         * @param categoryName The new name for the category.
+         * @param name The new name for the category.
          */
         put("product-category/{id}", {
             tags("Product Category")
@@ -95,13 +95,13 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
                 pathParameter<String>("id") {
                     required = true
                 }
-                queryParameter<String>("categoryName") {
+                queryParameter<String>("name") {
                     required = true
                 }
             }
             apiResponse()
         }) {
-            val (id, categoryName) = call.requiredParameters("id", "categoryName") ?: return@put
+            val (id, categoryName) = call.requiredParameters("id", "name") ?: return@put
             call.respond(
                 ApiResponse.success(
                     productCategoryController.updateCategory(

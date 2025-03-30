@@ -6,10 +6,10 @@ interface ProductCategoryRepo {
     /**
      * Creates a new product category.
      *
-     * @param categoryName The name of the category.
+     * @param name The name of the category.
      * @return The created product category.
      */
-    suspend fun createCategory(categoryName: String): ProductCategory
+    suspend fun createCategory(name: String): ProductCategory
 
     /**
      * Retrieves a list of product categories.

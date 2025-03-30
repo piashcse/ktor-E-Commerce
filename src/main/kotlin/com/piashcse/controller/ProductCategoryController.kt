@@ -16,17 +16,17 @@ class ProductCategoryController : ProductCategoryRepo {
     /**
      * Creates a new product category with the given category name.
      *
-     * @param categoryName The name of the category to be created.
+     * @param name The name of the category to be created.
      * @return The created product category entity.
      * @throws Exception if a category with the provided name already exists.
      */
-    override suspend fun createCategory(categoryName: String): ProductCategory = query {
+    override suspend fun createCategory(name: String): ProductCategory = query {
         val isCategoryExist =
-            ProductCategoryEntity.find { ProductCategoryTable.categoryName eq categoryName }.toList().singleOrNull()
+            ProductCategoryEntity.find { ProductCategoryTable.name eq name }.toList().singleOrNull()
         isCategoryExist?.let {
-            throw categoryName.alreadyExistException()
+            throw name.alreadyExistException()
         } ?: ProductCategoryEntity.new {
-            this.categoryName = categoryName
+            this.name = name
         }.response()
     }
 
@@ -51,11 +51,11 @@ class ProductCategoryController : ProductCategoryRepo {
      * @return The updated product category entity.
      * @throws Exception if no category is found with the provided category ID.
      */
-    override suspend fun updateCategory(categoryId: String, categoryName: String): ProductCategory = query {
+    override suspend fun updateCategory(categoryId: String, name: String): ProductCategory = query {
         val isCategoryExist =
             ProductCategoryEntity.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
         isCategoryExist?.let {
-            it.categoryName = categoryName
+            it.name = name
             it.response()
         } ?: throw categoryId.notFoundException()
     }

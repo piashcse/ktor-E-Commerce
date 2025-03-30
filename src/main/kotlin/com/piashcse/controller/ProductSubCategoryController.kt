@@ -27,14 +27,14 @@ class ProductSubCategoryController : ProductSubCategoryRepo {
                 .singleOrNull()
         isCategoryIdExist?.let {
             val isSubCategoryExist =
-                ProductSubCategoryEntity.find { ProductSubCategoryTable.subCategoryName eq productSubCategory.subCategoryName }
+                ProductSubCategoryEntity.find { ProductSubCategoryTable.name eq productSubCategory.name }
                     .toList()
                     .singleOrNull()
             isSubCategoryExist?.let {
-                throw productSubCategory.subCategoryName.alreadyExistException()
+                throw productSubCategory.name.alreadyExistException()
             } ?: ProductSubCategoryEntity.new {
                 categoryId = EntityID(productSubCategory.categoryId, ProductSubCategoryTable)
-                subCategoryName = productSubCategory.subCategoryName
+                name = productSubCategory.name
             }.response()
         } ?: throw productSubCategory.categoryId.notFoundException()
     }
@@ -63,12 +63,12 @@ class ProductSubCategoryController : ProductSubCategoryRepo {
      * @return The updated product subcategory.
      * @throws id.notFoundException() If the subcategory ID does not exist.
      */
-    override suspend fun updateProductSubCategory(id: String, subCategoryName: String): ProductSubCategory = query {
+    override suspend fun updateProductSubCategory(id: String, name: String): ProductSubCategory = query {
         val suCategoryExist =
             ProductSubCategoryEntity.find { ProductSubCategoryTable.id eq id }
                 .toList().singleOrNull()
         suCategoryExist?.let {
-            it.subCategoryName = subCategoryName
+            it.name = name
             it.response()
         } ?: throw id.notFoundException()
     }

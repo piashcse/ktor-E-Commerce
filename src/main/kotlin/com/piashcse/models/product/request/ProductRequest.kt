@@ -9,10 +9,10 @@ data class ProductRequest(
     val categoryId: String,
     val subCategoryId: String?,
     val brandId: String?,
-    val productName: String,
+    val name: String,
     val productCode: String?,
     val productQuantity: Int,
-    val productDetail: String,
+    val detail: String,
     val price: Double,
     val discountPrice: Double?,
     val status: Int?,
@@ -30,8 +30,8 @@ data class ProductRequest(
     fun validation() {
         validate(this) {
             validate(ProductRequest::categoryId).isNotNull().isNotEmpty()
-            validate(ProductRequest::productName).isNotNull().isNotEmpty()
-            validate(ProductRequest::productDetail).isNotNull().isNotEmpty()
+            validate(ProductRequest::name).isNotNull().isNotEmpty()
+            validate(ProductRequest::detail).isNotNull().isNotEmpty()
             validate(ProductRequest::price).isNotNull().isGreaterThan(0.0)
             validate(ProductRequest::productQuantity).isNotNull().isGreaterThan(0)
         }

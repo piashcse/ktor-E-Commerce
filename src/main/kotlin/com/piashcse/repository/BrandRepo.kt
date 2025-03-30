@@ -9,7 +9,7 @@ interface BrandRepo {
      * @param name The name of the brand.
      * @return The created brand.
      */
-    suspend fun createBrand(brandName: String): Brand
+    suspend fun createBrand(name: String): Brand
     /**
      * Retrieves all available brands with a limit.
      *
@@ -24,7 +24,7 @@ interface BrandRepo {
      * @param name The updated name of the brand.
      * @return The updated brand.
      */
-    suspend fun updateBrand(brandId: String, brandName: String): Brand
+    suspend fun updateBrand(brandId: String, name: String): Brand
     /**
      * Deletes a brand by its ID.
      *

@@ -15,16 +15,16 @@ class BrandController : BrandRepo {
     /**
      * Creates a new brand if it does not already exist.
      *
-     * @param brandName The name of the brand to be created.
+     * @param name The name of the brand to be created.
      * @return The created brand entity.
      * @throws Exception if the brand name already exists.
      */
-    override suspend fun createBrand(brandName: String): Brand = query {
-        val isBrandExist = BrandEntity.find { BrandTable.brandName eq brandName }.toList().singleOrNull()
+    override suspend fun createBrand(name: String): Brand = query {
+        val isBrandExist = BrandEntity.find { BrandTable.name eq name }.toList().singleOrNull()
         isBrandExist?.let {
-            throw brandName.alreadyExistException()
+            throw name.alreadyExistException()
         } ?: BrandEntity.new {
-            this.brandName = brandName
+            this.name = name
         }.response()
     }
 
@@ -44,14 +44,14 @@ class BrandController : BrandRepo {
      * Updates the name of an existing brand.
      *
      * @param brandId The ID of the brand to update.
-     * @param brandName The new name for the brand.
+     * @param name The new name for the brand.
      * @return The updated brand entity.
      * @throws Exception if the brand ID is not found.
      */
-    override suspend fun updateBrand(brandId: String, brandName: String): Brand = query {
+    override suspend fun updateBrand(brandId: String, name: String): Brand = query {
         val isBrandExist = BrandEntity.find { BrandTable.id eq brandId }.toList().singleOrNull()
         isBrandExist?.let {
-            it.brandName = brandName
+            it.name = name
             it.response()
         } ?: throw brandId.notFoundException()
     }

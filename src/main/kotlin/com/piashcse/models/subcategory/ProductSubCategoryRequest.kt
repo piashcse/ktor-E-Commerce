@@ -5,13 +5,13 @@ import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
 data class ProductSubCategoryRequest(
-     val categoryId: String,
-    val subCategoryName: String
+    val categoryId: String,
+    val name: String
 ) {
     fun validation() {
         validate(this) {
             validate(ProductSubCategoryRequest::categoryId).isNotNull().isNotEmpty()
-            validate(ProductSubCategoryRequest::subCategoryName).isNotNull().isNotEmpty()
+            validate(ProductSubCategoryRequest::name).isNotNull().isNotEmpty()
         }
     }
 }
