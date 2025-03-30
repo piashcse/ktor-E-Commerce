@@ -101,11 +101,11 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
             }
             apiResponse()
         }) {
-            val (id, categoryName) = call.requiredParameters("id", "name") ?: return@put
+            val (id, name) = call.requiredParameters("id", "name") ?: return@put
             call.respond(
                 ApiResponse.success(
                     productCategoryController.updateCategory(
-                        id, categoryName
+                        id, name
                     ), HttpStatusCode.OK
                 )
             )

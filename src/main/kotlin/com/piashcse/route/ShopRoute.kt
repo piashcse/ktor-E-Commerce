@@ -43,7 +43,7 @@ fun Route.shopRoute(shopController: ShopController) {
                 val requestBody = call.receive<ShopRequest>()
                 requestBody.validation()
                 shopController.createShop(
-                    call.currentUser().userId, requestBody.shopCategoryId, requestBody.shopName
+                    call.currentUser().userId, requestBody.categoryId, requestBody.name
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
@@ -65,7 +65,7 @@ fun Route.shopRoute(shopController: ShopController) {
                 }
                 apiResponse()
             }) {
-                val (limit, offset) = call.requiredParameters("limit") ?: return@get
+                val (limit) = call.requiredParameters("limit") ?: return@get
                 shopController.getShops(
                     call.currentUser().userId, limit.toInt()
                 ).let {
@@ -78,7 +78,7 @@ fun Route.shopRoute(shopController: ShopController) {
              * PUT request to update the name of an existing shop.
              *
              * @param id The ID of the shop to update.
-             * @param shopName The new name of the shop.
+             * @param name The new name of the shop.
              * @response A response containing the updated shop details.
              */
             put("{id}", {
@@ -87,15 +87,15 @@ fun Route.shopRoute(shopController: ShopController) {
                     pathParameter<String>("id") {
                         required = true
                     }
-                    queryParameter<String>("shopName") {
+                    queryParameter<String>("name") {
                         required = true
                     }
                 }
                 apiResponse()
             }) {
-                val (id, shopName) = call.requiredParameters("id", "shopName") ?: return@put
+                val (id, name) = call.requiredParameters("id", "name") ?: return@put
                 shopController.updateShop(
-                    call.currentUser().userId, id, shopName
+                    call.currentUser().userId, id, name
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
