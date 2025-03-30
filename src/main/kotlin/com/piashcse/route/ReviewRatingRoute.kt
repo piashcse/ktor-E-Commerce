@@ -86,15 +86,15 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
             /**
              * PUT request to update an existing review and rating.
              *
-             * @param reviewId The ID of the review to update.
+             * @param id The ID of the review to update.
              * @param review The updated review content.
              * @param rating The updated rating.
              * @response A response containing the updated review and rating.
              */
-            put("{reviewId}", {
+            put("{id}", {
                 tags("Review Rating")
                 request {
-                    pathParameter<String>("reviewId") {
+                    pathParameter<String>("id") {
                         required = true
                     }
                     queryParameter<String>("review") {
@@ -106,11 +106,11 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
                 }
                 apiResponse()
             }) {
-                val (reviewId, review, rating) = call.requiredParameters("reviewId", "review", "rating") ?: return@put
+                val (id, review, rating) = call.requiredParameters("id", "review", "rating") ?: return@put
                 call.respond(
                     ApiResponse.success(
                         reviewRatingController.updateReviewRating(
-                            reviewId,
+                            id,
                             review,
                             rating.toInt()
                         ), HttpStatusCode.OK
@@ -122,22 +122,22 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
             /**
              * DELETE request to remove an existing review and rating.
              *
-             * @param reviewId The ID of the review to delete.
+             * @param id The ID of the review to delete.
              * @response A response indicating the result of the deletion.
              */
-            delete("{reviewId}", {
+            delete("{id}", {
                 tags("Review Rating")
                 request {
-                    pathParameter<String>("reviewId") {
+                    pathParameter<String>("id") {
                         required = true
                     }
                 }
                 apiResponse()
             }) {
-                val (reviewId) = call.requiredParameters("reviewId") ?: return@delete
+                val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(
-                        reviewRatingController.deleteReviewRating(reviewId), HttpStatusCode.OK
+                        reviewRatingController.deleteReviewRating(id), HttpStatusCode.OK
                     )
                 )
             }
