@@ -1,6 +1,6 @@
 package com.piashcse.utils.extension
 
-import com.piashcse.models.user.body.JwtTokenBody
+import com.piashcse.models.user.body.JwtTokenRequest
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.CommonException
 import com.piashcse.utils.Response
@@ -44,8 +44,8 @@ suspend fun <T> query(block: () -> T): T = withContext(Dispatchers.IO) {
         block()
     }
 }
-fun ApplicationCall.currentUser(): JwtTokenBody {
-    return this.principal<JwtTokenBody>() ?: throw IllegalStateException("No authenticated user found")
+fun ApplicationCall.currentUser(): JwtTokenRequest {
+    return this.principal<JwtTokenRequest>() ?: throw IllegalStateException("No authenticated user found")
 }
 
 suspend fun ApplicationCall.requiredParameters(vararg requiredParams: String): List<String>? {

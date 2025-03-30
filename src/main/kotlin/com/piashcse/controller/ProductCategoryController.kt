@@ -8,8 +8,19 @@ import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 
+/**
+ * Controller for managing product categories.
+ */
 class ProductCategoryController : ProductCategoryRepo {
-    override suspend fun addProductCategory(categoryName: String): ProductCategory = query {
+
+    /**
+     * Creates a new product category with the given category name.
+     *
+     * @param categoryName The name of the category to be created.
+     * @return The created product category entity.
+     * @throws Exception if a category with the provided name already exists.
+     */
+    override suspend fun createCategory(categoryName: String): ProductCategory = query {
         val isCategoryExist =
             ProductCategoryEntity.find { ProductCategoryTable.categoryName eq categoryName }.toList().singleOrNull()
         isCategoryExist?.let {
@@ -19,14 +30,28 @@ class ProductCategoryController : ProductCategoryRepo {
         }.response()
     }
 
-    override suspend fun getProductCategory(limit: Int): List<ProductCategory> = query {
+    /**
+     * Retrieves the list of product categories with a limit on the number of categories returned.
+     *
+     * @param limit The maximum number of categories to retrieve.
+     * @return A list of product category entities.
+     */
+    override suspend fun getCategories(limit: Int): List<ProductCategory> = query {
         val categories = ProductCategoryEntity.all().limit(limit)
         categories.map {
             it.response()
         }
     }
 
-    override suspend fun updateProductCategory(categoryId: String, categoryName: String): ProductCategory = query {
+    /**
+     * Updates the name of an existing product category.
+     *
+     * @param categoryId The ID of the category to update.
+     * @param categoryName The new name for the category.
+     * @return The updated product category entity.
+     * @throws Exception if no category is found with the provided category ID.
+     */
+    override suspend fun updateCategory(categoryId: String, categoryName: String): ProductCategory = query {
         val isCategoryExist =
             ProductCategoryEntity.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
         isCategoryExist?.let {
@@ -35,7 +60,14 @@ class ProductCategoryController : ProductCategoryRepo {
         } ?: throw categoryId.notFoundException()
     }
 
-    override suspend fun deleteProductCategory(categoryId: String): String = query {
+    /**
+     * Deletes an existing product category by its ID.
+     *
+     * @param categoryId The ID of the category to delete.
+     * @return The ID of the deleted category.
+     * @throws Exception if no category is found with the provided category ID.
+     */
+    override suspend fun deleteCategory(categoryId: String): String = query {
         val isCategoryExist =
             ProductCategoryEntity.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
         isCategoryExist?.let {

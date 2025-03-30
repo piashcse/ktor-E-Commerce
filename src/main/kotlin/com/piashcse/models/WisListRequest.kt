@@ -4,10 +4,10 @@ import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
-data class AddWisList(val productId:String){
+data class WisListRequest(val productId:String){
     fun validation(){
         validate(this){
-            validate(AddWisList::productId).isNotNull().isNotEmpty()
+            validate(WisListRequest::productId).isNotNull().isNotEmpty()
         }
     }
 }

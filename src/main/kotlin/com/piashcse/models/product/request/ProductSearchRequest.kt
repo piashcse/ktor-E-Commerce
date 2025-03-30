@@ -5,7 +5,7 @@ import org.valiktor.functions.isNotNull
 import org.valiktor.functions.isNotZero
 import org.valiktor.validate
 
-data class ProductSearch(
+data class ProductSearchRequest(
     val limit: Int,
     val productName: String,
     val maxPrice: Double?,
@@ -14,8 +14,8 @@ data class ProductSearch(
 ) {
     fun validation() {
         validate(this) {
-            validate(ProductSearch::limit).isNotNull().isNotZero()
-            validate(ProductSearch::productName).isNotNull().isNotEmpty()
+            validate(ProductSearchRequest::limit).isNotNull().isNotZero()
+            validate(ProductSearchRequest::productName).isNotNull().isNotEmpty()
         }
     }
 }

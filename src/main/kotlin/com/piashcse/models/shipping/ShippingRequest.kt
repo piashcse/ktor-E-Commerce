@@ -6,7 +6,7 @@ import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
 
-data class AddShipping(
+data class ShippingRequest(
     val orderId: String,
     val shipAddress: String,
     val shipCity: String,
@@ -17,11 +17,11 @@ data class AddShipping(
 ) {
     fun validation() {
         validate(this) {
-            validate(AddShipping::orderId).isNotNull().isNotEmpty()
-            validate(AddShipping::shipAddress).isNotNull().isNotEmpty()
-            validate(AddShipping::shipCity)
-            validate(AddShipping::shipPhone)
-            validate(AddShipping::shipEmail).isEmail()
+            validate(ShippingRequest::orderId).isNotNull().isNotEmpty()
+            validate(ShippingRequest::shipAddress).isNotNull().isNotEmpty()
+            validate(ShippingRequest::shipCity)
+            validate(ShippingRequest::shipPhone)
+            validate(ShippingRequest::shipEmail).isEmail()
         }
     }
 }

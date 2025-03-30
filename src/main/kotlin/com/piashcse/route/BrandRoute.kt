@@ -1,7 +1,7 @@
 package com.piashcse.route
 
 import com.piashcse.controller.BrandController
-import com.piashcse.models.bands.AddBrand
+import com.piashcse.models.bands.BrandRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -16,8 +16,20 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+/**
+ * Defines routes for managing brands, with authentication and authorization based on user roles.
+ *
+ * @param brandController The controller handling brand-related operations.
+ */
 fun Route.brandRoute(brandController: BrandController) {
     route("brand") {
+        /**
+         * GET request to fetch a list of brands, with an optional limit on the number of brands.
+         *
+         * Accessible by customers, sellers, and admins.
+         *
+         * @param limit The maximum number of brands to return.
+         */
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
             get({
                 tags("Brand")
@@ -36,21 +48,38 @@ fun Route.brandRoute(brandController: BrandController) {
                 )
             }
         }
+
+        /**
+         * POST request to create a new brand.
+         *
+         * Accessible only by admins.
+         *
+         * @param brandName The name of the brand to be created.
+         */
         authenticate(RoleManagement.ADMIN.role) {
             post({
                 tags("Brand")
                 request {
-                    body<AddBrand>()
+                    body<BrandRequest>()
                 }
                 apiResponse()
             }) {
-                val requestBody = call.receive<AddBrand>()
+                val requestBody = call.receive<BrandRequest>()
                 call.respond(
                     ApiResponse.success(
-                        brandController.addBrand(requestBody.brandName), HttpStatusCode.OK
+                        brandController.createBrand(requestBody.brandName), HttpStatusCode.OK
                     )
                 )
             }
+
+            /**
+             * PUT request to update an existing brand's name.
+             *
+             * Accessible only by admins.
+             *
+             * @param id The ID of the brand to be updated.
+             * @param name The new name for the brand.
+             */
             put("{id}", {
                 tags("Brand")
                 request {
@@ -70,6 +99,14 @@ fun Route.brandRoute(brandController: BrandController) {
                     )
                 )
             }
+
+            /**
+             * DELETE request to remove a brand by its ID.
+             *
+             * Accessible only by admins.
+             *
+             * @param id The ID of the brand to be deleted.
+             */
             delete("{id}", {
                 tags("Brand")
                 request {

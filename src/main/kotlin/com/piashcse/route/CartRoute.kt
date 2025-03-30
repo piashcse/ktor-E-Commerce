@@ -1,7 +1,7 @@
 package com.piashcse.route
 
 import com.piashcse.controller.CartController
-import com.piashcse.models.cart.AddCart
+import com.piashcse.models.cart.CartRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -17,20 +17,35 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+/**
+ * Defines routes for managing the shopping cart.
+ *
+ * Accessible by customers only. It includes operations to create, get, update, remove, and clear cart items.
+ *
+ * @param cartController The controller handling cart-related operations.
+ */
 fun Route.cartRoute(cartController: CartController) {
     route("cart") {
+        /**
+         * POST request to add a product to the cart.
+         *
+         * Accessible by customers only.
+         *
+         * @param productId The ID of the product to add to the cart.
+         * @param quantity The quantity of the product to add to the cart.
+         */
         authenticate(RoleManagement.CUSTOMER.role) {
             post({
                 tags("Cart")
                 request {
-                    body<AddCart>()
+                    body<CartRequest>()
                 }
                 apiResponse()
             }) {
-                val requestBody = call.receive<AddCart>()
+                val requestBody = call.receive<CartRequest>()
                 call.respond(
                     ApiResponse.success(
-                        cartController.addToCart(
+                        cartController.createCart(
                             call.currentUser().userId,
                             requestBody.productId,
                             requestBody.quantity
@@ -38,6 +53,15 @@ fun Route.cartRoute(cartController: CartController) {
                     )
                 )
             }
+
+            /**
+             * GET request to retrieve items from the cart with a specified limit.
+             *
+             * Accessible by customers only.
+             *
+             * @param limit The maximum number of items to retrieve from the cart.
+             * @param offset The offset for pagination, if applicable.
+             */
             get({
                 tags("Cart")
                 request {
@@ -57,6 +81,15 @@ fun Route.cartRoute(cartController: CartController) {
                     )
                 )
             }
+
+            /**
+             * PUT request to update the quantity of a product in the cart.
+             *
+             * Accessible by customers only.
+             *
+             * @param productId The ID of the product to update in the cart.
+             * @param quantity The new quantity of the product.
+             */
             put({
                 tags("Cart")
                 request {
@@ -77,6 +110,14 @@ fun Route.cartRoute(cartController: CartController) {
                     )
                 )
             }
+
+            /**
+             * DELETE request to remove a specific product from the cart.
+             *
+             * Accessible by customers only.
+             *
+             * @param productId The ID of the product to remove from the cart.
+             */
             delete({
                 tags("Cart")
                 request {
@@ -89,18 +130,24 @@ fun Route.cartRoute(cartController: CartController) {
                 val (productId) = call.requiredParameters("productId") ?: return@delete
                 call.respond(
                     ApiResponse.success(
-                        cartController.deleteCartItem(call.currentUser().userId, productId),
+                        cartController.removeCartItem(call.currentUser().userId, productId),
                         HttpStatusCode.OK
                     )
                 )
             }
+
+            /**
+             * DELETE request to clear all items in the cart.
+             *
+             * Accessible by customers only.
+             */
             delete("all", {
                 tags("Cart")
                 apiResponse()
             }) {
                 call.respond(
                     ApiResponse.success(
-                        cartController.deleteAllItemsOfCart(call.currentUser().userId), HttpStatusCode.OK
+                        cartController.clearCart(call.currentUser().userId), HttpStatusCode.OK
                     )
                 )
             }

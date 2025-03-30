@@ -1,7 +1,7 @@
 package com.piashcse.route
 
 import com.piashcse.controller.ProductSubCategoryController
-import com.piashcse.models.subcategory.AddProductSubCategory
+import com.piashcse.models.subcategory.ProductSubCategoryRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -16,8 +16,26 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+/**
+ * Defines routes for managing product subcategories.
+ *
+ * Available for customers, sellers, and admins with different levels of access.
+ *
+ * @param subCategoryController The controller handling product subcategory operations.
+ */
 fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryController) {
+
+    // Routes for customers, sellers, and admins to view product subcategories
     authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
+
+        /**
+         * GET request to retrieve product subcategories by category ID.
+         *
+         * Accessible by customers, sellers, and admins.
+         *
+         * @param categoryId The category ID to filter subcategories.
+         * @param limit The number of subcategories to retrieve.
+         */
         get("product-subcategory", {
             tags("Product SubCategory")
             request {
@@ -39,21 +57,40 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
             )
         }
     }
+
+    // Routes for admins to manage product subcategories
     authenticate(RoleManagement.ADMIN.role) {
+
+        /**
+         * POST request to create a new product subcategory.
+         *
+         * Accessible by admins only.
+         *
+         * @param requestBody The details of the product subcategory to create.
+         */
         post("product-subcategory", {
             tags("Product SubCategory")
             request {
-                body<AddProductSubCategory>()
+                body<ProductSubCategoryRequest>()
             }
             apiResponse()
         }) {
-            val requestBody = call.receive<AddProductSubCategory>()
+            val requestBody = call.receive<ProductSubCategoryRequest>()
             call.respond(
                 ApiResponse.success(
                     subCategoryController.addProductSubCategory(requestBody), HttpStatusCode.OK
                 )
             )
         }
+
+        /**
+         * PUT request to update an existing product subcategory by ID.
+         *
+         * Accessible by admins only.
+         *
+         * @param id The ID of the product subcategory to update.
+         * @param name The new name for the product subcategory.
+         */
         put("product-subcategory/{id}", {
             tags("Product SubCategory")
             request {
@@ -74,8 +111,15 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
                     ), HttpStatusCode.OK
                 )
             )
-
         }
+
+        /**
+         * DELETE request to delete a product subcategory by ID.
+         *
+         * Accessible by admins only.
+         *
+         * @param id The ID of the product subcategory to delete.
+         */
         delete("product-subcategory/{id}", {
             tags("Product SubCategory")
             request {
@@ -93,7 +137,6 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
                     ), HttpStatusCode.OK
                 )
             )
-
         }
     }
 }

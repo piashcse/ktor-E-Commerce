@@ -3,8 +3,36 @@ package com.piashcse.repository
 import com.piashcse.entities.ProductCategory
 
 interface ProductCategoryRepo {
-    suspend fun addProductCategory(categoryName: String): ProductCategory
-    suspend fun getProductCategory(limit: Int): List<ProductCategory>
-    suspend fun updateProductCategory(categoryId: String, categoryName: String): ProductCategory
-    suspend fun deleteProductCategory(categoryId: String): String
+    /**
+     * Creates a new product category.
+     *
+     * @param categoryName The name of the category.
+     * @return The created product category.
+     */
+    suspend fun createCategory(categoryName: String): ProductCategory
+
+    /**
+     * Retrieves a list of product categories.
+     *
+     * @param limit The maximum number of categories to return.
+     * @return A list of product categories.
+     */
+    suspend fun getCategories(limit: Int): List<ProductCategory>
+
+    /**
+     * Updates an existing product category.
+     *
+     * @param categoryId The unique identifier of the category.
+     * @param name The updated category name.
+     * @return The updated product category.
+     */
+    suspend fun updateCategory(categoryId: String, name: String): ProductCategory
+
+    /**
+     * Deletes a product category.
+     *
+     * @param categoryId The unique identifier of the category.
+     * @return A confirmation message.
+     */
+    suspend fun deleteCategory(categoryId: String): String
 }

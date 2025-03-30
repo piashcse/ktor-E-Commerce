@@ -1,7 +1,7 @@
 package com.piashcse.route
 
 import com.piashcse.controller.ReviewRatingController
-import com.piashcse.models.AddReviewRating
+import com.piashcse.models.ReviewRatingRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -17,9 +17,23 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+/**
+ * Route for managing review and rating operations.
+ *
+ * @param reviewRatingController The controller responsible for handling review and rating-related operations.
+ */
 fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
     route("review-rating") {
+
+        // Route for getting reviews and ratings
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
+            /**
+             * GET request to retrieve reviews and ratings for a specific product.
+             *
+             * @param productId The ID of the product to get reviews and ratings.
+             * @param limit The maximum number of reviews to retrieve.
+             * @response A response containing the list of reviews and ratings for the product.
+             */
             get({
                 tags("Review Rating")
                 request {
@@ -41,15 +55,25 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
                 )
             }
         }
+
+        // Route for adding, updating, and deleting reviews and ratings
         authenticate(RoleManagement.CUSTOMER.role) {
+
+            // Route for posting a new review and rating
+            /**
+             * POST request to add a new review and rating for a product.
+             *
+             * @param requestBody The body of the request containing review and rating details.
+             * @response A response indicating the success of the operation.
+             */
             post({
                 tags("Review Rating")
                 request {
-                    body<AddReviewRating>()
+                    body<ReviewRatingRequest>()
                 }
                 apiResponse()
             }) {
-                val requestBody = call.receive<AddReviewRating>()
+                val requestBody = call.receive<ReviewRatingRequest>()
                 call.respond(
                     ApiResponse.success(
                         reviewRatingController.addReviewRating(call.currentUser().userId, requestBody),
@@ -57,6 +81,16 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
                     )
                 )
             }
+
+            // Route for updating an existing review and rating
+            /**
+             * PUT request to update an existing review and rating.
+             *
+             * @param reviewId The ID of the review to update.
+             * @param review The updated review content.
+             * @param rating The updated rating.
+             * @response A response containing the updated review and rating.
+             */
             put("{reviewId}", {
                 tags("Review Rating")
                 request {
@@ -83,6 +117,14 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
                     )
                 )
             }
+
+            // Route for deleting a review and rating
+            /**
+             * DELETE request to remove an existing review and rating.
+             *
+             * @param reviewId The ID of the review to delete.
+             * @response A response indicating the result of the deletion.
+             */
             delete("{reviewId}", {
                 tags("Review Rating")
                 request {

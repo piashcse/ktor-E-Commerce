@@ -4,7 +4,7 @@ import org.valiktor.functions.isNotNull
 import org.valiktor.functions.isNotZero
 import org.valiktor.validate
 
-data class ProductWithFilter(
+data class ProductWithFilterRequest(
     val limit: Int,
     val maxPrice: Double?,
     val minPrice: Double?,
@@ -14,7 +14,7 @@ data class ProductWithFilter(
 ) {
     fun validation() {
         validate(this) {
-            validate(ProductWithFilter::limit).isNotNull().isNotZero()
+            validate(ProductWithFilterRequest::limit).isNotNull().isNotZero()
         }
     }
 }

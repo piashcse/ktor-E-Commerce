@@ -1,7 +1,7 @@
 package com.piashcse.route
 
 import com.piashcse.controller.ShopController
-import com.piashcse.models.shop.AddShop
+import com.piashcse.models.shop.ShopRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -17,24 +17,45 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+/**
+ * Route for managing shops in the application.
+ *
+ * @param shopController The controller responsible for handling shop-related operations.
+ */
 fun Route.shopRoute(shopController: ShopController) {
     route("shop") {
+
+        // Route for creating a shop
         authenticate(RoleManagement.ADMIN.role) {
+            /**
+             * POST request to create a new shop.
+             *
+             * @param requestBody The body of the request containing shop creation details.
+             * @response A response containing the created shop details.
+             */
             post({
                 tags("Shop")
                 request {
-                    body<AddShop>()
+                    body<ShopRequest>()
                 }
                 apiResponse()
             }) {
-                val requestBody = call.receive<AddShop>()
+                val requestBody = call.receive<ShopRequest>()
                 requestBody.validation()
-                shopController.addShop(
+                shopController.createShop(
                     call.currentUser().userId, requestBody.shopCategoryId, requestBody.shopName
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
             }
+
+            // Route for getting a list of shops
+            /**
+             * GET request to retrieve a list of shops.
+             *
+             * @param limit The maximum number of shops to retrieve.
+             * @response A response containing the list of shops.
+             */
             get({
                 tags("Shop")
                 request {
@@ -45,12 +66,21 @@ fun Route.shopRoute(shopController: ShopController) {
                 apiResponse()
             }) {
                 val (limit, offset) = call.requiredParameters("limit") ?: return@get
-                shopController.getShop(
+                shopController.getShops(
                     call.currentUser().userId, limit.toInt()
                 ).let {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
             }
+
+            // Route for updating a shop
+            /**
+             * PUT request to update the name of an existing shop.
+             *
+             * @param id The ID of the shop to update.
+             * @param shopName The new name of the shop.
+             * @response A response containing the updated shop details.
+             */
             put("{id}", {
                 tags("Shop")
                 request {
@@ -70,6 +100,14 @@ fun Route.shopRoute(shopController: ShopController) {
                     call.respond(ApiResponse.success(it, HttpStatusCode.OK))
                 }
             }
+
+            // Route for deleting a shop
+            /**
+             * DELETE request to remove an existing shop.
+             *
+             * @param id The ID of the shop to delete.
+             * @response A response indicating the result of the deletion.
+             */
             delete("{id}", {
                 tags("Shop")
                 request {

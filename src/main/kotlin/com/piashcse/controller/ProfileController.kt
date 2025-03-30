@@ -3,8 +3,8 @@ package com.piashcse.controller
 import com.piashcse.entities.UserProfile
 import com.piashcse.entities.UserProfileTable
 import com.piashcse.entities.UsersProfileEntity
-import com.piashcse.models.user.body.UserProfileBody
-import com.piashcse.repository.UserProfileRepo
+import com.piashcse.models.user.body.UserProfileRequest
+import com.piashcse.repository.ProfileRepo
 import com.piashcse.utils.AppConstants
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
@@ -12,19 +12,39 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class UserProfileController : UserProfileRepo {
+/**
+ * Controller for managing user profiles. Provides methods to retrieve, update, and change user profile details and images.
+ */
+class ProfileController : ProfileRepo {
+
     init {
+        // Create the profile image directory if it does not exist.
         if (!File(AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION).exists()) {
             File(AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION).mkdirs()
         }
     }
 
+    /**
+     * Retrieves the user profile based on the given user ID.
+     *
+     * @param userId The ID of the user whose profile is to be retrieved.
+     * @return The user profile corresponding to the given user ID.
+     * @throws userId.notFoundException() If no user profile is found for the given user ID.
+     */
     override suspend fun getProfile(userId: String): UserProfile = query {
         val isProfileExist = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         isProfileExist?.response() ?: throw userId.notFoundException()
     }
 
-    override suspend fun updateProfileInfo(userId: String, userProfile: UserProfileBody?): UserProfile = query {
+    /**
+     * Updates the user profile details.
+     *
+     * @param userId The ID of the user whose profile is to be updated.
+     * @param userProfile The new profile details to update, can be null to keep current values.
+     * @return The updated user profile.
+     * @throws userId.notFoundException() If no user profile is found for the given user ID.
+     */
+    override suspend fun updateProfile(userId: String, userProfile: UserProfileRequest?): UserProfile = query {
         val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         userProfileEntity?.let {
             it.firstName = userProfile?.firstName ?: it.firstName
@@ -43,12 +63,22 @@ class UserProfileController : UserProfileRepo {
         } ?: throw userId.notFoundException()
     }
 
+    /**
+     * Updates the user's profile image and replaces the old one if it exists.
+     *
+     * @param userId The ID of the user whose profile image is to be updated.
+     * @param profileImage The new profile image file name.
+     * @return The updated user profile with the new image.
+     * @throws userId.notFoundException() If no user profile is found for the given user ID.
+     */
     override suspend fun updateProfileImage(userId: String, profileImage: String?): UserProfile = query {
         val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
-        // delete previous file from directory as latest one replace previous one
+
+        // Delete previous profile image if it exists, as the new one will replace it.
         userProfileEntity?.userProfileImage?.let {
             Files.deleteIfExists(Paths.get("${AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION}$it"))
         }
+
         userProfileEntity?.let {
             it.userProfileImage = profileImage ?: it.userProfileImage
             it.response()

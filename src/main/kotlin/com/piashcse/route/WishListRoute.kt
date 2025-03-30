@@ -1,7 +1,7 @@
 package com.piashcse.route
 
 import com.piashcse.controller.WishListController
-import com.piashcse.models.AddWisList
+import com.piashcse.models.WisListRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -16,17 +16,29 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+/**
+ * Route for managing the user's wish list operations.
+ *
+ * @param wishlistController The controller responsible for handling wish list operations.
+ */
 fun Route.wishListRoute(wishlistController: WishListController) {
     route("wishlist") {
         authenticate(RoleManagement.CUSTOMER.role) {
+
+            /**
+             * POST request to add a product to the user's wish list.
+             *
+             * @param productId The ID of the product to add to the wish list.
+             * @response A response indicating the success of adding the product to the wish list.
+             */
             post({
                 tags("Wish List")
                 request {
-                    body<AddWisList>()
+                    body<WisListRequest>()
                 }
                 apiResponse()
             }) {
-                val requestBody = call.receive<AddWisList>()
+                val requestBody = call.receive<WisListRequest>()
                 call.respond(
                     ApiResponse.success(
                         wishlistController.addToWishList(call.currentUser().userId, requestBody.productId),
@@ -34,6 +46,13 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                     )
                 )
             }
+
+            /**
+             * GET request to retrieve the user's wish list.
+             *
+             * @param limit The maximum number of products to retrieve from the wish list.
+             * @response A response containing the products in the user's wish list.
+             */
             get({
                 tags("Wish List")
                 request {
@@ -51,6 +70,13 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                     )
                 )
             }
+
+            /**
+             * DELETE request to remove a product from the user's wish list.
+             *
+             * @param productId The ID of the product to remove from the wish list.
+             * @response A response indicating the success of removing the product from the wish list.
+             */
             delete({
                 tags("Wish List")
                 request {
@@ -63,7 +89,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
                 val (productId) = call.requiredParameters("productId") ?: return@delete
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.deleteWishList(call.currentUser().userId, productId), HttpStatusCode.OK
+                        wishlistController.removeFromWishList(call.currentUser().userId, productId), HttpStatusCode.OK
                     )
                 )
             }

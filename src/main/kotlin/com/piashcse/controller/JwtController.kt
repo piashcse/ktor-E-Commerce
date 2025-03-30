@@ -3,7 +3,7 @@ package com.piashcse.controller
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
-import com.piashcse.models.user.body.JwtTokenBody
+import com.piashcse.models.user.body.JwtTokenRequest
 import java.util.*
 
 object JwtController {
@@ -22,7 +22,7 @@ object JwtController {
     /**
      * Produce a token for the given JwtTokenBody
      */
-    fun tokenProvider(jwtTokenBody: JwtTokenBody): String = JWT.create()
+    fun tokenProvider(jwtTokenBody: JwtTokenRequest): String = JWT.create()
         .withSubject("Authentication")
         .withIssuer(ISSUER)
         .withClaim("email", jwtTokenBody.email)

@@ -7,16 +7,12 @@ import org.valiktor.functions.isIn
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
-data class LoginBody(
-   val email: String,
-   val password: String,
-   val userType: String
-) {
+data class RegisterRequest(val email: String, val password: String, val userType: String) {
     fun validation() {
         validate(this) {
-            validate(LoginBody::email).isNotNull().isEmail()
-            validate(LoginBody::password).isNotNull().hasSize(4, 10)
-            validate(LoginBody::userType).isNotNull()
+            validate(RegisterRequest::email).isNotNull().isEmail()
+            validate(RegisterRequest::password).isNotNull().hasSize(4, 15)
+            validate(RegisterRequest::userType).isNotNull()
                 .isIn(RoleManagement.ADMIN.role, RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role)
         }
     }

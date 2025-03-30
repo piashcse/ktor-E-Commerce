@@ -1,7 +1,7 @@
 package com.piashcse.plugins
 
 import com.piashcse.controller.JwtController
-import com.piashcse.models.user.body.JwtTokenBody
+import com.piashcse.models.user.body.JwtTokenRequest
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -38,7 +38,7 @@ fun provideJwtAuthConfig(jwtConfig: JWTAuthenticationProvider.Config, userRole: 
         val email = it.payload.getClaim("email").asString()
         val userType = it.payload.getClaim("userType").asString()
         if (userType == userRole.role) {
-            JwtTokenBody(userId, email, userType)
+            JwtTokenRequest(userId, email, userType)
         } else null
     }
 }

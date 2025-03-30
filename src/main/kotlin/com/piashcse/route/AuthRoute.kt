@@ -18,32 +18,54 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+/**
+ * Defines authentication routes for login, registration, password reset, and password change.
+ *
+ * @param authController The controller handling authentication-related operations.
+ */
 fun Route.authRoute(authController: AuthController) {
     route("auth") {
+        /**
+         * Handles the login request.
+         *
+         * Receives a [LoginRequest] object and responds with a successful login response.
+         */
         post("login", {
             tags("Auth")
             request {
-                body<LoginBody>()
+                body<LoginRequest>()
             }
             apiResponse()
         }) {
-            val requestBody = call.receive<LoginBody>()
+            val requestBody = call.receive<LoginRequest>()
             call.respond(
                 ApiResponse.success(
                     authController.login(requestBody), HttpStatusCode.OK
                 )
             )
         }
+
+        /**
+         * Handles the registration request.
+         *
+         * Receives a [RegisterRequest] object and responds with a successful registration response.
+         */
         post("register", {
             tags("Auth")
             request {
-                body<RegistrationBody>()
+                body<RegisterRequest>()
             }
             apiResponse()
         }) {
-            val requestBody = call.receive<RegistrationBody>()
+            val requestBody = call.receive<RegisterRequest>()
             call.respond(ApiResponse.success(authController.register(requestBody), HttpStatusCode.OK))
         }
+
+        /**
+         * Handles the request for sending a password reset verification code.
+         *
+         * Receives the user's email as a query parameter and sends a verification code to the email.
+         */
         get("forget-password", {
             tags("Auth")
             request {
@@ -54,11 +76,10 @@ fun Route.authRoute(authController: AuthController) {
             apiResponse()
         }) {
             val (email) = call.requiredParameters("email") ?: return@get
-            val requestBody = ForgetPasswordEmail(email)
-            authController.forgetPasswordSendCode(requestBody).let {
+            val requestBody = ForgetPasswordRequest(email)
+            authController.sendPasswordResetOtp(requestBody).let {
                 sendEmail(requestBody.email, it.verificationCode)
                 call.respond(
-
                     ApiResponse.success(
                         "${AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_SENT_TO} ${requestBody.email}",
                         HttpStatusCode.OK
@@ -66,6 +87,12 @@ fun Route.authRoute(authController: AuthController) {
                 )
             }
         }
+
+        /**
+         * Handles the request for resetting the password.
+         *
+         * Receives the email, OTP, and new password as query parameters and verifies the password reset code.
+         */
         get("reset-password", {
             tags("Auth")
             request {
@@ -85,8 +112,8 @@ fun Route.authRoute(authController: AuthController) {
                 "email", "otp", "newPassword"
             ) ?: return@get
 
-            AuthController().forgetPasswordVerificationCode(
-                ConfirmPassword(
+            AuthController().verifyPasswordResetOtp(
+                ConfirmPasswordRequest(
                     email, verificationCode, newPassword
                 )
             ).let {
@@ -110,6 +137,12 @@ fun Route.authRoute(authController: AuthController) {
                 }
             }
         }
+
+        /**
+         * Handles the request to change the password for authenticated users.
+         *
+         * Requires the old and new password as query parameters and responds with a success or failure message.
+         */
         authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
             put("change-password", {
                 tags("Auth")
@@ -125,7 +158,7 @@ fun Route.authRoute(authController: AuthController) {
                 apiResponse()
             }) {
                 val (oldPassword, newPassword) = call.requiredParameters("oldPassword", "newPassword") ?: return@put
-                val loginUser = call.principal<JwtTokenBody>()
+                val loginUser = call.principal<JwtTokenRequest>()
                 authController.changePassword(loginUser?.userId!!, ChangePassword(oldPassword, newPassword)).let {
                     if (it) call.respond(
                         ApiResponse.success(

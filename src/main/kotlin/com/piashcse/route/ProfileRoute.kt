@@ -1,7 +1,7 @@
 package com.piashcse.route
 
-import com.piashcse.controller.UserProfileController
-import com.piashcse.models.user.body.UserProfileBody
+import com.piashcse.controller.ProfileController
+import com.piashcse.models.user.body.UserProfileRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.AppConstants
@@ -22,9 +22,20 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
 
-fun Route.userProfileRoute(userProfileController: UserProfileController) {
+/**
+ * Route for managing user profile-related operations.
+ *
+ * @param userProfileController The controller responsible for handling user profile-related operations.
+ */
+fun Route.profileRoute(userProfileController: ProfileController) {
     authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
         route("profile") {
+
+            /**
+             * GET request to retrieve the profile of the current user.
+             *
+             * @response A response containing the profile information of the user.
+             */
             get({
                 tags("Profile")
                 apiResponse()
@@ -35,6 +46,24 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
                     )
                 )
             }
+
+            /**
+             * PUT request to update the profile of the current user.
+             *
+             * @param firstName The user's first name.
+             * @param lastName The user's last name.
+             * @param secondaryMobileNumber The user's secondary mobile number.
+             * @param faxNumber The user's fax number.
+             * @param streetAddress The user's street address.
+             * @param city The user's city.
+             * @param identificationType The type of identification provided.
+             * @param identificationNo The identification number.
+             * @param occupation The user's occupation.
+             * @param userDescription A brief description about the user.
+             * @param postCode The user's postal code.
+             * @param gender The user's gender.
+             * @response A response indicating the success of the profile update.
+             */
             put({
                 tags("Profile")
                 request {
@@ -53,7 +82,7 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
                 }
                 apiResponse()
             }) {
-                val params = UserProfileBody(
+                val params = UserProfileRequest(
                     firstName = call.parameters["firstName"],
                     lastName = call.parameters["lastName"],
                     secondaryMobileNumber = call.parameters["secondaryMobileNumber"],
@@ -69,11 +98,17 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
                 )
                 call.respond(
                     ApiResponse.success(
-                        userProfileController.updateProfileInfo(call.currentUser().userId, params), HttpStatusCode.OK
+                        userProfileController.updateProfile(call.currentUser().userId, params), HttpStatusCode.OK
                     )
                 )
             }
 
+            /**
+             * POST request to upload a new profile image for the user.
+             *
+             * @param image The image file to be uploaded.
+             * @response A response containing the file name of the uploaded image.
+             */
             post("image-upload",{
                 tags("Profile")
                 request {
@@ -119,6 +154,5 @@ fun Route.userProfileRoute(userProfileController: UserProfileController) {
                 }
             }
         }
-
     }
 }

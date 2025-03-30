@@ -5,7 +5,7 @@ import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
-data class AddProduct(
+data class ProductRequest(
     val categoryId: String,
     val subCategoryId: String?,
     val brandId: String?,
@@ -29,11 +29,11 @@ data class AddProduct(
 ) {
     fun validation() {
         validate(this) {
-            validate(AddProduct::categoryId).isNotNull().isNotEmpty()
-            validate(AddProduct::productName).isNotNull().isNotEmpty()
-            validate(AddProduct::productDetail).isNotNull().isNotEmpty()
-            validate(AddProduct::price).isNotNull().isGreaterThan(0.0)
-            validate(AddProduct::productQuantity).isNotNull().isGreaterThan(0)
+            validate(ProductRequest::categoryId).isNotNull().isNotEmpty()
+            validate(ProductRequest::productName).isNotNull().isNotEmpty()
+            validate(ProductRequest::productDetail).isNotNull().isNotEmpty()
+            validate(ProductRequest::price).isNotNull().isGreaterThan(0.0)
+            validate(ProductRequest::productQuantity).isNotNull().isGreaterThan(0)
         }
     }
 }

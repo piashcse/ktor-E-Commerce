@@ -4,10 +4,10 @@ import org.valiktor.functions.isEmail
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
-data class ForgetPasswordEmail(val email: String) {
+data class ForgetPasswordRequest(val email: String) {
    init {
        validate(this) {
-           validate(ForgetPasswordEmail::email).isNotNull().isEmail()
+           validate(ForgetPasswordRequest::email).isNotNull().isEmail()
        }
    }
 }
