@@ -6,23 +6,23 @@ import com.piashcse.entities.base.BaseIntIdTable
 import org.jetbrains.exposed.dao.id.EntityID
 
 object ProductCategoryTable : BaseIntIdTable("category") {
-    val categoryName = text("category_name")
+    val name = text("name")
     val image = text("image").nullable()
 }
 
 class ProductCategoryEntity(id: EntityID<String>) : BaseIntEntity(id, ProductCategoryTable) {
     companion object : BaseIntEntityClass<ProductCategoryEntity>(ProductCategoryTable)
 
-    var categoryName by ProductCategoryTable.categoryName
+    var name by ProductCategoryTable.name
     private val subCategories by ProductSubCategoryEntity referrersOn ProductSubCategoryTable.categoryId
     var image by ProductCategoryTable.image
     fun response() =
-        ProductCategory(id.value, categoryName, subCategories.map { it.response() }, image)
+        ProductCategory(id.value, name, subCategories.map { it.response() }, image)
 }
 
 data class ProductCategory(
     val id: String,
-    val categoryName: String,
+    val name: String,
     val subCategories: List<ProductSubCategory>,
     val image: String?
 )

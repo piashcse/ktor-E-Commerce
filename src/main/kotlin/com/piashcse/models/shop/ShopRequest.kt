@@ -4,14 +4,14 @@ import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
-data class AddShop(
-    val shopName: String,
-    val shopCategoryId: String
+data class ShopRequest(
+    val name: String,
+    val categoryId: String
 ) {
     fun validation() {
         validate(this) {
-            validate(AddShop::shopName).isNotNull().isNotEmpty()
-            validate(AddShop::shopCategoryId).isNotNull().isNotEmpty()
+            validate(ShopRequest::name).isNotNull().isNotEmpty()
+            validate(ShopRequest::categoryId).isNotNull().isNotEmpty()
         }
     }
 }

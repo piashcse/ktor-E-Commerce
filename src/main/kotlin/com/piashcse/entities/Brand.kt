@@ -6,16 +6,16 @@ import com.piashcse.entities.base.BaseIntIdTable
 import org.jetbrains.exposed.dao.id.EntityID
 
 object BrandTable : BaseIntIdTable("brand") {
-    val brandName = text("brand_name")
-    val brandLogo = text("brand_log").nullable()
+    val name = text("name")
+    val logo = text("logo").nullable()
 }
 
 class BrandEntity(id: EntityID<String>) : BaseIntEntity(id, BrandTable) {
     companion object : BaseIntEntityClass<BrandEntity>(BrandTable)
 
-    var brandName by BrandTable.brandName
-    var brandLogo by BrandTable.brandLogo
-    fun response() = Brand(id.value, brandName, brandLogo)
+    var name by BrandTable.name
+    var logo by BrandTable.logo
+    fun response() = Brand(id.value, name, logo)
 }
 
-data class Brand(val id: String, val brandName: String, val brandLogo: String?)
+data class Brand(val id: String, val name: String, val logo: String?)

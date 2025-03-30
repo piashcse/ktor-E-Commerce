@@ -8,39 +8,71 @@ import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 
+/**
+ * Controller for managing shop categories. Provides methods to create, retrieve, update, and delete categories.
+ */
 class ShopCategoryController : ShopCategoryRepo {
-    override suspend fun addShopCategory(shopCategoryName: String): ShopCategory = query {
+
+    /**
+     * Creates a new shop category. If a category with the same name already exists, an exception is thrown.
+     *
+     * @param name The name of the category to be created.
+     * @return The created shop category.
+     * @throws alreadyExistException If a category with the same name already exists.
+     */
+    override suspend fun createCategory(name: String): ShopCategory = query {
         val isExistShopCategory =
-            ShopCategoryEntity.find { ShopCategoryTable.shopCategoryName eq shopCategoryName }.toList().singleOrNull()
+            ShopCategoryEntity.find { ShopCategoryTable.name eq name }.toList().singleOrNull()
         isExistShopCategory?.let {
-            throw shopCategoryName.alreadyExistException()
+            throw name.alreadyExistException()
         } ?: ShopCategoryEntity.new {
-            this.shopCategoryName = shopCategoryName
+            this.name = name
         }.response()
     }
 
-    override suspend fun getShopCategories(limit: Int): List<ShopCategory> = query {
+    /**
+     * Retrieves a list of shop categories with a specified limit on the number of categories.
+     *
+     * @param limit The maximum number of categories to retrieve.
+     * @return A list of shop categories.
+     */
+    override suspend fun getCategories(limit: Int): List<ShopCategory> = query {
         val shopCategories = ShopCategoryEntity.all().limit(limit)
         shopCategories.map {
             it.response()
         }
     }
 
-    override suspend fun updateShopCategory(shopCategoryId: String, shopCategoryName: String): ShopCategory = query {
+    /**
+     * Updates an existing shop category's name. If the category does not exist, an exception is thrown.
+     *
+     * @param categoryId The ID of the category to be updated.
+     * @param name The new name of the category.
+     * @return The updated shop category.
+     * @throws categoryId.notFoundException If the category with the specified ID is not found.
+     */
+    override suspend fun updateCategory(categoryId: String, name: String): ShopCategory = query {
         val isShopCategoryExist =
-            ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
+            ShopCategoryEntity.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
         isShopCategoryExist?.let {
-            it.shopCategoryName = shopCategoryName
+            it.name = name
             it.response()
-        } ?: throw shopCategoryId.notFoundException()
+        } ?: throw categoryId.notFoundException()
     }
 
-    override suspend fun deleteShopCategory(shopCategoryId: String): String = query {
+    /**
+     * Deletes a shop category. If the category does not exist, an exception is thrown.
+     *
+     * @param categoryId The ID of the category to be deleted.
+     * @return The ID of the deleted category.
+     * @throws categoryId.notFoundException If the category with the specified ID is not found.
+     */
+    override suspend fun deleteCategory(categoryId: String): String = query {
         val shopCategoryExist =
-            ShopCategoryEntity.find { ShopCategoryTable.id eq shopCategoryId }.toList().singleOrNull()
+            ShopCategoryEntity.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
         shopCategoryExist?.let {
             it.delete()
-            shopCategoryId
-        } ?: throw shopCategoryId.notFoundException()
+            categoryId
+        } ?: throw categoryId.notFoundException()
     }
 }

@@ -398,7 +398,7 @@ http://localhost:8080/shop-category
   },
   "data": {
     "id": "28918963-f932-425b-884b-a34d8ae69b2a",
-    "shopName": "New digital Shop"
+    "name": "New digital Shop"
   }
 }
 ```   
@@ -435,7 +435,7 @@ http://localhost:8080/shop-category?limit=10
   "data": [
     {
       "id": "9c95c44c-3767-4ca2-9486-e28e390b3741",
-      "shopName": "New Electronics"
+      "name": "New Electronics"
     }
   ]
 }
@@ -506,7 +506,7 @@ http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Pi
   },
   "data": {
     "id": "9c95c44c-3767-4ca2-9486-e28e390b3741",
-    "shopName": "Piash Digital shop"
+    "name": "Piash Digital shop"
   }
 }
 ```   
@@ -580,8 +580,8 @@ http://localhost:8080/shop?limit=10
   "data": [
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-      "shopName": "Piash Shop update",
-      "shopCategoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
+      "name": "Piash Shop update",
+      "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
     }
   ]
 }
@@ -617,8 +617,8 @@ http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?shopName=Shop%20
   },
   "data": {
     "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-    "shopName": "Shop again update",
-    "shopCategoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
+    "name": "Shop again update",
+    "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
   }
 }
 ```   
@@ -685,8 +685,8 @@ curl -X 'POST' \
   "midSlider": "string",
   "price": 10,
   "productCode": "string",
-  "productDetail": "string",
-  "productName": "string",
+  "detail": "string",
+  "name": "string",
   "productQuantity": 5,
   "status": 0,
   "trend": "string",
@@ -712,10 +712,10 @@ http://localhost:8080/product
   "data": {
     "id": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d",
     "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
-    "productName": "string",
+    "name": "string",
     "productCode": "string",
     "productQuantity": 5,
-    "productDetail": "string",
+    "detail": "string",
     "price": 10,
     "discountPrice": 0,
     "status": 0,
@@ -736,7 +736,7 @@ http://localhost:8080/product
 
 <details>
   
-<summary> <code>GET</code> <code>/product/{productId}</code></summary>
+<summary> <code>GET</code> <code>/product/{id}</code></summary>
 
 ### Curl
 
@@ -765,10 +765,10 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
   "data": {
     "id": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d",
     "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
-    "productName": "string",
+    "name": "string",
     "productCode": "string",
     "productQuantity": 5,
-    "productDetail": "string",
+    "detail": "string",
     "price": 10,
     "discountPrice": 0,
     "status": 0,
@@ -789,7 +789,7 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 
 <details>
   
-<summary> <code>PUT </code> <code>/product/{productId}</code></summary>
+<summary> <code>PUT </code> <code>/product/{id}</code></summary>
 
 ### Curl
 
@@ -801,8 +801,8 @@ curl -X 'PUT' \
   -H 'Content-Type: application/json' \
   -d '{
  
-  "productName": "Smartch watch",
-   "productDetail":"Xiaomi Smart Watch"
+  "name": "Smartch watch",
+  "detail":"Xiaomi Smart Watch"
   
 }'
 ``` 
@@ -825,10 +825,10 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
   "data": {
     "id": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d",
     "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
-    "productName": "Smartch watch",
+    "name": "Smartch watch",
     "productCode": "string",
     "productQuantity": 5,
-    "productDetail": "Xiaomi Smart Watch",
+    "detail": "Xiaomi Smart Watch",
     "price": 10,
     "discountPrice": 0,
     "status": 0,
@@ -880,10 +880,10 @@ http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
     {
       "id": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d",
       "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
-      "productName": "Smartch watch",
+      "name": "Smartch watch",
       "productCode": "string",
       "productQuantity": 5,
-      "productDetail": "Xiaomi Smart Watch",
+      "detail": "Xiaomi Smart Watch",
       "price": 10,
       "discountPrice": 0,
       "status": 0,
@@ -906,13 +906,13 @@ http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
 
 <details>
   
-<summary> <code>DELETE</code> <code>/product</code></summary>
+<summary> <code>DELETE</code> <code>/product/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/product?productId=79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
+  'http://localhost:8080/product?id=79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
 ``` 
@@ -945,7 +945,7 @@ http://localhost:8080/product?productId=79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/product/photo-upload?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
+  'http://localhost:8080/product/photo-upload?id=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjEyYzA5OGFhLTYzMWYtNDJlZC05MjAzLTFkMjdlMDA0MmY4YSIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzc3NTMyfQ.GeBDEnWNm84mHPhCxTCXUwRSmRo7KjkJ6AfuEXZNiiqKVGtof1xNi8tsBp53L9jbyYwK49HQnDpe6tb0nVwhHA' \
   -H 'Content-Type: multipart/form-data' \
@@ -955,7 +955,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/product/image-upload?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a
+http://localhost:8080/product/image-upload?id=71b26dd9-b4b5-4f87-a84d-c8daa506018a
 ``` 
 
 
@@ -994,7 +994,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/product-category?categoryName=Kids
+http://localhost:8080/product-category?name=Kids
 ``` 
 
 
@@ -1008,7 +1008,7 @@ http://localhost:8080/product-category?categoryName=Kids
   },
   "data": {
     "id": "75b44e08-2c94-438f-b500-b204c7c90cca",
-    "categoryName": "Kids",
+    "name": "Kids",
     "subCategories": []
   }
 }
@@ -1047,12 +1047,12 @@ http://localhost:8080/product-category?limit=10
   "data": [
     {
       "id": "58f5c085-d04a-47de-beab-1d476b6ce432",
-      "categoryName": "Mens Cloth",
+      "name": "Mens Cloth",
       "subCategories": []
     },
     {
       "id": "75b44e08-2c94-438f-b500-b204c7c90cca",
-      "categoryName": "Kids",
+      "name": "Kids",
       "subCategories": []
     }
   ]
@@ -1090,7 +1090,7 @@ http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?cate
   },
   "data": {
     "id": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
-    "categoryName": "Education 3.0",
+    "name": "Education 3.0",
     "subCategories": []
   }
 }
@@ -1146,7 +1146,7 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
-  "subCategoryName": "Paper"
+  "name": "Paper"
 }'
 ``` 
 
@@ -1168,7 +1168,7 @@ http://localhost:8080/product-subcategory
   "data": {
     "id": "751cef10-f98a-4ecc-ae03-4173830a626d",
     "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
-    "subCategoryName": "Paper"
+    "name": "Paper"
   }
 }
 ```   
@@ -1182,7 +1182,7 @@ http://localhost:8080/product-subcategory
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/product-subcategory?categoryId=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10' \
+  'http://localhost:8080/product-subcategory?id=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4NjUyMDJ9.q3w-4G4bMJwdwB-kCv7KhR6JlTjsbUungkAMWFYTwVRpDLezumFsW_6kU7AJ2MqyQn1zAoEW7-Qtp68JZlHYgQ'
 ``` 
@@ -1190,7 +1190,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/product-subcategory?categoryId=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10
+http://localhost:8080/product-subcategory?id=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10
 ``` 
 
 
@@ -1206,7 +1206,7 @@ http://localhost:8080/product-subcategory?categoryId=b8ccc13f-e118-4540-8e9e-5ea
     {
       "id": "751cef10-f98a-4ecc-ae03-4173830a626d",
       "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
-      "subCategoryName": "Paper"
+      "name": "Paper"
     }
   ]
 }
@@ -1244,7 +1244,7 @@ http://localhost:8080/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d?n
   "data": {
     "id": "751cef10-f98a-4ecc-ae03-4173830a626d",
     "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
-    "subCategoryName": "Pencil"
+    "name": "Pencil"
   }
 }
 ```   
@@ -1293,7 +1293,7 @@ http://localhost:8080/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/brand?brandName=Nike' \
+  'http://localhost:8080/brand?name=Nike' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg' \
   -d ''
@@ -1302,7 +1302,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/brand?brandName=Nike
+http://localhost:8080/brand?name=Nike
 ``` 
 
 
@@ -1316,7 +1316,7 @@ http://localhost:8080/brand?brandName=Nike
   },
   "data": {
     "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
-    "brandName": "Nike"
+    "name": "Nike"
   }
 }
 ```   
@@ -1353,11 +1353,11 @@ http://localhost:8080/brand?limit=10
   "data": [
     {
       "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
-      "brandName": "Nike"
+      "name": "Nike"
     },
     {
       "id": "19dd1021-432c-473c-8b19-0f56d19af9ad",
-      "brandName": "PUMA"
+      "name": "PUMA"
     }
   ]
 }
@@ -1394,7 +1394,7 @@ http://localhost:8080/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas
   },
   "data": {
     "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
-    "brandName": "Addidas"
+    "name": "Addidas"
   }
 }
 ```   
@@ -1467,10 +1467,10 @@ http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
     "product": {
       "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
       "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-      "productName": "Polo T Shirt",
+      "name": "Polo T Shirt",
       "productCode": "string",
       "productQuantity": 1,
-      "productDetail": "Chinese polo T-shirt",
+      "detail": "Chinese polo T-shirt",
       "price": 100,
       "discountPrice": 0,
       "status": 0,
@@ -1515,10 +1515,10 @@ http://localhost:8080/wishlist
     {
       "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
       "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-      "productName": "Polo T Shirt",
+      "name": "Polo T Shirt",
       "productCode": "string",
       "productQuantity": 1,
-      "productDetail": "Chinese polo T-shirt",
+      "detail": "Chinese polo T-shirt",
       "price": 100,
       "discountPrice": 0,
       "status": 0,
@@ -1562,10 +1562,10 @@ http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
   "data": {
     "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
     "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-    "productName": "Polo T Shirt",
+    "name": "Polo T Shirt",
     "productCode": "string",
     "productQuantity": 1,
-    "productDetail": "Chinese polo T-shirt",
+    "detail": "Chinese polo T-shirt",
     "price": 100,
     "discountPrice": 0,
     "status": 0,

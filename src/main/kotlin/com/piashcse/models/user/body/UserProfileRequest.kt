@@ -1,6 +1,6 @@
 package com.piashcse.models.user.body
 
-data class UserProfileBody(
+data class UserProfileRequest(
     val firstName: String?,
     val lastName: String?,
     val secondaryMobileNumber: String?,

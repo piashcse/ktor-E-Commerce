@@ -4,10 +4,10 @@ import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
-data class AddShopCategory( val name: String) {
+data class ShopCategoryRequest(val name: String) {
     fun validation() {
         validate(this) {
-            validate(AddShopCategory::name).isNotNull().isNotEmpty()
+            validate(ShopCategoryRequest::name).isNotNull().isNotEmpty()
         }
     }
 }

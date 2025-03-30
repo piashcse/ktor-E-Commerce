@@ -1,21 +1,20 @@
 package com.piashcse.models.product.request
 
-import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.functions.isNotZero
 import org.valiktor.validate
 
-data class ProductSearch(
+data class ProductWithFilterRequest(
     val limit: Int,
-    val productName: String,
     val maxPrice: Double?,
     val minPrice: Double?,
     val categoryId: String?,
+    val subCategoryId: String?,
+    val brandId: String?,
 ) {
     fun validation() {
         validate(this) {
-            validate(ProductSearch::limit).isNotNull().isNotZero()
-            validate(ProductSearch::productName).isNotNull().isNotEmpty()
+            validate(ProductWithFilterRequest::limit).isNotNull().isNotZero()
         }
     }
 }

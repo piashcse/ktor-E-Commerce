@@ -1,7 +1,7 @@
 package com.piashcse.route
 
 import com.piashcse.controller.PaymentController
-import com.piashcse.models.AddPayment
+import com.piashcse.models.PaymentRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -14,23 +14,46 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+/**
+ * Defines routes for handling payments.
+ *
+ * Accessible by customers to create payments and retrieve payment details.
+ *
+ * @param paymentController The controller handling payment-related operations.
+ */
 fun Route.paymentRoute(paymentController: PaymentController) {
     route("payment") {
+
+        /**
+         * POST request to create a new payment.
+         *
+         * Accessible by customers only.
+         *
+         * @param paymentRequest The payment details (e.g., amount, payment method, etc.) to process the payment.
+         */
         authenticate(RoleManagement.CUSTOMER.role) {
             post({
                 tags("Payment")
                 request {
-                    body<AddPayment>()
+                    body<PaymentRequest>()
                 }
                 apiResponse()
             }) {
-                val requestBody = call.receive<AddPayment>()
+                val requestBody = call.receive<PaymentRequest>()
                 call.respond(
                     ApiResponse.success(
-                        paymentController.addPayment(requestBody), HttpStatusCode.OK
+                        paymentController.createPayment(requestBody), HttpStatusCode.OK
                     )
                 )
             }
+
+            /**
+             * GET request to retrieve payment details by ID.
+             *
+             * Accessible by customers only.
+             *
+             * @param id The payment ID to retrieve.
+             */
             get("{id}", {
                 tags("Payment")
                 request {
@@ -43,9 +66,7 @@ fun Route.paymentRoute(paymentController: PaymentController) {
                 val (id) = call.requiredParameters("id") ?: return@get
                 call.respond(
                     ApiResponse.success(
-                        paymentController.getPayment(
-                            id
-                        ), HttpStatusCode.OK
+                        paymentController.getPaymentById(id), HttpStatusCode.OK
                     )
                 )
             }

@@ -5,7 +5,7 @@ import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
-data class AddPayment(
+data class PaymentRequest(
     val orderId: String,
     val amount: Long,
     val status: String,
@@ -13,10 +13,10 @@ data class AddPayment(
 ){
     fun validation(){
         validate(this){
-            validate(AddPayment::orderId).isNotNull().isNotEmpty()
-            validate(AddPayment::amount).isNotNull().isGreaterThan(0)
-            validate(AddPayment::status).isNotNull().isNotEmpty()
-            validate(AddPayment::paymentMethod).isNotNull().isNotEmpty()
+            validate(PaymentRequest::orderId).isNotNull().isNotEmpty()
+            validate(PaymentRequest::amount).isNotNull().isGreaterThan(0)
+            validate(PaymentRequest::status).isNotNull().isNotEmpty()
+            validate(PaymentRequest::paymentMethod).isNotNull().isNotEmpty()
         }
     }
 }

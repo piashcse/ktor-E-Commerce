@@ -7,17 +7,17 @@ import org.jetbrains.exposed.dao.id.EntityID
 
 object ShopTable : BaseIntIdTable("shop") {
     val userId = reference("user_id", UserTable.id)
-    val shopCategoryId = reference("shop_category_id", ShopCategoryTable.id)
-    val shopName = text("shop_name")
+    val categoryId = reference("category_id", ShopCategoryTable.id)
+    val name = text("name")
 }
 
 class ShopEntity(id: EntityID<String>) : BaseIntEntity(id, ShopTable) {
     companion object : BaseIntEntityClass<ShopEntity>(ShopTable)
 
     var userId by ShopTable.userId
-    var shopCategoryId by ShopTable.shopCategoryId
-    var shopName by ShopTable.shopName
-    fun shopResponse() = Shop(id.value, shopName, shopCategoryId.value)
+    var categoryId by ShopTable.categoryId
+    var name by ShopTable.name
+    fun shopResponse() = Shop(id.value, name, categoryId.value)
 }
 
-data class Shop(val id: String, val shopName: String, val shopCategoryId: String)
+data class Shop(val id: String, val name: String, val categoryId: String)

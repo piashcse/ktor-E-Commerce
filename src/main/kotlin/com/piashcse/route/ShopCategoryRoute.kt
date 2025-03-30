@@ -1,7 +1,7 @@
 package com.piashcse.route
 
 import com.piashcse.controller.ShopCategoryController
-import com.piashcse.models.shop.AddShopCategory
+import com.piashcse.models.shop.ShopCategoryRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -16,22 +16,45 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+/**
+ * Defines routes for managing shop categories.
+ *
+ * Allows admin users to create, retrieve, update, and delete shop categories.
+ *
+ * @param shopCategoryController The controller responsible for handling shop category operations.
+ */
 fun Route.shopCategoryRoute(shopCategoryController: ShopCategoryController) {
     authenticate(RoleManagement.ADMIN.role) {
+
+        /**
+         * POST request to create a new shop category.
+         *
+         * Accessible by **admin** only.
+         *
+         * @param requestBody The name of the new shop category.
+         */
         post("shop-category", {
             tags("Shop Category")
             request {
-                body<AddShopCategory>()
+                body<ShopCategoryRequest>()
             }
             apiResponse()
         }) {
-            val requestBody = call.receive<AddShopCategory>()
+            val requestBody = call.receive<ShopCategoryRequest>()
             call.respond(
                 ApiResponse.success(
-                    shopCategoryController.addShopCategory(requestBody.name), HttpStatusCode.OK
+                    shopCategoryController.createCategory(requestBody.name), HttpStatusCode.OK
                 )
             )
         }
+
+        /**
+         * GET request to retrieve a list of shop categories with a specified limit.
+         *
+         * Accessible by **admin** only.
+         *
+         * @param limit The maximum number of shop categories to retrieve.
+         */
         get("shop-category", {
             tags("Shop Category")
             request {
@@ -44,12 +67,19 @@ fun Route.shopCategoryRoute(shopCategoryController: ShopCategoryController) {
             val (limit) = call.requiredParameters("limit") ?: return@get
             call.respond(
                 ApiResponse.success(
-                    shopCategoryController.getShopCategories(
-                        limit.toInt()
-                    ), HttpStatusCode.OK
+                    shopCategoryController.getCategories(limit.toInt()),
+                    HttpStatusCode.OK
                 )
             )
         }
+
+        /**
+         * DELETE request to remove a shop category by its ID.
+         *
+         * Accessible by **admin** only.
+         *
+         * @param id The ID of the shop category to delete.
+         */
         delete("shop-category/{id}", {
             tags("Shop Category")
             request {
@@ -62,10 +92,19 @@ fun Route.shopCategoryRoute(shopCategoryController: ShopCategoryController) {
             val (id) = call.requiredParameters("id") ?: return@delete
             call.respond(
                 ApiResponse.success(
-                    shopCategoryController.deleteShopCategory(id), HttpStatusCode.OK
+                    shopCategoryController.deleteCategory(id), HttpStatusCode.OK
                 )
             )
         }
+
+        /**
+         * PUT request to update the name of an existing shop category.
+         *
+         * Accessible by **admin** only.
+         *
+         * @param id The ID of the shop category to update.
+         * @param name The new name for the shop category.
+         */
         put("shop-category/{id}", {
             tags("Shop Category")
             request {
@@ -81,7 +120,7 @@ fun Route.shopCategoryRoute(shopCategoryController: ShopCategoryController) {
             val (id, name) = call.requiredParameters("id", "name") ?: return@put
             call.respond(
                 ApiResponse.success(
-                    shopCategoryController.updateShopCategory(id, name), HttpStatusCode.OK
+                    shopCategoryController.updateCategory(id, name), HttpStatusCode.OK
                 )
             )
         }

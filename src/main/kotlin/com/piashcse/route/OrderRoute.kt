@@ -2,7 +2,7 @@ package com.piashcse.route
 
 
 import com.piashcse.controller.OrderController
-import com.piashcse.models.order.AddOrder
+import com.piashcse.models.order.OrderRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.OrderStatus
@@ -18,23 +18,46 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+/**
+ * Defines routes for managing orders.
+ *
+ * Accessible by customers and sellers with different roles and actions allowed for each.
+ *
+ * @param orderController The controller handling order-related operations.
+ */
 fun Route.orderRoute(orderController: OrderController) {
     route("/order") {
+
+        /**
+         * POST request to create a new order.
+         *
+         * Accessible by customers only.
+         *
+         * @param orderRequest The order details (product ID, quantity, etc.) to create the order.
+         */
         authenticate(RoleManagement.CUSTOMER.role) {
             post({
                 tags("Order")
                 request {
-                    body<AddOrder>()
+                    body<OrderRequest>()
                 }
                 apiResponse()
             }) {
-                val requestBody = call.receive<AddOrder>()
+                val requestBody = call.receive<OrderRequest>()
                 call.respond(
                     ApiResponse.success(
-                        orderController.addOrder(call.currentUser().userId, requestBody), HttpStatusCode.OK
+                        orderController.createOrder(call.currentUser().userId, requestBody), HttpStatusCode.OK
                     )
                 )
             }
+
+            /**
+             * GET request to retrieve orders placed by the customer.
+             *
+             * Accessible by customers only.
+             *
+             * @param limit The maximum number of orders to retrieve.
+             */
             get({
                 tags("Order")
                 request {
@@ -53,6 +76,14 @@ fun Route.orderRoute(orderController: OrderController) {
                     )
                 )
             }
+
+            /**
+             * PUT request to cancel an order.
+             *
+             * Accessible by customers only.
+             *
+             * @param id The order ID to cancel.
+             */
             put("{id}/cancel", {
                 tags("Order")
                 request {
@@ -65,11 +96,19 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(call.currentUser().userId, id, OrderStatus.CANCELED),
+                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderStatus.CANCELED),
                         HttpStatusCode.OK
                     )
                 )
             }
+
+            /**
+             * PUT request to mark an order as received.
+             *
+             * Accessible by customers only.
+             *
+             * @param id The order ID to mark as received.
+             */
             put("{id}/receive", {
                 tags("Order")
                 request {
@@ -82,13 +121,24 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(call.currentUser().userId, id, OrderStatus.RECEIVED),
+                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderStatus.RECEIVED),
                         HttpStatusCode.OK
                     )
                 )
             }
         }
+
+        /**
+         * Routes for sellers to confirm or deliver orders.
+         */
         authenticate(RoleManagement.SELLER.role) {
+            /**
+             * PUT request to confirm an order.
+             *
+             * Accessible by sellers only.
+             *
+             * @param id The order ID to confirm.
+             */
             put("{id}/confirm", {
                 tags("Order")
                 request {
@@ -101,11 +151,19 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(call.currentUser().userId, id, OrderStatus.CANCELED),
+                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderStatus.CONFIRMED),
                         HttpStatusCode.OK
                     )
                 )
             }
+
+            /**
+             * PUT request to mark an order as delivered.
+             *
+             * Accessible by sellers only.
+             *
+             * @param id The order ID to mark as delivered.
+             */
             put("{id}/deliver", {
                 tags("Order")
                 request {
@@ -118,7 +176,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrder(call.currentUser().userId, id, OrderStatus.DELIVERED),
+                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderStatus.DELIVERED),
                         HttpStatusCode.OK
                     )
                 )

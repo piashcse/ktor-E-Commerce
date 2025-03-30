@@ -11,36 +11,73 @@ import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
 
+/**
+ * Controller for managing shops. Provides methods to create, retrieve, update, and delete shops.
+ */
 class ShopController : ShopRepo {
-    override suspend fun addShop(userId: String, shopCategoryId: String, shopName: String): Shop = query {
-        val shopNameExist = ShopEntity.find { ShopTable.shopName eq shopName }.toList().singleOrNull()
+
+    /**
+     * Creates a new shop. If a shop with the same name already exists, an exception is thrown.
+     *
+     * @param userId The ID of the user who owns the shop.
+     * @param categoryId The ID of the category under which the shop falls.
+     * @param name The name of the shop to be created.
+     * @return The created shop.
+     * @throws alreadyExistException If a shop with the same name already exists.
+     */
+    override suspend fun createShop(userId: String, categoryId: String, name: String): Shop = query {
+        val shopNameExist = ShopEntity.find { ShopTable.name eq name }.toList().singleOrNull()
         if (shopNameExist == null) {
             ShopEntity.new {
                 this.userId = EntityID(userId, UserTable)
-                this.shopCategoryId = EntityID(shopCategoryId, ShopTable)
-                this.shopName = shopName
+                this.categoryId = EntityID(categoryId, ShopTable)
+                this.name = name
             }.shopResponse()
         } else {
-            throw shopName.alreadyExistException()
+            throw name.alreadyExistException()
         }
     }
 
-    override suspend fun getShop(userId: String, limit: Int): List<Shop> = query {
+    /**
+     * Retrieves a list of shops owned by a specific user with a specified limit on the number of shops.
+     *
+     * @param userId The ID of the user whose shops are to be retrieved.
+     * @param limit The maximum number of shops to retrieve.
+     * @return A list of shops owned by the user.
+     */
+    override suspend fun getShops(userId: String, limit: Int): List<Shop> = query {
         val isExist = ShopEntity.find { ShopTable.userId eq userId }.limit(limit).toList()
         isExist.map {
             it.shopResponse()
         }
     }
 
-    override suspend fun updateShop(userId: String, shopId: String, shopName: String): Shop = query {
+    /**
+     * Updates an existing shop's name. If the shop is not found, an exception is thrown.
+     *
+     * @param userId The ID of the user who owns the shop.
+     * @param shopId The ID of the shop to be updated.
+     * @param name The new name for the shop.
+     * @return The updated shop.
+     * @throws notFoundException If the shop with the specified ID is not found.
+     */
+    override suspend fun updateShop(userId: String, shopId: String, name: String): Shop = query {
         val shopNameExist =
             ShopEntity.find { ShopTable.userId eq userId and (ShopTable.id eq shopId) }.toList().singleOrNull()
         shopNameExist?.let {
-            it.shopName = shopName
+            it.name = name
             it.shopResponse()
-        } ?: throw shopName.notFoundException()
+        } ?: throw name.notFoundException()
     }
 
+    /**
+     * Deletes a shop owned by a specific user. If the shop is not found, an exception is thrown.
+     *
+     * @param userId The ID of the user who owns the shop.
+     * @param shopId The ID of the shop to be deleted.
+     * @return The ID of the deleted shop.
+     * @throws notFoundException If the shop with the specified ID is not found.
+     */
     override suspend fun deleteShop(userId: String, shopId: String): String = query {
         val shopNameExist =
             ShopEntity.find { ShopTable.userId eq userId and (ShopTable.id eq shopId) }.toList().singleOrNull()

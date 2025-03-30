@@ -1,13 +1,13 @@
-package com.piashcse.models.category
+package com.piashcse.models.bands
 
 import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
-data class AddProductCategory(val categoryName: String) {
+data class BrandRequest(val brandName: String) {
     fun validation() {
         validate(this) {
-            validate(AddProductCategory::categoryName).isNotNull().isNotEmpty()
+            validate(BrandRequest::brandName).isNotNull().isNotEmpty()
         }
     }
 }
