@@ -67,7 +67,7 @@ fun Route.brandRoute(brandController: BrandController) {
                 val requestBody = call.receive<BrandRequest>()
                 call.respond(
                     ApiResponse.success(
-                        brandController.createBrand(requestBody.brandName), HttpStatusCode.OK
+                        brandController.createBrand(requestBody.name), HttpStatusCode.OK
                     )
                 )
             }

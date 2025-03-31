@@ -1,7 +1,7 @@
 package com.piashcse.controller
 
 import com.piashcse.entities.ShopCategory
-import com.piashcse.entities.ShopCategoryEntity
+import com.piashcse.entities.ShopCategoryDAO
 import com.piashcse.entities.ShopCategoryTable
 import com.piashcse.repository.ShopCategoryRepo
 import com.piashcse.utils.extension.alreadyExistException
@@ -22,10 +22,10 @@ class ShopCategoryController : ShopCategoryRepo {
      */
     override suspend fun createCategory(name: String): ShopCategory = query {
         val isExistShopCategory =
-            ShopCategoryEntity.find { ShopCategoryTable.name eq name }.toList().singleOrNull()
+            ShopCategoryDAO.find { ShopCategoryTable.name eq name }.toList().singleOrNull()
         isExistShopCategory?.let {
             throw name.alreadyExistException()
-        } ?: ShopCategoryEntity.new {
+        } ?: ShopCategoryDAO.new {
             this.name = name
         }.response()
     }
@@ -37,7 +37,7 @@ class ShopCategoryController : ShopCategoryRepo {
      * @return A list of shop categories.
      */
     override suspend fun getCategories(limit: Int): List<ShopCategory> = query {
-        val shopCategories = ShopCategoryEntity.all().limit(limit)
+        val shopCategories = ShopCategoryDAO.all().limit(limit)
         shopCategories.map {
             it.response()
         }
@@ -53,7 +53,7 @@ class ShopCategoryController : ShopCategoryRepo {
      */
     override suspend fun updateCategory(categoryId: String, name: String): ShopCategory = query {
         val isShopCategoryExist =
-            ShopCategoryEntity.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
+            ShopCategoryDAO.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
         isShopCategoryExist?.let {
             it.name = name
             it.response()
@@ -69,7 +69,7 @@ class ShopCategoryController : ShopCategoryRepo {
      */
     override suspend fun deleteCategory(categoryId: String): String = query {
         val shopCategoryExist =
-            ShopCategoryEntity.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
+            ShopCategoryDAO.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
         shopCategoryExist?.let {
             it.delete()
             categoryId

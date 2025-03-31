@@ -7,10 +7,10 @@ import org.jetbrains.exposed.dao.id.EntityID
 
 object UserProfileTable : BaseIntIdTable("user_profile") {
     val userId = reference("user_id", UserTable.id)
-    val userProfileImage = text("user_profile_image").nullable()
+    val image = text("image").nullable()
     val firstName = text("first_name").nullable()
     val lastName = text("last_name").nullable()
-    val secondaryMobileNumber = text("secondary_mobile_number").nullable()
+    val mobile = text("mobile").nullable()
     val faxNumber = text("fax_number").nullable()
     val streetAddress = text("street_address").nullable()
     val city = text("city").nullable()
@@ -22,14 +22,14 @@ object UserProfileTable : BaseIntIdTable("user_profile") {
     val gender = text("gender").nullable()
 }
 
-class UsersProfileEntity(id: EntityID<String>) : BaseIntEntity(id, UserProfileTable) {
-    companion object : BaseIntEntityClass<UsersProfileEntity>(UserProfileTable)
+class UsersProfileDAO(id: EntityID<String>) : BaseIntEntity(id, UserProfileTable) {
+    companion object : BaseIntEntityClass<UsersProfileDAO>(UserProfileTable)
 
     var userId by UserProfileTable.userId
-    var userProfileImage by UserProfileTable.userProfileImage
+    var image by UserProfileTable.image
     var firstName by UserProfileTable.firstName
     var lastName by UserProfileTable.lastName
-    var secondaryMobileNumber by UserProfileTable.secondaryMobileNumber
+    var mobile by UserProfileTable.mobile
     var faxNumber by UserProfileTable.faxNumber
     var streetAddress by UserProfileTable.streetAddress
     var city by UserProfileTable.city
@@ -41,10 +41,10 @@ class UsersProfileEntity(id: EntityID<String>) : BaseIntEntity(id, UserProfileTa
     var gender by UserProfileTable.gender
     fun response() = UserProfile(
         userId.value,
-        userProfileImage,
+        image,
         firstName,
         lastName,
-        secondaryMobileNumber,
+        mobile,
         faxNumber,
         streetAddress,
         city,
@@ -59,10 +59,10 @@ class UsersProfileEntity(id: EntityID<String>) : BaseIntEntity(id, UserProfileTa
 
 data class UserProfile(
     var userId: String,
-    val userProfileImage: String?,
+    val image: String?,
     val firstName: String?,
     val lastName: String?,
-    val secondaryMobileNumber: String?,
+    val mobile: String?,
     val faxNumber: String?,
     val streetAddress: String?,
     val city: String?,

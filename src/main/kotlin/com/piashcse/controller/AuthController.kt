@@ -27,17 +27,17 @@ class AuthController : AuthRepo {
      */
     override suspend fun register(registerRequest: RegisterRequest): RegisterResponse = query {
         val userEntity =
-            UsersEntity.find { UserTable.email eq registerRequest.email and (UserTable.userType eq registerRequest.userType) }
+            UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType eq registerRequest.userType) }
                 .toList().singleOrNull()
         userEntity?.let {
             it.id.value.alreadyExistException("as ${it.userType}")
         }
-        val inserted = UsersEntity.new {
+        val inserted = UserDAO.new {
             email = registerRequest.email
             password = BCrypt.withDefaults().hashToString(12, registerRequest.password.toCharArray())
             userType = registerRequest.userType
         }
-        UsersProfileEntity.new {
+        UsersProfileDAO.new {
             userId = inserted.id
         }
         RegisterResponse(inserted.id.value, registerRequest.email)
@@ -52,7 +52,7 @@ class AuthController : AuthRepo {
      */
     override suspend fun login(loginRequest: LoginRequest): LoginResponse = query {
         val userEntity =
-            UsersEntity.find { UserTable.email eq loginRequest.email and (UserTable.userType eq loginRequest.userType) }
+            UserDAO.find { UserTable.email eq loginRequest.email and (UserTable.userType eq loginRequest.userType) }
                 .toList().singleOrNull()
         userEntity?.let {
             if (BCrypt.verifyer().verify(
@@ -75,7 +75,7 @@ class AuthController : AuthRepo {
      * @return `true` if the password is changed successfully, otherwise `false`.
      */
     override suspend fun changePassword(userId: String, changePassword: ChangePassword): Boolean = query {
-        val userEntity = UsersEntity.find { UserTable.id eq userId }.toList().singleOrNull()
+        val userEntity = UserDAO.find { UserTable.id eq userId }.toList().singleOrNull()
         userEntity?.let {
             if (BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), it.password).verified) {
                 it.password = BCrypt.withDefaults().hashToString(12, changePassword.newPassword.toCharArray())
@@ -94,7 +94,7 @@ class AuthController : AuthRepo {
      * @return The verification code sent to the user.
      */
     override suspend fun sendPasswordResetOtp(forgetPasswordRequest: ForgetPasswordRequest): VerificationCode = query {
-        val userEntity = UsersEntity.find { UserTable.email eq forgetPasswordRequest.email }.toList().singleOrNull()
+        val userEntity = UserDAO.find { UserTable.email eq forgetPasswordRequest.email }.toList().singleOrNull()
         userEntity?.let {
             val verificationCode = Random.nextInt(1000, 9999).toString()
             it.verificationCode = verificationCode
@@ -112,7 +112,7 @@ class AuthController : AuthRepo {
      * @throws Exception if the user does not exist.
      */
     override suspend fun verifyPasswordResetOtp(confirmPasswordRequest: ConfirmPasswordRequest): Int = query {
-        val userEntity = UsersEntity.find { UserTable.email eq confirmPasswordRequest.email }.toList().singleOrNull()
+        val userEntity = UserDAO.find { UserTable.email eq confirmPasswordRequest.email }.toList().singleOrNull()
         userEntity?.let {
             if (confirmPasswordRequest.verificationCode == it.verificationCode) {
                 it.password = BCrypt.withDefaults().hashToString(12, confirmPasswordRequest.newPassword.toCharArray())

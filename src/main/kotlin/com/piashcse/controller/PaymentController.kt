@@ -20,13 +20,14 @@ class PaymentController : PaymentRepo {
      * @throws Exception if the order with the provided order ID is not found.
      */
     override suspend fun createPayment(paymentRequest: PaymentRequest): Payment = query {
-        val isOrderExist = OrderEntity.find { OrderTable.id eq paymentRequest.orderId }.toList().singleOrNull()
+        val isOrderExist = OrderDAO.find { OrderTable.id eq paymentRequest.orderId }.toList().singleOrNull()
         isOrderExist?.let {
-            PaymentEntity.new {
+            PaymentDAO.new {
                 orderId = EntityID(paymentRequest.orderId, PaymentTable)
                 amount = paymentRequest.amount
                 status = paymentRequest.status
                 paymentMethod = paymentRequest.paymentMethod
+                transactionId = paymentRequest.transactionId
             }.response()
         } ?: throw paymentRequest.orderId.notFoundException()
     }
@@ -39,7 +40,7 @@ class PaymentController : PaymentRepo {
      * @throws Exception if no payment is found for the given payment ID.
      */
     override suspend fun getPaymentById(paymentId: String): Payment = query {
-        val isOrderExist = PaymentEntity.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
+        val isOrderExist = PaymentDAO.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
         isOrderExist?.response() ?: throw paymentId.notFoundException()
     }
 }

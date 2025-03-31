@@ -8,73 +8,61 @@ import org.jetbrains.exposed.dao.id.EntityID
 object ProductTable : BaseIntIdTable("product") {
     val userId = reference("user_id", UserTable.id)
     val name = text("name")
-    val price = double("price")
-    val detail = text("detail")
+    val description = text("description")
     val categoryId = reference("category_id", ProductCategoryTable.id)
     val subCategoryId = reference("sub_category_id", ProductSubCategoryTable.id).nullable()
     val brandId = reference("brand_id", BrandTable.id).nullable()
-    val productCode = text("product_code").nullable()
-    val productQuantity = integer("product_quantity")
+    val stockQuantity = integer("stock_quantity") // Number of products in stock
+    val minOrderQuantity = integer("min_order_quantity").default(1) // Minimum quantity required for purchase
+    val price = double("price")
     val discountPrice = double("discount_price").nullable()
-    val status = integer("status").nullable()
     val videoLink = text("video_link").nullable()
-    val mainSlider = text("main_slider").nullable()
-    val hotDeal = text("hot_deal").nullable()
-    val bestRated = text("best_rated").nullable()
-    val midSlider = text("mid_slider").nullable()
-    val hotNew = text("hot_new").nullable()
-    val trend = text("trend").nullable()
-    val buyOneGetOne = text("buy_one_get_one").nullable()
-    val imageOne = text("image_one").nullable()
-    val imageTwo = text("image_two").nullable()
+    val hotDeal = bool("hot_deal").default(false) // Whether it's a hot deal or not
+    val featured = bool("featured").default(false) // Whether the product is featured or not
+    val images = varchar("images", 1000) // Comma-separated image URLs for the product
+    val status = enumerationByName("status", 50, ProductStatus::class).default(ProductStatus.ACTIVE) // Product status
+
+    enum class ProductStatus {
+        ACTIVE, // Product is available for purchase
+        OUT_OF_STOCK // Product is not available
+    }
+
 }
 
-class ProductEntity(id: EntityID<String>) : BaseIntEntity(id, ProductTable) {
-    companion object : BaseIntEntityClass<ProductEntity>(ProductTable)
+class ProductDAO(id: EntityID<String>) : BaseIntEntity(id, ProductTable) {
+    companion object : BaseIntEntityClass<ProductDAO>(ProductTable)
 
     var userId by ProductTable.userId
     var categoryId by ProductTable.categoryId
     var subCategoryId by ProductTable.subCategoryId
     var brandId by ProductTable.brandId
     var name by ProductTable.name
-    var productCode by ProductTable.productCode
-    var productQuantity by ProductTable.productQuantity
-    var detail by ProductTable.detail
+    var description by ProductTable.description
+    var minOrderQuantity by ProductTable.minOrderQuantity
+    var stockQuantity by ProductTable.stockQuantity
     var price by ProductTable.price
     var discountPrice by ProductTable.discountPrice
-    var status by ProductTable.status
     var videoLink by ProductTable.videoLink
-    var mainSlider by ProductTable.mainSlider
     var hotDeal by ProductTable.hotDeal
-    var bestRated by ProductTable.bestRated
-    var midSlider by ProductTable.midSlider
-    var hotNew by ProductTable.hotNew
-    var trend by ProductTable.trend
-    var buyOneGetOne by ProductTable.buyOneGetOne
-    var imageOne by ProductTable.imageOne
-    var imageTwo by ProductTable.imageTwo
+    var featured by ProductTable.featured
+    var images by ProductTable.images
+    var status by ProductTable.status
     fun response() = Product(
         id.value,
         categoryId.value,
         subCategoryId?.value,
         brandId?.value,
         name,
-        productCode,
-        productQuantity,
-        detail,
+        description,
+        minOrderQuantity,
+        stockQuantity,
         price,
         discountPrice,
-        status,
         videoLink,
-        mainSlider,
         hotDeal,
-        bestRated,
-        midSlider,
-        hotNew,
-        trend,
-        buyOneGetOne,
-        imageOne,
-        imageTwo
+        featured,
+        images,
+        status
     )
 }
 
@@ -84,20 +72,14 @@ data class Product(
     val subCategoryId: String?,
     val brandId: String?,
     val name: String,
-    val productCode: String?,
-    val productQuantity: Int,
-    val detail: String,
+    val description: String,
+    val minOrderQuantity: Int,
+    val stockQuantity: Int,
     val price: Double,
     val discountPrice: Double?,
-    val status: Int?,
     val videoLink: String?,
-    val mainSlider: String?,
-    val hotDeal: String?,
-    val bestRated: String?,
-    val midSlider: String?,
-    val hotNew: String?,
-    val trend: String?,
-    val buyOneGetOne: String?,
-    val imageOne: String?,
-    val imageTwo: String?,
+    val hotDeal: Boolean?,
+    val featured: Boolean,
+    val images: String,
+    val status: ProductTable.ProductStatus
 )

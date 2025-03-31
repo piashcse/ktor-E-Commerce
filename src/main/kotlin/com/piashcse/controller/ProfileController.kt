@@ -2,7 +2,7 @@ package com.piashcse.controller
 
 import com.piashcse.entities.UserProfile
 import com.piashcse.entities.UserProfileTable
-import com.piashcse.entities.UsersProfileEntity
+import com.piashcse.entities.UsersProfileDAO
 import com.piashcse.models.user.body.UserProfileRequest
 import com.piashcse.repository.ProfileRepo
 import com.piashcse.utils.AppConstants
@@ -32,7 +32,7 @@ class ProfileController : ProfileRepo {
      * @throws userId.notFoundException() If no user profile is found for the given user ID.
      */
     override suspend fun getProfile(userId: String): UserProfile = query {
-        val isProfileExist = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+        val isProfileExist = UsersProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         isProfileExist?.response() ?: throw userId.notFoundException()
     }
 
@@ -45,11 +45,11 @@ class ProfileController : ProfileRepo {
      * @throws userId.notFoundException() If no user profile is found for the given user ID.
      */
     override suspend fun updateProfile(userId: String, userProfile: UserProfileRequest?): UserProfile = query {
-        val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+        val userProfileEntity = UsersProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         userProfileEntity?.let {
             it.firstName = userProfile?.firstName ?: it.firstName
             it.lastName = userProfile?.lastName ?: it.lastName
-            it.secondaryMobileNumber = userProfile?.secondaryMobileNumber ?: it.secondaryMobileNumber
+            it.mobile = userProfile?.secondaryMobileNumber ?: it.mobile
             it.faxNumber = userProfile?.faxNumber ?: it.faxNumber
             it.streetAddress = userProfile?.streetAddress ?: it.streetAddress
             it.city = userProfile?.city ?: it.city
@@ -72,15 +72,15 @@ class ProfileController : ProfileRepo {
      * @throws userId.notFoundException() If no user profile is found for the given user ID.
      */
     override suspend fun updateProfileImage(userId: String, profileImage: String?): UserProfile = query {
-        val userProfileEntity = UsersProfileEntity.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+        val userProfileEntity = UsersProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
 
         // Delete previous profile image if it exists, as the new one will replace it.
-        userProfileEntity?.userProfileImage?.let {
+        userProfileEntity?.image?.let {
             Files.deleteIfExists(Paths.get("${AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION}$it"))
         }
 
         userProfileEntity?.let {
-            it.userProfileImage = profileImage ?: it.userProfileImage
+            it.image = profileImage ?: it.image
             it.response()
         } ?: throw userId.notFoundException()
     }

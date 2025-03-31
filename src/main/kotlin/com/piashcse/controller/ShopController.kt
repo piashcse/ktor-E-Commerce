@@ -1,7 +1,7 @@
 package com.piashcse.controller
 
 import com.piashcse.entities.Shop
-import com.piashcse.entities.ShopEntity
+import com.piashcse.entities.ShopDAO
 import com.piashcse.entities.ShopTable
 import com.piashcse.entities.UserTable
 import com.piashcse.repository.ShopRepo
@@ -26,9 +26,9 @@ class ShopController : ShopRepo {
      * @throws alreadyExistException If a shop with the same name already exists.
      */
     override suspend fun createShop(userId: String, categoryId: String, name: String): Shop = query {
-        val shopNameExist = ShopEntity.find { ShopTable.name eq name }.toList().singleOrNull()
+        val shopNameExist = ShopDAO.find { ShopTable.name eq name }.toList().singleOrNull()
         if (shopNameExist == null) {
-            ShopEntity.new {
+            ShopDAO.new {
                 this.userId = EntityID(userId, UserTable)
                 this.categoryId = EntityID(categoryId, ShopTable)
                 this.name = name
@@ -46,7 +46,7 @@ class ShopController : ShopRepo {
      * @return A list of shops owned by the user.
      */
     override suspend fun getShops(userId: String, limit: Int): List<Shop> = query {
-        val isExist = ShopEntity.find { ShopTable.userId eq userId }.limit(limit).toList()
+        val isExist = ShopDAO.find { ShopTable.userId eq userId }.limit(limit).toList()
         isExist.map {
             it.shopResponse()
         }
@@ -63,7 +63,7 @@ class ShopController : ShopRepo {
      */
     override suspend fun updateShop(userId: String, shopId: String, name: String): Shop = query {
         val shopNameExist =
-            ShopEntity.find { ShopTable.userId eq userId and (ShopTable.id eq shopId) }.toList().singleOrNull()
+            ShopDAO.find { ShopTable.userId eq userId and (ShopTable.id eq shopId) }.toList().singleOrNull()
         shopNameExist?.let {
             it.name = name
             it.shopResponse()
@@ -80,7 +80,7 @@ class ShopController : ShopRepo {
      */
     override suspend fun deleteShop(userId: String, shopId: String): String = query {
         val shopNameExist =
-            ShopEntity.find { ShopTable.userId eq userId and (ShopTable.id eq shopId) }.toList().singleOrNull()
+            ShopDAO.find { ShopTable.userId eq userId and (ShopTable.id eq shopId) }.toList().singleOrNull()
         shopNameExist?.let {
             it.delete()
             shopId

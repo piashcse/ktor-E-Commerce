@@ -1,6 +1,5 @@
 package com.piashcse.repository
 
-import com.piashcse.entities.ImageUrl
 import com.piashcse.entities.Product
 import com.piashcse.models.product.request.ProductRequest
 import com.piashcse.models.product.request.ProductSearchRequest
@@ -25,7 +24,7 @@ interface ProductRepo {
      * @param update The product details to update.
      * @return The updated product.
      */
-    suspend fun updateProduct(userId: String, productId: String, update: UpdateProduct): Product
+    suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProduct): Product
 
     /**
      * Retrieves a list of products based on filters.
@@ -33,7 +32,7 @@ interface ProductRepo {
      * @param query The filters to apply when retrieving products.
      * @return A list of products matching the filters.
      */
-    suspend fun getProducts(query: ProductWithFilterRequest): List<Product>
+    suspend fun getProducts(productQuery: ProductWithFilterRequest): List<Product>
 
     /**
      * Retrieves a specific product by its ID.
@@ -42,7 +41,7 @@ interface ProductRepo {
      * @param query The filters to apply when retrieving the product.
      * @return A list of products (even if only one product matches).
      */
-    suspend fun getProductById(userId: String, query: ProductWithFilterRequest): List<Product>
+    suspend fun getProductById(userId: String, productQuery: ProductWithFilterRequest): List<Product>
 
     /**
      * Retrieves detailed information about a specific product.
@@ -62,20 +61,10 @@ interface ProductRepo {
     suspend fun deleteProduct(userId: String, productId: String): String
 
     /**
-     * Uploads an image for a product.
-     *
-     * @param userId The unique identifier of the user uploading the image.
-     * @param productId The unique identifier of the product.
-     * @param imageUrl The image URL to associate with the product.
-     * @return The uploaded image URL.
-     */
-    suspend fun uploadProductImage(userId: String, productId: String, imageUrl: String): ImageUrl
-
-    /**
      * Searches for products based on query parameters.
      *
      * @param query The search parameters.
      * @return A list of products matching the search.
      */
-    suspend fun searchProduct(query: ProductSearchRequest): List<Product>
+    suspend fun searchProduct(productQuery: ProductSearchRequest): List<Product>
 }

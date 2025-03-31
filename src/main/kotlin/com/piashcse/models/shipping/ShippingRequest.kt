@@ -8,20 +8,18 @@ import org.valiktor.validate
 
 data class ShippingRequest(
     val orderId: String,
-    val shipAddress: String,
-    val shipCity: String,
-    val shipPhone: Int,
-    val shipName: String?,
-    val shipEmail: String?,
-    val shipCountry: String?
+    val address: String,
+    val city: String,
+    val country: String,
+    val phone: Int,
+    val email: String?,
+    val shippingMethod: String?,
 ) {
     fun validation() {
         validate(this) {
             validate(ShippingRequest::orderId).isNotNull().isNotEmpty()
-            validate(ShippingRequest::shipAddress).isNotNull().isNotEmpty()
-            validate(ShippingRequest::shipCity)
-            validate(ShippingRequest::shipPhone)
-            validate(ShippingRequest::shipEmail).isEmail()
+            validate(ShippingRequest::address).isNotNull().isNotEmpty()
+            validate(ShippingRequest::email).isEmail()
         }
     }
 }

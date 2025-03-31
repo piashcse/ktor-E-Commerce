@@ -10,8 +10,8 @@ object BrandTable : BaseIntIdTable("brand") {
     val logo = text("logo").nullable()
 }
 
-class BrandEntity(id: EntityID<String>) : BaseIntEntity(id, BrandTable) {
-    companion object : BaseIntEntityClass<BrandEntity>(BrandTable)
+class BrandDAO(id: EntityID<String>) : BaseIntEntity(id, BrandTable) {
+    companion object : BaseIntEntityClass<BrandDAO>(BrandTable)
 
     var name by BrandTable.name
     var logo by BrandTable.logo

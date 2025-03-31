@@ -1,8 +1,8 @@
 package com.piashcse.repository
 
 import com.piashcse.entities.Order
+import com.piashcse.entities.OrderTable
 import com.piashcse.models.order.OrderRequest
-import com.piashcse.utils.extension.OrderStatus
 
 interface OrderRepo{
     /**
@@ -31,5 +31,5 @@ interface OrderRepo{
      * @param status The updated order status.
      * @return The updated order.
      */
-    suspend fun updateOrderStatus(userId: String, orderId: String, status: OrderStatus): Order
+    suspend fun updateOrderStatus(userId: String, orderId: String, status: OrderTable.OrderStatus): Order
 }

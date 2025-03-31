@@ -19,8 +19,8 @@ object UserTable : BaseIntIdTable("user") {
     override val primaryKey = PrimaryKey(id)
 }
 
-class UsersEntity(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
-    companion object : BaseIntEntityClass<UsersEntity>(UserTable)
+class UserDAO(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
+    companion object : BaseIntEntityClass<UserDAO>(UserTable)
     var email by UserTable.email
     var password by UserTable.password
     var userType by UserTable.userType
