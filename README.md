@@ -61,7 +61,7 @@ Ktor-E-Commerce is a high-performance backend solution designed for e-commerce a
   <img width="40%" height="25%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/mvc.png" />
 </p>
 <p align="center">
-<b>Fig.  MVC (Model - View - Controller) design pattern.</b>
+<b>Fig.  MVC (Model - View - Controller)</b>
 </p>
 
 ## Built With 🛠
@@ -1839,7 +1839,7 @@ http://localhost:8080/review-rating
 
 <details>
   
-<summary> <code>PUT</code> <code>/review-rating/{reviewId} </code></summary>
+<summary> <code>PUT</code> <code>/review-rating/{id} </code></summary>
 
 ### Curl
 
@@ -1878,7 +1878,7 @@ http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=
 
 <details>
   
-<summary> <code>DELETE</code> <code>/review-rating/{reviewId} </code></summary>
+<summary> <code>DELETE</code> <code>/review-rating/{id} </code></summary>
 
 ### Curl
 
