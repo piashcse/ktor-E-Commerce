@@ -24,8 +24,6 @@ class OrderController : OrderRepo {
     override suspend fun createOrder(userId: String, orderRequest: OrderRequest): Order = query {
         val order = OrderDAO.new {
             this.userId = EntityID(userId, OrderTable)
-            this.quantity = orderRequest.quantity
-            this.shippingCharge = orderRequest.shippingCharge
             this.subTotal = orderRequest.subTotal
             this.total = orderRequest.total
         }

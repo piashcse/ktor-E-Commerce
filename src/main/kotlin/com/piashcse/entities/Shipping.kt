@@ -6,40 +6,58 @@ import com.piashcse.entities.base.BaseIntIdTable
 import org.jetbrains.exposed.dao.id.EntityID
 
 object ShippingTable : BaseIntIdTable("shipping") {
-    val userId = reference("user_id", UserTable.id)
     val orderId = reference("order_id", OrderTable.id)
-    val shippingAddress = varchar("ship_address", 150)
-    val shippingCity = varchar("ship_city", 50)
-    val shippingPhone = integer("ship_phone")
-    val shippingName = varchar("ship_name", 50).nullable()
-    val shippingEmail = varchar("ship_email", 50).nullable()
-    val shippingCountry = varchar("ship_country", 50).nullable()
+    val address = varchar("address", 150)
+    val city = varchar("city", 50)
+    val country = varchar("ship_country", 50).nullable()
+    val phone = integer("phone")
+    val email = varchar("ship_email", 50).nullable()
+    val shippingMethod = varchar("shipping_method", 50).nullable()
+    val status = enumerationByName("status", 20, ShippingStatus::class).clientDefault { ShippingStatus.PENDING }
+    val trackingNumber = varchar("tracking_number", 255).nullable()
+
+    enum class ShippingStatus {
+        PENDING, SHIPPED, DELIVERED, CANCELLED
+    }
 }
 
 class ShippingDAO(id: EntityID<String>) : BaseIntEntity(id, ShippingTable) {
     companion object : BaseIntEntityClass<ShippingDAO>(ShippingTable)
 
-    var userId by ShippingTable.userId
     var orderId by ShippingTable.orderId
-    var shippingAddress by ShippingTable.shippingAddress
-    var shippingCity by ShippingTable.shippingCity
-    var shippingPhone by ShippingTable.shippingPhone
-    var shippingName by ShippingTable.shippingName
-    var shippingEmail by ShippingTable.shippingEmail
-    var shippingCountry by ShippingTable.shippingCountry
-
+    var address by ShippingTable.address
+    var city by ShippingTable.city
+    var phone by ShippingTable.phone
+    var country by ShippingTable.country
+    var shippingMethod by ShippingTable.shippingMethod
+    var email by ShippingTable.email
+    var status by ShippingTable.status
+    var trackingNumber by ShippingTable.trackingNumber
 
     fun response() =
-        Shipping(id.value, orderId.value, shippingAddress, shippingCity, shippingPhone, shippingName, shippingEmail, shippingCountry)
+        Shipping(
+            id.value,
+            orderId.value,
+            status,
+            address,
+            city,
+            country,
+            phone,
+            shippingMethod,
+            email,
+            trackingNumber,
+        )
 }
 
 data class Shipping(
-    val id:String,
+    val id: String,
     var orderId: String,
-    var shipAddress: String,
-    var shipCity: String,
-    var shipPhone: Int,
-    var shipName: String?,
-    var shipEmail: String?,
-    var shipCountry: String?
+    var status: ShippingTable.ShippingStatus,
+    var address: String,
+    var city: String,
+    var country: String?,
+    var phone: Int,
+    var email: String?,
+    var shippingMethod: String?,
+    var trackingNumber: String?,
 )

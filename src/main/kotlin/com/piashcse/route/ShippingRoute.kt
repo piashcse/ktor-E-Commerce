@@ -48,7 +48,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 val requestBody = call.receive<ShippingRequest>()
                 call.respond(
                     ApiResponse.success(
-                        shippingController.addShipping(call.currentUser().userId, requestBody),
+                        shippingController.createShipping(call.currentUser().userId, requestBody),
                         HttpStatusCode.OK
                     )
                 )
@@ -100,11 +100,12 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                         required = true
                     }
                     queryParameter<String>("orderId")
-                    queryParameter<String>("shipAddress")
-                    queryParameter<String>("shipCity")
-                    queryParameter<String>("shipPhone")
-                    queryParameter<String>("shipName")
-                    queryParameter<String>("shipEmail")
+                    queryParameter<String>("address")
+                    queryParameter<String>("city")
+                    queryParameter<String>("country")
+                    queryParameter<String>("shippingMethod")
+                    queryParameter<String>("phone")
+                    queryParameter<String>("email")
                     queryParameter<String>("shipCountry")
                 }
                 apiResponse()
@@ -112,12 +113,14 @@ fun Route.shippingRoute(shippingController: ShippingController) {
                 val (id) = call.requiredParameters("id") ?: return@put
                 val params = UpdateShipping(
                     id = id,
-                    shipAddress = call.parameters["shipAddress"],
-                    shipCity = call.parameters["shipCity"],
-                    shipPhone = call.parameters["shipPhone"]?.toInt(),
-                    shipName = call.parameters["shipName"],
-                    shipEmail = call.parameters["shipEmail"],
-                    shipCountry = call.parameters["shipCountry"],
+                    address = call.parameters["shipAddress"],
+                    city = call.parameters["shipCity"],
+                    country = call.parameters["country"],
+                    phone = call.parameters["phone"]?.toInt(),
+                    email = call.parameters["email"],
+                    shippingMethod = call.parameters["shippingMethod"],
+                    status = null,
+                    trackingNumber = null,
                 )
 
                 call.respond(

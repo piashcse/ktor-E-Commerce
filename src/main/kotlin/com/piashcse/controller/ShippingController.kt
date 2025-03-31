@@ -10,7 +10,6 @@ import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.and
 
 /**
  * Controller for managing shipping details. Provides methods to add, get, update, and delete shipping information.
@@ -25,21 +24,21 @@ class ShippingController : ShippingRepo {
      * @return The added shipping details.
      * @throws alreadyExistException If the shipping details for the specified order already exist.
      */
-    override suspend fun addShipping(userId: String, addShipping: ShippingRequest): Shipping = query {
+    override suspend fun createShipping(userId: String, shippingRequest: ShippingRequest): Shipping = query {
         val isShippingExist = ShippingDAO.find {
-            ShippingTable.userId eq userId and (ShippingTable.orderId eq addShipping.orderId)
+            ShippingTable.orderId eq shippingRequest.orderId
         }.toList().singleOrNull()
         isShippingExist?.let {
-            throw addShipping.orderId.alreadyExistException()
+            throw shippingRequest.orderId.alreadyExistException()
         } ?: ShippingDAO.new {
-            this.userId = EntityID(userId, ShippingTable)
-            this.orderId = EntityID(addShipping.orderId, ShippingTable)
-            shippingAddress = addShipping.shipAddress
-            shippingCity = addShipping.shipCity
-            shippingPhone = addShipping.shipPhone
-            shippingName = addShipping.shipName
-            shippingEmail = addShipping.shipEmail
-            shippingCountry = addShipping.shipCountry
+            this.orderId = EntityID(shippingRequest.orderId, ShippingTable)
+            address = shippingRequest.address
+            city = shippingRequest.city
+            country = shippingRequest.country
+            phone = shippingRequest.phone
+            email = shippingRequest.email
+            shippingMethod = shippingRequest.shippingMethod
+            trackingNumber = "TRK-${System.currentTimeMillis()}-${(1000..9999).random()}"
         }.response()
     }
 
@@ -53,7 +52,7 @@ class ShippingController : ShippingRepo {
      */
     override suspend fun getShipping(userId: String, orderId: String): Shipping = query {
         val isShippingExist = ShippingDAO.find {
-            ShippingTable.userId eq userId and (ShippingTable.orderId eq orderId)
+            ShippingTable.orderId eq orderId
         }.toList().singleOrNull()
         isShippingExist?.response() ?: throw orderId.notFoundException()
     }
@@ -68,16 +67,18 @@ class ShippingController : ShippingRepo {
      */
     override suspend fun updateShipping(userId: String, updateShipping: UpdateShipping): Shipping = query {
         val isShippingExist = ShippingDAO.find {
-            ShippingTable.userId eq userId and (ShippingTable.id eq updateShipping.id)
+            ShippingTable.id eq updateShipping.id
         }.toList().singleOrNull()
 
         isShippingExist?.let {
-            it.shippingAddress = updateShipping.shipAddress ?: it.shippingAddress
-            it.shippingCity = updateShipping.shipCity ?: it.shippingCity
-            it.shippingPhone = updateShipping.shipPhone ?: it.shippingPhone
-            it.shippingName = updateShipping.shipName ?: it.shippingName
-            it.shippingEmail = updateShipping.shipEmail ?: it.shippingEmail
-            it.shippingCountry = updateShipping.shipCountry ?: it.shippingCountry
+            it.address = updateShipping.address ?: it.address
+            it.city = updateShipping.city ?: it.city
+            it.country = updateShipping.country ?: it.country
+            it.phone = updateShipping.phone ?: it.phone
+            it.email = updateShipping.email ?: it.email
+            it.shippingMethod = updateShipping.shippingMethod ?: it.shippingMethod
+            it.status = updateShipping.status ?: it.status
+            it.trackingNumber = updateShipping.trackingNumber ?: it.trackingNumber
             it.response()
         } ?: throw updateShipping.id.alreadyExistException()
     }
@@ -92,7 +93,7 @@ class ShippingController : ShippingRepo {
      */
     override suspend fun deleteShipping(userId: String, id: String): String = query {
         val isShippingExist = ShippingDAO.find {
-            ShippingTable.userId eq userId and (ShippingTable.id eq id)
+            ShippingTable.id eq id
         }.toList().singleOrNull()
         isShippingExist?.let {
             it.delete()

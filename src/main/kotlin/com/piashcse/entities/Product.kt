@@ -13,7 +13,7 @@ object ProductTable : BaseIntIdTable("product") {
     val subCategoryId = reference("sub_category_id", ProductSubCategoryTable.id).nullable()
     val brandId = reference("brand_id", BrandTable.id).nullable()
     val stockQuantity = integer("stock_quantity") // Number of products in stock
-    val minOrderQuantity = integer("min_order_quantity") // Minimum quantity required for purchase
+    val minOrderQuantity = integer("min_order_quantity").default(1) // Minimum quantity required for purchase
     val price = double("price")
     val discountPrice = double("discount_price").nullable()
     val videoLink = text("video_link").nullable()
