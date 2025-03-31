@@ -1,7 +1,7 @@
 package com.piashcse.controller
 
 import com.piashcse.entities.ReviewRating
-import com.piashcse.entities.ReviewRatingEntity
+import com.piashcse.entities.ReviewRatingDAO
 import com.piashcse.entities.ReviewRatingTable
 import com.piashcse.models.ReviewRatingRequest
 import com.piashcse.repository.ReviewRatingRepo
@@ -27,7 +27,7 @@ class ReviewRatingController : ReviewRatingRepo {
         productId: String, limit: Int
     ): List<ReviewRating> = query {
         val isProductIdExist =
-            ReviewRatingEntity.find { ReviewRatingTable.productId eq productId }
+            ReviewRatingDAO.find { ReviewRatingTable.productId eq productId }
                 .limit(limit)
         isProductIdExist.map {
             it.response()
@@ -44,11 +44,11 @@ class ReviewRatingController : ReviewRatingRepo {
      */
     override suspend fun addReviewRating(userId: String, reviewRating: ReviewRatingRequest): ReviewRating = query {
         val isReviewRatingExist =
-            ReviewRatingEntity.find { ReviewRatingTable.id eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
+            ReviewRatingDAO.find { ReviewRatingTable.id eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
                 .singleOrNull()
         isReviewRatingExist?.let {
             throw it.productId.value.alreadyExistException()
-        } ?: ReviewRatingEntity.new {
+        } ?: ReviewRatingDAO.new {
             this.userId = EntityID(userId, ReviewRatingTable)
             productId = EntityID(reviewRating.productId, ReviewRatingTable)
             reviewText = reviewRating.reviewText
@@ -71,7 +71,7 @@ class ReviewRatingController : ReviewRatingRepo {
         rating: Int
     ): ReviewRating = query {
         val isReviewRatingExist =
-            ReviewRatingEntity.find { ReviewRatingTable.id eq reviewId }
+            ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
                 .singleOrNull()
 
         isReviewRatingExist?.let {
@@ -90,7 +90,7 @@ class ReviewRatingController : ReviewRatingRepo {
      */
     override suspend fun deleteReviewRating(reviewId: String): String = query {
         val isReviewRatingExist =
-            ReviewRatingEntity.find { ReviewRatingTable.id eq reviewId }
+            ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
                 .singleOrNull()
         isReviewRatingExist?.let {
             it.delete()

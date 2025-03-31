@@ -10,30 +10,24 @@ data class ProductRequest(
     val subCategoryId: String?,
     val brandId: String?,
     val name: String,
+    val description: String,
     val productCode: String?,
-    val productQuantity: Int,
-    val detail: String,
+    val stockQuantity: Int,
     val price: Double,
     val discountPrice: Double?,
     val status: Int?,
     val videoLink: String?,
-    val mainSlider: String?,
-    val hotDeal: String?,
-    val bestRated: String?,
-    val midSlider: String?,
-    val hotNew: String?,
-    val trend: String?,
-    val buyOneGetOne: String?,
-    val imageOne: String?,
-    val imageTwo: String?,
+    val hotDeal: Boolean,
+    val featured: Boolean,
+    val images: List<String>,
 ) {
     fun validation() {
         validate(this) {
             validate(ProductRequest::categoryId).isNotNull().isNotEmpty()
             validate(ProductRequest::name).isNotNull().isNotEmpty()
-            validate(ProductRequest::detail).isNotNull().isNotEmpty()
+            validate(ProductRequest::description).isNotNull().isNotEmpty()
             validate(ProductRequest::price).isNotNull().isGreaterThan(0.0)
-            validate(ProductRequest::productQuantity).isNotNull().isGreaterThan(0)
+            validate(ProductRequest::stockQuantity).isNotNull().isGreaterThan(0)
         }
     }
 }

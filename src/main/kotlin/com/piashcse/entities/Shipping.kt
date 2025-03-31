@@ -16,8 +16,8 @@ object ShippingTable : BaseIntIdTable("shipping") {
     val shippingCountry = varchar("ship_country", 50).nullable()
 }
 
-class ShippingEntity(id: EntityID<String>) : BaseIntEntity(id, ShippingTable) {
-    companion object : BaseIntEntityClass<ShippingEntity>(ShippingTable)
+class ShippingDAO(id: EntityID<String>) : BaseIntEntity(id, ShippingTable) {
+    companion object : BaseIntEntityClass<ShippingDAO>(ShippingTable)
 
     var userId by ShippingTable.userId
     var orderId by ShippingTable.orderId

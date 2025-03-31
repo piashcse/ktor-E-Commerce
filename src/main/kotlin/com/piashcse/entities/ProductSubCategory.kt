@@ -11,8 +11,8 @@ object ProductSubCategoryTable : BaseIntIdTable("sub_category") {
     val image = text("image").nullable()
 }
 
-class ProductSubCategoryEntity(id: EntityID<String>) : BaseIntEntity(id, ProductSubCategoryTable) {
-    companion object : BaseIntEntityClass<ProductSubCategoryEntity>(ProductSubCategoryTable)
+class ProductSubCategoryDAO(id: EntityID<String>) : BaseIntEntity(id, ProductSubCategoryTable) {
+    companion object : BaseIntEntityClass<ProductSubCategoryDAO>(ProductSubCategoryTable)
 
     var categoryId by ProductSubCategoryTable.categoryId
     var name by ProductSubCategoryTable.name

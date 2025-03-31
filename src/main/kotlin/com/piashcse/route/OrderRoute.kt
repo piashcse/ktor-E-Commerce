@@ -2,10 +2,10 @@ package com.piashcse.route
 
 
 import com.piashcse.controller.OrderController
+import com.piashcse.entities.OrderTable
 import com.piashcse.models.order.OrderRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.OrderStatus
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.requiredParameters
@@ -96,7 +96,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderStatus.CANCELED),
+                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderTable.OrderStatus.CANCELED),
                         HttpStatusCode.OK
                     )
                 )
@@ -121,7 +121,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderStatus.RECEIVED),
+                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderTable.OrderStatus.RECEIVED),
                         HttpStatusCode.OK
                     )
                 )
@@ -151,7 +151,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderStatus.CONFIRMED),
+                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderTable.OrderStatus.CONFIRMED),
                         HttpStatusCode.OK
                     )
                 )
@@ -176,7 +176,7 @@ fun Route.orderRoute(orderController: OrderController) {
                 val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderStatus.DELIVERED),
+                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderTable.OrderStatus.DELIVERED),
                         HttpStatusCode.OK
                     )
                 )

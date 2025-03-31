@@ -71,7 +71,7 @@ fun Route.cartRoute(cartController: CartController) {
                 }
                 apiResponse()
             }) {
-                val (limit, offset) = call.requiredParameters("limit") ?: return@get
+                val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
                         cartController.getCartItems(

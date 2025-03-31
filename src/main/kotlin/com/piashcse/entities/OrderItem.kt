@@ -11,8 +11,8 @@ object OrderItemTable : BaseIntIdTable("order_item") {
     val quantity = integer("quantity")
 }
 
-class OrderItemEntity(id: EntityID<String>) : BaseIntEntity(id, OrderItemTable) {
-    companion object : BaseIntEntityClass<OrderItemEntity>(OrderItemTable)
+class OrderItemDAO(id: EntityID<String>) : BaseIntEntity(id, OrderItemTable) {
+    companion object : BaseIntEntityClass<OrderItemDAO>(OrderItemTable)
 
     var orderId by OrderItemTable.orderId
     var productId by OrderItemTable.productId

@@ -1,7 +1,7 @@
 package com.piashcse.controller
 
 import com.piashcse.entities.ProductCategory
-import com.piashcse.entities.ProductCategoryEntity
+import com.piashcse.entities.ProductCategoryDAO
 import com.piashcse.entities.ProductCategoryTable
 import com.piashcse.repository.ProductCategoryRepo
 import com.piashcse.utils.extension.alreadyExistException
@@ -22,10 +22,10 @@ class ProductCategoryController : ProductCategoryRepo {
      */
     override suspend fun createCategory(name: String): ProductCategory = query {
         val isCategoryExist =
-            ProductCategoryEntity.find { ProductCategoryTable.name eq name }.toList().singleOrNull()
+            ProductCategoryDAO.find { ProductCategoryTable.name eq name }.toList().singleOrNull()
         isCategoryExist?.let {
             throw name.alreadyExistException()
-        } ?: ProductCategoryEntity.new {
+        } ?: ProductCategoryDAO.new {
             this.name = name
         }.response()
     }
@@ -37,7 +37,7 @@ class ProductCategoryController : ProductCategoryRepo {
      * @return A list of product category entities.
      */
     override suspend fun getCategories(limit: Int): List<ProductCategory> = query {
-        val categories = ProductCategoryEntity.all().limit(limit)
+        val categories = ProductCategoryDAO.all().limit(limit)
         categories.map {
             it.response()
         }
@@ -53,7 +53,7 @@ class ProductCategoryController : ProductCategoryRepo {
      */
     override suspend fun updateCategory(categoryId: String, name: String): ProductCategory = query {
         val isCategoryExist =
-            ProductCategoryEntity.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
+            ProductCategoryDAO.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
         isCategoryExist?.let {
             it.name = name
             it.response()
@@ -69,7 +69,7 @@ class ProductCategoryController : ProductCategoryRepo {
      */
     override suspend fun deleteCategory(categoryId: String): String = query {
         val isCategoryExist =
-            ProductCategoryEntity.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
+            ProductCategoryDAO.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
         isCategoryExist?.let {
             isCategoryExist.delete()
             categoryId

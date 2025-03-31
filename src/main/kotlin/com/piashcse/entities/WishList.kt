@@ -10,8 +10,8 @@ object WishListTable : BaseIntIdTable("wishlist") {
     val productId = reference("product_id", ProductTable.id)
 }
 
-class WishListEntity(id: EntityID<String>) : BaseIntEntity(id, WishListTable) {
-    companion object : BaseIntEntityClass<WishListEntity>(WishListTable)
+class WishListDAO(id: EntityID<String>) : BaseIntEntity(id, WishListTable) {
+    companion object : BaseIntEntityClass<WishListDAO>(WishListTable)
 
     var userId by WishListTable.userId
     var productId by WishListTable.productId

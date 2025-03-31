@@ -9,8 +9,8 @@ object ShopCategoryTable : BaseIntIdTable("shop_category") {
     val name = text("name")
 }
 
-class ShopCategoryEntity(id: EntityID<String>) : BaseIntEntity(id, ShopCategoryTable) {
-    companion object : BaseIntEntityClass<ShopCategoryEntity>(ShopCategoryTable)
+class ShopCategoryDAO(id: EntityID<String>) : BaseIntEntity(id, ShopCategoryTable) {
+    companion object : BaseIntEntityClass<ShopCategoryDAO>(ShopCategoryTable)
 
     var name by ShopCategoryTable.name
     fun response() = ShopCategory(id.value, name)

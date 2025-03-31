@@ -1,7 +1,7 @@
 package com.piashcse.controller
 
 import com.piashcse.entities.Shipping
-import com.piashcse.entities.ShippingEntity
+import com.piashcse.entities.ShippingDAO
 import com.piashcse.entities.ShippingTable
 import com.piashcse.models.shipping.ShippingRequest
 import com.piashcse.models.shipping.UpdateShipping
@@ -26,12 +26,12 @@ class ShippingController : ShippingRepo {
      * @throws alreadyExistException If the shipping details for the specified order already exist.
      */
     override suspend fun addShipping(userId: String, addShipping: ShippingRequest): Shipping = query {
-        val isShippingExist = ShippingEntity.find {
+        val isShippingExist = ShippingDAO.find {
             ShippingTable.userId eq userId and (ShippingTable.orderId eq addShipping.orderId)
         }.toList().singleOrNull()
         isShippingExist?.let {
             throw addShipping.orderId.alreadyExistException()
-        } ?: ShippingEntity.new {
+        } ?: ShippingDAO.new {
             this.userId = EntityID(userId, ShippingTable)
             this.orderId = EntityID(addShipping.orderId, ShippingTable)
             shippingAddress = addShipping.shipAddress
@@ -52,7 +52,7 @@ class ShippingController : ShippingRepo {
      * @throws orderId.notFoundException If the shipping details for the specified order ID are not found.
      */
     override suspend fun getShipping(userId: String, orderId: String): Shipping = query {
-        val isShippingExist = ShippingEntity.find {
+        val isShippingExist = ShippingDAO.find {
             ShippingTable.userId eq userId and (ShippingTable.orderId eq orderId)
         }.toList().singleOrNull()
         isShippingExist?.response() ?: throw orderId.notFoundException()
@@ -67,7 +67,7 @@ class ShippingController : ShippingRepo {
      * @throws alreadyExistException If the shipping ID does not exist for the specified user.
      */
     override suspend fun updateShipping(userId: String, updateShipping: UpdateShipping): Shipping = query {
-        val isShippingExist = ShippingEntity.find {
+        val isShippingExist = ShippingDAO.find {
             ShippingTable.userId eq userId and (ShippingTable.id eq updateShipping.id)
         }.toList().singleOrNull()
 
@@ -91,7 +91,7 @@ class ShippingController : ShippingRepo {
      * @throws id.notFoundException If the shipping record with the specified ID does not exist.
      */
     override suspend fun deleteShipping(userId: String, id: String): String = query {
-        val isShippingExist = ShippingEntity.find {
+        val isShippingExist = ShippingDAO.find {
             ShippingTable.userId eq userId and (ShippingTable.id eq id)
         }.toList().singleOrNull()
         isShippingExist?.let {

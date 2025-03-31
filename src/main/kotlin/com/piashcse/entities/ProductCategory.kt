@@ -10,11 +10,11 @@ object ProductCategoryTable : BaseIntIdTable("category") {
     val image = text("image").nullable()
 }
 
-class ProductCategoryEntity(id: EntityID<String>) : BaseIntEntity(id, ProductCategoryTable) {
-    companion object : BaseIntEntityClass<ProductCategoryEntity>(ProductCategoryTable)
+class ProductCategoryDAO(id: EntityID<String>) : BaseIntEntity(id, ProductCategoryTable) {
+    companion object : BaseIntEntityClass<ProductCategoryDAO>(ProductCategoryTable)
 
     var name by ProductCategoryTable.name
-    private val subCategories by ProductSubCategoryEntity referrersOn ProductSubCategoryTable.categoryId
+    private val subCategories by ProductSubCategoryDAO referrersOn ProductSubCategoryTable.categoryId
     var image by ProductCategoryTable.image
     fun response() =
         ProductCategory(id.value, name, subCategories.map { it.response() }, image)
