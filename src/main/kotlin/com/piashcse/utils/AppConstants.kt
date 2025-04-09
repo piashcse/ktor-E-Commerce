@@ -7,7 +7,7 @@ object AppConstants {
         }
 
         object VerificationCode {
-            const val VERIFICATION_CODE_SENT_TO = "verification code sent to"
+            const val VERIFICATION_CODE_SENT_TO = "Verification code sent to"
             const val VERIFICATION_CODE_IS_NOT_VALID = "Verification code is not valid"
         }
     }

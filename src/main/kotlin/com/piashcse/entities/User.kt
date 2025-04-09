@@ -8,33 +8,27 @@ import com.piashcse.models.user.body.JwtTokenRequest
 import org.jetbrains.exposed.dao.id.EntityID
 
 object UserTable : BaseIntIdTable("user") {
-    val email = varchar("email", 50)
-    val password = varchar("password", 200)
+    val email = varchar("email", 255).uniqueIndex() // Nullable for mobile users
     val userType = varchar("user_type", 100)
-    val mobileNumber = varchar("mobile_number", 50).nullable()
-    val emailVerifiedAt = text("email_verified_at").nullable() // so far unkmown
-    val rememberToken = varchar("remember_token", 50).nullable()
-    val verificationCode = varchar("verification_code", 30).nullable() // verification_code
-    val isVerified = bool("is_verified").nullable() // email verified by validation code
+    val password = varchar("password", 200)
+    val otpCode = varchar("otp_code", 6)
+    val otpExpiry = varchar("otp_expiry", 50)
+    val isVerified = bool("is_verified").default(false)
     override val primaryKey = PrimaryKey(id)
 }
 
 class UserDAO(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
     companion object : BaseIntEntityClass<UserDAO>(UserTable)
+
     var email by UserTable.email
-    var password by UserTable.password
     var userType by UserTable.userType
-    var mobileNumber by UserTable.mobileNumber
-    var emailVerifiedAt by UserTable.emailVerifiedAt
-    var rememberToken by UserTable.rememberToken
-    var verificationCode by UserTable.verificationCode
+    var password by UserTable.password
+    var otpCode by UserTable.otpCode
+    var otpExpiry by UserTable.otpExpiry
     var isVerified by UserTable.isVerified
-    fun response() = UsersResponse(
+    fun response() = UserResponse(
         id.value,
         email,
-        mobileNumber,
-        emailVerifiedAt,
-        rememberToken,
         isVerified,
         userType
     )
@@ -44,15 +38,12 @@ class UserDAO(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
     )
 }
 
-data class UsersResponse(
+data class UserResponse(
     val id: String,
     val email: String,
-    val mobileNumber: String?,
-    val emailVerifiedAt: String?,
-    val rememberToken: String?,
     val isVerified: Boolean?,
     var userType: String
 )
-data class LoginResponse(val user: UsersResponse?, val accessToken: String)
+
+data class LoginResponse(val user: UserResponse?, val accessToken: String)
 data class ChangePassword(val oldPassword: String, val newPassword: String)
-data class VerificationCode(val verificationCode: String)

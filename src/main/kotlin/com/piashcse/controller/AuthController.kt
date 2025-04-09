@@ -2,20 +2,18 @@ package com.piashcse.controller
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.entities.*
-import com.piashcse.models.user.body.ConfirmPasswordRequest
+import com.piashcse.models.user.body.ResetRequest
 import com.piashcse.models.user.body.ForgetPasswordRequest
 import com.piashcse.models.user.body.LoginRequest
 import com.piashcse.models.user.body.RegisterRequest
 import com.piashcse.models.user.response.RegisterResponse
 import com.piashcse.repository.AuthRepo
-import com.piashcse.utils.AppConstants
-import com.piashcse.utils.PasswordNotMatch
-import com.piashcse.utils.UserNotExistException
-import com.piashcse.utils.extension.alreadyExistException
+import com.piashcse.utils.*
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.sql.and
-import kotlin.random.Random
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class AuthController : AuthRepo {
     /**
@@ -25,22 +23,37 @@ class AuthController : AuthRepo {
      * @param registerRequest The request containing user details.
      * @return The response containing the registered user ID and email.
      */
-    override suspend fun register(registerRequest: RegisterRequest): RegisterResponse = query {
+    override suspend fun register(registerRequest: RegisterRequest): Any = query {
         val userEntity =
             UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType eq registerRequest.userType) }
                 .toList().singleOrNull()
-        userEntity?.let {
-            it.id.value.alreadyExistException("as ${it.userType}")
+        val otp = generateOTP()
+        val now =
+            LocalDateTime.now().plusHours(24).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) // 24 hours opt expire time
+
+        if (userEntity != null) {
+            val expiryTime = LocalDateTime.parse(userEntity.otpExpiry, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            if (expiryTime < LocalDateTime.now()) {
+                userEntity.otpCode = otp
+                sendEmail(userEntity.email, otp)
+                "New OTP sent to ${userEntity.email}"
+            } else {
+                "OTP already sent, wait until expiry"
+            }
+        } else {
+            val inserted = UserDAO.new {
+                email = registerRequest.email
+                otpCode = otp
+                otpExpiry = now
+                password = BCrypt.withDefaults().hashToString(12, registerRequest.password.toCharArray())
+                userType = registerRequest.userType
+            }
+            UsersProfileDAO.new {
+                userId = inserted.id
+            }
+            sendEmail(inserted.email, otp)
+            RegisterResponse(inserted.id.value, registerRequest.email, message = "OTP sent to ${inserted.email}")
         }
-        val inserted = UserDAO.new {
-            email = registerRequest.email
-            password = BCrypt.withDefaults().hashToString(12, registerRequest.password.toCharArray())
-            userType = registerRequest.userType
-        }
-        UsersProfileDAO.new {
-            userId = inserted.id
-        }
-        RegisterResponse(inserted.id.value, registerRequest.email)
     }
 
     /**
@@ -59,7 +72,11 @@ class AuthController : AuthRepo {
                     loginRequest.password.toCharArray(), it.password
                 ).verified
             ) {
-                it.loggedInWithToken()
+                if (it.isVerified) {
+                    it.loggedInWithToken()
+                } else {
+                    throw CommonException("Account is not verified")
+                }
             } else {
                 throw PasswordNotMatch()
             }
@@ -93,12 +110,12 @@ class AuthController : AuthRepo {
      * @param forgetPasswordRequest The request containing the user's email.
      * @return The verification code sent to the user.
      */
-    override suspend fun sendPasswordResetOtp(forgetPasswordRequest: ForgetPasswordRequest): VerificationCode = query {
+    override suspend fun forgetPassword(forgetPasswordRequest: ForgetPasswordRequest): String = query {
         val userEntity = UserDAO.find { UserTable.email eq forgetPasswordRequest.email }.toList().singleOrNull()
         userEntity?.let {
-            val verificationCode = Random.nextInt(1000, 9999).toString()
-            it.verificationCode = verificationCode
-            VerificationCode(verificationCode)
+            val otp = generateOTP()
+            it.otpCode = generateOTP()
+            otp
         } ?: throw forgetPasswordRequest.email.notFoundException()
     }
 
@@ -107,20 +124,20 @@ class AuthController : AuthRepo {
      * If the verification code matches, the password is updated and the code is cleared.
      * Returns a constant indicating whether the operation was successful or not.
      *
-     * @param confirmPasswordRequest The request containing email, verification code, and new password.
+     * @param resetPasswordRequest The request containing email, verification code, and new password.
      * @return `FOUND` if the verification code is correct and the password is updated, otherwise `NOT_FOUND`.
      * @throws Exception if the user does not exist.
      */
-    override suspend fun verifyPasswordResetOtp(confirmPasswordRequest: ConfirmPasswordRequest): Int = query {
-        val userEntity = UserDAO.find { UserTable.email eq confirmPasswordRequest.email }.toList().singleOrNull()
+    override suspend fun resetPassword(resetPasswordRequest: ResetRequest): Int = query {
+        val userEntity = UserDAO.find { UserTable.email eq resetPasswordRequest.email }.toList().singleOrNull()
         userEntity?.let {
-            if (confirmPasswordRequest.verificationCode == it.verificationCode) {
-                it.password = BCrypt.withDefaults().hashToString(12, confirmPasswordRequest.newPassword.toCharArray())
-                it.verificationCode = null
+            if (resetPasswordRequest.verificationCode == it.otpCode) {
+                it.password = BCrypt.withDefaults().hashToString(12, resetPasswordRequest.newPassword.toCharArray())
+                it.otpCode = it.otpCode
                 AppConstants.DataBaseTransaction.FOUND
             } else {
                 AppConstants.DataBaseTransaction.NOT_FOUND
             }
-        } ?: throw confirmPasswordRequest.email.notFoundException()
+        } ?: throw resetPasswordRequest.email.notFoundException()
     }
 }

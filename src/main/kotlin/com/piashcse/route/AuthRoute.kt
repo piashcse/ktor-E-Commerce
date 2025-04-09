@@ -77,8 +77,8 @@ fun Route.authRoute(authController: AuthController) {
         }) {
             val (email) = call.requiredParameters("email") ?: return@get
             val requestBody = ForgetPasswordRequest(email)
-            authController.sendPasswordResetOtp(requestBody).let {
-                sendEmail(requestBody.email, it.verificationCode)
+            authController.forgetPassword(requestBody).let { otp ->
+                sendEmail(requestBody.email, otp)
                 call.respond(
                     ApiResponse.success(
                         "${AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_SENT_TO} ${requestBody.email}",
@@ -112,8 +112,8 @@ fun Route.authRoute(authController: AuthController) {
                 "email", "otp", "newPassword"
             ) ?: return@get
 
-            AuthController().verifyPasswordResetOtp(
-                ConfirmPasswordRequest(
+            AuthController().resetPassword(
+                ResetRequest(
                     email, verificationCode, newPassword
                 )
             ).let {

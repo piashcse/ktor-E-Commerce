@@ -57,9 +57,6 @@ fun Application.configureSwagger() {
             route("swagger") {
                 swaggerUI("/api.json")
             }
-            get {
-                call.respondRedirect("/swagger/index.html?url=/api.json", true)
-            }
         }
     }
 }
