@@ -55,7 +55,7 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
-                val (productId) = call.requiredParameters("productId") ?: return@get
+                val (productId) = call.requiredParameters("id") ?: return@get
                 call.respond(ApiResponse.success(productController.getProductDetail(productId), HttpStatusCode.OK))
             }
 
