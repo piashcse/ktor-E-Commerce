@@ -269,14 +269,14 @@ http://localhost:8080/auth/forget-password?email=piash@gmail.com
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&verificationCode=9889&password=p1234' \
+  'http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&otp=9889&newPassword=p1234' \
   -H 'accept: application/json'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&verificationCode=9189&newPassword=p1234
+http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&otp=9189&newPassword=p1234
 ``` 
 
 
@@ -521,7 +521,7 @@ http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Pi
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/shop?name=Royal%20Shop&shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
+  'http://localhost:8080/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ' \
   -d ''
@@ -530,7 +530,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/shop?name=Royal%20Shop&shopCategoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb
+http://localhost:8080/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb
 ``` 
 
 
@@ -595,7 +595,7 @@ http://localhost:8080/shop?limit=10
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?shopName=Shop%20again%20update' \
+  'http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20again%20update' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
 ``` 
@@ -603,7 +603,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?shopName=Shop%20again%20update
+http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20again%20update
 ``` 
 
 
@@ -670,27 +670,25 @@ http://localhost:8080/shop/d2836959-6bc5-49d0-bd98-e73255a915c5
 curl -X 'POST' \
   'http://localhost:8080/product' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzY5OTcyfQ.QF530JiVfrYSz1m4aDAcTqOkvJ2zLy68MGiYkBQlzWamxF1O2BfqTYBWofRM0LWspCMXQt2HQTRijmjLW7dglQ' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiNjY0NDdhNTctYWY2ZS00ZjI1LWE0NmUtMWVkMGUxMTE0ZDhkIiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3NDQ0ODQ4NzB9.nYRrGaSH5rdzclhfRquQ8ZRaaGFifnu-7oLQ-IvY9_HAygbhSjDXMDtDl2VK3UuGr9vr64-pGgcY-nPCs1AaQg' \
   -H 'Content-Type: application/json' \
   -d '{
-  "bestRated": "string",
-  "buyOneGetOne": "string",
-  "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
-  "discountPrice": 0,
-  "hotDeal": "string",
-  "hotNew": "string",
-  "imageOne": "string",
-  "imageTwo": "string",
-  "mainSlider": "string",
-  "midSlider": "string",
-  "price": 10,
-  "productCode": "string",
-  "detail": "string",
-  "name": "string",
-  "productQuantity": 5,
-  "status": 0,
-  "trend": "string",
-  "videoLink": "string"
+  "brandId": null,
+  "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
+  "description": "Good watch",
+  "discountPrice": null,
+  "featured": true,
+  "hotDeal": true,
+  "images": [
+    "string"
+  ],
+  "name": "Smart watch",
+  "price": 100,
+  "productCode": null,
+  "status": null,
+  "stockQuantity":1,
+  "subCategoryId": null,
+  "videoLink": null
 }'
 ``` 
 
@@ -710,25 +708,17 @@ http://localhost:8080/product
     "description": "OK"
   },
   "data": {
-    "id": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d",
-    "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
-    "name": "string",
-    "productCode": "string",
-    "productQuantity": 5,
-    "detail": "string",
-    "price": 10,
-    "discountPrice": 0,
-    "status": 0,
-    "videoLink": "string",
-    "mainSlider": "string",
-    "hotDeal": "string",
-    "bestRated": "string",
-    "midSlider": "string",
-    "hotNew": "string",
-    "trend": "string",
-    "buyOneGetOne": "string",
-    "imageOne": "string",
-    "imageTwo": "string"
+    "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
+    "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
+    "name": "Smart watch",
+    "description": "Good watch",
+    "minOrderQuantity": 1,
+    "stockQuantity": 1,
+    "price": 100,
+    "hotDeal": true,
+    "featured": true,
+    "images": "[string]",
+    "status": "ACTIVE"
   }
 }
 ```   
@@ -763,25 +753,17 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
     "description": "OK"
   },
   "data": {
-    "id": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d",
-    "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
-    "name": "string",
-    "productCode": "string",
-    "productQuantity": 5,
-    "detail": "string",
-    "price": 10,
-    "discountPrice": 0,
-    "status": 0,
-    "videoLink": "string",
-    "mainSlider": "string",
-    "hotDeal": "string",
-    "bestRated": "string",
-    "midSlider": "string",
-    "hotNew": "string",
-    "trend": "string",
-    "buyOneGetOne": "string",
-    "imageOne": "string",
-    "imageTwo": "string"
+    "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
+    "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
+    "name": "Smart watch",
+    "description": "Good watch",
+    "minOrderQuantity": 1,
+    "stockQuantity": 1,
+    "price": 100,
+    "hotDeal": true,
+    "featured": true,
+    "images": "[string]",
+    "status": "ACTIVE"
   }
 }
 ```   
@@ -795,7 +777,7 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
+  'http://localhost:8080/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA' \
   -H 'Content-Type: application/json' \
@@ -810,7 +792,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
+http://localhost:8080/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5
 ``` 
 
 
@@ -823,25 +805,17 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
     "description": "OK"
   },
   "data": {
-    "id": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d",
-    "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
-    "name": "Smartch watch",
-    "productCode": "string",
-    "productQuantity": 5,
-    "detail": "Xiaomi Smart Watch",
-    "price": 10,
-    "discountPrice": 0,
-    "status": 0,
-    "videoLink": "string",
-    "mainSlider": "string",
-    "hotDeal": "string",
-    "bestRated": "string",
-    "midSlider": "string",
-    "hotNew": "string",
-    "trend": "string",
-    "buyOneGetOne": "string",
-    "imageOne": "string",
-    "imageTwo": "string"
+    "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
+    "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
+    "name": "Smart watch",
+    "description": "Good watch",
+    "minOrderQuantity": 1,
+    "stockQuantity": 1,
+    "price": 100,
+    "hotDeal": true,
+    "featured": true,
+    "images": "[string]",
+    "status": "ACTIVE"
   }
 }
 ```   
@@ -878,25 +852,17 @@ http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
   },
   "data": [
     {
-      "id": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d",
-      "categoryId": "ec757f21-4054-43fb-ac22-d6a2973e49e4",
-      "name": "Smartch watch",
-      "productCode": "string",
-      "productQuantity": 5,
-      "detail": "Xiaomi Smart Watch",
-      "price": 10,
-      "discountPrice": 0,
-      "status": 0,
-      "videoLink": "string",
-      "mainSlider": "string",
-      "hotDeal": "string",
-      "bestRated": "string",
-      "midSlider": "string",
-      "hotNew": "string",
-      "trend": "string",
-      "buyOneGetOne": "string",
-      "imageOne": "string",
-      "imageTwo": "string"
+     "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
+    "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
+    "name": "Smart watch",
+    "description": "Good watch",
+    "minOrderQuantity": 1,
+    "stockQuantity": 1,
+    "price": 100,
+    "hotDeal": true,
+    "featured": true,
+    "images": "[string]",
+    "status": "ACTIVE"
     }
   ]
 }
@@ -1068,7 +1034,7 @@ http://localhost:8080/product-category?limit=10
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?categoryName=Education%203.0' \
+  'http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiIzYTRhZTAzMi02ODAxLTQ3NWItOTUxYS0yNjE0ZjA0YTliYjAiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTExNTEyfQ._VBrVUeHJ2gOpCvmNHLhkjn5RMZUpf0B35uy_0k1cAQMMuDG7EDgGHzG3eq6PWpNYjMKBeNRrIByGG0lWSYpjg'
 ``` 
@@ -1076,7 +1042,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?categoryName=Education%203.0
+http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0
 ``` 
 
 
@@ -1470,7 +1436,7 @@ http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
       "name": "Polo T Shirt",
       "productCode": "string",
       "productQuantity": 1,
-      "detail": "Chinese polo T-shirt",
+      "description": "Chinese polo T-shirt",
       "price": 100,
       "discountPrice": 0,
       "status": 0,
@@ -1518,7 +1484,7 @@ http://localhost:8080/wishlist
       "name": "Polo T Shirt",
       "productCode": "string",
       "productQuantity": 1,
-      "detail": "Chinese polo T-shirt",
+      "descritpion": "Chinese polo T-shirt",
       "price": 100,
       "discountPrice": 0,
       "status": 0,
@@ -1565,7 +1531,7 @@ http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
     "name": "Polo T Shirt",
     "productCode": "string",
     "productQuantity": 1,
-    "detail": "Chinese polo T-shirt",
+    "description": "Chinese polo T-shirt",
     "price": 100,
     "discountPrice": 0,
     "status": 0,
