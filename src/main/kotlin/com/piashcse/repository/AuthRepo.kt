@@ -25,6 +25,14 @@ interface AuthRepo {
     suspend fun login(loginRequest: LoginRequest): LoginResponse
 
     /**
+     * Otp verification.
+     *
+     * @param request the otp code.
+     * @return The success response.
+     */
+    suspend fun otpVerification(userId: String,otp: String): Boolean
+
+    /**
      * Changes the password for a user.
      *
      * @param userId The unique identifier of the user.

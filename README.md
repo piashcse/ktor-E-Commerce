@@ -226,7 +226,39 @@ curl -X 'POST' \
 ```   
 </details>
 
+<details>
 
+<summary> <code>POST</code> <code>/auth/otp-verification</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d' \
+  -H 'accept: application/json'
+``` 
+
+### Request URL
+```
+   http://localhost:8080/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d
+``` 
+
+### Response
+```
+	
+Response body
+Download
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": true
+}
+
+```   
+</details>
 <details>
   
 <summary><code>GET </code> <code>/auth/forget-password</code></summary>

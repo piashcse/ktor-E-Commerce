@@ -84,6 +84,25 @@ class AuthController : AuthRepo {
     }
 
     /**
+     * Verify otp .
+     * Throws an exception if the otp code not valid.
+     *
+     * @param otp The request containing the otp code.
+     * @return Success after verify the otp.
+     */
+    override suspend fun otpVerification(userId: String, otp: String): Boolean = query {
+        val userEntity = UserDAO.find { UserTable.id eq userId }.toList().singleOrNull()
+        userEntity?.let {
+            if (it.otpCode == otp) {
+                it.isVerified = true
+                true
+            } else {
+                false
+            }
+        } ?: throw UserNotExistException()
+    }
+
+    /**
      * Changes the password for a user.
      * Throws an exception if the user does not exist or the old password is incorrect.
      *

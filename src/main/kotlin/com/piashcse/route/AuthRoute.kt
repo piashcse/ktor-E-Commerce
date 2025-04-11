@@ -62,6 +62,31 @@ fun Route.authRoute(authController: AuthController) {
         }
 
         /**
+         * Handles the otp-verification request.
+         *
+         * Receives otp as a query parameter and verifies the opt.
+         */
+        get("otp-verification", {
+            tags("Auth")
+            request {
+                queryParameter<String>("userId") {
+                    required = true
+                }
+                queryParameter<String>("otp") {
+                    required = true
+                }
+            }
+            apiResponse()
+        }) {
+            val (userId, otp) = call.requiredParameters("userId", "otp") ?: return@get
+            call.respond(
+                ApiResponse.success(
+                    authController.otpVerification(userId, otp), HttpStatusCode.OK
+                )
+            )
+        }
+
+        /**
          * Handles the request for sending a password reset verification code.
          *
          * Receives the user's email as a query parameter and sends a verification code to the email.
