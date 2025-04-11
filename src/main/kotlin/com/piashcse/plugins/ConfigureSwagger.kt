@@ -12,6 +12,23 @@ import io.ktor.server.routing.*
 
 fun Application.configureSwagger() {
     install(OpenApi) {
+        info {
+            title = "Ktor Ecommerce"
+            version = "1.0.0"
+            description = "API documentation for Ktor Ecommerce App"
+            contact {
+                name = "PLabs corporation"
+                email = "piash599@gmail.com"
+            }
+        }
+        server {
+            url = "http://localhost:8080/"
+            description = "Development Server"
+        }
+        server {
+            url = "http://ktorecommerce.com/"
+            description = "Production Server"
+        }
         security {
             // configure a basic-auth security scheme
             securityScheme("jwtToken") {
@@ -31,23 +48,6 @@ fun Application.configureSwagger() {
                 overwrite(SchemaGenerator.TypeOverwrites.File())
             }
         }
-        info {
-            title = "Ktor Ecommerce"
-            version = "1.0.0"
-            description = "API documentation for Ktor Ecommerce App"
-            contact {
-                name = "PLabs corporation"
-                email = "piash599@gmail.com"
-            }
-        }
-        server {
-            url = "http://localhost:8080/"
-            description = "Development Server"
-        }
-        server {
-            url = "http://ktorecommerce.com/"
-            description = "Production Server"
-        }
         routing {
             // Create a route for the openapi-spec file.
             route("api.json") {
@@ -57,8 +57,9 @@ fun Application.configureSwagger() {
             route("swagger") {
                 swaggerUI("/api.json")
             }
+            // Default route for loading swagger
             get {
-                call.respondRedirect("/swagger/index.html?url=/api.json", true)
+                call.respondRedirect("/swagger/index.html", true)
             }
         }
     }

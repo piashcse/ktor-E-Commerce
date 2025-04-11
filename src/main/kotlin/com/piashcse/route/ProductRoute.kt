@@ -55,7 +55,7 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
-                val (productId) = call.requiredParameters("productId") ?: return@get
+                val (productId) = call.requiredParameters("id") ?: return@get
                 call.respond(ApiResponse.success(productController.getProductDetail(productId), HttpStatusCode.OK))
             }
 
@@ -220,22 +220,15 @@ fun Route.productRoute(productController: ProductController) {
                     queryParameter<String>("subCategoryId")
                     queryParameter<String>("brandId")
                     queryParameter<String>("name")
-                    queryParameter<String>("productCode")
-                    queryParameter<Int>("productQuantity")
-                    queryParameter<String>("detail")
-                    queryParameter<Double>("price")
-                    queryParameter<Double>("discountPrice")
+                    queryParameter<String>("description")
+                    queryParameter<Int>("stockQuantity")
+                    queryParameter<Long>("price")
+                    queryParameter<Long>("discountPrice")
                     queryParameter<String>("status")
                     queryParameter<String>("videoLink")
-                    queryParameter<String>("mainSlider")
                     queryParameter<String>("hotDeal")
-                    queryParameter<String>("bestRated")
-                    queryParameter<String>("midSlider")
-                    queryParameter<String>("hotNew")
-                    queryParameter<String>("trend")
-                    queryParameter<String>("buyOneGetOne")
-                    queryParameter<String>("imageOne")
-                    queryParameter<String>("imageTwo")
+                    queryParameter<String>("featured")
+                    queryParameter<Array<String>>("images")
                 }
                 apiResponse()
             }) {
@@ -244,22 +237,15 @@ fun Route.productRoute(productController: ProductController) {
                     subCategoryId = call.parameters["subCategoryId"],
                     brandId = call.parameters["brandId"],
                     name = call.parameters["name"],
-                    productCode = call.parameters["productCode"],
-                    productQuantity = call.parameters["productQuantity"]?.toIntOrNull(),
-                    detail = call.parameters["detail"] ?: "",
+                    description = call.parameters["description"],
+                    stockQuantity = call.parameters["stockQuantity"]?.toInt() ?: 0,
                     price = call.parameters["price"]?.toDoubleOrNull(),
                     discountPrice = call.parameters["discountPrice"]?.toDoubleOrNull(),
-                    status = call.parameters["status"]?.toIntOrNull(),
+                    status = call.parameters["status"],
                     videoLink = call.parameters["videoLink"],
-                    mainSlider = call.parameters["mainSlider"],
-                    hotDeal = call.parameters["hotDeal"],
-                    bestRated = call.parameters["bestRated"],
-                    midSlider = call.parameters["midSlider"],
-                    hotNew = call.parameters["hotNew"],
-                    trend = call.parameters["trend"],
-                    buyOneGetOne = call.parameters["buyOneGetOne"],
-                    imageOne = call.parameters["imageOne"],
-                    imageTwo = call.parameters["imageTwo"]
+                    hotDeal = call.parameters["hotDeal"].toBoolean(),
+                    featured = call.parameters["featured"].toBoolean(),
+                    images = call.parameters["images"]?.split(",") ?: arrayListOf()
                 )
                 val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
@@ -302,9 +288,6 @@ fun Route.productRoute(productController: ProductController) {
             post("image-upload", {
                 tags("Product")
                 request {
-                    queryParameter<String>("id") {
-                        required = true
-                    }
                     multipartBody {
                         mediaTypes = setOf(ContentType.MultiPart.FormData)
                         part<File>("image") {
@@ -316,7 +299,6 @@ fun Route.productRoute(productController: ProductController) {
                 }
                 apiResponse()
             }) {
-                val (id) = call.requiredParameters("id") ?: return@post
                 val multipartData = call.receiveMultipart()
                 multipartData.forEachPart { part ->
                     when (part) {
@@ -332,7 +314,10 @@ fun Route.productRoute(productController: ProductController) {
                                     })
                                 }
                                 val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
-                                productController.uploadProductImage(
+                                call.respond(
+                                    ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
+                                )
+                                /*productController.uploadProductImage(
                                     call.currentUser().userId,
                                     id,
                                     fileNameInServer,
@@ -340,7 +325,7 @@ fun Route.productRoute(productController: ProductController) {
                                     call.respond(
                                         ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
                                     )
-                                }
+                                }*/
                             }
                         }
 

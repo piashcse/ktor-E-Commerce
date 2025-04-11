@@ -11,8 +11,8 @@ object ShopTable : BaseIntIdTable("shop") {
     val name = text("name")
 }
 
-class ShopEntity(id: EntityID<String>) : BaseIntEntity(id, ShopTable) {
-    companion object : BaseIntEntityClass<ShopEntity>(ShopTable)
+class ShopDAO(id: EntityID<String>) : BaseIntEntity(id, ShopTable) {
+    companion object : BaseIntEntityClass<ShopDAO>(ShopTable)
 
     var userId by ShopTable.userId
     var categoryId by ShopTable.categoryId

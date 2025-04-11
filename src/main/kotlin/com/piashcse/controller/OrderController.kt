@@ -3,9 +3,7 @@ package com.piashcse.controller
 import com.piashcse.entities.*
 import com.piashcse.models.order.OrderRequest
 import com.piashcse.repository.OrderRepo
-import com.piashcse.utils.extension.OrderStatus
 import com.piashcse.utils.extension.notFoundException
-import com.piashcse.utils.extension.orderStatusCode
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
@@ -24,15 +22,13 @@ class OrderController : OrderRepo {
      * @throws Exception if there is an issue during order creation or the product is no longer in the cart.
      */
     override suspend fun createOrder(userId: String, orderRequest: OrderRequest): Order = query {
-        val order = OrderEntity.new {
+        val order = OrderDAO.new {
             this.userId = EntityID(userId, OrderTable)
-            this.quantity = orderRequest.quantity
-            this.shippingCharge = orderRequest.shippingCharge
             this.subTotal = orderRequest.subTotal
             this.total = orderRequest.total
         }
         orderRequest.orderItems.forEach {
-            OrderItemEntity.new {
+            OrderItemDAO.new {
                 orderId = EntityID(order.id.value, OrderItemTable)
                 productId = EntityID(it.productId, OrderItemTable)
                 quantity = it.quantity
@@ -40,7 +36,7 @@ class OrderController : OrderRepo {
         }
         orderRequest.orderItems.forEach {
             val productExist =
-                CartItemEntity.find { CartItemTable.userId eq userId and (CartItemTable.productId eq it.productId) }
+                CartItemDAO.find { CartItemTable.userId eq userId and (CartItemTable.productId eq it.productId) }
                     .toList().singleOrNull()
             productExist?.delete()
         }
@@ -55,7 +51,7 @@ class OrderController : OrderRepo {
      * @return A list of order entities for the user.
      */
     override suspend fun getOrders(userId: String, limit: Int): List<Order> = query {
-        OrderEntity.find { OrderTable.userId eq userId }.limit(limit).map {
+        OrderDAO.find { OrderTable.userId eq userId }.limit(limit).map {
             it.response()
         }
     }
@@ -65,17 +61,17 @@ class OrderController : OrderRepo {
      *
      * @param userId The ID of the user whose order status is being updated.
      * @param orderId The ID of the order to be updated.
-     * @param orderStatus The new status of the order.
+     * @param status The new status of the order.
      * @return The updated order entity with the new status.
      * @throws Exception if the order does not exist for the given user.
      */
-    override suspend fun updateOrderStatus(userId: String, orderId: String, orderStatus: OrderStatus): Order = query {
-        val isOrderExist =
-            OrderEntity.find { OrderTable.userId eq userId and (OrderTable.id eq orderId) }.toList().singleOrNull()
-        isOrderExist?.let {
-            it.status = orderStatus.name.lowercase()
-            it.statusCode = orderStatus.name.lowercase().orderStatusCode()
-            it.response()
-        } ?: throw userId.notFoundException()
-    }
+    override suspend fun updateOrderStatus(userId: String, orderId: String, status: OrderTable.OrderStatus): Order =
+        query {
+            val isOrderExist =
+                OrderDAO.find { OrderTable.userId eq userId and (OrderTable.id eq orderId) }.toList().singleOrNull()
+            isOrderExist?.let {
+                it.status = status
+                it.response()
+            } ?: throw userId.notFoundException()
+        }
 }

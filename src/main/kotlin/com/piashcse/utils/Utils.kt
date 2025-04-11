@@ -5,6 +5,8 @@ import kotlinx.coroutines.launch
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.EmailException
 import org.apache.commons.mail.SimpleEmail
+import kotlin.math.pow
+import kotlin.random.Random
 
 fun sendEmail(
     toEmail: String,
@@ -33,4 +35,10 @@ fun sendEmail(
     } catch (e: EmailException) {
         throw CommonException("Sending email failed")
     }
+}
+
+fun generateOTP(length: Int = 6): String {
+    val min = 10.0.pow(length - 1).toInt()  // Example: 10^(4-1) = 1000
+    val max = (10.0.pow(length) - 1).toInt()  // Example: 10^4 - 1 = 9999
+    return Random.nextInt(min, max).toString()
 }

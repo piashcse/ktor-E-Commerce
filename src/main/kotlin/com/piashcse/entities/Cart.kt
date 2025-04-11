@@ -8,11 +8,11 @@ import org.jetbrains.exposed.dao.id.EntityID
 object CartItemTable : BaseIntIdTable("cart_item") {
     val userId = reference("user_id", UserTable.id)
     val productId = reference("product_id", ProductTable.id)
-    val quantity = integer("quantity")
+    val quantity = integer("quantity").default(1)
 }
 
-class CartItemEntity(id: EntityID<String>) : BaseIntEntity(id, CartItemTable) {
-    companion object : BaseIntEntityClass<CartItemEntity>(CartItemTable)
+class CartItemDAO(id: EntityID<String>) : BaseIntEntity(id, CartItemTable) {
+    companion object : BaseIntEntityClass<CartItemDAO>(CartItemTable)
 
     var userId by CartItemTable.userId
     var productId by CartItemTable.productId

@@ -23,7 +23,6 @@ fun configureDataBase() {
             ShopCategoryTable,
             ProductTable,
             ReviewRatingTable,
-            ProductImageTable,
             ProductCategoryTable,
             ProductSubCategoryTable,
             BrandTable,

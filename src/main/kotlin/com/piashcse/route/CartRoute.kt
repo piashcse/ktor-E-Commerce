@@ -60,7 +60,6 @@ fun Route.cartRoute(cartController: CartController) {
              * Accessible by customers only.
              *
              * @param limit The maximum number of items to retrieve from the cart.
-             * @param offset The offset for pagination, if applicable.
              */
             get({
                 tags("Cart")
@@ -71,7 +70,7 @@ fun Route.cartRoute(cartController: CartController) {
                 }
                 apiResponse()
             }) {
-                val (limit, offset) = call.requiredParameters("limit") ?: return@get
+                val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
                         cartController.getCartItems(

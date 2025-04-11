@@ -2,12 +2,10 @@ package com.piashcse.repository
 
 import com.piashcse.entities.ChangePassword
 import com.piashcse.entities.LoginResponse
-import com.piashcse.entities.VerificationCode
-import com.piashcse.models.user.body.ConfirmPasswordRequest
+import com.piashcse.models.user.body.ResetRequest
 import com.piashcse.models.user.body.ForgetPasswordRequest
 import com.piashcse.models.user.body.LoginRequest
 import com.piashcse.models.user.body.RegisterRequest
-import com.piashcse.models.user.response.RegisterResponse
 
 interface AuthRepo {
     /**
@@ -16,7 +14,7 @@ interface AuthRepo {
      * @param request The registration details.
      * @return The registration response.
      */
-    suspend fun register(registerRequest: RegisterRequest): RegisterResponse
+    suspend fun register(registerRequest: RegisterRequest): Any
 
     /**
      * Authenticates a user and returns a login response.
@@ -25,6 +23,14 @@ interface AuthRepo {
      * @return The login response.
      */
     suspend fun login(loginRequest: LoginRequest): LoginResponse
+
+    /**
+     * Otp verification.
+     *
+     * @param request the otp code.
+     * @return The success response.
+     */
+    suspend fun otpVerification(userId: String,otp: String): Boolean
 
     /**
      * Changes the password for a user.
@@ -41,7 +47,7 @@ interface AuthRepo {
      * @param request The request containing user details.
      * @return The verification code sent to the user.
      */
-    suspend fun sendPasswordResetOtp(forgetPasswordRequest: ForgetPasswordRequest): VerificationCode
+    suspend fun forgetPassword(forgetPasswordRequest: ForgetPasswordRequest): String
 
     /**
      * Verifies the password reset code.
@@ -49,5 +55,5 @@ interface AuthRepo {
      * @param request The request containing the verification details.
      * @return A status code representing the verification result.
      */
-    suspend fun verifyPasswordResetOtp(confirmPasswordRequest: ConfirmPasswordRequest): Int
+    suspend fun resetPassword(resetPasswordRequest: ResetRequest): Int
 }
