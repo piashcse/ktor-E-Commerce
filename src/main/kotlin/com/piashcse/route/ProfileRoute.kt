@@ -52,14 +52,13 @@ fun Route.profileRoute(userProfileController: ProfileController) {
              *
              * @param firstName The user's first name.
              * @param lastName The user's last name.
-             * @param secondaryMobileNumber The user's secondary mobile number.
+             * @param mobile The user's secondary mobile number.
              * @param faxNumber The user's fax number.
              * @param streetAddress The user's street address.
              * @param city The user's city.
              * @param identificationType The type of identification provided.
              * @param identificationNo The identification number.
              * @param occupation The user's occupation.
-             * @param userDescription A brief description about the user.
              * @param postCode The user's postal code.
              * @param gender The user's gender.
              * @response A response indicating the success of the profile update.
@@ -69,14 +68,13 @@ fun Route.profileRoute(userProfileController: ProfileController) {
                 request {
                     queryParameter<String>("firstName")
                     queryParameter<String>("lastName")
-                    queryParameter<String>("secondaryMobileNumber")
+                    queryParameter<String>("mobile")
                     queryParameter<String>("faxNumber")
                     queryParameter<String>("streetAddress")
                     queryParameter<String>("city")
                     queryParameter<String>("identificationType")
                     queryParameter<String>("identificationNo")
                     queryParameter<String>("occupation")
-                    queryParameter<String>("userDescription")
                     queryParameter<String>("postCode")
                     queryParameter<String>("gender")
                 }
@@ -85,14 +83,13 @@ fun Route.profileRoute(userProfileController: ProfileController) {
                 val params = UserProfileRequest(
                     firstName = call.parameters["firstName"],
                     lastName = call.parameters["lastName"],
-                    secondaryMobileNumber = call.parameters["secondaryMobileNumber"],
+                    mobile = call.parameters["mobile"],
                     faxNumber = call.parameters["faxNumber"],
                     streetAddress = call.parameters["streetAddress"],
                     city = call.parameters["city"],
                     identificationType = call.parameters["identificationType"],
                     identificationNo = call.parameters["identificationNo"],
                     occupation = call.parameters["occupation"],
-                    userDescription = call.parameters["description"],
                     postCode = call.parameters["postCode"],
                     gender = call.parameters["gender"],
                 )
@@ -109,7 +106,7 @@ fun Route.profileRoute(userProfileController: ProfileController) {
              * @param image The image file to be uploaded.
              * @response A response containing the file name of the uploaded image.
              */
-            post("image-upload",{
+            post("image-upload", {
                 tags("Profile")
                 request {
                     multipartBody {
@@ -140,11 +137,12 @@ fun Route.profileRoute(userProfileController: ProfileController) {
                                     })
                                 }
                                 val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
-                                userProfileController.updateProfileImage(call.currentUser().userId, fileNameInServer).let {
-                                    call.respond(
-                                        ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
-                                    )
-                                }
+                                userProfileController.updateProfileImage(call.currentUser().userId, fileNameInServer)
+                                    .let {
+                                        call.respond(
+                                            ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
+                                        )
+                                    }
                             }
                         }
 
