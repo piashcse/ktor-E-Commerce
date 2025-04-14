@@ -1,4 +1,5 @@
 # Ktor-E-Commerce
+
 [![Ktor](https://img.shields.io/badge/ktor-3.1.2-blue.svg)](https://github.com/ktorio/ktor)
 [![Exposed](https://img.shields.io/badge/Exposed-0.61.0-blue.svg)](https://github.com/JetBrains/Exposed)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
@@ -7,14 +8,15 @@
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
 <a href="https://github.com/piashcse"><img alt="License" src="https://img.shields.io/static/v1?label=GitHub&message=piashcse&color=C51162"/></a>
 
-Ktor-E-Commerce is a high-performance backend solution designed for e-commerce applications built with [ktor](https://ktor.io/docs/welcome.html). This backend leverages the power of Kotlin to provide a robust, scalable, and efficient service for handling your e-commerce needs.
+Ktor-E-Commerce is a high-performance backend solution designed for e-commerce applications built
+with [ktor](https://ktor.io/docs/welcome.html). This backend leverages the power of Kotlin to provide a robust,
+scalable, and efficient service for handling your e-commerce needs.
 
 ## Swagger View
 
 <p align="center">
   <img width="100%" height="40%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/swagger.gif" />
 </p>
-
 
 # Features
 
@@ -23,7 +25,7 @@ Ktor-E-Commerce is a high-performance backend solution designed for e-commerce a
 - **Customer Role**: Shoppers with basic access to browse and make purchases.
 - **Seller Role**: Vendors can list products and manage their inventory.
 - **Admin Role**: Administrators have full control over the platform.
-  
+
 ### 2. User Accounts and Authentication
 
 - **User Registration**: Allow customers to create accounts.
@@ -35,7 +37,7 @@ Ktor-E-Commerce is a high-performance backend solution designed for e-commerce a
 - **Product Listings**: Create, update, and delete product listings.
 - **Categories**: Organize products into categories and brands for easy navigation.
 - **Inventory Control**: Keep track of product availability and stock levels.
-  
+
 ### 4. Shopping Cart and Checkout
 
 - **Shopping Cart**: Add and remove products, update quantities, and calculate totals.
@@ -57,6 +59,7 @@ Ktor-E-Commerce is a high-performance backend solution designed for e-commerce a
 - **Input Validation**: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).
 
 ## Architecture
+
 <p align="center">
   <img width="40%" height="25%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/mvc.png" />
 </p>
@@ -89,13 +92,16 @@ git clone git@github.com:piashcse/ktor-E-Commerce.git
 Note: some installation instructions are for mac, for windows/linux please install accordingly.
 
 ## Postgres Setup
--  Create a database in postgreSQL
--  Change your db name, user, and password in `resources/hikari.properties` and replace them accordingly.
+
+- Create a database in postgreSQL
+- Change your db name, user, and password in `resources/hikari.properties` and replace them accordingly.
+
 ```bash
 dataSource.user=postgres
 dataSource.password=p123
 dataSource.databaseName=ktor-1.0.0
 ```
+
 ## PgAdmin Setup
 
 On Terminal
@@ -133,6 +139,7 @@ On Terminal
 ## Documentation
 
 ### ROLE MANAGEMENT
+
 <details>
 <summary>Admin, Seller, Customer </summary>
 
@@ -142,13 +149,14 @@ On Terminal
 
 </details>
 
-
 ### AUTH
+
 <details>
-  
+
 <summary> <code>POST </code> <code>/auth/login</code></summary>
 
 ### Curl
+
 ```
 curl -X 'POST' \
   'http://localhost:8080/auth/Login' \
@@ -162,11 +170,13 @@ curl -X 'POST' \
 ```
 
 ### Request URL
+
 ```
   http://localhost:8080/auth/Login
 ``` 
 
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -184,10 +194,11 @@ curl -X 'POST' \
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>POST</code> <code>/auth/register</code></summary>
 
 ### Curl
@@ -205,11 +216,13 @@ curl -X 'POST' \
 ``` 
 
 ### Request URL
+
 ```
     http://localhost:8080/auth/register
 ``` 
 
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -224,6 +237,7 @@ curl -X 'POST' \
 }
 
 ```   
+
 </details>
 
 <details>
@@ -239,11 +253,13 @@ curl -X 'GET' \
 ``` 
 
 ### Request URL
+
 ```
    http://localhost:8080/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d
 ``` 
 
 ### Response
+
 ```
 	
 Response body
@@ -258,9 +274,10 @@ Download
 }
 
 ```   
+
 </details>
 <details>
-  
+
 <summary><code>GET </code> <code>/auth/forget-password</code></summary>
 
 ### Curl
@@ -278,8 +295,8 @@ http://localhost:8080/auth/forget-password?email=piash@gmail.com
 
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -291,10 +308,11 @@ http://localhost:8080/auth/forget-password?email=piash@gmail.com
 }
 
 ```   
+
 </details>
 
 <details>
-  
+
 <summary><code>GET </code> <code>/auth/reset-password</code></summary>
 
 ### Curl
@@ -311,8 +329,8 @@ curl -X 'GET' \
 http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&otp=9189&newPassword=p1234
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -324,10 +342,11 @@ http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&otp=9189&ne
 }
 
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>PUT </code> <code>/auth/change-password</code></summary>
 
 ### Curl
@@ -345,8 +364,8 @@ curl -X 'PUT' \
 http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -357,11 +376,106 @@ http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234
   "data": "Password has been changed"
 }
 ```   
+
 </details>
 
 ### PROFILE
+
 <details>
+
+<summary> <code>GET</code> <code>/profile</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/profile' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJwaWFzaDU5OUBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MDdhYzI2NC1iZTJlLTRlODktYjZkMy03YTQ5YjE0MjYzZDIiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzQ0NzMyNzg4fQ.xJQw7NLnXzBO5yIAbK3HJtIFge4n0-z-SNk6l9ZmajbHNqFN4NtH-u2Lwt48kbL1W_xc-jUKNmqmhaamLuj9dg'
+
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/profile
+``` 
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "userId": "707ac264-be2e-4e89-b6d3-7a49b14263d2",
+    "firstName": "Mehedi ",
+    "lastName": "Hassan",
+    "mobile": "01812353930",
+    "faxNumber": "454",
+    "streetAddress": "Dhaka",
+    "city": "Dhaka",
+    "postCode": "1205",
+    "gender": "Malde"
+  }
+}
+```   
+
+</details>
+
+
+<details>
+
+<summary> <code>PUT</code> <code>/profile</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/profile?firstName=Mehedi%20&lastName=Hassan&mobile=01812353930&faxNumber=454&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Malde' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJwaWFzaDU5OUBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MDdhYzI2NC1iZTJlLTRlODktYjZkMy03YTQ5YjE0MjYzZDIiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzQ0NzMyNzg4fQ.xJQw7NLnXzBO5yIAbK3HJtIFge4n0-z-SNk6l9ZmajbHNqFN4NtH-u2Lwt48kbL1W_xc-jUKNmqmhaamLuj9dg'
   
+``` 
+
+### Request URL
+
+```
+http://localhost:8080/profile?firstName=Mehedi%20&lastName=Hassan&mobile=01812353930&faxNumber=454&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Malde
+
+``` 
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "userId": "707ac264-be2e-4e89-b6d3-7a49b14263d2",
+    "firstName": "Mehedi ",
+    "lastName": "Hassan",
+    "mobile": "01812353930",
+    "faxNumber": "454",
+    "streetAddress": "Dhaka",
+    "city": "Dhaka",
+    "postCode": "1205",
+    "gender": "Malde"
+  }
+}
+
+```   
+
+</details>
+
+<details>
+
 <summary> <code>POST</code> <code>/profile/image-upload</code></summary>
 
 ### Curl
@@ -370,34 +484,38 @@ http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234
 curl -X 'POST' \
   'http://localhost:8080/profile/image-upload' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJwaWFzaDU5OUBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MDdhYzI2NC1iZTJlLTRlODktYjZkMy03YTQ5YjE0MjYzZDIiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzQ0NzMyNzg4fQ.xJQw7NLnXzBO5yIAbK3HJtIFge4n0-z-SNk6l9ZmajbHNqFN4NtH-u2Lwt48kbL1W_xc-jUKNmqmhaamLuj9dg' \
   -H 'Content-Type: multipart/form-data' \
-  -F 'file=@piash.jpeg;type=image/jpeg'
+  -F 'image=@piashdp.jpg;type=image/jpeg'
 ``` 
 
 ### Request URL
 
 ```
 http://localhost:8080/profile/image-upload
+
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
-  "statsCode": {
+  "statusCode": {
     "value": 200,
     "description": "OK"
   },
-  "data": "37a1453d-1b76-4052-8f58-56eddeaeadca.jpeg"
+  "data": "73b21d27-466e-45c6-bc2b-0480eb4db2d2.jpg"
 }
+
 ```   
+
 </details>
 
 ### SHOP CATEGORY
+
 <details>
-  
+
 <summary> <code>POST</code> <code>/shop-category</code></summary>
 
 ### Curl
@@ -419,8 +537,8 @@ curl -X 'POST' \
 http://localhost:8080/shop-category
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -434,10 +552,11 @@ http://localhost:8080/shop-category
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>GET </code> <code>/shop-category</code></summary>
 
 ### Curl
@@ -455,8 +574,8 @@ curl -X 'GET' \
 http://localhost:8080/shop-category?limit=10
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -472,10 +591,11 @@ http://localhost:8080/shop-category?limit=10
   ]
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>DELETE</code> <code>/shop-category/{id}</code></summary>
 
 ### Curl
@@ -493,8 +613,8 @@ curl -X 'DELETE' \
 http://localhost:8080/shop-category/2a17da31-7517-41db-b7d3-f77d0ddd52a5
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -505,11 +625,12 @@ http://localhost:8080/shop-category/2a17da31-7517-41db-b7d3-f77d0ddd52a5
   "data": "2a17da31-7517-41db-b7d3-f77d0ddd52a5"
 }
 ```   
+
 </details>
 
 
 <details>
-  
+
 <summary> <code>PUT </code> <code>/shop-category/{id}</code></summary>
 
 ### Curl
@@ -527,8 +648,8 @@ curl -X 'PUT' \
 http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -542,10 +663,11 @@ http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Pi
   }
 }
 ```   
+
 </details>
 
-
 ### SHOP
+
 <details>
 <summary> <code>POST</code> <code>/shop</code></summary>
 
@@ -565,8 +687,8 @@ curl -X 'POST' \
 http://localhost:8080/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -580,6 +702,7 @@ http://localhost:8080/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-
   }
 }
 ```   
+
 </details>
 
 <details>
@@ -600,8 +723,8 @@ curl -X 'GET' \
 http://localhost:8080/shop?limit=10
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -618,6 +741,7 @@ http://localhost:8080/shop?limit=10
   ]
 }
 ```   
+
 </details>
 
 <details>
@@ -638,8 +762,8 @@ curl -X 'PUT' \
 http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20again%20update
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -654,6 +778,7 @@ http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20agai
   }
 }
 ```   
+
 </details>
 
 <details>
@@ -674,8 +799,8 @@ http://localhost:8080/shop/d2836959-6bc5-49d0-bd98-e73255a915c5
 
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -688,12 +813,13 @@ http://localhost:8080/shop/d2836959-6bc5-49d0-bd98-e73255a915c5
   }
 }
 ```   
+
 </details>
 
-### PRODUCT 
+### PRODUCT
 
 <details>
-  
+
 <summary> <code>POST</code> <code>/product</code></summary>
 
 ### Curl
@@ -730,8 +856,8 @@ curl -X 'POST' \
 http://localhost:8080/product
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -754,10 +880,11 @@ http://localhost:8080/product
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>GET</code> <code>/product/{id}</code></summary>
 
 ### Curl
@@ -775,8 +902,8 @@ curl -X 'GET' \
 http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -799,10 +926,11 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>PUT </code> <code>/product/{id}</code></summary>
 
 ### Curl
@@ -827,8 +955,8 @@ curl -X 'PUT' \
 http://localhost:8080/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -851,11 +979,12 @@ http://localhost:8080/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5
   }
 }
 ```   
+
 </details>
 
 
 <details>
-  
+
 <summary> <code>GET </code> <code>/product</code></summary>
 
 ### Curl
@@ -873,8 +1002,8 @@ curl -X 'GET' \
 http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -899,11 +1028,12 @@ http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
   ]
 }
 ```   
+
 </details>
 
 
 <details>
-  
+
 <summary> <code>DELETE</code> <code>/product/{id}</code></summary>
 
 ### Curl
@@ -921,8 +1051,8 @@ curl -X 'DELETE' \
 http://localhost:8080/product?productId=79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -933,10 +1063,11 @@ http://localhost:8080/product?productId=79a97389-78d5-4dff-a1f7-13bc7ae10a8d
   "data": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d"
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>POST</code> <code>/product/image-upload</code></summary>
 
 ### Curl
@@ -956,8 +1087,8 @@ curl -X 'POST' \
 http://localhost:8080/product/image-upload?id=71b26dd9-b4b5-4f87-a84d-c8daa506018a
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -971,12 +1102,13 @@ http://localhost:8080/product/image-upload?id=71b26dd9-b4b5-4f87-a84d-c8daa50601
   }
 }
 ```   
+
 </details>
 
 ### PRODUCT CATEGORY
 
 <details>
-  
+
 <summary> <code>POST</code> <code>/product-category</code></summary>
 
 ### Curl
@@ -995,8 +1127,8 @@ curl -X 'POST' \
 http://localhost:8080/product-category?name=Kids
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1011,11 +1143,12 @@ http://localhost:8080/product-category?name=Kids
   }
 }
 ```   
+
 </details>
 
 
 <details>
-  
+
 <summary> <code>GET </code> <code>/product-category</code></summary>
 
 ### Curl
@@ -1033,8 +1166,8 @@ curl -X 'GET' \
 http://localhost:8080/product-category?limit=10
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1056,10 +1189,11 @@ http://localhost:8080/product-category?limit=10
   ]
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>PUT </code> <code>/product-category/{id}</code></summary>
 
 ### Curl
@@ -1077,8 +1211,8 @@ curl -X 'PUT' \
 http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1093,10 +1227,11 @@ http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>DELETE</code> <code>/product-category/{id}</code></summary>
 
 ### Curl
@@ -1114,8 +1249,8 @@ curl -X 'DELETE' \
 http://localhost:8080/product-category/75b44e08-2c94-438f-b500-b204c7c90cca
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1126,12 +1261,13 @@ http://localhost:8080/product-category/75b44e08-2c94-438f-b500-b204c7c90cca
   "data": "75b44e08-2c94-438f-b500-b204c7c90cca"
 }
 ```   
+
 </details>
 
 ### PRODUCT SUB CATEGORY
 
 <details>
-  
+
 <summary> <code>POST </code> <code>/product-sub-category</code></summary>
 
 ### Curl
@@ -1154,8 +1290,8 @@ curl -X 'POST' \
 http://localhost:8080/product-subcategory
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1170,10 +1306,11 @@ http://localhost:8080/product-subcategory
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>GET </code> <code>/product-sub-category</code></summary>
 
 ### Curl
@@ -1191,8 +1328,8 @@ curl -X 'GET' \
 http://localhost:8080/product-subcategory?id=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1209,10 +1346,11 @@ http://localhost:8080/product-subcategory?id=b8ccc13f-e118-4540-8e9e-5eaa8028cb4
   ]
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>PUT </code> <code>/product-sub-category/{id}</code></summary>
 
 ### Curl
@@ -1230,8 +1368,8 @@ curl -X 'PUT' \
 http://localhost:8080/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d?name=Pencil
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1246,11 +1384,12 @@ http://localhost:8080/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d?n
   }
 }
 ```   
+
 </details>
 
 
 <details>
-  
+
 <summary> <code>DELETE </code> <code>/product-sub-category/{id}</code></summary>
 
 ### Curl
@@ -1268,8 +1407,8 @@ curl -X 'DELETE' \
 http://localhost:8080/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1280,11 +1419,13 @@ http://localhost:8080/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d
   "data": "751cef10-f98a-4ecc-ae03-4173830a626d"
 }
 ```   
+
 </details>
 
 ### BRAND
+
 <details>
-  
+
 <summary> <code>POST </code> <code>/brand </code></summary>
 
 ### Curl
@@ -1303,8 +1444,8 @@ curl -X 'POST' \
 http://localhost:8080/brand?name=Nike
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1318,10 +1459,11 @@ http://localhost:8080/brand?name=Nike
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>GET </code> <code>/brand </code></summary>
 
 ### Curl
@@ -1339,8 +1481,8 @@ curl -X 'GET' \
 http://localhost:8080/brand?limit=10
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1360,10 +1502,11 @@ http://localhost:8080/brand?limit=10
   ]
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>PUT </code> <code>/brand/{id} </code></summary>
 
 ### Curl
@@ -1381,8 +1524,8 @@ curl -X 'PUT' \
 http://localhost:8080/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1396,10 +1539,11 @@ http://localhost:8080/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>DELETE</code> <code>/brand/{id} </code></summary>
 
 ### Curl
@@ -1417,8 +1561,8 @@ curl -X 'DELETE' \
 http://localhost:8080/brand/19dd1021-432c-473c-8b19-0f56d19af9ad
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1429,11 +1573,13 @@ http://localhost:8080/brand/19dd1021-432c-473c-8b19-0f56d19af9ad
   "data": "19dd1021-432c-473c-8b19-0f56d19af9ad"
 }
 ```   
+
 </details>
 
 ### WISHLIST
+
 <details>
-  
+
 <summary> <code>POST</code> <code>/wishlist </code></summary>
 
 ### Curl
@@ -1452,8 +1598,8 @@ curl -X 'POST' \
 http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1479,10 +1625,11 @@ http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>GET </code> <code>/wishlist </code></summary>
 
 ### Curl
@@ -1500,8 +1647,8 @@ curl -X 'GET' \
 http://localhost:8080/wishlist
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1527,10 +1674,11 @@ http://localhost:8080/wishlist
   ]
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>DELETE </code> <code>/wishlist </code></summary>
 
 ### Curl
@@ -1548,8 +1696,8 @@ curl -X 'DELETE' \
 http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1573,11 +1721,13 @@ http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
   }
 }
 ```   
+
 </details>
 
-### SHIPPING 
+### SHIPPING
+
 <details>
-  
+
 <summary> <code>GET </code> <code>/shipping </code></summary>
 
 ### Curl
@@ -1595,8 +1745,8 @@ curl -X 'GET' \
 http://localhost:8080/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1617,10 +1767,11 @@ http://localhost:8080/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>POST </code> <code>/shipping </code></summary>
 
 ### Curl
@@ -1648,8 +1799,8 @@ curl -X 'POST' \
 http://localhost:8080/shipping
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1669,10 +1820,11 @@ http://localhost:8080/shipping
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>PUT </code> <code>/shipping/{id} </code></summary>
 
 ### Curl
@@ -1690,8 +1842,8 @@ curl -X 'PUT' \
 http://localhost:8080/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=Updated%20shipping%20address
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1712,10 +1864,11 @@ http://localhost:8080/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>DELETE </code> <code>/shipping/{id} </code></summary>
 
 ### Curl
@@ -1733,8 +1886,8 @@ curl -X 'DELETE' \
 http://localhost:8080/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1745,12 +1898,13 @@ http://localhost:8080/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8
   "data": "471ebc82-80e7-4da0-a472-d1c8835f57b8"
 }
 ```   
+
 </details>
 
 ### REVIEW-RATING
 
 <details>
-  
+
 <summary> <code>GET</code> <code>/review-rating </code></summary>
 
 ### Curl
@@ -1768,8 +1922,8 @@ curl -X 'GET' \
 http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1788,10 +1942,11 @@ http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99
   ]
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>POST</code> <code>/review-rating </code></summary>
 
 ### Curl
@@ -1815,8 +1970,8 @@ curl -X 'POST' \
 http://localhost:8080/review-rating
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1833,10 +1988,11 @@ http://localhost:8080/review-rating
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>PUT</code> <code>/review-rating/{id} </code></summary>
 
 ### Curl
@@ -1854,8 +2010,8 @@ curl -X 'PUT' \
 http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&rating=5
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1872,10 +2028,11 @@ http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>DELETE</code> <code>/review-rating/{id} </code></summary>
 
 ### Curl
@@ -1893,8 +2050,8 @@ curl -X 'DELETE' \
 http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1905,12 +2062,13 @@ http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736
   "data": "70ac842b-7a81-4976-9564-d440880d1736"
 }
 ```   
+
 </details>
 
 ### CART
 
 <details>
-  
+
 <summary> <code>POST</code> <code>/cart </code></summary>
 
 ### Curl
@@ -1929,8 +2087,8 @@ curl -X 'POST' \
 http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -1944,10 +2102,11 @@ http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quanti
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>GET </code> <code>/cart </code></summary>
 
 ### Curl
@@ -1965,8 +2124,8 @@ curl -X 'GET' \
 http://localhost:8080/cart?limit=10
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -2021,10 +2180,11 @@ http://localhost:8080/cart?limit=10
   ]
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>PUT </code> <code>/cart </code></summary>
 
 ### Curl
@@ -2042,8 +2202,8 @@ curl -X 'PUT' \
 http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -2071,10 +2231,11 @@ http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quanti
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>DELETE </code> <code>/cart </code></summary>
 
 ### Curl
@@ -2092,8 +2253,8 @@ curl -X 'DELETE' \
 http://localhost:8080/cart/71b26dd9-b4b5-4f87-a84d-c8daa506018a
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -2124,10 +2285,11 @@ http://localhost:8080/cart/71b26dd9-b4b5-4f87-a84d-c8daa506018a
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>DELETE </code> <code>/cart/all </code></summary>
 
 ### Curl
@@ -2145,8 +2307,8 @@ curl -X 'DELETE' \
 http://localhost:8080/cart/all
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -2157,11 +2319,13 @@ http://localhost:8080/cart/all
   "data": true
 }
 ```   
+
 </details>
 
 ### ORDER
+
 <details>
-  
+
 <summary> <code>POST</code> <code>/order </code></summary>
 
 ### Curl
@@ -2193,8 +2357,8 @@ curl -X 'POST' \
 http://localhost:8080/order
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -2207,10 +2371,11 @@ http://localhost:8080/order
   }
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>GET </code> <code>/order </code></summary>
 
 ### Curl
@@ -2228,8 +2393,8 @@ curl -X 'GET' \
 http://localhost:8080/order?limit=10
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -2271,10 +2436,11 @@ http://localhost:8080/order?limit=10
   ]
 }
 ```   
+
 </details>
 
 <details>
-  
+
 <summary> <code>PUT </code> <code>/order/{id}/cancel </code></summary>
 
 ### Curl
@@ -2292,8 +2458,8 @@ curl -X 'GET' \
 http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/cancel
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -2313,6 +2479,7 @@ http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/cancel
   }
 }
 ```   
+
 </details>
 <details>
 <summary> <code>PUT </code> <code>/order/{id}/receive </code></summary>
@@ -2332,8 +2499,8 @@ curl -X 'GET' \
 http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/receive
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -2353,6 +2520,7 @@ http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/receive
   }
 }
 ```   
+
 </details>
 
 <details>
@@ -2373,8 +2541,8 @@ curl -X 'GET' \
 http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/confirm
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -2394,6 +2562,7 @@ http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/confirm
   }
 }
 ```   
+
 </details>
 
 <details>
@@ -2414,8 +2583,8 @@ curl -X 'GET' \
 http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/deliver
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -2435,6 +2604,7 @@ http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/deliver
   }
 }
 ```   
+
 </details>
 
 ### PAYMENT
@@ -2464,8 +2634,8 @@ curl -X 'POST' \
 http://localhost:8080/payment
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -2482,6 +2652,7 @@ http://localhost:8080/payment
   }
 }
 ```   
+
 </details>
 <details>
 <summary> <code>GET </code> <code>/payment/{id} </code></summary>
@@ -2501,8 +2672,8 @@ curl -X 'GET' \
 http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15
 ``` 
 
-
 ### Response
+
 ```
 {
   "isSuccess": true,
@@ -2519,6 +2690,7 @@ http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15
   }
 }
 ```   
+
 </details>
 
 ## 👨 Developed By
@@ -2536,6 +2708,7 @@ http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15
 [![Blog](https://img.shields.io/badge/-Blog-0077B5?logo=readme&logoColor=white&style=for-the-badge)](https://piashcse.blogspot.com)
 
 # License
+
 ```
 Copyright 2023 piashcse (Mehedi Hassan Piash)
 

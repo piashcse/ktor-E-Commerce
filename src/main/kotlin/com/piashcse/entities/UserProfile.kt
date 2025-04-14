@@ -17,7 +17,6 @@ object UserProfileTable : BaseIntIdTable("user_profile") {
     val identificationType = text("identification_type").nullable()
     val identificationNo = text("identification_no").nullable()
     val occupation = text("occupation").nullable()
-    val userDescription = text("user_description").nullable()
     val postCode = text("post_code").nullable()
     val gender = text("gender").nullable()
 }
@@ -36,7 +35,6 @@ class UsersProfileDAO(id: EntityID<String>) : BaseIntEntity(id, UserProfileTable
     var identificationType by UserProfileTable.identificationType
     var identificationNo by UserProfileTable.identificationNo
     var occupation by UserProfileTable.occupation
-    var userDescription by UserProfileTable.userDescription
     var postCode by UserProfileTable.postCode
     var gender by UserProfileTable.gender
     fun response() = UserProfile(
@@ -51,7 +49,6 @@ class UsersProfileDAO(id: EntityID<String>) : BaseIntEntity(id, UserProfileTable
         identificationType,
         identificationNo,
         occupation,
-        userDescription,
         postCode,
         gender,
     )
@@ -69,7 +66,6 @@ data class UserProfile(
     val identificationType: String?,
     val identificationNo: String?,
     val occupation: String?,
-    val userDescription: String?,
     val postCode: String?,
     val gender: String?
 )
