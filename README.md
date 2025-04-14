@@ -1,7 +1,7 @@
 # Ktor-E-Commerce
 
 [![Ktor](https://img.shields.io/badge/ktor-3.1.2-blue.svg)](https://github.com/ktorio/ktor)
-[![Exposed](https://img.shields.io/badge/Exposed-0.60.0-blue.svg)](https://github.com/JetBrains/Exposed)
+[![Exposed](https://img.shields.io/badge/Exposed-0.61.0-blue.svg)](https://github.com/JetBrains/Exposed)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.20-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 ![Koin](https://img.shields.io/badge/Koin-4.0.2-29BEB0?logo=koin&logoColor=white)
 [![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-42.7.4-336791?logo=postgresql)](https://www.postgresql.org/)
@@ -68,30 +68,15 @@ scalable, and efficient service for handling your e-commerce needs.
 </p>
 
 ## Built With 🛠
-
-- [Ktor](https://ktor.io/docs/welcome.html) - Ktor is a framework to easily build connected applications – web
-  applications, HTTP services, mobile and browser applications. Modern connected applications need to be asynchronous to
-  provide the best experience to users, and Kotlin Coroutines provides awesome facilities to do it in an easy and
-  straightforward way.
-- [Exposed](https://github.com/JetBrains/Exposed) - Exposed is a lightweight SQL library on top of JDBC driver for
-  Kotlin language. Exposed has two flavors of database access: typesafe SQL wrapping DSL and lightweight Data Access
-  Objects (DAO).
-- [PostgreSQL](https://www.postgresql.org/) - PostgreSQL is a powerful, open-source object-relational database system
-  that uses and extends the SQL language combined with many features that safely store and scale the most complicated
-  data workloads.
-- [Koin](https://github.com/InsertKoinIO/koin) - A pragmatic lightweight dependency injection framework for Kotlin &
-  Kotlin Multiplatform.
-- [Kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime) - A multiplatform Kotlin library for working with date
-  and time.
-- [Bcrypt](https://github.com/patrickfav/bcrypt) - A Java standalone implementation of the bcrypt password hash
-  function. Based on the Blowfish cipher it is the default password hash algorithm for OpenBSD and other systems
-  including some Linux distributions.
-- [Apache Commons Email](https://github.com/apache/commons-email) - Apache Commons Email aims to provide an API for
-  sending email. It is built on top of the JavaMail API, which it aims to simplify.
-- [ktor-swagger-ui](https://github.com/SMILEY4/ktor-swagger-ui) - Kotlin Ktor plugin to generate OpenAPI and provide
-  Swagger UI.
-- [Valiktor](https://github.com/valiktor/valiktor) - Valiktor is a type-safe, powerful and extensible fluent DSL to
-  validate objects in Kotlin.
+- [Ktor](https://ktor.io/docs/welcome.html) - Ktor is a framework to easily build connected applications – web applications, HTTP services, mobile and browser applications. Modern connected applications need to be asynchronous to provide the best experience to users, and Kotlin Coroutines provides awesome facilities to do it in an easy and straightforward way.
+- [Exposed](https://github.com/JetBrains/Exposed) - Exposed is a lightweight SQL library on top of JDBC driver for Kotlin language. Exposed has two flavors of database access: typesafe SQL wrapping DSL and lightweight Data Access Objects (DAO).
+- [PostgreSQL](https://www.postgresql.org/) - PostgreSQL is a powerful, open-source object-relational database system that uses and extends the SQL language combined with many features that safely store and scale the most complicated data workloads.
+- [Koin](https://github.com/InsertKoinIO/koin) - A pragmatic lightweight dependency injection framework for Kotlin & Kotlin Multiplatform.
+- [Kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime) - A multiplatform Kotlin library for working with date and time.
+- [Bcrypt](https://github.com/patrickfav/bcrypt) - A Java standalone implementation of the bcrypt password hash function. Based on the Blowfish cipher it is the default password hash algorithm for OpenBSD and other systems including some Linux distributions.
+- [Apache Commons Email](https://github.com/apache/commons-email) - Apache Commons Email aims to provide an API for sending email. It is built on top of the JavaMail API, which it aims to simplify.
+- [ktor-openapi-tools](https://github.com/SMILEY4/ktor-swagger-ui) - Kotlin Ktor plugin to generate OpenAPI specifications and provides Swagger UI and ReDoc.
+- [Valiktor](https://github.com/valiktor/valiktor) - Valiktor is a type-safe, powerful and extensible fluent DSL to validate objects in Kotlin.
 
 ## Requirements
 
