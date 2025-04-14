@@ -242,7 +242,7 @@ curl -X 'POST' \
 
 <details>
 
-<summary> <code>POST</code> <code>/auth/otp-verification</code></summary>
+<summary> <code>GET</code> <code>/auth/otp-verification</code></summary>
 
 ### Curl
 
