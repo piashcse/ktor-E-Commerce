@@ -22,7 +22,7 @@ import io.ktor.server.routing.*
  *
  * @param shopController The controller responsible for handling shop-related operations.
  */
-fun Route.shopRoute(shopController: ShopController) {
+fun Route.shopRoutes(shopController: ShopController) {
     route("shop") {
 
         // Route for creating a shop

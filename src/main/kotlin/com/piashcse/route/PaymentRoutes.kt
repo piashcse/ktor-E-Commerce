@@ -21,7 +21,7 @@ import io.ktor.server.routing.*
  *
  * @param paymentController The controller handling payment-related operations.
  */
-fun Route.paymentRoute(paymentController: PaymentController) {
+fun Route.paymentRoutes(paymentController: PaymentController) {
     route("payment") {
 
         /**

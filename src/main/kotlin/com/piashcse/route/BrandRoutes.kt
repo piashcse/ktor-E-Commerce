@@ -21,7 +21,7 @@ import io.ktor.server.routing.*
  *
  * @param brandController The controller handling brand-related operations.
  */
-fun Route.brandRoute(brandController: BrandController) {
+fun Route.brandRoutes(brandController: BrandController) {
     route("brand") {
         /**
          * GET request to fetch a list of brands, with an optional limit on the number of brands.

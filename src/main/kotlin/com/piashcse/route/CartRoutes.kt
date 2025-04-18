@@ -24,7 +24,7 @@ import io.ktor.server.routing.*
  *
  * @param cartController The controller handling cart-related operations.
  */
-fun Route.cartRoute(cartController: CartController) {
+fun Route.cartRoutes(cartController: CartController) {
     route("cart") {
         /**
          * POST request to add a product to the cart.

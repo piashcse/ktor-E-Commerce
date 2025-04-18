@@ -21,7 +21,7 @@ import io.ktor.server.routing.*
  *
  * @param wishlistController The controller responsible for handling wish list operations.
  */
-fun Route.wishListRoute(wishlistController: WishListController) {
+fun Route.wishListRoutes(wishlistController: WishListController) {
     route("wishlist") {
         authenticate(RoleManagement.CUSTOMER.role) {
 

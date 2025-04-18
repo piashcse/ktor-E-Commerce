@@ -23,7 +23,7 @@ import io.ktor.server.routing.*
  *
  * @param authController The controller handling authentication-related operations.
  */
-fun Route.authRoute(authController: AuthController) {
+fun Route.authRoutes(authController: AuthController) {
     route("auth") {
         /**
          * Handles the login request.

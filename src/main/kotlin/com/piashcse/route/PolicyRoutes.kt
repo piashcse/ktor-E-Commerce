@@ -26,7 +26,7 @@ import io.ktor.server.routing.*
  *
  * @param policyController The controller handling policy-related operations.
  */
-fun Route.policyRoute(policyController: PolicyController) {
+fun Route.policyRoutes(policyController: PolicyController) {
     // Main route for policy management
     route("policy") {
         // Public routes for accessing policies - no authentication required
@@ -110,39 +110,6 @@ fun Route.policyRoute(policyController: PolicyController) {
             call.respond(ApiResponse.success(policyController.getPolicyById(id), HttpStatusCode.OK))
         }
 
-        /**
-         * POST request to record user consent to a policy.
-         *
-         * Accessible by authenticated users (CUSTOMER role).
-         */
-        authenticate(RoleManagement.CUSTOMER.role) {
-            post("consent", {
-                tags("Privacy Policy")
-                summary = "auth[customer]"
-                request {
-                    body<PolicyConsentRequest>()
-                }
-                apiResponse()
-            }) {
-                val consentRequest = call.receive<PolicyConsentRequest>()
-
-                // Automatically collect all necessary information
-                val userId = call.currentUser().userId
-                val policyId = consentRequest.policyId
-                val userAgent = call.request.headers["User-Agent"]
-                val ipAddress = call.request.origin.remoteHost
-
-                // Set the current user ID as the consenting user
-                val updatedRequest = consentRequest.copy(policyId, ipAddress, userAgent)
-                call.respond(
-                    ApiResponse.success(
-                        policyController.recordConsent(userId, updatedRequest),
-                        HttpStatusCode.Created
-                    )
-                )
-            }
-        }
-
         // Admin routes for managing policies
         authenticate(RoleManagement.ADMIN.role) {
             /**
@@ -209,54 +176,6 @@ fun Route.policyRoute(policyController: PolicyController) {
             }) {
                 val (id) = call.requiredParameters("id") ?: return@post
                 call.respond(ApiResponse.success(policyController.deactivatePolicy(id), HttpStatusCode.OK))
-            }
-        }
-    }
-
-    // User consent management routes
-    route("user-consents") {
-        authenticate(RoleManagement.CUSTOMER.role, RoleManagement.ADMIN.role) {
-            /**
-             * GET request to retrieve all consents for a specific user.
-             *
-             * Accessible by the user themselves or admins.
-             */
-            get({
-                tags("Privacy Policy")
-                summary = "auth[admin, customer]"
-                apiResponse()
-            }) {
-                val userId = call.currentUser().userId
-                call.respond(ApiResponse.success(policyController.getUserConsents(userId), HttpStatusCode.OK))
-            }
-
-            /**
-             * GET request to check if a user has consented to a specific policy type.
-             *
-             * Accessible by the user themselves or admins.
-             *
-             * @param userId The ID of the user.
-             * @param policyType The type of policy to check.
-             */
-            get("{policyType}", {
-                tags("Privacy Policy")
-                summary = "auth[admin, customer]"
-                request {
-                    pathParameter<String>("policyType") {
-                        description = "Policy type like PRIVACY_POLICY, TERMS_CONDITIONS, etc."
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
-                val (policyType) = call.requiredParameters("policyType") ?: return@get
-                val userId = call.currentUser().userId
-
-                val hasConsented = policyController.hasUserConsented(
-                    userId,
-                    PolicyDocumentTable.PolicyType.valueOf(policyType)
-                )
-                call.respond(ApiResponse.success(mapOf("hasConsented" to hasConsented), HttpStatusCode.OK))
             }
         }
     }

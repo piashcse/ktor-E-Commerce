@@ -1,7 +1,7 @@
 package com.piashcse.route
 
-import com.piashcse.controller.ProductSubCategoryController
-import com.piashcse.models.subcategory.ProductSubCategoryRequest
+import com.piashcse.controller.ProductCategoryController
+import com.piashcse.models.category.ProductCategoryRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -17,79 +17,78 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * Defines routes for managing product subcategories.
+ * Defines routes for managing product categories.
  *
- * Available for customers, sellers, and admins with different levels of access.
+ * Accessible by customers, sellers, and admins for viewing product categories.
+ * Admins have additional permissions to create, update, and delete categories.
  *
- * @param subCategoryController The controller handling product subcategory operations.
+ * @param productCategoryController The controller handling product category-related operations.
  */
-fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryController) {
+fun Route.productCategoryRoutes(productCategoryController: ProductCategoryController) {
 
     /**
-     * GET request to retrieve product subcategories by category ID.
+     * GET request to retrieve product categories.
      *
      * Accessible by customers, sellers, and admins.
      *
-     * @param categoryId The category ID to filter subcategories.
-     * @param limit The number of subcategories to retrieve.
+     * @param limit The number of categories to return.
      */
-    get("product-subcategory", {
-        tags("Product SubCategory")
+    get("product-category", {
+        tags("Product Category")
         request {
-            queryParameter<String>("categoryId") {
-                required = true
-            }
             queryParameter<String>("limit") {
                 required = true
             }
         }
         apiResponse()
     }) {
-        val (categoryId, limit) = call.requiredParameters("categoryId", "limit") ?: return@get
+        val (limit) = call.requiredParameters("limit") ?: return@get
         call.respond(
             ApiResponse.success(
-                subCategoryController.getProductSubCategory(categoryId, limit.toInt()), HttpStatusCode.OK
+                productCategoryController.getCategories(
+                    limit.toInt()
+                ), HttpStatusCode.OK
             )
         )
     }
-
-    // Routes for admins to manage product subcategories
+    // Routes for admins to create, update, and delete product categories
     authenticate(RoleManagement.ADMIN.role) {
-
         /**
-         * POST request to create a new product subcategory.
+         * POST request to create a new product category.
          *
          * Accessible by admins only.
          *
-         * @param requestBody The details of the product subcategory to create.
+         * @param requestBody The details of the category to create, including the category name.
          */
-        post("product-subcategory", {
-            tags("Product SubCategory")
-            summary = "auth[admin]"
+        post("product-category", {
+            tags("Product Category")
+            summary = "auth[customer]"
             request {
-                body<ProductSubCategoryRequest>()
+                body<ProductCategoryRequest>()
             }
             apiResponse()
         }) {
-            val requestBody = call.receive<ProductSubCategoryRequest>()
+            val requestBody = call.receive<ProductCategoryRequest>()
             call.respond(
                 ApiResponse.success(
-                    subCategoryController.addProductSubCategory(requestBody), HttpStatusCode.OK
+                    productCategoryController.createCategory(
+                        requestBody.name
+                    ), HttpStatusCode.OK
                 )
             )
         }
 
         /**
-         * PUT request to update an existing product subcategory by ID.
+         * PUT request to update an existing product category by ID.
          *
          * Accessible by admins only.
          *
-         * @param id The ID of the product subcategory to update.
-         * @param name The new name for the product subcategory.
+         * @param id The ID of the category to update.
+         * @param name The new name for the category.
          */
-        put("product-subcategory/{id}", {
-            tags("Product SubCategory")
-            summary = "auth[admin]"
+        put("product-category/{id}", {
+            tags("Product Category")
+            summary = "auth[customer]"
             request {
                 pathParameter<String>("id") {
                     required = true
@@ -103,7 +102,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
             val (id, name) = call.requiredParameters("id", "name") ?: return@put
             call.respond(
                 ApiResponse.success(
-                    subCategoryController.updateProductSubCategory(
+                    productCategoryController.updateCategory(
                         id, name
                     ), HttpStatusCode.OK
                 )
@@ -111,15 +110,15 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
         }
 
         /**
-         * DELETE request to delete a product subcategory by ID.
+         * DELETE request to remove a product category by ID.
          *
          * Accessible by admins only.
          *
-         * @param id The ID of the product subcategory to delete.
+         * @param id The ID of the category to delete.
          */
-        delete("product-subcategory/{id}", {
-            tags("Product SubCategory")
-            summary = "auth[admin]"
+        delete("product-category/{id}", {
+            tags("Product Category")
+            summary = "auth[customer]"
             request {
                 pathParameter<String>("id") {
                     required = true
@@ -130,7 +129,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
             val (id) = call.requiredParameters("id") ?: return@delete
             call.respond(
                 ApiResponse.success(
-                    subCategoryController.deleteProductSubCategory(
+                    productCategoryController.deleteCategory(
                         id
                     ), HttpStatusCode.OK
                 )

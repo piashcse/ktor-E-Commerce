@@ -32,7 +32,7 @@ import java.util.*
  *
  * @param productController The controller handling product-related operations.
  */
-fun Route.productRoute(productController: ProductController) {
+fun Route.productRoutes(productController: ProductController) {
     // Main route for product management
     route("product") {
 

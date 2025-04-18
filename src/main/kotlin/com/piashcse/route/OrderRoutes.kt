@@ -25,7 +25,7 @@ import io.ktor.server.routing.*
  *
  * @param orderController The controller handling order-related operations.
  */
-fun Route.orderRoute(orderController: OrderController) {
+fun Route.orderRoutes(orderController: OrderController) {
     route("/order") {
 
         /**

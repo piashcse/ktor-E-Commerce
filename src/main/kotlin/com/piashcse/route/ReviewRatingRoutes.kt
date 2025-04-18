@@ -22,7 +22,7 @@ import io.ktor.server.routing.*
  *
  * @param reviewRatingController The controller responsible for handling review and rating-related operations.
  */
-fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
+fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingController) {
     route("review-rating") {
 
         /**

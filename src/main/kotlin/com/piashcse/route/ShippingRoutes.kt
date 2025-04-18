@@ -25,7 +25,7 @@ import io.ktor.server.routing.*
  *
  * @param shippingController The controller responsible for handling shipping operations.
  */
-fun Route.shippingRoute(shippingController: ShippingController) {
+fun Route.shippingRoutes(shippingController: ShippingController) {
     route("/shipping") {
 
         // Routes for customers to add, retrieve, update, and delete shipping information

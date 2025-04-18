@@ -20,4 +20,5 @@ val controllerModule = module {
     single { PaymentController() }
     single { ReviewRatingController() }
     single { PolicyController() }
+    single { ConsentController() }
 }

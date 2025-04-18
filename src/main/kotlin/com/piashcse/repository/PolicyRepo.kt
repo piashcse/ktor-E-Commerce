@@ -37,19 +37,4 @@ interface PolicyRepo {
      * Deactivates a policy document (doesn't delete, just marks as inactive)
      */
     suspend fun deactivatePolicy(id: String): Boolean
-
-    /**
-     * Records user consent to a policy
-     */
-    suspend fun recordConsent(userId:String, consentRequest: PolicyConsentRequest): UserPolicyConsentResponse
-
-    /**
-     * Gets all consents for a user
-     */
-    suspend fun getUserConsents(userId: String): List<UserPolicyConsentResponse>
-
-    /**
-     * Checks if a user has consented to a specific policy
-     */
-    suspend fun hasUserConsented(userId: String, policyType: PolicyDocumentTable.PolicyType): Boolean
 }
