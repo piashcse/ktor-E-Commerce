@@ -2,10 +2,10 @@ package com.piashcse.repository
 
 import com.piashcse.entities.ChangePassword
 import com.piashcse.entities.LoginResponse
-import com.piashcse.models.user.body.ResetRequest
 import com.piashcse.models.user.body.ForgetPasswordRequest
 import com.piashcse.models.user.body.LoginRequest
 import com.piashcse.models.user.body.RegisterRequest
+import com.piashcse.models.user.body.ResetRequest
 
 interface AuthRepo {
     /**

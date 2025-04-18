@@ -23,7 +23,7 @@ import io.ktor.server.routing.*
  *
  * @param shopCategoryController The controller responsible for handling shop category operations.
  */
-fun Route.shopCategoryRoute(shopCategoryController: ShopCategoryController) {
+fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryController) {
     authenticate(RoleManagement.ADMIN.role) {
 
         /**
@@ -35,6 +35,7 @@ fun Route.shopCategoryRoute(shopCategoryController: ShopCategoryController) {
          */
         post("shop-category", {
             tags("Shop Category")
+            summary = "auth[admin]"
             request {
                 body<ShopCategoryRequest>()
             }
@@ -57,6 +58,7 @@ fun Route.shopCategoryRoute(shopCategoryController: ShopCategoryController) {
          */
         get("shop-category", {
             tags("Shop Category")
+            summary = "auth[admin]"
             request {
                 queryParameter<Int>("limit") {
                     required = true
@@ -82,6 +84,7 @@ fun Route.shopCategoryRoute(shopCategoryController: ShopCategoryController) {
          */
         delete("shop-category/{id}", {
             tags("Shop Category")
+            summary = "auth[admin]"
             request {
                 pathParameter<String>("id") {
                     required = true
@@ -107,6 +110,7 @@ fun Route.shopCategoryRoute(shopCategoryController: ShopCategoryController) {
          */
         put("shop-category/{id}", {
             tags("Shop Category")
+            summary = "auth[admin]"
             request {
                 pathParameter<String>("id") {
                     required = true

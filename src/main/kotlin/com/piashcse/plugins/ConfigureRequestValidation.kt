@@ -9,8 +9,8 @@ import com.piashcse.models.order.OrderRequest
 import com.piashcse.models.product.request.ProductRequest
 import com.piashcse.models.product.request.ProductSearchRequest
 import com.piashcse.models.shipping.ShippingRequest
-import com.piashcse.models.shop.ShopRequest
 import com.piashcse.models.shop.ShopCategoryRequest
+import com.piashcse.models.shop.ShopRequest
 import com.piashcse.models.subcategory.ProductSubCategoryRequest
 import com.piashcse.models.user.body.LoginRequest
 import com.piashcse.models.user.body.RegisterRequest

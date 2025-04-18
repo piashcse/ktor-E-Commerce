@@ -261,7 +261,7 @@ curl -X 'GET' \
 ### Response
 
 ```
-	
+
 Response body
 Download
 {
@@ -438,7 +438,7 @@ curl -X 'PUT' \
   'http://localhost:8080/profile?firstName=Mehedi%20&lastName=Hassan&mobile=01812353930&faxNumber=454&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Malde' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJwaWFzaDU5OUBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MDdhYzI2NC1iZTJlLTRlODktYjZkMy03YTQ5YjE0MjYzZDIiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzQ0NzMyNzg4fQ.xJQw7NLnXzBO5yIAbK3HJtIFge4n0-z-SNk6l9ZmajbHNqFN4NtH-u2Lwt48kbL1W_xc-jUKNmqmhaamLuj9dg'
-  
+
 ``` 
 
 ### Request URL
@@ -942,10 +942,10 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA' \
   -H 'Content-Type: application/json' \
   -d '{
- 
+
   "name": "Smartch watch",
   "detail":"Xiaomi Smart Watch"
-  
+
 }'
 ``` 
 
@@ -2687,6 +2687,419 @@ http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15
     "amount": 500,
     "status": "COMPLETED",
     "paymentMethod": "Bkash"
+  }
+}
+```   
+
+</details>
+
+### PRIVACY POLICY
+
+<details>
+
+<summary> <code>GET </code> <code>/policy</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/policy' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+
+```
+http://localhost:8080/policy
+``` 
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "type": "PRIVACY_POLICY",
+      "title": "Privacy Policy",
+      "content": "This is our privacy policy...",
+      "version": "1.0",
+      "effectiveDate": "2023-01-01T00:00:00Z",
+      "isActive": true,
+      "createdAt": "2023-01-01T00:00:00Z",
+      "updatedAt": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "type": "TERMS_CONDITIONS",
+      "title": "Terms and Conditions",
+      "content": "These are our terms and conditions...",
+      "version": "1.0",
+      "effectiveDate": "2023-01-01T00:00:00Z",
+      "isActive": true,
+      "createdAt": "2023-01-01T00:00:00Z",
+      "updatedAt": "2023-01-01T00:00:00Z"
+    }
+  ]
+}
+```   
+
+</details>
+
+<details>
+
+<summary> <code>GET </code> <code>/policy/{type}</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/policy/PRIVACY_POLICY' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+
+```
+http://localhost:8080/policy/PRIVACY_POLICY
+``` 
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "type": "PRIVACY_POLICY",
+    "title": "Privacy Policy",
+    "content": "This is our privacy policy...",
+    "version": "1.0",
+    "effectiveDate": "2023-01-01T00:00:00Z",
+    "isActive": true,
+    "createdAt": "2023-01-01T00:00:00Z",
+    "updatedAt": "2023-01-01T00:00:00Z"
+  }
+}
+```   
+
+</details>
+
+<details>
+
+<summary> <code>GET </code> <code>/policy/detail/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/policy/detail/550e8400-e29b-41d4-a716-446655440000' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+
+```
+http://localhost:8080/policy/detail/550e8400-e29b-41d4-a716-446655440000
+``` 
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "type": "PRIVACY_POLICY",
+    "title": "Privacy Policy",
+    "content": "This is our privacy policy...",
+    "version": "1.0",
+    "effectiveDate": "2023-01-01T00:00:00Z",
+    "isActive": true,
+    "createdAt": "2023-01-01T00:00:00Z",
+    "updatedAt": "2023-01-01T00:00:00Z"
+  }
+}
+```   
+
+</details>
+
+<details>
+
+<summary> <code>POST </code> <code>/policy/consent</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/policy/consent' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "policyId": "550e8400-e29b-41d4-a716-446655440000"
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/policy/consent
+``` 
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 201,
+    "description": "Created"
+  },
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440002",
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+    "policyId": "550e8400-e29b-41d4-a716-446655440000",
+    "ipAddress": "127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "consentedAt": "2023-06-15T10:30:00Z"
+  }
+}
+```   
+
+</details>
+
+<details>
+
+<summary> <code>POST </code> <code>/policy</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/policy' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "type": "PRIVACY_POLICY",
+  "title": "Updated Privacy Policy",
+  "content": "This is our updated privacy policy...",
+  "version": "1.1",
+  "effectiveDate": "2023-06-15T00:00:00Z"
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/policy
+``` 
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 201,
+    "description": "Created"
+  },
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440003",
+    "type": "PRIVACY_POLICY",
+    "title": "Updated Privacy Policy",
+    "content": "This is our updated privacy policy...",
+    "version": "1.1",
+    "effectiveDate": "2023-06-15T00:00:00Z",
+    "isActive": true
+  }
+}
+```   
+
+</details>
+
+<details>
+
+<summary> <code>PUT </code> <code>/policy/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/policy/550e8400-e29b-41d4-a716-446655440003' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "title": "Updated Privacy Policy v2",
+  "content": "This is our further updated privacy policy...",
+  "version": "1.2",
+  "effectiveDate": "2023-07-01T00:00:00Z"
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/policy/550e8400-e29b-41d4-a716-446655440003
+``` 
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440003",
+    "type": "PRIVACY_POLICY",
+    "title": "Updated Privacy Policy v2",
+    "content": "This is our further updated privacy policy...",
+    "version": "1.2",
+    "effectiveDate": "2023-07-01T00:00:00Z",
+    "isActive": true
+  }
+}
+```   
+
+</details>
+
+<details>
+
+<summary> <code>POST </code> <code>/policy/deactivate/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/policy/deactivate/550e8400-e29b-41d4-a716-446655440003' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
+```
+
+### Request URL
+
+```
+http://localhost:8080/policy/deactivate/550e8400-e29b-41d4-a716-446655440003
+``` 
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440003",
+    "type": "PRIVACY_POLICY",
+    "title": "Updated Privacy Policy v2",
+    "content": "This is our further updated privacy policy...",
+    "version": "1.2",
+    "effectiveDate": "2023-07-01T00:00:00Z",
+    "isActive": false
+  }
+}
+```   
+
+</details>
+
+### USER CONSENTS
+
+<details>
+
+<summary> <code>GET </code> <code>/user-consents</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/user-consents' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
+```
+
+### Request URL
+
+```
+http://localhost:8080/user-consents
+``` 
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+      "policyId": "550e8400-e29b-41d4-a716-446655440000",
+      "policyType": "PRIVACY_POLICY",
+      "policyVersion": "1.0",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+      "consentedAt": "2023-06-15T10:30:00Z"
+    }
+  ]
+}
+```   
+
+</details>
+
+<details>
+
+<summary> <code>GET </code> <code>/user-consents/{policyType}</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/user-consents/PRIVACY_POLICY' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
+```
+
+### Request URL
+
+```
+http://localhost:8080/user-consents/PRIVACY_POLICY
+``` 
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "hasConsented": true
   }
 }
 ```   

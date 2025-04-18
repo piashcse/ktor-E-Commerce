@@ -27,7 +27,7 @@ import java.util.*
  *
  * @param userProfileController The controller responsible for handling user profile-related operations.
  */
-fun Route.profileRoute(userProfileController: ProfileController) {
+fun Route.profileRoutes(userProfileController: ProfileController) {
     authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
         route("profile") {
 
@@ -38,6 +38,7 @@ fun Route.profileRoute(userProfileController: ProfileController) {
              */
             get({
                 tags("Profile")
+                summary = "auth[admin, seller, customer]"
                 apiResponse()
             }) {
                 call.respond(
@@ -65,6 +66,7 @@ fun Route.profileRoute(userProfileController: ProfileController) {
              */
             put({
                 tags("Profile")
+                summary = "auth[admin, seller, customer]"
                 request {
                     queryParameter<String>("firstName")
                     queryParameter<String>("lastName")
@@ -108,6 +110,7 @@ fun Route.profileRoute(userProfileController: ProfileController) {
              */
             post("image-upload", {
                 tags("Profile")
+                summary = "auth[admin, seller, customer]"
                 request {
                     multipartBody {
                         mediaTypes = setOf(ContentType.MultiPart.FormData)

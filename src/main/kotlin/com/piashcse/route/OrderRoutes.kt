@@ -25,7 +25,7 @@ import io.ktor.server.routing.*
  *
  * @param orderController The controller handling order-related operations.
  */
-fun Route.orderRoute(orderController: OrderController) {
+fun Route.orderRoutes(orderController: OrderController) {
     route("/order") {
 
         /**
@@ -38,6 +38,7 @@ fun Route.orderRoute(orderController: OrderController) {
         authenticate(RoleManagement.CUSTOMER.role) {
             post({
                 tags("Order")
+                summary = "auth[customer]"
                 request {
                     body<OrderRequest>()
                 }
@@ -60,6 +61,7 @@ fun Route.orderRoute(orderController: OrderController) {
              */
             get({
                 tags("Order")
+                summary = "auth[customer]"
                 request {
                     queryParameter<String>("limit") {
                         required = true
@@ -86,6 +88,7 @@ fun Route.orderRoute(orderController: OrderController) {
              */
             put("{id}/cancel", {
                 tags("Order")
+                summary = "auth[customer]"
                 request {
                     pathParameter<String>("id") {
                         required = true
@@ -111,6 +114,7 @@ fun Route.orderRoute(orderController: OrderController) {
              */
             put("{id}/receive", {
                 tags("Order")
+                summary = "auth[customer]"
                 request {
                     pathParameter<String>("id") {
                         required = true
@@ -141,6 +145,7 @@ fun Route.orderRoute(orderController: OrderController) {
              */
             put("{id}/confirm", {
                 tags("Order")
+                summary = "auth[seller]"
                 request {
                     pathParameter<String>("id") {
                         required = true
@@ -166,6 +171,7 @@ fun Route.orderRoute(orderController: OrderController) {
              */
             put("{id}/deliver", {
                 tags("Order")
+                summary = "auth[seller]"
                 request {
                     pathParameter<String>("id") {
                         required = true

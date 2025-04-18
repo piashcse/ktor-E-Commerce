@@ -25,7 +25,7 @@ import io.ktor.server.routing.*
  *
  * @param shippingController The controller responsible for handling shipping operations.
  */
-fun Route.shippingRoute(shippingController: ShippingController) {
+fun Route.shippingRoutes(shippingController: ShippingController) {
     route("/shipping") {
 
         // Routes for customers to add, retrieve, update, and delete shipping information
@@ -40,6 +40,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
              */
             post({
                 tags("Shipping")
+                summary = "auth[customer]"
                 request {
                     body<ShippingRequest>()
                 }
@@ -63,6 +64,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
              */
             get({
                 tags("Shipping")
+                summary = "auth[customer]"
                 request {
                     queryParameter<String>("orderId") {
                         required = true
@@ -95,6 +97,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
              */
             put("{id}", {
                 tags("Shipping")
+                summary = "auth[customer]"
                 request {
                     pathParameter<String>("id") {
                         required = true
@@ -140,6 +143,7 @@ fun Route.shippingRoute(shippingController: ShippingController) {
              */
             delete("{id}", {
                 tags("Shipping")
+                summary = "auth[customer]"
                 request {
                     pathParameter<String>("id") {
                         required = true

@@ -1,6 +1,8 @@
 package com.piashcse.controller
 
-import com.piashcse.entities.*
+import com.piashcse.entities.Product
+import com.piashcse.entities.ProductDAO
+import com.piashcse.entities.ProductTable
 import com.piashcse.models.product.request.ProductRequest
 import com.piashcse.models.product.request.ProductSearchRequest
 import com.piashcse.models.product.request.ProductWithFilterRequest

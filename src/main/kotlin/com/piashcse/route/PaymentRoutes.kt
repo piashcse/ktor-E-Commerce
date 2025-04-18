@@ -21,7 +21,7 @@ import io.ktor.server.routing.*
  *
  * @param paymentController The controller handling payment-related operations.
  */
-fun Route.paymentRoute(paymentController: PaymentController) {
+fun Route.paymentRoutes(paymentController: PaymentController) {
     route("payment") {
 
         /**
@@ -34,6 +34,7 @@ fun Route.paymentRoute(paymentController: PaymentController) {
         authenticate(RoleManagement.CUSTOMER.role) {
             post({
                 tags("Payment")
+                summary = "auth[customer]"
                 request {
                     body<PaymentRequest>()
                 }
@@ -56,6 +57,7 @@ fun Route.paymentRoute(paymentController: PaymentController) {
              */
             get("{id}", {
                 tags("Payment")
+                summary = "auth[customer]"
                 request {
                     pathParameter<String>("id") {
                         required = true

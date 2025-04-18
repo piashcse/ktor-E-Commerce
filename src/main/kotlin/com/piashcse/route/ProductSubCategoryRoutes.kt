@@ -23,39 +23,34 @@ import io.ktor.server.routing.*
  *
  * @param subCategoryController The controller handling product subcategory operations.
  */
-fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryController) {
+fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryController) {
 
-    // Routes for customers, sellers, and admins to view product subcategories
-    authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-
-        /**
-         * GET request to retrieve product subcategories by category ID.
-         *
-         * Accessible by customers, sellers, and admins.
-         *
-         * @param categoryId The category ID to filter subcategories.
-         * @param limit The number of subcategories to retrieve.
-         */
-        get("product-subcategory", {
-            tags("Product SubCategory")
-            request {
-                queryParameter<String>("categoryId") {
-                    required = true
-                }
-                queryParameter<String>("limit") {
-                    required = true
-                }
+    /**
+     * GET request to retrieve product subcategories by category ID.
+     *
+     * Accessible by customers, sellers, and admins.
+     *
+     * @param categoryId The category ID to filter subcategories.
+     * @param limit The number of subcategories to retrieve.
+     */
+    get("product-subcategory", {
+        tags("Product SubCategory")
+        request {
+            queryParameter<String>("categoryId") {
+                required = true
             }
-            apiResponse()
-        }) {
-            val (categoryId, limit) = call.requiredParameters("categoryId", "limit") ?: return@get
-            call.respond(
-                ApiResponse.success(
-                    subCategoryController.getProductSubCategory(categoryId, limit.toInt()),
-                    HttpStatusCode.OK
-                )
-            )
+            queryParameter<String>("limit") {
+                required = true
+            }
         }
+        apiResponse()
+    }) {
+        val (categoryId, limit) = call.requiredParameters("categoryId", "limit") ?: return@get
+        call.respond(
+            ApiResponse.success(
+                subCategoryController.getProductSubCategory(categoryId, limit.toInt()), HttpStatusCode.OK
+            )
+        )
     }
 
     // Routes for admins to manage product subcategories
@@ -70,6 +65,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
          */
         post("product-subcategory", {
             tags("Product SubCategory")
+            summary = "auth[admin]"
             request {
                 body<ProductSubCategoryRequest>()
             }
@@ -93,6 +89,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
          */
         put("product-subcategory/{id}", {
             tags("Product SubCategory")
+            summary = "auth[admin]"
             request {
                 pathParameter<String>("id") {
                     required = true
@@ -122,6 +119,7 @@ fun Route.productSubCategoryRoute(subCategoryController: ProductSubCategoryContr
          */
         delete("product-subcategory/{id}", {
             tags("Product SubCategory")
+            summary = "auth[admin]"
             request {
                 pathParameter<String>("id") {
                     required = true

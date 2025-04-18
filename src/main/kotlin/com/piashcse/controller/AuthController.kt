@@ -2,10 +2,10 @@ package com.piashcse.controller
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.entities.*
-import com.piashcse.models.user.body.ResetRequest
 import com.piashcse.models.user.body.ForgetPasswordRequest
 import com.piashcse.models.user.body.LoginRequest
 import com.piashcse.models.user.body.RegisterRequest
+import com.piashcse.models.user.body.ResetRequest
 import com.piashcse.models.user.response.RegisterResponse
 import com.piashcse.repository.AuthRepo
 import com.piashcse.utils.*
@@ -150,9 +150,8 @@ class AuthController : AuthRepo {
     override suspend fun resetPassword(resetPasswordRequest: ResetRequest): Int = query {
         val userEntity = UserDAO.find { UserTable.email eq resetPasswordRequest.email }.toList().singleOrNull()
         userEntity?.let {
-            if (resetPasswordRequest.verificationCode == it.otpCode) {
+            if (it.otpCode == resetPasswordRequest.verificationCode) {
                 it.password = BCrypt.withDefaults().hashToString(12, resetPasswordRequest.newPassword.toCharArray())
-                it.otpCode = it.otpCode
                 AppConstants.DataBaseTransaction.FOUND
             } else {
                 AppConstants.DataBaseTransaction.NOT_FOUND
