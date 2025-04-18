@@ -26,35 +26,31 @@ import io.ktor.server.routing.*
  */
 fun Route.productCategoryRoute(productCategoryController: ProductCategoryController) {
 
-    // Routes for customers, sellers, and admins to view product categories
-    authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-        /**
-         * GET request to retrieve product categories.
-         *
-         * Accessible by customers, sellers, and admins.
-         *
-         * @param limit The number of categories to return.
-         */
-        get("product-category", {
-            tags("Product Category")
-            request {
-                queryParameter<String>("limit") {
-                    required = true
-                }
+    /**
+     * GET request to retrieve product categories.
+     *
+     * Accessible by customers, sellers, and admins.
+     *
+     * @param limit The number of categories to return.
+     */
+    get("product-category", {
+        tags("Product Category")
+        request {
+            queryParameter<String>("limit") {
+                required = true
             }
-            apiResponse()
-        }) {
-            val (limit) = call.requiredParameters("limit") ?: return@get
-            call.respond(
-                ApiResponse.success(
-                    productCategoryController.getCategories(
-                        limit.toInt()
-                    ), HttpStatusCode.OK
-                )
-            )
         }
+        apiResponse()
+    }) {
+        val (limit) = call.requiredParameters("limit") ?: return@get
+        call.respond(
+            ApiResponse.success(
+                productCategoryController.getCategories(
+                    limit.toInt()
+                ), HttpStatusCode.OK
+            )
+        )
     }
-
     // Routes for admins to create, update, and delete product categories
     authenticate(RoleManagement.ADMIN.role) {
         /**
@@ -66,6 +62,7 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
          */
         post("product-category", {
             tags("Product Category")
+            summary = "auth[customer]"
             request {
                 body<ProductCategoryRequest>()
             }
@@ -91,6 +88,7 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
          */
         put("product-category/{id}", {
             tags("Product Category")
+            summary = "auth[customer]"
             request {
                 pathParameter<String>("id") {
                     required = true
@@ -120,6 +118,7 @@ fun Route.productCategoryRoute(productCategoryController: ProductCategoryControl
          */
         delete("product-category/{id}", {
             tags("Product Category")
+            summary = "auth[customer]"
             request {
                 pathParameter<String>("id") {
                     required = true

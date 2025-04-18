@@ -25,35 +25,32 @@ import io.ktor.server.routing.*
 fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
     route("review-rating") {
 
-        // Route for getting reviews and ratings
-        authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
-            /**
-             * GET request to retrieve reviews and ratings for a specific product.
-             *
-             * @param productId The ID of the product to get reviews and ratings.
-             * @param limit The maximum number of reviews to retrieve.
-             * @response A response containing the list of reviews and ratings for the product.
-             */
-            get({
-                tags("Review Rating")
-                request {
-                    queryParameter<String>("productId") {
-                        required = true
-                    }
-                    queryParameter<String>("limit") {
-                        required = true
-                    }
+        /**
+         * GET request to retrieve reviews and ratings for a specific product.
+         *
+         * @param productId The ID of the product to get reviews and ratings.
+         * @param limit The maximum number of reviews to retrieve.
+         * @response A response containing the list of reviews and ratings for the product.
+         */
+        get({
+            tags("Review Rating")
+            request {
+                queryParameter<String>("productId") {
+                    required = true
                 }
-                apiResponse()
-            }) {
-                val (productId, limit) = call.requiredParameters("productId", "limit") ?: return@get
-                call.respond(
-                    ApiResponse.success(
-                        reviewRatingController.getReviewRating(productId, limit.toInt()),
-                        HttpStatusCode.OK
-                    )
-                )
+                queryParameter<String>("limit") {
+                    required = true
+                }
             }
+            apiResponse()
+        }) {
+            val (productId, limit) = call.requiredParameters("productId", "limit") ?: return@get
+            call.respond(
+                ApiResponse.success(
+                    reviewRatingController.getReviewRating(productId, limit.toInt()),
+                    HttpStatusCode.OK
+                )
+            )
         }
 
         // Route for adding, updating, and deleting reviews and ratings
@@ -68,6 +65,7 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
              */
             post({
                 tags("Review Rating")
+                summary = "auth[customer]"
                 request {
                     body<ReviewRatingRequest>()
                 }
@@ -93,6 +91,7 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
              */
             put("{id}", {
                 tags("Review Rating")
+                summary = "auth[customer]"
                 request {
                     pathParameter<String>("id") {
                         required = true
@@ -127,6 +126,7 @@ fun Route.reviewRatingRoute(reviewRatingController: ReviewRatingController) {
              */
             delete("{id}", {
                 tags("Review Rating")
+                summary = "auth[customer]"
                 request {
                     pathParameter<String>("id") {
                         required = true

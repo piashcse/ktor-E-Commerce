@@ -36,103 +36,99 @@ fun Route.productRoute(productController: ProductController) {
     // Main route for product management
     route("product") {
 
-        // Routes for customers, sellers, and admins to view product details
-        authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-
-            /**
-             * GET request to retrieve product details by product ID.
-             *
-             * Accessible by customers, sellers, and admins.
-             *
-             * @param id The unique identifier of the product.
-             */
-            get("{id}", {
-                tags("Product")
-                request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
+        /**
+         * GET request to retrieve product details by product ID.
+         *
+         * Accessible by customers, sellers, and admins.
+         *
+         * @param id The unique identifier of the product.
+         */
+        get("{id}", {
+            tags("Product")
+            request {
+                pathParameter<String>("id") {
+                    required = true
                 }
-                apiResponse()
-            }) {
-                val (productId) = call.requiredParameters("id") ?: return@get
-                call.respond(ApiResponse.success(productController.getProductDetail(productId), HttpStatusCode.OK))
             }
+            apiResponse()
+        }) {
+            val (productId) = call.requiredParameters("id") ?: return@get
+            call.respond(ApiResponse.success(productController.getProductDetail(productId), HttpStatusCode.OK))
+        }
 
-            /**
-             * GET request to retrieve a list of products with optional filters.
-             *
-             * Accessible by customers, sellers, and admins.
-             *
-             * @param limit The number of products to retrieve.
-             * @param maxPrice Optional maximum price filter.
-             * @param minPrice Optional minimum price filter.
-             * @param categoryId Optional category filter.
-             * @param subCategoryId Optional sub-category filter.
-             * @param brandId Optional brand filter.
-             */
-            get({
-                tags("Product")
-                request {
-                    queryParameter<Int>("limit") {
-                        required = true
-                    }
-                    queryParameter<Double>("maxPrice")
-                    queryParameter<Double>("minPrice")
-                    queryParameter<String>("categoryId")
-                    queryParameter<String>("subCategoryId")
-                    queryParameter<String>("brandId")
+        /**
+         * GET request to retrieve a list of products with optional filters.
+         *
+         * Accessible by customers, sellers, and admins.
+         *
+         * @param limit The number of products to retrieve.
+         * @param maxPrice Optional maximum price filter.
+         * @param minPrice Optional minimum price filter.
+         * @param categoryId Optional category filter.
+         * @param subCategoryId Optional sub-category filter.
+         * @param brandId Optional brand filter.
+         */
+        get({
+            tags("Product")
+            request {
+                queryParameter<Int>("limit") {
+                    required = true
                 }
-                apiResponse()
-            }) {
-                val (limit) = call.requiredParameters("limit") ?: return@get
-                val params = ProductWithFilterRequest(
-                    limit = limit.toInt(),
-                    maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
-                    minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
-                    categoryId = call.parameters["categoryId"],
-                    subCategoryId = call.parameters["subCategoryId"],
-                    brandId = call.parameters["brandId"]
-                )
-                call.respond(ApiResponse.success(productController.getProducts(params), HttpStatusCode.OK))
+                queryParameter<Double>("maxPrice")
+                queryParameter<Double>("minPrice")
+                queryParameter<String>("categoryId")
+                queryParameter<String>("subCategoryId")
+                queryParameter<String>("brandId")
             }
+            apiResponse()
+        }) {
+            val (limit) = call.requiredParameters("limit") ?: return@get
+            val params = ProductWithFilterRequest(
+                limit = limit.toInt(),
+                maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
+                minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
+                categoryId = call.parameters["categoryId"],
+                subCategoryId = call.parameters["subCategoryId"],
+                brandId = call.parameters["brandId"]
+            )
+            call.respond(ApiResponse.success(productController.getProducts(params), HttpStatusCode.OK))
+        }
 
-            /**
-             * GET request to search for products by name with optional filters.
-             *
-             * Accessible by customers, sellers, and admins.
-             *
-             * @param limit The number of products to retrieve.
-             * @param productName The name of the product to search.
-             * @param categoryId Optional category filter.
-             * @param maxPrice Optional maximum price filter.
-             * @param minPrice Optional minimum price filter.
-             */
-            get("search", {
-                tags("Product")
-                request {
-                    queryParameter<Int>("limit") {
-                        required = true
-                    }
-                    queryParameter<String>("name") {
-                        required = true
-                    }
-                    queryParameter<String>("categoryId")
-                    queryParameter<Double>("maxPrice")
-                    queryParameter<Double>("minPrice")
+        /**
+         * GET request to search for products by name with optional filters.
+         *
+         * Accessible by customers, sellers, and admins.
+         *
+         * @param limit The number of products to retrieve.
+         * @param productName The name of the product to search.
+         * @param categoryId Optional category filter.
+         * @param maxPrice Optional maximum price filter.
+         * @param minPrice Optional minimum price filter.
+         */
+        get("search", {
+            tags("Product")
+            request {
+                queryParameter<Int>("limit") {
+                    required = true
                 }
-                apiResponse()
-            }) {
-                val (limit) = call.requiredParameters("limit") ?: return@get
-                val queryParams = ProductSearchRequest(
-                    limit = limit.toInt(),
-                    name = call.parameters["name"]!!,
-                    maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
-                    minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
-                    categoryId = call.parameters["categoryId"]
-                )
-                call.respond(ApiResponse.success(productController.searchProduct(queryParams), HttpStatusCode.OK))
+                queryParameter<String>("name") {
+                    required = true
+                }
+                queryParameter<String>("categoryId")
+                queryParameter<Double>("maxPrice")
+                queryParameter<Double>("minPrice")
             }
+            apiResponse()
+        }) {
+            val (limit) = call.requiredParameters("limit") ?: return@get
+            val queryParams = ProductSearchRequest(
+                limit = limit.toInt(),
+                name = call.parameters["name"]!!,
+                maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
+                minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
+                categoryId = call.parameters["categoryId"]
+            )
+            call.respond(ApiResponse.success(productController.searchProduct(queryParams), HttpStatusCode.OK))
         }
 
         // Routes for sellers to manage their products
@@ -152,6 +148,7 @@ fun Route.productRoute(productController: ProductController) {
              */
             get("seller", {
                 tags("Product")
+                summary = "auth[seller]"
                 request {
                     queryParameter<Int>("limit") {
                         required = true
@@ -189,6 +186,7 @@ fun Route.productRoute(productController: ProductController) {
              */
             post({
                 tags("Product")
+                summary = "auth[seller]"
                 request {
                     body<ProductRequest>()
                 }
@@ -212,6 +210,7 @@ fun Route.productRoute(productController: ProductController) {
              */
             put("{id}", {
                 tags("Product")
+                summary = "auth[seller]"
                 request {
                     pathParameter<String>("id") {
                         required = true
@@ -264,6 +263,7 @@ fun Route.productRoute(productController: ProductController) {
              */
             delete("{id}", {
                 tags("Product")
+                summary = "auth[seller]"
                 request {
                     pathParameter<String>("id")
                 }
@@ -287,6 +287,7 @@ fun Route.productRoute(productController: ProductController) {
              */
             post("image-upload", {
                 tags("Product")
+                summary = "auth[seller]"
                 request {
                     multipartBody {
                         mediaTypes = setOf(ContentType.MultiPart.FormData)
@@ -316,8 +317,7 @@ fun Route.productRoute(productController: ProductController) {
                                 val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
                                 call.respond(
                                     ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
-                                )
-                                /*productController.uploadProductImage(
+                                )/*productController.uploadProductImage(
                                     call.currentUser().userId,
                                     id,
                                     fileNameInServer,
@@ -347,6 +347,7 @@ fun Route.productRoute(productController: ProductController) {
              */
             delete("{id}", {
                 tags("Product")
+                summary = "auth[admin]"
                 request {
                     pathParameter<String>("id") {
                         required = true
@@ -357,8 +358,7 @@ fun Route.productRoute(productController: ProductController) {
                 val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(
-                        productController.deleteProduct(call.currentUser().userId, id),
-                        HttpStatusCode.OK
+                        productController.deleteProduct(call.currentUser().userId, id), HttpStatusCode.OK
                     )
                 )
             }

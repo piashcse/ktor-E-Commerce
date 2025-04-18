@@ -33,6 +33,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
              */
             post({
                 tags("Wish List")
+                summary = "auth[customer]"
                 request {
                     body<WisListRequest>()
                 }
@@ -55,6 +56,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
              */
             get({
                 tags("Wish List")
+                summary = "auth[customer]"
                 request {
                     queryParameter<String>("limit") {
                         required = true
@@ -79,6 +81,7 @@ fun Route.wishListRoute(wishlistController: WishListController) {
              */
             delete({
                 tags("Wish List")
+                summary = "auth[customer]"
                 request {
                     queryParameter<String>("productId") {
                         required = true

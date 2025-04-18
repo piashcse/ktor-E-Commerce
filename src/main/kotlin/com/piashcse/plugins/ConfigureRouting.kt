@@ -21,6 +21,7 @@ fun Application.configureRoute() {
     val shippingController: ShippingController by inject()
     val orderController: OrderController by inject()
     val paymentController: PaymentController by inject()
+    val policyController: PolicyController by inject()
     routing {
         authRoute(authController)
         profileRoute(userProfileController)
@@ -36,5 +37,6 @@ fun Application.configureRoute() {
         shippingRoute(shippingController)
         orderRoute(orderController)
         paymentRoute(paymentController)
+        policyRoute(policyController)
     }
 }

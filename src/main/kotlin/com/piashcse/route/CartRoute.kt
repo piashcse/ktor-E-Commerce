@@ -37,6 +37,7 @@ fun Route.cartRoute(cartController: CartController) {
         authenticate(RoleManagement.CUSTOMER.role) {
             post({
                 tags("Cart")
+                summary = "auth[customer]"
                 request {
                     body<CartRequest>()
                 }
@@ -63,6 +64,7 @@ fun Route.cartRoute(cartController: CartController) {
              */
             get({
                 tags("Cart")
+                summary = "auth[customer]"
                 request {
                     queryParameter<Int>("limit") {
                         required = true
@@ -91,6 +93,7 @@ fun Route.cartRoute(cartController: CartController) {
              */
             put({
                 tags("Cart")
+                summary = "auth[customer]"
                 request {
                     queryParameter<String>("productId") {
                         required = true
@@ -119,6 +122,7 @@ fun Route.cartRoute(cartController: CartController) {
              */
             delete({
                 tags("Cart")
+                summary = "auth[customer]"
                 request {
                     queryParameter<String>("productId") {
                         required = true
@@ -142,6 +146,7 @@ fun Route.cartRoute(cartController: CartController) {
              */
             delete("all", {
                 tags("Cart")
+                summary = "auth[customer]"
                 apiResponse()
             }) {
                 call.respond(

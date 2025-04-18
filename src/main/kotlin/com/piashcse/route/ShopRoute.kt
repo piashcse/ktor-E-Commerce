@@ -35,6 +35,7 @@ fun Route.shopRoute(shopController: ShopController) {
              */
             post({
                 tags("Shop")
+                summary = "auth[admin]"
                 request {
                     body<ShopRequest>()
                 }
@@ -58,6 +59,7 @@ fun Route.shopRoute(shopController: ShopController) {
              */
             get({
                 tags("Shop")
+                summary = "auth[admin]"
                 request {
                     queryParameter<Int>("limit") {
                         required = true
@@ -83,6 +85,7 @@ fun Route.shopRoute(shopController: ShopController) {
              */
             put("{id}", {
                 tags("Shop")
+                summary = "auth[admin]"
                 request {
                     pathParameter<String>("id") {
                         required = true
@@ -110,6 +113,7 @@ fun Route.shopRoute(shopController: ShopController) {
              */
             delete("{id}", {
                 tags("Shop")
+                summary = "auth[admin]"
                 request {
                     pathParameter<String>("id") {
                         required = true

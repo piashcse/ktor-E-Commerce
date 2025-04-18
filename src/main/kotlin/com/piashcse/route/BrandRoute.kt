@@ -33,6 +33,7 @@ fun Route.brandRoute(brandController: BrandController) {
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
             get({
                 tags("Brand")
+                summary = "auth[admin, customer, seller]"
                 request {
                     queryParameter<Int>("limit") {
                         required = true
@@ -59,6 +60,7 @@ fun Route.brandRoute(brandController: BrandController) {
         authenticate(RoleManagement.ADMIN.role) {
             post({
                 tags("Brand")
+                summary = "auth[admin]"
                 request {
                     body<BrandRequest>()
                 }
@@ -82,6 +84,7 @@ fun Route.brandRoute(brandController: BrandController) {
              */
             put("{id}", {
                 tags("Brand")
+                summary = "auth[admin]"
                 request {
                     pathParameter<String>("id") {
                         required = true
@@ -109,6 +112,7 @@ fun Route.brandRoute(brandController: BrandController) {
              */
             delete("{id}", {
                 tags("Brand")
+                summary = "auth[admin]"
                 request {
                     pathParameter<String>("id") {
                         required = true
