@@ -28,7 +28,7 @@ scalable, and efficient service for handling your e-commerce needs.
 
 ### 2. User Accounts and Authentication
 
-- **User Registration**: Allow customers to create accounts.
+- **User Registration**: Allow customers to create accounts. Users can register with the same email for different roles (customer and seller).
 - **User Authentication**: Implement JWT-based authentication for user sessions.
 - **User Profiles**: Enable users to view and update their profiles.
 
@@ -216,6 +216,12 @@ curl -X 'POST' \
 
 <summary> <code>POST</code> <code>/auth/register</code></summary>
 
+### Description
+Register a new user with the specified email, password, and userType. 
+- Users can register with the same email for different roles (customer and seller).
+- If a user is already registered as a customer and wants to become a seller, they can register with the same email but different userType.
+- If a user is already verified and tries to register with the same email and userType, they will receive a message indicating that the user already exists.
+
 ### Curl
 
 ```
@@ -295,18 +301,21 @@ Download
 
 <summary><code>GET </code> <code>/auth/forget-password</code></summary>
 
+### Description
+Send a password reset verification code to the specified email. If the user has multiple accounts with the same email but different roles, the userType parameter can be used to specify which account to reset the password for.
+
 ### Curl
 
 ```
  curl -X 'GET' \
-  'http://localhost:8080/auth/forget-password?email=piash@gmail.com' \
+  'http://localhost:8080/auth/forget-password?email=piash@gmail.com&userType=customer' \
   -H 'accept: application/json'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/auth/forget-password?email=piash@gmail.com
+http://localhost:8080/auth/forget-password?email=piash@gmail.com&userType=customer
 
 ``` 
 
@@ -330,18 +339,21 @@ http://localhost:8080/auth/forget-password?email=piash@gmail.com
 
 <summary><code>GET </code> <code>/auth/reset-password</code></summary>
 
+### Description
+Reset the password for a user account using the verification code sent to their email. If the user has multiple accounts with the same email but different roles, the userType parameter can be used to specify which account to reset the password for.
+
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&otp=9889&newPassword=p1234' \
+  'http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&otp=9889&newPassword=p1234&userType=customer' \
   -H 'accept: application/json'
 ``` 
 
 ### Request URL
 
 ```
-http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&otp=9189&newPassword=p1234
+http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&otp=9189&newPassword=p1234&userType=customer
 ``` 
 
 ### Response

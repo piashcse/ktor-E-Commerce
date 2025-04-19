@@ -142,6 +142,10 @@ class AuthController : AuthRepo {
         val userEntity = UserDAO.find { UserTable.id eq userId }.toList().singleOrNull()
         userEntity?.let {
             if (BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), it.password).verified) {
+                // Check if new password is same as old password
+                if (changePassword.oldPassword == changePassword.newPassword) {
+                    throw CommonException("New password cannot be the same as old password")
+                }
                 it.password = BCrypt.withDefaults().hashToString(12, changePassword.newPassword.toCharArray())
                 true
             } else {
@@ -165,22 +169,13 @@ class AuthController : AuthRepo {
             throw forgetPasswordRequest.email.notFoundException()
         }
 
-        // If userType is specified, find the specific user
-        if (forgetPasswordRequest.userType != null) {
-            val specificUser = userEntities.find { it.userType == forgetPasswordRequest.userType }
-            specificUser?.let {
-                val otp = generateOTP()
-                it.otpCode = otp
-                otp
-            } ?: throw "${forgetPasswordRequest.email} not found for ${forgetPasswordRequest.userType} role".notFoundException()
-        } else {
-            // If userType is not specified and multiple accounts exist, use the first one
-            // In a real-world scenario, you might want to handle this differently
-            val user = userEntities.first()
+        // Find the specific user with the given email and userType
+        val specificUser = userEntities.find { it.userType == forgetPasswordRequest.userType }
+        specificUser?.let {
             val otp = generateOTP()
-            user.otpCode = otp
+            it.otpCode = otp
             otp
-        }
+        } ?: throw "${forgetPasswordRequest.email} not found for ${forgetPasswordRequest.userType} role".notFoundException()
     }
 
     /**
@@ -200,18 +195,16 @@ class AuthController : AuthRepo {
             throw resetPasswordRequest.email.notFoundException()
         }
 
-        // If userType is specified, find the specific user
-        val userEntity = if (resetPasswordRequest.userType != null) {
-            userEntities.find { it.userType == resetPasswordRequest.userType }
-                ?: throw "${resetPasswordRequest.email} not found for ${resetPasswordRequest.userType} role".notFoundException()
-        } else {
-            // If userType is not specified and multiple accounts exist, use the first one
-            // In a real-world scenario, you might want to handle this differently
-            userEntities.first()
-        }
+        // Find the specific user with the given email and userType
+        val userEntity = userEntities.find { it.userType == resetPasswordRequest.userType }
+            ?: throw "${resetPasswordRequest.email} not found for ${resetPasswordRequest.userType} role".notFoundException()
 
         // Verify the code and update the password
         if (userEntity.otpCode == resetPasswordRequest.verificationCode) {
+            // Check if new password is same as current password
+            if (BCrypt.verifyer().verify(resetPasswordRequest.newPassword.toCharArray(), userEntity.password).verified) {
+                throw CommonException("New password cannot be the same as current password")
+            }
             userEntity.password = BCrypt.withDefaults().hashToString(12, resetPasswordRequest.newPassword.toCharArray())
             AppConstants.DataBaseTransaction.FOUND
         } else {
