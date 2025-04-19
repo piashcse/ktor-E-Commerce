@@ -97,11 +97,14 @@ fun Route.authRoutes(authController: AuthController) {
                 queryParameter<String>("email") {
                     required = true
                 }
+                queryParameter<String>("userType") {
+                    required = true
+                }
             }
             apiResponse()
         }) {
-            val (email) = call.requiredParameters("email") ?: return@get
-            val requestBody = ForgetPasswordRequest(email)
+            val (email, userType) = call.requiredParameters("email", "userType") ?: return@get
+            val requestBody = ForgetPasswordRequest(email, userType)
             authController.forgetPassword(requestBody).let { otp ->
                 sendEmail(requestBody.email, otp)
                 call.respond(
@@ -130,16 +133,19 @@ fun Route.authRoutes(authController: AuthController) {
                 queryParameter<String>("newPassword") {
                     required = true
                 }
+                queryParameter<String>("userType") {
+                    required = true
+                }
             }
             apiResponse()
         }) {
-            val (email, verificationCode, newPassword) = call.requiredParameters(
-                "email", "otp", "newPassword"
+            val (email, otp, newPassword, userType) = call.requiredParameters(
+                "email", "otp", "newPassword", "userType"
             ) ?: return@get
 
             AuthController().resetPassword(
                 ResetRequest(
-                    email, verificationCode, newPassword
+                    email, otp, newPassword, userType
                 )
             ).let {
                 when (it) {
