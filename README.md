@@ -68,15 +68,30 @@ scalable, and efficient service for handling your e-commerce needs.
 </p>
 
 ## Built With 🛠
-- [Ktor](https://ktor.io/docs/welcome.html) - Ktor is a framework to easily build connected applications – web applications, HTTP services, mobile and browser applications. Modern connected applications need to be asynchronous to provide the best experience to users, and Kotlin Coroutines provides awesome facilities to do it in an easy and straightforward way.
-- [Exposed](https://github.com/JetBrains/Exposed) - Exposed is a lightweight SQL library on top of JDBC driver for Kotlin language. Exposed has two flavors of database access: typesafe SQL wrapping DSL and lightweight Data Access Objects (DAO).
-- [PostgreSQL](https://www.postgresql.org/) - PostgreSQL is a powerful, open-source object-relational database system that uses and extends the SQL language combined with many features that safely store and scale the most complicated data workloads.
-- [Koin](https://github.com/InsertKoinIO/koin) - A pragmatic lightweight dependency injection framework for Kotlin & Kotlin Multiplatform.
-- [Kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime) - A multiplatform Kotlin library for working with date and time.
-- [Bcrypt](https://github.com/patrickfav/bcrypt) - A Java standalone implementation of the bcrypt password hash function. Based on the Blowfish cipher it is the default password hash algorithm for OpenBSD and other systems including some Linux distributions.
-- [Apache Commons Email](https://github.com/apache/commons-email) - Apache Commons Email aims to provide an API for sending email. It is built on top of the JavaMail API, which it aims to simplify.
-- [ktor-openapi-tools](https://github.com/SMILEY4/ktor-swagger-ui) - Kotlin Ktor plugin to generate OpenAPI specifications and provides Swagger UI and ReDoc.
-- [Valiktor](https://github.com/valiktor/valiktor) - Valiktor is a type-safe, powerful and extensible fluent DSL to validate objects in Kotlin.
+
+- [Ktor](https://ktor.io/docs/welcome.html) - Ktor is a framework to easily build connected applications – web
+  applications, HTTP services, mobile and browser applications. Modern connected applications need to be asynchronous to
+  provide the best experience to users, and Kotlin Coroutines provides awesome facilities to do it in an easy and
+  straightforward way.
+- [Exposed](https://github.com/JetBrains/Exposed) - Exposed is a lightweight SQL library on top of JDBC driver for
+  Kotlin language. Exposed has two flavors of database access: typesafe SQL wrapping DSL and lightweight Data Access
+  Objects (DAO).
+- [PostgreSQL](https://www.postgresql.org/) - PostgreSQL is a powerful, open-source object-relational database system
+  that uses and extends the SQL language combined with many features that safely store and scale the most complicated
+  data workloads.
+- [Koin](https://github.com/InsertKoinIO/koin) - A pragmatic lightweight dependency injection framework for Kotlin &
+  Kotlin Multiplatform.
+- [Kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime) - A multiplatform Kotlin library for working with date
+  and time.
+- [Bcrypt](https://github.com/patrickfav/bcrypt) - A Java standalone implementation of the bcrypt password hash
+  function. Based on the Blowfish cipher it is the default password hash algorithm for OpenBSD and other systems
+  including some Linux distributions.
+- [Apache Commons Email](https://github.com/apache/commons-email) - Apache Commons Email aims to provide an API for
+  sending email. It is built on top of the JavaMail API, which it aims to simplify.
+- [ktor-openapi-tools](https://github.com/SMILEY4/ktor-swagger-ui) - Kotlin Ktor plugin to generate OpenAPI
+  specifications and provides Swagger UI and ReDoc.
+- [Valiktor](https://github.com/valiktor/valiktor) - Valiktor is a type-safe, powerful and extensible fluent DSL to
+  validate objects in Kotlin.
 
 ## Requirements
 
@@ -2839,51 +2854,6 @@ http://localhost:8080/policy/detail/550e8400-e29b-41d4-a716-446655440000
 
 <details>
 
-<summary> <code>POST </code> <code>/policy/consent</code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/policy/consent' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "policyId": "550e8400-e29b-41d4-a716-446655440000"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/policy/consent
-``` 
-
-### Response
-
-```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 201,
-    "description": "Created"
-  },
-  "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440002",
-    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
-    "policyId": "550e8400-e29b-41d4-a716-446655440000",
-    "ipAddress": "127.0.0.1",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "consentedAt": "2023-06-15T10:30:00Z"
-  }
-}
-```   
-
-</details>
-
-<details>
-
 <summary> <code>POST </code> <code>/policy</code></summary>
 
 ### Curl
@@ -3023,11 +2993,56 @@ http://localhost:8080/policy/deactivate/550e8400-e29b-41d4-a716-446655440003
 
 </details>
 
-### USER CONSENTS
+### PRIVACY POLICY CONSENTS
 
 <details>
 
-<summary> <code>GET </code> <code>/user-consents</code></summary>
+<summary> <code>POST </code> <code>/policy-consent</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/policy/consent' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "policyId": "550e8400-e29b-41d4-a716-446655440000"
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/policy/consent
+``` 
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 201,
+    "description": "Created"
+  },
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440002",
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+    "policyId": "550e8400-e29b-41d4-a716-446655440000",
+    "ipAddress": "127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "consentedAt": "2023-06-15T10:30:00Z"
+  }
+}
+```   
+
+</details>
+
+<details>
+
+<summary> <code>GET </code> <code>/policy-consents</code></summary>
 
 ### Curl
 
@@ -3072,7 +3087,7 @@ http://localhost:8080/user-consents
 
 <details>
 
-<summary> <code>GET </code> <code>/user-consents/{policyType}</code></summary>
+<summary> <code>GET </code> <code>/policy-consents/{policyType}</code></summary>
 
 ### Curl
 

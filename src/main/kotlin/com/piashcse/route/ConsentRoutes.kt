@@ -21,7 +21,7 @@ import kotlin.collections.component1
 
 fun Route.consentRoutes(consentController: ConsentController) {
     // User consent management routes
-    route("user-consents") {
+    route("policy-consents") {
         /**
          * POST request to record user consent to a policy.
          *
@@ -29,7 +29,7 @@ fun Route.consentRoutes(consentController: ConsentController) {
          */
         authenticate(RoleManagement.CUSTOMER.role) {
             post("consent", {
-                tags("User Consent")
+                tags("Privacy Policy Consent")
                 summary = "auth[customer]"
                 request {
                     body<PolicyConsentRequest>()
@@ -62,7 +62,7 @@ fun Route.consentRoutes(consentController: ConsentController) {
              * Accessible by the user themselves or admins.
              */
             get({
-                tags("User Consent")
+                tags("Privacy Policy Consent")
                 summary = "auth[admin, customer]"
                 apiResponse()
             }) {
@@ -79,7 +79,7 @@ fun Route.consentRoutes(consentController: ConsentController) {
              * @param policyType The type of policy to check.
              */
             get("{policyType}", {
-                tags("User Consent")
+                tags("Privacy Policy Consent")
                 summary = "auth[admin, customer]"
                 request {
                     pathParameter<String>("policyType") {
