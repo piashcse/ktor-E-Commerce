@@ -8,13 +8,18 @@ import com.piashcse.models.user.body.JwtTokenRequest
 import org.jetbrains.exposed.dao.id.EntityID
 
 object UserTable : BaseIntIdTable("user") {
-    val email = varchar("email", 255).uniqueIndex() // Nullable for mobile users
+    val email = varchar("email", 255) // Nullable for mobile users
     val userType = varchar("user_type", 100)
     val password = varchar("password", 200)
     val otpCode = varchar("otp_code", 6)
     val otpExpiry = varchar("otp_expiry", 50)
     val isVerified = bool("is_verified").default(false)
     override val primaryKey = PrimaryKey(id)
+
+    // Create a composite unique index on email and userType
+    init {
+        uniqueIndex("email_userType_idx", email, userType)
+    }
 }
 
 class UserDAO(id: EntityID<String>) : BaseIntEntity(id, UserTable) {

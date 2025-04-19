@@ -7,7 +7,8 @@ import org.valiktor.validate
 data class ResetRequest(
     val email: String,
     val verificationCode: String,
-    val newPassword: String
+    val newPassword: String,
+    val userType: String? = null
 ) {
     fun validation() {
         validate(this) {

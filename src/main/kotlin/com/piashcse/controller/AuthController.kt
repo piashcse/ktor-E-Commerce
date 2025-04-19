@@ -24,23 +24,37 @@ class AuthController : AuthRepo {
      * @return The response containing the registered user ID and email.
      */
     override suspend fun register(registerRequest: RegisterRequest): Any = query {
+        // Check if user exists with the same email and userType
         val userEntity =
             UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType eq registerRequest.userType) }
                 .toList().singleOrNull()
+
+        // Check if user exists with the same email but different userType
+        val existingUserWithDifferentType = 
+            UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType neq registerRequest.userType) }
+                .toList().singleOrNull()
+
         val otp = generateOTP()
         val now =
             LocalDateTime.now().plusHours(24).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) // 24 hours opt expire time
 
         if (userEntity != null) {
-            val expiryTime = LocalDateTime.parse(userEntity.otpExpiry, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-            if (expiryTime < LocalDateTime.now()) {
-                userEntity.otpCode = otp
-                sendEmail(userEntity.email, otp)
-                "New OTP sent to ${userEntity.email}"
+            // User exists with the same email and userType
+            // Check if the user is already verified
+            if (userEntity.isVerified) {
+                "User already exists with this email"
             } else {
-                "OTP already sent, wait until expiry"
+                val expiryTime = LocalDateTime.parse(userEntity.otpExpiry, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                if (expiryTime < LocalDateTime.now()) {
+                    userEntity.otpCode = otp
+                    sendEmail(userEntity.email, otp)
+                    "New OTP sent to ${userEntity.email}"
+                } else {
+                    "OTP already sent, wait until expiry"
+                }
             }
         } else {
+            // Create new user
             val inserted = UserDAO.new {
                 email = registerRequest.email
                 otpCode = otp
@@ -48,11 +62,25 @@ class AuthController : AuthRepo {
                 password = BCrypt.withDefaults().hashToString(12, registerRequest.password.toCharArray())
                 userType = registerRequest.userType
             }
-            UsersProfileDAO.new {
-                userId = inserted.id
+
+            // If this is a new user (not existing with different role), create profile
+            if (existingUserWithDifferentType == null) {
+                UsersProfileDAO.new {
+                    userId = inserted.id
+                }
             }
+
+            // Send OTP
             sendEmail(inserted.email, otp)
-            RegisterResponse(inserted.id.value, registerRequest.email, message = "OTP sent to ${inserted.email}")
+
+            // Return appropriate message
+            if (existingUserWithDifferentType != null) {
+                RegisterResponse(inserted.id.value, registerRequest.email, 
+                    message = "OTP sent to ${inserted.email}. You already have an account as ${existingUserWithDifferentType.userType}.")
+            } else {
+                RegisterResponse(inserted.id.value, registerRequest.email, 
+                    message = "OTP sent to ${inserted.email}")
+            }
         }
     }
 
@@ -130,12 +158,29 @@ class AuthController : AuthRepo {
      * @return The verification code sent to the user.
      */
     override suspend fun forgetPassword(forgetPasswordRequest: ForgetPasswordRequest): String = query {
-        val userEntity = UserDAO.find { UserTable.email eq forgetPasswordRequest.email }.toList().singleOrNull()
-        userEntity?.let {
+        // Find all users with the given email
+        val userEntities = UserDAO.find { UserTable.email eq forgetPasswordRequest.email }.toList()
+
+        if (userEntities.isEmpty()) {
+            throw forgetPasswordRequest.email.notFoundException()
+        }
+
+        // If userType is specified, find the specific user
+        if (forgetPasswordRequest.userType != null) {
+            val specificUser = userEntities.find { it.userType == forgetPasswordRequest.userType }
+            specificUser?.let {
+                val otp = generateOTP()
+                it.otpCode = otp
+                otp
+            } ?: throw "${forgetPasswordRequest.email} not found for ${forgetPasswordRequest.userType} role".notFoundException()
+        } else {
+            // If userType is not specified and multiple accounts exist, use the first one
+            // In a real-world scenario, you might want to handle this differently
+            val user = userEntities.first()
             val otp = generateOTP()
-            it.otpCode = generateOTP()
+            user.otpCode = otp
             otp
-        } ?: throw forgetPasswordRequest.email.notFoundException()
+        }
     }
 
     /**
@@ -148,14 +193,29 @@ class AuthController : AuthRepo {
      * @throws Exception if the user does not exist.
      */
     override suspend fun resetPassword(resetPasswordRequest: ResetRequest): Int = query {
-        val userEntity = UserDAO.find { UserTable.email eq resetPasswordRequest.email }.toList().singleOrNull()
-        userEntity?.let {
-            if (it.otpCode == resetPasswordRequest.verificationCode) {
-                it.password = BCrypt.withDefaults().hashToString(12, resetPasswordRequest.newPassword.toCharArray())
-                AppConstants.DataBaseTransaction.FOUND
-            } else {
-                AppConstants.DataBaseTransaction.NOT_FOUND
-            }
-        } ?: throw resetPasswordRequest.email.notFoundException()
+        // Find all users with the given email
+        val userEntities = UserDAO.find { UserTable.email eq resetPasswordRequest.email }.toList()
+
+        if (userEntities.isEmpty()) {
+            throw resetPasswordRequest.email.notFoundException()
+        }
+
+        // If userType is specified, find the specific user
+        val userEntity = if (resetPasswordRequest.userType != null) {
+            userEntities.find { it.userType == resetPasswordRequest.userType }
+                ?: throw "${resetPasswordRequest.email} not found for ${resetPasswordRequest.userType} role".notFoundException()
+        } else {
+            // If userType is not specified and multiple accounts exist, use the first one
+            // In a real-world scenario, you might want to handle this differently
+            userEntities.first()
+        }
+
+        // Verify the code and update the password
+        if (userEntity.otpCode == resetPasswordRequest.verificationCode) {
+            userEntity.password = BCrypt.withDefaults().hashToString(12, resetPasswordRequest.newPassword.toCharArray())
+            AppConstants.DataBaseTransaction.FOUND
+        } else {
+            AppConstants.DataBaseTransaction.NOT_FOUND
+        }
     }
 }
