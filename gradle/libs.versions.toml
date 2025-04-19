@@ -14,6 +14,7 @@ commons-io-version = "2.17.0"
 ktor-swagger-ui-version = "5.0.2"
 shadow-version = "8.3.6"
 koin = "4.0.2"
+docker-version = "9.4.0"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
@@ -55,3 +56,4 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor-version" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow-version" }
+docker = { id = "com.bmuschko.docker-java-application", version.ref = "docker-version" }
