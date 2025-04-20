@@ -1,6 +1,6 @@
 package com.piashcse.modules.policy.routes
 
-import com.piashcse.modules.policy.service.PolicyController
+import com.piashcse.modules.policy.controller.PolicyController
 import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.database.models.policy.CreatePolicyRequest
 import com.piashcse.database.models.policy.UpdatePolicyRequest

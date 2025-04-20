@@ -1,6 +1,6 @@
 package com.piashcse.modules.payment.routes
 
-import com.piashcse.modules.payment.service.PaymentController
+import com.piashcse.modules.payment.controller.PaymentController
 import com.piashcse.database.models.PaymentRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse

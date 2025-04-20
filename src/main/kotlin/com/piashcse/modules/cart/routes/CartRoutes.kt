@@ -1,6 +1,6 @@
 package com.piashcse.modules.cart.routes
 
-import com.piashcse.modules.cart.service.CartController
+import com.piashcse.modules.cart.controller.CartController
 import com.piashcse.database.models.cart.CartRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse

@@ -1,6 +1,6 @@
 package com.piashcse.plugins
 
-import com.piashcse.modules.auth.service.JwtController
+import com.piashcse.modules.auth.controller.JwtController
 import com.piashcse.database.models.user.body.JwtTokenRequest
 import io.ktor.server.application.*
 import io.ktor.server.auth.*

@@ -1,7 +1,7 @@
 package com.piashcse.modules.order.routes
 
 
-import com.piashcse.modules.order.service.OrderController
+import com.piashcse.modules.order.controller.OrderController
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.models.order.OrderRequest
 import com.piashcse.plugins.RoleManagement

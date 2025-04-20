@@ -1,6 +1,6 @@
 package com.piashcse.modules.auth.routes
 
-import com.piashcse.modules.auth.service.AuthController
+import com.piashcse.modules.auth.controller.AuthController
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.database.models.user.body.ForgetPasswordRequest
 import com.piashcse.database.models.user.body.JwtTokenRequest

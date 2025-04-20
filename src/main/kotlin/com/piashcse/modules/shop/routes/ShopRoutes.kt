@@ -1,6 +1,6 @@
 package com.piashcse.modules.shop.routes
 
-import com.piashcse.modules.shop.service.ShopController
+import com.piashcse.modules.shop.controller.ShopController
 import com.piashcse.database.models.shop.ShopRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse

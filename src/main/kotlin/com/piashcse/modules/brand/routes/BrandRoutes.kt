@@ -1,6 +1,6 @@
 package com.piashcse.modules.brand.routes
 
-import com.piashcse.modules.brand.service.BrandController
+import com.piashcse.modules.brand.controller.BrandController
 import com.piashcse.database.models.bands.BrandRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse

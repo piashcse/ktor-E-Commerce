@@ -1,6 +1,6 @@
 package com.piashcse.modules.shopcategory.routes
 
-import com.piashcse.modules.shopcategory.service.ShopCategoryController
+import com.piashcse.modules.shopcategory.controller.ShopCategoryController
 import com.piashcse.database.models.shop.ShopCategoryRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse

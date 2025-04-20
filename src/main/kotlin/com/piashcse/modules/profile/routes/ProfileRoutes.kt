@@ -1,6 +1,6 @@
 package com.piashcse.modules.profile.routes
 
-import com.piashcse.modules.profile.service.ProfileController
+import com.piashcse.modules.profile.controller.ProfileController
 import com.piashcse.database.models.user.body.UserProfileRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse

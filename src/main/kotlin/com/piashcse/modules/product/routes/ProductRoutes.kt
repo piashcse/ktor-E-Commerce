@@ -1,6 +1,6 @@
 package com.piashcse.modules.product.routes
 
-import com.piashcse.modules.product.service.ProductController
+import com.piashcse.modules.product.controller.ProductController
 import com.piashcse.database.models.product.request.ProductRequest
 import com.piashcse.database.models.product.request.ProductSearchRequest
 import com.piashcse.database.models.product.request.ProductWithFilterRequest

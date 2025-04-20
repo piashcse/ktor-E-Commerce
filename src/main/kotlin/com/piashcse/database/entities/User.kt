@@ -1,6 +1,6 @@
 package com.piashcse.database.entities
 
-import com.piashcse.modules.auth.service.JwtController
+import com.piashcse.modules.auth.controller.JwtController
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable

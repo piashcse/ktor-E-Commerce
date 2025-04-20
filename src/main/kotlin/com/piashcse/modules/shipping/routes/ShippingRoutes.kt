@@ -1,6 +1,6 @@
 package com.piashcse.modules.shipping.routes
 
-import com.piashcse.modules.shipping.service.ShippingController
+import com.piashcse.modules.shipping.controller.ShippingController
 import com.piashcse.database.models.shipping.ShippingRequest
 import com.piashcse.database.models.shipping.UpdateShipping
 import com.piashcse.plugins.RoleManagement

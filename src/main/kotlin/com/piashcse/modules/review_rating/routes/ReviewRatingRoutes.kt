@@ -1,6 +1,6 @@
 package com.piashcse.modules.review_rating.routes
 
-import com.piashcse.modules.review_rating.service.ReviewRatingController
+import com.piashcse.modules.review_rating.controller.ReviewRatingController
 import com.piashcse.database.models.ReviewRatingRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse

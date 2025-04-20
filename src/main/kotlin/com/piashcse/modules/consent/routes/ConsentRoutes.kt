@@ -1,6 +1,6 @@
 package com.piashcse.modules.consent.routes
 
-import com.piashcse.modules.consent.service.ConsentController
+import com.piashcse.modules.consent.controller.ConsentController
 import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.database.models.policy.PolicyConsentRequest
 import com.piashcse.plugins.RoleManagement

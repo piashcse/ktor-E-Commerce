@@ -1,6 +1,6 @@
 package com.piashcse.modules.productsubcategory.routes
 
-import com.piashcse.modules.productsubcategory.service.ProductSubCategoryController
+import com.piashcse.modules.productsubcategory.controller.ProductSubCategoryController
 import com.piashcse.database.models.subcategory.ProductSubCategoryRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse

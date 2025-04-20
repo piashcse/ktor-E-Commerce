@@ -1,6 +1,6 @@
 package com.piashcse.modules.wishlist.routes
 
-import com.piashcse.modules.wishlist.service.WishListController
+import com.piashcse.modules.wishlist.controller.WishListController
 import com.piashcse.database.models.WisListRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
