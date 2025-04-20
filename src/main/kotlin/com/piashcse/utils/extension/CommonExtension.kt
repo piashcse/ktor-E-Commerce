@@ -1,6 +1,7 @@
 package com.piashcse.utils.extension
 
-import com.piashcse.models.user.body.JwtTokenRequest
+import com.piashcse.database.models.user.body.JwtTokenRequest
+
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.CommonException
 import com.piashcse.utils.Response
