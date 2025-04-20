@@ -61,7 +61,7 @@ scalable, and efficient service for handling your e-commerce needs.
 ## Architecture
 
 <p align="center">
-  <img width="40%" height="25%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/mvc.png" />
+  <img width="40%" height="25%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/onion_architecture.png" />
 </p>
 <p align="center">
 <b>Fig.  MVC (Model - View - Controller)</b>

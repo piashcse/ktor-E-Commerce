@@ -1,19 +1,19 @@
 package com.piashcse.plugins
 
-import com.piashcse.models.PaymentRequest
-import com.piashcse.models.WisListRequest
-import com.piashcse.models.bands.BrandRequest
-import com.piashcse.models.cart.CartRequest
-import com.piashcse.models.category.ProductCategoryRequest
-import com.piashcse.models.order.OrderRequest
-import com.piashcse.models.product.request.ProductRequest
-import com.piashcse.models.product.request.ProductSearchRequest
-import com.piashcse.models.shipping.ShippingRequest
-import com.piashcse.models.shop.ShopCategoryRequest
-import com.piashcse.models.shop.ShopRequest
-import com.piashcse.models.subcategory.ProductSubCategoryRequest
-import com.piashcse.models.user.body.LoginRequest
-import com.piashcse.models.user.body.RegisterRequest
+import com.piashcse.database.models.PaymentRequest
+import com.piashcse.database.models.WisListRequest
+import com.piashcse.database.models.bands.BrandRequest
+import com.piashcse.database.models.cart.CartRequest
+import com.piashcse.database.models.category.ProductCategoryRequest
+import com.piashcse.database.models.order.OrderRequest
+import com.piashcse.database.models.product.request.ProductRequest
+import com.piashcse.database.models.product.request.ProductSearchRequest
+import com.piashcse.database.models.shipping.ShippingRequest
+import com.piashcse.database.models.shop.ShopCategoryRequest
+import com.piashcse.database.models.shop.ShopRequest
+import com.piashcse.database.models.subcategory.ProductSubCategoryRequest
+import com.piashcse.database.models.user.body.LoginRequest
+import com.piashcse.database.models.user.body.RegisterRequest
 import io.ktor.server.application.*
 import io.ktor.server.plugins.requestvalidation.*
 
