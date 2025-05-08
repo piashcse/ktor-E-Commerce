@@ -1,6 +1,6 @@
 package com.piashcse.database.entities
 
-import com.piashcse.modules.auth.controller.JwtController
+import com.piashcse.modules.auth.JwtProvider
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
@@ -39,7 +39,7 @@ class UserDAO(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
     )
 
     fun loggedInWithToken() = LoginResponse(
-        response(), JwtController.tokenProvider(JwtTokenRequest(id.value, email, userType))
+        response(), JwtProvider.tokenProvider(JwtTokenRequest(id.value, email, userType))
     )
 }
 

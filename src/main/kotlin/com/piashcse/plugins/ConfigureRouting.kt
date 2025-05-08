@@ -1,35 +1,35 @@
 package com.piashcse.plugins
 
-import com.piashcse.modules.auth.routes.authRoutes
-import com.piashcse.modules.auth.controller.AuthController
-import com.piashcse.modules.brand.routes.brandRoutes
-import com.piashcse.modules.brand.controller.BrandController
-import com.piashcse.modules.cart.routes.cartRoutes
-import com.piashcse.modules.cart.controller.CartController
-import com.piashcse.modules.consent.routes.consentRoutes
-import com.piashcse.modules.consent.controller.ConsentController
-import com.piashcse.modules.order.routes.orderRoutes
-import com.piashcse.modules.order.controller.OrderController
-import com.piashcse.modules.payment.routes.paymentRoutes
-import com.piashcse.modules.payment.controller.PaymentController
-import com.piashcse.modules.policy.routes.policyRoutes
-import com.piashcse.modules.policy.controller.PolicyController
-import com.piashcse.modules.product.routes.productRoutes
-import com.piashcse.modules.product.controller.ProductController
-import com.piashcse.modules.productcategory.routes.productCategoryRoutes
-import com.piashcse.modules.productcategory.controller.ProductCategoryController
-import com.piashcse.modules.productsubcategory.routes.productSubCategoryRoutes
-import com.piashcse.modules.productsubcategory.controller.ProductSubCategoryController
-import com.piashcse.modules.profile.routes.profileRoutes
-import com.piashcse.modules.profile.controller.ProfileController
-import com.piashcse.modules.review_rating.routes.reviewRatingRoutes
-import com.piashcse.modules.review_rating.controller.ReviewRatingController
-import com.piashcse.modules.shipping.routes.shippingRoutes
-import com.piashcse.modules.shipping.controller.ShippingController
-import com.piashcse.modules.shop.controller.ShopController
-import com.piashcse.modules.shop.routes.shopRoutes
-import com.piashcse.modules.shopcategory.routes.shopCategoryRoutes
-import com.piashcse.modules.shopcategory.controller.ShopCategoryController
+import com.piashcse.modules.auth.authRoutes
+import com.piashcse.modules.auth.AuthService
+import com.piashcse.modules.brand.brandRoutes
+import com.piashcse.modules.brand.BrandService
+import com.piashcse.modules.cart.cartRoutes
+import com.piashcse.modules.cart.CartService
+import com.piashcse.modules.consent.consentRoutes
+import com.piashcse.modules.consent.ConsentService
+import com.piashcse.modules.order.orderRoutes
+import com.piashcse.modules.order.OrderService
+import com.piashcse.modules.payment.paymentRoutes
+import com.piashcse.modules.payment.PaymentService
+import com.piashcse.modules.policy.policyRoutes
+import com.piashcse.modules.policy.PolicyService
+import com.piashcse.modules.product.productRoutes
+import com.piashcse.modules.product.ProductService
+import com.piashcse.modules.productcategory.productCategoryRoutes
+import com.piashcse.modules.productcategory.ProductCategoryService
+import com.piashcse.modules.productsubcategory.productSubCategoryRoutes
+import com.piashcse.modules.productsubcategory.ProductSubCategoryService
+import com.piashcse.modules.profile.profileRoutes
+import com.piashcse.modules.profile.ProfileService
+import com.piashcse.modules.review_rating.reviewRatingRoutes
+import com.piashcse.modules.review_rating.ReviewRatingService
+import com.piashcse.modules.shipping.shippingRoutes
+import com.piashcse.modules.shipping.ShippingService
+import com.piashcse.modules.shop.ShopService
+import com.piashcse.modules.shop.shopRoutes
+import com.piashcse.modules.shopcategory.shopCategoryRoutes
+import com.piashcse.modules.shopcategory.ShopCategoryService
 import com.piashcse.modules.wishlist.routes.wishListRoutes
 import com.piashcse.modules.wishlist.controller.WishListController
 import io.ktor.server.application.*
@@ -37,22 +37,22 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Application.configureRoute() {
-    val authController: AuthController by inject()
-    val userProfileController: ProfileController by inject()
-    val shopCategoryController: ShopCategoryController by inject()
-    val shopController: ShopController by inject()
-    val brandController: BrandController by inject()
-    val productCategoryController: ProductCategoryController by inject()
-    val productSubCategoryController: ProductSubCategoryController by inject()
-    val productController: ProductController by inject()
-    val reviewRatingController: ReviewRatingController by inject()
-    val cartController: CartController by inject()
+    val authController: AuthService by inject()
+    val userProfileController: ProfileService by inject()
+    val shopCategoryController: ShopCategoryService by inject()
+    val shopController: ShopService by inject()
+    val brandController: BrandService by inject()
+    val productCategoryController: ProductCategoryService by inject()
+    val productSubCategoryController: ProductSubCategoryService by inject()
+    val productController: ProductService by inject()
+    val reviewRatingController: ReviewRatingService by inject()
+    val cartController: CartService by inject()
     val wishListController: WishListController by inject()
-    val shippingController: ShippingController by inject()
-    val orderController: OrderController by inject()
-    val paymentController: PaymentController by inject()
-    val policyController: PolicyController by inject()
-    val consentController: ConsentController by inject()
+    val shippingController: ShippingService by inject()
+    val orderController: OrderService by inject()
+    val paymentController: PaymentService by inject()
+    val policyController: PolicyService by inject()
+    val consentController: ConsentService by inject()
     routing {
         authRoutes(authController)
         profileRoutes(userProfileController)
