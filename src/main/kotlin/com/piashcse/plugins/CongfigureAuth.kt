@@ -1,6 +1,6 @@
 package com.piashcse.plugins
 
-import com.piashcse.modules.auth.controller.JwtController
+import com.piashcse.modules.auth.JwtProvider
 import com.piashcse.database.models.user.body.JwtTokenRequest
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -29,7 +29,7 @@ fun Application.configureAuth() {
 }
 
 fun provideJwtAuthConfig(jwtConfig: JWTAuthenticationProvider.Config, userRole: RoleManagement) {
-    jwtConfig.verifier(JwtController.verifier)
+    jwtConfig.verifier(JwtProvider.verifier)
     jwtConfig.realm = "piashcse"
     jwtConfig.validate {
         val userId = it.payload.getClaim("userId").asString()
