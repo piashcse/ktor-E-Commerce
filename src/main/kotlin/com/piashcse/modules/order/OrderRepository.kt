@@ -1,10 +1,10 @@
 package com.piashcse.modules.order
 
+import com.piashcse.constants.OrderStatus
 import com.piashcse.database.entities.Order
-import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.models.order.OrderRequest
 
-interface OrderRepository{
+interface OrderRepository {
     /**
      * Creates a new order for a user.
      *
@@ -31,5 +31,5 @@ interface OrderRepository{
      * @param status The updated order status.
      * @return The updated order.
      */
-    suspend fun updateOrderStatus(userId: String, orderId: String, status: OrderTable.OrderStatus): Order
+    suspend fun updateOrderStatus(userId: String, orderId: String, status: OrderStatus): Order
 }

@@ -1,5 +1,6 @@
 package com.piashcse.database.models
 
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.PaymentTable
 import org.valiktor.functions.isGreaterThan
 import org.valiktor.functions.isNotEmpty
@@ -9,7 +10,7 @@ import org.valiktor.validate
 data class PaymentRequest(
     val orderId: String,
     val amount: Long,
-    val status: PaymentTable.PaymentStatus,
+    val status: PaymentStatus,
     val paymentMethod: String,
     val transactionId: String?,
 ) {

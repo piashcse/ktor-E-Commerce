@@ -1,5 +1,6 @@
 package com.piashcse.modules.order
 
+import com.piashcse.constants.OrderStatus
 import com.piashcse.database.entities.CartItemDAO
 import com.piashcse.database.entities.CartItemTable
 import com.piashcse.database.entities.Order
@@ -70,7 +71,7 @@ class OrderService : OrderRepository {
      * @return The updated order entity with the new status.
      * @throws Exception if the order does not exist for the given user.
      */
-    override suspend fun updateOrderStatus(userId: String, orderId: String, status: OrderTable.OrderStatus): Order =
+    override suspend fun updateOrderStatus(userId: String, orderId: String, status: OrderStatus): Order =
         query {
             val isOrderExist =
                 OrderDAO.Companion.find { OrderTable.userId eq userId and (OrderTable.id eq orderId) }.toList()

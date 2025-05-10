@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
@@ -21,11 +22,6 @@ object ProductTable : BaseIntIdTable("product") {
     val featured = bool("featured").default(false) // Whether the product is featured or not
     val images = varchar("images", 1000) // Comma-separated image URLs for the product
     val status = enumerationByName("status", 50, ProductStatus::class).default(ProductStatus.ACTIVE) // Product status
-
-    enum class ProductStatus {
-        ACTIVE, // Product is available for purchase
-        OUT_OF_STOCK // Product is not available
-    }
 
 }
 
@@ -81,5 +77,5 @@ data class Product(
     val hotDeal: Boolean?,
     val featured: Boolean,
     val images: String,
-    val status: ProductTable.ProductStatus
+    val status: ProductStatus
 )

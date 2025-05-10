@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
@@ -12,10 +13,6 @@ object PaymentTable : BaseIntIdTable("payment") {
     val status = enumerationByName("status", 30, PaymentStatus::class).clientDefault { PaymentStatus.PENDING }
     val paymentMethod = varchar("payment_method", 50) // e.g., "CREDIT_CARD", "PAYPAL"
     val transactionId = varchar("transaction_id", 100).nullable()
-
-    enum class PaymentStatus {
-        PENDING, COMPLETED, FAILED, REFUNDED
-    }
 }
 
 class PaymentDAO(id: EntityID<String>) : BaseIntEntity(id, PaymentTable) {
@@ -41,7 +38,7 @@ data class Payment(
     val id: String,
     val orderId: String,
     val amount: Long,
-    val status: PaymentTable.PaymentStatus,
+    val status: PaymentStatus,
     val paymentMethod: String,
     val transactionId: String?
 )
