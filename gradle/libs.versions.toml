@@ -17,7 +17,6 @@ koin = "4.0.2"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
-ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm", version.ref = "ktor-version" }
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor-version" }
 ktor-serialization-gson = { module = "io.ktor:ktor-serialization-gson-jvm", version.ref = "ktor-version" }
 ktor-server-host-common = { module = "io.ktor:ktor-server-host-common-jvm", version.ref = "ktor-version" }
