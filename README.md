@@ -152,6 +152,23 @@ On Terminal
 ./gradlew run
 ```
 
+## 📧 SMTP Email Setup
+
+This project uses Gmail’s SMTP service to send emails (e.g., for password recovery). Follow the instructions below to configure it securely.
+
+### 🔧 Configuration SMTP Email
+Update the SmtpServer object with your own Gmail credentials:
+
+```
+object SmtpServer {
+    const val HOST_NAME = "smtp.googlemail.com"
+    const val PORT = 465
+    const val DEFAULT_AUTHENTICATOR = "your-email@gmail.com" // Your Gmail address
+    const val DEFAULT_AUTHENTICATOR_PASSWORD = "your-app-password" // App-specific password
+    const val EMAIL_SUBJECT = "Forget Password"
+    const val SENDING_EMAIL = "your-email@gmail.com" // Sender email displayed to recipients
+}
+```
 ## Documentation
 
 ### ROLE MANAGEMENT
