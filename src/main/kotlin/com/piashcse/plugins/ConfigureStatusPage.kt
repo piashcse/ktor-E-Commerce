@@ -1,5 +1,6 @@
 package com.piashcse.plugins
 
+import com.piashcse.constants.Message
 import com.piashcse.utils.*
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -35,34 +36,36 @@ fun Application.configureStatusPage() {
 
                 is EmailNotExist -> {
                     call.respond(
-                        HttpStatusCode.BadRequest, ApiResponse.failure("User not exist", HttpStatusCode.BadRequest)
+                        HttpStatusCode.BadRequest,
+                        ApiResponse.failure(Message.USER_NOT_EXIST, HttpStatusCode.BadRequest)
                     )
                 }
 
                 is NullPointerException -> {
                     call.respond(
                         ApiResponse.failure(
-                            "Null pointer error : ${error.message}", HttpStatusCode.BadRequest
+                            "${Message.NULL_POINTER_ERROR} ${error.message}", HttpStatusCode.BadRequest
                         )
                     )
                 }
 
                 is UserNotExistException -> {
                     call.respond(
-                        HttpStatusCode.BadRequest, ApiResponse.failure("User not exist", HttpStatusCode.BadRequest)
+                        HttpStatusCode.BadRequest,
+                        ApiResponse.failure(Message.USER_NOT_EXIST, HttpStatusCode.BadRequest)
                     )
                 }
 
                 is PasswordNotMatch -> {
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        ApiResponse.failure("Password is wrong", HttpStatusCode.BadRequest)
+                        ApiResponse.failure(Message.PASSWORD_IS_WRONG, HttpStatusCode.BadRequest)
                     )
                 }
 
                 is TypeCastException -> {
                     call.respond(
-                        ApiResponse.failure("Type cast exception", HttpStatusCode.BadRequest)
+                        ApiResponse.failure(Message.TYPE_CAST_EXCEPTION, HttpStatusCode.BadRequest)
                     )
                 }
 
@@ -75,14 +78,14 @@ fun Application.configureStatusPage() {
                 else -> {
                     call.respond(
                         HttpStatusCode.InternalServerError, ApiResponse.failure(
-                            "Internal server error : ${error.message}", HttpStatusCode.InternalServerError
+                            "${Message.INTERNAL_SERVER_ERROR} ${error.message}", HttpStatusCode.InternalServerError
                         )
                     )
                 }
             }
         }
         status(HttpStatusCode.Unauthorized) { call, statusCode ->
-            call.respond(HttpStatusCode.Unauthorized, ApiResponse.failure("Unauthorized api call", statusCode))
+            call.respond(HttpStatusCode.Unauthorized, ApiResponse.failure(Message.UNAUTHORIZED_API_CALL, statusCode))
         }
     }
 }

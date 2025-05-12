@@ -1,4 +1,4 @@
-package com.piashcse.modules.wishlist.controller
+package com.piashcse.modules.wishlist
 
 import com.piashcse.database.entities.Product
 import com.piashcse.database.entities.ProductDAO
@@ -6,7 +6,6 @@ import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.WishList
 import com.piashcse.database.entities.WishListDAO
 import com.piashcse.database.entities.WishListTable
-import com.piashcse.modules.wishlist.repository.WishListRepo
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
@@ -16,7 +15,7 @@ import org.jetbrains.exposed.sql.and
 /**
  * Controller for managing the user's wishlist. Provides methods to add, retrieve, and remove items from the wishlist.
  */
-class WishListController : WishListRepo {
+class WishListService : WishListRepository {
 
     /**
      * Adds a product to the user's wishlist. If the product is already in the wishlist, an exception is thrown.

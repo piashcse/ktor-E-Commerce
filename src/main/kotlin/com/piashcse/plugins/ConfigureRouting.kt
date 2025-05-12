@@ -30,8 +30,8 @@ import com.piashcse.modules.shop.ShopService
 import com.piashcse.modules.shop.shopRoutes
 import com.piashcse.modules.shopcategory.shopCategoryRoutes
 import com.piashcse.modules.shopcategory.ShopCategoryService
-import com.piashcse.modules.wishlist.routes.wishListRoutes
-import com.piashcse.modules.wishlist.controller.WishListController
+import com.piashcse.modules.wishlist.wishListRoutes
+import com.piashcse.modules.wishlist.WishListService
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -47,7 +47,7 @@ fun Application.configureRoute() {
     val productController: ProductService by inject()
     val reviewRatingController: ReviewRatingService by inject()
     val cartController: CartService by inject()
-    val wishListController: WishListController by inject()
+    val wishListController: WishListService by inject()
     val shippingController: ShippingService by inject()
     val orderController: OrderService by inject()
     val paymentController: PaymentService by inject()

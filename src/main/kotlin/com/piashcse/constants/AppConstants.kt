@@ -1,16 +1,6 @@
-package com.piashcse.utils
+package com.piashcse.constants
 
 object AppConstants {
-    object SuccessMessage {
-        object Password {
-            const val PASSWORD_CHANGE_SUCCESS = "Password change successful"
-        }
-
-        object VerificationCode {
-            const val VERIFICATION_CODE_SENT_TO = "Verification code sent to"
-            const val VERIFICATION_CODE_IS_NOT_VALID = "Verification code is not valid"
-        }
-    }
 
     object DataBaseTransaction {
         const val FOUND = 1

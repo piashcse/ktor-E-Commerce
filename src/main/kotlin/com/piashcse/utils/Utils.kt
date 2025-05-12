@@ -1,4 +1,7 @@
 package com.piashcse.utils
+
+import com.piashcse.constants.AppConstants
+import com.piashcse.constants.Message
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,13 +30,13 @@ fun sendEmail(
                 isSSLOnConnect = true
                 setFrom(fromEmail)
                 this.subject = subject
-                setMsg("Your verification code is: $verificationCode")
+                setMsg("${Message.VERIFICATION_CODE_SENT_TO} $verificationCode")
                 addTo(toEmail)
                 send()
             }
         }
     } catch (e: EmailException) {
-        throw CommonException("Sending email failed")
+        throw CommonException(Message.SENDING_EMAIL_FAILED)
     }
 }
 
