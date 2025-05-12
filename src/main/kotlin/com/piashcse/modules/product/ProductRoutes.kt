@@ -6,7 +6,7 @@ import com.piashcse.database.models.product.request.ProductWithFilterRequest
 import com.piashcse.database.models.product.request.UpdateProduct
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.AppConstants
+import com.piashcse.constants.AppConstants
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.fileExtension

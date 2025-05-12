@@ -1,7 +1,6 @@
-package com.piashcse.modules.wishlist.routes
+package com.piashcse.modules.wishlist
 
-import com.piashcse.modules.wishlist.controller.WishListController
-import com.piashcse.database.models.WisListRequest
+import com.piashcse.database.models.WishListRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -21,7 +20,7 @@ import io.ktor.server.routing.*
  *
  * @param wishlistController The controller responsible for handling wish list operations.
  */
-fun Route.wishListRoutes(wishlistController: WishListController) {
+fun Route.wishListRoutes(wishlistController: WishListService) {
     route("wishlist") {
         authenticate(RoleManagement.CUSTOMER.role) {
 
@@ -35,11 +34,11 @@ fun Route.wishListRoutes(wishlistController: WishListController) {
                 tags("Wish List")
                 summary = "auth[customer]"
                 request {
-                    body<WisListRequest>()
+                    body<WishListRequest>()
                 }
                 apiResponse()
             }) {
-                val requestBody = call.receive<WisListRequest>()
+                val requestBody = call.receive<WishListRequest>()
                 call.respond(
                     ApiResponse.success(
                         wishlistController.addToWishList(call.currentUser().userId, requestBody.productId),

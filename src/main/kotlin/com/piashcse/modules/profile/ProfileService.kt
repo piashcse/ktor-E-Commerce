@@ -4,7 +4,7 @@ import com.piashcse.database.entities.UserProfile
 import com.piashcse.database.entities.UserProfileTable
 import com.piashcse.database.entities.UsersProfileDAO
 import com.piashcse.database.models.user.body.UserProfileRequest
-import com.piashcse.utils.AppConstants
+import com.piashcse.constants.AppConstants
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import java.io.File

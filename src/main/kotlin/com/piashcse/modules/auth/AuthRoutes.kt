@@ -1,5 +1,6 @@
 package com.piashcse.modules.auth
 
+import com.piashcse.constants.Message
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.database.models.user.body.ForgetPasswordRequest
 import com.piashcse.database.models.user.body.JwtTokenRequest
@@ -8,7 +9,7 @@ import com.piashcse.database.models.user.body.RegisterRequest
 import com.piashcse.database.models.user.body.ResetRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.AppConstants
+import com.piashcse.constants.AppConstants
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.requiredParameters
 import com.piashcse.utils.sendEmail
@@ -112,7 +113,7 @@ fun Route.authRoutes(authController: AuthService) {
                 sendEmail(requestBody.email, otp)
                 call.respond(
                     ApiResponse.success(
-                        "${AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_SENT_TO} ${requestBody.email}",
+                        "${Message.VERIFICATION_CODE_SENT_TO} ${requestBody.email}",
                         HttpStatusCode.OK
                     )
                 )
@@ -155,7 +156,7 @@ fun Route.authRoutes(authController: AuthService) {
                     AppConstants.DataBaseTransaction.FOUND -> {
                         call.respond(
                             ApiResponse.success(
-                                AppConstants.SuccessMessage.Password.PASSWORD_CHANGE_SUCCESS, HttpStatusCode.OK
+                                Message.PASSWORD_CHANGE_SUCCESS, HttpStatusCode.OK
                             )
                         )
                     }
@@ -163,7 +164,7 @@ fun Route.authRoutes(authController: AuthService) {
                     AppConstants.DataBaseTransaction.NOT_FOUND -> {
                         call.respond(
                             ApiResponse.success(
-                                AppConstants.SuccessMessage.VerificationCode.VERIFICATION_CODE_IS_NOT_VALID,
+                                Message.VERIFICATION_CODE_IS_NOT_VALID,
                                 HttpStatusCode.OK
                             )
                         )

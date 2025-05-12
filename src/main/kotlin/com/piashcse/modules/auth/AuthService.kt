@@ -1,6 +1,7 @@
 package com.piashcse.modules.auth
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.piashcse.constants.Message
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.database.entities.LoginResponse
 import com.piashcse.database.entities.UserDAO
@@ -11,7 +12,7 @@ import com.piashcse.database.models.user.body.LoginRequest
 import com.piashcse.database.models.user.body.RegisterRequest
 import com.piashcse.database.models.user.body.ResetRequest
 import com.piashcse.database.models.user.response.RegisterResponse
-import com.piashcse.utils.AppConstants
+import com.piashcse.constants.AppConstants
 import com.piashcse.utils.CommonException
 import com.piashcse.utils.PasswordNotMatch
 import com.piashcse.utils.UserNotExistException
@@ -50,15 +51,15 @@ class AuthService : AuthRepository {
             // User exists with the same email and userType
             // Check if the user is already verified
             if (userEntity.isVerified) {
-                "User already exists with this email"
+                Message.USER_ALREADY_EXIST_WITH_THIS_EMAIL
             } else {
                 val expiryTime = LocalDateTime.parse(userEntity.otpExpiry, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 if (expiryTime < LocalDateTime.now()) {
                     userEntity.otpCode = otp
                     sendEmail(userEntity.email, otp)
-                    "New OTP sent to ${userEntity.email}"
+                    "${Message.NEW_OTP_SENT_TO} ${userEntity.email}"
                 } else {
-                    "OTP already sent, wait until expiry"
+                    Message.OTP_ALREADY_SENT_WAIT_UNTIL_EXPIRY
                 }
             }
         } else {
@@ -84,13 +85,13 @@ class AuthService : AuthRepository {
             // Return appropriate message
             if (existingUserWithDifferentType != null) {
                 RegisterResponse(
-                    inserted.id.value, registerRequest.email,
-                    message = "OTP sent to ${inserted.email}. You already have an account as ${existingUserWithDifferentType.userType}."
+                    inserted.id.value,
+                    registerRequest.email,
+                    message = "${Message.OTP_SENT_TO} ${inserted.email}. You already have an account as ${existingUserWithDifferentType.userType}."
                 )
             } else {
                 RegisterResponse(
-                    inserted.id.value, registerRequest.email,
-                    message = "OTP sent to ${inserted.email}"
+                    inserted.id.value, registerRequest.email, message = "${Message.OTP_SENT_TO} ${inserted.email}"
                 )
             }
         }
@@ -115,7 +116,7 @@ class AuthService : AuthRepository {
                 if (it.isVerified) {
                     it.loggedInWithToken()
                 } else {
-                    throw CommonException("Account is not verified")
+                    throw CommonException(Message.ACCOUNT_NOT_VERIFIED)
                 }
             } else {
                 throw PasswordNotMatch()
@@ -156,7 +157,7 @@ class AuthService : AuthRepository {
             if (BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), it.password).verified) {
                 // Check if new password is same as old password
                 if (changePassword.oldPassword == changePassword.newPassword) {
-                    throw CommonException("New password cannot be the same as old password")
+                    throw CommonException(Message.NEW_PASSWORD_CANNOT_BE_SAME_AS_OLD_PASSWORD)
                 }
                 it.password = BCrypt.withDefaults().hashToString(12, changePassword.newPassword.toCharArray())
                 true
@@ -218,7 +219,7 @@ class AuthService : AuthRepository {
             if (BCrypt.verifyer()
                     .verify(resetPasswordRequest.newPassword.toCharArray(), userEntity.password).verified
             ) {
-                throw CommonException("New password cannot be the same as current password")
+                throw CommonException(Message.NEW_PASSWORD_CANNOT_BE_SAME_AS_CURRENT_PASSWORD)
             }
             userEntity.password = BCrypt.withDefaults().hashToString(12, resetPasswordRequest.newPassword.toCharArray())
             AppConstants.DataBaseTransaction.FOUND

@@ -15,7 +15,7 @@ import com.piashcse.modules.review_rating.ReviewRatingService
 import com.piashcse.modules.shipping.ShippingService
 import com.piashcse.modules.shop.ShopService
 import com.piashcse.modules.shopcategory.ShopCategoryService
-import com.piashcse.modules.wishlist.controller.WishListController
+import com.piashcse.modules.wishlist.WishListService
 import org.koin.dsl.module
 
 val controllerModule = module {
@@ -31,7 +31,7 @@ val controllerModule = module {
     single { ShopCategoryService() }
     single { AuthService() }
     single { ProfileService() }
-    single { WishListController() }
+    single { WishListService() }
     single { PaymentService() }
     single { ReviewRatingService() }
     single { PolicyService() }

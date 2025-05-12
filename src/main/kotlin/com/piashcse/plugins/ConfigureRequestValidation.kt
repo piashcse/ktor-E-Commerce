@@ -1,7 +1,7 @@
 package com.piashcse.plugins
 
 import com.piashcse.database.models.PaymentRequest
-import com.piashcse.database.models.WisListRequest
+import com.piashcse.database.models.WishListRequest
 import com.piashcse.database.models.bands.BrandRequest
 import com.piashcse.database.models.cart.CartRequest
 import com.piashcse.database.models.category.ProductCategoryRequest
@@ -67,7 +67,7 @@ fun Application.configureRequestValidation() {
             cart.validation()
             ValidationResult.Valid
         }
-        validate<WisListRequest> { wishlist ->
+        validate<WishListRequest> { wishlist ->
             wishlist.validation()
             ValidationResult.Valid
         }

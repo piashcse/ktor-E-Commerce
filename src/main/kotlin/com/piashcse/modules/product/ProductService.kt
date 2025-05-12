@@ -7,7 +7,7 @@ import com.piashcse.database.models.product.request.ProductRequest
 import com.piashcse.database.models.product.request.ProductSearchRequest
 import com.piashcse.database.models.product.request.ProductWithFilterRequest
 import com.piashcse.database.models.product.request.UpdateProduct
-import com.piashcse.utils.AppConstants
+import com.piashcse.constants.AppConstants
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID

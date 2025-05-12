@@ -1,9 +1,9 @@
-package com.piashcse.modules.wishlist.repository
+package com.piashcse.modules.wishlist
 
 import com.piashcse.database.entities.Product
 import com.piashcse.database.entities.WishList
 
-interface WishListRepo {
+interface WishListRepository {
     /**
      * Adds a product to the user's wish list.
      *

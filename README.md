@@ -157,7 +157,7 @@ On Terminal
 This project uses Gmail’s SMTP service to send emails (e.g., for password recovery). Follow the instructions below to configure it securely.
 
 ### 🔧 Configuration SMTP Email
-Open the file utils/utils.kt and update the SmtpServer object:
+Open the file constants/AppConstants.kt and update the SmtpServer object:
 
 ```
 object SmtpServer {
