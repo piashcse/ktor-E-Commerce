@@ -1,8 +1,8 @@
 package com.piashcse.modules.order
 
-
+import com.piashcse.constants.Message.INVALID_ORDER_STATUS
+import com.piashcse.constants.Message.YOU_ARE_NOT_ALLOWED_TO_SET_STATUS
 import com.piashcse.constants.OrderStatus
-import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.models.order.OrderRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
@@ -11,31 +11,33 @@ import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.requiredParameters
 import io.github.smiley4.ktoropenapi.get
 import io.github.smiley4.ktoropenapi.post
-import io.github.smiley4.ktoropenapi.put
+import io.github.smiley4.ktoropenapi.patch
 import io.ktor.http.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * Defines routes for managing orders.
+ * Defines all order-related routes for customers and sellers.
  *
- * Accessible by customers and sellers with different roles and actions allowed for each.
+ * - Customers can create orders and update their own orders to "CANCELED" or "RECEIVED".
+ * - Sellers can update orders to "CONFIRMED" or "DELIVERED".
  *
- * @param orderController The controller handling order-related operations.
+ * @param orderController The service that handles order operations.
  */
 fun Route.orderRoutes(orderController: OrderService) {
     route("/order") {
 
-        /**
-         * POST request to create a new order.
-         *
-         * Accessible by customers only.
-         *
-         * @param orderRequest The order details (product ID, quantity, etc.) to create the order.
-         */
         authenticate(RoleManagement.CUSTOMER.role) {
+            /**
+             * POST request to create a new order.
+             *
+             * Accessible by customers only.
+             *
+             * @body OrderRequest The order data (product ID, quantity, etc.).
+             */
             post({
                 tags("Order")
                 summary = "auth[customer]"
@@ -47,85 +49,31 @@ fun Route.orderRoutes(orderController: OrderService) {
                 val requestBody = call.receive<OrderRequest>()
                 call.respond(
                     ApiResponse.success(
-                        orderController.createOrder(call.currentUser().userId, requestBody), HttpStatusCode.OK
-                    )
-                )
-            }
-
-            /**
-             * GET request to retrieve orders placed by the customer.
-             *
-             * Accessible by customers only.
-             *
-             * @param limit The maximum number of orders to retrieve.
-             */
-            get({
-                tags("Order")
-                summary = "auth[customer]"
-                request {
-                    queryParameter<String>("limit") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
-                val (limit) = call.requiredParameters("limit") ?: return@get
-                call.respond(
-                    ApiResponse.success(
-                        orderController.getOrders(
-                            call.currentUser().userId, limit.toInt()
-                        ), HttpStatusCode.OK
-                    )
-                )
-            }
-
-            /**
-             * PUT request to cancel an order.
-             *
-             * Accessible by customers only.
-             *
-             * @param id The order ID to cancel.
-             */
-            put("{id}/cancel", {
-                tags("Order")
-                summary = "auth[customer]"
-                request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
-                val (id) = call.requiredParameters("id") ?: return@put
-                call.respond(
-                    ApiResponse.success(
-                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderStatus.CANCELED),
+                        orderController.createOrder(call.currentUser().userId, requestBody),
                         HttpStatusCode.OK
                     )
                 )
             }
 
             /**
-             * PUT request to mark an order as received.
+             * GET request to fetch the list of orders by the current customer.
              *
              * Accessible by customers only.
              *
-             * @param id The order ID to mark as received.
+             * @queryParam limit The maximum number of orders to retrieve.
              */
-            put("{id}/receive", {
+            get({
                 tags("Order")
                 summary = "auth[customer]"
                 request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
+                    queryParameter<String>("limit") { required = true }
                 }
                 apiResponse()
             }) {
-                val (id) = call.requiredParameters("id") ?: return@put
+                val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderStatus.RECEIVED),
+                        orderController.getOrders(call.currentUser().userId, limit.toInt()),
                         HttpStatusCode.OK
                     )
                 )
@@ -133,56 +81,61 @@ fun Route.orderRoutes(orderController: OrderService) {
         }
 
         /**
-         * Routes for sellers to confirm or deliver orders.
+         * PATCH request to update order status.
+         *
+         * Accessible by both customers and sellers.
+         * - Customers can update status to: CANCELED, RECEIVED
+         * - Sellers can update status to: CONFIRMED, DELIVERED
+         *
+         * @queryParam id The ID of the order to update.
+         * @queryParam status The new status to set (e.g., CONFIRMED, DELIVERED, CANCELED, RECEIVED).
          */
-        authenticate(RoleManagement.SELLER.role) {
-            /**
-             * PUT request to confirm an order.
-             *
-             * Accessible by sellers only.
-             *
-             * @param id The order ID to confirm.
-             */
-            put("{id}/confirm", {
+        authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
+            patch("status/{id}", {
                 tags("Order")
-                summary = "auth[seller]"
+                summary = "auth[customer|seller]"
                 request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
+                    pathParameter<String>("id") { required = true }
+                    queryParameter<String>("status") { required = true }
                 }
                 apiResponse()
             }) {
-                val (id) = call.requiredParameters("id") ?: return@put
-                call.respond(
-                    ApiResponse.success(
-                        orderController.updateOrderStatus(call.currentUser().userId, id,OrderStatus.CONFIRMED),
-                        HttpStatusCode.OK
-                    )
-                )
-            }
+                val (id, statusParam) = call.requiredParameters("id", "status") ?: return@patch
+                val user = call.currentUser()
 
-            /**
-             * PUT request to mark an order as delivered.
-             *
-             * Accessible by sellers only.
-             *
-             * @param id The order ID to mark as delivered.
-             */
-            put("{id}/deliver", {
-                tags("Order")
-                summary = "auth[seller]"
-                request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
+                val status = try {
+                    OrderStatus.valueOf(statusParam.uppercase())
+                } catch (e: IllegalArgumentException) {
+                    call.respond(
+                        HttpStatusCode.BadRequest, ApiResponse.failure(
+                            "$INVALID_ORDER_STATUS $statusParam",
+                            HttpStatusCode.BadRequest
+                        )
+                    )
+                    return@patch
                 }
-                apiResponse()
-            }) {
-                val (id) = call.requiredParameters("id") ?: return@put
+
+                val isSeller =
+                    call.principal<JWTPrincipal>()?.payload?.getClaim("role")?.asString() == RoleManagement.SELLER.role
+                val isCustomer = call.principal<JWTPrincipal>()?.payload?.getClaim("role")
+                    ?.asString() == RoleManagement.CUSTOMER.role
+
+                val sellerOnlyStatuses = listOf(OrderStatus.CONFIRMED, OrderStatus.DELIVERED)
+                val customerOnlyStatuses = listOf(OrderStatus.CANCELED, OrderStatus.RECEIVED)
+
+                if ((status in sellerOnlyStatuses && !isSeller) || (status in customerOnlyStatuses && !isCustomer)) {
+                    call.respond(
+                        HttpStatusCode.Unauthorized, ApiResponse.failure(
+                            "$YOU_ARE_NOT_ALLOWED_TO_SET_STATUS $status",
+                            HttpStatusCode.Unauthorized
+                        )
+                    )
+                    return@patch
+                }
+
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrderStatus(call.currentUser().userId, id, OrderStatus.DELIVERED),
+                        orderController.updateOrderStatus(user.userId, id, status),
                         HttpStatusCode.OK
                     )
                 )
