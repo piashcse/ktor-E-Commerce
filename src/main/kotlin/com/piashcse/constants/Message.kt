@@ -18,4 +18,6 @@ object Message {
     const val VERIFICATION_CODE_SENT_TO = "Verification code sent to"
     const val VERIFICATION_CODE_IS_NOT_VALID = "Verification code is not valid"
     const val SENDING_EMAIL_FAILED = "Sending email failed"
+    const val YOU_ARE_NOT_ALLOWED_TO_SET_STATUS = "You are not allowed to set status to"
+    const val INVALID_ORDER_STATUS = "Invalid order status:"
 }
