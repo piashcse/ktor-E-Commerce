@@ -1,0 +1,50 @@
+version: '3.8'
+
+networks:
+  ktor-network:
+    driver: bridge
+
+services:
+  ktor-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ktor-ecommerce
+    container_name: ktor-dev-container
+    platform: linux/arm64
+    ports:
+      - "8080:8080"
+      - "5005:5005"
+    volumes:
+      - ./src:/app/src
+      - ./resources:/app/resources
+      - ~/.gradle/caches:/root/.gradle/caches
+    environment:
+      - KTOR_DEVELOPMENT=true
+      - DB_URL=jdbc:postgresql://db:5432/ktorecommerce
+      - DB_USER=postgres
+      - DB_PASSWORD=p123
+    depends_on:
+      - db
+    networks:
+      - ktor-network
+    restart: unless-stopped
+
+  db:
+    image: postgres:14.7
+    container_name: postgres-db
+    platform: linux/arm64
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: p123
+      POSTGRES_DB: ktorecommerce
+    ports:
+      - "5433:5432"
+    networks:
+      - ktor-network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
