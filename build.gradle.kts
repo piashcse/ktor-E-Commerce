@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.ktor)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.shadow)
+    alias(libs.plugins.docker)
 }
 
 group = "com.piashcse"
@@ -74,6 +75,16 @@ tasks.withType<JavaCompile> {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+docker {
+    javaApplication {
+        baseImage.set("openjdk:17-jdk-slim")
+        maintainer.set("piashcse")
+        ports.set(listOf(8080))
+        images.set(listOf("piashcse/ktor-e-commerce:${project.version}", "piashcse/ktor-e-commerce:latest"))
+        jvmArgs.set(listOf("-Xms256m", "-Xmx512m"))
     }
 }
 
