@@ -56,10 +56,10 @@ fun configureDataBase() {
 
 private fun initDB() {
     // database connection is handled from hikari properties
-    val config = HikariConfig("/hikari.properties")
-    val dataSource = HikariDataSource(config)
-    runFlyway(dataSource)
-    Database.connect(dataSource)
+    HikariDataSource(HikariConfig("/hikari.properties")).also { dataSource ->
+        runFlyway(dataSource)
+        Database.connect(dataSource)
+    }
 }
 
 private fun runFlyway(datasource: DataSource) {
