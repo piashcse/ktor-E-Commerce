@@ -32,7 +32,7 @@ class ProfileService : ProfileRepository {
      */
     override suspend fun getProfile(userId: String): UserProfile = query {
         val isProfileExist =
-            UsersProfileDAO.Companion.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+            UsersProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         isProfileExist?.response() ?: throw userId.notFoundException()
     }
 
@@ -46,7 +46,7 @@ class ProfileService : ProfileRepository {
      */
     override suspend fun updateProfile(userId: String, userProfile: UserProfileRequest?): UserProfile = query {
         val userProfileEntity =
-            UsersProfileDAO.Companion.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+            UsersProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         userProfileEntity?.let {
             it.firstName = userProfile?.firstName ?: it.firstName
             it.lastName = userProfile?.lastName ?: it.lastName
@@ -73,7 +73,7 @@ class ProfileService : ProfileRepository {
      */
     override suspend fun updateProfileImage(userId: String, profileImage: String?): UserProfile = query {
         val userProfileEntity =
-            UsersProfileDAO.Companion.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+            UsersProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
 
         // Delete previous profile image if it exists, as the new one will replace it.
         userProfileEntity?.image?.let {

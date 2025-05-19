@@ -21,13 +21,13 @@ class ConsentService: ConsentRepository {
         consentRequest: PolicyConsentRequest
     ): UserPolicyConsentResponse = query {
         // Verify user and policy exist
-        val user = UserDAO.Companion.findById(currentUserId) ?: throw currentUserId.notFoundException()
+        val user = UserDAO.findById(currentUserId) ?: throw currentUserId.notFoundException()
         val policy =
-            PolicyDocumentDAO.Companion.findById(consentRequest.policyId)
+            PolicyDocumentDAO.findById(consentRequest.policyId)
                 ?: throw consentRequest.policyId.notFoundException()
 
         // Check if consent already exists, if so update it
-        val existingConsent = PolicyConsentDAO.Companion.find {
+        val existingConsent = PolicyConsentDAO.find {
             PolicyConsentTable.userId eq user.id and (PolicyConsentTable.policyId eq policy.id)
         }.firstOrNull()
 
@@ -38,7 +38,7 @@ class ConsentService: ConsentRepository {
             userAgent = consentRequest.userAgent
         }
             ?: // Create new consent
-            PolicyConsentDAO.Companion.new {
+            PolicyConsentDAO.new {
                 userId = user.id
                 policyId = policy
                 consentDate = LocalDateTime.now().toString()
@@ -54,9 +54,9 @@ class ConsentService: ConsentRepository {
      * Gets all consents for a user
      */
     override suspend fun getUserConsents(userId: String): List<UserPolicyConsentResponse> = query {
-        val user = UserDAO.Companion.findById(userId) ?: throw userId.notFoundException()
+        val user = UserDAO.findById(userId) ?: throw userId.notFoundException()
 
-        PolicyConsentDAO.Companion.find { PolicyConsentTable.userId eq user.id }
+        PolicyConsentDAO.find { PolicyConsentTable.userId eq user.id }
             .map { it.response() }
     }
 
@@ -64,15 +64,15 @@ class ConsentService: ConsentRepository {
      * Checks if a user has consented to a specific policy
      */
     override suspend fun hasUserConsented(userId: String, policyType: PolicyDocumentTable.PolicyType): Boolean = query {
-        val user = UserDAO.Companion.findById(userId) ?: throw userId.notFoundException()
+        val user = UserDAO.findById(userId) ?: throw userId.notFoundException()
 
         // Find the active policy of the specified type
-        val activePolicy = PolicyDocumentDAO.Companion.find {
+        val activePolicy = PolicyDocumentDAO.find {
             PolicyDocumentTable.type eq policyType and (PolicyDocumentTable.isActive eq true)
         }.firstOrNull() ?: return@query false
 
         // Check if user has consented to this policy
-        PolicyConsentDAO.Companion.find {
+        PolicyConsentDAO.find {
             PolicyConsentTable.userId eq user.id and (PolicyConsentTable.policyId eq activePolicy.id)
         }.firstOrNull() != null
     }

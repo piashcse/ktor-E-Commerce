@@ -24,12 +24,12 @@ class ShippingService : ShippingRepository {
      * @throws alreadyExistException If the shipping details for the specified order already exist.
      */
     override suspend fun createShipping(userId: String, shippingRequest: ShippingRequest): Shipping = query {
-        val isShippingExist = ShippingDAO.Companion.find {
+        val isShippingExist = ShippingDAO.find {
             ShippingTable.orderId eq shippingRequest.orderId
         }.toList().singleOrNull()
         isShippingExist?.let {
             throw shippingRequest.orderId.alreadyExistException()
-        } ?: ShippingDAO.Companion.new {
+        } ?: ShippingDAO.new {
             this.orderId = EntityID(shippingRequest.orderId, ShippingTable)
             address = shippingRequest.address
             city = shippingRequest.city
@@ -50,7 +50,7 @@ class ShippingService : ShippingRepository {
      * @throws orderId.notFoundException If the shipping details for the specified order ID are not found.
      */
     override suspend fun getShipping(userId: String, orderId: String): Shipping = query {
-        val isShippingExist = ShippingDAO.Companion.find {
+        val isShippingExist = ShippingDAO.find {
             ShippingTable.orderId eq orderId
         }.toList().singleOrNull()
         isShippingExist?.response() ?: throw orderId.notFoundException()
@@ -65,7 +65,7 @@ class ShippingService : ShippingRepository {
      * @throws alreadyExistException If the shipping ID does not exist for the specified user.
      */
     override suspend fun updateShipping(userId: String, updateShipping: UpdateShipping): Shipping = query {
-        val isShippingExist = ShippingDAO.Companion.find {
+        val isShippingExist = ShippingDAO.find {
             ShippingTable.id eq updateShipping.id
         }.toList().singleOrNull()
 
@@ -91,7 +91,7 @@ class ShippingService : ShippingRepository {
      * @throws id.notFoundException If the shipping record with the specified ID does not exist.
      */
     override suspend fun deleteShipping(userId: String, id: String): String = query {
-        val isShippingExist = ShippingDAO.Companion.find {
+        val isShippingExist = ShippingDAO.find {
             ShippingTable.id eq id
         }.toList().singleOrNull()
         isShippingExist?.let {

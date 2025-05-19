@@ -40,7 +40,7 @@ class ProductService : ProductRepository {
      * @return The created product entity.
      */
     override suspend fun createProduct(userId: String, productRequest: ProductRequest): Product = query {
-        ProductDAO.Companion.new {
+        ProductDAO.new {
             this.userId = EntityID(userId, ProductTable)
             categoryId = EntityID(productRequest.categoryId, ProductTable)
             subCategoryId = productRequest.subCategoryId?.let { EntityID(productRequest.subCategoryId, ProductTable) }
@@ -69,7 +69,7 @@ class ProductService : ProductRepository {
     override suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProduct): Product =
         query {
             val isProductExist =
-                ProductDAO.Companion.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.toList()
+                ProductDAO.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.toList()
                     .singleOrNull()
             isProductExist?.apply {
                 this.userId = EntityID(userId, ProductTable)
@@ -122,7 +122,7 @@ class ProductService : ProductRepository {
             }
         }
         query.limit(productQuery.limit).map {
-            ProductDAO.Companion.wrapRow(it).response()
+            ProductDAO.wrapRow(it).response()
         }
     }
 
@@ -164,7 +164,7 @@ class ProductService : ProductRepository {
             }
         }
         query.limit(productQuery.limit).map {
-            ProductDAO.Companion.wrapRow(it).response()
+            ProductDAO.wrapRow(it).response()
         }
     }
 
@@ -176,7 +176,7 @@ class ProductService : ProductRepository {
      * @throws Exception if the product with the provided ID is not found.
      */
     override suspend fun getProductDetail(productId: String): Product = query {
-        val isProductExist = ProductDAO.Companion.find { ProductTable.id eq productId }.toList().singleOrNull()
+        val isProductExist = ProductDAO.find { ProductTable.id eq productId }.toList().singleOrNull()
         isProductExist?.response() ?: throw productId.notFoundException()
     }
 
@@ -190,7 +190,7 @@ class ProductService : ProductRepository {
      */
     override suspend fun deleteProduct(userId: String, productId: String): String = query {
         val isProductExist =
-            ProductDAO.Companion.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.toList()
+            ProductDAO.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.toList()
                 .singleOrNull()
         isProductExist?.let {
             it.delete()
@@ -205,7 +205,7 @@ class ProductService : ProductRepository {
      * @return A list of products matching the search criteria.
      */
     override suspend fun searchProduct(productQuery: ProductSearchRequest): List<Product> = query {
-        ProductDAO.Companion.find {
+        ProductDAO.find {
             // Apply filters dynamically based on query parameters
             val conditions = mutableListOf<Op<Boolean>>()
 

@@ -16,7 +16,7 @@ class PolicyService : PolicyRepository {
      */
     override suspend fun createPolicy(createPolicyRequest: CreatePolicyRequest): PolicyDocumentResponse = query {
         // Create a new policy document
-        val policyDocument = PolicyDocumentDAO.Companion.new {
+        val policyDocument = PolicyDocumentDAO.new {
             title = createPolicyRequest.title
             type = createPolicyRequest.type
             content = createPolicyRequest.content
@@ -26,7 +26,7 @@ class PolicyService : PolicyRepository {
 
         // If this is a new active policy of the same type, deactivate previous versions
         if (policyDocument.isActive) {
-            PolicyDocumentDAO.Companion.find {
+            PolicyDocumentDAO.find {
                 PolicyDocumentTable.type eq createPolicyRequest.type and
                         (PolicyDocumentTable.id neq policyDocument.id) and
                         (PolicyDocumentTable.isActive eq true)
@@ -41,7 +41,7 @@ class PolicyService : PolicyRepository {
      */
     override suspend fun updatePolicy(id: String, updatePolicyRequest: UpdatePolicyRequest): PolicyDocumentResponse =
         query {
-            val policyDocument = PolicyDocumentDAO.Companion.findById(id) ?: throw id.notFoundException()
+            val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.notFoundException()
 
             // Update only the fields that are provided
             updatePolicyRequest.title?.let { policyDocument.title = it }
@@ -53,7 +53,7 @@ class PolicyService : PolicyRepository {
 
                 // If setting this policy to active, deactivate other policies of the same type
                 if (it) {
-                    PolicyDocumentDAO.Companion.find {
+                    PolicyDocumentDAO.find {
                         PolicyDocumentTable.type eq policyDocument.type and
                                 (PolicyDocumentTable.id neq policyDocument.id) and
                                 (PolicyDocumentTable.isActive eq true)
@@ -67,7 +67,7 @@ class PolicyService : PolicyRepository {
      * Gets a policy document by type, returning the latest active version
      */
     override suspend fun getPolicyByType(type: PolicyDocumentTable.PolicyType): PolicyDocumentResponse = query {
-        val policyDocument = PolicyDocumentDAO.Companion.find {
+        val policyDocument = PolicyDocumentDAO.find {
             PolicyDocumentTable.type eq type and (PolicyDocumentTable.isActive eq true)
         }.firstOrNull() ?: throw CommonException("No active $type found")
 
@@ -78,7 +78,7 @@ class PolicyService : PolicyRepository {
      * Gets a policy document by ID
      */
     override suspend fun getPolicyById(id: String): PolicyDocumentResponse = query {
-        val policyDocument = PolicyDocumentDAO.Companion.findById(id) ?: throw id.notFoundException()
+        val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.notFoundException()
         policyDocument.response()
     }
 
@@ -87,9 +87,9 @@ class PolicyService : PolicyRepository {
      */
     override suspend fun getAllPolicies(type: PolicyDocumentTable.PolicyType?): List<PolicyDocumentResponse> = query {
         val query = if (type != null) {
-            PolicyDocumentDAO.Companion.find { PolicyDocumentTable.type eq type }
+            PolicyDocumentDAO.find { PolicyDocumentTable.type eq type }
         } else {
-            PolicyDocumentDAO.Companion.all()
+            PolicyDocumentDAO.all()
         }
 
         query.map { it.response() }
@@ -99,7 +99,7 @@ class PolicyService : PolicyRepository {
      * Deactivates a policy document (doesn't delete, just marks as inactive)
      */
     override suspend fun deactivatePolicy(id: String): Boolean = query {
-        val policyDocument = PolicyDocumentDAO.Companion.findById(id) ?: throw id.notFoundException()
+        val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.notFoundException()
         policyDocument.isActive = false
         true
     }

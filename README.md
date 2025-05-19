@@ -2484,15 +2484,15 @@ http://localhost:8080/order?limit=10
 
 </details>
 
-<details>
 
-<summary> <code>PUT </code> <code>/order/{id}/cancel </code></summary>
+<details>
+<summary> <code>PATCH </code> <code>/order/{id} </code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/cancel' \
+  'http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTA5NDYxfQ.KU7eVxmkq0zg1sQy9RsAVAxuwtGcuGlB9pqMnc-eUI9If-dycduIhn7xv8np0yFVtULAF2_ns59u38gsR237eQ'
 ``` 
@@ -2500,132 +2500,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/cancel
-``` 
-
-### Response
-
-```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
-    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
-    "quantity": 1073741824,
-    "subTotal": 0.1,
-    "total": 0.1,
-    "shippingCharge": 0.1,
-    "cancelOrder": false,
-    "status": "canceled",
-    "statusCode": 4
-  }
-}
-```   
-
-</details>
-<details>
-<summary> <code>PUT </code> <code>/order/{id}/receive </code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/receive' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTA5NDYxfQ.KU7eVxmkq0zg1sQy9RsAVAxuwtGcuGlB9pqMnc-eUI9If-dycduIhn7xv8np0yFVtULAF2_ns59u38gsR237eQ'
-``` 
-
-### Request URL
-
-```
-http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/receive
-``` 
-
-### Response
-
-```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
-    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
-    "quantity": 1073741824,
-    "subTotal": 0.1,
-    "total": 0.1,
-    "shippingCharge": 0.1,
-    "cancelOrder": false,
-    "status": "received",
-    "statusCode": 4
-  }
-}
-```   
-
-</details>
-
-<details>
-<summary> <code>PUT </code> <code>/order/{id}/confirm </code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/confirm' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTA5NDYxfQ.KU7eVxmkq0zg1sQy9RsAVAxuwtGcuGlB9pqMnc-eUI9If-dycduIhn7xv8np0yFVtULAF2_ns59u38gsR237eQ'
-``` 
-
-### Request URL
-
-```
-http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/confirm
-``` 
-
-### Response
-
-```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
-    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
-    "quantity": 1073741824,
-    "subTotal": 0.1,
-    "total": 0.1,
-    "shippingCharge": 0.1,
-    "cancelOrder": false,
-    "status": "confirmed",
-    "statusCode": 4
-  }
-}
-```   
-
-</details>
-
-<details>
-<summary> <code>PUT </code> <code>/order/{id}/deliver </code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/deliver' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTA5NDYxfQ.KU7eVxmkq0zg1sQy9RsAVAxuwtGcuGlB9pqMnc-eUI9If-dycduIhn7xv8np0yFVtULAF2_ns59u38gsR237eQ'
-``` 
-
-### Request URL
-
-```
-http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/deliver
+http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered
 ``` 
 
 ### Response

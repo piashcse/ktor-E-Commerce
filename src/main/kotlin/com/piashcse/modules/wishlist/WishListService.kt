@@ -27,14 +27,14 @@ class WishListService : WishListRepository {
      */
     override suspend fun addToWishList(userId: String, productId: String): WishList = query {
         val isExits =
-            WishListDAO.Companion.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
+            WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
                 .toList()
                 .singleOrNull()
         if (isExits == null) {
-            WishListDAO.Companion.new {
+            WishListDAO.new {
                 this.userId = EntityID(userId, WishListTable)
                 this.productId = EntityID(productId, WishListTable)
-            }.response(ProductDAO.Companion.find { ProductTable.id eq productId }.first().response())
+            }.response(ProductDAO.find { ProductTable.id eq productId }.first().response())
         } else {
             throw productId.alreadyExistException()
         }
@@ -48,8 +48,8 @@ class WishListService : WishListRepository {
      * @return A list of products in the user's wishlist.
      */
     override suspend fun getWishList(userId: String, limit: Int): List<Product> = query {
-        WishListDAO.Companion.find { WishListTable.userId eq userId }.limit(limit).map {
-            ProductDAO.Companion.find { ProductTable.id eq it.productId }.first().response()
+        WishListDAO.find { WishListTable.userId eq userId }.limit(limit).map {
+            ProductDAO.find { ProductTable.id eq it.productId }.first().response()
         }
     }
 
@@ -63,12 +63,12 @@ class WishListService : WishListRepository {
      */
     override suspend fun removeFromWishList(userId: String, productId: String): Product = query {
         val isExits =
-            WishListDAO.Companion.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
+            WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
                 .toList()
                 .singleOrNull()
         isExits?.let {
             it.delete()
-            ProductDAO.Companion.find { ProductTable.id eq it.productId }.first().response()
+            ProductDAO.find { ProductTable.id eq it.productId }.first().response()
         } ?: run {
             throw productId.notFoundException()
         }

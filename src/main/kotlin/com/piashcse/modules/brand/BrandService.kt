@@ -19,10 +19,10 @@ class BrandService : BrandRepository {
      * @throws Exception if the brand name already exists.
      */
     override suspend fun createBrand(name: String): Brand = query {
-        val isBrandExist = BrandDAO.Companion.find { BrandTable.name eq name }.toList().singleOrNull()
+        val isBrandExist = BrandDAO.find { BrandTable.name eq name }.toList().singleOrNull()
         isBrandExist?.let {
             throw name.alreadyExistException()
-        } ?: BrandDAO.Companion.new {
+        } ?: BrandDAO.new {
             this.name = name
         }.response()
     }
@@ -34,7 +34,7 @@ class BrandService : BrandRepository {
      * @return A list of brand entities.
      */
     override suspend fun getBrands(limit: Int): List<Brand> = query {
-        BrandDAO.Companion.all().limit(limit).map {
+        BrandDAO.all().limit(limit).map {
             it.response()
         }
     }
@@ -48,7 +48,7 @@ class BrandService : BrandRepository {
      * @throws Exception if the brand ID is not found.
      */
     override suspend fun updateBrand(brandId: String, name: String): Brand = query {
-        val isBrandExist = BrandDAO.Companion.find { BrandTable.id eq brandId }.toList().singleOrNull()
+        val isBrandExist = BrandDAO.find { BrandTable.id eq brandId }.toList().singleOrNull()
         isBrandExist?.let {
             it.name = name
             it.response()
@@ -63,7 +63,7 @@ class BrandService : BrandRepository {
      * @throws Exception if the brand ID is not found.
      */
     override suspend fun deleteBrand(brandId: String): String = query {
-        val isBrandExist = BrandDAO.Companion.find { BrandTable.id eq brandId }.toList().singleOrNull()
+        val isBrandExist = BrandDAO.find { BrandTable.id eq brandId }.toList().singleOrNull()
         isBrandExist?.let {
             it.delete()
             brandId

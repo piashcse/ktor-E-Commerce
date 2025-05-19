@@ -25,9 +25,9 @@ class ShopService : ShopRepository {
      * @throws alreadyExistException If a shop with the same name already exists.
      */
     override suspend fun createShop(userId: String, categoryId: String, name: String): Shop = query {
-        val shopNameExist = ShopDAO.Companion.find { ShopTable.name eq name }.toList().singleOrNull()
+        val shopNameExist = ShopDAO.find { ShopTable.name eq name }.toList().singleOrNull()
         if (shopNameExist == null) {
-            ShopDAO.Companion.new {
+            ShopDAO.new {
                 this.userId = EntityID(userId, UserTable)
                 this.categoryId = EntityID(categoryId, ShopTable)
                 this.name = name
@@ -45,7 +45,7 @@ class ShopService : ShopRepository {
      * @return A list of shops owned by the user.
      */
     override suspend fun getShops(userId: String, limit: Int): List<Shop> = query {
-        val isExist = ShopDAO.Companion.find { ShopTable.userId eq userId }.limit(limit).toList()
+        val isExist = ShopDAO.find { ShopTable.userId eq userId }.limit(limit).toList()
         isExist.map {
             it.shopResponse()
         }
@@ -62,7 +62,7 @@ class ShopService : ShopRepository {
      */
     override suspend fun updateShop(userId: String, shopId: String, name: String): Shop = query {
         val shopNameExist =
-            ShopDAO.Companion.find { ShopTable.userId eq userId and (ShopTable.id eq shopId) }.toList().singleOrNull()
+            ShopDAO.find { ShopTable.userId eq userId and (ShopTable.id eq shopId) }.toList().singleOrNull()
         shopNameExist?.let {
             it.name = name
             it.shopResponse()
@@ -79,7 +79,7 @@ class ShopService : ShopRepository {
      */
     override suspend fun deleteShop(userId: String, shopId: String): String = query {
         val shopNameExist =
-            ShopDAO.Companion.find { ShopTable.userId eq userId and (ShopTable.id eq shopId) }.toList().singleOrNull()
+            ShopDAO.find { ShopTable.userId eq userId and (ShopTable.id eq shopId) }.toList().singleOrNull()
         shopNameExist?.let {
             it.delete()
             shopId

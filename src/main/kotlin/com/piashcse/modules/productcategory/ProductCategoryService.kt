@@ -21,10 +21,10 @@ class ProductCategoryService : ProductCategoryRepository {
      */
     override suspend fun createCategory(name: String): ProductCategory = query {
         val isCategoryExist =
-            ProductCategoryDAO.Companion.find { ProductCategoryTable.name eq name }.toList().singleOrNull()
+            ProductCategoryDAO.find { ProductCategoryTable.name eq name }.toList().singleOrNull()
         isCategoryExist?.let {
             throw name.alreadyExistException()
-        } ?: ProductCategoryDAO.Companion.new {
+        } ?: ProductCategoryDAO.new {
             this.name = name
         }.response()
     }
@@ -36,7 +36,7 @@ class ProductCategoryService : ProductCategoryRepository {
      * @return A list of product category entities.
      */
     override suspend fun getCategories(limit: Int): List<ProductCategory> = query {
-        val categories = ProductCategoryDAO.Companion.all().limit(limit)
+        val categories = ProductCategoryDAO.all().limit(limit)
         categories.map {
             it.response()
         }
@@ -52,7 +52,7 @@ class ProductCategoryService : ProductCategoryRepository {
      */
     override suspend fun updateCategory(categoryId: String, name: String): ProductCategory = query {
         val isCategoryExist =
-            ProductCategoryDAO.Companion.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
+            ProductCategoryDAO.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
         isCategoryExist?.let {
             it.name = name
             it.response()
@@ -68,7 +68,7 @@ class ProductCategoryService : ProductCategoryRepository {
      */
     override suspend fun deleteCategory(categoryId: String): String = query {
         val isCategoryExist =
-            ProductCategoryDAO.Companion.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
+            ProductCategoryDAO.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
         isCategoryExist?.let {
             isCategoryExist.delete()
             categoryId

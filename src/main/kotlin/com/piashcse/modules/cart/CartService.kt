@@ -28,11 +28,11 @@ class CartService : CartRepository {
      */
     override suspend fun createCart(userId: String, productId: String, quantity: Int): Cart = query {
         val isProductExist =
-            CartItemDAO.Companion.find { CartItemTable.userId eq userId and (CartItemTable.productId eq productId) }
+            CartItemDAO.find { CartItemTable.userId eq userId and (CartItemTable.productId eq productId) }
                 .toList().singleOrNull()
         isProductExist?.let {
             throw productId.alreadyExistException()
-        } ?: CartItemDAO.Companion.new {
+        } ?: CartItemDAO.new {
             this.userId = EntityID(userId, CartItemTable)
             this.productId = EntityID(productId, CartItemTable)
             this.quantity = quantity
@@ -47,8 +47,8 @@ class CartService : CartRepository {
      * @return A list of cart item entities with associated product details.
      */
     override suspend fun getCartItems(userId: String, limit: Int): List<Cart> = query {
-        CartItemDAO.Companion.find { CartItemTable.userId eq userId }.limit(limit).map {
-            it.response(ProductDAO.Companion.find { ProductTable.id eq it.productId }.first().response())
+        CartItemDAO.find { CartItemTable.userId eq userId }.limit(limit).map {
+            it.response(ProductDAO.find { ProductTable.id eq it.productId }.first().response())
         }
     }
 
@@ -63,11 +63,11 @@ class CartService : CartRepository {
      */
     override suspend fun updateCartQuantity(userId: String, productId: String, quantity: Int): Cart = query {
         val isProductExist =
-            CartItemDAO.Companion.find { CartItemTable.userId eq userId and (CartItemTable.productId eq productId) }
+            CartItemDAO.find { CartItemTable.userId eq userId and (CartItemTable.productId eq productId) }
                 .toList().singleOrNull()
         isProductExist?.let {
             it.quantity = it.quantity + quantity
-            it.response(ProductDAO.Companion.find { ProductTable.id eq it.productId }.first().response())
+            it.response(ProductDAO.find { ProductTable.id eq it.productId }.first().response())
         } ?: throw productId.notFoundException()
     }
 
@@ -81,11 +81,11 @@ class CartService : CartRepository {
      */
     override suspend fun removeCartItem(userId: String, productId: String): Product = query {
         val isProductExist =
-            CartItemDAO.Companion.find { CartItemTable.userId eq userId and (CartItemTable.productId eq productId) }
+            CartItemDAO.find { CartItemTable.userId eq userId and (CartItemTable.productId eq productId) }
                 .toList().singleOrNull()
         isProductExist?.let {
             it.delete()
-            ProductDAO.Companion.find { ProductTable.id eq it.productId }.first().response()
+            ProductDAO.find { ProductTable.id eq it.productId }.first().response()
         } ?: throw productId.notFoundException()
     }
 
@@ -96,7 +96,7 @@ class CartService : CartRepository {
      * @return True if the cart was cleared successfully, false if the cart was already empty.
      */
     override suspend fun clearCart(userId: String): Boolean = query {
-        val isCartExist = CartItemDAO.Companion.find { CartItemTable.userId eq userId }.toList()
+        val isCartExist = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
         if (isCartExist.isEmpty()) {
             true
         } else {
