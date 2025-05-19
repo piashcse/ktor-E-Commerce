@@ -1,21 +1,21 @@
 package com.piashcse.di
 
-import com.piashcse.modules.auth.AuthService
-import com.piashcse.modules.brand.BrandService
-import com.piashcse.modules.cart.CartService
-import com.piashcse.modules.consent.ConsentService
-import com.piashcse.modules.order.OrderService
-import com.piashcse.modules.payment.PaymentService
-import com.piashcse.modules.policy.PolicyService
-import com.piashcse.modules.product.ProductService
-import com.piashcse.modules.productcategory.ProductCategoryService
-import com.piashcse.modules.productsubcategory.ProductSubCategoryService
-import com.piashcse.modules.profile.ProfileService
-import com.piashcse.modules.review_rating.ReviewRatingService
-import com.piashcse.modules.shipping.ShippingService
-import com.piashcse.modules.shop.ShopService
-import com.piashcse.modules.shopcategory.ShopCategoryService
-import com.piashcse.modules.wishlist.WishListService
+import com.piashcse.feature.auth.AuthService
+import com.piashcse.feature.brand.BrandService
+import com.piashcse.feature.cart.CartService
+import com.piashcse.feature.consent.ConsentService
+import com.piashcse.feature.order.OrderService
+import com.piashcse.feature.payment.PaymentService
+import com.piashcse.feature.policy.PolicyService
+import com.piashcse.feature.product.ProductService
+import com.piashcse.feature.productcategory.ProductCategoryService
+import com.piashcse.feature.productsubcategory.ProductSubCategoryService
+import com.piashcse.feature.profile.ProfileService
+import com.piashcse.feature.review_rating.ReviewRatingService
+import com.piashcse.feature.shipping.ShippingService
+import com.piashcse.feature.shop.ShopService
+import com.piashcse.feature.shopcategory.ShopCategoryService
+import com.piashcse.feature.wishlist.WishListService
 import org.koin.dsl.module
 
 val controllerModule = module {
