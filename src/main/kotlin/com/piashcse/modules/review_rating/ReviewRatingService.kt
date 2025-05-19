@@ -26,7 +26,7 @@ class ReviewRatingService : ReviewRatingRepository {
         productId: String, limit: Int
     ): List<ReviewRating> = query {
         val isProductIdExist =
-            ReviewRatingDAO.Companion.find { ReviewRatingTable.productId eq productId }
+            ReviewRatingDAO.find { ReviewRatingTable.productId eq productId }
                 .limit(limit)
         isProductIdExist.map {
             it.response()
@@ -43,11 +43,11 @@ class ReviewRatingService : ReviewRatingRepository {
      */
     override suspend fun addReviewRating(userId: String, reviewRating: ReviewRatingRequest): ReviewRating = query {
         val isReviewRatingExist =
-            ReviewRatingDAO.Companion.find { ReviewRatingTable.id eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
+            ReviewRatingDAO.find { ReviewRatingTable.id eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
                 .singleOrNull()
         isReviewRatingExist?.let {
             throw it.productId.value.alreadyExistException()
-        } ?: ReviewRatingDAO.Companion.new {
+        } ?: ReviewRatingDAO.new {
             this.userId = EntityID(userId, ReviewRatingTable)
             productId = EntityID(reviewRating.productId, ReviewRatingTable)
             reviewText = reviewRating.reviewText
@@ -70,7 +70,7 @@ class ReviewRatingService : ReviewRatingRepository {
         rating: Int
     ): ReviewRating = query {
         val isReviewRatingExist =
-            ReviewRatingDAO.Companion.find { ReviewRatingTable.id eq reviewId }
+            ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
                 .singleOrNull()
 
         isReviewRatingExist?.let {
@@ -89,7 +89,7 @@ class ReviewRatingService : ReviewRatingRepository {
      */
     override suspend fun deleteReviewRating(reviewId: String): String = query {
         val isReviewRatingExist =
-            ReviewRatingDAO.Companion.find { ReviewRatingTable.id eq reviewId }
+            ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
                 .singleOrNull()
         isReviewRatingExist?.let {
             it.delete()

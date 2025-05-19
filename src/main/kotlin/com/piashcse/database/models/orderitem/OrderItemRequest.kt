@@ -7,7 +7,7 @@ import org.valiktor.validate
 
 data class OrderItemRequest(
     val productId: String,
-    val quantity: Int
+    val quantity: Int,
 ) {
     fun validation() {
         validate(this) {

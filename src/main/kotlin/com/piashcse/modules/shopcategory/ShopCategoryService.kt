@@ -21,10 +21,10 @@ class ShopCategoryService : ShopCategoryRepository {
      */
     override suspend fun createCategory(name: String): ShopCategory = query {
         val isExistShopCategory =
-            ShopCategoryDAO.Companion.find { ShopCategoryTable.name eq name }.toList().singleOrNull()
+            ShopCategoryDAO.find { ShopCategoryTable.name eq name }.toList().singleOrNull()
         isExistShopCategory?.let {
             throw name.alreadyExistException()
-        } ?: ShopCategoryDAO.Companion.new {
+        } ?: ShopCategoryDAO.new {
             this.name = name
         }.response()
     }
@@ -36,7 +36,7 @@ class ShopCategoryService : ShopCategoryRepository {
      * @return A list of shop categories.
      */
     override suspend fun getCategories(limit: Int): List<ShopCategory> = query {
-        val shopCategories = ShopCategoryDAO.Companion.all().limit(limit)
+        val shopCategories = ShopCategoryDAO.all().limit(limit)
         shopCategories.map {
             it.response()
         }
@@ -52,7 +52,7 @@ class ShopCategoryService : ShopCategoryRepository {
      */
     override suspend fun updateCategory(categoryId: String, name: String): ShopCategory = query {
         val isShopCategoryExist =
-            ShopCategoryDAO.Companion.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
+            ShopCategoryDAO.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
         isShopCategoryExist?.let {
             it.name = name
             it.response()
@@ -68,7 +68,7 @@ class ShopCategoryService : ShopCategoryRepository {
      */
     override suspend fun deleteCategory(categoryId: String): String = query {
         val shopCategoryExist =
-            ShopCategoryDAO.Companion.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
+            ShopCategoryDAO.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
         shopCategoryExist?.let {
             it.delete()
             categoryId

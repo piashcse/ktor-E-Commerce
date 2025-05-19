@@ -93,7 +93,7 @@ fun Route.orderRoutes(orderController: OrderService) {
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
             patch("status/{id}", {
                 tags("Order")
-                summary = "auth[customer|seller]"
+                summary = "auth[customer, seller]"
                 request {
                     pathParameter<String>("id") { required = true }
                     queryParameter<String>("status") { required = true }

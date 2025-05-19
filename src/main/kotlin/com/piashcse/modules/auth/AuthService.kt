@@ -35,12 +35,12 @@ class AuthService : AuthRepository {
     override suspend fun register(registerRequest: RegisterRequest): Any = query {
         // Check if user exists with the same email and userType
         val userEntity =
-            UserDAO.Companion.find { UserTable.email eq registerRequest.email and (UserTable.userType eq registerRequest.userType) }
+            UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType eq registerRequest.userType) }
                 .toList().singleOrNull()
 
         // Check if user exists with the same email but different userType
         val existingUserWithDifferentType =
-            UserDAO.Companion.find { UserTable.email eq registerRequest.email and (UserTable.userType neq registerRequest.userType) }
+            UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType neq registerRequest.userType) }
                 .toList().singleOrNull()
 
         val otp = generateOTP()
@@ -64,7 +64,7 @@ class AuthService : AuthRepository {
             }
         } else {
             // Create new user
-            val inserted = UserDAO.Companion.new {
+            val inserted = UserDAO.new {
                 email = registerRequest.email
                 otpCode = otp
                 otpExpiry = now
@@ -74,7 +74,7 @@ class AuthService : AuthRepository {
 
             // If this is a new user (not existing with different role), create profile
             if (existingUserWithDifferentType == null) {
-                UsersProfileDAO.Companion.new {
+                UsersProfileDAO.new {
                     userId = inserted.id
                 }
             }
@@ -106,7 +106,7 @@ class AuthService : AuthRepository {
      */
     override suspend fun login(loginRequest: LoginRequest): LoginResponse = query {
         val userEntity =
-            UserDAO.Companion.find { UserTable.email eq loginRequest.email and (UserTable.userType eq loginRequest.userType) }
+            UserDAO.find { UserTable.email eq loginRequest.email and (UserTable.userType eq loginRequest.userType) }
                 .toList().singleOrNull()
         userEntity?.let {
             if (BCrypt.verifyer().verify(
@@ -132,7 +132,7 @@ class AuthService : AuthRepository {
      * @return Success after verify the otp.
      */
     override suspend fun otpVerification(userId: String, otp: String): Boolean = query {
-        val userEntity = UserDAO.Companion.find { UserTable.id eq userId }.toList().singleOrNull()
+        val userEntity = UserDAO.find { UserTable.id eq userId }.toList().singleOrNull()
         userEntity?.let {
             if (it.otpCode == otp) {
                 it.isVerified = true
@@ -152,7 +152,7 @@ class AuthService : AuthRepository {
      * @return `true` if the password is changed successfully, otherwise `false`.
      */
     override suspend fun changePassword(userId: String, changePassword: ChangePassword): Boolean = query {
-        val userEntity = UserDAO.Companion.find { UserTable.id eq userId }.toList().singleOrNull()
+        val userEntity = UserDAO.find { UserTable.id eq userId }.toList().singleOrNull()
         userEntity?.let {
             if (BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), it.password).verified) {
                 // Check if new password is same as old password
@@ -176,7 +176,7 @@ class AuthService : AuthRepository {
      */
     override suspend fun forgetPassword(forgetPasswordRequest: ForgetPasswordRequest): String = query {
         // Find all users with the given email
-        val userEntities = UserDAO.Companion.find { UserTable.email eq forgetPasswordRequest.email }.toList()
+        val userEntities = UserDAO.find { UserTable.email eq forgetPasswordRequest.email }.toList()
 
         if (userEntities.isEmpty()) {
             throw forgetPasswordRequest.email.notFoundException()
@@ -203,7 +203,7 @@ class AuthService : AuthRepository {
      */
     override suspend fun resetPassword(resetPasswordRequest: ResetRequest): Int = query {
         // Find all users with the given email
-        val userEntities = UserDAO.Companion.find { UserTable.email eq resetPasswordRequest.email }.toList()
+        val userEntities = UserDAO.find { UserTable.email eq resetPasswordRequest.email }.toList()
 
         if (userEntities.isEmpty()) {
             throw resetPasswordRequest.email.notFoundException()

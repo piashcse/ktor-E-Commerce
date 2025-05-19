@@ -27,18 +27,18 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
     override suspend fun addProductSubCategory(productSubCategory: ProductSubCategoryRequest): ProductSubCategory =
         query {
             val isCategoryIdExist =
-                ProductCategoryDAO.Companion.find { ProductCategoryTable.id eq productSubCategory.categoryId }.toList()
+                ProductCategoryDAO.find { ProductCategoryTable.id eq productSubCategory.categoryId }.toList()
                     .singleOrNull()
             isCategoryIdExist?.let {
                 val isSubCategoryExist =
-                    ProductSubCategoryDAO.Companion.find {
+                    ProductSubCategoryDAO.find {
                         ProductSubCategoryTable.name eq productSubCategory.name
                     }
                         .toList()
                         .singleOrNull()
                 isSubCategoryExist?.let {
                     throw productSubCategory.name.alreadyExistException()
-                } ?: ProductSubCategoryDAO.Companion.new {
+                } ?: ProductSubCategoryDAO.new {
                     categoryId = EntityID(productSubCategory.categoryId, ProductSubCategoryTable)
                     name = productSubCategory.name
                 }.response()
@@ -55,7 +55,7 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
     override suspend fun getProductSubCategory(categoryId: String, limit: Int): List<ProductSubCategory> =
         query {
             val subCategoryExist =
-                ProductSubCategoryDAO.Companion.find { ProductSubCategoryTable.categoryId eq categoryId }
+                ProductSubCategoryDAO.find { ProductSubCategoryTable.categoryId eq categoryId }
                     .limit(limit)
             subCategoryExist.map {
                 it.response()
@@ -72,7 +72,7 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
      */
     override suspend fun updateProductSubCategory(id: String, name: String): ProductSubCategory = query {
         val suCategoryExist =
-            ProductSubCategoryDAO.Companion.find { ProductSubCategoryTable.id eq id }
+            ProductSubCategoryDAO.find { ProductSubCategoryTable.id eq id }
                 .toList().singleOrNull()
         suCategoryExist?.let {
             it.name = name
@@ -89,7 +89,7 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
      */
     override suspend fun deleteProductSubCategory(subCategoryId: String): String = query {
         val isSubCategoryExist =
-            ProductSubCategoryDAO.Companion.find { ProductSubCategoryTable.id eq subCategoryId }.toList().singleOrNull()
+            ProductSubCategoryDAO.find { ProductSubCategoryTable.id eq subCategoryId }.toList().singleOrNull()
         isSubCategoryExist?.let {
             isSubCategoryExist.delete()
             subCategoryId
