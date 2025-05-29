@@ -4,6 +4,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.model.response.ShopCategory
 import org.jetbrains.exposed.dao.id.EntityID
 
 object ShopCategoryTable : BaseIntIdTable("shop_category") {
@@ -16,5 +17,3 @@ class ShopCategoryDAO(id: EntityID<String>) : BaseIntEntity(id, ShopCategoryTabl
     var name by ShopCategoryTable.name
     fun response() = ShopCategory(id.value, name)
 }
-
-data class ShopCategory(val id: String, val name: String)

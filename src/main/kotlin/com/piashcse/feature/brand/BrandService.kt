@@ -1,8 +1,8 @@
 package com.piashcse.feature.brand
 
-import com.piashcse.database.entities.Brand
 import com.piashcse.database.entities.BrandDAO
 import com.piashcse.database.entities.BrandTable
+import com.piashcse.model.response.Brand
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query

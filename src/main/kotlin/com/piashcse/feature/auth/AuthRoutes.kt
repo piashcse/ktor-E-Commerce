@@ -1,15 +1,11 @@
 package com.piashcse.feature.auth
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.ChangePassword
-import com.piashcse.database.models.user.body.ForgetPasswordRequest
-import com.piashcse.database.models.user.body.JwtTokenRequest
-import com.piashcse.database.models.user.body.LoginRequest
-import com.piashcse.database.models.user.body.RegisterRequest
-import com.piashcse.database.models.user.body.ResetRequest
+import com.piashcse.model.request.*
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.constants.AppConstants
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.requiredParameters
 import com.piashcse.utils.sendEmail

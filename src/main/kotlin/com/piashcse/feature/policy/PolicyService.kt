@@ -1,10 +1,10 @@
 package com.piashcse.feature.policy
 
 import com.piashcse.database.entities.PolicyDocumentDAO
-import com.piashcse.database.entities.PolicyDocumentResponse
 import com.piashcse.database.entities.PolicyDocumentTable
-import com.piashcse.database.models.policy.CreatePolicyRequest
-import com.piashcse.database.models.policy.UpdatePolicyRequest
+import com.piashcse.model.request.CreatePolicyRequest
+import com.piashcse.model.request.UpdatePolicyRequest
+import com.piashcse.model.response.PolicyDocument
 import com.piashcse.utils.CommonException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
@@ -14,7 +14,7 @@ class PolicyService : PolicyRepository {
     /**
      * Creates a new policy document
      */
-    override suspend fun createPolicy(createPolicyRequest: CreatePolicyRequest): PolicyDocumentResponse = query {
+    override suspend fun createPolicy(createPolicyRequest: CreatePolicyRequest): PolicyDocument = query {
         // Create a new policy document
         val policyDocument = PolicyDocumentDAO.new {
             title = createPolicyRequest.title
@@ -39,7 +39,7 @@ class PolicyService : PolicyRepository {
     /**
      * Updates an existing policy document
      */
-    override suspend fun updatePolicy(id: String, updatePolicyRequest: UpdatePolicyRequest): PolicyDocumentResponse =
+    override suspend fun updatePolicy(id: String, updatePolicyRequest: UpdatePolicyRequest): PolicyDocument =
         query {
             val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.notFoundException()
 
@@ -66,7 +66,7 @@ class PolicyService : PolicyRepository {
     /**
      * Gets a policy document by type, returning the latest active version
      */
-    override suspend fun getPolicyByType(type: PolicyDocumentTable.PolicyType): PolicyDocumentResponse = query {
+    override suspend fun getPolicyByType(type: PolicyDocumentTable.PolicyType): PolicyDocument = query {
         val policyDocument = PolicyDocumentDAO.find {
             PolicyDocumentTable.type eq type and (PolicyDocumentTable.isActive eq true)
         }.firstOrNull() ?: throw CommonException("No active $type found")
@@ -77,7 +77,7 @@ class PolicyService : PolicyRepository {
     /**
      * Gets a policy document by ID
      */
-    override suspend fun getPolicyById(id: String): PolicyDocumentResponse = query {
+    override suspend fun getPolicyById(id: String): PolicyDocument = query {
         val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.notFoundException()
         policyDocument.response()
     }
@@ -85,7 +85,7 @@ class PolicyService : PolicyRepository {
     /**
      * Gets all policy documents, optionally filtered by type
      */
-    override suspend fun getAllPolicies(type: PolicyDocumentTable.PolicyType?): List<PolicyDocumentResponse> = query {
+    override suspend fun getAllPolicies(type: PolicyDocumentTable.PolicyType?): List<PolicyDocument> = query {
         val query = if (type != null) {
             PolicyDocumentDAO.find { PolicyDocumentTable.type eq type }
         } else {

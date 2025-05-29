@@ -3,6 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.model.response.PolicyDocument
 import org.jetbrains.exposed.dao.id.EntityID
 
 /**
@@ -45,7 +46,7 @@ class PolicyDocumentDAO(id: EntityID<String>) : BaseIntEntity(id, PolicyDocument
     var effectiveDate by PolicyDocumentTable.effectiveDate
     var isActive by PolicyDocumentTable.isActive
 
-    fun response() = PolicyDocumentResponse(
+    fun response() = PolicyDocument(
         id.value,
         title,
         type.name,
@@ -55,16 +56,3 @@ class PolicyDocumentDAO(id: EntityID<String>) : BaseIntEntity(id, PolicyDocument
         isActive,
     )
 }
-
-/**
- * Response model for policy documents
- */
-data class PolicyDocumentResponse(
-    val id: String,
-    val title: String,
-    val type: String,
-    val content: String,
-    val version: String,
-    val effectiveDate: String,
-    val isActive: Boolean,
-)

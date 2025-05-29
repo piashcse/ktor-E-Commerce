@@ -1,12 +1,8 @@
 package com.piashcse.feature.consent
 
-import com.piashcse.database.entities.PolicyConsentDAO
-import com.piashcse.database.entities.PolicyConsentTable
-import com.piashcse.database.entities.PolicyDocumentDAO
-import com.piashcse.database.entities.PolicyDocumentTable
-import com.piashcse.database.entities.UserDAO
-import com.piashcse.database.entities.UserPolicyConsentResponse
-import com.piashcse.database.models.policy.PolicyConsentRequest
+import com.piashcse.database.entities.*
+import com.piashcse.model.request.PolicyConsentRequest
+import com.piashcse.model.response.UserPolicyConsent
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.sql.and
@@ -19,7 +15,7 @@ class ConsentService: ConsentRepository {
     override suspend fun recordConsent(
         currentUserId: String,
         consentRequest: PolicyConsentRequest
-    ): UserPolicyConsentResponse = query {
+    ): UserPolicyConsent = query {
         // Verify user and policy exist
         val user = UserDAO.findById(currentUserId) ?: throw currentUserId.notFoundException()
         val policy =
@@ -53,7 +49,7 @@ class ConsentService: ConsentRepository {
     /**
      * Gets all consents for a user
      */
-    override suspend fun getUserConsents(userId: String): List<UserPolicyConsentResponse> = query {
+    override suspend fun getUserConsents(userId: String): List<UserPolicyConsent> = query {
         val user = UserDAO.findById(userId) ?: throw userId.notFoundException()
 
         PolicyConsentDAO.find { PolicyConsentTable.userId eq user.id }

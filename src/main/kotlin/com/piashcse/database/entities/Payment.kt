@@ -4,6 +4,7 @@ import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.model.response.Payment
 import org.jetbrains.exposed.dao.id.EntityID
 
 object PaymentTable : BaseIntIdTable("payment") {
@@ -33,13 +34,4 @@ class PaymentDAO(id: EntityID<String>) : BaseIntEntity(id, PaymentTable) {
         transactionId = transactionId
     )
 }
-
-data class Payment(
-    val id: String,
-    val orderId: String,
-    val amount: Long,
-    val status: PaymentStatus,
-    val paymentMethod: String,
-    val transactionId: String?
-)
 

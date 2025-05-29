@@ -1,7 +1,7 @@
 package com.piashcse.feature.shipping
 
-import com.piashcse.database.models.shipping.ShippingRequest
-import com.piashcse.database.models.shipping.UpdateShipping
+import com.piashcse.model.request.ShippingRequest
+import com.piashcse.model.request.UpdateShippingRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -113,7 +113,7 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
                 apiResponse()
             }) {
                 val (id) = call.requiredParameters("id") ?: return@put
-                val params = UpdateShipping(
+                val params = UpdateShippingRequest(
                     id = id,
                     address = call.parameters["shipAddress"],
                     city = call.parameters["shipCity"],

@@ -1,7 +1,7 @@
 package com.piashcse.feature.cart
 
 import com.piashcse.database.entities.Cart
-import com.piashcse.database.entities.Product
+import com.piashcse.model.response.Product
 
 interface CartRepository {
     /**

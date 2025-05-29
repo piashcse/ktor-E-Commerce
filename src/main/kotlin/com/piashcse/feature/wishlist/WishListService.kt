@@ -1,11 +1,7 @@
 package com.piashcse.feature.wishlist
 
-import com.piashcse.database.entities.Product
-import com.piashcse.database.entities.ProductDAO
-import com.piashcse.database.entities.ProductTable
-import com.piashcse.database.entities.WishList
-import com.piashcse.database.entities.WishListDAO
-import com.piashcse.database.entities.WishListTable
+import com.piashcse.database.entities.*
+import com.piashcse.model.response.Product
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query

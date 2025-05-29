@@ -2,10 +2,10 @@ package com.piashcse.feature.productsubcategory
 
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductCategoryTable
-import com.piashcse.database.entities.ProductSubCategory
 import com.piashcse.database.entities.ProductSubCategoryDAO
 import com.piashcse.database.entities.ProductSubCategoryTable
-import com.piashcse.database.models.subcategory.ProductSubCategoryRequest
+import com.piashcse.model.request.ProductSubCategoryRequest
+import com.piashcse.model.response.ProductSubCategory
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query

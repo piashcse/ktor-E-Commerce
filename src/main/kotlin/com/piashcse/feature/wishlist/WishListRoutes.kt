@@ -1,6 +1,6 @@
 package com.piashcse.feature.wishlist
 
-import com.piashcse.database.models.WishListRequest
+import com.piashcse.model.request.WishListRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse

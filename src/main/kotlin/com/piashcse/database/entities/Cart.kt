@@ -3,6 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.model.response.Product
 import org.jetbrains.exposed.dao.id.EntityID
 
 object CartItemTable : BaseIntIdTable("cart_item") {

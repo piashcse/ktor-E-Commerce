@@ -2,10 +2,10 @@ package com.piashcse.feature.auth
 
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.database.entities.LoginResponse
-import com.piashcse.database.models.user.body.ForgetPasswordRequest
-import com.piashcse.database.models.user.body.LoginRequest
-import com.piashcse.database.models.user.body.RegisterRequest
-import com.piashcse.database.models.user.body.ResetRequest
+import com.piashcse.model.request.ForgetPasswordRequest
+import com.piashcse.model.request.LoginRequest
+import com.piashcse.model.request.RegisterRequest
+import com.piashcse.model.request.ResetRequest
 
 interface AuthRepository {
     /**

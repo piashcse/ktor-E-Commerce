@@ -1,6 +1,6 @@
 package com.piashcse.feature.brand
 
-import com.piashcse.database.entities.Brand
+import com.piashcse.model.response.Brand
 
 interface BrandRepository {
     /**

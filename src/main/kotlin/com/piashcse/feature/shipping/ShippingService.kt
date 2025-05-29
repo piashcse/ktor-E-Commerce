@@ -1,10 +1,10 @@
 package com.piashcse.feature.shipping
 
-import com.piashcse.database.entities.Shipping
 import com.piashcse.database.entities.ShippingDAO
 import com.piashcse.database.entities.ShippingTable
-import com.piashcse.database.models.shipping.ShippingRequest
-import com.piashcse.database.models.shipping.UpdateShipping
+import com.piashcse.model.request.ShippingRequest
+import com.piashcse.model.request.UpdateShippingRequest
+import com.piashcse.model.response.Shipping
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
@@ -64,7 +64,7 @@ class ShippingService : ShippingRepository {
      * @return The updated shipping details.
      * @throws alreadyExistException If the shipping ID does not exist for the specified user.
      */
-    override suspend fun updateShipping(userId: String, updateShipping: UpdateShipping): Shipping = query {
+    override suspend fun updateShipping(userId: String, updateShipping: UpdateShippingRequest): Shipping = query {
         val isShippingExist = ShippingDAO.find {
             ShippingTable.id eq updateShipping.id
         }.toList().singleOrNull()

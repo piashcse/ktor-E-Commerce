@@ -1,6 +1,6 @@
 package com.piashcse.feature.shop
 
-import com.piashcse.database.entities.Shop
+import com.piashcse.model.response.Shop
 
 interface ShopRepository {
     /**

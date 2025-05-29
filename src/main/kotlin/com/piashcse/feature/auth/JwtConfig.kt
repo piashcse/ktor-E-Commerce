@@ -3,9 +3,9 @@ package com.piashcse.feature.auth
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
-import com.piashcse.database.models.user.body.JwtTokenRequest
-import io.ktor.server.config.HoconApplicationConfig
-import java.util.Date
+import com.piashcse.model.request.JwtTokenRequest
+import io.ktor.server.config.*
+import java.util.*
 
 object JwtConfig {
     private lateinit var secret: String

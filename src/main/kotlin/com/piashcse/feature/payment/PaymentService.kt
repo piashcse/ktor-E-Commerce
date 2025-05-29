@@ -2,10 +2,10 @@ package com.piashcse.feature.payment
 
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderTable
-import com.piashcse.database.entities.Payment
 import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.database.entities.PaymentTable
-import com.piashcse.database.models.PaymentRequest
+import com.piashcse.model.request.PaymentRequest
+import com.piashcse.model.response.Payment
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID

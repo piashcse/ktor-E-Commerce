@@ -1,6 +1,6 @@
 package com.piashcse.feature.shopcategory
 
-import com.piashcse.database.models.shop.ShopCategoryRequest
+import com.piashcse.model.request.ShopCategoryRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse

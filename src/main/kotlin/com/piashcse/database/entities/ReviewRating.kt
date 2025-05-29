@@ -3,6 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.model.response.ReviewRating
 import org.jetbrains.exposed.dao.id.EntityID
 
 object ReviewRatingTable : BaseIntIdTable("review_rating") {
@@ -28,11 +29,3 @@ class ReviewRatingDAO(id: EntityID<String>) : BaseIntEntity(id, ReviewRatingTabl
         rating = rating,
     )
 }
-
-data class ReviewRating(
-    val id: String,
-    val userId: String,
-    val productId: String,
-    val reviewText: String,
-    val rating: Int
-)
