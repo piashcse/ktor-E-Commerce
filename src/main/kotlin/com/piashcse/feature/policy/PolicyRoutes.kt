@@ -1,8 +1,8 @@
 package com.piashcse.feature.policy
 
 import com.piashcse.database.entities.PolicyDocumentTable
-import com.piashcse.database.models.policy.CreatePolicyRequest
-import com.piashcse.database.models.policy.UpdatePolicyRequest
+import com.piashcse.model.request.CreatePolicyRequest
+import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse

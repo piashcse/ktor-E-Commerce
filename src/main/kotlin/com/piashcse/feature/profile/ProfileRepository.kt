@@ -1,7 +1,7 @@
 package com.piashcse.feature.profile
 
-import com.piashcse.database.entities.UserProfile
-import com.piashcse.database.models.user.body.UserProfileRequest
+import com.piashcse.model.request.UserProfileRequest
+import com.piashcse.model.response.UserProfile
 
 interface ProfileRepository {
     /**

@@ -1,6 +1,6 @@
 package com.piashcse.feature.review_rating
 
-import com.piashcse.database.models.ReviewRatingRequest
+import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse

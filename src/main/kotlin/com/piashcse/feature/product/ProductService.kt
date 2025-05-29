@@ -1,13 +1,13 @@
 package com.piashcse.feature.product
 
-import com.piashcse.database.entities.Product
+import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
-import com.piashcse.database.models.product.request.ProductRequest
-import com.piashcse.database.models.product.request.ProductSearchRequest
-import com.piashcse.database.models.product.request.ProductWithFilterRequest
-import com.piashcse.database.models.product.request.UpdateProduct
-import com.piashcse.constants.AppConstants
+import com.piashcse.model.request.ProductRequest
+import com.piashcse.model.request.ProductSearchRequest
+import com.piashcse.model.request.ProductWithFilterRequest
+import com.piashcse.model.request.UpdateProductRequest
+import com.piashcse.model.response.Product
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.dao.id.EntityID
@@ -66,7 +66,7 @@ class ProductService : ProductRepository {
      * @return The updated product entity.
      * @throws Exception if the product with the provided ID is not found.
      */
-    override suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProduct): Product =
+    override suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProductRequest): Product =
         query {
             val isProductExist =
                 ProductDAO.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.toList()

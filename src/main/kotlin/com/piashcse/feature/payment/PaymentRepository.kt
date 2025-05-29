@@ -1,7 +1,7 @@
 package com.piashcse.feature.payment
 
-import com.piashcse.database.entities.Payment
-import com.piashcse.database.models.PaymentRequest
+import com.piashcse.model.request.PaymentRequest
+import com.piashcse.model.response.Payment
 
 interface PaymentRepository {
     /**

@@ -1,7 +1,7 @@
 package com.piashcse.feature.review_rating
 
-import com.piashcse.database.entities.ReviewRating
-import com.piashcse.database.models.ReviewRatingRequest
+import com.piashcse.model.request.ReviewRatingRequest
+import com.piashcse.model.response.ReviewRating
 
 interface ReviewRatingRepository {
     suspend fun getReviewRating(productId: String, limit: Int): List<ReviewRating>

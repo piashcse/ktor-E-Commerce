@@ -3,6 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.model.response.Shipping
 import org.jetbrains.exposed.dao.id.EntityID
 
 object ShippingTable : BaseIntIdTable("shipping") {
@@ -48,16 +49,3 @@ class ShippingDAO(id: EntityID<String>) : BaseIntEntity(id, ShippingTable) {
             trackingNumber,
         )
 }
-
-data class Shipping(
-    val id: String,
-    var orderId: String,
-    var status: ShippingTable.ShippingStatus,
-    var address: String,
-    var city: String,
-    var country: String?,
-    var phone: Int,
-    var email: String?,
-    var shippingMethod: String?,
-    var trackingNumber: String?,
-)

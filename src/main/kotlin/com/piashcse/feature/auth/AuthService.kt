@@ -1,25 +1,17 @@
 package com.piashcse.feature.auth
 
 import at.favre.lib.crypto.bcrypt.BCrypt
-import com.piashcse.constants.Message
-import com.piashcse.database.entities.ChangePassword
-import com.piashcse.database.entities.LoginResponse
-import com.piashcse.database.entities.UserDAO
-import com.piashcse.database.entities.UserTable
-import com.piashcse.database.entities.UsersProfileDAO
-import com.piashcse.database.models.user.body.ForgetPasswordRequest
-import com.piashcse.database.models.user.body.LoginRequest
-import com.piashcse.database.models.user.body.RegisterRequest
-import com.piashcse.database.models.user.body.ResetRequest
-import com.piashcse.database.models.user.response.RegisterResponse
 import com.piashcse.constants.AppConstants
-import com.piashcse.utils.CommonException
-import com.piashcse.utils.PasswordNotMatch
-import com.piashcse.utils.UserNotExistException
+import com.piashcse.constants.Message
+import com.piashcse.database.entities.*
+import com.piashcse.model.request.ForgetPasswordRequest
+import com.piashcse.model.request.LoginRequest
+import com.piashcse.model.request.RegisterRequest
+import com.piashcse.model.request.ResetRequest
+import com.piashcse.model.response.Registration
+import com.piashcse.utils.*
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.generateOTP
-import com.piashcse.utils.sendEmail
 import org.jetbrains.exposed.sql.and
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -84,13 +76,13 @@ class AuthService : AuthRepository {
 
             // Return appropriate message
             if (existingUserWithDifferentType != null) {
-                RegisterResponse(
+                Registration(
                     inserted.id.value,
                     registerRequest.email,
                     message = "${Message.OTP_SENT_TO} ${inserted.email}. You already have an account as ${existingUserWithDifferentType.userType}."
                 )
             } else {
-                RegisterResponse(
+                Registration(
                     inserted.id.value, registerRequest.email, message = "${Message.OTP_SENT_TO} ${inserted.email}"
                 )
             }

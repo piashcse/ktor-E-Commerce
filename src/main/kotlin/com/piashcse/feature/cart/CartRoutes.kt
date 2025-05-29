@@ -1,6 +1,6 @@
 package com.piashcse.feature.cart
 
-import com.piashcse.database.models.cart.CartRequest
+import com.piashcse.model.request.CartRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse

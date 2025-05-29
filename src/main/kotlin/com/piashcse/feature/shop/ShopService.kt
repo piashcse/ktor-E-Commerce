@@ -1,9 +1,9 @@
 package com.piashcse.feature.shop
 
-import com.piashcse.database.entities.Shop
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.UserTable
+import com.piashcse.model.response.Shop
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query

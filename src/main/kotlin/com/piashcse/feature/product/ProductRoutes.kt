@@ -1,12 +1,12 @@
 package com.piashcse.feature.product
 
-import com.piashcse.database.models.product.request.ProductRequest
-import com.piashcse.database.models.product.request.ProductSearchRequest
-import com.piashcse.database.models.product.request.ProductWithFilterRequest
-import com.piashcse.database.models.product.request.UpdateProduct
+import com.piashcse.constants.AppConstants
+import com.piashcse.model.request.ProductRequest
+import com.piashcse.model.request.ProductSearchRequest
+import com.piashcse.model.request.ProductWithFilterRequest
+import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.constants.AppConstants
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.fileExtension
@@ -230,7 +230,7 @@ fun Route.productRoutes(productController: ProductService) {
                 }
                 apiResponse()
             }) {
-                val params = UpdateProduct(
+                val params = UpdateProductRequest(
                     categoryId = call.parameters["categoryId"],
                     subCategoryId = call.parameters["subCategoryId"],
                     brandId = call.parameters["brandId"],

@@ -1,11 +1,7 @@
 package com.piashcse.feature.cart
 
-import com.piashcse.database.entities.Cart
-import com.piashcse.database.entities.CartItemDAO
-import com.piashcse.database.entities.CartItemTable
-import com.piashcse.database.entities.Product
-import com.piashcse.database.entities.ProductDAO
-import com.piashcse.database.entities.ProductTable
+import com.piashcse.database.entities.*
+import com.piashcse.model.response.Product
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query

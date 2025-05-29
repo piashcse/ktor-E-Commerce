@@ -1,7 +1,7 @@
 package com.piashcse.feature.wishlist
 
-import com.piashcse.database.entities.Product
 import com.piashcse.database.entities.WishList
+import com.piashcse.model.response.Product
 
 interface WishListRepository {
     /**

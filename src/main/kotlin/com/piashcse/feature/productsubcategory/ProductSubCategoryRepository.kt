@@ -1,7 +1,7 @@
 package com.piashcse.feature.productsubcategory
 
-import com.piashcse.database.entities.ProductSubCategory
-import com.piashcse.database.models.subcategory.ProductSubCategoryRequest
+import com.piashcse.model.request.ProductSubCategoryRequest
+import com.piashcse.model.response.ProductSubCategory
 
 /**
  * Repository interface for managing product subcategories.

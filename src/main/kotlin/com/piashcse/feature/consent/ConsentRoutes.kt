@@ -1,7 +1,7 @@
 package com.piashcse.feature.consent
 
 import com.piashcse.database.entities.PolicyDocumentTable
-import com.piashcse.database.models.policy.PolicyConsentRequest
+import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
@@ -9,14 +9,12 @@ import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.requiredParameters
 import io.github.smiley4.ktoropenapi.get
 import io.github.smiley4.ktoropenapi.post
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.auth.authenticate
-import io.ktor.server.plugins.origin
-import io.ktor.server.request.receive
-import io.ktor.server.response.respond
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.route
-import kotlin.collections.component1
+import io.ktor.http.*
+import io.ktor.server.auth.*
+import io.ktor.server.plugins.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 
 fun Route.consentRoutes(consentController: ConsentService) {
     // User consent management routes

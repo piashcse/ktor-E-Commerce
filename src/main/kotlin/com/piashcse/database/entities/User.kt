@@ -1,10 +1,10 @@
 package com.piashcse.database.entities
 
-import com.piashcse.feature.auth.JwtConfig
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
-import com.piashcse.database.models.user.body.JwtTokenRequest
+import com.piashcse.feature.auth.JwtConfig
+import com.piashcse.model.request.JwtTokenRequest
 import org.jetbrains.exposed.dao.id.EntityID
 
 object UserTable : BaseIntIdTable("user") {

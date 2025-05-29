@@ -4,6 +4,7 @@ import com.piashcse.constants.OrderStatus
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.model.response.Order
 import org.jetbrains.exposed.dao.id.EntityID
 
 object OrderTable : BaseIntIdTable("order") {
@@ -27,10 +28,3 @@ class OrderDAO(id: EntityID<String>) : BaseIntEntity(id, OrderTable) {
         status,
     )
 }
-
-data class Order(
-    val orderId: String,
-    val subTotal: Float,
-    val total: Float,
-    val status: OrderStatus,
-)

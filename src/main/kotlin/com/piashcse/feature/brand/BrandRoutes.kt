@@ -1,6 +1,6 @@
 package com.piashcse.feature.brand
 
-import com.piashcse.database.models.bands.BrandRequest
+import com.piashcse.model.request.BrandRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse

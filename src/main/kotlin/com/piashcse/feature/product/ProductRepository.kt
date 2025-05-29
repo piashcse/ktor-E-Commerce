@@ -1,10 +1,10 @@
 package com.piashcse.feature.product
 
-import com.piashcse.database.entities.Product
-import com.piashcse.database.models.product.request.ProductRequest
-import com.piashcse.database.models.product.request.ProductSearchRequest
-import com.piashcse.database.models.product.request.ProductWithFilterRequest
-import com.piashcse.database.models.product.request.UpdateProduct
+import com.piashcse.model.request.ProductRequest
+import com.piashcse.model.request.ProductSearchRequest
+import com.piashcse.model.request.ProductWithFilterRequest
+import com.piashcse.model.request.UpdateProductRequest
+import com.piashcse.model.response.Product
 
 interface ProductRepository {
     /**
@@ -24,7 +24,7 @@ interface ProductRepository {
      * @param update The product details to update.
      * @return The updated product.
      */
-    suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProduct): Product
+    suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProductRequest): Product
 
     /**
      * Retrieves a list of products based on filters.

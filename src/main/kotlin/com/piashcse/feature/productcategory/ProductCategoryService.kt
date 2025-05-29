@@ -1,8 +1,8 @@
 package com.piashcse.feature.productcategory
 
-import com.piashcse.database.entities.ProductCategory
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductCategoryTable
+import com.piashcse.model.response.ProductCategory
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query

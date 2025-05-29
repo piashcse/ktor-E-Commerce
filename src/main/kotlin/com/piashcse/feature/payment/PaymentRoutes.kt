@@ -1,6 +1,6 @@
 package com.piashcse.feature.payment
 
-import com.piashcse.database.models.PaymentRequest
+import com.piashcse.model.request.PaymentRequest
 import com.piashcse.plugins.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse

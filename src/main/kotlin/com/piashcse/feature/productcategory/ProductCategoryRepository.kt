@@ -1,6 +1,6 @@
 package com.piashcse.feature.productcategory
 
-import com.piashcse.database.entities.ProductCategory
+import com.piashcse.model.response.ProductCategory
 
 interface ProductCategoryRepository {
     /**

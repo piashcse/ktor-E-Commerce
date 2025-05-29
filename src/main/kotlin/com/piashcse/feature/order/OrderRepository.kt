@@ -1,8 +1,8 @@
 package com.piashcse.feature.order
 
 import com.piashcse.constants.OrderStatus
-import com.piashcse.database.entities.Order
-import com.piashcse.database.models.order.OrderRequest
+import com.piashcse.model.request.OrderRequest
+import com.piashcse.model.response.Order
 
 interface OrderRepository {
     /**
