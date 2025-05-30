@@ -1,7 +1,7 @@
-package com.piashcse.feature.productcategory
+package com.piashcse.feature.product_category
 
 import com.piashcse.model.request.ProductCategoryRequest
-import com.piashcse.plugins.RoleManagement
+import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.requiredParameters

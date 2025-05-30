@@ -4,7 +4,7 @@ import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.model.request.*
-import com.piashcse.plugins.RoleManagement
+import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.requiredParameters

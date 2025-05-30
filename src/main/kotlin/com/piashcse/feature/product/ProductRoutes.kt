@@ -5,7 +5,7 @@ import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
-import com.piashcse.plugins.RoleManagement
+import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser

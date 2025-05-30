@@ -1,4 +1,4 @@
-package com.piashcse.plugins
+package com.piashcse.plugin
 
 import com.piashcse.feature.auth.JwtConfig
 import com.piashcse.model.request.JwtTokenRequest

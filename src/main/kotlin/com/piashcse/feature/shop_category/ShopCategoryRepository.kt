@@ -1,4 +1,4 @@
-package com.piashcse.feature.shopcategory
+package com.piashcse.feature.shop_category
 
 import com.piashcse.model.response.ShopCategory
 

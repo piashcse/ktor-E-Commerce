@@ -1,4 +1,4 @@
-package com.piashcse.plugins
+package com.piashcse.plugin
 
 import com.piashcse.constants.Message
 import com.piashcse.utils.*

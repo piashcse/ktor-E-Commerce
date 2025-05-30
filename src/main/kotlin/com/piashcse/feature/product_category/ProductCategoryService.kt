@@ -1,4 +1,4 @@
-package com.piashcse.feature.productcategory
+package com.piashcse.feature.product_category
 
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductCategoryTable

@@ -1,6 +1,6 @@
 package com.piashcse.model.request
 
-import com.piashcse.plugins.RoleManagement
+import com.piashcse.plugin.RoleManagement
 import org.valiktor.functions.hasSize
 import org.valiktor.functions.isEmail
 import org.valiktor.functions.isIn
