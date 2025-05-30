@@ -4,7 +4,7 @@ import com.piashcse.constants.Message.INVALID_ORDER_STATUS
 import com.piashcse.constants.Message.YOU_ARE_NOT_ALLOWED_TO_SET_STATUS
 import com.piashcse.constants.OrderStatus
 import com.piashcse.model.request.OrderRequest
-import com.piashcse.plugins.RoleManagement
+import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser

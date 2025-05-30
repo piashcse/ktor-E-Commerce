@@ -1,4 +1,4 @@
-package com.piashcse.plugins
+package com.piashcse.plugin
 
 import com.piashcse.feature.auth.AuthService
 import com.piashcse.feature.auth.authRoutes
@@ -16,10 +16,10 @@ import com.piashcse.feature.policy.PolicyService
 import com.piashcse.feature.policy.policyRoutes
 import com.piashcse.feature.product.ProductService
 import com.piashcse.feature.product.productRoutes
-import com.piashcse.feature.productcategory.ProductCategoryService
-import com.piashcse.feature.productcategory.productCategoryRoutes
-import com.piashcse.feature.productsubcategory.ProductSubCategoryService
-import com.piashcse.feature.productsubcategory.productSubCategoryRoutes
+import com.piashcse.feature.product_category.ProductCategoryService
+import com.piashcse.feature.product_category.productCategoryRoutes
+import com.piashcse.feature.product_sub_category.ProductSubCategoryService
+import com.piashcse.feature.product_sub_category.productSubCategoryRoutes
 import com.piashcse.feature.profile.ProfileService
 import com.piashcse.feature.profile.profileRoutes
 import com.piashcse.feature.review_rating.ReviewRatingService
@@ -28,8 +28,8 @@ import com.piashcse.feature.shipping.ShippingService
 import com.piashcse.feature.shipping.shippingRoutes
 import com.piashcse.feature.shop.ShopService
 import com.piashcse.feature.shop.shopRoutes
-import com.piashcse.feature.shopcategory.ShopCategoryService
-import com.piashcse.feature.shopcategory.shopCategoryRoutes
+import com.piashcse.feature.shop_category.ShopCategoryService
+import com.piashcse.feature.shop_category.shopCategoryRoutes
 import com.piashcse.feature.wishlist.WishListService
 import com.piashcse.feature.wishlist.wishListRoutes
 import io.ktor.server.application.*

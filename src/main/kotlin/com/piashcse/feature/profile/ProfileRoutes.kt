@@ -2,7 +2,7 @@ package com.piashcse.feature.profile
 
 import com.piashcse.constants.AppConstants
 import com.piashcse.model.request.UserProfileRequest
-import com.piashcse.plugins.RoleManagement
+import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser

@@ -1,7 +1,7 @@
 package com.piashcse.feature.review_rating
 
 import com.piashcse.model.request.ReviewRatingRequest
-import com.piashcse.plugins.RoleManagement
+import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser

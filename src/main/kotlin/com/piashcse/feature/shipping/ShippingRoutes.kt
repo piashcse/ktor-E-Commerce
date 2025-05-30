@@ -2,7 +2,7 @@ package com.piashcse.feature.shipping
 
 import com.piashcse.model.request.ShippingRequest
 import com.piashcse.model.request.UpdateShippingRequest
-import com.piashcse.plugins.RoleManagement
+import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser

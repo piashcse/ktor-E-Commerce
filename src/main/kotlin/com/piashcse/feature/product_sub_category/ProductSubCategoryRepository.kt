@@ -1,4 +1,4 @@
-package com.piashcse.feature.productsubcategory
+package com.piashcse.feature.product_sub_category
 
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.model.response.ProductSubCategory
