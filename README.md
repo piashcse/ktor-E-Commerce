@@ -1,6 +1,6 @@
 # Ktor-E-Commerce
 
-[![Ktor](https://img.shields.io/badge/ktor-3.1.3-blue.svg)](https://github.com/ktorio/ktor)
+[![Ktor](https://img.shields.io/badge/ktor-3.2.0-blue.svg)](https://github.com/ktorio/ktor)
 [![Exposed](https://img.shields.io/badge/Exposed-0.61.0-blue.svg)](https://github.com/JetBrains/Exposed)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 ![Koin](https://img.shields.io/badge/Koin-4.0.2-29BEB0?logo=koin&logoColor=white)
@@ -8,7 +8,7 @@
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
 <a href="https://github.com/piashcse"><img alt="License" src="https://img.shields.io/static/v1?label=GitHub&message=piashcse&color=C51162"/></a>
 
-Ktor-E-Commerce is a high-performance backend solution designed for e-commerce applications built
+Ktor-E-Commerce is a high-performance backend solution designed for modern e-commerce applications built
 with [ktor](https://ktor.io/docs/welcome.html). This backend leverages the power of Kotlin to provide a robust,
 scalable, and efficient service for handling your e-commerce needs.
 
