@@ -98,6 +98,126 @@ scalable, and efficient service for handling your e-commerce needs.
 
 - [JAVA 11](https://jdk.java.net/11/) (or latest)
 - [PostgreSQL](https://www.postgresql.org/) (latest)
+- [Docker](https://www.docker.com/) (optional, for containerization)
+
+## Docker Support
+
+This project includes Docker support for easy deployment and containerization. 
+
+### Installing Docker
+
+Before you can use Docker, you need to install it on your system:
+
+#### For macOS:
+1. Download Docker Desktop for Mac from [Docker Hub](https://hub.docker.com/editions/community/docker-ce-desktop-mac)
+2. Double-click the downloaded `.dmg` file and drag Docker to your Applications folder
+3. Open Docker from your Applications folder
+4. Wait for Docker to start (you'll see the Docker icon in the menu bar)
+
+#### For Windows:
+1. Download Docker Desktop for Windows from [Docker Hub](https://hub.docker.com/editions/community/docker-ce-desktop-windows)
+2. Run the installer and follow the instructions
+3. Start Docker Desktop from the Start menu
+4. Wait for Docker to start (you'll see the Docker icon in the system tray)
+
+#### For Linux (Ubuntu):
+```bash
+# Update package index
+sudo apt-get update
+
+# Install prerequisites
+sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+
+# Add Docker's official GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+# Add Docker repository
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+# Update package index again
+sudo apt-get update
+
+# Install Docker CE
+sudo apt-get install docker-ce
+
+# Start Docker service
+sudo systemctl start docker
+
+# Enable Docker to start on boot
+sudo systemctl enable docker
+
+# Add your user to the docker group to run Docker without sudo
+sudo usermod -aG docker $USER
+```
+
+After installation, verify Docker is running with:
+```bash
+docker --version
+```
+
+### Build the Shadow JAR
+
+First, build the shadow JAR using Gradle:
+
+```bash
+./gradlew shadowJar
+```
+
+This will create a fat JAR file at `build/libs/src-all.jar`.
+
+### Build the Docker Image
+
+Build the Docker image using the provided Dockerfile:
+
+```bash
+docker build -t piashcse/ktor-e-commerce:latest .
+```
+
+### Run the Docker Container
+
+Run the Docker container, exposing port 8080:
+
+```bash
+docker run -p 8080:8080 piashcse/ktor-e-commerce:latest
+```
+
+The application will be accessible at http://localhost:8080.
+
+### Environment Variables
+
+You can customize the application behavior using environment variables:
+
+- `HOST`: The host address to bind to (default: 0.0.0.0)
+- `PORT`: The port to listen on (default: 8080)
+- `JAVA_OPTS`: JVM options (default: -Xms256m -Xmx512m)
+
+Example:
+
+```bash
+docker run -p 9000:9000 -e PORT=9000 -e JAVA_OPTS="-Xms512m -Xmx1g" piashcse/ktor-e-commerce:latest
+```
+
+### Using Gradle Docker Plugin
+
+Alternatively, you can use the Gradle Docker plugin to build and manage Docker images:
+
+#### Build Docker Image
+
+```bash
+./gradlew dockerBuildImage
+```
+
+This will create a Docker image with tags `piashcse/ktor-e-commerce:1.0.0` and `piashcse/ktor-e-commerce:latest`.
+
+#### Push Docker Image to Registry
+
+```bash
+./gradlew dockerPushImage
+```
+
+This will push the Docker image to the configured Docker registry.
+
+Note: You need to have Docker installed and running for these Gradle tasks to work.
 
 ## Clone the repository
 
