@@ -1,0 +1,25 @@
+# .github/workflows/docs.yml
+name: Deploy Docs
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: pip install mkdocs mkdocs-material
+
+      - name: Deploy Docs
+        run: mkdocs gh-deploy --force
