@@ -1,0 +1,31 @@
+site_name: Ktor-E-Commerce
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: green
+    accent: cyan
+
+nav:
+  - Home: index.md
+  - Auth: auth.md
+  - Profile: profile.md
+  - Shop Category: shop-category.md
+  - Shop: shop.md
+  - Brand: brand.md
+  - Product Category: product-category.md
+  - Product Sub Category: product-sub-category.md
+  - Product: product.md
+  - Review Rating: review-rating.md
+  - Cart: cart.md
+  - WishList: wishlist.md
+  - Order: order.md
+  - Payment: payment.md
+  - Privacy Policy: privacy-policy.md
+  - Privacy Policy Consent: privacy-policy-consent.md
+
+repo_url: https://github.com/piashcse/ktor-ecommerce
+edit_uri: edit/main/docs/
+
+extra_css:
+  - css/extra.css
