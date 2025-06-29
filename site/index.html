@@ -1,0 +1,1224 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+        <link rel="next" href="auth/">
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>Ktor-E-Commerce</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.342714a4.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="css/extra.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ktor-e-commerce" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="Ktor-E-Commerce" class="md-header__button md-logo" aria-label="Ktor-E-Commerce" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Ktor-E-Commerce
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Home
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/piashcse/ktor-ecommerce" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="Ktor-E-Commerce" class="md-nav__button md-logo" aria-label="Ktor-E-Commerce" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Ktor-E-Commerce
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/piashcse/ktor-ecommerce" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#swagger-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      Swagger View
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-role-based-access-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Role-Based Access Control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-user-accounts-and-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. User Accounts and Authentication
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-product-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Product Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-shopping-cart-and-checkout" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Shopping Cart and Checkout
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-order-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Order Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-scalability-and-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Scalability and Performance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Security
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architecture
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Requirements
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clone-the-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      Clone the repository
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Clone the repository">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#postgres-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Postgres Setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pgadmin-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      PgAdmin Setup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-the-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      Run the project
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Run the project">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#smtp-email-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      📧 SMTP Email Setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-smtp-email" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔧 Configuration SMTP Email
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#developed-by" class="md-nav__link">
+    <span class="md-ellipsis">
+      👨 Developed By
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Auth
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="profile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Profile
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="shop-category/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shop Category
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="shop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shop
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="brand/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Brand
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="product-category/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Product Category
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="product-sub-category/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Product Sub Category
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="product/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Product
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="review-rating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Review Rating
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="cart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Cart
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="wishlist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    WishList
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="order/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Order
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Payment
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="privacy-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Privacy Policy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="privacy-policy-consent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Privacy Policy Consent
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#swagger-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      Swagger View
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-role-based-access-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Role-Based Access Control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-user-accounts-and-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. User Accounts and Authentication
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-product-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Product Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-shopping-cart-and-checkout" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Shopping Cart and Checkout
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-order-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Order Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-scalability-and-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Scalability and Performance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Security
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architecture
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Requirements
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clone-the-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      Clone the repository
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Clone the repository">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#postgres-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Postgres Setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pgadmin-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      PgAdmin Setup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#run-the-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      Run the project
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Run the project">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#smtp-email-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      📧 SMTP Email Setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-smtp-email" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔧 Configuration SMTP Email
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#developed-by" class="md-nav__link">
+    <span class="md-ellipsis">
+      👨 Developed By
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="ktor-e-commerce">Ktor-E-Commerce</h1>
+<p>Ktor-E-Commerce is a high-performance backend solution designed for e-commerce applications built
+with <a href="https://ktor.io/docs/welcome.html">ktor</a>. This backend leverages the power of Kotlin to provide a robust,
+scalable, and efficient service for handling your e-commerce needs.</p>
+<h2 id="swagger-view">Swagger View</h2>
+<p align="center">
+  <img width="100%" height="40%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/swagger.gif" />
+</p>
+
+<h2 id="features">Features</h2>
+<h3 id="1-role-based-access-control">1. Role-Based Access Control</h3>
+<ul>
+<li><strong>Customer Role</strong>: Shoppers with basic access to browse and make purchases.</li>
+<li><strong>Seller Role</strong>: Vendors can list products and manage their inventory.</li>
+<li><strong>Admin Role</strong>: Administrators have full control over the platform.</li>
+</ul>
+<h3 id="2-user-accounts-and-authentication">2. User Accounts and Authentication</h3>
+<ul>
+<li><strong>User Registration</strong>: Allow customers to create accounts. Users can register with the same email for different roles (customer and seller).</li>
+<li><strong>User Authentication</strong>: Implement JWT-based authentication for user sessions.</li>
+<li><strong>User Profiles</strong>: Enable users to view and update their profiles.</li>
+</ul>
+<h3 id="3-product-management">3. Product Management</h3>
+<ul>
+<li><strong>Product Listings</strong>: Create, update, and delete product listings.</li>
+<li><strong>Categories</strong>: Organize products into categories and brands for easy navigation.</li>
+<li><strong>Inventory Control</strong>: Keep track of product availability and stock levels.</li>
+</ul>
+<h3 id="4-shopping-cart-and-checkout">4. Shopping Cart and Checkout</h3>
+<ul>
+<li><strong>Shopping Cart</strong>: Add and remove products, update quantities, and calculate totals.</li>
+<li><strong>Checkout</strong>: Streamline the checkout process for quick and secure payments.</li>
+</ul>
+<h3 id="5-order-management">5. Order Management</h3>
+<ul>
+<li><strong>Order Processing</strong>: Handle order creation, status updates, and order history.</li>
+<li><strong>Payment Integration</strong>: Integrate with popular payment gateways for seamless transactions.</li>
+</ul>
+<h3 id="6-scalability-and-performance">6. Scalability and Performance</h3>
+<ul>
+<li><strong>Asynchronous Processing</strong>: Leverage Ktor's async capabilities for high performance.</li>
+<li><strong>Load Balancing</strong>: Easily scale your application to accommodate increased traffic.</li>
+</ul>
+<h3 id="7-security">7. Security</h3>
+<ul>
+<li><strong>JWT Tokens</strong>: Implement JSON Web Tokens for secure authentication.</li>
+<li><strong>Input Validation</strong>: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).</li>
+</ul>
+<h2 id="architecture">Architecture</h2>
+<p align="center">
+  </br>
+  <img width="60%" height="60%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/onion_architecture.png" />
+</p>
+<p align="center">
+<b>Fig.  Onion Architecture </b>
+</p>
+
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li><a href="https://jdk.java.net/11/">JAVA 11</a> (or latest)</li>
+<li><a href="https://www.postgresql.org/">PostgreSQL</a> (latest)</li>
+</ul>
+<h2 id="clone-the-repository">Clone the repository</h2>
+<pre><code class="language-bash">git clone git@github.com:piashcse/ktor-E-Commerce.git
+</code></pre>
+<p>Note: some installation instructions are for mac, for windows/linux please install accordingly.</p>
+<h3 id="postgres-setup">Postgres Setup</h3>
+<ul>
+<li>Create a database in postgreSQL</li>
+<li>Change your db name, user, and password in <code>resources/hikari.properties</code> and replace them accordingly.</li>
+</ul>
+<pre><code class="language-bash">dataSource.user=postgres
+dataSource.password=p123
+dataSource.databaseName=ktor-1.0.0
+</code></pre>
+<h3 id="pgadmin-setup">PgAdmin Setup</h3>
+<p>On Terminal</p>
+<pre><code>brew install --cask pgadmin4
+</code></pre>
+<p>Open PgAdmin</p>
+<p>In the "Create - Server" dialog that appears, fill in the following information:</p>
+<p>General tab:</p>
+<ul>
+<li>Name: Give your server a name (e.g., "Ktor Ecommerce App")</li>
+</ul>
+<p>Connection tab:</p>
+<ul>
+<li>Host name/address: localhost (if your PostgreSQL server is on the same machine)</li>
+<li>Port: 5432 (default PostgreSQL port)</li>
+<li>Maintenance database: postgres (default database)</li>
+<li>Username: piashcse (the user you created for your application)</li>
+<li>Password: p123 (the password you set for piashcse)</li>
+</ul>
+<p><img alt="server1" src="screenshots/ktor-postgres.png" /></p>
+<h2 id="run-the-project">Run the project</h2>
+<p>On Terminal</p>
+<pre><code>./gradlew run
+</code></pre>
+<h3 id="smtp-email-setup">📧 SMTP Email Setup</h3>
+<p>This project uses Gmail’s SMTP service to send emails (e.g., for password recovery). Follow the instructions below to configure it securely.</p>
+<h3 id="configuration-smtp-email">🔧 Configuration SMTP Email</h3>
+<p>Open the file constants/AppConstants.kt and update the SmtpServer object:</p>
+<pre><code>object SmtpServer {
+    const val HOST_NAME = &quot;smtp.googlemail.com&quot;
+    const val PORT = 465
+    const val DEFAULT_AUTHENTICATOR = &quot;your-email@gmail.com&quot; // Your Gmail address
+    const val DEFAULT_AUTHENTICATOR_PASSWORD = &quot;your-app-password&quot; // App-specific password
+    const val EMAIL_SUBJECT = &quot;Forget Password&quot;
+    const val SENDING_EMAIL = &quot;your-email@gmail.com&quot; // Sender email displayed to recipients
+}
+</code></pre>
+<h2 id="developed-by">👨 Developed By</h2>
+<p><a href="https://twitter.com/piashcse" target="_blank">
+  <img src="https://avatars.githubusercontent.com/piashcse" width="90" align="left">
+</a></p>
+<p><strong>Mehedi Hassan Piash</strong></p>
+<p><a href="https://twitter.com/piashcse"><img alt="Twitter" src="https://img.shields.io/badge/-Twitter-1DA1F2?logo=x&amp;logoColor=white&amp;style=for-the-badge" /></a>
+<a href="https://medium.com/@piashcse"><img alt="Medium" src="https://img.shields.io/badge/-Medium-00AB6C?logo=medium&amp;logoColor=white&amp;style=for-the-badge" /></a>
+<a href="https://www.linkedin.com/in/piashcse/"><img alt="Linkedin" src="https://img.shields.io/badge/-LinkedIn-0077B5?logo=linkedin&amp;logoColor=white&amp;style=for-the-badge" /></a>
+<a href="https://piashcse.github.io/"><img alt="Web" src="https://img.shields.io/badge/-Web-0073E6?logo=appveyor&amp;logoColor=white&amp;style=for-the-badge" /></a>
+<a href="https://piashcse.blogspot.com"><img alt="Blog" src="https://img.shields.io/badge/-Blog-0077B5?logo=readme&amp;logoColor=white&amp;style=for-the-badge" /></a></p>
+<h1 id="license">License</h1>
+<pre><code>Copyright 2023 piashcse (Mehedi Hassan Piash)
+
+Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  </body>
+</html>
