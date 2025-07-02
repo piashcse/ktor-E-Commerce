@@ -1,31 +1,58 @@
 site_name: Ktor-E-Commerce
+site_url: https://github.com/piashcse/ktor-E-Commerce
+site_description: Ktor-E-Commerce is a high performance backend solution for modern e-commerce applications, built with JetBrain's ktor.
+
 theme:
   name: material
+  icon:
+    logo: material/library
   palette:
-    scheme: slate
-    primary: green
-    accent: cyan
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+   - navigation.tabs  # 👈 enables top tab bar
+  hide:
+   - navigation
 
 nav:
   - Home: index.md
-  - Auth: auth.md
-  - Profile: profile.md
-  - Shop Category: shop-category.md
-  - Shop: shop.md
-  - Brand: brand.md
-  - Product Category: product-category.md
-  - Product Sub Category: product-sub-category.md
-  - Product: product.md
-  - Review Rating: review-rating.md
-  - Cart: cart.md
-  - WishList: wishlist.md
-  - Order: order.md
-  - Payment: payment.md
-  - Privacy Policy: privacy-policy.md
-  - Privacy Policy Consent: privacy-policy-consent.md
+  - Documentation:
+      - Auth: auth.md
+      - Profile: profile.md
+      - Shop Category: shop-category.md
+      - Shop: shop.md
+      - Brand: brand.md
+      - Product Category: product-category.md
+      - Product Sub Category: product-sub-category.md
+      - Product: product.md
+      - Review Rating: review-rating.md
+      - WishList: wishlist.md
+      - Cart: cart.md
+      - Order: order.md
+      - Payment: payment.md
+      - Privacy Policy: privacy-policy.md
+      - Privacy Policy Consent: privacy-policy-consent.md
+  - Changelog: changelog.md
 
 repo_url: https://github.com/piashcse/ktor-ecommerce
 edit_uri: edit/main/docs/
 
 extra_css:
   - css/extra.css
+plugins:
+  - search
+  - meta  # 👈 Required for per-page 'hide' to work

@@ -1,3 +1,9 @@
-.md-nav__title {
-    display: none;
+/* Hides the sidebar label "Documentation" only */
+.md-nav__item:has(> .md-nav__title[data-md-label="Documentation"]) > .md-nav__title {
+    display: none !important;
+}
+
+/* Optional: removes top margin after title is hidden */
+.md-nav__item:has(> .md-nav__title[data-md-label="Documentation"]) > .md-nav__list {
+    margin-top: 0 !important;
 }

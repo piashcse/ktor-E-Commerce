@@ -1,3 +1,7 @@
+---
+hide:
+  - navigation
+---
 # Ktor-E-Commerce
 
 Ktor-E-Commerce is a high-performance backend solution designed for e-commerce applications built
@@ -150,7 +154,7 @@ object SmtpServer {
 [![Web](https://img.shields.io/badge/-Web-0073E6?logo=appveyor&logoColor=white&style=for-the-badge)](https://piashcse.github.io/)
 [![Blog](https://img.shields.io/badge/-Blog-0077B5?logo=readme&logoColor=white&style=for-the-badge)](https://piashcse.blogspot.com)
 
-# License
+## License
 
 ```
 Copyright 2023 piashcse (Mehedi Hassan Piash)
