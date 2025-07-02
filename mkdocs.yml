@@ -1,5 +1,4 @@
 site_name: Ktor-E-Commerce
-site_url: https://github.com/piashcse/ktor-E-Commerce
 site_description: Ktor-E-Commerce is a high performance backend solution for modern e-commerce applications, built with JetBrain's ktor.
 
 theme:
