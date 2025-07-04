@@ -308,36 +308,3 @@ The API returns appropriate HTTP status codes and error messages:
 | `shipped` | 3 | Order has been shipped |
 | `delivered` | 4 | Order has been delivered |
 | `cancelled` | 5 | Order has been cancelled |
-
----
-
-## Business Rules
-
-### Order Creation
-- All order items must reference valid product IDs
-- Order totals should be calculated correctly (subtotal + shipping = total)
-- Order status must be a valid status value
-- At least one order item is required
-
-### Order Updates
-- Only order status can be updated via the PATCH endpoint
-- Status transitions should follow business logic (e.g., cannot change from delivered to pending)
-- Order status updates may trigger notifications or other business processes
-
-### Order Retrieval
-- Orders are returned for the authenticated user
-- Pagination is supported through limit and offset parameters
-- Orders are typically returned in chronological order (newest first)
-
----
-
-## Notes
-
-- Order IDs are UUIDs and must be provided in valid UUID format for path parameters
-- The GET endpoint supports pagination through `limit` and `offset` parameters
-- Order status codes provide a numeric representation of status for easier processing
-- The `cancelOrder` field indicates if an order has been cancelled
-- Product availability should be checked before order creation
-- Order items are not directly exposed in the list endpoint but are part of the order creation process
-- Status updates are tracked with both string status and numeric status codes
-- Shipping charges are included in the total calculation
