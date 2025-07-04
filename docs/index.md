@@ -112,7 +112,10 @@ Connection tab:
 - Username: piashcse (the user you created for your application)
 - Password: p123 (the password you set for piashcse)
 
-![server1](screenshots/ktor-postgres.png)
+<p align="center">
+  </br>
+  <img width="60%" height="60%" src="https://raw.githubusercontent.com/piashcse/ktor-E-Commerce/master/screenshots/ktor-postgres.png" />
+</p>
 
 ## Run the project
 
