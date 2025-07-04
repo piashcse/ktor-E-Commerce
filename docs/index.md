@@ -11,7 +11,7 @@ scalable, and efficient service for handling your e-commerce needs.
 ## Swagger View
 
 <p align="center">
-  <img width="100%" height="40%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/swagger.gif" />
+  <img width="100%" height="40%" src="https://raw.githubusercontent.com/piashcse/ktor-E-Commerce/master/screenshots/swagger.gif" />
 </p>
 
 ## Features
@@ -58,7 +58,7 @@ scalable, and efficient service for handling your e-commerce needs.
 
 <p align="center">
   </br>
-  <img width="60%" height="60%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/onion_architecture.png" />
+  <img width="60%" height="60%" src="https://raw.githubusercontent.com/piashcse/ktor-E-Commerce/master/screenshots/onion_architecture.png" />
 </p>
 <p align="center">
 <b>Fig.  Onion Architecture </b>
