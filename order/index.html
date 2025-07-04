@@ -992,57 +992,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#business-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Business Rules
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Business Rules">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#order-creation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Order Creation
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#order-updates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Order Updates
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#order-retrieval" class="md-nav__link">
-    <span class="md-ellipsis">
-      Order Retrieval
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Notes
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -1458,57 +1407,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#business-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Business Rules
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Business Rules">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#order-creation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Order Creation
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#order-updates" class="md-nav__link">
-    <span class="md-ellipsis">
-      Order Updates
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#order-retrieval" class="md-nav__link">
-    <span class="md-ellipsis">
-      Order Retrieval
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Notes
-    </span>
-  </a>
   
 </li>
       
@@ -2121,39 +2019,6 @@
 </tr>
 </tbody>
 </table>
-<hr />
-<h2 id="business-rules">Business Rules</h2>
-<h3 id="order-creation">Order Creation</h3>
-<ul>
-<li>All order items must reference valid product IDs</li>
-<li>Order totals should be calculated correctly (subtotal + shipping = total)</li>
-<li>Order status must be a valid status value</li>
-<li>At least one order item is required</li>
-</ul>
-<h3 id="order-updates">Order Updates</h3>
-<ul>
-<li>Only order status can be updated via the PATCH endpoint</li>
-<li>Status transitions should follow business logic (e.g., cannot change from delivered to pending)</li>
-<li>Order status updates may trigger notifications or other business processes</li>
-</ul>
-<h3 id="order-retrieval">Order Retrieval</h3>
-<ul>
-<li>Orders are returned for the authenticated user</li>
-<li>Pagination is supported through limit and offset parameters</li>
-<li>Orders are typically returned in chronological order (newest first)</li>
-</ul>
-<hr />
-<h2 id="notes">Notes</h2>
-<ul>
-<li>Order IDs are UUIDs and must be provided in valid UUID format for path parameters</li>
-<li>The GET endpoint supports pagination through <code>limit</code> and <code>offset</code> parameters</li>
-<li>Order status codes provide a numeric representation of status for easier processing</li>
-<li>The <code>cancelOrder</code> field indicates if an order has been cancelled</li>
-<li>Product availability should be checked before order creation</li>
-<li>Order items are not directly exposed in the list endpoint but are part of the order creation process</li>
-<li>Status updates are tracked with both string status and numeric status codes</li>
-<li>Shipping charges are included in the total calculation</li>
-</ul>
 
 
 
