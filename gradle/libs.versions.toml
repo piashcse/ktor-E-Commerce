@@ -1,5 +1,5 @@
 [versions]
-ktor-version = "3.2.0"
+ktor-version = "3.2.1"
 kotlin-version = "2.1.21"
 logback-version = "1.5.17"
 exposed-version = "0.61.0"
