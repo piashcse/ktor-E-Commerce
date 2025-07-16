@@ -1,10 +1,10 @@
 [versions]
-ktor-version = "3.2.1"
+ktor-version = "3.2.2"
 kotlin-version = "2.1.21"
-logback-version = "1.5.17"
+logback-version = "1.5.18"
 exposed-version = "0.61.0"
 flyway-version = "9.22.3"
-postgresql-version = "42.7.4"
+postgresql-version = "42.7.7"
 hikari-version = "6.2.1"
 bcrypt-version = "0.10.2"
 kotlinx-datetime-version = "0.6.2"
@@ -13,7 +13,7 @@ valiktor-core-version = "0.12.0"
 commons-io-version = "2.17.0"
 ktor-swagger-ui-version = "5.1.0"
 shadow-version = "8.3.6"
-koin = "4.0.2"
+koin = "4.1.0"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
