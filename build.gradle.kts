@@ -22,22 +22,24 @@ repositories {
 }
 
 dependencies {
+    // Ktor core
     implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.content.negotiation)
-    implementation(libs.exposed.core)
-    implementation(libs.exposed.jdbc)
-    implementation(libs.ktor.serialization.gson)
-    implementation(libs.ktor.server.host.common)
-    implementation(libs.ktor.server.status.pages)
-    implementation(libs.ktor.server.auth)
-    implementation(libs.ktor.server.auth.jwt)
     implementation(libs.ktor.server.netty)
-    implementation(libs.logback.classic)
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.serialization.gson)
+    implementation(libs.ktor.server.status.pages)
     implementation(libs.ktor.server.call.logging)
     implementation(libs.ktor.server.request.validation)
-    testImplementation(libs.ktor.server.test.host)
-    testImplementation(libs.kotlin.test.junit)
+    implementation(libs.ktor.server.auth)
+    implementation(libs.ktor.server.auth.jwt)
+    implementation(libs.ktor.server.host.common)
 
+    // Logging
+    implementation(libs.logback.classic)
+
+    // Database & migration
+    implementation(libs.postgresql)
+    implementation(libs.hikari)
     implementation(libs.flyway.core)
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
@@ -45,30 +47,28 @@ dependencies {
     implementation(libs.exposed.java.time)
     implementation(libs.exposed.kotlin.datetime)
 
-    implementation(libs.postgresql)
-    implementation(libs.hikari)
-
+    // Utils
     implementation(libs.bcrypt)
-    implementation(libs.kotlinx.datetime)
     implementation(libs.commons.email)
     implementation(libs.valiktor.core)
     implementation(libs.commons.io)
 
+    // Swagger / OpenAPI
     implementation(libs.ktor.swagger.ui)
     implementation(libs.ktor.open.api)
 
+    // Dependency injection (Koin)
     implementation(libs.koin.ktor)
     implementation(libs.koin.core)
     implementation(libs.koin.logger)
+
+    // Testing
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.kotlin.test.junit)
 }
+
 kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-}
-tasks.withType<JavaCompile> {
-    sourceCompatibility = "17"
-    targetCompatibility = "17"
+    jvmToolchain(17)
 }
 
 java {
@@ -77,6 +77,6 @@ java {
     }
 }
 
-tasks.create("stage") {
+tasks.register("stage") {
     dependsOn("installDist")
 }
