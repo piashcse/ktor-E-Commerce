@@ -1,19 +1,18 @@
 [versions]
-ktor-version = "3.2.2"
+ktor-version = "3.3.0"
 kotlin-version = "2.1.21"
 logback-version = "1.5.18"
 exposed-version = "0.61.0"
 flyway-version = "9.22.3"
-postgresql-version = "42.7.7"
+postgre-sql-version = "42.7.7"
 hikari-version = "6.2.1"
 bcrypt-version = "0.10.2"
-kotlinx-datetime-version = "0.6.2"
 commons-email-version ="1.5"
 valiktor-core-version = "0.12.0"
 commons-io-version = "2.17.0"
-ktor-swagger-ui-version = "5.1.0"
+ktor-open-api-tools-version = "5.2.0"
 shadow-version = "8.3.6"
-koin = "4.1.0"
+koin-version = "4.1.1"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
@@ -36,18 +35,17 @@ exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "e
 exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed-version" }
 exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed-version" }
 exposed-kotlin-datetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed-version" }
-postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql-version" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgre-sql-version" }
 hikari = { module = "com.zaxxer:HikariCP", version.ref = "hikari-version" }
 bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt-version" }
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime-version" }
 commons-email = { module = "org.apache.commons:commons-email", version.ref = "commons-email-version" }
 valiktor-core = { module = "org.valiktor:valiktor-core", version.ref = "valiktor-core-version" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons-io-version" }
-ktor-swagger-ui = { module = "io.github.smiley4:ktor-swagger-ui", version.ref = "ktor-swagger-ui-version" }
-ktor-open-api = { module = "io.github.smiley4:ktor-openapi", version.ref = "ktor-swagger-ui-version" }
-koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
-koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
-koin-logger = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
+ktor-swagger-ui = { module = "io.github.smiley4:ktor-swagger-ui", version.ref = "ktor-open-api-tools-version" }
+ktor-open-api = { module = "io.github.smiley4:ktor-openapi", version.ref = "ktor-open-api-tools-version" }
+koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin-version" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-version" }
+koin-logger = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin-version" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
