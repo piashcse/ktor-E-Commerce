@@ -10,7 +10,8 @@
 
 Ktor-E-Commerce is a high-performance backend solution designed for modern e-commerce applications built
 with [ktor](https://ktor.io/docs/welcome.html). This backend leverages the power of Kotlin to provide a robust,
-scalable, and efficient service for handling your e-commerce needs.
+scalable, and efficient service for handling your e-commerce needs. For detailed documentation and guides, visit the project [documentation](https://piashcse.github.io/ktor-E-Commerce).
+
 
 ## Swagger View
 
