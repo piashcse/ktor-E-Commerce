@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.commons.email)
     implementation(libs.valiktor.core)
     implementation(libs.commons.io)
+    implementation(libs.dotenv.kotlin)
 
     // Swagger / OpenAPI
     implementation(libs.ktor.swagger.ui)

@@ -1,5 +1,6 @@
 package com.piashcse.database
 
+import com.piashcse.config.DotEnvConfig
 import com.piashcse.database.entities.*
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -39,8 +40,16 @@ fun configureDataBase() {
 }
 
 private fun initDB() {
-    // database connection is handled from hikari properties
-    HikariDataSource(HikariConfig("/hikari.properties")).also { dataSource ->
+    // Create HikariConfig with values from DotEnv
+    // we can also define from hikari.properties like HikariDataSource(HikariConfig("/hikari.properties"))
+    val config = HikariConfig().apply {
+        driverClassName = "org.postgresql.Driver"
+        jdbcUrl = "jdbc:postgresql://${DotEnvConfig.dbHost}:${DotEnvConfig.dbPort}/${DotEnvConfig.dbName}"
+        username = DotEnvConfig.dbUser
+        password = DotEnvConfig.dbPassword
+    }
+    
+    HikariDataSource(config).also { dataSource ->
         runFlyway(dataSource)
         Database.connect(dataSource)
     }

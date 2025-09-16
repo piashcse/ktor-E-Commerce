@@ -12,6 +12,39 @@ Ktor-E-Commerce is a high-performance backend solution designed for modern e-com
 with [ktor](https://ktor.io/docs/welcome.html). This backend leverages the power of Kotlin to provide a robust,
 scalable, and efficient service for handling your e-commerce needs.
 
+## Environment Configuration
+
+This project now uses DotEnv for configuration management. Create a `.env` file in the project root with the following variables:
+
+```env
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=ktor-1.0.0
+DB_USER=postgres
+DB_PASSWORD=p123
+
+# Server Configuration
+PORT=8080
+HOST=localhost
+
+# JWT Configuration
+JWT_SECRET=zAP5MBA4B4Ijz0MZaS48
+JWT_ISSUER=piashcse
+JWT_AUDIENCE=ktor-ecommerce
+JWT_REALM=ktor-ecommerce
+
+# Email Configuration
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USERNAME=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password
+```
+
+The `.env` file is included in `.gitignore` to prevent sensitive information from being committed to the repository.
+
+For more detailed information about environment variables and how to use them, please refer to our [Environment Variables Documentation](docs/environment-variables.md).
+
 ## Swagger View
 
 <p align="center">
@@ -65,7 +98,7 @@ scalable, and efficient service for handling your e-commerce needs.
   <img width="60%" height="60%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/onion_architecture.png" />
 </p>
 <p align="center">
-<b>Fig.  Onion Architecture </b>
+<b>Fig. Clean Architecture </b>
 </p>
 
 ## Built With 🛠

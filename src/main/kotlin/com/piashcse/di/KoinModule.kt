@@ -22,7 +22,6 @@ val controllerModule = module {
     single { BrandService() }
     single { CartService() }
     single { OrderService() }
-    single { OrderService() }
     single { ProductService() }
     single { ProductCategoryService() }
     single { ProductSubCategoryService() }

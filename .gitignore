@@ -3,3 +3,4 @@
 /build/
 /.idea/
 /src/main/resources/hikari.properties
+.env
