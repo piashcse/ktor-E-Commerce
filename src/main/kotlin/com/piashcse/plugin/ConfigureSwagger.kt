@@ -1,5 +1,6 @@
 package com.piashcse.plugin
 
+import com.piashcse.config.DotEnvConfig
 import io.github.smiley4.ktoropenapi.OpenApi
 import io.github.smiley4.ktoropenapi.config.AuthScheme
 import io.github.smiley4.ktoropenapi.config.AuthType
@@ -22,7 +23,7 @@ fun Application.configureSwagger() {
             }
         }
         server {
-            url = "http://localhost:8080/"
+            url = "http://localhost:${DotEnvConfig.serverPort}/"
             description = "Development Server"
         }
         server {

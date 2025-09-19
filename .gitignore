@@ -2,4 +2,6 @@
 /.gradle/
 /build/
 /.idea/
+/out/
 /src/main/resources/hikari.properties
+.env

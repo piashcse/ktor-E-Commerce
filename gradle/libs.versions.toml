@@ -13,6 +13,7 @@ commons-io-version = "2.17.0"
 ktor-open-api-tools-version = "5.2.0"
 shadow-version = "8.3.6"
 koin-version = "4.1.1"
+dotenv-version = "6.4.1"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
@@ -46,6 +47,7 @@ ktor-open-api = { module = "io.github.smiley4:ktor-openapi", version.ref = "ktor
 koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin-version" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-version" }
 koin-logger = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin-version" }
+dotenv-kotlin = { module = "io.github.cdimascio:dotenv-kotlin", version.ref = "dotenv-version" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }

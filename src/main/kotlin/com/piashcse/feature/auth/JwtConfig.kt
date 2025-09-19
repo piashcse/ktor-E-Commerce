@@ -3,6 +3,7 @@ package com.piashcse.feature.auth
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
+import com.piashcse.config.DotEnvConfig
 import com.piashcse.model.request.JwtTokenRequest
 import io.ktor.server.config.*
 import java.util.*
@@ -16,9 +17,9 @@ object JwtConfig {
     lateinit var verifier: JWTVerifier
         private set
 
-    fun init(environment: HoconApplicationConfig) {
-        secret = environment.property("ktor.jwt.secret").getString()
-        issuer = environment.property("ktor.jwt.issuer").getString()
+    fun init() {
+        secret = DotEnvConfig.jwtSecret
+        issuer = DotEnvConfig.jwtIssuer
         algorithm = Algorithm.HMAC512(secret)
         verifier = JWT.require(algorithm).withIssuer(issuer).build()
     }
