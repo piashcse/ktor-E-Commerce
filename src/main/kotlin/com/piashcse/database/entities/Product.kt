@@ -22,12 +22,12 @@ object ProductTable : BaseIntIdTable("product") {
     val hotDeal = bool("hot_deal").default(false) // Whether it's a hot deal or not
     val featured = bool("featured").default(false) // Whether the product is featured or not
     val images = varchar("images", 1000) // Comma-separated image URLs for the product
-    val status = enumerationByName("status", 50, ProductStatus::class).default(ProductStatus.ACTIVE) // Product status
+    val status = enumerationByName<ProductStatus>("status", 50).default(ProductStatus.ACTIVE) // Product status
 
 }
 
 class ProductDAO(id: EntityID<String>) : BaseIntEntity(id, ProductTable) {
-    companion object : BaseIntEntityClass<ProductDAO>(ProductTable)
+    companion object : BaseIntEntityClass<ProductDAO>(ProductTable, ProductDAO::class.java)
 
     var userId by ProductTable.userId
     var categoryId by ProductTable.categoryId

@@ -13,7 +13,7 @@ object CartItemTable : BaseIntIdTable("cart_item") {
 }
 
 class CartItemDAO(id: EntityID<String>) : BaseIntEntity(id, CartItemTable) {
-    companion object : BaseIntEntityClass<CartItemDAO>(CartItemTable)
+    companion object : BaseIntEntityClass<CartItemDAO>(CartItemTable, CartItemDAO::class.java)
 
     var userId by CartItemTable.userId
     var productId by CartItemTable.productId

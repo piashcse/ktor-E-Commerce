@@ -13,7 +13,7 @@ object OrderItemTable : BaseIntIdTable("order_item") {
 }
 
 class OrderItemDAO(id: EntityID<String>) : BaseIntEntity(id, OrderItemTable) {
-    companion object : BaseIntEntityClass<OrderItemDAO>(OrderItemTable)
+    companion object : BaseIntEntityClass<OrderItemDAO>(OrderItemTable,OrderItemDAO::class.java)
 
     var orderId by OrderItemTable.orderId
     var productId by OrderItemTable.productId

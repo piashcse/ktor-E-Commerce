@@ -12,7 +12,7 @@ object ShopCategoryTable : BaseIntIdTable("shop_category") {
 }
 
 class ShopCategoryDAO(id: EntityID<String>) : BaseIntEntity(id, ShopCategoryTable) {
-    companion object : BaseIntEntityClass<ShopCategoryDAO>(ShopCategoryTable)
+    companion object : BaseIntEntityClass<ShopCategoryDAO>(ShopCategoryTable, ShopCategoryDAO::class.java)
 
     var name by ShopCategoryTable.name
     fun response() = ShopCategory(id.value, name)

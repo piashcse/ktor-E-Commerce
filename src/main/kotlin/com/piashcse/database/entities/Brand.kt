@@ -4,7 +4,6 @@ import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
 import com.piashcse.model.response.Brand
-
 import org.jetbrains.exposed.dao.id.EntityID
 
 object BrandTable : BaseIntIdTable("brand") {
@@ -13,7 +12,7 @@ object BrandTable : BaseIntIdTable("brand") {
 }
 
 class BrandDAO(id: EntityID<String>) : BaseIntEntity(id, BrandTable) {
-    companion object : BaseIntEntityClass<BrandDAO>(BrandTable)
+    companion object : BaseIntEntityClass<BrandDAO>(BrandTable, BrandDAO::class.java)
 
     var name by BrandTable.name
     var logo by BrandTable.logo

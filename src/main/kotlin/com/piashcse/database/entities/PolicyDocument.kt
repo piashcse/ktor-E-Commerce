@@ -37,7 +37,7 @@ object PolicyDocumentTable : BaseIntIdTable("policy_documents") {
  * Data Access Object for policy documents
  */
 class PolicyDocumentDAO(id: EntityID<String>) : BaseIntEntity(id, PolicyDocumentTable) {
-    companion object : BaseIntEntityClass<PolicyDocumentDAO>(PolicyDocumentTable)
+    companion object : BaseIntEntityClass<PolicyDocumentDAO>(PolicyDocumentTable, PolicyDocumentDAO::class.java)
 
     var title by PolicyDocumentTable.title
     var type by PolicyDocumentTable.type
