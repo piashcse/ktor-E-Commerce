@@ -14,7 +14,7 @@ object ReviewRatingTable : BaseIntIdTable("review_rating") {
 }
 
 class ReviewRatingDAO(id: EntityID<String>) : BaseIntEntity(id, ReviewRatingTable) {
-    companion object : BaseIntEntityClass<ReviewRatingDAO>(ReviewRatingTable)
+    companion object : BaseIntEntityClass<ReviewRatingDAO>(ReviewRatingTable, ReviewRatingDAO::class.java)
 
     var userId by ReviewRatingTable.userId
     var productId by ReviewRatingTable.productId

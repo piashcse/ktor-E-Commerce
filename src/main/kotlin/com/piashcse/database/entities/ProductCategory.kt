@@ -12,7 +12,7 @@ object ProductCategoryTable : BaseIntIdTable("category") {
 }
 
 class ProductCategoryDAO(id: EntityID<String>) : BaseIntEntity(id, ProductCategoryTable) {
-    companion object : BaseIntEntityClass<ProductCategoryDAO>(ProductCategoryTable)
+    companion object : BaseIntEntityClass<ProductCategoryDAO>(ProductCategoryTable, ProductCategoryDAO::class.java)
 
     var name by ProductCategoryTable.name
     private val subCategories by ProductSubCategoryDAO referrersOn ProductSubCategoryTable.categoryId

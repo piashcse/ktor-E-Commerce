@@ -25,7 +25,7 @@ object PolicyConsentTable : BaseIntIdTable("policy_consents") {
  * Data Access Object for user policy consents
  */
 class PolicyConsentDAO(id: EntityID<String>) : BaseIntEntity(id, PolicyConsentTable) {
-    companion object : BaseIntEntityClass<PolicyConsentDAO>(PolicyConsentTable)
+    companion object : BaseIntEntityClass<PolicyConsentDAO>(PolicyConsentTable, PolicyConsentDAO::class.java)
 
     var userId by PolicyConsentTable.userId
     var policyId by PolicyDocumentDAO referencedOn PolicyConsentTable.policyId

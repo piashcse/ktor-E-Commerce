@@ -13,7 +13,7 @@ object ShopTable : BaseIntIdTable("shop") {
 }
 
 class ShopDAO(id: EntityID<String>) : BaseIntEntity(id, ShopTable) {
-    companion object : BaseIntEntityClass<ShopDAO>(ShopTable)
+    companion object : BaseIntEntityClass<ShopDAO>(ShopTable, ShopDAO::class.java)
 
     var userId by ShopTable.userId
     var categoryId by ShopTable.categoryId

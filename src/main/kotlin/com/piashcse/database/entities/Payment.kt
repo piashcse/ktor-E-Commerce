@@ -17,7 +17,7 @@ object PaymentTable : BaseIntIdTable("payment") {
 }
 
 class PaymentDAO(id: EntityID<String>) : BaseIntEntity(id, PaymentTable) {
-    companion object : BaseIntEntityClass<PaymentDAO>(PaymentTable) // Reference the Payments table
+    companion object : BaseIntEntityClass<PaymentDAO>(PaymentTable,PaymentDAO::class.java ) // Reference the Payments table
 
     var paymentId by PaymentTable.id
     var orderId by PaymentTable.orderId

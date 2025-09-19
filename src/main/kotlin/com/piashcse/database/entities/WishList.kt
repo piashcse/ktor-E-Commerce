@@ -12,7 +12,7 @@ object WishListTable : BaseIntIdTable("wishlist") {
 }
 
 class WishListDAO(id: EntityID<String>) : BaseIntEntity(id, WishListTable) {
-    companion object : BaseIntEntityClass<WishListDAO>(WishListTable)
+    companion object : BaseIntEntityClass<WishListDAO>(WishListTable,WishListDAO::class.java)
 
     var userId by WishListTable.userId
     var productId by WishListTable.productId

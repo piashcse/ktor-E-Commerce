@@ -23,7 +23,7 @@ object ShippingTable : BaseIntIdTable("shipping") {
 }
 
 class ShippingDAO(id: EntityID<String>) : BaseIntEntity(id, ShippingTable) {
-    companion object : BaseIntEntityClass<ShippingDAO>(ShippingTable)
+    companion object : BaseIntEntityClass<ShippingDAO>(ShippingTable, ShippingDAO::class.java)
 
     var orderId by ShippingTable.orderId
     var address by ShippingTable.address

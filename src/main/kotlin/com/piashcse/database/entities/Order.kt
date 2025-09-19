@@ -11,11 +11,11 @@ object OrderTable : BaseIntIdTable("order") {
     val userId = reference("user_id", UserTable.id)
     val subTotal = float("sub_total")
     val total = float("total")
-    val status = enumerationByName("status", 30, OrderStatus::class).clientDefault { OrderStatus.PENDING }
+    val status = enumerationByName<OrderStatus>("status", 30).clientDefault { OrderStatus.PENDING }
 }
 
 class OrderDAO(id: EntityID<String>) : BaseIntEntity(id, OrderTable) {
-    companion object : BaseIntEntityClass<OrderDAO>(OrderTable)
+    companion object : BaseIntEntityClass<OrderDAO>(OrderTable, OrderDAO::class.java)
 
     var userId by OrderTable.userId
     var subTotal by OrderTable.subTotal

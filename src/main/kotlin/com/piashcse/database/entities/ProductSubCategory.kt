@@ -14,7 +14,7 @@ object ProductSubCategoryTable : BaseIntIdTable("sub_category") {
 }
 
 class ProductSubCategoryDAO(id: EntityID<String>) : BaseIntEntity(id, ProductSubCategoryTable) {
-    companion object : BaseIntEntityClass<ProductSubCategoryDAO>(ProductSubCategoryTable)
+    companion object : BaseIntEntityClass<ProductSubCategoryDAO>(ProductSubCategoryTable, ProductSubCategoryDAO::class.java)
 
     var categoryId by ProductSubCategoryTable.categoryId
     var name by ProductSubCategoryTable.name

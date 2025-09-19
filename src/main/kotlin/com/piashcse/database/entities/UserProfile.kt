@@ -24,7 +24,7 @@ object UserProfileTable : BaseIntIdTable("user_profile") {
 }
 
 class UsersProfileDAO(id: EntityID<String>) : BaseIntEntity(id, UserProfileTable) {
-    companion object : BaseIntEntityClass<UsersProfileDAO>(UserProfileTable)
+    companion object : BaseIntEntityClass<UsersProfileDAO>(UserProfileTable,UsersProfileDAO::class.java)
 
     var userId by UserProfileTable.userId
     var image by UserProfileTable.image

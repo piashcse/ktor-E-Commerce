@@ -1,8 +1,12 @@
 package com.piashcse.database.entities.base
 
-import org.jetbrains.exposed.dao.*
+import org.jetbrains.exposed.dao.Entity
+import org.jetbrains.exposed.dao.EntityClass
+import org.jetbrains.exposed.dao.EntityChangeType
+import org.jetbrains.exposed.dao.EntityHook
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
+import org.jetbrains.exposed.dao.toEntity
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
@@ -20,7 +24,8 @@ abstract class BaseIntEntity(id: EntityID<String>, table: BaseIntIdTable) : Enti
     val createdAt by table.createdAt
     var updatedAt by table.updatedAt
 }
-abstract class BaseIntEntityClass<E : BaseIntEntity>(table: BaseIntIdTable) : EntityClass<String, E>(table){
+
+abstract class BaseIntEntityClass<E : BaseIntEntity>(table: BaseIntIdTable, entityType: Class<E>) : EntityClass<String, E>(table, entityType) {
     init {
         EntityHook.subscribe { action ->
             if (action.changeType == EntityChangeType.Updated) {
@@ -33,6 +38,7 @@ abstract class BaseIntEntityClass<E : BaseIntEntity>(table: BaseIntIdTable) : En
         }
     }
 }
+
 // generating utc time
-fun currentUtc(): LocalDateTime =  LocalDateTime.now(ZoneOffset.UTC)
+fun currentUtc(): LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
 

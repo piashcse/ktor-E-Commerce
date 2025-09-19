@@ -6,9 +6,10 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils.create
-import org.jetbrains.exposed.sql.StdOutSqlLogger
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.Slf4jSqlDebugLogger
 import org.jetbrains.exposed.sql.addLogger
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import javax.sql.DataSource
 
@@ -16,8 +17,8 @@ import javax.sql.DataSource
 fun configureDataBase() {
     initDB()
     transaction {
-        addLogger(StdOutSqlLogger)
-        create(
+        TransactionManager.current().addLogger(Slf4jSqlDebugLogger)
+        SchemaUtils.create(
             UserTable,
             UserProfileTable,
             ShopTable,
