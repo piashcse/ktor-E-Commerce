@@ -5,7 +5,7 @@ import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
 import com.piashcse.model.response.ProductSubCategory
-import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object ProductSubCategoryTable : BaseIntIdTable("sub_category") {
     val categoryId = reference("category_id", ProductCategoryTable.id)

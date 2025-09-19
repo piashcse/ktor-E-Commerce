@@ -8,7 +8,9 @@ import com.piashcse.model.response.PolicyDocument
 import com.piashcse.utils.CommonException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
-import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.neq
 
 class PolicyService : PolicyRepository {
     /**

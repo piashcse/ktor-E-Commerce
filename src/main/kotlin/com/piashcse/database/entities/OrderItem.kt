@@ -3,7 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
-import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object OrderItemTable : BaseIntIdTable("order_item") {
     val orderId = reference("order_id", OrderTable.id)

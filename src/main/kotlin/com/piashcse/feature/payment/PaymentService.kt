@@ -8,7 +8,8 @@ import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.Payment
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
-import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.eq
 
 /**
  * Controller for managing payment-related operations.

@@ -1,14 +1,14 @@
 package com.piashcse.database.entities.base
 
-import org.jetbrains.exposed.dao.Entity
-import org.jetbrains.exposed.dao.EntityClass
-import org.jetbrains.exposed.dao.EntityChangeType
-import org.jetbrains.exposed.dao.EntityHook
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IdTable
-import org.jetbrains.exposed.dao.toEntity
-import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.javatime.datetime
+import org.jetbrains.exposed.v1.core.Column
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.dao.id.IdTable
+import org.jetbrains.exposed.v1.dao.Entity
+import org.jetbrains.exposed.v1.dao.EntityChangeType
+import org.jetbrains.exposed.v1.dao.EntityClass
+import org.jetbrains.exposed.v1.dao.EntityHook
+import org.jetbrains.exposed.v1.dao.toEntity
+import org.jetbrains.exposed.v1.javatime.datetime
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*

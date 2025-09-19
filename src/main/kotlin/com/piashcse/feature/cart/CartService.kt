@@ -5,8 +5,9 @@ import com.piashcse.model.response.Product
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.eq
 
 /**
  * Controller for managing cart-related operations.
