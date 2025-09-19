@@ -5,7 +5,8 @@ import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.model.response.UserPolicyConsent
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
-import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
 import java.time.LocalDateTime
 
 class ConsentService: ConsentRepository {

@@ -8,7 +8,8 @@ import com.piashcse.model.response.Shipping
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
-import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.eq
 
 /**
  * Controller for managing shipping details. Provides methods to add, get, update, and delete shipping information.

@@ -7,6 +7,7 @@ import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.model.response.UserProfile
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
+import org.jetbrains.exposed.v1.core.eq
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths

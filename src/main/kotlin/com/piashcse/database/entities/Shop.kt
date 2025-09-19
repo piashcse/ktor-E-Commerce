@@ -4,7 +4,7 @@ import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
 import com.piashcse.model.response.Shop
-import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object ShopTable : BaseIntIdTable("shop") {
     val userId = reference("user_id", UserTable.id)

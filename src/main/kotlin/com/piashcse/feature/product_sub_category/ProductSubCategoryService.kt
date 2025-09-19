@@ -9,7 +9,8 @@ import com.piashcse.model.response.ProductSubCategory
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
-import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.eq
 
 /**
  * Controller for managing product subcategories. Provides methods to add, update, retrieve, and delete product subcategories.

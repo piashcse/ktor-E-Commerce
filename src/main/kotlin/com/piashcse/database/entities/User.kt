@@ -5,7 +5,7 @@ import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
 import com.piashcse.feature.auth.JwtConfig
 import com.piashcse.model.request.JwtTokenRequest
-import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object UserTable : BaseIntIdTable("user") {
     val email = varchar("email", 255) // Nullable for mobile users

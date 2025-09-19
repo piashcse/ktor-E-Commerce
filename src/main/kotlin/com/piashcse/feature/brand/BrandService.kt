@@ -6,6 +6,7 @@ import com.piashcse.model.response.Brand
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
+import org.jetbrains.exposed.v1.core.eq
 
 /**
  * Controller for managing brand-related operations.

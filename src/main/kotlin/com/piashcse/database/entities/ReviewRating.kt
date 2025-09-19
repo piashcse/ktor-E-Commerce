@@ -4,7 +4,12 @@ import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
 import com.piashcse.model.response.ReviewRating
-import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.Table.Dual.check
+import org.jetbrains.exposed.v1.core.Table.Dual.integer
+import org.jetbrains.exposed.v1.core.Table.Dual.reference
+import org.jetbrains.exposed.v1.core.Table.Dual.varchar
+import org.jetbrains.exposed.v1.core.between
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object ReviewRatingTable : BaseIntIdTable("review_rating") {
     val userId = reference("user_id", UserTable.id)

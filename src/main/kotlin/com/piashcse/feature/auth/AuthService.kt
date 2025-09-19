@@ -12,7 +12,9 @@ import com.piashcse.model.response.Registration
 import com.piashcse.utils.*
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
-import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.neq
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
