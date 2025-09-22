@@ -2,7 +2,7 @@ package com.piashcse.feature.profile
 
 import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.UserProfileTable
-import com.piashcse.database.entities.UsersProfileDAO
+import com.piashcse.database.entities.UserProfileDAO
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.model.response.UserProfile
 import com.piashcse.utils.extension.notFoundException
@@ -33,7 +33,7 @@ class ProfileService : ProfileRepository {
      */
     override suspend fun getProfile(userId: String): UserProfile = query {
         val isProfileExist =
-            UsersProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+            UserProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         isProfileExist?.response() ?: throw userId.notFoundException()
     }
 
@@ -47,7 +47,7 @@ class ProfileService : ProfileRepository {
      */
     override suspend fun updateProfile(userId: String, userProfile: UserProfileRequest?): UserProfile = query {
         val userProfileEntity =
-            UsersProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+            UserProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         userProfileEntity?.let {
             it.firstName = userProfile?.firstName ?: it.firstName
             it.lastName = userProfile?.lastName ?: it.lastName
@@ -74,7 +74,7 @@ class ProfileService : ProfileRepository {
      */
     override suspend fun updateProfileImage(userId: String, profileImage: String?): UserProfile = query {
         val userProfileEntity =
-            UsersProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+            UserProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
 
         // Delete previous profile image if it exists, as the new one will replace it.
         userProfileEntity?.image?.let {

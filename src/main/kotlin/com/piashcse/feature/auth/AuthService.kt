@@ -68,7 +68,7 @@ class AuthService : AuthRepository {
 
             // If this is a new user (not existing with different role), create profile
             if (existingUserWithDifferentType == null) {
-                UsersProfileDAO.new {
+                UserProfileDAO.new {
                     userId = inserted.id
                 }
             }
