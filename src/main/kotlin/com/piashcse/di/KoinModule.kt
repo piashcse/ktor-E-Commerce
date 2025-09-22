@@ -18,7 +18,7 @@ import com.piashcse.feature.shop_category.ShopCategoryService
 import com.piashcse.feature.wishlist.WishListService
 import org.koin.dsl.module
 
-val controllerModule = module {
+val serviceModule = module {
     single { BrandService() }
     single { CartService() }
     single { OrderService() }
