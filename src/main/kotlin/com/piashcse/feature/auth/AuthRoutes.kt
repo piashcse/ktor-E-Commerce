@@ -38,9 +38,23 @@ fun Route.authRoutes(authController: AuthService) {
             apiResponse()
         }) {
             val requestBody = call.receive<LoginRequest>()
+            // Extract user agent and IP address from the request
+            val userAgent = call.request.headers["User-Agent"]
+            // Use the local address as fallback since origin may have name conflicts
+            val clientIP = call.request.local.remoteAddress
+            
+            // Create updated request with client information
+            val loginRequest = LoginRequest(
+                email = requestBody.email,
+                password = requestBody.password,
+                userType = requestBody.userType,
+                userAgent = userAgent,
+                ipAddress = clientIP
+            )
+            
             call.respond(
                 ApiResponse.success(
-                    authController.login(requestBody), HttpStatusCode.OK
+                    authController.login(loginRequest), HttpStatusCode.OK
                 )
             )
         }
@@ -198,6 +212,60 @@ fun Route.authRoutes(authController: AuthService) {
                     ) else call.respond(
                         ApiResponse.failure(
                             "Old password is wrong", HttpStatusCode.OK
+                        )
+                    )
+                }
+            }
+        }
+
+        /** 
+         * Refreshes the access token using a refresh token.
+         *
+         * Receives a [RefreshTokenRequest] object and responds with a new access token.
+         */
+        post("refresh", {
+            tags("Auth")
+            request {
+                body<RefreshTokenRequest>()
+            }
+            apiResponse()
+        }) {
+            val requestBody = call.receive<RefreshTokenRequest>()
+            try {
+                call.respond(
+                    ApiResponse.success(
+                        authController.refreshToken(requestBody), HttpStatusCode.OK
+                    )
+                )
+            } catch (e: Exception) {
+                call.respond(
+                    ApiResponse.failure(
+                        e.message ?: "Invalid refresh token", HttpStatusCode.Unauthorized
+                    )
+                )
+            }
+        }
+
+        /** 
+         * Logs out the user by invalidating the refresh token.
+         *
+         * Requires a valid JWT token for authentication.
+         */
+        authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
+            post("logout", {
+                tags("Auth")
+                protected = true
+                apiResponse()
+            }) {
+                val loginUser = call.principal<JwtTokenRequest>()
+                // Get refresh token from header, query parameter, or body
+                val refreshToken = call.request.headers["Refresh-Token"] ?: 
+                                  call.request.queryParameters["refreshToken"] ?: 
+                                  run { /* Try to get from body if needed */ null }
+                authController.logout(loginUser?.userId!!, refreshToken).let {
+                    call.respond(
+                        ApiResponse.success(
+                            "Successfully logged out", HttpStatusCode.OK
                         )
                     )
                 }

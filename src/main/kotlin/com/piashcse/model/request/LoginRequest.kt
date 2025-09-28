@@ -10,7 +10,9 @@ import org.valiktor.validate
 data class LoginRequest(
    val email: String,
    val password: String,
-   val userType: String
+   val userType: String,
+   val userAgent: String? = null,
+   val ipAddress: String? = null
 ) {
     fun validation() {
         validate(this) {

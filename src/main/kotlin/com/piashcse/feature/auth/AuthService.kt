@@ -5,7 +5,9 @@ import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.ForgetPasswordRequest
+import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.model.request.LoginRequest
+import com.piashcse.model.request.RefreshTokenRequest
 import com.piashcse.model.request.RegisterRequest
 import com.piashcse.model.request.ResetRequest
 import com.piashcse.model.response.Registration
@@ -17,6 +19,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.neq
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 class AuthService : AuthRepository {
     /**
@@ -108,7 +111,28 @@ class AuthService : AuthRepository {
                 ).verified
             ) {
                 if (it.isVerified) {
-                    it.loggedInWithToken()
+                    // First, deactivate any existing refresh tokens for this user
+                    RefreshTokenDAO.find { 
+                        (RefreshTokenTable.userId eq it.id.value) and (RefreshTokenTable.isActive eq true) 
+                    }.forEach { token ->
+                        token.isActive = false
+                    }
+                    
+                    // Generate a new refresh token
+                    val refreshTokenValue = generateRefreshToken()
+                    
+                    // Store the refresh token in the database with client information
+                    RefreshTokenDAO.new {
+                        token = refreshTokenValue
+                        userId = it.id.value
+                        expiryDate = (System.currentTimeMillis() + JwtConfig.REFRESH_TOKEN_VALIDITY_MS) // 7 days validity in milliseconds
+                        // createdDate will be set automatically by default
+                        isActive = true
+                        userAgent = loginRequest.userAgent // Store user agent if provided
+                        ipAddress = loginRequest.ipAddress // Store IP address if provided
+                    }
+                    
+                    it.loggedInWithToken(refreshTokenValue)
                 } else {
                     throw CommonException(Message.ACCOUNT_NOT_VERIFIED)
                 }
@@ -220,5 +244,115 @@ class AuthService : AuthRepository {
         } else {
             AppConstants.DataBaseTransaction.NOT_FOUND
         }
+    }
+
+    override suspend fun refreshToken(refreshTokenRequest: RefreshTokenRequest): LoginResponse = query {
+        // Find the refresh token in the database
+        val refreshTokenEntity = RefreshTokenDAO.find { 
+            RefreshTokenTable.token eq refreshTokenRequest.refreshToken 
+        }.singleOrNull()
+
+        // Check if the token exists and is still active and not expired
+        if (refreshTokenEntity != null && 
+            refreshTokenEntity.isActive && 
+            refreshTokenEntity.expiryDate > System.currentTimeMillis()) {
+            
+            // Find the associated user
+            val userEntity = UserDAO.findById(refreshTokenEntity.userId)
+            userEntity?.let {
+                if (it.isVerified) {
+                    // Check if we're within the maximum lifetime for this token
+                    // We'll implement a sliding window approach - if the token was created more than 
+                    // MAX_REFRESH_TOKEN_LIFETIME_MS ago, we'll reject it
+                    val maxLifetimeExpiry = refreshTokenEntity.createdDate + JwtConfig.MAX_REFRESH_TOKEN_LIFETIME_MS
+                    
+                    if (System.currentTimeMillis() > maxLifetimeExpiry) {
+                        // Token has exceeded its maximum lifetime, deactivate it
+                        refreshTokenEntity.isActive = false
+                        throw CommonException("Refresh token has exceeded maximum lifetime")
+                    }
+                    
+                    // Optional: Add additional security checks such as user agent/IP matching
+                    // This is commented out for now as these checks might be too restrictive for mobile apps or changing networks
+                    /*
+                    val currentClientInfo = extractClientInfo() // Function to extract from the request
+                    if (refreshTokenEntity.userAgent != null && refreshTokenEntity.userAgent != currentClientInfo.userAgent) {
+                        // User agent mismatch - potential security issue
+                        refreshTokenEntity.isActive = false
+                        throw CommonException("Security mismatch - user agent changed")
+                    }
+                    if (refreshTokenEntity.ipAddress != null && refreshTokenEntity.ipAddress != currentClientInfo.ipAddress) {
+                        // IP address mismatch - potential security issue
+                        refreshTokenEntity.isActive = false
+                        throw CommonException("Security mismatch - IP address changed")
+                    }
+                    */
+                    
+                    // Generate new tokens
+                    val newRefreshTokenValue = generateRefreshToken()
+                    
+                    // Deactivate the old refresh token to prevent reuse (rotation)
+                    refreshTokenEntity.isActive = false
+                    
+                    // Store the new refresh token in the database with updated expiry
+                    RefreshTokenDAO.new {
+                        token = newRefreshTokenValue
+                        userId = it.id.value
+                        expiryDate = (System.currentTimeMillis() + JwtConfig.REFRESH_TOKEN_VALIDITY_MS) // 7 days validity
+                        // createdDate will be set automatically by default (this is a new token)
+                        isActive = true
+                        userAgent = refreshTokenEntity.userAgent // Copy original user agent for validation
+                        ipAddress = refreshTokenEntity.ipAddress // Copy original IP for validation
+                    }
+                    
+                    // Return new access token and refresh token with metadata
+                    LoginResponse(
+                        user = userEntity.response(),
+                        accessToken = JwtConfig.tokenProvider(JwtTokenRequest(it.id.value, it.email, it.userType)),
+                        refreshToken = newRefreshTokenValue,
+                        tokenType = "Bearer",
+                        expiresIn = JwtConfig.ACCESS_TOKEN_VALIDITY_MS / 1000 // 30 minutes in seconds
+                    )
+                } else {
+                    throw CommonException(Message.ACCOUNT_NOT_VERIFIED)
+                }
+            } ?: throw "User not found for refresh token".notFoundException()
+        } else {
+            // Token is invalid, expired, or has been used already (not active)
+            // Mark as invalid if it exists but is not active (possible reuse attack)
+            refreshTokenEntity?.let {
+                if (!it.isActive) {
+                    // This token has already been used - possible security issue
+                    // Log security event if needed
+                }
+            }
+            throw CommonException("Invalid or expired refresh token")
+        }
+    }
+
+    override suspend fun logout(userId: String, refreshToken: String?): Boolean = query {
+        var tokensUpdated = false
+        
+        // If refresh token is provided, deactivate only that specific token
+        if (!refreshToken.isNullOrEmpty()) {
+            val refreshTokenEntity = RefreshTokenDAO.find { 
+                RefreshTokenTable.token eq refreshToken 
+            }.singleOrNull()
+            
+            refreshTokenEntity?.let {
+                it.isActive = false
+                tokensUpdated = true
+            }
+        }
+        
+        // Deactivate all active refresh tokens for the user
+        RefreshTokenDAO.find { 
+            (RefreshTokenTable.userId eq userId) and (RefreshTokenTable.isActive eq true) 
+        }.forEach { token ->
+            token.isActive = false
+            tokensUpdated = true
+        }
+        
+        tokensUpdated
     }
 }

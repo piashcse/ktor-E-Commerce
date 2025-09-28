@@ -7,7 +7,7 @@ import com.piashcse.feature.auth.JwtConfig
 import com.piashcse.model.request.JwtTokenRequest
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
-object UserTable : BaseIntIdTable("user") {
+object UserTable : BaseIntIdTable("users") {
     val email = varchar("email", 255) // Nullable for mobile users
     val userType = varchar("user_type", 100)
     val password = varchar("password", 200)
@@ -38,8 +38,12 @@ class UserDAO(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
         userType
     )
 
-    fun loggedInWithToken() = LoginResponse(
-        response(), JwtConfig.tokenProvider(JwtTokenRequest(id.value, email, userType))
+    fun loggedInWithToken(refreshToken: String? = null) = LoginResponse(
+        user = response(), 
+        accessToken = JwtConfig.tokenProvider(JwtTokenRequest(id.value, email, userType)),
+        refreshToken = refreshToken,
+        tokenType = "Bearer",
+        expiresIn = JwtConfig.ACCESS_TOKEN_VALIDITY_MS / 1000 // Convert to seconds
     )
 }
 
@@ -50,5 +54,11 @@ data class UserResponse(
     var userType: String
 )
 
-data class LoginResponse(val user: UserResponse?, val accessToken: String)
+data class LoginResponse(
+    val user: UserResponse?,
+    val accessToken: String,
+    val refreshToken: String? = null,
+    val tokenType: String = "Bearer",
+    val expiresIn: Long = 1800 // 30 minutes in seconds (access token validity)
+)
 data class ChangePassword(val oldPassword: String, val newPassword: String)

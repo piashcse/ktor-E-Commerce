@@ -34,7 +34,8 @@ fun configureDataBase() {
             ShippingTable,
             PaymentTable,
             PolicyDocumentTable,
-            PolicyConsentTable
+            PolicyConsentTable,
+            RefreshTokenTable
         )
     }
 }

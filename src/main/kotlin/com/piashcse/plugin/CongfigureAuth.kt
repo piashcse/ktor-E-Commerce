@@ -30,10 +30,11 @@ fun Application.configureAuth() {
 
 fun provideJwtAuthConfig(jwtConfig: JWTAuthenticationProvider.Config, userRole: RoleManagement) {
     jwtConfig.verifier(JwtConfig.verifier)
-    jwtConfig.validate {
-        val userId = it.payload.getClaim("userId").asString()
-        val email = it.payload.getClaim("email").asString()
-        val userType = it.payload.getClaim("userType").asString()
+    jwtConfig.validate { jwt ->
+        val userId = jwt.payload.getClaim("userId").asString()
+        val email = jwt.payload.getClaim("email").asString()
+        val userType = jwt.payload.getClaim("userType").asString()
+        
         if (userType == userRole.role) {
             JwtTokenRequest(userId, email, userType)
         } else null
