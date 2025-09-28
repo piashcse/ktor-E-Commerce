@@ -30,7 +30,11 @@ scalable, and efficient service for handling your e-commerce needs. For detailed
 ### 2. User Accounts and Authentication
 
 - **User Registration**: Allow customers to create accounts. Users can register with the same email for different roles (customer and seller).
-- **User Authentication**: Implement JWT-based authentication for user sessions.
+- **User Authentication**: Implement JWT-based authentication with enhanced security features:
+  - Short-lived access tokens (30 minutes)
+  - Secure refresh token rotation
+  - Cryptographically secure random refresh tokens
+  - Client information tracking (user agent, IP address) for security validation
 - **User Profiles**: Enable users to view and update their profiles.
 
 ### 3. Product Management
@@ -56,8 +60,13 @@ scalable, and efficient service for handling your e-commerce needs. For detailed
 
 ### 7. Security
 
-- **JWT Tokens**: Implement JSON Web Tokens for secure authentication.
+- **JWT Tokens**: Implement JSON Web Tokens with best practices for secure authentication.
+  - **Short-lived Access Tokens**: 30-minute expiration for enhanced security
+  - **Secure Refresh Tokens**: Cryptographically secure random tokens with rotation
+  - **Sliding Expiration**: 7-day refresh token validity with 30-day maximum lifetime
+  - **Token Storage**: Refresh tokens stored with user agent and IP address for security validation
 - **Input Validation**: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).
+- **Table Security**: Fixed critical table naming to avoid SQL reserved keyword conflicts (`user` → `users`)
 
 ## Architecture
 
@@ -231,6 +240,7 @@ curl -X 'POST' \
   http://localhost:8080/auth/Login
 ``` 
 
+```
 ### Response
 
 ```
@@ -244,11 +254,16 @@ curl -X 'POST' \
     "user": {
       "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
       "email": "customer@gmail.com",
+      "isVerified": true,
       "userType": "customer"
     },
-    "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJjZTU2Mzc3NC1kM2Q1LTQ0MmUtYWQxYS1iODg0YmIwYTUzZjAiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI5NTkzMjQ5fQ.XWWEO1NFN3Gysb1Tghm1l1BcQ2NsYexXE2YmgeIvBv_Wq-DXgmihDed1zt3_TAJevM631vtMQ7LtwOXbYhKF9A"
+    "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJjZTU2Mzc3NC1kM2Q1LTQ0MmUtYWQxYS1iODg0YmIwYTUzZjAiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI5NTkzMjQ5fQ.XWWEO1NFN3Gysb1Tghm1l1BcQ2NsYexXE2YmgeIvBv_Wq-DXgmihDed1zt3_TAJevM631vtMQ7LtwOXbYhKF9A",
+    "refreshToken": "fQx7D9kL2mP4vR8sW1nT5yU3cE6aH9oI2pX7zQ4sV1bR5mN8wE3cA6hJ9kL2mP4vR8",
+    "tokenType": "Bearer",
+    "expiresIn": 1800
   }
 }
+```   
 ```   
 
 </details>
@@ -442,6 +457,57 @@ http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234
     "description": "OK"
   },
   "data": "Password has been changed"
+}
+```   
+
+</details>
+
+<details>
+
+<summary> <code>POST </code> <code>/auth/refresh</code></summary>
+
+### Description
+Refresh the access token using a valid refresh token. Returns a new access token and a new refresh token with updated expiration. The old refresh token is invalidated upon successful refresh.
+
+### Curl
+
+```
+curl -X 'POST' 
+  'http://localhost:8080/auth/refresh' 
+  -H 'accept: application/json' 
+  -H 'Content-Type: application/json' 
+  -d '{
+  "refreshToken": "fQx7D9kL2mP4vR8sW1nT5yU3cE6aH9oI2pX7zQ4sV1bR5mN8wE3cA6hJ9kL2mP4vR8"
+}'
+``` 
+
+### Request URL
+
+```
+  http://localhost:8080/auth/refresh
+``` 
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "user": {
+      "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+      "email": "customer@gmail.com",
+      "isVerified": true,
+      "userType": "customer"
+    },
+    "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJjZTU2Mzc3NC1kM2Q1LTQ0MmUtYWQxYS1iODg0YmIwYTUzZjAiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI5NjA0MjQ5fQ.SAMPLE_NEW_JWT_TOKEN",
+    "refreshToken": "aB3cD6eF9gH2iJ5kL8mN1oP4qR7sT0uV3wX6yZ9A2bC5dE8fG1hI4jK7lM0nO3pQ6r",
+    "tokenType": "Bearer",
+    "expiresIn": 1800
+  }
 }
 ```   
 
