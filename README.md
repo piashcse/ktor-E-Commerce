@@ -90,8 +90,7 @@ scalable, and efficient service for handling your e-commerce needs. For detailed
   including some Linux distributions.
 - [Apache Commons Email](https://github.com/apache/commons-email) - Apache Commons Email aims to provide an API for
   sending email. It is built on top of the JavaMail API, which it aims to simplify.
-- [ktor-openapi-tools](https://github.com/SMILEY4/ktor-swagger-ui) - Kotlin Ktor plugin to generate OpenAPI
-  specifications and provides Swagger UI and ReDoc.
+- [Ktor OpenAPI/Swagger](https://ktor.io/docs/server-openapi.html) - Ktor's built-in OpenAPI generation and Swagger UI.
 - [Valiktor](https://github.com/valiktor/valiktor) - Valiktor is a type-safe, powerful and extensible fluent DSL to
   validate objects in Kotlin.
 

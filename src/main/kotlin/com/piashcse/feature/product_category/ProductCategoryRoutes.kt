@@ -3,12 +3,7 @@ package com.piashcse.feature.product_category
 import com.piashcse.model.request.ProductCategoryRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.requiredParameters
-import io.github.smiley4.ktoropenapi.delete
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.post
-import io.github.smiley4.ktoropenapi.put
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -28,19 +23,12 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
     /**
      * GET request to retrieve product categories.
      *
-     * Accessible by customers, sellers, and admins.
-     *
-     * @param limit The number of categories to return.
+     * @tag Product Category
+     * @query limit The number of categories to return.
+     * @response 200 [ApiResponse] Success response with product categories
+     * @response 400 Bad request if limit is missing
      */
-    get("product-category", {
-        tags("Product Category")
-        request {
-            queryParameter<String>("limit") {
-                required = true
-            }
-        }
-        apiResponse()
-    }) {
+    get("/product-category") {
         val (limit) = call.requiredParameters("limit") ?: return@get
         call.respond(
             ApiResponse.success(
@@ -55,18 +43,12 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
         /**
          * POST request to create a new product category.
          *
-         * Accessible by admins only.
-         *
-         * @param requestBody The details of the category to create, including the category name.
+         * @tag Product Category
+         * @summary auth[admin]
+         * @body [ProductCategoryRequest] The details of the category to create, including the category name.
+         * @response 200 [ApiResponse] Success response after creation
          */
-        post("product-category", {
-            tags("Product Category")
-            summary = "auth[customer]"
-            request {
-                body<ProductCategoryRequest>()
-            }
-            apiResponse()
-        }) {
+        post("/product-category") {
             val requestBody = call.receive<ProductCategoryRequest>()
             call.respond(
                 ApiResponse.success(
@@ -80,24 +62,14 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
         /**
          * PUT request to update an existing product category by ID.
          *
-         * Accessible by admins only.
-         *
-         * @param id The ID of the category to update.
-         * @param name The new name for the category.
+         * @tag Product Category
+         * @summary auth[admin]
+         * @path id The ID of the category to update.
+         * @query name The new name for the category.
+         * @response 200 [ApiResponse] Success response after update
+         * @response 400 Bad request if required parameters are missing
          */
-        put("product-category/{id}", {
-            tags("Product Category")
-            summary = "auth[customer]"
-            request {
-                pathParameter<String>("id") {
-                    required = true
-                }
-                queryParameter<String>("name") {
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        put("/product-category/{id}") {
             val (id, name) = call.requiredParameters("id", "name") ?: return@put
             call.respond(
                 ApiResponse.success(
@@ -111,20 +83,13 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
         /**
          * DELETE request to remove a product category by ID.
          *
-         * Accessible by admins only.
-         *
-         * @param id The ID of the category to delete.
+         * @tag Product Category
+         * @summary auth[admin]
+         * @path id The ID of the category to delete.
+         * @response 200 [ApiResponse] Success response after deletion
+         * @response 400 Bad request if id is missing
          */
-        delete("product-category/{id}", {
-            tags("Product Category")
-            summary = "auth[customer]"
-            request {
-                pathParameter<String>("id") {
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        delete("/product-category/{id}") {
             val (id) = call.requiredParameters("id") ?: return@delete
             call.respond(
                 ApiResponse.success(

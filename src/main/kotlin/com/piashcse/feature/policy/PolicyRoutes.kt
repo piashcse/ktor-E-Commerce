@@ -5,11 +5,7 @@ import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.requiredParameters
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.post
-import io.github.smiley4.ktoropenapi.put
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -30,20 +26,11 @@ fun Route.policyRoutes(policyController: PolicyService) {
         /**
          * GET request to retrieve all policies, optionally filtered by type.
          *
-         * Accessible by anyone.
-         *
-         * @param type Optional filter by policy type (PRIVACY_POLICY, TERMS_CONDITIONS, etc.)
+         * @tag Privacy Policy
+         * @query type Optional filter by policy type (PRIVACY_POLICY, TERMS_CONDITIONS, etc.)
+         * @response 200 [ApiResponse] Success response with policies
          */
-        get({
-            tags("Privacy Policy")
-            request {
-                queryParameter<String>("type") {
-                    description = "Filter policies by type"
-                    required = false
-                }
-            }
-            apiResponse()
-        }) {
+        get("/policy") {
             val type = call.request.queryParameters["type"]
             val policyType = type?.let {
                 PolicyDocumentTable.PolicyType.valueOf(type)
@@ -59,20 +46,12 @@ fun Route.policyRoutes(policyController: PolicyService) {
         /**
          * GET request to retrieve the active policy of a specific type.
          *
-         * Accessible by anyone.
-         *
-         * @param type The policy type (PRIVACY_POLICY, TERMS_CONDITIONS, etc.)
+         * @tag Privacy Policy
+         * @path type The policy type (PRIVACY_POLICY, TERMS_CONDITIONS, etc.)
+         * @response 200 [ApiResponse] Success response with the policy
+         * @response 400 Bad request if type is invalid
          */
-        get("{type}", {
-            tags("Privacy Policy")
-            request {
-                pathParameter<String>("type") {
-                    description = "Policy type like PRIVACY_POLICY, TERMS_CONDITIONS, etc."
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        get("/policy/{type}") {
             val (type) = call.requiredParameters("type") ?: return@get
             call.respond(
                 ApiResponse.success(
@@ -88,20 +67,12 @@ fun Route.policyRoutes(policyController: PolicyService) {
         /**
          * GET request to retrieve a specific policy by ID.
          *
-         * Accessible by anyone.
-         *
-         * @param id The unique identifier of the policy.
+         * @tag Privacy Policy
+         * @path id The unique identifier of the policy.
+         * @response 200 [ApiResponse] Success response with the policy
+         * @response 400 Bad request if id is missing
          */
-        get("detail/{id}", {
-            tags("Privacy Policy")
-            request {
-                pathParameter<String>("id") {
-                    description = "Policy ID"
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        get("/policy/detail/{id}") {
             val (id) = call.requiredParameters("id") ?: return@get
             call.respond(ApiResponse.success(policyController.getPolicyById(id), HttpStatusCode.OK))
         }
@@ -111,18 +82,12 @@ fun Route.policyRoutes(policyController: PolicyService) {
             /**
              * POST request to create a new policy document.
              *
-             * Accessible by admins only.
-             *
-             * @param createPolicyRequest The details of the policy to create.
+             * @tag Privacy Policy
+             * @summary auth[admin]
+             * @body [CreatePolicyRequest] The details of the policy to create.
+             * @response 201 [ApiResponse] Success response after policy creation
              */
-            post({
-                tags("Privacy Policy")
-                summary = "auth[admin]"
-                request {
-                    body<CreatePolicyRequest>()
-                }
-                apiResponse()
-            }) {
+            post("/policy") {
                 val createRequest = call.receive<CreatePolicyRequest>()
                 call.respond(ApiResponse.success(policyController.createPolicy(createRequest), HttpStatusCode.Created))
             }
@@ -130,23 +95,14 @@ fun Route.policyRoutes(policyController: PolicyService) {
             /**
              * PUT request to update an existing policy document.
              *
-             * Accessible by admins only.
-             *
-             * @param id The ID of the policy to update.
-             * @param updatePolicyRequest The parameters to update.
+             * @tag Privacy Policy
+             * @summary auth[admin]
+             * @path id The ID of the policy to update.
+             * @body [UpdatePolicyRequest] The parameters to update.
+             * @response 200 [ApiResponse] Success response after policy update
+             * @response 400 Bad request if id is missing
              */
-            put("{id}", {
-                tags("Privacy Policy")
-                summary = "auth[admin]"
-                request {
-                    pathParameter<String>("id") {
-                        description = "Policy ID"
-                        required = true
-                    }
-                    body<UpdatePolicyRequest>()
-                }
-                apiResponse()
-            }) {
+            put("/policy/{id}") {
                 val (id) = call.requiredParameters("id") ?: return@put
                 val updateRequest = call.receive<UpdatePolicyRequest>()
                 call.respond(ApiResponse.success(policyController.updatePolicy(id, updateRequest), HttpStatusCode.OK))
@@ -155,21 +111,13 @@ fun Route.policyRoutes(policyController: PolicyService) {
             /**
              * POST request to deactivate a policy document.
              *
-             * Accessible by admins only.
-             *
-             * @param id The ID of the policy to deactivate.
+             * @tag Privacy Policy
+             * @summary auth[admin]
+             * @path id The ID of the policy to deactivate.
+             * @response 200 [ApiResponse] Success response after policy deactivation
+             * @response 400 Bad request if id is missing
              */
-            post("deactivate/{id}", {
-                tags("Privacy Policy")
-                summary = "auth[admin]"
-                request {
-                    pathParameter<String>("id") {
-                        description = "Policy ID"
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            post("/policy/deactivate/{id}") {
                 val (id) = call.requiredParameters("id") ?: return@post
                 call.respond(ApiResponse.success(policyController.deactivatePolicy(id), HttpStatusCode.OK))
             }

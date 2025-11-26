@@ -5,7 +5,6 @@ import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.CommonException
 import com.piashcse.utils.Response
-import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -23,22 +22,6 @@ fun String.alreadyExistException(secondaryInfo: String = ""): CommonException {
     else CommonException("$this $secondaryInfo is already Exist")
 }
 
-fun RouteConfig.apiResponse() {
-   return response {
-        // document the "200 OK" response
-        code(HttpStatusCode.OK) {
-            description = "Successful"
-            // specify the schema of the response body and some additional information
-            body<Response> {
-                description = "Successful"
-            }
-        }
-        // document the "422 Unprocessable Entity" response
-        code(HttpStatusCode.InternalServerError) {
-            description = "Internal Server Error"
-        }
-    }
-}
 
 suspend fun <T> query(block: () -> T): T = withContext(Dispatchers.IO) {
     transaction {

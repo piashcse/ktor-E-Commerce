@@ -4,13 +4,8 @@ import com.piashcse.model.request.ShippingRequest
 import com.piashcse.model.request.UpdateShippingRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.requiredParameters
-import io.github.smiley4.ktoropenapi.delete
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.post
-import io.github.smiley4.ktoropenapi.put
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -33,18 +28,12 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
             /**
              * POST request to add shipping information for an order.
              *
-             * Accessible by customers only.
-             *
-             * @param requestBody The shipping details for the order.
+             * @tag Shipping
+             * @summary auth[customer]
+             * @body [ShippingRequest] The shipping details for the order.
+             * @response 200 [ApiResponse] Success response
              */
-            post({
-                tags("Shipping")
-                summary = "auth[customer]"
-                request {
-                    body<ShippingRequest>()
-                }
-                apiResponse()
-            }) {
+            post("/shipping") {
                 val requestBody = call.receive<ShippingRequest>()
                 call.respond(
                     ApiResponse.success(
@@ -57,20 +46,13 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
             /**
              * GET request to retrieve shipping information for a specific order.
              *
-             * Accessible by customers only.
-             *
-             * @param orderId The ID of the order to retrieve shipping details.
+             * @tag Shipping
+             * @summary auth[customer]
+             * @query orderId The ID of the order to retrieve shipping details.
+             * @response 200 [ApiResponse] Success response with shipping details
+             * @response 400 Bad request if orderId is missing
              */
-            get({
-                tags("Shipping")
-                summary = "auth[customer]"
-                request {
-                    queryParameter<String>("orderId") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            get("/shipping") {
                 val (orderId) = call.requiredParameters("orderId") ?: return@get
                 call.respond(
                     ApiResponse.success(
@@ -83,40 +65,25 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
             /**
              * PUT request to update existing shipping information for an order.
              *
-             * Accessible by customers only.
-             *
-             * @param id The ID of the shipping record to update.
-             * @param orderId The updated order ID.
-             * @param shipAddress The updated shipping address.
-             * @param shipCity The updated shipping city.
-             * @param shipPhone The updated shipping phone number.
-             * @param shipName The updated shipping recipient name.
-             * @param shipEmail The updated shipping recipient email.
-             * @param shipCountry The updated shipping country.
+             * @tag Shipping
+             * @summary auth[customer]
+             * @path id The ID of the shipping record to update.
+             * @query orderId The updated order ID.
+             * @query address The updated shipping address.
+             * @query city The updated shipping city.
+             * @query country The updated shipping country.
+             * @query shippingMethod The updated shipping method.
+             * @query phone The updated shipping phone number.
+             * @query email The updated shipping recipient email.
+             * @response 200 [ApiResponse] Success response with updated shipping info
+             * @response 400 Bad request if id is missing
              */
-            put("{id}", {
-                tags("Shipping")
-                summary = "auth[customer]"
-                request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
-                    queryParameter<String>("orderId")
-                    queryParameter<String>("address")
-                    queryParameter<String>("city")
-                    queryParameter<String>("country")
-                    queryParameter<String>("shippingMethod")
-                    queryParameter<String>("phone")
-                    queryParameter<String>("email")
-                    queryParameter<String>("shipCountry")
-                }
-                apiResponse()
-            }) {
+            put("/shipping/{id}") {
                 val (id) = call.requiredParameters("id") ?: return@put
                 val params = UpdateShippingRequest(
                     id = id,
-                    address = call.parameters["shipAddress"],
-                    city = call.parameters["shipCity"],
+                    address = call.parameters["address"],
+                    city = call.parameters["city"],
                     country = call.parameters["country"],
                     phone = call.parameters["phone"]?.toInt(),
                     email = call.parameters["email"],
@@ -136,20 +103,13 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
             /**
              * DELETE request to delete a shipping record.
              *
-             * Accessible by customers only.
-             *
-             * @param id The ID of the shipping record to delete.
+             * @tag Shipping
+             * @summary auth[customer]
+             * @path id The ID of the shipping record to delete.
+             * @response 200 [ApiResponse] Success response indicating deletion
+             * @response 400 Bad request if id is missing
              */
-            delete("{id}", {
-                tags("Shipping")
-                summary = "auth[customer]"
-                request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            delete("/shipping/{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(

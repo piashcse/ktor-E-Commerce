@@ -3,12 +3,7 @@ package com.piashcse.feature.shop_category
 import com.piashcse.model.request.ShopCategoryRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.requiredParameters
-import io.github.smiley4.ktoropenapi.delete
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.post
-import io.github.smiley4.ktoropenapi.put
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -28,18 +23,12 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
         /**
          * POST request to create a new shop category.
          *
-         * Accessible by **admin** only.
-         *
-         * @param requestBody The name of the new shop category.
+         * @tag Shop Category
+         * @summary auth[admin]
+         * @body [ShopCategoryRequest] The name of the new shop category.
+         * @response 200 [ApiResponse] Success response after creation
          */
-        post("shop-category", {
-            tags("Shop Category")
-            summary = "auth[admin]"
-            request {
-                body<ShopCategoryRequest>()
-            }
-            apiResponse()
-        }) {
+        post("/shop-category") {
             val requestBody = call.receive<ShopCategoryRequest>()
             call.respond(
                 ApiResponse.success(
@@ -51,20 +40,13 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
         /**
          * GET request to retrieve a list of shop categories with a specified limit.
          *
-         * Accessible by **admin** only.
-         *
-         * @param limit The maximum number of shop categories to retrieve.
+         * @tag Shop Category
+         * @summary auth[admin]
+         * @query limit The maximum number of shop categories to retrieve.
+         * @response 200 [ApiResponse] Success response with categories
+         * @response 400 Bad request if limit is missing
          */
-        get("shop-category", {
-            tags("Shop Category")
-            summary = "auth[admin]"
-            request {
-                queryParameter<Int>("limit") {
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        get("/shop-category") {
             val (limit) = call.requiredParameters("limit") ?: return@get
             call.respond(
                 ApiResponse.success(
@@ -77,20 +59,13 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
         /**
          * DELETE request to remove a shop category by its ID.
          *
-         * Accessible by **admin** only.
-         *
-         * @param id The ID of the shop category to delete.
+         * @tag Shop Category
+         * @summary auth[admin]
+         * @path id The ID of the shop category to delete.
+         * @response 200 [ApiResponse] Success response after deletion
+         * @response 400 Bad request if id is missing
          */
-        delete("shop-category/{id}", {
-            tags("Shop Category")
-            summary = "auth[admin]"
-            request {
-                pathParameter<String>("id") {
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        delete("/shop-category/{id}") {
             val (id) = call.requiredParameters("id") ?: return@delete
             call.respond(
                 ApiResponse.success(
@@ -102,24 +77,14 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
         /**
          * PUT request to update the name of an existing shop category.
          *
-         * Accessible by **admin** only.
-         *
-         * @param id The ID of the shop category to update.
-         * @param name The new name for the shop category.
+         * @tag Shop Category
+         * @summary auth[admin]
+         * @path id The ID of the shop category to update.
+         * @query name The new name for the shop category.
+         * @response 200 [ApiResponse] Success response after update
+         * @response 400 Bad request if required parameters are missing
          */
-        put("shop-category/{id}", {
-            tags("Shop Category")
-            summary = "auth[admin]"
-            request {
-                pathParameter<String>("id") {
-                    required = true
-                }
-                queryParameter<String>("name") {
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        put("/shop-category/{id}") {
             val (id, name) = call.requiredParameters("id", "name") ?: return@put
             call.respond(
                 ApiResponse.success(

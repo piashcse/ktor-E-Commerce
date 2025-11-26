@@ -3,12 +3,7 @@ package com.piashcse.feature.product_sub_category
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.requiredParameters
-import io.github.smiley4.ktoropenapi.delete
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.post
-import io.github.smiley4.ktoropenapi.put
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -27,23 +22,13 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
     /**
      * GET request to retrieve product subcategories by category ID.
      *
-     * Accessible by customers, sellers, and admins.
-     *
-     * @param categoryId The category ID to filter subcategories.
-     * @param limit The number of subcategories to retrieve.
+     * @tag Product SubCategory
+     * @query categoryId The category ID to filter subcategories.
+     * @query limit The number of subcategories to retrieve.
+     * @response 200 [ApiResponse] Success response with product subcategories
+     * @response 400 Bad request if required parameters are missing
      */
-    get("product-subcategory", {
-        tags("Product SubCategory")
-        request {
-            queryParameter<String>("categoryId") {
-                required = true
-            }
-            queryParameter<String>("limit") {
-                required = true
-            }
-        }
-        apiResponse()
-    }) {
+    get("/product-subcategory") {
         val (categoryId, limit) = call.requiredParameters("categoryId", "limit") ?: return@get
         call.respond(
             ApiResponse.success(
@@ -58,18 +43,12 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
         /**
          * POST request to create a new product subcategory.
          *
-         * Accessible by admins only.
-         *
-         * @param requestBody The details of the product subcategory to create.
+         * @tag Product SubCategory
+         * @summary auth[admin]
+         * @body [ProductSubCategoryRequest] The details of the product subcategory to create.
+         * @response 200 [ApiResponse] Success response after creation
          */
-        post("product-subcategory", {
-            tags("Product SubCategory")
-            summary = "auth[admin]"
-            request {
-                body<ProductSubCategoryRequest>()
-            }
-            apiResponse()
-        }) {
+        post("/product-subcategory") {
             val requestBody = call.receive<ProductSubCategoryRequest>()
             call.respond(
                 ApiResponse.success(
@@ -81,24 +60,14 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
         /**
          * PUT request to update an existing product subcategory by ID.
          *
-         * Accessible by admins only.
-         *
-         * @param id The ID of the product subcategory to update.
-         * @param name The new name for the product subcategory.
+         * @tag Product SubCategory
+         * @summary auth[admin]
+         * @path id The ID of the product subcategory to update.
+         * @query name The new name for the product subcategory.
+         * @response 200 [ApiResponse] Success response after update
+         * @response 400 Bad request if required parameters are missing
          */
-        put("product-subcategory/{id}", {
-            tags("Product SubCategory")
-            summary = "auth[admin]"
-            request {
-                pathParameter<String>("id") {
-                    required = true
-                }
-                queryParameter<String>("name") {
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        put("/product-subcategory/{id}") {
             val (id, name) = call.requiredParameters("id", "name") ?: return@put
             call.respond(
                 ApiResponse.success(
@@ -112,20 +81,13 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
         /**
          * DELETE request to delete a product subcategory by ID.
          *
-         * Accessible by admins only.
-         *
-         * @param id The ID of the product subcategory to delete.
+         * @tag Product SubCategory
+         * @summary auth[admin]
+         * @path id The ID of the product subcategory to delete.
+         * @response 200 [ApiResponse] Success response after deletion
+         * @response 400 Bad request if id is missing
          */
-        delete("product-subcategory/{id}", {
-            tags("Product SubCategory")
-            summary = "auth[admin]"
-            request {
-                pathParameter<String>("id") {
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        delete("/product-subcategory/{id}") {
             val (id) = call.requiredParameters("id") ?: return@delete
             call.respond(
                 ApiResponse.success(

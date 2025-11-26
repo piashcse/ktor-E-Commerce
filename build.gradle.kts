@@ -1,3 +1,6 @@
+@file:OptIn(OpenApiPreview::class)
+import io.ktor.plugin.OpenApiPreview
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
@@ -68,6 +71,7 @@ dependencies {
     testImplementation(libs.kotlin.test.junit)
 }
 
+
 kotlin {
     jvmToolchain(17)
 }
@@ -75,6 +79,28 @@ kotlin {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+ktor {
+    openApi {
+        title = "Ktor E-Commerce API"
+        version = "1.0.0"
+        summary = "E-Commerce API built with Ktor framework"
+        description = "This is a complete E-Commerce API with user authentication, product management, cart functionality, and order processing."
+        termsOfService = "https://example.com/terms/"
+        contact = "support@example.com"
+        license = "MIT"
+        // Location of the generated specification (defaults to openapi/generated.json)
+        target = project.layout.buildDirectory.file("openapi/generated.json")
+    }
+}
+
+// Copy the generated OpenAPI spec to resources during build process
+tasks.processResources {
+    dependsOn("buildOpenApi")
+    from(layout.buildDirectory.dir("openapi")) {
+        into("openapi")
     }
 }
 

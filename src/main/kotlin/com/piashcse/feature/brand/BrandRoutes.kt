@@ -3,12 +3,7 @@ package com.piashcse.feature.brand
 import com.piashcse.model.request.BrandRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.requiredParameters
-import io.github.smiley4.ktoropenapi.delete
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.post
-import io.github.smiley4.ktoropenapi.put
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -25,21 +20,14 @@ fun Route.brandRoutes(brandController: BrandService) {
         /**
          * GET request to fetch a list of brands, with an optional limit on the number of brands.
          *
-         * Accessible by customers, sellers, and admins.
-         *
-         * @param limit The maximum number of brands to return.
+         * @tag Brand
+         * @summary auth[admin, customer, seller]
+         * @query limit The maximum number of brands to return.
+         * @response 200 [ApiResponse] Success response with brands
+         * @response 400 Bad request if limit is missing
          */
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            get({
-                tags("Brand")
-                summary = "auth[admin, customer, seller]"
-                request {
-                    queryParameter<Int>("limit") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            get("/brand") {
                 val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
@@ -52,19 +40,13 @@ fun Route.brandRoutes(brandController: BrandService) {
         /**
          * POST request to create a new brand.
          *
-         * Accessible only by admins.
-         *
-         * @param brandName The name of the brand to be created.
+         * @tag Brand
+         * @summary auth[admin]
+         * @body [BrandRequest] The name of the brand to be created.
+         * @response 200 [ApiResponse] Success response after creation
          */
         authenticate(RoleManagement.ADMIN.role) {
-            post({
-                tags("Brand")
-                summary = "auth[admin]"
-                request {
-                    body<BrandRequest>()
-                }
-                apiResponse()
-            }) {
+            post("/brand") {
                 val requestBody = call.receive<BrandRequest>()
                 call.respond(
                     ApiResponse.success(
@@ -76,24 +58,14 @@ fun Route.brandRoutes(brandController: BrandService) {
             /**
              * PUT request to update an existing brand's name.
              *
-             * Accessible only by admins.
-             *
-             * @param id The ID of the brand to be updated.
-             * @param name The new name for the brand.
+             * @tag Brand
+             * @summary auth[admin]
+             * @path id The ID of the brand to be updated.
+             * @query name The new name for the brand.
+             * @response 200 [ApiResponse] Success response after update
+             * @response 400 Bad request if required parameters are missing
              */
-            put("{id}", {
-                tags("Brand")
-                summary = "auth[admin]"
-                request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
-                    queryParameter<String>("name") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            put("/brand/{id}") {
                 val (id, name) = call.requiredParameters("id", "name") ?: return@put
                 call.respond(
                     ApiResponse.success(
@@ -105,20 +77,13 @@ fun Route.brandRoutes(brandController: BrandService) {
             /**
              * DELETE request to remove a brand by its ID.
              *
-             * Accessible only by admins.
-             *
-             * @param id The ID of the brand to be deleted.
+             * @tag Brand
+             * @summary auth[admin]
+             * @path id The ID of the brand to be deleted.
+             * @response 200 [ApiResponse] Success response after deletion
+             * @response 400 Bad request if id is missing
              */
-            delete("{id}", {
-                tags("Brand")
-                summary = "auth[admin]"
-                request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            delete("/brand/{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(

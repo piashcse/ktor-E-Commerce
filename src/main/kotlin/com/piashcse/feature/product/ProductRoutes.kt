@@ -7,14 +7,9 @@ import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.fileExtension
 import com.piashcse.utils.extension.requiredParameters
-import io.github.smiley4.ktoropenapi.delete
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.post
-import io.github.smiley4.ktoropenapi.put
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.auth.*
@@ -40,17 +35,11 @@ fun Route.productRoutes(productController: ProductService) {
          *
          * Accessible by customers, sellers, and admins.
          *
-         * @param id The unique identifier of the product.
+         * @tag Product
+         * @path id The unique identifier of the product
+         * @response 200 Product details retrieved successfully
          */
-        get("{id}", {
-            tags("Product")
-            request {
-                pathParameter<String>("id") {
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        get("{id}") {
             val (productId) = call.requiredParameters("id") ?: return@get
             call.respond(ApiResponse.success(productController.getProductDetail(productId), HttpStatusCode.OK))
         }
@@ -67,20 +56,7 @@ fun Route.productRoutes(productController: ProductService) {
          * @param subCategoryId Optional sub-category filter.
          * @param brandId Optional brand filter.
          */
-        get({
-            tags("Product")
-            request {
-                queryParameter<Int>("limit") {
-                    required = true
-                }
-                queryParameter<Double>("maxPrice")
-                queryParameter<Double>("minPrice")
-                queryParameter<String>("categoryId")
-                queryParameter<String>("subCategoryId")
-                queryParameter<String>("brandId")
-            }
-            apiResponse()
-        }) {
+        get {
             val (limit) = call.requiredParameters("limit") ?: return@get
             val params = ProductWithFilterRequest(
                 limit = limit.toInt(),
@@ -104,25 +80,11 @@ fun Route.productRoutes(productController: ProductService) {
          * @param maxPrice Optional maximum price filter.
          * @param minPrice Optional minimum price filter.
          */
-        get("search", {
-            tags("Product")
-            request {
-                queryParameter<Int>("limit") {
-                    required = true
-                }
-                queryParameter<String>("name") {
-                    required = true
-                }
-                queryParameter<String>("categoryId")
-                queryParameter<Double>("maxPrice")
-                queryParameter<Double>("minPrice")
-            }
-            apiResponse()
-        }) {
+        get("search") {
             val (limit) = call.requiredParameters("limit") ?: return@get
             val queryParams = ProductSearchRequest(
                 limit = limit.toInt(),
-                name = call.parameters["name"]!!,
+                name = call.parameters["name"] ?: return@get,
                 maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
                 minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
                 categoryId = call.parameters["categoryId"]
@@ -145,21 +107,7 @@ fun Route.productRoutes(productController: ProductService) {
              * @param subCategoryId Optional sub-category filter.
              * @param brandId Optional brand filter.
              */
-            get("seller", {
-                tags("Product")
-                summary = "auth[seller]"
-                request {
-                    queryParameter<Int>("limit") {
-                        required = true
-                    }
-                    queryParameter<Double>("maxPrice")
-                    queryParameter<Double>("minPrice")
-                    queryParameter<String>("categoryId")
-                    queryParameter<String>("subCategoryId")
-                    queryParameter<String>("brandId")
-                }
-                apiResponse()
-            }) {
+            get("seller") {
                 val (limit) = call.requiredParameters("limit") ?: return@get
                 val params = ProductWithFilterRequest(
                     limit = limit.toInt(),
@@ -183,14 +131,7 @@ fun Route.productRoutes(productController: ProductService) {
              *
              * @param requestBody The details of the product to create.
              */
-            post({
-                tags("Product")
-                summary = "auth[seller]"
-                request {
-                    body<ProductRequest>()
-                }
-                apiResponse()
-            }) {
+            post {
                 val requestBody = call.receive<ProductRequest>()
                 call.respond(
                     ApiResponse.success(
@@ -207,29 +148,7 @@ fun Route.productRoutes(productController: ProductService) {
              * @param id The ID of the product to update.
              * @param params The parameters to update, including product details.
              */
-            put("{id}", {
-                tags("Product")
-                summary = "auth[seller]"
-                request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
-                    queryParameter<String>("categoryId")
-                    queryParameter<String>("subCategoryId")
-                    queryParameter<String>("brandId")
-                    queryParameter<String>("name")
-                    queryParameter<String>("description")
-                    queryParameter<Int>("stockQuantity")
-                    queryParameter<Long>("price")
-                    queryParameter<Long>("discountPrice")
-                    queryParameter<String>("status")
-                    queryParameter<String>("videoLink")
-                    queryParameter<String>("hotDeal")
-                    queryParameter<String>("featured")
-                    queryParameter<Array<String>>("images")
-                }
-                apiResponse()
-            }) {
+            put("{id}") {
                 val params = UpdateProductRequest(
                     categoryId = call.parameters["categoryId"],
                     subCategoryId = call.parameters["subCategoryId"],
@@ -241,9 +160,9 @@ fun Route.productRoutes(productController: ProductService) {
                     discountPrice = call.parameters["discountPrice"]?.toDoubleOrNull(),
                     status = call.parameters["status"],
                     videoLink = call.parameters["videoLink"],
-                    hotDeal = call.parameters["hotDeal"].toBoolean(),
-                    featured = call.parameters["featured"].toBoolean(),
-                    images = call.parameters["images"]?.split(",") ?: arrayListOf()
+                    hotDeal = call.parameters["hotDeal"]?.toBoolean(),
+                    featured = call.parameters["featured"]?.toBoolean(),
+                    images = call.parameters["images"]?.split(",")?.toList() ?: emptyList()
                 )
                 val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
@@ -260,14 +179,7 @@ fun Route.productRoutes(productController: ProductService) {
              *
              * @param id The ID of the product to delete.
              */
-            delete("{id}", {
-                tags("Product")
-                summary = "auth[seller]"
-                request {
-                    pathParameter<String>("id")
-                }
-                apiResponse()
-            }) {
+            delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(
@@ -284,21 +196,7 @@ fun Route.productRoutes(productController: ProductService) {
              * @param id The ID of the product.
              * @param image The image file to upload.
              */
-            post("image-upload", {
-                tags("Product")
-                summary = "auth[seller]"
-                request {
-                    multipartBody {
-                        mediaTypes = setOf(ContentType.MultiPart.FormData)
-                        part<File>("image") {
-                            mediaTypes = setOf(
-                                ContentType.Image.PNG, ContentType.Image.JPEG, ContentType.Image.SVG
-                            )
-                        }
-                    }
-                }
-                apiResponse()
-            }) {
+            post("image-upload") {
                 val multipartData = call.receiveMultipart()
                 multipartData.forEachPart { part ->
                     when (part) {
@@ -336,16 +234,7 @@ fun Route.productRoutes(productController: ProductService) {
              *
              * @param id The ID of the product to delete.
              */
-            delete("{id}", {
-                tags("Product")
-                summary = "auth[admin]"
-                request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(
