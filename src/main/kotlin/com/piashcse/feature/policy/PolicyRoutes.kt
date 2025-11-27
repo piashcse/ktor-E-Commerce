@@ -30,7 +30,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
          * @query type Optional filter by policy type (PRIVACY_POLICY, TERMS_CONDITIONS, etc.)
          * @response 200 [ApiResponse] Success response with policies
          */
-        get("/policy") {
+        get {
             val type = call.request.queryParameters["type"]
             val policyType = type?.let {
                 PolicyDocumentTable.PolicyType.valueOf(type)
@@ -51,7 +51,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
          * @response 200 [ApiResponse] Success response with the policy
          * @response 400 Bad request if type is invalid
          */
-        get("/policy/{type}") {
+        get("{type}") {
             val (type) = call.requiredParameters("type") ?: return@get
             call.respond(
                 ApiResponse.success(
@@ -72,7 +72,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
          * @response 200 [ApiResponse] Success response with the policy
          * @response 400 Bad request if id is missing
          */
-        get("/policy/detail/{id}") {
+        get("detail/{id}") {
             val (id) = call.requiredParameters("id") ?: return@get
             call.respond(ApiResponse.success(policyController.getPolicyById(id), HttpStatusCode.OK))
         }
@@ -87,7 +87,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
              * @body [CreatePolicyRequest] The details of the policy to create.
              * @response 201 [ApiResponse] Success response after policy creation
              */
-            post("/policy") {
+            post {
                 val createRequest = call.receive<CreatePolicyRequest>()
                 call.respond(ApiResponse.success(policyController.createPolicy(createRequest), HttpStatusCode.Created))
             }
@@ -102,7 +102,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
              * @response 200 [ApiResponse] Success response after policy update
              * @response 400 Bad request if id is missing
              */
-            put("/policy/{id}") {
+            put("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@put
                 val updateRequest = call.receive<UpdatePolicyRequest>()
                 call.respond(ApiResponse.success(policyController.updatePolicy(id, updateRequest), HttpStatusCode.OK))
@@ -117,7 +117,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
              * @response 200 [ApiResponse] Success response after policy deactivation
              * @response 400 Bad request if id is missing
              */
-            post("/policy/deactivate/{id}") {
+            post("deactivate/{id}") {
                 val (id) = call.requiredParameters("id") ?: return@post
                 call.respond(ApiResponse.success(policyController.deactivatePolicy(id), HttpStatusCode.OK))
             }

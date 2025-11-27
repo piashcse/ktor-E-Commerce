@@ -76,6 +76,13 @@ kotlin {
     jvmToolchain(17)
 }
 
+// Configure OpenAPI generation compiler plugin options
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    compilerOptions {
+        freeCompilerArgs.add("-Xcontext-receivers")
+    }
+}
+
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
@@ -92,16 +99,33 @@ ktor {
         contact = "support@example.com"
         license = "MIT"
         // Location of the generated specification (defaults to openapi/generated.json)
-        target = project.layout.buildDirectory.file("openapi/generated.json")
+        target = project.layout.buildDirectory.file("ktor/openapi/generated.json")
     }
 }
 
-// Copy the generated OpenAPI spec to resources during build process
-tasks.processResources {
-    dependsOn("buildOpenApi")
-    from(layout.buildDirectory.dir("openapi")) {
-        into("openapi")
+// Transform OpenAPI JSON to ensure Swagger UI compatibility
+val transformOpenApiJson by tasks.registering {
+    dependsOn("buildOpenApi") // Ensure the OpenAPI generation task runs first
+    doLast {
+        val inputFile = project.layout.buildDirectory.file("ktor/openapi/generated.json").get().asFile
+        val outputFile = project.layout.projectDirectory.dir("src/main/resources/openapi").file("openapi.json").asFile
+
+        if (inputFile.exists()) {
+            val content = inputFile.readText()
+            // Replace OpenAPI 3.1 with 3.0 to ensure Swagger UI compatibility
+            val updatedContent = content.replace("\"openapi\": \"3.1.1\"", "\"openapi\": \"3.0.1\"")
+            outputFile.writeText(updatedContent)
+        }
     }
+}
+
+tasks.withType<ProcessResources> {
+    mustRunAfter(transformOpenApiJson) // Ensure our transformation runs after resources processing
+}
+
+// Make sure our transformation happens during the build process
+tasks.build {
+    dependsOn(transformOpenApiJson)
 }
 
 tasks.register("stage") {

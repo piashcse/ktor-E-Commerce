@@ -27,7 +27,7 @@ fun Route.brandRoutes(brandController: BrandService) {
          * @response 400 Bad request if limit is missing
          */
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
-            get("/brand") {
+            get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
@@ -46,7 +46,7 @@ fun Route.brandRoutes(brandController: BrandService) {
          * @response 200 [ApiResponse] Success response after creation
          */
         authenticate(RoleManagement.ADMIN.role) {
-            post("/brand") {
+            post {
                 val requestBody = call.receive<BrandRequest>()
                 call.respond(
                     ApiResponse.success(
@@ -65,7 +65,7 @@ fun Route.brandRoutes(brandController: BrandService) {
              * @response 200 [ApiResponse] Success response after update
              * @response 400 Bad request if required parameters are missing
              */
-            put("/brand/{id}") {
+            put("{id}") {
                 val (id, name) = call.requiredParameters("id", "name") ?: return@put
                 call.respond(
                     ApiResponse.success(
@@ -83,7 +83,7 @@ fun Route.brandRoutes(brandController: BrandService) {
              * @response 200 [ApiResponse] Success response after deletion
              * @response 400 Bad request if id is missing
              */
-            delete("/brand/{id}") {
+            delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(

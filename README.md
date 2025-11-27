@@ -13,7 +13,27 @@ with [ktor](https://ktor.io/docs/welcome.html). This backend leverages the power
 scalable, and efficient service for handling your e-commerce needs. For detailed documentation and guides, visit the project [documentation](https://piashcse.github.io/ktor-E-Commerce).
 
 
-## Swagger View
+## API Documentation & OpenAPI Specification
+
+### Swagger UI
+The application includes Swagger UI for API documentation. Access it at `/swagger` endpoint when the application is running.
+
+### OpenAPI Specification Generation
+The application now includes a properly configured OpenAPI specification file that documents the available endpoints. The specification is available at:
+- `/swagger` - Interactive Swagger UI
+- `/openapi` - Raw OpenAPI specification
+
+The static OpenAPI specification file is located at `src/main/resources/openapi/openapi.json` and includes documentation for all the main API endpoints.
+
+To generate an updated OpenAPI specification file based on the code comments (experimental), run:
+
+```bash
+./gradlew buildOpenApi -PgenerateOpenApi
+```
+
+This will generate an updated OpenAPI specification in the `build/openapi/` directory.
+
+**Note**: The OpenAPI generation feature is experimental in Ktor 3.x. The static specification file in resources provides stable documentation for all endpoints.
 
 <p align="center">
   <img width="100%" height="40%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/swagger.gif" />

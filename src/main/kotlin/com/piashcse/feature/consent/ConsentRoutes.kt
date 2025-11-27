@@ -25,7 +25,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
          * @response 201 [ApiResponse] Success response after recording consent
          */
         authenticate(RoleManagement.CUSTOMER.role) {
-            post("/policy-consents/consent") {
+            post("consent") {
                 val consentRequest = call.receive<PolicyConsentRequest>()
 
                 // Automatically collect all necessary information
@@ -53,7 +53,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
              * @summary auth[admin, customer]
              * @response 200 [ApiResponse] Success response with user consents
              */
-            get("/policy-consents") {
+            get {
                 val userId = call.currentUser().userId
                 call.respond(ApiResponse.success(consentController.getUserConsents(userId), HttpStatusCode.OK))
             }
@@ -67,7 +67,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
              * @response 200 [ApiResponse] Success response with consent status
              * @response 400 Bad request if policyType is missing or invalid
              */
-            get("/policy-consents/{policyType}") {
+            get("{policyType}") {
                 val (policyType) = call.requiredParameters("policyType") ?: return@get
                 val userId = call.currentUser().userId
 

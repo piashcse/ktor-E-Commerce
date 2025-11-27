@@ -29,7 +29,7 @@ fun Route.cartRoutes(cartController: CartService) {
          * @response 200 [ApiResponse] Success response after adding to cart
          */
         authenticate(RoleManagement.CUSTOMER.role) {
-            post("/cart") {
+            post {
                 val requestBody = call.receive<CartRequest>()
                 call.respond(
                     ApiResponse.success(
@@ -51,7 +51,7 @@ fun Route.cartRoutes(cartController: CartService) {
              * @response 200 [ApiResponse] Success response with cart items
              * @response 400 Bad request if limit is missing
              */
-            get("/cart") {
+            get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
@@ -73,7 +73,7 @@ fun Route.cartRoutes(cartController: CartService) {
              * @response 200 [ApiResponse] Success response after updating quantity
              * @response 400 Bad request if required parameters are missing
              */
-            put("/cart/update") {
+            put("update") {
                 val (productId, quantity) = call.requiredParameters("productId", "quantity") ?: return@put
                 call.respond(
                     ApiResponse.success(
@@ -92,7 +92,7 @@ fun Route.cartRoutes(cartController: CartService) {
              * @response 200 [ApiResponse] Success response after removing from cart
              * @response 400 Bad request if productId is missing
              */
-            delete("/cart/remove") {
+            delete("remove") {
                 val (productId) = call.requiredParameters("productId") ?: return@delete
                 call.respond(
                     ApiResponse.success(
@@ -109,7 +109,7 @@ fun Route.cartRoutes(cartController: CartService) {
              * @summary auth[customer]
              * @response 200 [ApiResponse] Success response after clearing cart
              */
-            delete("/cart/all") {
+            delete("all") {
                 call.respond(
                     ApiResponse.success(
                         cartController.clearCart(call.currentUser().userId), HttpStatusCode.OK
