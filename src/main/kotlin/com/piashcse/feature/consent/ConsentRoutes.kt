@@ -15,16 +15,14 @@ import io.ktor.server.routing.*
 
 fun Route.consentRoutes(consentController: ConsentService) {
     // User consent management routes
-    route("policy-consents") {
-        /**
-         * POST request to record user consent to a policy.
-         *
-         * @tag Privacy Policy Consent
-         * @summary auth[customer]
-         * @body [PolicyConsentRequest] The consent details.
-         * @response 201 [ApiResponse] Success response after recording consent
-         */
+    route("/policy-consents") {
         authenticate(RoleManagement.CUSTOMER.role) {
+            /**
+             * @tag Privacy Policy Consent
+             * @summary auth[customer]
+             * @body [PolicyConsentRequest] The consent details.
+             * @response 201 [ApiResponse] Success response after recording consent
+             */
             post("consent") {
                 val consentRequest = call.receive<PolicyConsentRequest>()
 
@@ -47,8 +45,6 @@ fun Route.consentRoutes(consentController: ConsentService) {
 
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.ADMIN.role) {
             /**
-             * GET request to retrieve all consents for a specific user.
-             *
              * @tag Privacy Policy Consent
              * @summary auth[admin, customer]
              * @response 200 [ApiResponse] Success response with user consents
@@ -59,8 +55,6 @@ fun Route.consentRoutes(consentController: ConsentService) {
             }
 
             /**
-             * GET request to check if a user has consented to a specific policy type.
-             *
              * @tag Privacy Policy Consent
              * @summary auth[admin, customer]
              * @path policyType The type of policy to check.

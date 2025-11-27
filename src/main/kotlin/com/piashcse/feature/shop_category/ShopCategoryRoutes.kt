@@ -18,12 +18,10 @@ import io.ktor.server.routing.*
  * @param shopCategoryController The controller responsible for handling shop category operations.
  */
 fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
-    route("shop-category") {
+    route("/shop-category") {
         authenticate(RoleManagement.ADMIN.role) {
 
             /**
-             * POST request to create a new shop category.
-             *
              * @tag Shop Category
              * @summary auth[admin]
              * @body [ShopCategoryRequest] The name of the new shop category.
@@ -39,11 +37,9 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
             }
 
             /**
-             * GET request to retrieve a list of shop categories with a specified limit.
-             *
              * @tag Shop Category
              * @summary auth[admin]
-             * @query limit The maximum number of shop categories to retrieve.
+             * @query limit The maximum number of shop categories to retrieve. (required)
              * @response 200 [ApiResponse] Success response with categories
              * @response 400 Bad request if limit is missing
              */
@@ -58,8 +54,6 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
             }
 
             /**
-             * DELETE request to remove a shop category by its ID.
-             *
              * @tag Shop Category
              * @summary auth[admin]
              * @path id The ID of the shop category to delete.
@@ -76,8 +70,6 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
             }
 
             /**
-             * PUT request to update the name of an existing shop category.
-             *
              * @tag Shop Category
              * @summary auth[admin]
              * @path id The ID of the shop category to update.

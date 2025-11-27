@@ -19,12 +19,10 @@ import io.ktor.server.routing.*
  * @param productCategoryController The controller handling product category-related operations.
  */
 fun Route.productCategoryRoutes(productCategoryController: ProductCategoryService) {
-    route("product-category") {
+    route("/product-category") {
         /**
-         * GET request to retrieve product categories.
-         *
-         * @tag Product Category
-         * @query limit The number of categories to return.
+         * @tag ProductCategory
+         * @query limit The number of categories to return. (required)
          * @response 200 [ApiResponse] Success response with product categories
          * @response 400 Bad request if limit is missing
          */
@@ -41,9 +39,7 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
         // Routes for admins to create, update, and delete product categories
         authenticate(RoleManagement.ADMIN.role) {
             /**
-             * POST request to create a new product category.
-             *
-             * @tag Product Category
+             * @tag ProductCategory
              * @summary auth[admin]
              * @body [ProductCategoryRequest] The details of the category to create, including the category name.
              * @response 200 [ApiResponse] Success response after creation
@@ -60,9 +56,7 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
             }
 
             /**
-             * PUT request to update an existing product category by ID.
-             *
-             * @tag Product Category
+             * @tag ProducCategory
              * @summary auth[admin]
              * @path id The ID of the category to update.
              * @query name The new name for the category.
@@ -81,9 +75,7 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
             }
 
             /**
-             * DELETE request to remove a product category by ID.
-             *
-             * @tag Product Category
+             * @tag ProductCategory
              * @summary auth[admin]
              * @path id The ID of the category to delete.
              * @response 200 [ApiResponse] Success response after deletion

@@ -24,7 +24,7 @@ import io.ktor.server.routing.*
  * @param orderController The service that handles order operations.
  */
 fun Route.orderRoutes(orderController: OrderService) {
-    route("order") {
+    route("/order") {
 
         authenticate(RoleManagement.CUSTOMER.role) {
             /**
@@ -49,7 +49,7 @@ fun Route.orderRoutes(orderController: OrderService) {
              * GET request to fetch the list of orders by the current customer.
              *
              * @tag Order
-             * @query limit The maximum number of orders to retrieve
+             * @query limit The maximum number of orders to retrieve (required)
              * @response 200 List of orders retrieved successfully
              * @security jwtToken
              */
@@ -64,20 +64,14 @@ fun Route.orderRoutes(orderController: OrderService) {
             }
         }
 
-        /**
-         * PATCH request to update order status.
-         *
-         * Accessible by both customers and sellers.
-         * - Customers can update status to: CANCELED, RECEIVED
-         * - Sellers can update status to: CONFIRMED, DELIVERED
-         *
-         * @tag Order
-         * @path id The ID of the order to update
-         * @query status The new status to set (e.g., CONFIRMED, DELIVERED, CANCELED, RECEIVED)
-         * @response 200 Order status updated successfully
-         * @security jwtToken
-         */
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
+            /**
+             * @tag Order
+             * @path id The ID of the order to update (required)
+             * @query status The new status to set (e.g., CONFIRMED, DELIVERED, CANCELED, RECEIVED) (required)
+             * @response 200 Order status updated successfully
+             * @security jwtToken
+             */
             patch("status/{id}") {
                 val (id, statusParam) = call.requiredParameters("id", "status") ?: return@patch
                 val user = call.currentUser()

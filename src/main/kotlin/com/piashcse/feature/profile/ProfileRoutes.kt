@@ -24,16 +24,14 @@ import java.util.*
  */
 fun Route.profileRoutes(userProfileController: ProfileService) {
     authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
-        route("profile") {
+        route("/profile") {
 
             /**
-             * GET request to retrieve the profile of the current user.
-             *
              * @tag Profile
              * @summary auth[admin, seller, customer]
              * @response 200 [ApiResponse] A response containing the profile information of the user.
              */
-            get("/profile") {
+            get {
                 call.respond(
                     ApiResponse.success(
                         userProfileController.getProfile(call.currentUser().userId), HttpStatusCode.OK
@@ -42,8 +40,6 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
             }
 
             /**
-             * PUT request to update the profile of the current user.
-             *
              * @tag Profile
              * @summary auth[admin, seller, customer]
              * @query firstName The user's first name.
@@ -59,7 +55,7 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
              * @query gender The user's gender.
              * @response 200 [ApiResponse] A response indicating the success of the profile update.
              */
-            put("/profile") {
+            put {
                 val params = UserProfileRequest(
                     firstName = call.parameters["firstName"],
                     lastName = call.parameters["lastName"],
@@ -81,13 +77,11 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
             }
 
             /**
-             * POST request to upload a new profile image for the user.
-             *
              * @tag Profile
              * @summary auth[admin, seller, customer]
              * @response 200 [ApiResponse] A response containing the file name of the uploaded image.
              */
-            post("/profile/image-upload") {
+            post("image-upload") {
                 val multipartData = call.receiveMultipart()
 
                 multipartData.forEachPart { part ->

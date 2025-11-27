@@ -20,12 +20,8 @@ import io.ktor.server.routing.*
  */
 fun Route.policyRoutes(policyController: PolicyService) {
     // Main route for policy management
-    route("policy") {
-        // Public routes for accessing policies - no authentication required
-
+    route("/policy") {
         /**
-         * GET request to retrieve all policies, optionally filtered by type.
-         *
          * @tag Privacy Policy
          * @query type Optional filter by policy type (PRIVACY_POLICY, TERMS_CONDITIONS, etc.)
          * @response 200 [ApiResponse] Success response with policies
@@ -44,8 +40,6 @@ fun Route.policyRoutes(policyController: PolicyService) {
         }
 
         /**
-         * GET request to retrieve the active policy of a specific type.
-         *
          * @tag Privacy Policy
          * @path type The policy type (PRIVACY_POLICY, TERMS_CONDITIONS, etc.)
          * @response 200 [ApiResponse] Success response with the policy
@@ -65,8 +59,6 @@ fun Route.policyRoutes(policyController: PolicyService) {
         }
 
         /**
-         * GET request to retrieve a specific policy by ID.
-         *
          * @tag Privacy Policy
          * @path id The unique identifier of the policy.
          * @response 200 [ApiResponse] Success response with the policy
@@ -80,8 +72,6 @@ fun Route.policyRoutes(policyController: PolicyService) {
         // Admin routes for managing policies
         authenticate(RoleManagement.ADMIN.role) {
             /**
-             * POST request to create a new policy document.
-             *
              * @tag Privacy Policy
              * @summary auth[admin]
              * @body [CreatePolicyRequest] The details of the policy to create.
@@ -93,8 +83,6 @@ fun Route.policyRoutes(policyController: PolicyService) {
             }
 
             /**
-             * PUT request to update an existing policy document.
-             *
              * @tag Privacy Policy
              * @summary auth[admin]
              * @path id The ID of the policy to update.
@@ -109,8 +97,6 @@ fun Route.policyRoutes(policyController: PolicyService) {
             }
 
             /**
-             * POST request to deactivate a policy document.
-             *
              * @tag Privacy Policy
              * @summary auth[admin]
              * @path id The ID of the policy to deactivate.

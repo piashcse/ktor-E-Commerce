@@ -28,13 +28,9 @@ import java.util.*
  */
 fun Route.productRoutes(productController: ProductService) {
     // Main route for product management
-    route("product") {
+    route("/product") {
 
         /**
-         * GET request to retrieve product details by product ID.
-         *
-         * Accessible by customers, sellers, and admins.
-         *
          * @tag Product
          * @path id The unique identifier of the product
          * @response 200 Product details retrieved successfully
@@ -45,16 +41,14 @@ fun Route.productRoutes(productController: ProductService) {
         }
 
         /**
-         * GET request to retrieve a list of products with optional filters.
-         *
-         * Accessible by customers, sellers, and admins.
-         *
-         * @param limit The number of products to retrieve.
-         * @param maxPrice Optional maximum price filter.
-         * @param minPrice Optional minimum price filter.
-         * @param categoryId Optional category filter.
-         * @param subCategoryId Optional sub-category filter.
-         * @param brandId Optional brand filter.
+         * @tag Product
+         * @query limit The number of products to retrieve. (required)
+         * @query maxPrice Optional maximum price filter.
+         * @query minPrice Optional minimum price filter.
+         * @query categoryId Optional category filter.
+         * @query subCategoryId Optional sub-category filter.
+         * @query brandId Optional brand filter.
+         * @response 200 Success response with products
          */
         get {
             val (limit) = call.requiredParameters("limit") ?: return@get
@@ -70,15 +64,13 @@ fun Route.productRoutes(productController: ProductService) {
         }
 
         /**
-         * GET request to search for products by name with optional filters.
-         *
-         * Accessible by customers, sellers, and admins.
-         *
-         * @param limit The number of products to retrieve.
-         * @param productName The name of the product to search.
-         * @param categoryId Optional category filter.
-         * @param maxPrice Optional maximum price filter.
-         * @param minPrice Optional minimum price filter.
+         * @tag Product
+         * @query limit The number of products to retrieve. (required)
+         * @query name The name of the product to search. (required)
+         * @query categoryId Optional category filter.
+         * @query maxPrice Optional maximum price filter.
+         * @query minPrice Optional minimum price filter.
+         * @response 200 Success response with search results
          */
         get("search") {
             val (limit) = call.requiredParameters("limit") ?: return@get
@@ -96,16 +88,14 @@ fun Route.productRoutes(productController: ProductService) {
         authenticate(RoleManagement.SELLER.role) {
 
             /**
-             * GET request to retrieve seller-specific products with filters.
-             *
-             * Accessible by sellers.
-             *
-             * @param limit The number of products to retrieve.
-             * @param maxPrice Optional maximum price filter.
-             * @param minPrice Optional minimum price filter.
-             * @param categoryId Optional category filter.
-             * @param subCategoryId Optional sub-category filter.
-             * @param brandId Optional brand filter.
+             * @tag Product
+             * @query limit The number of products to retrieve. (required)
+             * @query maxPrice Optional maximum price filter.
+             * @query minPrice Optional minimum price filter.
+             * @query categoryId Optional category filter.
+             * @query subCategoryId Optional sub-category filter.
+             * @query brandId Optional brand filter.
+             * @response 200 Success response with seller products
              */
             get("seller") {
                 val (limit) = call.requiredParameters("limit") ?: return@get
@@ -125,10 +115,7 @@ fun Route.productRoutes(productController: ProductService) {
             }
 
             /**
-             * POST request to create a new product.
-             *
-             * Accessible by sellers only.
-             *
+             * @tag Product
              * @param requestBody The details of the product to create.
              */
             post {
@@ -141,12 +128,22 @@ fun Route.productRoutes(productController: ProductService) {
             }
 
             /**
-             * PUT request to update an existing product.
-             *
-             * Accessible by sellers only.
-             *
-             * @param id The ID of the product to update.
-             * @param params The parameters to update, including product details.
+             * @tag Product
+             * @path id The ID of the product to update. (required)
+             * @query categoryId The category ID.
+             * @query subCategoryId The sub-category ID.
+             * @query brandId The brand ID.
+             * @query name The product name.
+             * @query description The product name.
+             * @query stockQuantity The stock quantity.
+             * @query price The product price.
+             * @query discountPrice The discounted price.
+             * @query status The product status.
+             * @query videoLink The video link.
+             * @query hotDeal Whether it's a hot deal.
+             * @query featured Whether it's featured.
+             * @query images Product images.
+             * @response 200 Success response after product update
              */
             put("{id}") {
                 val params = UpdateProductRequest(
@@ -173,10 +170,7 @@ fun Route.productRoutes(productController: ProductService) {
             }
 
             /**
-             * DELETE request to delete a product by ID.
-             *
-             * Accessible by sellers only.
-             *
+             * @tag Product
              * @param id The ID of the product to delete.
              */
             delete("{id}") {
@@ -189,10 +183,7 @@ fun Route.productRoutes(productController: ProductService) {
             }
 
             /**
-             * POST request to upload a product image.
-             *
-             * Accessible by sellers only.
-             *
+             * @tag Product
              * @param id The ID of the product.
              * @param image The image file to upload.
              */
@@ -228,10 +219,7 @@ fun Route.productRoutes(productController: ProductService) {
         authenticate(RoleManagement.ADMIN.role) {
 
             /**
-             * DELETE request to delete any product by ID (admin only).
-             *
-             * Accessible by admins.
-             *
+             * @tag Product
              * @param id The ID of the product to delete.
              */
             delete("{id}") {

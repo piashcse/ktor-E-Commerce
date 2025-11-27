@@ -17,16 +17,14 @@ import io.ktor.server.routing.*
  */
 fun Route.brandRoutes(brandController: BrandService) {
     route("brand") {
-        /**
-         * GET request to fetch a list of brands, with an optional limit on the number of brands.
-         *
-         * @tag Brand
-         * @summary auth[admin, customer, seller]
-         * @query limit The maximum number of brands to return.
-         * @response 200 [ApiResponse] Success response with brands
-         * @response 400 Bad request if limit is missing
-         */
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
+            /**
+             * @tag Brand
+             * @summary auth[admin, customer, seller]
+             * @query limit The maximum number of brands to return. (required)
+             * @response 200 [ApiResponse] Success response with brands
+             * @response 400 Bad request if limit is missing
+             */
             get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
@@ -37,15 +35,13 @@ fun Route.brandRoutes(brandController: BrandService) {
             }
         }
 
-        /**
-         * POST request to create a new brand.
-         *
-         * @tag Brand
-         * @summary auth[admin]
-         * @body [BrandRequest] The name of the brand to be created.
-         * @response 200 [ApiResponse] Success response after creation
-         */
         authenticate(RoleManagement.ADMIN.role) {
+            /**
+             * @tag Brand
+             * @summary auth[admin]
+             * @body [BrandRequest] The name of the brand to be created.
+             * @response 200 [ApiResponse] Success response after creation
+             */
             post {
                 val requestBody = call.receive<BrandRequest>()
                 call.respond(
@@ -56,8 +52,6 @@ fun Route.brandRoutes(brandController: BrandService) {
             }
 
             /**
-             * PUT request to update an existing brand's name.
-             *
              * @tag Brand
              * @summary auth[admin]
              * @path id The ID of the brand to be updated.
@@ -75,8 +69,6 @@ fun Route.brandRoutes(brandController: BrandService) {
             }
 
             /**
-             * DELETE request to remove a brand by its ID.
-             *
              * @tag Brand
              * @summary auth[admin]
              * @path id The ID of the brand to be deleted.

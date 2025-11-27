@@ -17,19 +17,15 @@ import io.ktor.server.routing.*
  * @param shopController The controller responsible for handling shop-related operations.
  */
 fun Route.shopRoutes(shopController: ShopService) {
-    route("shop") {
-
-        // Route for creating a shop
+    route("/shop") {
         authenticate(RoleManagement.ADMIN.role) {
             /**
-             * POST request to create a new shop.
-             *
              * @tag Shop
              * @summary auth[admin]
              * @body [ShopRequest] The body of the request containing shop creation details.
              * @response 200 [ApiResponse] A response containing the created shop details.
              */
-            post("/shop") {
+            post {
                 val requestBody = call.receive<ShopRequest>()
                 requestBody.validation()
                 shopController.createShop(
@@ -39,17 +35,14 @@ fun Route.shopRoutes(shopController: ShopService) {
                 }
             }
 
-            // Route for getting a list of shops
             /**
-             * GET request to retrieve a list of shops.
-             *
              * @tag Shop
              * @summary auth[admin]
-             * @query limit The maximum number of shops to retrieve.
+             * @query limit The maximum number of shops to retrieve. (required)
              * @response 200 [ApiResponse] A response containing the list of shops.
              * @response 400 Bad request if limit is missing
              */
-            get("/shop") {
+            get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
                 shopController.getShops(
                     call.currentUser().userId, limit.toInt()
@@ -58,10 +51,7 @@ fun Route.shopRoutes(shopController: ShopService) {
                 }
             }
 
-            // Route for updating a shop
             /**
-             * PUT request to update the name of an existing shop.
-             *
              * @tag Shop
              * @summary auth[admin]
              * @path id The ID of the shop to update.
@@ -69,7 +59,7 @@ fun Route.shopRoutes(shopController: ShopService) {
              * @response 200 [ApiResponse] A response containing the updated shop details.
              * @response 400 Bad request if required parameters are missing
              */
-            put("/shop/{id}") {
+            put("{id}") {
                 val (id, name) = call.requiredParameters("id", "name") ?: return@put
                 shopController.updateShop(
                     call.currentUser().userId, id, name
@@ -78,17 +68,14 @@ fun Route.shopRoutes(shopController: ShopService) {
                 }
             }
 
-            // Route for deleting a shop
             /**
-             * DELETE request to remove an existing shop.
-             *
              * @tag Shop
              * @summary auth[admin]
              * @path id The ID of the shop to delete.
              * @response 200 [ApiResponse] A response indicating the result of the deletion.
              * @response 400 Bad request if id is missing
              */
-            delete("/shop/{id}") {
+            delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete
                 shopController.deleteShop(
                     call.currentUser().userId, id

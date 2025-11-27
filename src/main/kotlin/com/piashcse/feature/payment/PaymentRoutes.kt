@@ -18,18 +18,15 @@ import io.ktor.server.routing.*
  * @param paymentController The controller handling payment-related operations.
  */
 fun Route.paymentRoutes(paymentController: PaymentService) {
-    route("payment") {
-
-        /**
-         * POST request to create a new payment.
-         *
-         * @tag Payment
-         * @summary auth[customer]
-         * @body [PaymentRequest] The payment details (e.g., amount, payment method, etc.) to process the payment.
-         * @response 200 [ApiResponse] Success response after creating payment
-         */
+    route("/payment") {
         authenticate(RoleManagement.CUSTOMER.role) {
-            post("/payment") {
+            /**
+             * @tag Payment
+             * @summary auth[customer]
+             * @body [PaymentRequest] The payment details (e.g., amount, payment method, etc.) to process the payment.
+             * @response 200 [ApiResponse] Success response after creating payment
+             */
+            post {
                 val requestBody = call.receive<PaymentRequest>()
                 call.respond(
                     ApiResponse.success(
@@ -39,15 +36,13 @@ fun Route.paymentRoutes(paymentController: PaymentService) {
             }
 
             /**
-             * GET request to retrieve payment details by ID.
-             *
              * @tag Payment
              * @summary auth[customer]
              * @path id The payment ID to retrieve.
              * @response 200 [ApiResponse] Success response with payment details
              * @response 400 Bad request if id is missing
              */
-            get("/payment/{id}") {
+            get("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@get
                 call.respond(
                     ApiResponse.success(

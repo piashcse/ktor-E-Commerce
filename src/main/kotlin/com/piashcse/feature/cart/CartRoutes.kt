@@ -19,16 +19,14 @@ import io.ktor.server.routing.*
  * @param cartController The controller handling cart-related operations.
  */
 fun Route.cartRoutes(cartController: CartService) {
-    route("cart") {
-        /**
-         * POST request to add a product to the cart.
-         *
-         * @tag Cart
-         * @summary auth[customer]
-         * @body [CartRequest] The product and quantity to add to the cart.
-         * @response 200 [ApiResponse] Success response after adding to cart
-         */
+    route("/cart") {
         authenticate(RoleManagement.CUSTOMER.role) {
+            /**
+             * @tag Cart
+             * @summary auth[customer]
+             * @body [CartRequest] The product and quantity to add to the cart.
+             * @response 200 [ApiResponse] Success response after adding to cart
+             */
             post {
                 val requestBody = call.receive<CartRequest>()
                 call.respond(
@@ -43,11 +41,9 @@ fun Route.cartRoutes(cartController: CartService) {
             }
 
             /**
-             * GET request to retrieve items from the cart with a specified limit.
-             *
              * @tag Cart
              * @summary auth[customer]
-             * @query limit The maximum number of items to retrieve from the cart.
+             * @query limit The maximum number of items to retrieve from the cart. (required)
              * @response 200 [ApiResponse] Success response with cart items
              * @response 400 Bad request if limit is missing
              */
@@ -64,12 +60,10 @@ fun Route.cartRoutes(cartController: CartService) {
             }
 
             /**
-             * PUT request to update the quantity of a product in the cart.
-             *
              * @tag Cart
              * @summary auth[customer]
-             * @query productId The ID of the product to update in the cart.
-             * @query quantity The new quantity of the product.
+             * @query productId The ID of the product to update in the cart. (required)
+             * @query quantity The new quantity of the product. (required)
              * @response 200 [ApiResponse] Success response after updating quantity
              * @response 400 Bad request if required parameters are missing
              */
@@ -84,11 +78,9 @@ fun Route.cartRoutes(cartController: CartService) {
             }
 
             /**
-             * DELETE request to remove a specific product from the cart.
-             *
              * @tag Cart
              * @summary auth[customer]
-             * @query productId The ID of the product to remove from the cart.
+             * @query productId The ID of the product to remove from the cart. (required)
              * @response 200 [ApiResponse] Success response after removing from cart
              * @response 400 Bad request if productId is missing
              */
@@ -103,8 +95,6 @@ fun Route.cartRoutes(cartController: CartService) {
             }
 
             /**
-             * DELETE request to clear all items in the cart.
-             *
              * @tag Cart
              * @summary auth[customer]
              * @response 200 [ApiResponse] Success response after clearing cart

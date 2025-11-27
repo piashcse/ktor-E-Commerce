@@ -26,14 +26,12 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
         authenticate(RoleManagement.CUSTOMER.role) {
 
             /**
-             * POST request to add shipping information for an order.
-             *
              * @tag Shipping
              * @summary auth[customer]
              * @body [ShippingRequest] The shipping details for the order.
              * @response 200 [ApiResponse] Success response
              */
-            post("/shipping") {
+            post {
                 val requestBody = call.receive<ShippingRequest>()
                 call.respond(
                     ApiResponse.success(
@@ -44,15 +42,13 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
             }
 
             /**
-             * GET request to retrieve shipping information for a specific order.
-             *
              * @tag Shipping
              * @summary auth[customer]
-             * @query orderId The ID of the order to retrieve shipping details.
+             * @query orderId The ID of the order to retrieve shipping details. (required)
              * @response 200 [ApiResponse] Success response with shipping details
              * @response 400 Bad request if orderId is missing
              */
-            get("/shipping") {
+            get {
                 val (orderId) = call.requiredParameters("orderId") ?: return@get
                 call.respond(
                     ApiResponse.success(
@@ -63,8 +59,6 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
             }
 
             /**
-             * PUT request to update existing shipping information for an order.
-             *
              * @tag Shipping
              * @summary auth[customer]
              * @path id The ID of the shipping record to update.
@@ -78,7 +72,7 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
              * @response 200 [ApiResponse] Success response with updated shipping info
              * @response 400 Bad request if id is missing
              */
-            put("/shipping/{id}") {
+            put("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@put
                 val params = UpdateShippingRequest(
                     id = id,
@@ -101,15 +95,13 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
             }
 
             /**
-             * DELETE request to delete a shipping record.
-             *
              * @tag Shipping
              * @summary auth[customer]
              * @path id The ID of the shipping record to delete.
              * @response 200 [ApiResponse] Success response indicating deletion
              * @response 400 Bad request if id is missing
              */
-            delete("/shipping/{id}") {
+            delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(

@@ -5,9 +5,8 @@
         "version": "1.0.0"
     },
     "paths": {
-        "auth/login": {
+        "/auth/login": {
             "post": {
-                "summary": "Handles the login request.",
                 "tags": [
                     "Auth"
                 ],
@@ -35,9 +34,8 @@
                 }
             }
         },
-        "auth/register": {
+        "/auth/register": {
             "post": {
-                "summary": "Handles the registration request.",
                 "tags": [
                     "Auth"
                 ],
@@ -65,9 +63,8 @@
                 }
             }
         },
-        "auth/otp-verification": {
+        "/auth/otp-verification": {
             "get": {
-                "summary": "Handles the otp-verification request.",
                 "tags": [
                     "Auth"
                 ],
@@ -75,7 +72,7 @@
                     {
                         "name": "userId",
                         "in": "query",
-                        "description": "The user ID",
+                        "description": "The user ID (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -84,7 +81,7 @@
                     {
                         "name": "otp",
                         "in": "query",
-                        "description": "The OTP code",
+                        "description": "The OTP code (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -105,9 +102,8 @@
                 }
             }
         },
-        "auth/forget-password": {
+        "/auth/forget-password": {
             "get": {
-                "summary": "Handles the request for sending a password reset verification code.",
                 "tags": [
                     "Auth"
                 ],
@@ -115,7 +111,7 @@
                     {
                         "name": "email",
                         "in": "query",
-                        "description": "The user's email address",
+                        "description": "The user's email address (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -124,7 +120,7 @@
                     {
                         "name": "userType",
                         "in": "query",
-                        "description": "The type of user",
+                        "description": "The type of user (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -145,9 +141,8 @@
                 }
             }
         },
-        "auth/reset-password": {
+        "/auth/reset-password": {
             "get": {
-                "summary": "Handles the request for resetting the password.",
                 "tags": [
                     "Auth"
                 ],
@@ -155,7 +150,7 @@
                     {
                         "name": "email",
                         "in": "query",
-                        "description": "The user's email address",
+                        "description": "The user's email address (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -164,7 +159,7 @@
                     {
                         "name": "otp",
                         "in": "query",
-                        "description": "The OTP code",
+                        "description": "The OTP code (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -173,7 +168,7 @@
                     {
                         "name": "newPassword",
                         "in": "query",
-                        "description": "The new password",
+                        "description": "The new password (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -182,7 +177,7 @@
                     {
                         "name": "userType",
                         "in": "query",
-                        "description": "The type of user",
+                        "description": "The type of user (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -203,11 +198,34 @@
                 }
             }
         },
-        "auth/change-password": {
+        "/auth/change-password": {
             "put": {
+                "tags": [
+                    "Auth"
+                ],
+                "parameters": [
+                    {
+                        "name": "oldPassword",
+                        "in": "query",
+                        "description": "The old password (required)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "newPassword",
+                        "in": "query",
+                        "description": "The new password (required)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Password changed successfully or old password is wrong",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -216,27 +234,52 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "jwtToken": []
+                    }
+                ]
             }
         },
         "brand": {
             "get": {
+                "tags": [
+                    "Brand"
+                ],
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "The maximum number of brands to return. (required)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Success response with brands",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Response"
+                                    "$ref": "#/components/schemas/ApiResponse"
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "description": "Bad request if limit is missing"
                     }
                 }
             },
             "post": {
+                "tags": [
+                    "Brand"
+                ],
                 "requestBody": {
-                    "description": "",
+                    "description": "The name of the brand to be created.",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -247,11 +290,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Success response after creation",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Response"
+                                    "$ref": "#/components/schemas/ApiResponse"
                                 }
                             }
                         }
@@ -261,7 +304,6 @@
         },
         "brand/{id}": {
             "put": {
-                "summary": "PUT request to update an existing brand's name.",
                 "tags": [
                     "Brand"
                 ],
@@ -302,7 +344,6 @@
                 }
             },
             "delete": {
-                "summary": "DELETE request to remove a brand by its ID.",
                 "tags": [
                     "Brand"
                 ],
@@ -334,10 +375,13 @@
                 }
             }
         },
-        "cart": {
+        "/cart": {
             "post": {
+                "tags": [
+                    "Cart"
+                ],
                 "requestBody": {
-                    "description": "",
+                    "description": "The product and quantity to add to the cart.",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -348,11 +392,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Success response after adding to cart",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Response"
+                                    "$ref": "#/components/schemas/ApiResponse"
                                 }
                             }
                         }
@@ -360,7 +404,6 @@
                 }
             },
             "get": {
-                "summary": "GET request to retrieve items from the cart with a specified limit.",
                 "tags": [
                     "Cart"
                 ],
@@ -368,7 +411,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The maximum number of items to retrieve from the cart.",
+                        "description": "The maximum number of items to retrieve from the cart. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -392,9 +435,8 @@
                 }
             }
         },
-        "cart/update": {
+        "/cart/update": {
             "put": {
-                "summary": "PUT request to update the quantity of a product in the cart.",
                 "tags": [
                     "Cart"
                 ],
@@ -402,7 +444,7 @@
                     {
                         "name": "productId",
                         "in": "query",
-                        "description": "The ID of the product to update in the cart.",
+                        "description": "The ID of the product to update in the cart. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -411,7 +453,7 @@
                     {
                         "name": "quantity",
                         "in": "query",
-                        "description": "The new quantity of the product.",
+                        "description": "The new quantity of the product. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -435,9 +477,8 @@
                 }
             }
         },
-        "cart/remove": {
+        "/cart/remove": {
             "delete": {
-                "summary": "DELETE request to remove a specific product from the cart.",
                 "tags": [
                     "Cart"
                 ],
@@ -445,7 +486,7 @@
                     {
                         "name": "productId",
                         "in": "query",
-                        "description": "The ID of the product to remove from the cart.",
+                        "description": "The ID of the product to remove from the cart. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -469,9 +510,8 @@
                 }
             }
         },
-        "cart/all": {
+        "/cart/all": {
             "delete": {
-                "summary": "DELETE request to clear all items in the cart.",
                 "tags": [
                     "Cart"
                 ],
@@ -489,14 +529,39 @@
                 }
             }
         },
-        "policy-consents/consent": {
+        "/policy-consents/consent": {
             "post": {
+                "tags": [
+                    "Privacy"
+                ],
                 "requestBody": {
-                    "description": "",
+                    "description": "The consent details.",
                     "content": {
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/PolicyConsentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Success response after recording consent",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
                             }
                         }
                     }
@@ -510,24 +575,11 @@
                             "type": "string"
                         }
                     }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Response"
-                                }
-                            }
-                        }
-                    }
-                }
+                ]
             }
         },
-        "policy-consents": {
+        "/policy-consents": {
             "get": {
-                "summary": "GET request to retrieve all consents for a specific user.",
                 "tags": [
                     "Privacy"
                 ],
@@ -545,9 +597,8 @@
                 }
             }
         },
-        "policy-consents/{policyType}": {
+        "/policy-consents/{policyType}": {
             "get": {
-                "summary": "GET request to check if a user has consented to a specific policy type.",
                 "tags": [
                     "Privacy"
                 ],
@@ -579,7 +630,7 @@
                 }
             }
         },
-        "order": {
+        "/order": {
             "post": {
                 "summary": "POST request to create a new order.",
                 "tags": [
@@ -622,7 +673,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The maximum number of orders to retrieve",
+                        "description": "The maximum number of orders to retrieve (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -648,9 +699,42 @@
                 ]
             }
         },
-        "order/status/{id}": {
+        "/order/status/{id}": {
             "patch": {
+                "tags": [
+                    "Order"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the order to update (required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "The new status to set (e.g., CONFIRMED, DELIVERED, CANCELED, RECEIVED) (required)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
+                    "200": {
+                        "description": "Order status updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    },
                     "400": {
                         "description": "",
                         "content": {
@@ -670,24 +754,22 @@
                                 }
                             }
                         }
-                    },
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Response"
-                                }
-                            }
-                        }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "jwtToken": []
+                    }
+                ]
             }
         },
-        "payment/payment": {
+        "/payment": {
             "post": {
+                "tags": [
+                    "Payment"
+                ],
                 "requestBody": {
-                    "description": "",
+                    "description": "The payment details (e.g., amount, payment method, etc.) to process the payment.",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -698,11 +780,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Success response after creating payment",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Response"
+                                    "$ref": "#/components/schemas/ApiResponse"
                                 }
                             }
                         }
@@ -710,9 +792,8 @@
                 }
             }
         },
-        "payment/payment/{id}": {
+        "/payment/{id}": {
             "get": {
-                "summary": "GET request to retrieve payment details by ID.",
                 "tags": [
                     "Payment"
                 ],
@@ -744,9 +825,8 @@
                 }
             }
         },
-        "policy": {
+        "/policy": {
             "get": {
-                "summary": "GET request to retrieve all policies, optionally filtered by type.",
                 "tags": [
                     "Privacy"
                 ],
@@ -775,7 +855,6 @@
                 }
             },
             "post": {
-                "summary": "POST request to create a new policy document.",
                 "tags": [
                     "Privacy"
                 ],
@@ -813,9 +892,8 @@
                 }
             }
         },
-        "policy/{type}": {
+        "/policy/{type}": {
             "get": {
-                "summary": "GET request to retrieve the active policy of a specific type.",
                 "tags": [
                     "Privacy"
                 ],
@@ -847,9 +925,8 @@
                 }
             }
         },
-        "policy/detail/{id}": {
+        "/policy/detail/{id}": {
             "get": {
-                "summary": "GET request to retrieve a specific policy by ID.",
                 "tags": [
                     "Privacy"
                 ],
@@ -881,9 +958,8 @@
                 }
             }
         },
-        "policy/{id}": {
+        "/policy/{id}": {
             "put": {
-                "summary": "PUT request to update an existing policy document.",
                 "tags": [
                     "Privacy"
                 ],
@@ -925,9 +1001,8 @@
                 }
             }
         },
-        "policy/deactivate/{id}": {
+        "/policy/deactivate/{id}": {
             "post": {
-                "summary": "POST request to deactivate a policy document.",
                 "tags": [
                     "Privacy"
                 ],
@@ -959,9 +1034,8 @@
                 }
             }
         },
-        "product/{id}": {
+        "/product/{id}": {
             "get": {
-                "summary": "GET request to retrieve product details by product ID.\nAccessible by customers, sellers, and admins.",
                 "tags": [
                     "Product"
                 ],
@@ -990,11 +1064,23 @@
                 }
             },
             "put": {
-                "summary": "PUT request to update an existing product.\nAccessible by sellers only.",
+                "tags": [
+                    "Product"
+                ],
                 "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the product to update. (required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "categoryId",
                         "in": "query",
+                        "description": "The category ID.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1003,6 +1089,7 @@
                     {
                         "name": "subCategoryId",
                         "in": "query",
+                        "description": "The sub-category ID.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1011,6 +1098,7 @@
                     {
                         "name": "brandId",
                         "in": "query",
+                        "description": "The brand ID.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1019,6 +1107,7 @@
                     {
                         "name": "name",
                         "in": "query",
+                        "description": "The product name.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1027,6 +1116,7 @@
                     {
                         "name": "description",
                         "in": "query",
+                        "description": "The product name.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1035,6 +1125,7 @@
                     {
                         "name": "stockQuantity",
                         "in": "query",
+                        "description": "The stock quantity.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1043,6 +1134,7 @@
                     {
                         "name": "price",
                         "in": "query",
+                        "description": "The product price.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1051,6 +1143,7 @@
                     {
                         "name": "discountPrice",
                         "in": "query",
+                        "description": "The discounted price.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1059,6 +1152,7 @@
                     {
                         "name": "status",
                         "in": "query",
+                        "description": "The product status.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1067,6 +1161,7 @@
                     {
                         "name": "videoLink",
                         "in": "query",
+                        "description": "The video link.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1075,6 +1170,7 @@
                     {
                         "name": "hotDeal",
                         "in": "query",
+                        "description": "Whether it's a hot deal.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1083,6 +1179,7 @@
                     {
                         "name": "featured",
                         "in": "query",
+                        "description": "Whether it's featured.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1091,6 +1188,7 @@
                     {
                         "name": "images",
                         "in": "query",
+                        "description": "Product images.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1099,7 +1197,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Success response after product update",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1111,7 +1209,9 @@
                 }
             },
             "delete": {
-                "summary": "DELETE request to delete any product by ID (admin only).\nAccessible by admins.",
+                "tags": [
+                    "Product"
+                ],
                 "responses": {
                     "200": {
                         "description": "",
@@ -1126,13 +1226,25 @@
                 }
             }
         },
-        "product": {
+        "/product": {
             "get": {
-                "summary": "GET request to retrieve a list of products with optional filters.\nAccessible by customers, sellers, and admins.",
+                "tags": [
+                    "Product"
+                ],
                 "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "The number of products to retrieve. (required)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "maxPrice",
                         "in": "query",
+                        "description": "Optional maximum price filter.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1141,6 +1253,7 @@
                     {
                         "name": "minPrice",
                         "in": "query",
+                        "description": "Optional minimum price filter.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1149,6 +1262,7 @@
                     {
                         "name": "categoryId",
                         "in": "query",
+                        "description": "Optional category filter.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1157,6 +1271,7 @@
                     {
                         "name": "subCategoryId",
                         "in": "query",
+                        "description": "Optional sub-category filter.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1165,6 +1280,7 @@
                     {
                         "name": "brandId",
                         "in": "query",
+                        "description": "Optional brand filter.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1173,7 +1289,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Success response with products",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1185,7 +1301,9 @@
                 }
             },
             "post": {
-                "summary": "POST request to create a new product.\nAccessible by sellers only.",
+                "tags": [
+                    "Product"
+                ],
                 "requestBody": {
                     "description": "",
                     "content": {
@@ -1210,29 +1328,25 @@
                 }
             }
         },
-        "product/search": {
+        "/product/search": {
             "get": {
-                "summary": "GET request to search for products by name with optional filters.\nAccessible by customers, sellers, and admins.",
+                "tags": [
+                    "Product"
+                ],
                 "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "The number of products to retrieve. (required)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "name",
                         "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "maxPrice",
-                        "in": "query",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "minPrice",
-                        "in": "query",
+                        "description": "The name of the product to search. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1241,6 +1355,25 @@
                     {
                         "name": "categoryId",
                         "in": "query",
+                        "description": "Optional category filter.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "maxPrice",
+                        "in": "query",
+                        "description": "Optional maximum price filter.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "minPrice",
+                        "in": "query",
+                        "description": "Optional minimum price filter.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1249,7 +1382,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Success response with search results",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1261,13 +1394,25 @@
                 }
             }
         },
-        "product/seller": {
+        "/product/seller": {
             "get": {
-                "summary": "GET request to retrieve seller-specific products with filters.\nAccessible by sellers.",
+                "tags": [
+                    "Product"
+                ],
                 "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "The number of products to retrieve. (required)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     {
                         "name": "maxPrice",
                         "in": "query",
+                        "description": "Optional maximum price filter.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1276,6 +1421,7 @@
                     {
                         "name": "minPrice",
                         "in": "query",
+                        "description": "Optional minimum price filter.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1284,6 +1430,7 @@
                     {
                         "name": "categoryId",
                         "in": "query",
+                        "description": "Optional category filter.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1292,6 +1439,7 @@
                     {
                         "name": "subCategoryId",
                         "in": "query",
+                        "description": "Optional sub-category filter.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1300,6 +1448,7 @@
                     {
                         "name": "brandId",
                         "in": "query",
+                        "description": "Optional brand filter.",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1308,7 +1457,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "",
+                        "description": "Success response with seller products",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1320,9 +1469,11 @@
                 }
             }
         },
-        "product/image-upload": {
+        "/product/image-upload": {
             "post": {
-                "summary": "POST request to upload a product image.\nAccessible by sellers only.",
+                "tags": [
+                    "Product"
+                ],
                 "responses": {
                     "200": {
                         "description": "",
@@ -1337,17 +1488,16 @@
                 }
             }
         },
-        "product-category": {
+        "/product-category": {
             "get": {
-                "summary": "GET request to retrieve product categories.",
                 "tags": [
-                    "Product"
+                    "ProductCategory"
                 ],
                 "parameters": [
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The number of categories to return.",
+                        "description": "The number of categories to return. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1371,9 +1521,8 @@
                 }
             },
             "post": {
-                "summary": "POST request to create a new product category.",
                 "tags": [
-                    "Product"
+                    "ProductCategory"
                 ],
                 "requestBody": {
                     "description": "The details of the category to create, including the category name.",
@@ -1399,11 +1548,10 @@
                 }
             }
         },
-        "product-category/{id}": {
+        "/product-category/{id}": {
             "put": {
-                "summary": "PUT request to update an existing product category by ID.",
                 "tags": [
-                    "Product"
+                    "ProducCategory"
                 ],
                 "parameters": [
                     {
@@ -1442,9 +1590,8 @@
                 }
             },
             "delete": {
-                "summary": "DELETE request to remove a product category by ID.",
                 "tags": [
-                    "Product"
+                    "ProductCategory"
                 ],
                 "parameters": [
                     {
@@ -1476,15 +1623,14 @@
         },
         "/product-subcategory": {
             "get": {
-                "summary": "GET request to retrieve product subcategories by category ID.",
                 "tags": [
-                    "Product"
+                    "ProductSubCategory"
                 ],
                 "parameters": [
                     {
                         "name": "categoryId",
                         "in": "query",
-                        "description": "The category ID to filter subcategories.",
+                        "description": "The category ID to filter subcategories. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1493,7 +1639,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The number of subcategories to retrieve.",
+                        "description": "The number of subcategories to retrieve. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1517,9 +1663,8 @@
                 }
             },
             "post": {
-                "summary": "POST request to create a new product subcategory.",
                 "tags": [
-                    "Product"
+                    "ProductSubCategory"
                 ],
                 "requestBody": {
                     "description": "The details of the product subcategory to create.",
@@ -1547,9 +1692,8 @@
         },
         "/product-subcategory/{id}": {
             "put": {
-                "summary": "PUT request to update an existing product subcategory by ID.",
                 "tags": [
-                    "Product"
+                    "ProductSubCategory"
                 ],
                 "parameters": [
                     {
@@ -1588,9 +1732,8 @@
                 }
             },
             "delete": {
-                "summary": "DELETE request to delete a product subcategory by ID.",
                 "tags": [
-                    "Product"
+                    "ProductSubCategory"
                 ],
                 "parameters": [
                     {
@@ -1620,9 +1763,8 @@
                 }
             }
         },
-        "profile/profile": {
+        "/profile": {
             "get": {
-                "summary": "GET request to retrieve the profile of the current user.",
                 "tags": [
                     "Profile"
                 ],
@@ -1640,7 +1782,6 @@
                 }
             },
             "put": {
-                "summary": "PUT request to update the profile of the current user.",
                 "tags": [
                     "Profile"
                 ],
@@ -1759,9 +1900,8 @@
                 }
             }
         },
-        "profile/profile/image-upload": {
+        "/profile/image-upload": {
             "post": {
-                "summary": "POST request to upload a new profile image for the user.",
                 "tags": [
                     "Profile"
                 ],
@@ -1779,9 +1919,8 @@
                 }
             }
         },
-        "review-rating/review-rating": {
+        "/review-rating/review-rating": {
             "get": {
-                "summary": "GET request to retrieve reviews and ratings for a specific product.",
                 "tags": [
                     "Review"
                 ],
@@ -1789,7 +1928,7 @@
                     {
                         "name": "productId",
                         "in": "query",
-                        "description": "The ID of the product to get reviews and ratings.",
+                        "description": "The ID of the product to get reviews and ratings. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1798,7 +1937,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The maximum number of reviews to retrieve.",
+                        "description": "The maximum number of reviews to retrieve. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1822,7 +1961,6 @@
                 }
             },
             "post": {
-                "summary": "POST request to add a new review and rating for a product.",
                 "tags": [
                     "Review"
                 ],
@@ -1850,9 +1988,8 @@
                 }
             }
         },
-        "review-rating/review-rating/{id}": {
+        "/review-rating/review-rating/{id}": {
             "put": {
-                "summary": "PUT request to update an existing review and rating.",
                 "tags": [
                     "Review"
                 ],
@@ -1860,7 +1997,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the review to update.",
+                        "description": "The ID of the review to update. (required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1869,7 +2006,7 @@
                     {
                         "name": "review",
                         "in": "query",
-                        "description": "The updated review content.",
+                        "description": "The updated review content. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1878,7 +2015,7 @@
                     {
                         "name": "rating",
                         "in": "query",
-                        "description": "The updated rating.",
+                        "description": "The updated rating. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1902,7 +2039,6 @@
                 }
             },
             "delete": {
-                "summary": "DELETE request to remove an existing review and rating.",
                 "tags": [
                     "Review"
                 ],
@@ -1934,9 +2070,8 @@
                 }
             }
         },
-        "/shipping/shipping": {
+        "/shipping": {
             "post": {
-                "summary": "POST request to add shipping information for an order.",
                 "tags": [
                     "Shipping"
                 ],
@@ -1964,7 +2099,6 @@
                 }
             },
             "get": {
-                "summary": "GET request to retrieve shipping information for a specific order.",
                 "tags": [
                     "Shipping"
                 ],
@@ -1972,7 +2106,7 @@
                     {
                         "name": "orderId",
                         "in": "query",
-                        "description": "The ID of the order to retrieve shipping details.",
+                        "description": "The ID of the order to retrieve shipping details. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1996,9 +2130,8 @@
                 }
             }
         },
-        "/shipping/shipping/{id}": {
+        "/shipping/{id}": {
             "put": {
-                "summary": "PUT request to update existing shipping information for an order.",
                 "tags": [
                     "Shipping"
                 ],
@@ -2093,7 +2226,6 @@
                 }
             },
             "delete": {
-                "summary": "DELETE request to delete a shipping record.",
                 "tags": [
                     "Shipping"
                 ],
@@ -2125,9 +2257,8 @@
                 }
             }
         },
-        "shop/shop": {
+        "/shop": {
             "post": {
-                "summary": "POST request to create a new shop.",
                 "tags": [
                     "Shop"
                 ],
@@ -2155,7 +2286,6 @@
                 }
             },
             "get": {
-                "summary": "GET request to retrieve a list of shops.",
                 "tags": [
                     "Shop"
                 ],
@@ -2163,7 +2293,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The maximum number of shops to retrieve.",
+                        "description": "The maximum number of shops to retrieve. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2187,9 +2317,8 @@
                 }
             }
         },
-        "shop/shop/{id}": {
+        "/shop/{id}": {
             "put": {
-                "summary": "PUT request to update the name of an existing shop.",
                 "tags": [
                     "Shop"
                 ],
@@ -2230,7 +2359,6 @@
                 }
             },
             "delete": {
-                "summary": "DELETE request to remove an existing shop.",
                 "tags": [
                     "Shop"
                 ],
@@ -2262,9 +2390,8 @@
                 }
             }
         },
-        "shop-category": {
+        "/shop-category": {
             "post": {
-                "summary": "POST request to create a new shop category.",
                 "tags": [
                     "Shop"
                 ],
@@ -2292,7 +2419,6 @@
                 }
             },
             "get": {
-                "summary": "GET request to retrieve a list of shop categories with a specified limit.",
                 "tags": [
                     "Shop"
                 ],
@@ -2300,7 +2426,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The maximum number of shop categories to retrieve.",
+                        "description": "The maximum number of shop categories to retrieve. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2324,9 +2450,8 @@
                 }
             }
         },
-        "shop-category/{id}": {
+        "/shop-category/{id}": {
             "delete": {
-                "summary": "DELETE request to remove a shop category by its ID.",
                 "tags": [
                     "Shop"
                 ],
@@ -2358,7 +2483,6 @@
                 }
             },
             "put": {
-                "summary": "PUT request to update the name of an existing shop category.",
                 "tags": [
                     "Shop"
                 ],
@@ -2399,11 +2523,10 @@
                 }
             }
         },
-        "wishlist/wishlist": {
+        "/wishlist": {
             "post": {
-                "summary": "POST request to add a product to the user's wish list.",
                 "tags": [
-                    "Wish"
+                    "WishList"
                 ],
                 "requestBody": {
                     "description": "The product to add to the wish list.",
@@ -2429,15 +2552,14 @@
                 }
             },
             "get": {
-                "summary": "GET request to retrieve the user's wish list.",
                 "tags": [
-                    "Wish"
+                    "WishList"
                 ],
                 "parameters": [
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The maximum number of products to retrieve from the wish list.",
+                        "description": "The maximum number of products to retrieve from the wish list. (required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2461,11 +2583,10 @@
                 }
             }
         },
-        "wishlist/wishlist/remove": {
+        "/wishlist/remove": {
             "delete": {
-                "summary": "DELETE request to remove a product from the user's wish list.",
                 "tags": [
-                    "Wish"
+                    "WishList"
                 ],
                 "parameters": [
                     {

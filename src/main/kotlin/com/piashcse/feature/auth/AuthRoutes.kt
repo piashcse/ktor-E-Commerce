@@ -20,10 +20,8 @@ import io.ktor.server.routing.*
  * @param authController The controller handling authentication-related operations.
  */
 fun Route.authRoutes(authController: AuthService) {
-    route("auth") {
+    route("/auth") {
         /**
-         * Handles the login request.
-         *
          * @tag Auth
          * @body [LoginRequest] The login credentials
          * @response 200 Successful login response
@@ -38,8 +36,6 @@ fun Route.authRoutes(authController: AuthService) {
         }
 
         /**
-         * Handles the registration request.
-         *
          * @tag Auth
          * @body [RegisterRequest] The registration details
          * @response 200 Successful registration response
@@ -50,11 +46,9 @@ fun Route.authRoutes(authController: AuthService) {
         }
 
         /**
-         * Handles the otp-verification request.
-         *
          * @tag Auth
-         * @query userId The user ID
-         * @query otp The OTP code
+         * @query userId The user ID (required)
+         * @query otp The OTP code (required)
          * @response 200 Successful OTP verification
          */
         get("otp-verification") {
@@ -67,11 +61,9 @@ fun Route.authRoutes(authController: AuthService) {
         }
 
         /**
-         * Handles the request for sending a password reset verification code.
-         *
          * @tag Auth
-         * @query email The user's email address
-         * @query userType The type of user
+         * @query email The user's email address (required)
+         * @query userType The type of user (required)
          * @response 200 Verification code sent successfully
          */
         get("forget-password") {
@@ -89,13 +81,11 @@ fun Route.authRoutes(authController: AuthService) {
         }
 
         /**
-         * Handles the request for resetting the password.
-         *
          * @tag Auth
-         * @query email The user's email address
-         * @query otp The OTP code
-         * @query newPassword The new password
-         * @query userType The type of user
+         * @query email The user's email address (required)
+         * @query otp The OTP code (required)
+         * @query newPassword The new password (required)
+         * @query userType The type of user (required)
          * @response 200 Password reset successfully or invalid verification code
          */
         get("reset-password") {
@@ -129,16 +119,14 @@ fun Route.authRoutes(authController: AuthService) {
             }
         }
 
-        /**
-         * Handles the request to change the password for authenticated users.
-         *
-         * @tag Auth
-         * @query oldPassword The old password
-         * @query newPassword The new password
-         * @response 200 Password changed successfully or old password is wrong
-         * @security jwtToken
-         */
         authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
+            /**
+             * @tag Auth
+             * @query oldPassword The old password (required)
+             * @query newPassword The new password (required)
+             * @response 200 Password changed successfully or old password is wrong
+             * @security jwtToken
+             */
             put("change-password") {
                 val (oldPassword, newPassword) = call.requiredParameters("oldPassword", "newPassword") ?: return@put
                 val loginUser = call.principal<JwtTokenRequest>()

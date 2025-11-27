@@ -17,18 +17,16 @@ import io.ktor.server.routing.*
  * @param wishlistController The controller responsible for handling wish list operations.
  */
 fun Route.wishListRoutes(wishlistController: WishListService) {
-    route("wishlist") {
+    route("/wishlist") {
         authenticate(RoleManagement.CUSTOMER.role) {
 
             /**
-             * POST request to add a product to the user's wish list.
-             *
-             * @tag Wish List
+             * @tag WishList
              * @summary auth[customer]
              * @body [WishListRequest] The product to add to the wish list.
              * @response 200 [ApiResponse] Success response after adding to wishlist
              */
-            post("/wishlist") {
+            post {
                 val requestBody = call.receive<WishListRequest>()
                 call.respond(
                     ApiResponse.success(
@@ -39,15 +37,13 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
             }
 
             /**
-             * GET request to retrieve the user's wish list.
-             *
-             * @tag Wish List
+             * @tag WishList
              * @summary auth[customer]
-             * @query limit The maximum number of products to retrieve from the wish list.
+             * @query limit The maximum number of products to retrieve from the wish list. (required)
              * @response 200 [ApiResponse] Success response with wishlist items
              * @response 400 Bad request if limit is missing
              */
-            get("/wishlist") {
+            get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
@@ -58,15 +54,13 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
             }
 
             /**
-             * DELETE request to remove a product from the user's wish list.
-             *
-             * @tag Wish List
+             * @tag WishList
              * @summary auth[customer]
              * @query productId The ID of the product to remove from the wish list.
              * @response 200 [ApiResponse] Success response after removing from wishlist
              * @response 400 Bad request if productId is missing
              */
-            delete("/wishlist/remove") {
+            delete("remove") {
                 val (productId) = call.requiredParameters("productId") ?: return@delete
                 call.respond(
                     ApiResponse.success(

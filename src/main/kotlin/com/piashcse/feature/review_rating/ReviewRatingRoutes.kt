@@ -17,14 +17,12 @@ import io.ktor.server.routing.*
  * @param reviewRatingController The controller responsible for handling review and rating-related operations.
  */
 fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
-    route("review-rating") {
+    route("/review-rating") {
 
         /**
-         * GET request to retrieve reviews and ratings for a specific product.
-         *
          * @tag Review Rating
-         * @query productId The ID of the product to get reviews and ratings.
-         * @query limit The maximum number of reviews to retrieve.
+         * @query productId The ID of the product to get reviews and ratings. (required)
+         * @query limit The maximum number of reviews to retrieve. (required)
          * @response 200 [ApiResponse] A response containing the list of reviews and ratings for the product.
          * @response 400 Bad request if required parameters are missing
          */
@@ -43,8 +41,6 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
 
             // Route for posting a new review and rating
             /**
-             * POST request to add a new review and rating for a product.
-             *
              * @tag Review Rating
              * @summary auth[customer]
              * @body [ReviewRatingRequest] The body of the request containing review and rating details.
@@ -62,13 +58,11 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
 
             // Route for updating an existing review and rating
             /**
-             * PUT request to update an existing review and rating.
-             *
              * @tag Review Rating
              * @summary auth[customer]
-             * @path id The ID of the review to update.
-             * @query review The updated review content.
-             * @query rating The updated rating.
+             * @path id The ID of the review to update. (required)
+             * @query review The updated review content. (required)
+             * @query rating The updated rating. (required)
              * @response 200 [ApiResponse] A response containing the updated review and rating.
              * @response 400 Bad request if required parameters are missing
              */
@@ -87,8 +81,6 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
 
             // Route for deleting a review and rating
             /**
-             * DELETE request to remove an existing review and rating.
-             *
              * @tag Review Rating
              * @summary auth[customer]
              * @path id The ID of the review to delete.
