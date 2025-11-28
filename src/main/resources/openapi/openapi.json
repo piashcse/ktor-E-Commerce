@@ -632,7 +632,6 @@
         },
         "/order": {
             "post": {
-                "summary": "POST request to create a new order.",
                 "tags": [
                     "Order"
                 ],
@@ -665,7 +664,6 @@
                 ]
             },
             "get": {
-                "summary": "GET request to fetch the list of orders by the current customer.",
                 "tags": [
                     "Order"
                 ],
@@ -1930,7 +1928,7 @@
                 }
             }
         },
-        "/review-rating/review-rating": {
+        "/review-rating": {
             "get": {
                 "tags": [
                     "Review"
@@ -1999,7 +1997,7 @@
                 }
             }
         },
-        "/review-rating/review-rating/{id}": {
+        "/review-rating/{id}": {
             "put": {
                 "tags": [
                     "Review"
