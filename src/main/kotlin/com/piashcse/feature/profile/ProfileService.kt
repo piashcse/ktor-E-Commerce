@@ -68,11 +68,11 @@ class ProfileService : ProfileRepository {
      * Updates the user's profile image and replaces the old one if it exists.
      *
      * @param userId The ID of the user whose profile image is to be updated.
-     * @param profileImage The new profile image file name.
+     * @param imageUrl The new profile image file name.
      * @return The updated user profile with the new image.
      * @throws userId.notFoundException() If no user profile is found for the given user ID.
      */
-    override suspend fun updateProfileImage(userId: String, profileImage: String?): UserProfile = query {
+    override suspend fun updateProfileImage(userId: String, imageUrl: String?): UserProfile = query {
         val userProfileEntity =
             UserProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
 
@@ -82,7 +82,7 @@ class ProfileService : ProfileRepository {
         }
 
         userProfileEntity?.let {
-            it.image = profileImage ?: it.image
+            it.image = imageUrl ?: it.image
             it.response()
         } ?: throw userId.notFoundException()
     }

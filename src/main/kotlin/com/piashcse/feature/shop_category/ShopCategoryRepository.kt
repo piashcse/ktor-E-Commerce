@@ -9,7 +9,7 @@ interface ShopCategoryRepository {
      * @param categoryName The name of the shop category.
      * @return The created shop category.
      */
-    suspend fun createCategory(categoryName: String): ShopCategory
+    suspend fun createCategory(name: String): ShopCategory
 
     /**
      * Retrieves a list of shop categories with a limit.
@@ -26,7 +26,7 @@ interface ShopCategoryRepository {
      * @param categoryName The updated name of the shop category.
      * @return The updated shop category.
      */
-    suspend fun updateCategory(categoryId: String, categoryName: String): ShopCategory
+    suspend fun updateCategory(categoryId: String, name: String): ShopCategory
 
     /**
      * Deletes a specific shop category.
