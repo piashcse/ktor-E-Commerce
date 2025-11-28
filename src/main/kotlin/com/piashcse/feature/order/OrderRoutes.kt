@@ -28,8 +28,6 @@ fun Route.orderRoutes(orderController: OrderService) {
 
         authenticate(RoleManagement.CUSTOMER.role) {
             /**
-             * POST request to create a new order.
-             *
              * @tag Order
              * @body [OrderRequest]
              * @response 200 [Response]
@@ -46,8 +44,6 @@ fun Route.orderRoutes(orderController: OrderService) {
             }
 
             /**
-             * GET request to fetch the list of orders by the current customer.
-             *
              * @tag Order
              * @query limit (required)
              * @response 200 [Response]
