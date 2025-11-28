@@ -6,13 +6,15 @@ import com.piashcse.database.entities.base.BaseIntIdTable
 import com.piashcse.feature.auth.JwtConfig
 import com.piashcse.model.request.JwtTokenRequest
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.javatime.datetime
+import java.time.LocalDateTime
 
 object UserTable : BaseIntIdTable("user") {
     val email = varchar("email", 255) // Nullable for mobile users
     val userType = varchar("user_type", 100)
     val password = varchar("password", 200)
     val otpCode = varchar("otp_code", 6)
-    val otpExpiry = varchar("otp_expiry", 50)
+    val otpExpiry = datetime("otp_expiry").nullable()
     val isVerified = bool("is_verified").default(false)
     override val primaryKey = PrimaryKey(id)
 

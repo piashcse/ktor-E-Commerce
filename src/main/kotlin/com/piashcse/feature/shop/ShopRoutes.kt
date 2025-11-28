@@ -3,13 +3,8 @@ package com.piashcse.feature.shop
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.requiredParameters
-import io.github.smiley4.ktoropenapi.delete
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.post
-import io.github.smiley4.ktoropenapi.put
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -22,24 +17,14 @@ import io.ktor.server.routing.*
  * @param shopController The controller responsible for handling shop-related operations.
  */
 fun Route.shopRoutes(shopController: ShopService) {
-    route("shop") {
-
-        // Route for creating a shop
+    route("/shop") {
         authenticate(RoleManagement.ADMIN.role) {
             /**
-             * POST request to create a new shop.
-             *
-             * @param requestBody The body of the request containing shop creation details.
-             * @response A response containing the created shop details.
+             * @tag Shop
+             * @body [ShopRequest]
+             * @response 200 [Response]
              */
-            post({
-                tags("Shop")
-                summary = "auth[admin]"
-                request {
-                    body<ShopRequest>()
-                }
-                apiResponse()
-            }) {
+            post {
                 val requestBody = call.receive<ShopRequest>()
                 requestBody.validation()
                 shopController.createShop(
@@ -49,23 +34,13 @@ fun Route.shopRoutes(shopController: ShopService) {
                 }
             }
 
-            // Route for getting a list of shops
             /**
-             * GET request to retrieve a list of shops.
-             *
-             * @param limit The maximum number of shops to retrieve.
-             * @response A response containing the list of shops.
+             * @tag Shop
+             * @query limit (required)
+             * @response 200 [Response]
+             * @response 400
              */
-            get({
-                tags("Shop")
-                summary = "auth[admin]"
-                request {
-                    queryParameter<Int>("limit") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
                 shopController.getShops(
                     call.currentUser().userId, limit.toInt()
@@ -74,27 +49,14 @@ fun Route.shopRoutes(shopController: ShopService) {
                 }
             }
 
-            // Route for updating a shop
             /**
-             * PUT request to update the name of an existing shop.
-             *
-             * @param id The ID of the shop to update.
-             * @param name The new name of the shop.
-             * @response A response containing the updated shop details.
+             * @tag Shop
+             * @path id (required)
+             * @query name (required)
+             * @response 200 [Response]
+             * @response 400
              */
-            put("{id}", {
-                tags("Shop")
-                summary = "auth[admin]"
-                request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
-                    queryParameter<String>("name") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            put("{id}") {
                 val (id, name) = call.requiredParameters("id", "name") ?: return@put
                 shopController.updateShop(
                     call.currentUser().userId, id, name
@@ -103,23 +65,13 @@ fun Route.shopRoutes(shopController: ShopService) {
                 }
             }
 
-            // Route for deleting a shop
             /**
-             * DELETE request to remove an existing shop.
-             *
-             * @param id The ID of the shop to delete.
-             * @response A response indicating the result of the deletion.
+             * @tag Shop
+             * @path id (required)
+             * @response 200 [Response]
+             * @response 400
              */
-            delete("{id}", {
-                tags("Shop")
-                summary = "auth[admin]"
-                request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete
                 shopController.deleteShop(
                     call.currentUser().userId, id

@@ -3,12 +3,8 @@ package com.piashcse.feature.wishlist
 import com.piashcse.model.request.WishListRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.requiredParameters
-import io.github.smiley4.ktoropenapi.delete
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.post
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -21,23 +17,15 @@ import io.ktor.server.routing.*
  * @param wishlistController The controller responsible for handling wish list operations.
  */
 fun Route.wishListRoutes(wishlistController: WishListService) {
-    route("wishlist") {
+    route("/wishlist") {
         authenticate(RoleManagement.CUSTOMER.role) {
 
             /**
-             * POST request to add a product to the user's wish list.
-             *
-             * @param productId The ID of the product to add to the wish list.
-             * @response A response indicating the success of adding the product to the wish list.
+             * @tag WishList
+             * @body [WishListRequest]
+             * @response 200 [Response]
              */
-            post({
-                tags("Wish List")
-                summary = "auth[customer]"
-                request {
-                    body<WishListRequest>()
-                }
-                apiResponse()
-            }) {
+            post {
                 val requestBody = call.receive<WishListRequest>()
                 call.respond(
                     ApiResponse.success(
@@ -48,21 +36,12 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
             }
 
             /**
-             * GET request to retrieve the user's wish list.
-             *
-             * @param limit The maximum number of products to retrieve from the wish list.
-             * @response A response containing the products in the user's wish list.
+             * @tag WishList
+             * @query limit (required)
+             * @response 200 [Response]
+             * @response 400
              */
-            get({
-                tags("Wish List")
-                summary = "auth[customer]"
-                request {
-                    queryParameter<String>("limit") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
@@ -73,21 +52,12 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
             }
 
             /**
-             * DELETE request to remove a product from the user's wish list.
-             *
-             * @param productId The ID of the product to remove from the wish list.
-             * @response A response indicating the success of removing the product from the wish list.
+             * @tag WishList
+             * @query productId (required)
+             * @response 200 [Response]
+             * @response 400
              */
-            delete({
-                tags("Wish List")
-                summary = "auth[customer]"
-                request {
-                    queryParameter<String>("productId") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            delete("remove") {
                 val (productId) = call.requiredParameters("productId") ?: return@delete
                 call.respond(
                     ApiResponse.success(

@@ -5,11 +5,7 @@ import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.requiredParameters
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.post
-import io.github.smiley4.ktoropenapi.put
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -24,26 +20,13 @@ import io.ktor.server.routing.*
  */
 fun Route.policyRoutes(policyController: PolicyService) {
     // Main route for policy management
-    route("policy") {
-        // Public routes for accessing policies - no authentication required
-
+    route("/policy") {
         /**
-         * GET request to retrieve all policies, optionally filtered by type.
-         *
-         * Accessible by anyone.
-         *
-         * @param type Optional filter by policy type (PRIVACY_POLICY, TERMS_CONDITIONS, etc.)
+         * @tag Privacy Policy
+         * @query type
+         * @response 200 [Response]
          */
-        get({
-            tags("Privacy Policy")
-            request {
-                queryParameter<String>("type") {
-                    description = "Filter policies by type"
-                    required = false
-                }
-            }
-            apiResponse()
-        }) {
+        get {
             val type = call.request.queryParameters["type"]
             val policyType = type?.let {
                 PolicyDocumentTable.PolicyType.valueOf(type)
@@ -57,22 +40,12 @@ fun Route.policyRoutes(policyController: PolicyService) {
         }
 
         /**
-         * GET request to retrieve the active policy of a specific type.
-         *
-         * Accessible by anyone.
-         *
-         * @param type The policy type (PRIVACY_POLICY, TERMS_CONDITIONS, etc.)
+         * @tag Privacy Policy
+         * @path type (required)
+         * @response 200 [Response]
+         * @response 400
          */
-        get("{type}", {
-            tags("Privacy Policy")
-            request {
-                pathParameter<String>("type") {
-                    description = "Policy type like PRIVACY_POLICY, TERMS_CONDITIONS, etc."
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        get("{type}") {
             val (type) = call.requiredParameters("type") ?: return@get
             call.respond(
                 ApiResponse.success(
@@ -86,22 +59,12 @@ fun Route.policyRoutes(policyController: PolicyService) {
         }
 
         /**
-         * GET request to retrieve a specific policy by ID.
-         *
-         * Accessible by anyone.
-         *
-         * @param id The unique identifier of the policy.
+         * @tag Privacy Policy
+         * @path id (required)
+         * @response 200 [Response]
+         * @response 400
          */
-        get("detail/{id}", {
-            tags("Privacy Policy")
-            request {
-                pathParameter<String>("id") {
-                    description = "Policy ID"
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        get("detail/{id}") {
             val (id) = call.requiredParameters("id") ?: return@get
             call.respond(ApiResponse.success(policyController.getPolicyById(id), HttpStatusCode.OK))
         }
@@ -109,67 +72,35 @@ fun Route.policyRoutes(policyController: PolicyService) {
         // Admin routes for managing policies
         authenticate(RoleManagement.ADMIN.role) {
             /**
-             * POST request to create a new policy document.
-             *
-             * Accessible by admins only.
-             *
-             * @param createPolicyRequest The details of the policy to create.
+             * @tag Privacy Policy
+             * @body [CreatePolicyRequest]
+             * @response 201 [Response]
              */
-            post({
-                tags("Privacy Policy")
-                summary = "auth[admin]"
-                request {
-                    body<CreatePolicyRequest>()
-                }
-                apiResponse()
-            }) {
+            post {
                 val createRequest = call.receive<CreatePolicyRequest>()
                 call.respond(ApiResponse.success(policyController.createPolicy(createRequest), HttpStatusCode.Created))
             }
 
             /**
-             * PUT request to update an existing policy document.
-             *
-             * Accessible by admins only.
-             *
-             * @param id The ID of the policy to update.
-             * @param updatePolicyRequest The parameters to update.
+             * @tag Privacy Policy
+             * @path id
+             * @body [UpdatePolicyRequest]
+             * @response 200 [Response]
+             * @response 400
              */
-            put("{id}", {
-                tags("Privacy Policy")
-                summary = "auth[admin]"
-                request {
-                    pathParameter<String>("id") {
-                        description = "Policy ID"
-                        required = true
-                    }
-                    body<UpdatePolicyRequest>()
-                }
-                apiResponse()
-            }) {
+            put("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@put
                 val updateRequest = call.receive<UpdatePolicyRequest>()
                 call.respond(ApiResponse.success(policyController.updatePolicy(id, updateRequest), HttpStatusCode.OK))
             }
 
             /**
-             * POST request to deactivate a policy document.
-             *
-             * Accessible by admins only.
-             *
-             * @param id The ID of the policy to deactivate.
+             * @tag Privacy Policy
+             * @path id
+             * @response 200 [Response]
+             * @response 400
              */
-            post("deactivate/{id}", {
-                tags("Privacy Policy")
-                summary = "auth[admin]"
-                request {
-                    pathParameter<String>("id") {
-                        description = "Policy ID"
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            post("deactivate/{id}") {
                 val (id) = call.requiredParameters("id") ?: return@post
                 call.respond(ApiResponse.success(policyController.deactivatePolicy(id), HttpStatusCode.OK))
             }

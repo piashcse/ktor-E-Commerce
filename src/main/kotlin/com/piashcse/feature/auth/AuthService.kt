@@ -38,8 +38,7 @@ class AuthService : AuthRepository {
                 .toList().singleOrNull()
 
         val otp = generateOTP()
-        val now =
-            LocalDateTime.now().plusHours(24).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) // 24 hours opt expire time
+        val now = LocalDateTime.now().plusHours(24) // 24 hours opt expire time
 
         if (userEntity != null) {
             // User exists with the same email and userType
@@ -47,8 +46,7 @@ class AuthService : AuthRepository {
             if (userEntity.isVerified) {
                 Message.USER_ALREADY_EXIST_WITH_THIS_EMAIL
             } else {
-                val expiryTime = LocalDateTime.parse(userEntity.otpExpiry, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-                if (expiryTime < LocalDateTime.now()) {
+                if (userEntity.otpExpiry!! < LocalDateTime.now()) {
                     userEntity.otpCode = otp
                     sendEmail(userEntity.email, otp)
                     "${Message.NEW_OTP_SENT_TO} ${userEntity.email}"

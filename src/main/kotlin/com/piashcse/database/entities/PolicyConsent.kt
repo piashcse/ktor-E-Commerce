@@ -5,6 +5,7 @@ import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
 import com.piashcse.model.response.UserPolicyConsent
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.javatime.datetime
 import java.time.LocalDateTime
 
 
@@ -14,7 +15,7 @@ import java.time.LocalDateTime
 object PolicyConsentTable : BaseIntIdTable("policy_consents") {
     val userId = reference("user_id", UserTable)
     val policyId = reference("policy_id", PolicyDocumentTable)
-    val consentDate = varchar("consent_date", 50).default(LocalDateTime.now().toString())
+    val consentDate = datetime("consent_date").nullable()
     val ipAddress = varchar("ip_address", 50).nullable()
     val userAgent = varchar("user_agent", 255).nullable()
 
@@ -37,7 +38,7 @@ class PolicyConsentDAO(id: EntityID<String>) : BaseIntEntity(id, PolicyConsentTa
         id.value,
         userId.value,
         policyId.id.value,
-        consentDate,
+        consentDate?.toString() ?: LocalDateTime.now().toString(),  // Convert LocalDateTime to string for response
         ipAddress,
         userAgent
     )

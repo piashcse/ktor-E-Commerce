@@ -6,12 +6,8 @@ import com.piashcse.constants.OrderStatus
 import com.piashcse.model.request.OrderRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.requiredParameters
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.patch
-import io.github.smiley4.ktoropenapi.post
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -34,18 +30,12 @@ fun Route.orderRoutes(orderController: OrderService) {
             /**
              * POST request to create a new order.
              *
-             * Accessible by customers only.
-             *
-             * @body OrderRequest The order data (product ID, quantity, etc.).
+             * @tag Order
+             * @body [OrderRequest]
+             * @response 200 [Response]
+             * @security jwtToken
              */
-            post({
-                tags("Order")
-                summary = "auth[customer]"
-                request {
-                    body<OrderRequest>()
-                }
-                apiResponse()
-            }) {
+            post {
                 val requestBody = call.receive<OrderRequest>()
                 call.respond(
                     ApiResponse.success(
@@ -58,18 +48,12 @@ fun Route.orderRoutes(orderController: OrderService) {
             /**
              * GET request to fetch the list of orders by the current customer.
              *
-             * Accessible by customers only.
-             *
-             * @queryParam limit The maximum number of orders to retrieve.
+             * @tag Order
+             * @query limit (required)
+             * @response 200 [Response]
+             * @security jwtToken
              */
-            get({
-                tags("Order")
-                summary = "auth[customer]"
-                request {
-                    queryParameter<String>("limit") { required = true }
-                }
-                apiResponse()
-            }) {
+            get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
@@ -80,26 +64,15 @@ fun Route.orderRoutes(orderController: OrderService) {
             }
         }
 
-        /**
-         * PATCH request to update order status.
-         *
-         * Accessible by both customers and sellers.
-         * - Customers can update status to: CANCELED, RECEIVED
-         * - Sellers can update status to: CONFIRMED, DELIVERED
-         *
-         * @queryParam id The ID of the order to update.
-         * @queryParam status The new status to set (e.g., CONFIRMED, DELIVERED, CANCELED, RECEIVED).
-         */
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
-            patch("status/{id}", {
-                tags("Order")
-                summary = "auth[customer, seller]"
-                request {
-                    pathParameter<String>("id") { required = true }
-                    queryParameter<String>("status") { required = true }
-                }
-                apiResponse()
-            }) {
+            /**
+             * @tag Order
+             * @path id (required)
+             * @query status (required)
+             * @response 200 [Response]
+             * @security jwtToken
+             */
+            patch("status/{id}") {
                 val (id, statusParam) = call.requiredParameters("id", "status") ?: return@patch
                 val user = call.currentUser()
 

@@ -4,11 +4,8 @@ import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.requiredParameters
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.post
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.*
@@ -18,21 +15,14 @@ import io.ktor.server.routing.*
 
 fun Route.consentRoutes(consentController: ConsentService) {
     // User consent management routes
-    route("policy-consents") {
-        /**
-         * POST request to record user consent to a policy.
-         *
-         * Accessible by authenticated users (CUSTOMER role).
-         */
+    route("/policy-consents") {
         authenticate(RoleManagement.CUSTOMER.role) {
-            post("consent", {
-                tags("Privacy Policy Consent")
-                summary = "auth[customer]"
-                request {
-                    body<PolicyConsentRequest>()
-                }
-                apiResponse()
-            }) {
+            /**
+             * @tag Privacy Policy Consent
+             * @body [PolicyConsentRequest]
+             * @response 201 [Response]
+             */
+            post("consent") {
                 val consentRequest = call.receive<PolicyConsentRequest>()
 
                 // Automatically collect all necessary information
@@ -54,38 +44,21 @@ fun Route.consentRoutes(consentController: ConsentService) {
 
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.ADMIN.role) {
             /**
-             * GET request to retrieve all consents for a specific user.
-             *
-             * Accessible by the user themselves or admins.
+             * @tag Privacy Policy Consent
+             * @response 200 [Response]
              */
-            get({
-                tags("Privacy Policy Consent")
-                summary = "auth[admin, customer]"
-                apiResponse()
-            }) {
+            get {
                 val userId = call.currentUser().userId
                 call.respond(ApiResponse.success(consentController.getUserConsents(userId), HttpStatusCode.OK))
             }
 
             /**
-             * GET request to check if a user has consented to a specific policy type.
-             *
-             * Accessible by the user themselves or admins.
-             *
-             * @param userId The ID of the user.
-             * @param policyType The type of policy to check.
+             * @tag Privacy Policy Consent
+             * @path policyType (required)
+             * @response 200 [Response]
+             * @response 400
              */
-            get("{policyType}", {
-                tags("Privacy Policy Consent")
-                summary = "auth[admin, customer]"
-                request {
-                    pathParameter<String>("policyType") {
-                        description = "Policy type like PRIVACY_POLICY, TERMS_CONDITIONS, etc."
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            get("{policyType}") {
                 val (policyType) = call.requiredParameters("policyType") ?: return@get
                 val userId = call.currentUser().userId
 

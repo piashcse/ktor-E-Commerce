@@ -1,6 +1,6 @@
 [versions]
-ktor-version = "3.3.2"
-kotlin-version = "2.1.21"
+ktor-version = "3.3.3"
+kotlin-version = "2.2.21"
 logback-version = "1.5.18"
 exposed-version = "1.0.0-rc-3"
 flyway-version = "9.22.3"
@@ -10,7 +10,6 @@ bcrypt-version = "0.10.2"
 commons-email-version ="1.5"
 valiktor-core-version = "0.12.0"
 commons-io-version = "2.17.0"
-ktor-open-api-tools-version = "5.3.0"
 shadow-version = "9.2.2"
 koin-version = "4.1.1"
 dotenv-version = "6.4.1"
@@ -42,8 +41,8 @@ bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt-version" }
 commons-email = { module = "org.apache.commons:commons-email", version.ref = "commons-email-version" }
 valiktor-core = { module = "org.valiktor:valiktor-core", version.ref = "valiktor-core-version" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons-io-version" }
-ktor-swagger-ui = { module = "io.github.smiley4:ktor-swagger-ui", version.ref = "ktor-open-api-tools-version" }
-ktor-open-api = { module = "io.github.smiley4:ktor-openapi", version.ref = "ktor-open-api-tools-version" }
+ktor-swagger-ui = { module = "io.ktor:ktor-server-swagger", version.ref = "ktor-version" }
+ktor-open-api = { module = "io.ktor:ktor-server-openapi", version.ref = "ktor-version" }
 koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin-version" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-version" }
 koin-logger = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin-version" }

@@ -6,12 +6,8 @@ import com.piashcse.database.entities.ChangePassword
 import com.piashcse.model.request.*
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.requiredParameters
 import com.piashcse.utils.sendEmail
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.post
-import io.github.smiley4.ktoropenapi.put
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -24,19 +20,13 @@ import io.ktor.server.routing.*
  * @param authController The controller handling authentication-related operations.
  */
 fun Route.authRoutes(authController: AuthService) {
-    route("auth") {
+    route("/auth") {
         /**
-         * Handles the login request.
-         *
-         * Receives a [LoginRequest] object and responds with a successful login response.
+         * @tag Auth
+         * @body [LoginRequest]
+         * @response 200 [Response]
          */
-        post("login", {
-            tags("Auth")
-            request {
-                body<LoginRequest>()
-            }
-            apiResponse()
-        }) {
+        post("login") {
             val requestBody = call.receive<LoginRequest>()
             call.respond(
                 ApiResponse.success(
@@ -46,38 +36,22 @@ fun Route.authRoutes(authController: AuthService) {
         }
 
         /**
-         * Handles the registration request.
-         *
-         * Receives a [RegisterRequest] object and responds with a successful registration response.
+         * @tag Auth
+         * @body [RegisterRequest]
+         * @response 200 [Response]
          */
-        post("register", {
-            tags("Auth")
-            request {
-                body<RegisterRequest>()
-            }
-            apiResponse()
-        }) {
+        post("register") {
             val requestBody = call.receive<RegisterRequest>()
             call.respond(ApiResponse.success(authController.register(requestBody), HttpStatusCode.OK))
         }
 
         /**
-         * Handles the otp-verification request.
-         *
-         * Receives otp as a query parameter and verifies the opt.
+         * @tag Auth
+         * @query userId (required)
+         * @query otp (required)
+         * @response 200 [Response]
          */
-        get("otp-verification", {
-            tags("Auth")
-            request {
-                queryParameter<String>("userId") {
-                    required = true
-                }
-                queryParameter<String>("otp") {
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        get("otp-verification") {
             val (userId, otp) = call.requiredParameters("userId", "otp") ?: return@get
             call.respond(
                 ApiResponse.success(
@@ -87,22 +61,12 @@ fun Route.authRoutes(authController: AuthService) {
         }
 
         /**
-         * Handles the request for sending a password reset verification code.
-         *
-         * Receives the user's email as a query parameter and sends a verification code to the email.
+         * @tag Auth
+         * @query email (required)
+         * @query userType (required)
+         * @response 200 [Response]
          */
-        get("forget-password", {
-            tags("Auth")
-            request {
-                queryParameter<String>("email") {
-                    required = true
-                }
-                queryParameter<String>("userType") {
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        get("forget-password") {
             val (email, userType) = call.requiredParameters("email", "userType") ?: return@get
             val requestBody = ForgetPasswordRequest(email, userType)
             authController.forgetPassword(requestBody).let { otp ->
@@ -117,28 +81,14 @@ fun Route.authRoutes(authController: AuthService) {
         }
 
         /**
-         * Handles the request for resetting the password.
-         *
-         * Receives the email, OTP, and new password as query parameters and verifies the password reset code.
+         * @tag Auth
+         * @query email (required)
+         * @query otp (required)
+         * @query newPassword (required)
+         * @query userType (required)
+         * @response 200 [Response]
          */
-        get("reset-password", {
-            tags("Auth")
-            request {
-                queryParameter<String>("email") {
-                    required = true
-                }
-                queryParameter<String>("otp") {
-                    required = true
-                }
-                queryParameter<String>("newPassword") {
-                    required = true
-                }
-                queryParameter<String>("userType") {
-                    required = true
-                }
-            }
-            apiResponse()
-        }) {
+        get("reset-password") {
             val (email, otp, newPassword, userType) = call.requiredParameters(
                 "email", "otp", "newPassword", "userType"
             ) ?: return@get
@@ -169,25 +119,15 @@ fun Route.authRoutes(authController: AuthService) {
             }
         }
 
-        /**
-         * Handles the request to change the password for authenticated users.
-         *
-         * Requires the old and new password as query parameters and responds with a success or failure message.
-         */
         authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
-            put("change-password", {
-                tags("Auth")
-                protected = true
-                request {
-                    queryParameter<String>("oldPassword") {
-                        required = true
-                    }
-                    queryParameter<String>("newPassword") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            /**
+             * @tag Auth
+             * @query oldPassword (required)
+             * @query newPassword (required)
+             * @response 200 [Response]
+             * @security jwtToken
+             */
+            put("change-password") {
                 val (oldPassword, newPassword) = call.requiredParameters("oldPassword", "newPassword") ?: return@put
                 val loginUser = call.principal<JwtTokenRequest>()
                 authController.changePassword(loginUser?.userId!!, ChangePassword(oldPassword, newPassword)).let {

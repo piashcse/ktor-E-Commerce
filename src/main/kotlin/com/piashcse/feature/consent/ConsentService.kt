@@ -30,7 +30,7 @@ class ConsentService: ConsentRepository {
 
         val consent = existingConsent?.// Update existing consent
         apply {
-            consentDate = LocalDateTime.now().toString()
+            consentDate = LocalDateTime.now()
             ipAddress = consentRequest.ipAddress
             userAgent = consentRequest.userAgent
         }
@@ -38,7 +38,7 @@ class ConsentService: ConsentRepository {
             PolicyConsentDAO.new {
                 userId = user.id
                 policyId = policy
-                consentDate = LocalDateTime.now().toString()
+                consentDate = LocalDateTime.now()
                 ipAddress = consentRequest.ipAddress
                 userAgent = consentRequest.userAgent
             }

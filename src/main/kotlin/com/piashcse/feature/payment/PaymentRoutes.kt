@@ -3,10 +3,7 @@ package com.piashcse.feature.payment
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.apiResponse
 import com.piashcse.utils.extension.requiredParameters
-import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.post
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -21,24 +18,14 @@ import io.ktor.server.routing.*
  * @param paymentController The controller handling payment-related operations.
  */
 fun Route.paymentRoutes(paymentController: PaymentService) {
-    route("payment") {
-
-        /**
-         * POST request to create a new payment.
-         *
-         * Accessible by customers only.
-         *
-         * @param paymentRequest The payment details (e.g., amount, payment method, etc.) to process the payment.
-         */
+    route("/payment") {
         authenticate(RoleManagement.CUSTOMER.role) {
-            post({
-                tags("Payment")
-                summary = "auth[customer]"
-                request {
-                    body<PaymentRequest>()
-                }
-                apiResponse()
-            }) {
+            /**
+             * @tag Payment
+             * @body [PaymentRequest]
+             * @response 200 [Response]
+             */
+            post {
                 val requestBody = call.receive<PaymentRequest>()
                 call.respond(
                     ApiResponse.success(
@@ -48,22 +35,12 @@ fun Route.paymentRoutes(paymentController: PaymentService) {
             }
 
             /**
-             * GET request to retrieve payment details by ID.
-             *
-             * Accessible by customers only.
-             *
-             * @param id The payment ID to retrieve.
+             * @tag Payment
+             * @path id (required)
+             * @response 200 [Response]
+             * @response 400
              */
-            get("{id}", {
-                tags("Payment")
-                summary = "auth[customer]"
-                request {
-                    pathParameter<String>("id") {
-                        required = true
-                    }
-                }
-                apiResponse()
-            }) {
+            get("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@get
                 call.respond(
                     ApiResponse.success(
