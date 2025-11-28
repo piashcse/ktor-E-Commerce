@@ -177,13 +177,7 @@ Connection tab:
 
 ![server1](screenshots/ktor-postgres.png)
 
-## Run the project
 
-On Terminal
-
-```
-./gradlew run
-```
 
 ## 📧 SMTP Email Setup
 
@@ -198,6 +192,38 @@ Configure your email settings in the `.env` file:
 - `EMAIL_PASSWORD`: Your email app password
 
 > **Important**: Use Gmail app passwords instead of your regular Gmail password. Generate an app password in your Google Account settings under Security > 2-Step Verification > App passwords.
+
+## API Documentation & OpenAPI Specification
+
+The application includes built-in API documentation and OpenAPI specification generation:
+
+### Accessing API Documentation
+
+- **Swagger UI**: Access interactive API documentation at `/swagger` endpoint when the application is running.
+- **Raw OpenAPI Specification**: Get the OpenAPI JSON specification at `/openapi` endpoint.
+
+### Generating OpenAPI Specification
+
+The static OpenAPI specification file is located at `src/main/resources/openapi/openapi.json` and includes documentation for all the main API endpoints.
+
+To generate an updated OpenAPI specification file based on the current code:
+
+```bash
+./gradlew transformOpenApiJson
+```
+
+This will generate an updated OpenAPI specification and save it to `src/main/resources/openapi/openapi.json`.
+
+**Note**: The OpenAPI generation feature is experimental in Ktor 3.x. The static specification file in resources provides stable documentation for all endpoints.
+
+## Run the project
+
+On Terminal
+
+```
+./gradlew run
+```
+
 ## Documentation
 
 ### ROLE MANAGEMENT
