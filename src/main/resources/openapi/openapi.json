@@ -242,6 +242,160 @@
                 ]
             }
         },
+        "/auth/{userId}/change-user-type": {
+            "put": {
+                "tags": [
+                    "Auth"
+                ],
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "(required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "userType",
+                        "in": "query",
+                        "description": "(required)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtToken": []
+                    }
+                ]
+            }
+        },
+        "/auth/{userId}/deactivate": {
+            "put": {
+                "tags": [
+                    "Auth"
+                ],
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "(required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtToken": []
+                    }
+                ]
+            }
+        },
+        "/auth/{userId}/activate": {
+            "put": {
+                "tags": [
+                    "Auth"
+                ],
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "(required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "jwtToken": []
+                    }
+                ]
+            }
+        },
         "brand": {
             "get": {
                 "tags": [
@@ -942,16 +1096,6 @@
                         }
                     },
                     "400": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Response"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
                         "description": "",
                         "content": {
                             "application/json": {
@@ -2144,7 +2288,7 @@
                 }
             }
         },
-        "/review-rating/review-rating": {
+        "/review-rating": {
             "get": {
                 "tags": [
                     "Review"
@@ -2213,7 +2357,7 @@
                 }
             }
         },
-        "/review-rating/review-rating/{id}": {
+        "/review-rating/{id}": {
             "put": {
                 "tags": [
                     "Review"

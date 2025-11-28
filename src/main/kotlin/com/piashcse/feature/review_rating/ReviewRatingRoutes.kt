@@ -26,7 +26,7 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
          * @response 200 [Response]
          * @response 400
          */
-        get("/review-rating") {
+        get() {
             val (productId, limit) = call.requiredParameters("productId", "limit") ?: return@get
             call.respond(
                 ApiResponse.success(
@@ -45,7 +45,7 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
              * @body [ReviewRatingRequest]
              * @response 200 [Response]
              */
-            post("/review-rating") {
+            post {
                 val requestBody = call.receive<ReviewRatingRequest>()
                 call.respond(
                     ApiResponse.success(
@@ -64,7 +64,7 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
              * @response 200 [Response]
              * @response 400
              */
-            put("/review-rating/{id}") {
+            put("{id}") {
                 val (id, review, rating) = call.requiredParameters("id", "review", "rating") ?: return@put
                 call.respond(
                     ApiResponse.success(
@@ -84,7 +84,7 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
              * @response 200 [Response]
              * @response 400
              */
-            delete("/review-rating/{id}") {
+            delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(

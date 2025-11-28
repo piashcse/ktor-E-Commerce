@@ -3,6 +3,7 @@ package com.piashcse.feature.auth
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
+import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.ForgetPasswordRequest
 import com.piashcse.model.request.LoginRequest
@@ -16,7 +17,6 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.neq
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class AuthService : AuthRepository {
     /**
@@ -29,10 +29,10 @@ class AuthService : AuthRepository {
     override suspend fun register(registerRequest: RegisterRequest): Any = query {
         // Convert string userType to enum for the database query
         val userTypeEnum = try {
-            com.piashcse.constants.UserType.valueOf(registerRequest.userType.uppercase())
+            UserType.valueOf(registerRequest.userType.uppercase())
         } catch (e: IllegalArgumentException) {
             // If the value is not valid, default to CUSTOMER
-            com.piashcse.constants.UserType.CUSTOMER
+            UserType.CUSTOMER
         }
 
         // Check if user exists with the same email and userType
@@ -80,7 +80,7 @@ class AuthService : AuthRepository {
             }
 
             // Create corresponding seller record if user is registering as a seller
-            if (userTypeEnum == com.piashcse.constants.UserType.SELLER) {
+            if (userTypeEnum == UserType.SELLER) {
                 SellerDAO.new {
                     userId = inserted.id
                     status = com.piashcse.constants.ShopStatus.PENDING // Default to pending approval
@@ -93,7 +93,7 @@ class AuthService : AuthRepository {
             // Check if this is a new registration for a different role (like existing as customer, registering as seller)
             if (existingUserWithDifferentType != null) {
                 // Create seller record if registering as seller
-                if (userTypeEnum == com.piashcse.constants.UserType.SELLER) {
+                if (userTypeEnum == UserType.SELLER) {
                     // Check if seller record doesn't already exist for this user
                     val existingSeller = SellerDAO.find { SellerTable.userId eq inserted.id }.singleOrNull()
                     if (existingSeller == null) {
@@ -130,7 +130,7 @@ class AuthService : AuthRepository {
     override suspend fun login(loginRequest: LoginRequest): LoginResponse = query {
         // Convert string userType to enum for comparison
         val userTypeEnum = try {
-            com.piashcse.constants.UserType.valueOf(loginRequest.userType.uppercase())
+            UserType.valueOf(loginRequest.userType.uppercase())
         } catch (e: IllegalArgumentException) {
             // If the value is not valid, return not found
             throw loginRequest.email.notFoundException()
@@ -215,7 +215,7 @@ class AuthService : AuthRepository {
 
         // Convert string userType to enum for comparison
         val userTypeEnum = try {
-            com.piashcse.constants.UserType.valueOf(forgetPasswordRequest.userType.uppercase())
+            UserType.valueOf(forgetPasswordRequest.userType.uppercase())
         } catch (e: IllegalArgumentException) {
             throw forgetPasswordRequest.email.notFoundException()
         }
@@ -249,7 +249,7 @@ class AuthService : AuthRepository {
 
         // Convert string userType to enum for comparison
         val userTypeEnum = try {
-            com.piashcse.constants.UserType.valueOf(resetPasswordRequest.userType.uppercase())
+            UserType.valueOf(resetPasswordRequest.userType.uppercase())
         } catch (e: IllegalArgumentException) {
             throw "${resetPasswordRequest.email} not found for ${resetPasswordRequest.userType} role".notFoundException()
         }
@@ -271,5 +271,84 @@ class AuthService : AuthRepository {
         } else {
             AppConstants.DataBaseTransaction.NOT_FOUND
         }
+    }
+
+    /**
+     * Changes the user type for a specific user.
+     * Only admins and super admins can change user types, with proper validation.
+     */
+    override suspend fun changeUserType(currentUserId: String, targetUserId: String, newUserType: UserType): Boolean = query {
+        // Get the current user making the change
+        val currentUser = UserDAO.find { UserTable.id eq currentUserId }.singleOrNull()
+            ?: throw UserNotExistException()
+
+        // Check if the current user has permission to change user types
+        if (!RoleBasedAuth.canManageUsers(currentUser.userType.name, newUserType.name)) {
+            throw CommonException("Insufficient permissions to change user type to $newUserType")
+        }
+
+        // Get the target user
+        val targetUser = UserDAO.find { UserTable.id eq targetUserId }.singleOrNull()
+            ?: throw UserNotExistException()
+
+        // Update the user type
+        targetUser.userType = newUserType
+
+        // If changing to seller, create seller record if it doesn't exist
+        if (newUserType == UserType.SELLER) {
+            val existingSeller = SellerDAO.find { SellerTable.userId eq targetUser.id }.singleOrNull()
+            if (existingSeller == null) {
+                SellerDAO.new {
+                    userId = targetUser.id
+                    status = com.piashcse.constants.ShopStatus.PENDING // Default to pending approval
+                }
+            }
+        }
+
+        true
+    }
+
+    /**
+     * Deactivates a user account.
+     */
+    override suspend fun deactivateUser(currentUserId: String, targetUserId: String): Boolean = query {
+        // Get the current user making the change
+        val currentUser = UserDAO.find { UserTable.id eq currentUserId }.singleOrNull()
+            ?: throw UserNotExistException()
+
+        // Get the target user
+        val targetUser = UserDAO.find { UserTable.id eq targetUserId }.singleOrNull()
+            ?: throw UserNotExistException()
+
+        // Check if the current user has permission to deactivate this user
+        if (!RoleBasedAuth.canManageUsers(currentUser.userType.name, targetUser.userType.name)) {
+            throw CommonException("Insufficient permissions to deactivate user")
+        }
+
+        // Update user active status
+        targetUser.isActive = false
+        true
+    }
+
+    /**
+     * Activates a user account.
+     */
+    override suspend fun activateUser(currentUserId: String, targetUserId: String): Boolean = query {
+        // Get the current user making the change
+        val currentUser = UserDAO.find { UserTable.id eq currentUserId }.singleOrNull()
+            ?: throw UserNotExistException()
+
+        // Get the target user
+        val targetUser = UserDAO.find { UserTable.id eq targetUserId }.singleOrNull()
+            ?: throw UserNotExistException()
+
+        // Check if the current user has permission to activate this user
+        if (!RoleBasedAuth.canManageUsers(currentUser.userType.name, targetUser.userType.name)) {
+            throw CommonException("Insufficient permissions to activate user")
+        }
+
+        // Update user active status
+        targetUser.isActive = true
+        true
     }
 }

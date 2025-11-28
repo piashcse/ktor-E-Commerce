@@ -66,6 +66,31 @@ class SellerDAO(id: EntityID<String>) : BaseIntEntity(id, SellerTable) {
         createdAt = createdAt,
         updatedAt = updatedAt
     )
+
+    /**
+     * Get the associated user information
+     */
+    fun getUser(): UserDAO? = UserDAO.findById(userId)
+
+    /**
+     * Check if the seller is approved
+     */
+    fun isApproved(): Boolean = status == ShopStatus.APPROVED
+
+    /**
+     * Check if the seller is pending approval
+     */
+    fun isPending(): Boolean = status == ShopStatus.PENDING
+
+    /**
+     * Check if the seller is rejected
+     */
+    fun isRejected(): Boolean = status == ShopStatus.REJECTED
+
+    /**
+     * Check if the seller is suspended
+     */
+    fun isSuspended(): Boolean = status == ShopStatus.SUSPENDED
 }
 
 data class SellerResponse(

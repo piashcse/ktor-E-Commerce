@@ -217,8 +217,8 @@ fun Route.productRoutes(productController: ProductService) {
             }
         }
 
-        // Routes for admins to manage all products
-        authenticate(RoleManagement.ADMIN.role) {
+        // Routes for admins and super admins to manage all products
+        authenticate(RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
 
             /**
              * @tag Product

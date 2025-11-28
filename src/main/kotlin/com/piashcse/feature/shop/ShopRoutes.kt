@@ -1,5 +1,6 @@
 package com.piashcse.feature.shop
 
+import com.piashcse.constants.UserType
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.plugin.RoleManagement
@@ -20,10 +21,10 @@ import io.ktor.server.routing.*
 fun Route.shopRoutes(shopController: ShopService) {
     // Main route for shop management
     route("/shop") {
-        
+
         // Routes for sellers to manage their shops
         authenticate(RoleManagement.SELLER.role) {
-            
+
             /**
              * @tag Shop
              * @body requestBody
@@ -72,7 +73,7 @@ fun Route.shopRoutes(shopController: ShopService) {
 
         // Routes for customers to view shops
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
-            
+
             /**
              * @tag Shop
              * @query status
@@ -106,9 +107,9 @@ fun Route.shopRoutes(shopController: ShopService) {
             }
         }
 
-        // Routes for admins to manage all shops
-        authenticate(RoleManagement.ADMIN.role) {
-            
+        // Routes for admins and super admins to manage all shops
+        authenticate(RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
+
             /**
              * @tag Shop
              * @query status
@@ -164,6 +165,11 @@ fun Route.shopRoutes(shopController: ShopService) {
                 val (shopId) = call.requiredParameters("id") ?: return@put
                 call.respond(ApiResponse.success(shopController.activateShop(shopId), HttpStatusCode.OK))
             }
+        }
+
+        // Super Admin specific routes (if any additional functionality needed)
+        authenticate(RoleManagement.SUPER_ADMIN.role) {
+            // Additional Super Admin specific functionality for shops could go here
         }
     }
 }
