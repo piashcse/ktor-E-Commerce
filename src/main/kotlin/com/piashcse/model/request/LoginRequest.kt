@@ -1,5 +1,6 @@
 package com.piashcse.model.request
 
+import com.piashcse.constants.UserType
 import com.piashcse.plugin.RoleManagement
 import org.valiktor.functions.hasSize
 import org.valiktor.functions.isEmail
@@ -17,7 +18,7 @@ data class LoginRequest(
             validate(LoginRequest::email).isNotNull().isEmail()
             validate(LoginRequest::password).isNotNull().hasSize(4, 10)
             validate(LoginRequest::userType).isNotNull()
-                .isIn(RoleManagement.ADMIN.role, RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role)
+                .isIn(RoleManagement.SUPER_ADMIN.role, RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role)
         }
     }
 }

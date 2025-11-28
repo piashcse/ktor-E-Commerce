@@ -6,7 +6,13 @@ import org.valiktor.validate
 
 data class ShopRequest(
     val name: String,
-    val categoryId: String
+    val categoryId: String,
+    val description: String?,
+    val address: String?,
+    val phone: String?,
+    val email: String?,
+    val logo: String?,
+    val coverImage: String?
 ) {
     fun validation() {
         validate(this) {

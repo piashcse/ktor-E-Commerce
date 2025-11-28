@@ -630,9 +630,216 @@
                 }
             }
         },
+        "/inventory": {
+            "post": {
+                "tags": [
+                    "Inventory"
+                ],
+                "requestBody": {
+                    "description": "requestBody",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InventoryRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/{id}": {
+            "put": {
+                "tags": [
+                    "Inventory"
+                ],
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "description": "(required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "requestBody",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InventoryRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Inventory"
+                ],
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "description": "(required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/inventory/stock/{id}": {
+            "put": {
+                "tags": [
+                    "Inventory"
+                ],
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "description": "(required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "quantity",
+                        "in": "query",
+                        "description": "(required)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "operation",
+                        "in": "query",
+                        "description": "(optional) - add, subtract, set",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/shop": {
+            "get": {
+                "tags": [
+                    "Inventory"
+                ],
+                "parameters": [
+                    {
+                        "name": "shopId",
+                        "in": "query",
+                        "description": "(required)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/inventory/low-stock": {
+            "get": {
+                "tags": [
+                    "Inventory"
+                ],
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/order": {
             "post": {
-                "summary": "POST request to create a new order.",
                 "tags": [
                     "Order"
                 ],
@@ -665,7 +872,6 @@
                 ]
             },
             "get": {
-                "summary": "GET request to fetch the list of orders by the current customer.",
                 "tags": [
                     "Order"
                 ],
@@ -1189,6 +1395,14 @@
                         "name": "images",
                         "in": "query",
                         "description": "",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "freeShipping",
+                        "in": "query",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2274,7 +2488,7 @@
                     "Shop"
                 ],
                 "requestBody": {
-                    "description": "",
+                    "description": "requestBody",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -2300,17 +2514,6 @@
                 "tags": [
                     "Shop"
                 ],
-                "parameters": [
-                    {
-                        "name": "limit",
-                        "in": "query",
-                        "description": "(required)",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "",
@@ -2321,9 +2524,6 @@
                                 }
                             }
                         }
-                    },
-                    "400": {
-                        "description": ""
                     }
                 }
             }
@@ -2342,17 +2542,18 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    {
-                        "name": "name",
-                        "in": "query",
-                        "description": "(required)",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ],
+                "requestBody": {
+                    "description": "requestBody",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateShopRequest"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "",
@@ -2363,19 +2564,16 @@
                                 }
                             }
                         }
-                    },
-                    "400": {
-                        "description": ""
                     }
                 }
             },
-            "delete": {
+            "get": {
                 "tags": [
                     "Shop"
                 ],
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "shopId",
                         "in": "path",
                         "description": "(required)",
                         "required": true,
@@ -2395,8 +2593,265 @@
                             }
                         }
                     },
-                    "400": {
+                    "404": {
                         "description": ""
+                    }
+                }
+            }
+        },
+        "/shop/public": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shop/category/{categoryId}": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "parameters": [
+                    {
+                        "name": "categoryId",
+                        "in": "path",
+                        "description": "(required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shop/featured": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shop/status": {
+            "get": {
+                "tags": [
+                    "Shop"
+                ],
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shop/approve/{id}": {
+            "put": {
+                "tags": [
+                    "Shop"
+                ],
+                "parameters": [
+                    {
+                        "name": "shopId",
+                        "in": "path",
+                        "description": "(required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shop/reject/{id}": {
+            "put": {
+                "tags": [
+                    "Shop"
+                ],
+                "parameters": [
+                    {
+                        "name": "shopId",
+                        "in": "path",
+                        "description": "(required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shop/suspend/{id}": {
+            "put": {
+                "tags": [
+                    "Shop"
+                ],
+                "parameters": [
+                    {
+                        "name": "shopId",
+                        "in": "path",
+                        "description": "(required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/shop/activate/{id}": {
+            "put": {
+                "tags": [
+                    "Shop"
+                ],
+                "parameters": [
+                    {
+                        "name": "shopId",
+                        "in": "path",
+                        "description": "(required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -2712,6 +3167,29 @@
                     }
                 }
             },
+            "InventoryRequest": {
+                "type": "object",
+                "properties": {
+                    "productId": {
+                        "type": "string"
+                    },
+                    "shopId": {
+                        "type": "string"
+                    },
+                    "stockQuantity": {
+                        "type": "integer"
+                    },
+                    "reservedQuantity": {
+                        "type": "integer"
+                    },
+                    "minimumStockLevel": {
+                        "type": "integer"
+                    },
+                    "maximumStockLevel": {
+                        "type": "integer"
+                    }
+                }
+            },
             "OrderRequest": {
                 "type": "object",
                 "properties": {
@@ -2864,6 +3342,9 @@
                     "featured": {
                         "type": "boolean"
                     },
+                    "freeShipping": {
+                        "type": "boolean"
+                    },
                     "images": {
                         "type": "array",
                         "items": {
@@ -2938,6 +3419,50 @@
                         "type": "string"
                     },
                     "categoryId": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "address": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "logo": {
+                        "type": "string"
+                    },
+                    "coverImage": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UpdateShopRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "address": {
+                        "type": "string"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "logo": {
+                        "type": "string"
+                    },
+                    "coverImage": {
                         "type": "string"
                     }
                 }

@@ -27,14 +27,22 @@ class AuthService : AuthRepository {
      * @return The response containing the registered user ID and email.
      */
     override suspend fun register(registerRequest: RegisterRequest): Any = query {
+        // Convert string userType to enum for the database query
+        val userTypeEnum = try {
+            com.piashcse.constants.UserType.valueOf(registerRequest.userType.uppercase())
+        } catch (e: IllegalArgumentException) {
+            // If the value is not valid, default to CUSTOMER
+            com.piashcse.constants.UserType.CUSTOMER
+        }
+
         // Check if user exists with the same email and userType
         val userEntity =
-            UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType eq registerRequest.userType) }
+            UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType eq userTypeEnum) }
                 .toList().singleOrNull()
 
         // Check if user exists with the same email but different userType
         val existingUserWithDifferentType =
-            UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType neq registerRequest.userType) }
+            UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType neq userTypeEnum) }
                 .toList().singleOrNull()
 
         val otp = generateOTP()
@@ -61,7 +69,7 @@ class AuthService : AuthRepository {
                 otpCode = otp
                 otpExpiry = now
                 password = BCrypt.withDefaults().hashToString(12, registerRequest.password.toCharArray())
-                userType = registerRequest.userType
+                userType = userTypeEnum
             }
 
             // If this is a new user (not existing with different role), create profile
@@ -71,8 +79,31 @@ class AuthService : AuthRepository {
                 }
             }
 
+            // Create corresponding seller record if user is registering as a seller
+            if (userTypeEnum == com.piashcse.constants.UserType.SELLER) {
+                SellerDAO.new {
+                    userId = inserted.id
+                    status = com.piashcse.constants.ShopStatus.PENDING // Default to pending approval
+                }
+            }
+
             // Send OTP
             sendEmail(inserted.email, otp)
+
+            // Check if this is a new registration for a different role (like existing as customer, registering as seller)
+            if (existingUserWithDifferentType != null) {
+                // Create seller record if registering as seller
+                if (userTypeEnum == com.piashcse.constants.UserType.SELLER) {
+                    // Check if seller record doesn't already exist for this user
+                    val existingSeller = SellerDAO.find { SellerTable.userId eq inserted.id }.singleOrNull()
+                    if (existingSeller == null) {
+                        SellerDAO.new {
+                            userId = inserted.id
+                            status = com.piashcse.constants.ShopStatus.PENDING // Default to pending approval
+                        }
+                    }
+                }
+            }
 
             // Return appropriate message
             if (existingUserWithDifferentType != null) {
@@ -97,8 +128,16 @@ class AuthService : AuthRepository {
      * @return The response containing the authentication token.
      */
     override suspend fun login(loginRequest: LoginRequest): LoginResponse = query {
+        // Convert string userType to enum for comparison
+        val userTypeEnum = try {
+            com.piashcse.constants.UserType.valueOf(loginRequest.userType.uppercase())
+        } catch (e: IllegalArgumentException) {
+            // If the value is not valid, return not found
+            throw loginRequest.email.notFoundException()
+        }
+
         val userEntity =
-            UserDAO.find { UserTable.email eq loginRequest.email and (UserTable.userType eq loginRequest.userType) }
+            UserDAO.find { UserTable.email eq loginRequest.email and (UserTable.userType eq userTypeEnum) }
                 .toList().singleOrNull()
         userEntity?.let {
             if (BCrypt.verifyer().verify(
@@ -174,8 +213,15 @@ class AuthService : AuthRepository {
             throw forgetPasswordRequest.email.notFoundException()
         }
 
+        // Convert string userType to enum for comparison
+        val userTypeEnum = try {
+            com.piashcse.constants.UserType.valueOf(forgetPasswordRequest.userType.uppercase())
+        } catch (e: IllegalArgumentException) {
+            throw forgetPasswordRequest.email.notFoundException()
+        }
+
         // Find the specific user with the given email and userType
-        val specificUser = userEntities.find { it.userType == forgetPasswordRequest.userType }
+        val specificUser = userEntities.find { it.userType == userTypeEnum }
         specificUser?.let {
             val otp = generateOTP()
             it.otpCode = otp
@@ -201,8 +247,15 @@ class AuthService : AuthRepository {
             throw resetPasswordRequest.email.notFoundException()
         }
 
+        // Convert string userType to enum for comparison
+        val userTypeEnum = try {
+            com.piashcse.constants.UserType.valueOf(resetPasswordRequest.userType.uppercase())
+        } catch (e: IllegalArgumentException) {
+            throw "${resetPasswordRequest.email} not found for ${resetPasswordRequest.userType} role".notFoundException()
+        }
+
         // Find the specific user with the given email and userType
-        val userEntity = userEntities.find { it.userType == resetPasswordRequest.userType }
+        val userEntity = userEntities.find { it.userType == userTypeEnum }
             ?: throw "${resetPasswordRequest.email} not found for ${resetPasswordRequest.userType} role".notFoundException()
 
         // Verify the code and update the password

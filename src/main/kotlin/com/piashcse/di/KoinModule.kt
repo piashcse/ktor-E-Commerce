@@ -4,6 +4,7 @@ import com.piashcse.feature.auth.AuthService
 import com.piashcse.feature.brand.BrandService
 import com.piashcse.feature.cart.CartService
 import com.piashcse.feature.consent.ConsentService
+import com.piashcse.feature.inventory.InventoryService
 import com.piashcse.feature.order.OrderService
 import com.piashcse.feature.payment.PaymentService
 import com.piashcse.feature.policy.PolicyService
@@ -35,4 +36,5 @@ val serviceModule = module {
     single { ReviewRatingService() }
     single { PolicyService() }
     single { ConsentService() }
+    single { InventoryService() }
 }

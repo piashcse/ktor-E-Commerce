@@ -26,8 +26,8 @@ class OrderService : OrderRepository {
     override suspend fun createOrder(userId: String, orderRequest: OrderRequest): Order = query {
         val order = OrderDAO.new {
             this.userId = EntityID(userId, OrderTable)
-            this.subTotal = orderRequest.subTotal
-            this.total = orderRequest.total
+            this.subTotal = java.math.BigDecimal.valueOf(orderRequest.subTotal.toDouble())
+            this.total = java.math.BigDecimal.valueOf(orderRequest.total.toDouble())
         }
         orderRequest.orderItems.forEach {
             OrderItemDAO.new {

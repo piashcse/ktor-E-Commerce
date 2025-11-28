@@ -8,6 +8,8 @@ import com.piashcse.feature.cart.CartService
 import com.piashcse.feature.cart.cartRoutes
 import com.piashcse.feature.consent.ConsentService
 import com.piashcse.feature.consent.consentRoutes
+import com.piashcse.feature.inventory.InventoryService
+import com.piashcse.feature.inventory.inventoryRoutes
 import com.piashcse.feature.order.OrderService
 import com.piashcse.feature.order.orderRoutes
 import com.piashcse.feature.payment.PaymentService
@@ -53,6 +55,7 @@ fun Application.configureRoute() {
     val paymentController: PaymentService by inject()
     val policyController: PolicyService by inject()
     val consentController: ConsentService by inject()
+    val inventoryController: InventoryService by inject()
     routing {
         authRoutes(authController)
         profileRoutes(userProfileController)
@@ -70,5 +73,6 @@ fun Application.configureRoute() {
         paymentRoutes(paymentController)
         policyRoutes(policyController)
         consentRoutes(consentController)
+        inventoryRoutes(inventoryController)
     }
 }
