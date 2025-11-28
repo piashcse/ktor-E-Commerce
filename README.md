@@ -1,6 +1,6 @@
 # Ktor-E-Commerce
 
-[![Ktor](https://img.shields.io/badge/ktor-3.3.2-blue.svg)](https://github.com/ktorio/ktor)
+[![Ktor](https://img.shields.io/badge/ktor-3.3.3-blue.svg)](https://github.com/ktorio/ktor)
 [![Exposed](https://img.shields.io/badge/Exposed-1.0.0.rc3-blue.svg)](https://github.com/JetBrains/Exposed)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.1.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 ![Koin](https://img.shields.io/badge/Koin-4.1.1-29BEB0?logo=koin&logoColor=white)
@@ -11,29 +11,6 @@
 Ktor-E-Commerce is a high-performance backend solution designed for modern e-commerce applications built
 with [ktor](https://ktor.io/docs/welcome.html). This backend leverages the power of Kotlin to provide a robust,
 scalable, and efficient service for handling your e-commerce needs. For detailed documentation and guides, visit the project [documentation](https://piashcse.github.io/ktor-E-Commerce).
-
-
-## API Documentation & OpenAPI Specification
-
-### Swagger UI
-The application includes Swagger UI for API documentation. Access it at `/swagger` endpoint when the application is running.
-
-### OpenAPI Specification Generation
-The application now includes a properly configured OpenAPI specification file that documents the available endpoints. The specification is available at:
-- `/swagger` - Interactive Swagger UI
-- `/openapi` - Raw OpenAPI specification
-
-The static OpenAPI specification file is located at `src/main/resources/openapi/openapi.json` and includes documentation for all the main API endpoints.
-
-To generate an updated OpenAPI specification file based on the code comments (experimental), run:
-
-```bash
-./gradlew buildOpenApi -PgenerateOpenApi
-```
-
-This will generate an updated OpenAPI specification in the `build/openapi/` directory.
-
-**Note**: The OpenAPI generation feature is experimental in Ktor 3.x. The static specification file in resources provides stable documentation for all endpoints.
 
 <p align="center">
   <img width="100%" height="40%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/swagger.gif" />
@@ -129,34 +106,48 @@ Note: some installation instructions are for mac, for windows/linux please insta
 
 ## Environment Configuration
 
-This project now uses DotEnv for configuration management. Create a `.env` file in the project root with the following variables:
+This project uses DotEnv for configuration management. Follow these steps to set up your environment:
 
-```env
-# Database Configuration
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=ktor-1.0.0
-DB_USER=postgres
-DB_PASSWORD=p123
+1. Create a `.env` file in the project root directory:
+   ```bash
+   touch .env
+   ```
 
-# Server Configuration
-PORT=8080
-HOST=localhost
+2. Add the following variables to your `.env` file:
 
-# JWT Configuration
-JWT_SECRET=zAP5MBA4B4Ijz0MZaS48
-JWT_ISSUER=piashcse
-JWT_AUDIENCE=ktor-ecommerce
-JWT_REALM=ktor-ecommerce
+   ```env
+   # Database Configuration
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=ktor-ecommerce
+   DB_USER=postgres
+   DB_PASSWORD=p123
 
-# Email Configuration
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USERNAME=your-email@gmail.com
-EMAIL_PASSWORD=your-app-password
-```
+   # Server Configuration
+   PORT=8080
+   HOST=localhost
+
+   # JWT Configuration
+   JWT_SECRET=your-super-secret-jwt-secret-key-change-in-production
+   JWT_ISSUER=ktor-ecommerce-app
+   JWT_AUDIENCE=ktor-ecommerce
+   JWT_REALM=ktor-ecommerce
+
+   # Email Configuration
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
+   EMAIL_USERNAME=your-email@gmail.com
+   EMAIL_PASSWORD=your-gmail-app-password
+   ```
+
+3. Update the values as needed for your environment, especially:
+   - Database credentials to match your PostgreSQL setup
+   - JWT secret with a strong, unique value for production
+   - Email credentials with your actual Gmail and app password
 
 The `.env` file is included in `.gitignore` to prevent sensitive information from being committed to the repository.
+
+> **Note**: For email configuration, make sure to use a Gmail app password rather than your regular Gmail password. You can generate an app password in your Google Account settings under Security > 2-Step Verification > App passwords.
 
 For more detailed information about environment variables and how to use them, please refer to our [Environment Variables Documentation](docs/environment-variables.md).
 
@@ -186,6 +177,45 @@ Connection tab:
 
 ![server1](screenshots/ktor-postgres.png)
 
+
+
+## 📧 SMTP Email Setup
+
+This project uses Gmail’s SMTP service to send emails (e.g., for password recovery). The email configuration is managed through environment variables in your `.env` file.
+
+### 🔧 SMTP Configuration
+Configure your email settings in the `.env` file:
+
+- `EMAIL_HOST`: SMTP server host (e.g., `smtp.gmail.com`)
+- `EMAIL_PORT`: SMTP server port (e.g., `587` for TLS)
+- `EMAIL_USERNAME`: Your email address
+- `EMAIL_PASSWORD`: Your email app password
+
+> **Important**: Use Gmail app passwords instead of your regular Gmail password. Generate an app password in your Google Account settings under Security > 2-Step Verification > App passwords.
+
+## API Documentation & OpenAPI Specification
+
+The application includes built-in API documentation and OpenAPI specification generation:
+
+### Accessing API Documentation
+
+- **Swagger UI**: Access interactive API documentation at `/swagger` endpoint when the application is running.
+- **Raw OpenAPI Specification**: Get the OpenAPI JSON specification at `/openapi` endpoint.
+
+### Generating OpenAPI Specification
+
+The static OpenAPI specification file is located at `src/main/resources/openapi/openapi.json` and includes documentation for all the main API endpoints.
+
+To generate an updated OpenAPI specification file based on the current code:
+
+```bash
+./gradlew transformOpenApiJson
+```
+
+This will generate an updated OpenAPI specification and save it to `src/main/resources/openapi/openapi.json`.
+
+**Note**: The OpenAPI generation feature is experimental in Ktor 3.x. The static specification file in resources provides stable documentation for all endpoints.
+
 ## Run the project
 
 On Terminal
@@ -194,23 +224,6 @@ On Terminal
 ./gradlew run
 ```
 
-## 📧 SMTP Email Setup
-
-This project uses Gmail’s SMTP service to send emails (e.g., for password recovery). Follow the instructions below to configure it securely.
-
-### 🔧 Configuration SMTP Email
-Open the file constants/AppConstants.kt and update the SmtpServer object:
-
-```
-object SmtpServer {
-    const val HOST_NAME = "smtp.googlemail.com"
-    const val PORT = 465
-    const val DEFAULT_AUTHENTICATOR = "your-email@gmail.com" // Your Gmail address
-    const val DEFAULT_AUTHENTICATOR_PASSWORD = "your-app-password" // App-specific password
-    const val EMAIL_SUBJECT = "Forget Password"
-    const val SENDING_EMAIL = "your-email@gmail.com" // Sender email displayed to recipients
-}
-```
 ## Documentation
 
 ### ROLE MANAGEMENT
