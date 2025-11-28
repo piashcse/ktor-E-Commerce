@@ -11,6 +11,8 @@ import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.neq
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class PolicyService : PolicyRepository {
     /**
@@ -23,7 +25,7 @@ class PolicyService : PolicyRepository {
             type = createPolicyRequest.type
             content = createPolicyRequest.content
             version = createPolicyRequest.version
-            effectiveDate = createPolicyRequest.effectiveDate
+            effectiveDate = LocalDateTime.parse(createPolicyRequest.effectiveDate, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
         }
 
         // If this is a new active policy of the same type, deactivate previous versions
@@ -49,7 +51,7 @@ class PolicyService : PolicyRepository {
             updatePolicyRequest.title?.let { policyDocument.title = it }
             updatePolicyRequest.content?.let { policyDocument.content = it }
             updatePolicyRequest.version?.let { policyDocument.version = it }
-            updatePolicyRequest.effectiveDate?.let { policyDocument.effectiveDate = it }
+            updatePolicyRequest.effectiveDate?.let { policyDocument.effectiveDate = LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME) }
             updatePolicyRequest.isActive?.let {
                 policyDocument.isActive = it
 

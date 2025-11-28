@@ -28,8 +28,7 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
 
             /**
              * @tag Profile
-             * @summary auth[admin, seller, customer]
-             * @response 200 [ApiResponse] A response containing the profile information of the user.
+             * @response 200 [Response]
              */
             get {
                 call.respond(
@@ -41,19 +40,18 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
 
             /**
              * @tag Profile
-             * @summary auth[admin, seller, customer]
-             * @query firstName The user's first name.
-             * @query lastName The user's last name.
-             * @query mobile The user's secondary mobile number.
-             * @query faxNumber The user's fax number.
-             * @query streetAddress The user's street address.
-             * @query city The user's city.
-             * @query identificationType The type of identification provided.
-             * @query identificationNo The identification number.
-             * @query occupation The user's occupation.
-             * @query postCode The user's postal code.
-             * @query gender The user's gender.
-             * @response 200 [ApiResponse] A response indicating the success of the profile update.
+             * @query firstName
+             * @query lastName
+             * @query mobile
+             * @query faxNumber
+             * @query streetAddress
+             * @query city
+             * @query identificationType
+             * @query identificationNo
+             * @query occupation
+             * @query postCode
+             * @query gender
+             * @response 200 [Response]
              */
             put {
                 val params = UserProfileRequest(
@@ -78,8 +76,7 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
 
             /**
              * @tag Profile
-             * @summary auth[admin, seller, customer]
-             * @response 200 [ApiResponse] A response containing the file name of the uploaded image.
+             * @response 200 [Response]
              */
             post("image-upload") {
                 val multipartData = call.receiveMultipart()

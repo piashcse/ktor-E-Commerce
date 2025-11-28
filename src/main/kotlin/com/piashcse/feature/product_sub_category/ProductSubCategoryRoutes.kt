@@ -22,10 +22,10 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
 
         /**
          * @tag ProductSubCategory
-         * @query categoryId The category ID to filter subcategories. (required)
-         * @query limit The number of subcategories to retrieve. (required)
-         * @response 200 [ApiResponse] Success response with product subcategories
-         * @response 400 Bad request if required parameters are missing
+         * @query categoryId (required)
+         * @query limit (required)
+         * @response 200 [Response]
+         * @response 400
          */
         get {
             val (categoryId, limit) = call.requiredParameters("categoryId", "limit") ?: return@get
@@ -40,9 +40,8 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
         authenticate(RoleManagement.ADMIN.role) {
             /**
              * @tag ProductSubCategory
-             * @summary auth[admin]
-             * @body [ProductSubCategoryRequest] The details of the product subcategory to create.
-             * @response 200 [ApiResponse] Success response after creation
+             * @body [ProductSubCategoryRequest]
+             * @response 200 [Response]
              */
             post {
                 val requestBody = call.receive<ProductSubCategoryRequest>()
@@ -55,11 +54,10 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
 
             /**
              * @tag ProductSubCategory
-             * @summary auth[admin]
-             * @path id The ID of the product subcategory to update.
-             * @query name The new name for the product subcategory.
-             * @response 200 [ApiResponse] Success response after update
-             * @response 400 Bad request if required parameters are missing
+             * @path id (required)
+             * @query name (required)
+             * @response 200 [Response]
+             * @response 400
              */
             put("{id}") {
                 val (id, name) = call.requiredParameters("id", "name") ?: return@put
@@ -74,10 +72,9 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
 
             /**
              * @tag ProductSubCategory
-             * @summary auth[admin]
-             * @path id The ID of the product subcategory to delete.
-             * @response 200 [ApiResponse] Success response after deletion
-             * @response 400 Bad request if id is missing
+             * @path id (required)
+             * @response 200 [Response]
+             * @response 400
              */
             delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete

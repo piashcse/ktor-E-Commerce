@@ -21,10 +21,10 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
 
         /**
          * @tag Review Rating
-         * @query productId The ID of the product to get reviews and ratings. (required)
-         * @query limit The maximum number of reviews to retrieve. (required)
-         * @response 200 [ApiResponse] A response containing the list of reviews and ratings for the product.
-         * @response 400 Bad request if required parameters are missing
+         * @query productId (required)
+         * @query limit (required)
+         * @response 200 [Response]
+         * @response 400
          */
         get("/review-rating") {
             val (productId, limit) = call.requiredParameters("productId", "limit") ?: return@get
@@ -42,9 +42,8 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
             // Route for posting a new review and rating
             /**
              * @tag Review Rating
-             * @summary auth[customer]
-             * @body [ReviewRatingRequest] The body of the request containing review and rating details.
-             * @response 200 [ApiResponse] A response indicating the success of the operation.
+             * @body [ReviewRatingRequest]
+             * @response 200 [Response]
              */
             post("/review-rating") {
                 val requestBody = call.receive<ReviewRatingRequest>()
@@ -59,12 +58,11 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
             // Route for updating an existing review and rating
             /**
              * @tag Review Rating
-             * @summary auth[customer]
-             * @path id The ID of the review to update. (required)
-             * @query review The updated review content. (required)
-             * @query rating The updated rating. (required)
-             * @response 200 [ApiResponse] A response containing the updated review and rating.
-             * @response 400 Bad request if required parameters are missing
+             * @path id
+             * @query review
+             * @query rating
+             * @response 200 [Response]
+             * @response 400
              */
             put("/review-rating/{id}") {
                 val (id, review, rating) = call.requiredParameters("id", "review", "rating") ?: return@put
@@ -82,10 +80,9 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
             // Route for deleting a review and rating
             /**
              * @tag Review Rating
-             * @summary auth[customer]
-             * @path id The ID of the review to delete.
-             * @response 200 [ApiResponse] A response indicating the result of the deletion.
-             * @response 400 Bad request if id is missing
+             * @path id
+             * @response 200 [Response]
+             * @response 400
              */
             delete("/review-rating/{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete

@@ -11,7 +11,7 @@
                     "Auth"
                 ],
                 "requestBody": {
-                    "description": "The login credentials",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -22,7 +22,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Successful login response",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -40,7 +40,7 @@
                     "Auth"
                 ],
                 "requestBody": {
-                    "description": "The registration details",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -51,7 +51,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Successful registration response",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -72,7 +72,7 @@
                     {
                         "name": "userId",
                         "in": "query",
-                        "description": "The user ID (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -81,7 +81,7 @@
                     {
                         "name": "otp",
                         "in": "query",
-                        "description": "The OTP code (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -90,7 +90,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successful OTP verification",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -111,7 +111,7 @@
                     {
                         "name": "email",
                         "in": "query",
-                        "description": "The user's email address (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -120,7 +120,7 @@
                     {
                         "name": "userType",
                         "in": "query",
-                        "description": "The type of user (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -129,7 +129,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Verification code sent successfully",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -150,7 +150,7 @@
                     {
                         "name": "email",
                         "in": "query",
-                        "description": "The user's email address (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -159,7 +159,7 @@
                     {
                         "name": "otp",
                         "in": "query",
-                        "description": "The OTP code (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -168,7 +168,7 @@
                     {
                         "name": "newPassword",
                         "in": "query",
-                        "description": "The new password (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -177,7 +177,7 @@
                     {
                         "name": "userType",
                         "in": "query",
-                        "description": "The type of user (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -186,7 +186,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Password reset successfully or invalid verification code",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -207,7 +207,7 @@
                     {
                         "name": "oldPassword",
                         "in": "query",
-                        "description": "The old password (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -216,7 +216,7 @@
                     {
                         "name": "newPassword",
                         "in": "query",
-                        "description": "The new password (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -225,7 +225,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Password changed successfully or old password is wrong",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -251,7 +251,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The maximum number of brands to return. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -260,17 +260,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with brands",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if limit is missing"
+                        "description": ""
                     }
                 }
             },
@@ -279,7 +279,7 @@
                     "Brand"
                 ],
                 "requestBody": {
-                    "description": "The name of the brand to be created.",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -290,11 +290,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Success response after creation",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -311,7 +311,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the brand to be updated.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -320,7 +320,7 @@
                     {
                         "name": "name",
                         "in": "query",
-                        "description": "The new name for the brand.",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -329,17 +329,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after update",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if required parameters are missing"
+                        "description": ""
                     }
                 }
             },
@@ -351,7 +351,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the brand to be deleted.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -360,7 +360,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after deletion",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -370,7 +370,7 @@
                         }
                     },
                     "400": {
-                        "description": "Bad request if id is missing"
+                        "description": ""
                     }
                 }
             }
@@ -381,7 +381,7 @@
                     "Cart"
                 ],
                 "requestBody": {
-                    "description": "The product and quantity to add to the cart.",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -392,11 +392,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Success response after adding to cart",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -411,7 +411,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The maximum number of items to retrieve from the cart. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -420,17 +420,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with cart items",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if limit is missing"
+                        "description": ""
                     }
                 }
             }
@@ -444,7 +444,7 @@
                     {
                         "name": "productId",
                         "in": "query",
-                        "description": "The ID of the product to update in the cart. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -453,7 +453,7 @@
                     {
                         "name": "quantity",
                         "in": "query",
-                        "description": "The new quantity of the product. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -462,17 +462,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after updating quantity",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if required parameters are missing"
+                        "description": ""
                     }
                 }
             }
@@ -486,7 +486,7 @@
                     {
                         "name": "productId",
                         "in": "query",
-                        "description": "The ID of the product to remove from the cart. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -495,17 +495,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after removing from cart",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if productId is missing"
+                        "description": ""
                     }
                 }
             }
@@ -517,11 +517,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after clearing cart",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -535,7 +535,7 @@
                     "Privacy"
                 ],
                 "requestBody": {
-                    "description": "The consent details.",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -546,11 +546,11 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Success response after recording consent",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -585,11 +585,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with user consents",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -606,7 +606,7 @@
                     {
                         "name": "policyType",
                         "in": "path",
-                        "description": "The type of policy to check.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -615,17 +615,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with consent status",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if policyType is missing or invalid"
+                        "description": ""
                     }
                 }
             }
@@ -637,7 +637,7 @@
                     "Order"
                 ],
                 "requestBody": {
-                    "description": "The order data (product ID, quantity, etc.)",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -648,7 +648,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Order created successfully",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -673,7 +673,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The maximum number of orders to retrieve (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -682,7 +682,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "List of orders retrieved successfully",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -708,7 +708,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the order to update (required)",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -717,7 +717,7 @@
                     {
                         "name": "status",
                         "in": "query",
-                        "description": "The new status to set (e.g., CONFIRMED, DELIVERED, CANCELED, RECEIVED) (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -726,7 +726,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Order status updated successfully",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -769,7 +769,7 @@
                     "Payment"
                 ],
                 "requestBody": {
-                    "description": "The payment details (e.g., amount, payment method, etc.) to process the payment.",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -780,11 +780,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Success response after creating payment",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -801,7 +801,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The payment ID to retrieve.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -810,17 +810,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with payment details",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if id is missing"
+                        "description": ""
                     }
                 }
             }
@@ -834,7 +834,7 @@
                     {
                         "name": "type",
                         "in": "query",
-                        "description": "Optional filter by policy type (PRIVACY_POLICY, TERMS_CONDITIONS, etc.)",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -843,11 +843,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with policies",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -859,7 +859,7 @@
                     "Privacy"
                 ],
                 "requestBody": {
-                    "description": "The details of the policy to create.",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -870,11 +870,11 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Success response after policy creation",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -901,7 +901,7 @@
                     {
                         "name": "type",
                         "in": "path",
-                        "description": "The policy type (PRIVACY_POLICY, TERMS_CONDITIONS, etc.)",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -910,17 +910,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with the policy",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if type is invalid"
+                        "description": ""
                     }
                 }
             }
@@ -934,7 +934,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The unique identifier of the policy.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -943,17 +943,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with the policy",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if id is missing"
+                        "description": ""
                     }
                 }
             }
@@ -967,7 +967,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the policy to update.",
+                        "description": "",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -975,7 +975,7 @@
                     }
                 ],
                 "requestBody": {
-                    "description": "The parameters to update.",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -986,17 +986,17 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Success response after policy update",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if id is missing"
+                        "description": ""
                     }
                 }
             }
@@ -1010,7 +1010,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the policy to deactivate.",
+                        "description": "",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1019,17 +1019,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after policy deactivation",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if id is missing"
+                        "description": ""
                     }
                 }
             }
@@ -1043,7 +1043,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The unique identifier of the product",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1052,7 +1052,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Product details retrieved successfully",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1071,7 +1071,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the product to update. (required)",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1080,7 +1080,7 @@
                     {
                         "name": "categoryId",
                         "in": "query",
-                        "description": "The category ID.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1089,7 +1089,7 @@
                     {
                         "name": "subCategoryId",
                         "in": "query",
-                        "description": "The sub-category ID.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1098,7 +1098,7 @@
                     {
                         "name": "brandId",
                         "in": "query",
-                        "description": "The brand ID.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1107,7 +1107,7 @@
                     {
                         "name": "name",
                         "in": "query",
-                        "description": "The product name.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1116,7 +1116,7 @@
                     {
                         "name": "description",
                         "in": "query",
-                        "description": "The product name.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1125,7 +1125,7 @@
                     {
                         "name": "stockQuantity",
                         "in": "query",
-                        "description": "The stock quantity.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1134,7 +1134,7 @@
                     {
                         "name": "price",
                         "in": "query",
-                        "description": "The product price.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1143,7 +1143,7 @@
                     {
                         "name": "discountPrice",
                         "in": "query",
-                        "description": "The discounted price.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1152,7 +1152,7 @@
                     {
                         "name": "status",
                         "in": "query",
-                        "description": "The product status.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1161,7 +1161,7 @@
                     {
                         "name": "videoLink",
                         "in": "query",
-                        "description": "The video link.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1170,7 +1170,7 @@
                     {
                         "name": "hotDeal",
                         "in": "query",
-                        "description": "Whether it's a hot deal.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1179,7 +1179,7 @@
                     {
                         "name": "featured",
                         "in": "query",
-                        "description": "Whether it's featured.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1188,7 +1188,7 @@
                     {
                         "name": "images",
                         "in": "query",
-                        "description": "Product images.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1197,7 +1197,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after product update",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1211,6 +1211,17 @@
             "delete": {
                 "tags": [
                     "Product"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "(required)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -1235,7 +1246,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The number of products to retrieve. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1244,7 +1255,7 @@
                     {
                         "name": "maxPrice",
                         "in": "query",
-                        "description": "Optional maximum price filter.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1253,7 +1264,7 @@
                     {
                         "name": "minPrice",
                         "in": "query",
-                        "description": "Optional minimum price filter.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1262,7 +1273,7 @@
                     {
                         "name": "categoryId",
                         "in": "query",
-                        "description": "Optional category filter.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1271,7 +1282,7 @@
                     {
                         "name": "subCategoryId",
                         "in": "query",
-                        "description": "Optional sub-category filter.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1280,7 +1291,7 @@
                     {
                         "name": "brandId",
                         "in": "query",
-                        "description": "Optional brand filter.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1289,7 +1300,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with products",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1305,7 +1316,7 @@
                     "Product"
                 ],
                 "requestBody": {
-                    "description": "",
+                    "description": "requestBody",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -1337,7 +1348,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The number of products to retrieve. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1346,7 +1357,7 @@
                     {
                         "name": "name",
                         "in": "query",
-                        "description": "The name of the product to search. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1355,7 +1366,7 @@
                     {
                         "name": "categoryId",
                         "in": "query",
-                        "description": "Optional category filter.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1364,7 +1375,7 @@
                     {
                         "name": "maxPrice",
                         "in": "query",
-                        "description": "Optional maximum price filter.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1373,7 +1384,7 @@
                     {
                         "name": "minPrice",
                         "in": "query",
-                        "description": "Optional minimum price filter.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1382,7 +1393,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with search results",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1403,7 +1414,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The number of products to retrieve. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1412,7 +1423,7 @@
                     {
                         "name": "maxPrice",
                         "in": "query",
-                        "description": "Optional maximum price filter.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1421,7 +1432,7 @@
                     {
                         "name": "minPrice",
                         "in": "query",
-                        "description": "Optional minimum price filter.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1430,7 +1441,7 @@
                     {
                         "name": "categoryId",
                         "in": "query",
-                        "description": "Optional category filter.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1439,7 +1450,7 @@
                     {
                         "name": "subCategoryId",
                         "in": "query",
-                        "description": "Optional sub-category filter.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1448,7 +1459,7 @@
                     {
                         "name": "brandId",
                         "in": "query",
-                        "description": "Optional brand filter.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1457,7 +1468,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with seller products",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1497,7 +1508,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The number of categories to return. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1506,17 +1517,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with product categories",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if limit is missing"
+                        "description": ""
                     }
                 }
             },
@@ -1525,7 +1536,7 @@
                     "ProductCategory"
                 ],
                 "requestBody": {
-                    "description": "The details of the category to create, including the category name.",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -1536,11 +1547,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Success response after creation",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -1551,13 +1562,13 @@
         "/product-category/{id}": {
             "put": {
                 "tags": [
-                    "ProducCategory"
+                    "ProductCategory"
                 ],
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the category to update.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1566,7 +1577,7 @@
                     {
                         "name": "name",
                         "in": "query",
-                        "description": "The new name for the category.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1575,29 +1586,29 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after update",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if required parameters are missing"
+                        "description": ""
                     }
                 }
             },
             "delete": {
                 "tags": [
-                    "ProductCategory"
+                    "Product"
                 ],
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the category to delete.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1606,17 +1617,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after deletion",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if id is missing"
+                        "description": ""
                     }
                 }
             }
@@ -1630,7 +1641,7 @@
                     {
                         "name": "categoryId",
                         "in": "query",
-                        "description": "The category ID to filter subcategories. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1639,7 +1650,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The number of subcategories to retrieve. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1648,17 +1659,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with product subcategories",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if required parameters are missing"
+                        "description": ""
                     }
                 }
             },
@@ -1667,7 +1678,7 @@
                     "ProductSubCategory"
                 ],
                 "requestBody": {
-                    "description": "The details of the product subcategory to create.",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -1678,11 +1689,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Success response after creation",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -1699,7 +1710,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the product subcategory to update.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1708,7 +1719,7 @@
                     {
                         "name": "name",
                         "in": "query",
-                        "description": "The new name for the product subcategory.",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1717,17 +1728,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after update",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if required parameters are missing"
+                        "description": ""
                     }
                 }
             },
@@ -1739,7 +1750,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the product subcategory to delete.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -1748,17 +1759,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after deletion",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if id is missing"
+                        "description": ""
                     }
                 }
             }
@@ -1770,11 +1781,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "A response containing the profile information of the user.",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -1789,7 +1800,7 @@
                     {
                         "name": "firstName",
                         "in": "query",
-                        "description": "The user's first name.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1798,7 +1809,7 @@
                     {
                         "name": "lastName",
                         "in": "query",
-                        "description": "The user's last name.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1807,7 +1818,7 @@
                     {
                         "name": "mobile",
                         "in": "query",
-                        "description": "The user's secondary mobile number.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1816,7 +1827,7 @@
                     {
                         "name": "faxNumber",
                         "in": "query",
-                        "description": "The user's fax number.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1825,7 +1836,7 @@
                     {
                         "name": "streetAddress",
                         "in": "query",
-                        "description": "The user's street address.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1834,7 +1845,7 @@
                     {
                         "name": "city",
                         "in": "query",
-                        "description": "The user's city.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1843,7 +1854,7 @@
                     {
                         "name": "identificationType",
                         "in": "query",
-                        "description": "The type of identification provided.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1852,7 +1863,7 @@
                     {
                         "name": "identificationNo",
                         "in": "query",
-                        "description": "The identification number.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1861,7 +1872,7 @@
                     {
                         "name": "occupation",
                         "in": "query",
-                        "description": "The user's occupation.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1870,7 +1881,7 @@
                     {
                         "name": "postCode",
                         "in": "query",
-                        "description": "The user's postal code.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1879,7 +1890,7 @@
                     {
                         "name": "gender",
                         "in": "query",
-                        "description": "The user's gender.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1888,11 +1899,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "A response indicating the success of the profile update.",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -1907,11 +1918,11 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "A response containing the file name of the uploaded image.",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -1928,7 +1939,7 @@
                     {
                         "name": "productId",
                         "in": "query",
-                        "description": "The ID of the product to get reviews and ratings. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1937,7 +1948,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The maximum number of reviews to retrieve. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -1946,17 +1957,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "A response containing the list of reviews and ratings for the product.",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if required parameters are missing"
+                        "description": ""
                     }
                 }
             },
@@ -1965,7 +1976,7 @@
                     "Review"
                 ],
                 "requestBody": {
-                    "description": "The body of the request containing review and rating details.",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -1976,11 +1987,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "A response indicating the success of the operation.",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -1997,7 +2008,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the review to update. (required)",
+                        "description": "",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2006,7 +2017,7 @@
                     {
                         "name": "review",
                         "in": "query",
-                        "description": "The updated review content. (required)",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2015,7 +2026,7 @@
                     {
                         "name": "rating",
                         "in": "query",
-                        "description": "The updated rating. (required)",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2024,17 +2035,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "A response containing the updated review and rating.",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if required parameters are missing"
+                        "description": ""
                     }
                 }
             },
@@ -2046,7 +2057,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the review to delete.",
+                        "description": "",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2055,17 +2066,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "A response indicating the result of the deletion.",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if id is missing"
+                        "description": ""
                     }
                 }
             }
@@ -2076,7 +2087,7 @@
                     "Shipping"
                 ],
                 "requestBody": {
-                    "description": "The shipping details for the order.",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -2087,11 +2098,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Success response",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -2106,7 +2117,7 @@
                     {
                         "name": "orderId",
                         "in": "query",
-                        "description": "The ID of the order to retrieve shipping details. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2115,17 +2126,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with shipping details",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if orderId is missing"
+                        "description": ""
                     }
                 }
             }
@@ -2139,7 +2150,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the shipping record to update.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2148,7 +2159,7 @@
                     {
                         "name": "orderId",
                         "in": "query",
-                        "description": "The updated order ID.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2157,7 +2168,7 @@
                     {
                         "name": "address",
                         "in": "query",
-                        "description": "The updated shipping address.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2166,7 +2177,7 @@
                     {
                         "name": "city",
                         "in": "query",
-                        "description": "The updated shipping city.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2175,7 +2186,7 @@
                     {
                         "name": "country",
                         "in": "query",
-                        "description": "The updated shipping country.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2184,7 +2195,7 @@
                     {
                         "name": "shippingMethod",
                         "in": "query",
-                        "description": "The updated shipping method.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2193,7 +2204,7 @@
                     {
                         "name": "phone",
                         "in": "query",
-                        "description": "The updated shipping phone number.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2202,7 +2213,7 @@
                     {
                         "name": "email",
                         "in": "query",
-                        "description": "The updated shipping recipient email.",
+                        "description": "",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2211,17 +2222,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with updated shipping info",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if id is missing"
+                        "description": ""
                     }
                 }
             },
@@ -2233,7 +2244,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the shipping record to delete.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2242,17 +2253,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response indicating deletion",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if id is missing"
+                        "description": ""
                     }
                 }
             }
@@ -2263,7 +2274,7 @@
                     "Shop"
                 ],
                 "requestBody": {
-                    "description": "The body of the request containing shop creation details.",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -2274,11 +2285,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "A response containing the created shop details.",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -2293,7 +2304,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The maximum number of shops to retrieve. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2302,17 +2313,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "A response containing the list of shops.",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if limit is missing"
+                        "description": ""
                     }
                 }
             }
@@ -2326,7 +2337,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the shop to update.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2335,7 +2346,7 @@
                     {
                         "name": "name",
                         "in": "query",
-                        "description": "The new name of the shop.",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2344,17 +2355,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "A response containing the updated shop details.",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if required parameters are missing"
+                        "description": ""
                     }
                 }
             },
@@ -2366,7 +2377,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the shop to delete.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2375,17 +2386,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "A response indicating the result of the deletion.",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if id is missing"
+                        "description": ""
                     }
                 }
             }
@@ -2396,7 +2407,7 @@
                     "Shop"
                 ],
                 "requestBody": {
-                    "description": "The name of the new shop category.",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -2407,11 +2418,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Success response after creation",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -2426,7 +2437,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The maximum number of shop categories to retrieve. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2435,17 +2446,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with categories",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if limit is missing"
+                        "description": ""
                     }
                 }
             }
@@ -2459,7 +2470,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the shop category to delete.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2468,17 +2479,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after deletion",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if id is missing"
+                        "description": ""
                     }
                 }
             },
@@ -2490,7 +2501,7 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "The ID of the shop category to update.",
+                        "description": "(required)",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -2499,7 +2510,7 @@
                     {
                         "name": "name",
                         "in": "query",
-                        "description": "The new name for the shop category.",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2508,17 +2519,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after update",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if required parameters are missing"
+                        "description": ""
                     }
                 }
             }
@@ -2529,7 +2540,7 @@
                     "WishList"
                 ],
                 "requestBody": {
-                    "description": "The product to add to the wish list.",
+                    "description": "",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -2540,11 +2551,11 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Success response after adding to wishlist",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
@@ -2559,7 +2570,7 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "The maximum number of products to retrieve from the wish list. (required)",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2568,17 +2579,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response with wishlist items",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if limit is missing"
+                        "description": ""
                     }
                 }
             }
@@ -2592,7 +2603,7 @@
                     {
                         "name": "productId",
                         "in": "query",
-                        "description": "The ID of the product to remove from the wish list.",
+                        "description": "(required)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -2601,17 +2612,17 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success response after removing from wishlist",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
+                                    "$ref": "#/components/schemas/Response"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Bad request if productId is missing"
+                        "description": ""
                     }
                 }
             }

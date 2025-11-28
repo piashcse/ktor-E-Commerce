@@ -23,8 +23,8 @@ fun Route.authRoutes(authController: AuthService) {
     route("/auth") {
         /**
          * @tag Auth
-         * @body [LoginRequest] The login credentials
-         * @response 200 Successful login response
+         * @body [LoginRequest]
+         * @response 200 [Response]
          */
         post("login") {
             val requestBody = call.receive<LoginRequest>()
@@ -37,8 +37,8 @@ fun Route.authRoutes(authController: AuthService) {
 
         /**
          * @tag Auth
-         * @body [RegisterRequest] The registration details
-         * @response 200 Successful registration response
+         * @body [RegisterRequest]
+         * @response 200 [Response]
          */
         post("register") {
             val requestBody = call.receive<RegisterRequest>()
@@ -47,9 +47,9 @@ fun Route.authRoutes(authController: AuthService) {
 
         /**
          * @tag Auth
-         * @query userId The user ID (required)
-         * @query otp The OTP code (required)
-         * @response 200 Successful OTP verification
+         * @query userId (required)
+         * @query otp (required)
+         * @response 200 [Response]
          */
         get("otp-verification") {
             val (userId, otp) = call.requiredParameters("userId", "otp") ?: return@get
@@ -62,9 +62,9 @@ fun Route.authRoutes(authController: AuthService) {
 
         /**
          * @tag Auth
-         * @query email The user's email address (required)
-         * @query userType The type of user (required)
-         * @response 200 Verification code sent successfully
+         * @query email (required)
+         * @query userType (required)
+         * @response 200 [Response]
          */
         get("forget-password") {
             val (email, userType) = call.requiredParameters("email", "userType") ?: return@get
@@ -82,11 +82,11 @@ fun Route.authRoutes(authController: AuthService) {
 
         /**
          * @tag Auth
-         * @query email The user's email address (required)
-         * @query otp The OTP code (required)
-         * @query newPassword The new password (required)
-         * @query userType The type of user (required)
-         * @response 200 Password reset successfully or invalid verification code
+         * @query email (required)
+         * @query otp (required)
+         * @query newPassword (required)
+         * @query userType (required)
+         * @response 200 [Response]
          */
         get("reset-password") {
             val (email, otp, newPassword, userType) = call.requiredParameters(
@@ -122,9 +122,9 @@ fun Route.authRoutes(authController: AuthService) {
         authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
             /**
              * @tag Auth
-             * @query oldPassword The old password (required)
-             * @query newPassword The new password (required)
-             * @response 200 Password changed successfully or old password is wrong
+             * @query oldPassword (required)
+             * @query newPassword (required)
+             * @response 200 [Response]
              * @security jwtToken
              */
             put("change-password") {

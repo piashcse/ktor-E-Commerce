@@ -20,10 +20,9 @@ fun Route.brandRoutes(brandController: BrandService) {
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
             /**
              * @tag Brand
-             * @summary auth[admin, customer, seller]
-             * @query limit The maximum number of brands to return. (required)
-             * @response 200 [ApiResponse] Success response with brands
-             * @response 400 Bad request if limit is missing
+             * @query limit (required)
+             * @response 200 [Response]
+             * @response 400
              */
             get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
@@ -38,9 +37,8 @@ fun Route.brandRoutes(brandController: BrandService) {
         authenticate(RoleManagement.ADMIN.role) {
             /**
              * @tag Brand
-             * @summary auth[admin]
-             * @body [BrandRequest] The name of the brand to be created.
-             * @response 200 [ApiResponse] Success response after creation
+             * @body [BrandRequest]
+             * @response 200 [Response]
              */
             post {
                 val requestBody = call.receive<BrandRequest>()
@@ -53,11 +51,10 @@ fun Route.brandRoutes(brandController: BrandService) {
 
             /**
              * @tag Brand
-             * @summary auth[admin]
-             * @path id The ID of the brand to be updated.
-             * @query name The new name for the brand.
-             * @response 200 [ApiResponse] Success response after update
-             * @response 400 Bad request if required parameters are missing
+             * @path id (required)
+             * @query name (required)
+             * @response 200 [Response]
+             * @response 400
              */
             put("{id}") {
                 val (id, name) = call.requiredParameters("id", "name") ?: return@put
@@ -70,10 +67,9 @@ fun Route.brandRoutes(brandController: BrandService) {
 
             /**
              * @tag Brand
-             * @summary auth[admin]
-             * @path id The ID of the brand to be deleted.
-             * @response 200 [ApiResponse] Success response after deletion
-             * @response 400 Bad request if id is missing
+             * @path id (required)
+             * @response 200 [ApiResponse]
+             * @response 400
              */
             delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete

@@ -22,9 +22,9 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
     route("/product-category") {
         /**
          * @tag ProductCategory
-         * @query limit The number of categories to return. (required)
-         * @response 200 [ApiResponse] Success response with product categories
-         * @response 400 Bad request if limit is missing
+         * @query limit (required)
+         * @response 200 [Response]
+         * @response 400
          */
         get {
             val (limit) = call.requiredParameters("limit") ?: return@get
@@ -40,9 +40,8 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
         authenticate(RoleManagement.ADMIN.role) {
             /**
              * @tag ProductCategory
-             * @summary auth[admin]
-             * @body [ProductCategoryRequest] The details of the category to create, including the category name.
-             * @response 200 [ApiResponse] Success response after creation
+             * @body [ProductCategoryRequest]
+             * @response 200 [Response]
              */
             post {
                 val requestBody = call.receive<ProductCategoryRequest>()
@@ -56,12 +55,11 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
             }
 
             /**
-             * @tag ProducCategory
-             * @summary auth[admin]
-             * @path id The ID of the category to update.
-             * @query name The new name for the category.
-             * @response 200 [ApiResponse] Success response after update
-             * @response 400 Bad request if required parameters are missing
+             * @tag ProductCategory
+             * @path id (required)
+             * @query name
+             * @response 200 [Response]
+             * @response 400
              */
             put("{id}") {
                 val (id, name) = call.requiredParameters("id", "name") ?: return@put
@@ -75,11 +73,10 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
             }
 
             /**
-             * @tag ProductCategory
-             * @summary auth[admin]
-             * @path id The ID of the category to delete.
-             * @response 200 [ApiResponse] Success response after deletion
-             * @response 400 Bad request if id is missing
+             * @tag Product Category
+             * @path id (required)
+             * @response 200 [Response]
+             * @response 400
              */
             delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete

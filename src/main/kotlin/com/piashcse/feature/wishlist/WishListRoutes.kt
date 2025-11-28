@@ -22,9 +22,8 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
 
             /**
              * @tag WishList
-             * @summary auth[customer]
-             * @body [WishListRequest] The product to add to the wish list.
-             * @response 200 [ApiResponse] Success response after adding to wishlist
+             * @body [WishListRequest]
+             * @response 200 [Response]
              */
             post {
                 val requestBody = call.receive<WishListRequest>()
@@ -38,10 +37,9 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
 
             /**
              * @tag WishList
-             * @summary auth[customer]
-             * @query limit The maximum number of products to retrieve from the wish list. (required)
-             * @response 200 [ApiResponse] Success response with wishlist items
-             * @response 400 Bad request if limit is missing
+             * @query limit (required)
+             * @response 200 [Response]
+             * @response 400
              */
             get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
@@ -55,10 +53,9 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
 
             /**
              * @tag WishList
-             * @summary auth[customer]
-             * @query productId The ID of the product to remove from the wish list.
-             * @response 200 [ApiResponse] Success response after removing from wishlist
-             * @response 400 Bad request if productId is missing
+             * @query productId (required)
+             * @response 200 [Response]
+             * @response 400
              */
             delete("remove") {
                 val (productId) = call.requiredParameters("productId") ?: return@delete

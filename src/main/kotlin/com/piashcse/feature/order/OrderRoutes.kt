@@ -31,8 +31,8 @@ fun Route.orderRoutes(orderController: OrderService) {
              * POST request to create a new order.
              *
              * @tag Order
-             * @body [OrderRequest] The order data (product ID, quantity, etc.)
-             * @response 200 Order created successfully
+             * @body [OrderRequest]
+             * @response 200 [Response]
              * @security jwtToken
              */
             post {
@@ -49,8 +49,8 @@ fun Route.orderRoutes(orderController: OrderService) {
              * GET request to fetch the list of orders by the current customer.
              *
              * @tag Order
-             * @query limit The maximum number of orders to retrieve (required)
-             * @response 200 List of orders retrieved successfully
+             * @query limit (required)
+             * @response 200 [Response]
              * @security jwtToken
              */
             get {
@@ -67,9 +67,9 @@ fun Route.orderRoutes(orderController: OrderService) {
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
             /**
              * @tag Order
-             * @path id The ID of the order to update (required)
-             * @query status The new status to set (e.g., CONFIRMED, DELIVERED, CANCELED, RECEIVED) (required)
-             * @response 200 Order status updated successfully
+             * @path id (required)
+             * @query status (required)
+             * @response 200 [Response]
              * @security jwtToken
              */
             patch("status/{id}") {

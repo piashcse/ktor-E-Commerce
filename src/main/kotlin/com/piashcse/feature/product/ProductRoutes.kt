@@ -32,8 +32,8 @@ fun Route.productRoutes(productController: ProductService) {
 
         /**
          * @tag Product
-         * @path id The unique identifier of the product
-         * @response 200 Product details retrieved successfully
+         * @path id (required)
+         * @response 200 [Response]
          */
         get("{id}") {
             val (productId) = call.requiredParameters("id") ?: return@get
@@ -42,13 +42,13 @@ fun Route.productRoutes(productController: ProductService) {
 
         /**
          * @tag Product
-         * @query limit The number of products to retrieve. (required)
-         * @query maxPrice Optional maximum price filter.
-         * @query minPrice Optional minimum price filter.
-         * @query categoryId Optional category filter.
-         * @query subCategoryId Optional sub-category filter.
-         * @query brandId Optional brand filter.
-         * @response 200 Success response with products
+         * @query limit (required)
+         * @query maxPrice
+         * @query minPrice
+         * @query categoryId
+         * @query subCategoryId
+         * @query brandId
+         * @response 200 [Response]
          */
         get {
             val (limit) = call.requiredParameters("limit") ?: return@get
@@ -65,12 +65,12 @@ fun Route.productRoutes(productController: ProductService) {
 
         /**
          * @tag Product
-         * @query limit The number of products to retrieve. (required)
-         * @query name The name of the product to search. (required)
-         * @query categoryId Optional category filter.
-         * @query maxPrice Optional maximum price filter.
-         * @query minPrice Optional minimum price filter.
-         * @response 200 Success response with search results
+         * @query limit (required)
+         * @query name (required)
+         * @query categoryId
+         * @query maxPrice
+         * @query minPrice
+         * @response 200 [Response]
          */
         get("search") {
             val (limit) = call.requiredParameters("limit") ?: return@get
@@ -89,13 +89,13 @@ fun Route.productRoutes(productController: ProductService) {
 
             /**
              * @tag Product
-             * @query limit The number of products to retrieve. (required)
-             * @query maxPrice Optional maximum price filter.
-             * @query minPrice Optional minimum price filter.
-             * @query categoryId Optional category filter.
-             * @query subCategoryId Optional sub-category filter.
-             * @query brandId Optional brand filter.
-             * @response 200 Success response with seller products
+             * @query limit (required)
+             * @query maxPrice
+             * @query minPrice
+             * @query categoryId
+             * @query subCategoryId
+             * @query brandId
+             * @response 200 [Response]
              */
             get("seller") {
                 val (limit) = call.requiredParameters("limit") ?: return@get
@@ -116,7 +116,7 @@ fun Route.productRoutes(productController: ProductService) {
 
             /**
              * @tag Product
-             * @param requestBody The details of the product to create.
+             * @body requestBody
              */
             post {
                 val requestBody = call.receive<ProductRequest>()
@@ -129,21 +129,21 @@ fun Route.productRoutes(productController: ProductService) {
 
             /**
              * @tag Product
-             * @path id The ID of the product to update. (required)
-             * @query categoryId The category ID.
-             * @query subCategoryId The sub-category ID.
-             * @query brandId The brand ID.
-             * @query name The product name.
-             * @query description The product name.
-             * @query stockQuantity The stock quantity.
-             * @query price The product price.
-             * @query discountPrice The discounted price.
-             * @query status The product status.
-             * @query videoLink The video link.
-             * @query hotDeal Whether it's a hot deal.
-             * @query featured Whether it's featured.
-             * @query images Product images.
-             * @response 200 Success response after product update
+             * @path id (required)
+             * @query categoryId
+             * @query subCategoryId
+             * @query brandId
+             * @query name
+             * @query description
+             * @query stockQuantity
+             * @query price
+             * @query discountPrice
+             * @query status
+             * @query videoLink
+             * @query hotDeal
+             * @query featured
+             * @query images
+             * @response 200 [Response]
              */
             put("{id}") {
                 val params = UpdateProductRequest(
@@ -171,7 +171,8 @@ fun Route.productRoutes(productController: ProductService) {
 
             /**
              * @tag Product
-             * @param id The ID of the product to delete.
+             * @path id (required)
+             * @response 200 [Response]
              */
             delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete
@@ -184,8 +185,8 @@ fun Route.productRoutes(productController: ProductService) {
 
             /**
              * @tag Product
-             * @param id The ID of the product.
-             * @param image The image file to upload.
+             * @param id
+             * @param image
              */
             post("image-upload") {
                 val multipartData = call.receiveMultipart()
@@ -220,7 +221,8 @@ fun Route.productRoutes(productController: ProductService) {
 
             /**
              * @tag Product
-             * @param id The ID of the product to delete.
+             * @path id (required)
+             * @response 200 [Response]
              */
             delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete

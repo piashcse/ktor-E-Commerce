@@ -19,9 +19,8 @@ fun Route.consentRoutes(consentController: ConsentService) {
         authenticate(RoleManagement.CUSTOMER.role) {
             /**
              * @tag Privacy Policy Consent
-             * @summary auth[customer]
-             * @body [PolicyConsentRequest] The consent details.
-             * @response 201 [ApiResponse] Success response after recording consent
+             * @body [PolicyConsentRequest]
+             * @response 201 [Response]
              */
             post("consent") {
                 val consentRequest = call.receive<PolicyConsentRequest>()
@@ -46,8 +45,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.ADMIN.role) {
             /**
              * @tag Privacy Policy Consent
-             * @summary auth[admin, customer]
-             * @response 200 [ApiResponse] Success response with user consents
+             * @response 200 [Response]
              */
             get {
                 val userId = call.currentUser().userId
@@ -56,10 +54,9 @@ fun Route.consentRoutes(consentController: ConsentService) {
 
             /**
              * @tag Privacy Policy Consent
-             * @summary auth[admin, customer]
-             * @path policyType The type of policy to check.
-             * @response 200 [ApiResponse] Success response with consent status
-             * @response 400 Bad request if policyType is missing or invalid
+             * @path policyType (required)
+             * @response 200 [Response]
+             * @response 400
              */
             get("{policyType}") {
                 val (policyType) = call.requiredParameters("policyType") ?: return@get

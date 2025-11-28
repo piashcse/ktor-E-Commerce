@@ -22,9 +22,8 @@ fun Route.paymentRoutes(paymentController: PaymentService) {
         authenticate(RoleManagement.CUSTOMER.role) {
             /**
              * @tag Payment
-             * @summary auth[customer]
-             * @body [PaymentRequest] The payment details (e.g., amount, payment method, etc.) to process the payment.
-             * @response 200 [ApiResponse] Success response after creating payment
+             * @body [PaymentRequest]
+             * @response 200 [Response]
              */
             post {
                 val requestBody = call.receive<PaymentRequest>()
@@ -37,10 +36,9 @@ fun Route.paymentRoutes(paymentController: PaymentService) {
 
             /**
              * @tag Payment
-             * @summary auth[customer]
-             * @path id The payment ID to retrieve.
-             * @response 200 [ApiResponse] Success response with payment details
-             * @response 400 Bad request if id is missing
+             * @path id (required)
+             * @response 200 [Response]
+             * @response 400
              */
             get("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@get

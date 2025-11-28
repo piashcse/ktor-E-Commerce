@@ -21,9 +21,8 @@ fun Route.shopRoutes(shopController: ShopService) {
         authenticate(RoleManagement.ADMIN.role) {
             /**
              * @tag Shop
-             * @summary auth[admin]
-             * @body [ShopRequest] The body of the request containing shop creation details.
-             * @response 200 [ApiResponse] A response containing the created shop details.
+             * @body [ShopRequest]
+             * @response 200 [Response]
              */
             post {
                 val requestBody = call.receive<ShopRequest>()
@@ -37,10 +36,9 @@ fun Route.shopRoutes(shopController: ShopService) {
 
             /**
              * @tag Shop
-             * @summary auth[admin]
-             * @query limit The maximum number of shops to retrieve. (required)
-             * @response 200 [ApiResponse] A response containing the list of shops.
-             * @response 400 Bad request if limit is missing
+             * @query limit (required)
+             * @response 200 [Response]
+             * @response 400
              */
             get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
@@ -53,11 +51,10 @@ fun Route.shopRoutes(shopController: ShopService) {
 
             /**
              * @tag Shop
-             * @summary auth[admin]
-             * @path id The ID of the shop to update.
-             * @query name The new name of the shop.
-             * @response 200 [ApiResponse] A response containing the updated shop details.
-             * @response 400 Bad request if required parameters are missing
+             * @path id (required)
+             * @query name (required)
+             * @response 200 [Response]
+             * @response 400
              */
             put("{id}") {
                 val (id, name) = call.requiredParameters("id", "name") ?: return@put
@@ -70,10 +67,9 @@ fun Route.shopRoutes(shopController: ShopService) {
 
             /**
              * @tag Shop
-             * @summary auth[admin]
-             * @path id The ID of the shop to delete.
-             * @response 200 [ApiResponse] A response indicating the result of the deletion.
-             * @response 400 Bad request if id is missing
+             * @path id (required)
+             * @response 200 [Response]
+             * @response 400
              */
             delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete

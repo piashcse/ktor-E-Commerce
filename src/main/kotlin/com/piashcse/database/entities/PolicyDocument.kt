@@ -5,6 +5,8 @@ import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
 import com.piashcse.model.response.PolicyDocument
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.javatime.datetime
+import java.time.LocalDateTime
 
 /**
  * Table for storing various policy documents like privacy policy, terms, etc.
@@ -14,7 +16,7 @@ object PolicyDocumentTable : BaseIntIdTable("policy_documents") {
     val type = enumerationByName("type", 30, PolicyType::class) // PRIVACY_POLICY, TERMS_CONDITIONS, REFUND_POLICY, etc.
     val content = text("content")
     val version = varchar("version", 50)
-    val effectiveDate = varchar("effective_date", 50) // ISO date string
+    val effectiveDate = datetime("effective_date") // DateTime type instead of varchar
     val isActive = bool("is_active").default(true)
 
     override val primaryKey = PrimaryKey(id)
@@ -52,7 +54,7 @@ class PolicyDocumentDAO(id: EntityID<String>) : BaseIntEntity(id, PolicyDocument
         type.name,
         content,
         version,
-        effectiveDate,
+        effectiveDate.toString(),  // Convert LocalDateTime to string for response
         isActive,
     )
 }

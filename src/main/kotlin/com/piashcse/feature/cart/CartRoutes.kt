@@ -23,9 +23,8 @@ fun Route.cartRoutes(cartController: CartService) {
         authenticate(RoleManagement.CUSTOMER.role) {
             /**
              * @tag Cart
-             * @summary auth[customer]
-             * @body [CartRequest] The product and quantity to add to the cart.
-             * @response 200 [ApiResponse] Success response after adding to cart
+             * @body [CartRequest]
+             * @response 200 [Response]
              */
             post {
                 val requestBody = call.receive<CartRequest>()
@@ -42,10 +41,9 @@ fun Route.cartRoutes(cartController: CartService) {
 
             /**
              * @tag Cart
-             * @summary auth[customer]
-             * @query limit The maximum number of items to retrieve from the cart. (required)
-             * @response 200 [ApiResponse] Success response with cart items
-             * @response 400 Bad request if limit is missing
+             * @query limit (required)
+             * @response 200 [Response]
+             * @response 400
              */
             get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
@@ -61,11 +59,10 @@ fun Route.cartRoutes(cartController: CartService) {
 
             /**
              * @tag Cart
-             * @summary auth[customer]
-             * @query productId The ID of the product to update in the cart. (required)
-             * @query quantity The new quantity of the product. (required)
-             * @response 200 [ApiResponse] Success response after updating quantity
-             * @response 400 Bad request if required parameters are missing
+             * @query productId (required)
+             * @query quantity (required)
+             * @response 200 [Response]
+             * @response 400
              */
             put("update") {
                 val (productId, quantity) = call.requiredParameters("productId", "quantity") ?: return@put
@@ -79,10 +76,9 @@ fun Route.cartRoutes(cartController: CartService) {
 
             /**
              * @tag Cart
-             * @summary auth[customer]
-             * @query productId The ID of the product to remove from the cart. (required)
-             * @response 200 [ApiResponse] Success response after removing from cart
-             * @response 400 Bad request if productId is missing
+             * @query productId (required)
+             * @response 200 [Response]
+             * @response 400
              */
             delete("remove") {
                 val (productId) = call.requiredParameters("productId") ?: return@delete
@@ -96,8 +92,7 @@ fun Route.cartRoutes(cartController: CartService) {
 
             /**
              * @tag Cart
-             * @summary auth[customer]
-             * @response 200 [ApiResponse] Success response after clearing cart
+             * @response 200 [Response]
              */
             delete("all") {
                 call.respond(
