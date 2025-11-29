@@ -120,15 +120,27 @@ class ShopService : ShopRepository {
      * @return A list of shops matching the criteria.
      */
     override suspend fun getShops(status: String?, category: String?, limit: Int): List<Shop> = query {
+        // Validate status parameter
+        val statusEnum = if (status != null) {
+            try {
+                ShopStatus.valueOf(status.uppercase())
+            } catch (e: IllegalArgumentException) {
+                // If invalid status, return empty list
+                return@query emptyList()
+            }
+        } else {
+            null
+        }
+
         val query = ShopDAO.all()
 
-        val filteredQuery = if (status != null) {
-            query.filter { it.status.name == status }
+        val filteredQuery = if (statusEnum != null) {
+            query.filter { it.status == statusEnum }
         } else {
             query
-        }.filter { 
+        }.filter {
             if (category != null) it.categoryId.value == category else true
-        }.filter { 
+        }.filter {
             it.status != ShopStatus.REJECTED && it.status != ShopStatus.SUSPENDED
         }
 

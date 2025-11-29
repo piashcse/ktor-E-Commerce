@@ -75,19 +75,22 @@ suspend fun ApplicationCall.requireSpecificRole(role: UserType) {
 object RoleBasedAuth {
 
     fun isSuperAdmin(userType: String): Boolean {
-        return userType.equals("SUPER_ADMIN", ignoreCase = true)
+        return UserType.fromString(userType) == UserType.SUPER_ADMIN
     }
 
     fun isAdmin(userType: String): Boolean {
-        return userType.equals("ADMIN", ignoreCase = true) || isSuperAdmin(userType)
+        val userTypeEnum = UserType.fromString(userType)
+        return userTypeEnum == UserType.ADMIN || userTypeEnum == UserType.SUPER_ADMIN
     }
 
     fun isSeller(userType: String): Boolean {
-        return userType.equals("SELLER", ignoreCase = true)
+        return UserType.fromString(userType) == UserType.SELLER
     }
 
     fun isCustomer(userType: String): Boolean {
-        return userType.equals("CUSTOMER", ignoreCase = true) || isAdmin(userType) || isSeller(userType)
+        val userTypeEnum = UserType.fromString(userType)
+        return userTypeEnum == UserType.CUSTOMER || userTypeEnum == UserType.SELLER ||
+               userTypeEnum == UserType.ADMIN || userTypeEnum == UserType.SUPER_ADMIN
     }
 
     fun canManageUsers(currentRole: String, targetRole: String): Boolean {

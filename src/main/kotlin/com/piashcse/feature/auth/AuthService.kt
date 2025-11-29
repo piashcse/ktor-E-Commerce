@@ -115,7 +115,7 @@ class AuthService : AuthRepository {
             throw ValidationException("Invalid email format")
         if (!ValidationUtils.validatePassword(request.password))
             throw ValidationException("Password must be at least 8 characters with at least one letter and one number")
-        if (request.userType !in listOf("CUSTOMER", "SELLER", "ADMIN", "SUPER_ADMIN"))
+        if (UserType.fromString(request.userType) == null)
             throw ValidationException("Invalid user type. Must be one of: CUSTOMER, SELLER, ADMIN, SUPER_ADMIN")
     }
 
@@ -131,9 +131,7 @@ class AuthService : AuthRepository {
         validateLoginRequest(loginRequest)
 
         // Convert string userType to enum for comparison
-        val userTypeEnum = try {
-            UserType.valueOf(loginRequest.userType.uppercase())
-        } catch (e: IllegalArgumentException) {
+        val userTypeEnum = UserType.fromString(loginRequest.userType) ?: run {
             // If the value is not valid, return not found
             throw loginRequest.email.notFoundException()
         }
@@ -164,7 +162,7 @@ class AuthService : AuthRepository {
     private fun validateLoginRequest(request: LoginRequest) {
         if (!ValidationUtils.validateEmail(request.email))
             throw ValidationException("Invalid email format")
-        if (request.userType !in listOf("CUSTOMER", "SELLER", "ADMIN", "SUPER_ADMIN"))
+        if (UserType.fromString(request.userType) == null)
             throw ValidationException("Invalid user type. Must be one of: CUSTOMER, SELLER, ADMIN, SUPER_ADMIN")
         if (request.password.isBlank())
             throw ValidationException("Password cannot be empty")
