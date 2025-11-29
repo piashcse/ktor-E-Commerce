@@ -31,7 +31,9 @@ object PolicyDocumentTable : BaseIntIdTable("policy_documents") {
         COOKIE_POLICY,
         DISCLAIMER,
         EULA,
-        SHIPPING_POLICY
+        SHIPPING_POLICY;
+        val isLegalPolicy get() = this in listOf(PRIVACY_POLICY, TERMS_CONDITIONS, DISCLAIMER, EULA)
+        val requiresConsent get() = this != SHIPPING_POLICY  // Shipping policy might not require consent
     }
 }
 

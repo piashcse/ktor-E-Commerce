@@ -18,7 +18,10 @@ object ShippingTable : BaseIntIdTable("shipping") {
     val trackingNumber = varchar("tracking_number", 255).nullable()
 
     enum class ShippingStatus {
-        PENDING, SHIPPED, DELIVERED, CANCELLED
+        PENDING, SHIPPED, DELIVERED, CANCELLED;
+        val isActive get() = this in listOf(PENDING, SHIPPED)
+        val isCompleted get() = this == DELIVERED
+        val isCancelable get() = this == PENDING
     }
 }
 

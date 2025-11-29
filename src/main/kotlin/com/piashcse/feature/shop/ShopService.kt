@@ -15,6 +15,7 @@ import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.CurrentTimestamp
 import java.time.LocalDateTime
@@ -46,8 +47,8 @@ class ShopService : ShopRepository {
         }
 
         val shop = ShopDAO.new {
-            this.userId = org.jetbrains.exposed.v1.core.dao.id.EntityID(userId, ShopTable)
-            categoryId = org.jetbrains.exposed.v1.core.dao.id.EntityID(shopRequest.categoryId, ShopTable)
+            this.userId = EntityID(userId, ShopTable)
+            categoryId = EntityID(shopRequest.categoryId, ShopTable)
             name = shopRequest.name
             description = shopRequest.description
             address = shopRequest.address

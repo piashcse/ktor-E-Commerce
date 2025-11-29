@@ -17,44 +17,34 @@ object RoleHierarchy {
         UserType.SELLER to setOf(UserType.SELLER, UserType.CUSTOMER),
         UserType.CUSTOMER to setOf(UserType.CUSTOMER)
     )
-    
+
     /**
      * Check if a role has access to a specific resource role
      */
     fun hasAccess(userRole: UserType, resourceRole: UserType): Boolean {
         return roleHierarchy[userRole]?.contains(resourceRole) ?: false
     }
-    
+
     /**
      * Get all roles that a user role can access
      */
     fun getAccessibleRoles(userRole: UserType): Set<UserType> {
         return roleHierarchy[userRole] ?: emptySet()
     }
-}
 
-/**
- * Extension function to check if current user has access to a specific role
- */
-fun JwtTokenRequest.hasAccessTo(role: UserType): Boolean {
-    val currentUserType = try {
-        UserType.valueOf(this.userType.uppercase())
-    } catch (e: IllegalArgumentException) {
-        return false
-    }
-    return RoleHierarchy.hasAccess(currentUserType, role)
-}
-
-/**
- * Extension function to check if current user has specific role
- */
-fun JwtTokenRequest.hasRole(role: UserType): Boolean {
-    return try {
-        UserType.valueOf(this.userType.uppercase()) == role
-    } catch (e: IllegalArgumentException) {
-        false
+    /**
+     * Check if a user can manage users of a specific type
+     */
+    fun canManageUser(currentUserType: UserType, targetUserType: UserType): Boolean {
+        return when (currentUserType) {
+            UserType.SUPER_ADMIN -> true  // Super admin can manage all users
+            UserType.ADMIN -> targetUserType != UserType.SUPER_ADMIN && targetUserType != UserType.ADMIN
+            UserType.SELLER -> targetUserType == UserType.CUSTOMER
+            UserType.CUSTOMER -> targetUserType == UserType.CUSTOMER
+        }
     }
 }
+
 
 /**
  * Utility function to require specific role access
@@ -78,60 +68,32 @@ suspend fun ApplicationCall.requireSpecificRole(role: UserType) {
     }
 }
 
-/**
- * Extension function to get current user role
- */
-fun JwtTokenRequest.getUserType(): UserType? {
-    return try {
-        UserType.valueOf(this.userType.uppercase())
-    } catch (e: IllegalArgumentException) {
-        null
-    }
-}
 
 /**
  * Role-based authorization utilities for different user types
  */
 object RoleBasedAuth {
-    
+
     fun isSuperAdmin(userType: String): Boolean {
         return userType.equals("SUPER_ADMIN", ignoreCase = true)
     }
-    
+
     fun isAdmin(userType: String): Boolean {
         return userType.equals("ADMIN", ignoreCase = true) || isSuperAdmin(userType)
     }
-    
+
     fun isSeller(userType: String): Boolean {
         return userType.equals("SELLER", ignoreCase = true)
     }
-    
+
     fun isCustomer(userType: String): Boolean {
         return userType.equals("CUSTOMER", ignoreCase = true) || isAdmin(userType) || isSeller(userType)
     }
-    
+
     fun canManageUsers(currentRole: String, targetRole: String): Boolean {
-        val currentUserType = try { 
-            UserType.valueOf(currentRole.uppercase()) 
-        } catch (e: IllegalArgumentException) { 
-            return false 
-        }
-        
-        val targetUserType = try { 
-            UserType.valueOf(targetRole.uppercase()) 
-        } catch (e: IllegalArgumentException) { 
-            return false 
-        }
-        
-        // Super admin can manage all users
-        if (currentUserType == UserType.SUPER_ADMIN) return true
-        
-        // Admin can manage sellers and customers, but not other admins or super admins
-        if (currentUserType == UserType.ADMIN) {
-            return targetUserType == UserType.SELLER || targetUserType == UserType.CUSTOMER
-        }
-        
-        // Other roles can only manage their own resources
-        return currentRole.equals(targetRole, ignoreCase = true)
+        val currentUserType = UserType.fromString(currentRole) ?: return false
+        val targetUserType = UserType.fromString(targetRole) ?: return false
+
+        return RoleHierarchy.canManageUser(currentUserType, targetUserType)
     }
 }

@@ -20,4 +20,5 @@ object Message {
     const val SENDING_EMAIL_FAILED = "Sending email failed"
     const val YOU_ARE_NOT_ALLOWED_TO_SET_STATUS = "You are not allowed to set status to"
     const val INVALID_ORDER_STATUS = "Invalid order status:"
+    const val ACCOUNT_DEACTIVATED = "Account has been deactivated"
 }

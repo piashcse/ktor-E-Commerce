@@ -1,5 +1,6 @@
 package com.piashcse.feature.shop
 
+import com.piashcse.constants.ShopStatus
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.model.response.Shop
@@ -71,7 +72,7 @@ interface ShopRepository {
      * @param status The status to filter by.
      * @return A list of shops with the specified status.
      */
-    suspend fun getShopsByStatus(status: com.piashcse.constants.ShopStatus): List<Shop>
+    suspend fun getShopsByStatus(status: ShopStatus): List<Shop>
 
     /**
      * Approves a shop application.

@@ -3,6 +3,7 @@ package com.piashcse.feature.brand
 import com.piashcse.database.entities.BrandDAO
 import com.piashcse.database.entities.BrandTable
 import com.piashcse.model.response.Brand
+import com.piashcse.utils.ValidationException
 import com.piashcse.utils.extension.alreadyExistException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
@@ -20,7 +21,14 @@ class BrandService : BrandRepository {
      * @throws Exception if the brand name already exists.
      */
     override suspend fun createBrand(name: String): Brand = query {
-        val isBrandExist = BrandDAO.find { BrandTable.name eq name }.toList().singleOrNull()
+        if (name.isBlank()) {
+            throw ValidationException("Brand name cannot be blank")
+        }
+        if (name.length > 255) {
+            throw ValidationException("Brand name cannot exceed 255 characters")
+        }
+
+        val isBrandExist = BrandDAO.find { BrandTable.name eq name }.singleOrNull()
         isBrandExist?.let {
             throw name.alreadyExistException()
         } ?: BrandDAO.new {
@@ -49,11 +57,18 @@ class BrandService : BrandRepository {
      * @throws Exception if the brand ID is not found.
      */
     override suspend fun updateBrand(brandId: String, name: String): Brand = query {
-        val isBrandExist = BrandDAO.find { BrandTable.id eq brandId }.toList().singleOrNull()
-        isBrandExist?.let {
-            it.name = name
-            it.response()
-        } ?: throw brandId.notFoundException()
+        if (name.isBlank()) {
+            throw ValidationException("Brand name cannot be blank")
+        }
+        if (name.length > 255) {
+            throw ValidationException("Brand name cannot exceed 255 characters")
+        }
+
+        val brand = BrandDAO.find { BrandTable.id eq brandId }.singleOrNull()
+            ?: throw brandId.notFoundException()
+
+        brand.name = name
+        brand.response()
     }
 
     /**

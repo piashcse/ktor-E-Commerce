@@ -94,7 +94,7 @@ fun Route.authRoutes(authController: AuthService) {
                 "email", "otp", "newPassword", "userType"
             ) ?: return@get
 
-            AuthService().resetPassword(
+            authController.resetPassword(
                 ResetRequest(
                     email, otp, newPassword, userType
                 )

@@ -1,8 +1,13 @@
 package com.piashcse.feature.product
 
 import com.piashcse.constants.AppConstants
+import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
+import com.piashcse.database.entities.SellerDAO
+import com.piashcse.database.entities.SellerTable
+import com.piashcse.database.entities.ShopDAO
+import com.piashcse.database.entities.ShopTable
 import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
@@ -44,24 +49,7 @@ class ProductService : ProductRepository {
      * @return The created product entity.
      */
     override suspend fun createProduct(userId: String, shopId: String?, productRequest: ProductRequest): Product = query {
-        // Verify that the user is a seller
-        val seller = com.piashcse.database.entities.SellerDAO.find {
-            com.piashcse.database.entities.SellerTable.userId eq userId
-        }.singleOrNull()
-        if (seller == null) {
-            throw "User is not registered as a seller".notFoundException()
-        }
-
-        // If shopId is provided, verify that the user is authorized to add products to that shop
-        if (shopId != null) {
-            val shop = com.piashcse.database.entities.ShopDAO.find {
-                com.piashcse.database.entities.ShopTable.id eq shopId and
-                (com.piashcse.database.entities.ShopTable.userId eq userId)
-            }.singleOrNull()
-            if (shop == null) {
-                throw "User is not authorized to add products to this shop".notFoundException()
-            }
-        }
+        validateProductForSeller(userId, shopId)
 
         val product = ProductDAO.new {
             this.userId = EntityID(userId, ProductTable)
@@ -83,11 +71,33 @@ class ProductService : ProductRepository {
             newProduct = true
             freeShipping = productRequest.freeShipping ?: false
             images = productRequest.images.joinToString(",")
-            status = com.piashcse.constants.ProductStatus.ACTIVE
+            status = ProductStatus.ACTIVE
         }.response()
 
         product
     }
+
+    private fun validateProductForSeller(userId: String, shopId: String?) {
+        // Verify that the user is a seller
+        val seller = SellerDAO.find {
+            SellerTable.userId eq userId
+        }.singleOrNull()
+        if (seller == null) {
+            throw "User is not registered as a seller".notFoundException()
+        }
+
+        // If shopId is provided, verify that the user is authorized to add products to that shop
+        if (shopId != null) {
+            val shop = ShopDAO.find {
+                ShopTable.id eq shopId and
+                (ShopTable.userId eq userId)
+            }.singleOrNull()
+            if (shop == null) {
+                throw "User is not authorized to add products to this shop".notFoundException()
+            }
+        }
+    }
+
 
     private fun generateSKU(productName: String): String {
         val cleanName = productName.replace(Regex("[^a-zA-Z0-9]"), "").take(6).uppercase()
@@ -115,17 +125,18 @@ class ProductService : ProductRepository {
     override suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProductRequest): Product =
         query {
             // Verify that the user is a seller
-            val seller = com.piashcse.database.entities.SellerDAO.find {
-                com.piashcse.database.entities.SellerTable.userId eq userId
+            val seller = SellerDAO.find {
+                SellerTable.userId eq userId
             }.singleOrNull()
             if (seller == null) {
                 throw "User is not registered as a seller".notFoundException()
             }
 
-            val isProductExist =
-                ProductDAO.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.toList()
-                    .singleOrNull()
-            isProductExist?.apply {
+            // Verify user has access to this product
+            val product = ProductDAO.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.singleOrNull()
+                ?: throw productId.notFoundException()
+
+            product.apply {
                 this.userId = EntityID(userId, ProductTable)
                 categoryId =
                     updateProduct.categoryId?.let { EntityID(updateProduct.categoryId, ProductTable) } ?: categoryId
@@ -143,7 +154,7 @@ class ProductService : ProductRepository {
                 featured = updateProduct.featured ?: featured
                 freeShipping = updateProduct.freeShipping ?: freeShipping
                 images = if (updateProduct.images.isEmpty()) images else updateProduct.images.joinToString(",")
-            }?.response() ?: throw productId.notFoundException()
+            }.response()
         }
 
     /**
@@ -177,7 +188,7 @@ class ProductService : ProductRepository {
                 ProductTable.brandId eq it
             }
         }
-        query.andWhere { ProductTable.status eq com.piashcse.constants.ProductStatus.ACTIVE }
+        query.andWhere { ProductTable.status eq ProductStatus.ACTIVE }
         query.limit(productQuery.limit).map {
             ProductDAO.wrapRow(it).response()
         }
@@ -217,7 +228,7 @@ class ProductService : ProductRepository {
                 ProductTable.brandId eq it
             }
         }
-        query.andWhere { ProductTable.status eq com.piashcse.constants.ProductStatus.ACTIVE }
+        query.andWhere { ProductTable.status eq ProductStatus.ACTIVE }
         query.limit(productQuery.limit).map {
             ProductDAO.wrapRow(it).response()
         }
@@ -257,7 +268,7 @@ class ProductService : ProductRepository {
                 ProductTable.brandId eq it
             }
         }
-        query.andWhere { ProductTable.status eq com.piashcse.constants.ProductStatus.ACTIVE }
+        query.andWhere { ProductTable.status eq ProductStatus.ACTIVE }
         query.limit(productQuery.limit).map {
             ProductDAO.wrapRow(it).response()
         }
@@ -284,21 +295,15 @@ class ProductService : ProductRepository {
      * @throws Exception if the product with the provided ID is not found.
      */
     override suspend fun deleteProduct(userId: String, productId: String): String = query {
-        // Verify that the user is a seller
-        val seller = com.piashcse.database.entities.SellerDAO.find {
-            com.piashcse.database.entities.SellerTable.userId eq userId
-        }.singleOrNull()
-        if (seller == null) {
-            throw "User is not registered as a seller".notFoundException()
-        }
+        validateProductForSeller(userId, null) // Only check if user is a seller
 
-        val isProductExist =
-            ProductDAO.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.toList()
-                .singleOrNull()
-        isProductExist?.let {
-            it.delete()
-            productId
-        } ?: throw productId.notFoundException()
+        // Find the product and verify user ownership
+        val product = ProductDAO.find {
+            ProductTable.userId eq userId and (ProductTable.id eq productId)
+        }.singleOrNull() ?: throw productId.notFoundException()
+
+        product.delete()
+        productId
     }
 
     /**
@@ -346,7 +351,7 @@ class ProductService : ProductRepository {
      */
     override suspend fun getProductsByCategory(categoryId: String): List<Product> = query {
         ProductDAO.find {
-            ProductTable.categoryId eq categoryId and (ProductTable.status eq com.piashcse.constants.ProductStatus.ACTIVE)
+            ProductTable.categoryId eq categoryId and (ProductTable.status eq ProductStatus.ACTIVE)
         }.map { it.response() }
     }
 
@@ -357,7 +362,7 @@ class ProductService : ProductRepository {
      */
     override suspend fun getFeaturedProducts(): List<Product> = query {
         ProductDAO.find {
-            ProductTable.featured eq true and (ProductTable.status eq com.piashcse.constants.ProductStatus.ACTIVE)
+            ProductTable.featured eq true and (ProductTable.status eq ProductStatus.ACTIVE)
         }.orderBy(ProductTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.DESC).map { it.response() }
     }
 
@@ -368,7 +373,7 @@ class ProductService : ProductRepository {
      */
     override suspend fun getBestSellingProducts(): List<Product> = query {
         ProductDAO.find {
-            ProductTable.bestSeller eq true and (ProductTable.status eq com.piashcse.constants.ProductStatus.ACTIVE)
+            ProductTable.bestSeller eq true and (ProductTable.status eq ProductStatus.ACTIVE)
         }.orderBy(ProductTable.totalSales to org.jetbrains.exposed.v1.core.SortOrder.DESC).limit(10).map { it.response() }
     }
 
@@ -379,7 +384,7 @@ class ProductService : ProductRepository {
      */
     override suspend fun getHotDealProducts(): List<Product> = query {
         ProductDAO.find {
-            ProductTable.hotDeal eq true and (ProductTable.status eq com.piashcse.constants.ProductStatus.ACTIVE)
+            ProductTable.hotDeal eq true and (ProductTable.status eq ProductStatus.ACTIVE)
         }.orderBy(ProductTable.discountPercentage to org.jetbrains.exposed.v1.core.SortOrder.DESC).limit(10).map { it.response() }
     }
 }

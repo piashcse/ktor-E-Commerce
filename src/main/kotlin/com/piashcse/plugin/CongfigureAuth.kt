@@ -45,7 +45,7 @@ fun provideJwtAuthConfig(jwtConfig: JWTAuthenticationProvider.Config, userRole: 
         }
 
         // Check if the user has access to the required role (role hierarchy)
-        if (RoleHierarchy.hasAccess(userType, userRole.toUserType())) {
+        if (RoleHierarchy.hasAccess(userType, userRole.userType)) {
             JwtTokenRequest(userId, email, userTypeString)
         } else null
     }
@@ -57,12 +57,13 @@ enum class RoleManagement(val role: String) {
     SELLER("seller"),
     CUSTOMER("customer");
 
-    fun toUserType(): UserType = when (this) {
-        SUPER_ADMIN -> UserType.SUPER_ADMIN
-        ADMIN -> UserType.ADMIN
-        SELLER -> UserType.SELLER
-        CUSTOMER -> UserType.CUSTOMER
-    }
+    val userType: UserType
+        get() = when (this) {
+            SUPER_ADMIN -> UserType.SUPER_ADMIN
+            ADMIN -> UserType.ADMIN
+            SELLER -> UserType.SELLER
+            CUSTOMER -> UserType.CUSTOMER
+        }
 
     companion object {
         fun fromUserType(userType: UserType): RoleManagement = when (userType) {
@@ -71,5 +72,10 @@ enum class RoleManagement(val role: String) {
             UserType.SELLER -> SELLER
             UserType.CUSTOMER -> CUSTOMER
         }
+
+        // Role hierarchy helpers
+        val adminRoles = setOf(SUPER_ADMIN, ADMIN)
+        val sellerRoles = setOf(SUPER_ADMIN, ADMIN, SELLER)
+        val customerRoles = setOf(SUPER_ADMIN, ADMIN, SELLER, CUSTOMER)
     }
 }

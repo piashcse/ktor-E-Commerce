@@ -3,6 +3,7 @@ package com.piashcse.feature.consent
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.model.response.UserPolicyConsent
+import com.piashcse.utils.ValidationException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
@@ -17,31 +18,36 @@ class ConsentService: ConsentRepository {
         currentUserId: String,
         consentRequest: PolicyConsentRequest
     ): UserPolicyConsent = query {
+        if (currentUserId.isBlank()) {
+            throw ValidationException("User ID cannot be blank")
+        }
+        if (consentRequest.policyId.isBlank()) {
+            throw ValidationException("Policy ID cannot be blank")
+        }
+
         // Verify user and policy exist
         val user = UserDAO.findById(currentUserId) ?: throw currentUserId.notFoundException()
-        val policy =
-            PolicyDocumentDAO.findById(consentRequest.policyId)
-                ?: throw consentRequest.policyId.notFoundException()
+        val policy = PolicyDocumentDAO.findById(consentRequest.policyId)
+            ?: throw consentRequest.policyId.notFoundException()
 
         // Check if consent already exists, if so update it
         val existingConsent = PolicyConsentDAO.find {
             PolicyConsentTable.userId eq user.id and (PolicyConsentTable.policyId eq policy.id)
         }.firstOrNull()
 
-        val consent = existingConsent?.// Update existing consent
-        apply {
+        val consent = existingConsent?.apply {
+            // Update existing consent
+            consentDate = LocalDateTime.now()
+            ipAddress = consentRequest.ipAddress
+            userAgent = consentRequest.userAgent
+        } ?: PolicyConsentDAO.new {
+            // Create new consent
+            userId = user.id
+            policyId = policy
             consentDate = LocalDateTime.now()
             ipAddress = consentRequest.ipAddress
             userAgent = consentRequest.userAgent
         }
-            ?: // Create new consent
-            PolicyConsentDAO.new {
-                userId = user.id
-                policyId = policy
-                consentDate = LocalDateTime.now()
-                ipAddress = consentRequest.ipAddress
-                userAgent = consentRequest.userAgent
-            }
 
         // Return the response
         consent.response()

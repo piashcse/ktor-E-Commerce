@@ -1,5 +1,6 @@
 package com.piashcse.feature.shop
 
+import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
@@ -118,7 +119,7 @@ fun Route.shopRoutes(shopController: ShopService) {
             get("/status") {
                 val statusParam = call.parameters["status"] ?: return@get
                 val status = try {
-                    com.piashcse.constants.ShopStatus.valueOf(statusParam.uppercase())
+                    ShopStatus.valueOf(statusParam.uppercase())
                 } catch (e: IllegalArgumentException) {
                     call.respond(HttpStatusCode.BadRequest, "Invalid status")
                     return@get

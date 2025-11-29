@@ -9,6 +9,7 @@ import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
+import com.piashcse.utils.ValidationException
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.eq
@@ -22,14 +23,15 @@ class InventoryService : InventoryRepository {
      * @return The created/updated inventory record.
      */
     override suspend fun createOrUpdateInventory(inventoryRequest: InventoryRequest): InventoryResponse = query {
-        val product = ProductDAO.find { ProductTable.id eq inventoryRequest.productId }.singleOrNull()
-            ?: throw inventoryRequest.productId.notFoundException()
+        // Validate inputs
+        validateInventoryRequest(inventoryRequest)
 
-        val shop = ShopDAO.find { ShopTable.id eq inventoryRequest.shopId }.singleOrNull()
-            ?: throw inventoryRequest.shopId.notFoundException()
+        // Validate related entities exist
+        val product = ProductDAO.findById(inventoryRequest.productId) ?: throw inventoryRequest.productId.notFoundException()
+        val shop = ShopDAO.findById(inventoryRequest.shopId) ?: throw inventoryRequest.shopId.notFoundException()
 
-        val existingInventory = InventoryDAO.find { 
-            InventoryTable.productId eq inventoryRequest.productId 
+        val existingInventory = InventoryDAO.find {
+            InventoryTable.productId eq inventoryRequest.productId
         }.singleOrNull()
 
         val inventory = if (existingInventory != null) {
@@ -52,8 +54,15 @@ class InventoryService : InventoryRepository {
             }
         }
 
-
         inventory.response()
+    }
+
+    private fun validateInventoryRequest(request: InventoryRequest) {
+        if (request.productId.isBlank()) throw ValidationException("Product ID cannot be blank")
+        if (request.shopId.isBlank()) throw ValidationException("Shop ID cannot be blank")
+        if (request.stockQuantity < 0) throw ValidationException("Stock quantity cannot be negative")
+        if (request.minimumStockLevel != null && request.minimumStockLevel!! < 0) throw ValidationException("Minimum stock level cannot be negative")
+        if (request.maximumStockLevel != null && request.maximumStockLevel!! < 0) throw ValidationException("Maximum stock level cannot be negative")
     }
 
     /**

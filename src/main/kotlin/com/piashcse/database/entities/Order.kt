@@ -1,6 +1,7 @@
 package com.piashcse.database.entities
 
 import com.piashcse.constants.OrderStatus
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.base.BaseIntEntity
 import com.piashcse.database.entities.base.BaseIntEntityClass
 import com.piashcse.database.entities.base.BaseIntIdTable
@@ -20,7 +21,7 @@ object OrderTable : BaseIntIdTable("order") {
     val total = decimal("total", 10, 2)
     val currency = varchar("currency", 3).default("USD") // Currency of the order
     val paymentMethod = varchar("payment_method", 50).nullable() // Method used for payment
-    val paymentStatus = enumerationByName<com.piashcse.constants.PaymentStatus>("payment_status", 30).default(com.piashcse.constants.PaymentStatus.PENDING)
+    val paymentStatus = enumerationByName<PaymentStatus>("payment_status", 30).default(PaymentStatus.PENDING)
     val status = enumerationByName<OrderStatus>("status", 30).default(OrderStatus.PENDING)
     val notes = text("notes").nullable() // Additional notes from customer
     val shippingAddress = text("shipping_address").nullable() // Complete shipping address
