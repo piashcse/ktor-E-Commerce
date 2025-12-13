@@ -1,14 +1,14 @@
 package com.piashcse.database.entities
 
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.ReviewRating
 import org.jetbrains.exposed.v1.core.between
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 
-object ReviewRatingTable : BaseIntIdTable("review_rating") {
+object ReviewRatingTable : BaseIdTable("review_rating") {
     val userId = reference("user_id", UserTable.id)
     val productId = reference("product_id", ProductTable.id)
     val reviewText = varchar("review_text", 500)
@@ -18,11 +18,11 @@ object ReviewRatingTable : BaseIntIdTable("review_rating") {
     val helpfulCount = integer("helpful_count").default(0) // Number of helpful votes
     val notHelpfulCount = integer("not_helpful_count").default(0) // Number of not helpful votes
     val status = varchar("status", 20).default("active") // Review status: active, hidden, flagged
-    // createdAt and updatedAt are inherited from BaseIntIdTable
+    // createdAt and updatedAt are inherited from BaseIdTable
 }
 
-class ReviewRatingDAO(id: EntityID<String>) : BaseIntEntity(id, ReviewRatingTable) {
-    companion object : BaseIntEntityClass<ReviewRatingDAO>(ReviewRatingTable, ReviewRatingDAO::class.java)
+class ReviewRatingDAO(id: EntityID<String>) : BaseEntity(id, ReviewRatingTable) {
+    companion object : BaseEntityClass<ReviewRatingDAO>(ReviewRatingTable, ReviewRatingDAO::class.java)
 
     var userId by ReviewRatingTable.userId
     var productId by ReviewRatingTable.productId

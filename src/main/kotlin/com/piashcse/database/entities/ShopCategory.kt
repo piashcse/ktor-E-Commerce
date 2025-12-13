@@ -1,18 +1,18 @@
 package com.piashcse.database.entities
 
 
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.ShopCategory
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
-object ShopCategoryTable : BaseIntIdTable("shop_category") {
+object ShopCategoryTable : BaseIdTable("shop_category") {
     val name = text("name")
 }
 
-class ShopCategoryDAO(id: EntityID<String>) : BaseIntEntity(id, ShopCategoryTable) {
-    companion object : BaseIntEntityClass<ShopCategoryDAO>(ShopCategoryTable, ShopCategoryDAO::class.java)
+class ShopCategoryDAO(id: EntityID<String>) : BaseEntity(id, ShopCategoryTable) {
+    companion object : BaseEntityClass<ShopCategoryDAO>(ShopCategoryTable, ShopCategoryDAO::class.java)
 
     var name by ShopCategoryTable.name
     fun response() = ShopCategory(id.value, name)

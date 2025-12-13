@@ -1,14 +1,14 @@
 package com.piashcse.database.entities
 
 import com.piashcse.constants.ShopStatus
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
 
-object SellerTable : BaseIntIdTable("seller") {
+object SellerTable : BaseIdTable("seller") {
     val userId = reference("user_id", UserTable.id)
     val shopId = reference("shop_id", ShopTable.id).nullable()
     val businessName = varchar("business_name", 255).nullable()
@@ -24,11 +24,11 @@ object SellerTable : BaseIntIdTable("seller") {
     val approvedAt = datetime("approved_at").nullable()
     val suspendedAt = datetime("suspended_at").nullable()
     val terminatedAt = datetime("terminated_at").nullable()
-    // createdAt and updatedAt are inherited from BaseIntIdTable
+    // createdAt and updatedAt are inherited from BaseIdTable
 }
 
-class SellerDAO(id: EntityID<String>) : BaseIntEntity(id, SellerTable) {
-    companion object : BaseIntEntityClass<SellerDAO>(SellerTable, SellerDAO::class.java)
+class SellerDAO(id: EntityID<String>) : BaseEntity(id, SellerTable) {
+    companion object : BaseEntityClass<SellerDAO>(SellerTable, SellerDAO::class.java)
 
     var userId by SellerTable.userId
     var shopId by SellerTable.shopId

@@ -1,14 +1,14 @@
 package com.piashcse.database.entities
 
 
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.UserProfile
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.datetime.date
 
-object UserProfileTable : BaseIntIdTable("user_profile") {
+object UserProfileTable : BaseIdTable("user_profile") {
     val userId = reference("user_id", UserTable.id)
     val image = text("image").nullable()
     val firstName = text("first_name").nullable()
@@ -28,11 +28,11 @@ object UserProfileTable : BaseIntIdTable("user_profile") {
     val bio = text("bio").nullable() // Added bio for user description
     val isActive = bool("is_active").default(true) // Whether the profile is active
     val verified = bool("verified").default(false) // Whether the profile is verified
-    // createdAt and updatedAt are inherited from BaseIntIdTable
+    // createdAt and updatedAt are inherited from BaseIdTable
 }
 
-class UserProfileDAO(id: EntityID<String>) : BaseIntEntity(id, UserProfileTable) {
-    companion object : BaseIntEntityClass<UserProfileDAO>(UserProfileTable, UserProfileDAO::class.java)
+class UserProfileDAO(id: EntityID<String>) : BaseEntity(id, UserProfileTable) {
+    companion object : BaseEntityClass<UserProfileDAO>(UserProfileTable, UserProfileDAO::class.java)
 
     var userId by UserProfileTable.userId
     var image by UserProfileTable.image

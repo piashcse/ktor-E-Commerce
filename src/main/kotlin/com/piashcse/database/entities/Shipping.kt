@@ -1,17 +1,17 @@
 package com.piashcse.database.entities
 
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.Shipping
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
-object ShippingTable : BaseIntIdTable("shipping") {
+object ShippingTable : BaseIdTable("shipping") {
     val orderId = reference("order_id", OrderTable.id)
     val address = varchar("address", 150)
     val city = varchar("city", 50)
     val country = varchar("ship_country", 50).nullable()
-    val phone = integer("phone")
+    val phone = varchar("phone", 20)
     val email = varchar("ship_email", 50).nullable()
     val shippingMethod = varchar("shipping_method", 50).nullable()
     val status = enumerationByName("status", 20, ShippingStatus::class).clientDefault { ShippingStatus.PENDING }
@@ -25,8 +25,8 @@ object ShippingTable : BaseIntIdTable("shipping") {
     }
 }
 
-class ShippingDAO(id: EntityID<String>) : BaseIntEntity(id, ShippingTable) {
-    companion object : BaseIntEntityClass<ShippingDAO>(ShippingTable, ShippingDAO::class.java)
+class ShippingDAO(id: EntityID<String>) : BaseEntity(id, ShippingTable) {
+    companion object : BaseEntityClass<ShippingDAO>(ShippingTable, ShippingDAO::class.java)
 
     var orderId by ShippingTable.orderId
     var address by ShippingTable.address

@@ -1,16 +1,16 @@
 package com.piashcse.database.entities
 
 import com.piashcse.constants.ProductStatus
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.Product
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
 
-object ProductTable : BaseIntIdTable("product") {
+object ProductTable : BaseIdTable("product") {
     val userId = reference("user_id", UserTable.id) // Original creator/seller
     val shopId = reference("shop_id", ShopTable.id).nullable() // Shop that currently sells this product
     val name = text("name")
@@ -39,11 +39,11 @@ object ProductTable : BaseIntIdTable("product") {
     val totalReviews = integer("total_reviews").default(0) // Total number of reviews
     val totalSales = integer("total_sales").default(0) // Total number of items sold
     val stockQuantity = integer("stock_quantity").default(0) // Current available stock quantity
-    // createdAt and updatedAt are inherited from BaseIntIdTable
+    // createdAt and updatedAt are inherited from BaseIdTable
 }
 
-class ProductDAO(id: EntityID<String>) : BaseIntEntity(id, ProductTable) {
-    companion object : BaseIntEntityClass<ProductDAO>(ProductTable, ProductDAO::class.java)
+class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
+    companion object : BaseEntityClass<ProductDAO>(ProductTable, ProductDAO::class.java)
 
     var userId by ProductTable.userId
     var shopId by ProductTable.shopId

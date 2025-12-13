@@ -1,9 +1,9 @@
 package com.piashcse.database.entities
 
 import com.piashcse.constants.UserType
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.feature.auth.JwtConfig
 import com.piashcse.model.request.JwtTokenRequest
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
@@ -11,7 +11,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.time.LocalDateTime
 
-object UserTable : BaseIntIdTable("user") {
+object UserTable : BaseIdTable("user") {
     val email = varchar("email", 255) // Nullable for mobile users
     val userType = enumerationByName<UserType>("user_type", 100)
     val password = varchar("password", 200)
@@ -27,8 +27,8 @@ object UserTable : BaseIntIdTable("user") {
     }
 }
 
-class UserDAO(id: EntityID<String>) : BaseIntEntity(id, UserTable) {
-    companion object : BaseIntEntityClass<UserDAO>(UserTable, UserDAO::class.java)
+class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
+    companion object : BaseEntityClass<UserDAO>(UserTable, UserDAO::class.java)
 
     var email by UserTable.email
     var userType by UserTable.userType

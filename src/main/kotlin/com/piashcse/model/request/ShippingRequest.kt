@@ -11,7 +11,7 @@ data class ShippingRequest(
     val address: String,
     val city: String,
     val country: String,
-    val phone: Int,
+    val phone: String,
     val email: String?,
     val shippingMethod: String?,
 ) {

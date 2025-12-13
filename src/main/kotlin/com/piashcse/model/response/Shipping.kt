@@ -9,7 +9,7 @@ data class Shipping(
     var address: String,
     var city: String,
     var country: String?,
-    var phone: Int,
+    var phone: String,
     var email: String?,
     var shippingMethod: String?,
     var trackingNumber: String?,

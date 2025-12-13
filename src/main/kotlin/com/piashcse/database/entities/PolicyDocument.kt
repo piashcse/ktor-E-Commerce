@@ -1,8 +1,8 @@
 package com.piashcse.database.entities
 
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.PolicyDocument
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 /**
  * Table for storing various policy documents like privacy policy, terms, etc.
  */
-object PolicyDocumentTable : BaseIntIdTable("policy_documents") {
+object PolicyDocumentTable : BaseIdTable("policy_documents") {
     val title = varchar("title", 255)
     val type = enumerationByName("type", 30, PolicyType::class) // PRIVACY_POLICY, TERMS_CONDITIONS, REFUND_POLICY, etc.
     val content = text("content")
@@ -40,8 +40,8 @@ object PolicyDocumentTable : BaseIntIdTable("policy_documents") {
 /**
  * Data Access Object for policy documents
  */
-class PolicyDocumentDAO(id: EntityID<String>) : BaseIntEntity(id, PolicyDocumentTable) {
-    companion object : BaseIntEntityClass<PolicyDocumentDAO>(PolicyDocumentTable, PolicyDocumentDAO::class.java)
+class PolicyDocumentDAO(id: EntityID<String>) : BaseEntity(id, PolicyDocumentTable) {
+    companion object : BaseEntityClass<PolicyDocumentDAO>(PolicyDocumentTable, PolicyDocumentDAO::class.java)
 
     var title by PolicyDocumentTable.title
     var type by PolicyDocumentTable.type

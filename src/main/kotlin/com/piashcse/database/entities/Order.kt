@@ -2,15 +2,15 @@ package com.piashcse.database.entities
 
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentStatus
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.Order
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
 
-object OrderTable : BaseIntIdTable("order") {
+object OrderTable : BaseIdTable("order") {
     val userId = reference("user_id", UserTable.id)
     val shopId = reference("shop_id", ShopTable.id).nullable() // Which shop the order belongs to (for multi-vendor)
     val orderNumber = varchar("order_number", 50).uniqueIndex() // Unique order number for tracking
@@ -30,11 +30,11 @@ object OrderTable : BaseIntIdTable("order") {
     val deliveredDate = datetime("delivered_date").nullable() // When the order was delivered
     val canceledDate = datetime("canceled_date").nullable() // When the order was canceled
     val completedDate = datetime("completed_date").nullable() // When the order was completed
-    // createdAt and updatedAt are inherited from BaseIntIdTable
+    // createdAt and updatedAt are inherited from BaseIdTable
 }
 
-class OrderDAO(id: EntityID<String>) : BaseIntEntity(id, OrderTable) {
-    companion object : BaseIntEntityClass<OrderDAO>(OrderTable, OrderDAO::class.java)
+class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
+    companion object : BaseEntityClass<OrderDAO>(OrderTable, OrderDAO::class.java)
 
     var userId by OrderTable.userId
     var shopId by OrderTable.shopId

@@ -1,13 +1,13 @@
 package com.piashcse.database.entities
 
 import com.piashcse.constants.PaymentStatus
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.Payment
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
-object PaymentTable : BaseIntIdTable("payment") {
+object PaymentTable : BaseIdTable("payment") {
     val orderId = reference("order_id", OrderTable.id)
     val userId = reference("user_id", UserTable.id)
     val amount = long("amount")
@@ -16,8 +16,8 @@ object PaymentTable : BaseIntIdTable("payment") {
     val transactionId = varchar("transaction_id", 100).nullable()
 }
 
-class PaymentDAO(id: EntityID<String>) : BaseIntEntity(id, PaymentTable) {
-    companion object : BaseIntEntityClass<PaymentDAO>(PaymentTable,PaymentDAO::class.java ) // Reference the Payments table
+class PaymentDAO(id: EntityID<String>) : BaseEntity(id, PaymentTable) {
+    companion object : BaseEntityClass<PaymentDAO>(PaymentTable,PaymentDAO::class.java ) // Reference the Payments table
 
     var paymentId by PaymentTable.id
     var orderId by PaymentTable.orderId

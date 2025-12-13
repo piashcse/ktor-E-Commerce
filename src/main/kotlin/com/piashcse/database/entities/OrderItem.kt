@@ -1,13 +1,13 @@
 package com.piashcse.database.entities
 
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
 
-object OrderItemTable : BaseIntIdTable("order_item") {
+object OrderItemTable : BaseIdTable("order_item") {
     val orderId = reference("order_id", OrderTable.id)
     val productId = reference("product_id", ProductTable.id)
     val shopId = reference("shop_id", ShopTable.id) // Shop that sold this item
@@ -18,11 +18,11 @@ object OrderItemTable : BaseIntIdTable("order_item") {
     val total = decimal("total", 10, 2) // Total for this order item (quantity * price - discount + tax)
     val sku = varchar("sku", 100).nullable() // SKU of the product at the time of order
     val productName = varchar("product_name", 255).nullable() // Name of the product at the time of order
-    // createdAt and updatedAt are inherited from BaseIntIdTable
+    // createdAt and updatedAt are inherited from BaseIdTable
 }
 
-class OrderItemDAO(id: EntityID<String>) : BaseIntEntity(id, OrderItemTable) {
-    companion object : BaseIntEntityClass<OrderItemDAO>(OrderItemTable, OrderItemDAO::class.java)
+class OrderItemDAO(id: EntityID<String>) : BaseEntity(id, OrderItemTable) {
+    companion object : BaseEntityClass<OrderItemDAO>(OrderItemTable, OrderItemDAO::class.java)
 
     var orderId by OrderItemTable.orderId
     var productId by OrderItemTable.productId

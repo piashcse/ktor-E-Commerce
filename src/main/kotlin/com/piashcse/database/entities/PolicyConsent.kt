@@ -1,8 +1,8 @@
 package com.piashcse.database.entities
 
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.UserPolicyConsent
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 /**
  * Table for tracking user consent to various policies
  */
-object PolicyConsentTable : BaseIntIdTable("policy_consents") {
+object PolicyConsentTable : BaseIdTable("policy_consents") {
     val userId = reference("user_id", UserTable)
     val policyId = reference("policy_id", PolicyDocumentTable)
     val consentDate = datetime("consent_date").nullable()
@@ -25,8 +25,8 @@ object PolicyConsentTable : BaseIntIdTable("policy_consents") {
 /**
  * Data Access Object for user policy consents
  */
-class PolicyConsentDAO(id: EntityID<String>) : BaseIntEntity(id, PolicyConsentTable) {
-    companion object : BaseIntEntityClass<PolicyConsentDAO>(PolicyConsentTable, PolicyConsentDAO::class.java)
+class PolicyConsentDAO(id: EntityID<String>) : BaseEntity(id, PolicyConsentTable) {
+    companion object : BaseEntityClass<PolicyConsentDAO>(PolicyConsentTable, PolicyConsentDAO::class.java)
 
     var userId by PolicyConsentTable.userId
     var policyId by PolicyDocumentDAO referencedOn PolicyConsentTable.policyId

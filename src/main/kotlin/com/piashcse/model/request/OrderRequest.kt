@@ -10,6 +10,7 @@ data class OrderRequest(
     val total: Float,
     val shippingCharge: Float,
     val orderStatus: String,
+    val shippingAddress: String,
     val orderItems: MutableList<OrderItemRequest>
 ) {
     fun validation() {
@@ -19,6 +20,7 @@ data class OrderRequest(
             validate(OrderRequest::total).isNotNull().isGreaterThan(0f)
             validate(OrderRequest::shippingCharge).isNotNull().isGreaterThan(0f)
             validate(OrderRequest::orderStatus).isNotNull()
+            validate(OrderRequest::shippingAddress).isNotNull()
             validate(OrderRequest::orderItems).isNotNull()
         }
     }
