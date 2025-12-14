@@ -475,7 +475,109 @@ http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234
   },
   "data": "Password has been changed"
 }
-```   
+```
+
+</details>
+
+<details>
+
+<summary> <code>PUT</code> <code>/auth/{userId}/change-user-type</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type?userType=ADMIN' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type?userType=ADMIN
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "User type changed successfully to ADMIN"
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>PUT</code> <code>/auth/{userId}/deactivate</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "User deactivated successfully"
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>PUT</code> <code>/auth/{userId}/activate</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "User activated successfully"
+}
+```
 
 </details>
 
@@ -912,7 +1014,315 @@ http://localhost:8080/shop/d2836959-6bc5-49d0-bd98-e73255a915c5
     "id": "d2836959-6bc5-49d0-bd98-e73255a915c5",
   }
 }
-```   
+```
+
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/shop/public</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/shop/public?status=APPROVED&category=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/shop/public?status=APPROVED&category=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
+      "name": "Shop Name",
+      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
+      "status": "APPROVED"
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/shop/category/{categoryId}</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/shop/category/5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/shop/category/5e67ec97-9ed6-48ee-9d56-4163fe1711cb
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
+      "name": "Shop Name",
+      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
+      "status": "APPROVED"
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/shop/featured</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/shop/featured' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/shop/featured
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
+      "name": "Featured Shop",
+      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
+      "status": "APPROVED"
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/shop/status</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/shop/status?status=APPROVED' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/shop/status?status=APPROVED
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
+      "name": "Approved Shop",
+      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
+      "status": "APPROVED"
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/shop/approve/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
+    "name": "Approved Shop",
+    "status": "APPROVED"
+  }
+}
+```
+
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/shop/reject/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/shop/reject/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/shop/reject/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
+    "name": "Rejected Shop",
+    "status": "REJECTED"
+  }
+}
+```
+
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/shop/suspend/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/shop/suspend/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/shop/suspend/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
+    "name": "Suspended Shop",
+    "status": "SUSPENDED"
+  }
+}
+```
+
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/shop/activate/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/shop/activate/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/shop/activate/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
+    "name": "Activated Shop",
+    "status": "APPROVED"
+  }
+}
+```
 
 </details>
 
@@ -1085,6 +1495,47 @@ http://localhost:8080/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5
 
 <details>
 
+<summary> <code>GET </code> <code>/product/seller</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/product/seller?limit=10&maxPrice=100&minPrice=0&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&subCategoryId=70ac842b-7a81-4976-9564-d440880d1736&brandId=28918963-f932-425b-884b-a34d8ae69b2a' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/product/seller?limit=10&maxPrice=100&minPrice=0&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&subCategoryId=70ac842b-7a81-4976-9564-d440880d1736&brandId=28918963-f932-425b-884b-a34d8ae69b2a
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+      "name": "Product Name",
+      "price": 99.99,
+      "status": "ACTIVE"
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+
 <summary> <code>GET </code> <code>/product</code></summary>
 
 ### Curl
@@ -1094,13 +1545,13 @@ curl -X 'GET' \
   'http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
-``` 
+```
 
 ### Response
 
@@ -1127,10 +1578,50 @@ http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
     }
   ]
 }
-```   
+```
 
 </details>
 
+<details>
+
+<summary> <code>GET</code> <code>/product/search</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/product/search?limit=10&name=smartphone&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&maxPrice=1000&minPrice=10' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/product/search?limit=10&name=smartphone&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&maxPrice=1000&minPrice=10
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+      "name": "Smartphone",
+      "price": 599.99,
+      "status": "ACTIVE"
+    }
+  ]
+}
+```
+
+</details>
 
 <details>
 
@@ -1140,16 +1631,16 @@ http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/product?id=79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
+  'http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
-``` 
+```
 
 ### Request URL
 
 ```
-http://localhost:8080/product?productId=79a97389-78d5-4dff-a1f7-13bc7ae10a8d
-``` 
+http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
+```
 
 ### Response
 
@@ -1174,18 +1665,18 @@ http://localhost:8080/product?productId=79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/product/photo-upload?id=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
+  'http://localhost:8080/product/image-upload' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjEyYzA5OGFhLTYzMWYtNDJlZC05MjAzLTFkMjdlMDA0MmY4YSIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzc3NTMyfQ.GeBDEnWNm84mHPhCxTCXUwRSmRo7KjkJ6AfuEXZNiiqKVGtof1xNi8tsBp53L9jbyYwK49HQnDpe6tb0nVwhHA' \
   -H 'Content-Type: multipart/form-data' \
   -F 'file=@307116353_3302565903398527_525569142260037778_n.png;type=image/png'
-``` 
+```
 
 ### Request URL
 
 ```
-http://localhost:8080/product/image-upload?id=71b26dd9-b4b5-4f87-a84d-c8daa506018a
-``` 
+http://localhost:8080/product/image-upload
+```
 
 ### Response
 
@@ -2668,7 +3159,7 @@ http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15
 
 </details>
 
-### PRIVACY POLICY
+### PRIVACY POLICY & CONSENTS
 
 <details>
 
@@ -2953,8 +3444,6 @@ http://localhost:8080/policy/deactivate/550e8400-e29b-41d4-a716-446655440003
 
 </details>
 
-### PRIVACY POLICY CONSENTS
-
 <details>
 
 <summary> <code>POST </code> <code>/policy-consent</code></summary>
@@ -2976,7 +3465,7 @@ curl -X 'POST' \
 
 ```
 http://localhost:8080/policy/consent
-``` 
+```
 
 ### Response
 
@@ -2996,19 +3485,1409 @@ http://localhost:8080/policy/consent
     "consentedAt": "2023-06-15T10:30:00Z"
   }
 }
-```   
+```
+
+</details>
+
+### INVENTORY MANAGEMENT
+
+<details>
+
+<summary> <code>POST</code> <code>/inventory</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/inventory' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+  "quantity": 100,
+  "reserved": 10
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/inventory
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "12345678-1234-1234-1234-123456789012",
+    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+    "quantity": 100,
+    "reserved": 10,
+    "available": 90
+  }
+}
+```
 
 </details>
 
 <details>
 
-<summary> <code>GET </code> <code>/policy-consents</code></summary>
+<summary> <code>PUT</code> <code>/inventory/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/inventory/12345678-1234-1234-1234-123456789012' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+  "quantity": 150,
+  "reserved": 20
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/inventory/12345678-1234-1234-1234-123456789012
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "12345678-1234-1234-1234-123456789012",
+    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+    "quantity": 150,
+    "reserved": 20,
+    "available": 130
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>PUT</code> <code>/inventory/stock/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+    "newQuantity": 200,
+    "operation": "add"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/inventory/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/user-consents' \
+  'http://localhost:8080/inventory/cbd630f6-bf9f-48ad-ac51-f806807d99fd' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/inventory/cbd630f6-bf9f-48ad-ac51-f806807d99fd
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+    "quantity": 200,
+    "reserved": 20,
+    "available": 180
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/inventory/shop</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/inventory/shop?shopId=12345678-1234-1234-1234-123456789012' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/inventory/shop?shopId=12345678-1234-1234-1234-123456789012
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "12345678-1234-1234-1234-123456789012",
+      "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+      "quantity": 200,
+      "reserved": 20,
+      "available": 180
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/inventory/low-stock</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/inventory/low-stock' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/inventory/low-stock
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "12345678-1234-1234-1234-123456789012",
+      "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+      "quantity": 5,
+      "reserved": 2,
+      "available": 3
+    }
+  ]
+}
+```
+
+### PRODUCT SUBCATEGORY
+
+<details>
+
+<summary> <code>POST</code> <code>/product-subcategory</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/product-subcategory' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Electronics Subcategory",
+  "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/product-subcategory
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "70ac842b-7a81-4976-9564-d440880d1736",
+    "name": "Electronics Subcategory",
+    "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/product-subcategory</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/product-subcategory?categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/product-subcategory?categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "70ac842b-7a81-4976-9564-d440880d1736",
+      "name": "Electronics Subcategory",
+      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>PUT</code> <code>/product-subcategory/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736?name=Updated%20Electronics%20Subcategory' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736?name=Updated%20Electronics%20Subcategory
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "70ac842b-7a81-4976-9564-d440880d1736",
+    "name": "Updated Electronics Subcategory",
+    "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>DELETE</code> <code>/product-subcategory/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "70ac842b-7a81-4976-9564-d440880d1736"
+  }
+}
+```
+
+</details>
+
+### BRAND
+
+<details>
+
+<summary> <code>POST</code> <code>/brand</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/brand' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Apple"
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/brand
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "70ac842b-7a81-4976-9564-d440880d1736",
+    "name": "Apple"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/brand</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/brand?limit=10' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/brand?limit=10
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "70ac842b-7a81-4976-9564-d440880d1736",
+      "name": "Apple"
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>PUT</code> <code>/brand/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/brand/70ac842b-7a81-4976-9564-d440880d1736?name=Samsung' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/brand/70ac842b-7a81-4976-9564-d440880d1736?name=Samsung
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "70ac842b-7a81-4976-9564-d440880d1736",
+    "name": "Samsung"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>DELETE</code> <code>/brand/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/brand/70ac842b-7a81-4976-9564-d440880d1736' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/brand/70ac842b-7a81-4976-9564-d440880d1736
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "70ac842b-7a81-4976-9564-d440880d1736"
+  }
+}
+```
+
+</details>
+
+### CART
+
+<details>
+
+<summary> <code>POST</code> <code>/cart</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/cart' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+  "quantity": 2
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/cart
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+    "quantity": 2,
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/cart</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/cart?limit=10' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/cart?limit=10
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+      "quantity": 2,
+      "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4"
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>PUT</code> <code>/cart/update</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/cart/update?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&quantity=3' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/cart/update?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&quantity=3
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+    "newQuantity": 3,
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>DELETE</code> <code>/cart/remove</code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/cart/remove?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/cart/remove?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>DELETE</code> <code>/cart/all</code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/cart/all' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/cart/all
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+    "message": "Cart cleared successfully"
+  }
+}
+```
+
+</details>
+
+### WISHLIST
+
+<details>
+
+<summary> <code>POST</code> <code>/wishlist</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/wishlist' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd"
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/wishlist
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/wishlist</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/wishlist?limit=10' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/wishlist?limit=10
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+      "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4"
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>DELETE</code> <code>/wishlist/remove</code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/wishlist/remove?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/wishlist/remove?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4"
+  }
+}
+```
+
+</details>
+
+### SHIPPING
+
+<details>
+
+<summary> <code>POST</code> <code>/shipping</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/shipping' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "orderId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "address": "123 Main St",
+  "city": "New York",
+  "country": "USA",
+  "phone": "+1234567890",
+  "email": "customer@example.com",
+  "shippingMethod": "Standard"
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/shipping
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "70ac842b-7a81-4976-9564-d440880d1736",
+    "orderId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "address": "123 Main St",
+    "city": "New York",
+    "country": "USA",
+    "phone": "+1234567890",
+    "email": "customer@example.com",
+    "shippingMethod": "Standard",
+    "status": "PENDING"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/shipping</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/shipping?orderId=a1b2c3d4-e5f6-7890-1234-567890abcdef' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/shipping?orderId=a1b2c3d4-e5f6-7890-1234-567890abcdef
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "70ac842b-7a81-4976-9564-d440880d1736",
+    "orderId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "address": "123 Main St",
+    "city": "New York",
+    "country": "USA",
+    "phone": "+1234567890",
+    "email": "customer@example.com",
+    "shippingMethod": "Standard",
+    "status": "PENDING"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>PUT</code> <code>/shipping/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/shipping/70ac842b-7a81-4976-9564-d440880d1736?address=456%20Updated%20St&city=Los%20Angeles&phone=%2B1987654321' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/shipping/70ac842b-7a81-4976-9564-d440880d1736?address=456%20Updated%20St&city=Los%20Angeles&phone=%2B1987654321
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "70ac842b-7a81-4976-9564-d440880d1736",
+    "orderId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "address": "456 Updated St",
+    "city": "Los Angeles",
+    "country": "USA",
+    "phone": "+1987654321",
+    "email": "customer@example.com",
+    "shippingMethod": "Standard",
+    "status": "PENDING"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>DELETE</code> <code>/shipping/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'DELETE' \
+  'http://localhost:8080/shipping/70ac842b-7a81-4976-9564-d440880d1736' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/shipping/70ac842b-7a81-4976-9564-d440880d1736
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "70ac842b-7a81-4976-9564-d440880d1736"
+  }
+}
+```
+
+</details>
+
+### ORDER
+
+<details>
+
+<summary> <code>POST</code> <code>/order</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/order' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "items": [
+    {
+      "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+      "quantity": 2
+    }
+  ],
+  "totalAmount": 299.98,
+  "shippingAddress": {
+    "address": "123 Main St",
+    "city": "New York",
+    "country": "USA",
+    "phone": "+1234567890",
+    "email": "customer@example.com"
+  }
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/order
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+    "items": [
+      {
+        "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 299.98,
+    "status": "PENDING",
+    "createdAt": "2023-06-15T10:30:00Z"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/order</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/order?limit=10' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/order?limit=10
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+      "items": [
+        {
+          "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+          "quantity": 2
+        }
+      ],
+      "totalAmount": 299.98,
+      "status": "PENDING",
+      "createdAt": "2023-06-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>PATCH</code> <code>/order/status/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'PATCH' \
+  'http://localhost:8080/order/status/a1b2c3d4-e5f6-7890-1234-567890abcdef?status=CONFIRMED' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/order/status/a1b2c3d4-e5f6-7890-1234-567890abcdef?status=CONFIRMED
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "status": "CONFIRMED",
+    "updatedAt": "2023-06-15T11:30:00Z"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>PATCH</code> <code>/order/status/{id}</code> (Admin/Super Admin)</summary>
+
+### Curl
+
+```
+curl -X 'PATCH' \
+  'http://localhost:8080/order/status/a1b2c3d4-e5f6-7890-1234-567890abcdef?status=DELIVERED' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/order/status/a1b2c3d4-e5f6-7890-1234-567890abcdef?status=DELIVERED
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "status": "DELIVERED",
+    "updatedAt": "2023-06-15T11:30:00Z"
+  }
+}
+```
+
+</details>
+
+### PAYMENT
+
+<details>
+
+<summary> <code>POST</code> <code>/payment</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/payment' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "orderId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+  "amount": 299.98,
+  "paymentMethod": "CREDIT_CARD",
+  "paymentDetails": {
+    "cardNumber": "4111111111111111",
+    "expiryDate": "12/25",
+    "cvv": "123"
+  }
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/payment
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "p1q2r3s4-t5u6-7890-1234-567890abcdef",
+    "orderId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "amount": 299.98,
+    "status": "PENDING",
+    "paymentMethod": "CREDIT_CARD"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/payment</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/payment' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/payment
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "p1q2r3s4-t5u6-7890-1234-567890abcdef",
+      "orderId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "amount": 299.98,
+      "status": "COMPLETED",
+      "paymentMethod": "CREDIT_CARD",
+      "createdAt": "2023-06-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/payment/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/payment/p1q2r3s4-t5u6-7890-1234-567890abcdef' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
+```
+
+### Request URL
+
+```
+http://localhost:8080/payment/p1q2r3s4-t5u6-7890-1234-567890abcdef
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": {
+    "id": "p1q2r3s4-t5u6-7890-1234-567890abcdef",
+    "orderId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    "amount": 299.98,
+    "status": "COMPLETED",
+    "paymentMethod": "CREDIT_CARD",
+    "createdAt": "2023-06-15T10:30:00Z"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/policy-consents</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/policy-consents' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
 ```
@@ -3016,7 +4895,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/user-consents
+http://localhost:8080/policy-consents
 ``` 
 
 ### Response
@@ -3053,7 +4932,7 @@ http://localhost:8080/user-consents
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/user-consents/PRIVACY_POLICY' \
+  'http://localhost:8080/policy-consents/PRIVACY_POLICY' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
 ```
@@ -3061,7 +4940,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/user-consents/PRIVACY_POLICY
+http://localhost:8080/policy-consents/PRIVACY_POLICY
 ``` 
 
 ### Response
