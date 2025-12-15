@@ -3742,6 +3742,8 @@ http://localhost:8080/inventory/low-stock
   ]
 }
 ```
+</details>
+
 
 ### PRODUCT SUBCATEGORY
 
@@ -4956,8 +4958,7 @@ http://localhost:8080/policy-consents/PRIVACY_POLICY
     "hasConsented": true
   }
 }
-```   
-
+```
 </details>
 
 ## 👨 Developed By
