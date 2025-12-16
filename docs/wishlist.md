@@ -19,6 +19,7 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/wishlist` | Add a product to wishlist | Yes |
 | `GET` | `/wishlist` | Retrieve user's wishlist items | Yes |
 | `DELETE` | `/wishlist` | Remove a product from wishlist | Yes |
+| `DELETE` | `/wishlist/remove` | Remove a product from wishlist | Yes |
 
 ---
 

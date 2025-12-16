@@ -16,6 +16,7 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `POST` | `/payment` | Create a new payment | Yes |
+| `GET` | `/payment` | Retrieve user's payments | Yes |
 | `GET` | `/payment/{id}` | Retrieve payment by ID | Yes |
 
 ---

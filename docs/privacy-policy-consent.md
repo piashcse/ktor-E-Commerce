@@ -17,8 +17,8 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `POST` | `/policy/consent` | Create a new policy consent record | Yes |
-| `GET` | `/user-consents` | Retrieve all user consent records | Yes |
-| `GET` | `/user-consents/{policyType}` | Check if user has consented to specific policy type | Yes |
+| `GET` | `/policy-consents` | Retrieve all user consent records | Yes |
+| `GET` | `/policy-consents/{policyType}` | Check if user has consented to specific policy type | Yes |
 
 ---
 

@@ -20,6 +20,11 @@ Authorization: Bearer <your_access_token>
 | `GET` | `/product/{id}` | Retrieve a specific product | Yes |
 | `PUT` | `/product/{id}` | Update an existing product | Yes |
 | `GET` | `/product` | Retrieve list of products with filters | Yes |
+| `GET` | `/product/search` | Search products with filters | No |
+| `GET` | `/product/seller` | Retrieve products belonging to seller | Yes |
+| `GET` | `/product/featured` | Retrieve featured products | No |
+| `GET` | `/product/best-selling` | Retrieve best selling products | No |
+| `GET` | `/product/hot-deals` | Retrieve products on hot deals | No |
 | `DELETE` | `/product/{id}` | Delete a product | Yes |
 | `POST` | `/product/image-upload` | Upload product image | Yes |
 

@@ -21,6 +21,8 @@ Authorization: Bearer <your_access_token>
 | `PUT` | `/cart` | Update product quantity in cart | Yes |
 | `DELETE` | `/cart` | Remove specific product from cart | Yes |
 | `DELETE` | `/cart/all` | Clear entire cart | Yes |
+| `PUT` | `/cart/update` | Update product quantity in cart | Yes |
+| `DELETE` | `/cart/remove` | Remove specific product from cart | Yes |
 
 ---
 

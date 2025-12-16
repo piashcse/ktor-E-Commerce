@@ -143,6 +143,33 @@ object SmtpServer {
 }
 ```
 
+## API Documentation
+
+For comprehensive API documentation, please refer to the following resources:
+
+- [Authentication API](auth.md) - User authentication and management
+- [Profile API](profile.md) - User profile management
+- [Product API](product.md) - Product management
+- [Product Search API](product-search.md) - Product search functionality
+- [Product Seller API](product-seller.md) - Seller-specific product features
+- [Product Special API](product-special.md) - Featured, best-selling, and hot deals
+- [Shop API](shop.md) - Shop management
+- [Shop Public API](shop-public.md) - Public shop features and admin operations
+- [Shop Category API](shop-category.md) - Shop category management
+- [Product Category API](product-category.md) - Product category management
+- [Product Sub-Category API](product-sub-category.md) - Product sub-category management
+- [Brand API](brand.md) - Brand management
+- [Cart API](cart.md) - Shopping cart functionality
+- [Wishlist API](wishlist.md) - Wishlist functionality
+- [Order API](order.md) - Order management
+- [Shipping API](shipping.md) - Shipping address management
+- [Payment API](payment.md) - Payment processing
+- [Review Rating API](review-rating.md) - Product reviews and ratings
+- [Inventory API](inventory.md) - Inventory management
+- [Privacy Policy API](privacy-policy.md) - Privacy policy management
+- [Privacy Policy Consent API](privacy-policy-consent.md) - User consent tracking
+
+
 ## 👨 Developed By
 
 <a href="https://twitter.com/piashcse" target="_blank">

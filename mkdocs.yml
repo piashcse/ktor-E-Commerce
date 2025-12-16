@@ -29,20 +29,28 @@ theme:
 
 nav:
   - Home: index.md
-  - Documentation:
+  - API Reference:
       - Auth: auth.md
+      - Auth Additional: auth-additional.md
       - Profile: profile.md
       - Shop Category: shop-category.md
       - Shop: shop.md
+      - Shop Public: shop-public.md
       - Brand: brand.md
       - Product Category: product-category.md
       - Product Sub Category: product-sub-category.md
       - Product: product.md
+      - Product Search: product-search.md
+      - Product Seller: product-seller.md
+      - Product Special: product-special.md
       - Review Rating: review-rating.md
       - WishList: wishlist.md
       - Cart: cart.md
       - Order: order.md
       - Payment: payment.md
+      - Shipping: shipping.md
+      - Inventory: inventory.md
+      - Environment Variables: environment-variables.md
       - Privacy Policy: privacy-policy.md
       - Privacy Policy Consent: privacy-policy-consent.md
   - Changelog: changelog.md

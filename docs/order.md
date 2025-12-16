@@ -18,7 +18,9 @@ Authorization: Bearer <your_access_token>
 |--------|----------|-------------|------------------------|
 | `POST` | `/order` | Create a new order | Yes |
 | `GET` | `/order` | Retrieve list of orders | Yes |
-| `PATCH` | `/order/{id}` | Update order status | Yes |
+| `GET` | `/order/seller` | Retrieve orders belonging to seller | Yes |
+| `GET` | `/order/admin` | Retrieve all orders (Admin/Super Admin) | Yes |
+| `PATCH` | `/order/status/{id}` | Update order status | Yes |
 
 ---
 
