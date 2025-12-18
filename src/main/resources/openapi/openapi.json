@@ -1960,7 +1960,7 @@
             },
             "delete": {
                 "tags": [
-                    "Product"
+                    "ProductDategory"
                 ],
                 "parameters": [
                     {
@@ -3352,6 +3352,9 @@
                     "orderStatus": {
                         "type": "string"
                     },
+                    "shippingAddress": {
+                        "type": "string"
+                    },
                     "orderItems": {
                         "type": "array",
                         "items": {
@@ -3380,6 +3383,12 @@
                     "status": {
                         "type": "object",
                         "properties": {
+                            "isFinal": {
+                                "type": "boolean"
+                            },
+                            "isSuccessful": {
+                                "type": "boolean"
+                            },
                             "name": {
                                 "type": "string"
                             },
@@ -3405,6 +3414,12 @@
                     "type": {
                         "type": "object",
                         "properties": {
+                            "isLegalPolicy": {
+                                "type": "boolean"
+                            },
+                            "requiresConsent": {
+                                "type": "boolean"
+                            },
                             "name": {
                                 "type": "string"
                             },
@@ -3546,7 +3561,7 @@
                         "type": "string"
                     },
                     "phone": {
-                        "type": "integer"
+                        "type": "string"
                     },
                     "email": {
                         "type": "string"
