@@ -2321,7 +2321,6 @@ http://localhost:8080/wishlist/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2
     // ...
   }
 }
-```
     "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
     "name": "Polo T Shirt",
     "productCode": "string",
@@ -3056,22 +3055,22 @@ http://localhost:8080/order?limit=10
 
 
 <details>
-<summary> <code>PATCH </code> <code>/order/{id} </code></summary>
+<summary> <code>PATCH </code> <code>/order/status/{id} </code></summary>
 
 ### Curl
 
 ```
-curl -X 'GET' \
-  'http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered' \
+curl -X 'PATCH' \
+  'http://localhost:8080/order/status/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTA5NDYxfQ.KU7eVxmkq0zg1sQy9RsAVAxuwtGcuGlB9pqMnc-eUI9If-dycduIhn7xv8np0yFVtULAF2_ns59u38gsR237eQ'
-``` 
+```
 
 ### Request URL
 
 ```
-http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered
-``` 
+http://localhost:8080/order/status/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered
+```
 
 ### Response
 
@@ -3093,7 +3092,7 @@ http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivere
     "statusCode": 4
   }
 }
-```   
+```
 
 </details>
 
@@ -3470,13 +3469,13 @@ http://localhost:8080/policy/deactivate/550e8400-e29b-41d4-a716-446655440003
 
 <details>
 
-<summary> <code>POST </code> <code>/policy-consent</code></summary>
+<summary> <code>POST </code> <code>/policy-consents/consent</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/policy/consent' \
+  'http://localhost:8080/policy-consents/consent' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
   -H 'Content-Type: application/json' \
@@ -3488,7 +3487,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/policy/consent
+http://localhost:8080/policy-consents/consent
 ```
 
 ### Response
