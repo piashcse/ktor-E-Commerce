@@ -1,6 +1,6 @@
 # Wishlist API
 
-This documentation provides comprehensive details for the Wishlist API endpoints. The API supports adding products to wishlist, retrieving user's wishlist items, and removing products from wishlist. Wishlist functionality is user-specific and requires authentication to access personal wishlist data.
+This documentation provides comprehensive details for the Wishlist API endpoints. The API supports adding products to wishlist, retrieving user's wishlist items, checking product status, and removing products from wishlist. Wishlist functionality is user-specific and requires authentication to access personal wishlist data.
 
 **Base URL:** `http://localhost:8080`
 
@@ -17,8 +17,8 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `POST` | `/wishlist` | Add a product to wishlist | Yes |
-| `GET` | `/wishlist` | Retrieve user's wishlist items | Yes |
-| `DELETE` | `/wishlist` | Remove a product from wishlist | Yes |
+| `GET` | `/wishlist` | Retrieve user's wishlist items (Paginated) | Yes |
+| `GET` | `/wishlist/check` | Check if a product is in wishlist | Yes |
 | `DELETE` | `/wishlist/remove` | Remove a product from wishlist | Yes |
 
 ---
@@ -31,7 +31,7 @@ Authorization: Bearer <your_access_token>
 
 Add a product to the authenticated user's wishlist.
 
-#### Query Parameters
+#### Request Body
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -42,15 +42,19 @@ Add a product to the authenticated user's wishlist.
 | Header | Value | Required |
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
+| `Content-Type` | `application/json` | Yes |
 
 #### Example Request
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
+  'http://localhost:8080/wishlist' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -d ''
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4"
+}'
 ```
 
 #### Example Response
@@ -67,37 +71,11 @@ curl -X 'POST' \
       "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
       "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
       "name": "Polo T Shirt",
-      "productCode": "string",
-      "productQuantity": 1,
-      "description": "Chinese polo T-shirt",
-      "price": 100,
-      "discountPrice": 0,
-      "status": 0,
-      "hotDeal": "string",
-      "bestRated": "string",
-      "buyOneGetOne": "string"
+      // ... product details
     }
   }
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.product` | object | Complete product object added to wishlist |
-| `data.product.id` | string | Unique identifier of the product |
-| `data.product.categoryId` | string | UUID of the product category |
-| `data.product.name` | string | Name of the product |
-| `data.product.productCode` | string | Product code/SKU |
-| `data.product.productQuantity` | number | Available quantity |
-| `data.product.description` | string | Product description |
-| `data.product.price` | number | Regular price of the product |
-| `data.product.discountPrice` | number | Discounted price (0 if no discount) |
-| `data.product.status` | number | Product status code |
-| `data.product.hotDeal` | string | Hot deal indicator |
-| `data.product.bestRated` | string | Best rated indicator |
-| `data.product.buyOneGetOne` | string | Buy one get one offer indicator |
 
 ---
 
@@ -105,7 +83,14 @@ curl -X 'POST' \
 
 **`GET /wishlist`**
 
-Retrieve all products in the authenticated user's wishlist.
+Retrieve all products in the authenticated user's wishlist with pagination.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `page` | integer | No | Page number (default: 1) |
+| `limit` | integer | No | Items per page (default: 10) |
 
 #### Headers
 
@@ -117,7 +102,7 @@ Retrieve all products in the authenticated user's wishlist.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/wishlist' \
+  'http://localhost:8080/wishlist?page=1&limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -134,45 +119,54 @@ curl -X 'GET' \
   "data": [
     {
       "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-      "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
       "name": "Polo T Shirt",
-      "productCode": "string",
-      "productQuantity": 1,
-      "description": "Chinese polo T-shirt",
-      "price": 100,
-      "discountPrice": 0,
-      "status": 0,
-      "hotDeal": "string",
-      "bestRated": "string",
-      "buyOneGetOne": "string"
+      // ... product details
     }
   ]
 }
 ```
 
-#### Response Fields
+---
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of product objects in the wishlist |
-| `data[].id` | string | Unique identifier of the product |
-| `data[].categoryId` | string | UUID of the product category |
-| `data[].name` | string | Name of the product |
-| `data[].productCode` | string | Product code/SKU |
-| `data[].productQuantity` | number | Available quantity |
-| `data[].description` | string | Product description |
-| `data[].price` | number | Regular price of the product |
-| `data[].discountPrice` | number | Discounted price (0 if no discount) |
-| `data[].status` | number | Product status code |
-| `data[].hotDeal` | string | Hot deal indicator |
-| `data[].bestRated` | string | Best rated indicator |
-| `data[].buyOneGetOne` | string | Buy one get one offer indicator |
+### 3. Check Product in Wishlist
+
+**`GET /wishlist/check`**
+
+Check if a specific product exists in the user's wishlist.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `productId` | string | Yes | UUID of the product to check |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/wishlist/check?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+#### Example Response
+
+```json
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": true
+}
+```
 
 ---
 
-### 3. Remove Product from Wishlist
+### 4. Remove Product from Wishlist
 
-**`DELETE /wishlist`**
+**`DELETE /wishlist/remove`**
 
 Remove a specific product from the authenticated user's wishlist.
 
@@ -192,7 +186,7 @@ Remove a specific product from the authenticated user's wishlist.
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/wishlist?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
+  'http://localhost:8080/wishlist/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -207,39 +201,12 @@ curl -X 'DELETE' \
     "description": "OK"
   },
   "data": {
-    "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-    "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-    "name": "Polo T Shirt",
-    "productCode": "string",
-    "productQuantity": 1,
-    "description": "Chinese polo T-shirt",
-    "price": 100,
-    "discountPrice": 0,
-    "status": 0,
-    "hotDeal": "string",
-    "bestRated": "string",
-    "buyOneGetOne": "string"
+      "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
+      "name": "Polo T Shirt",
+      // ... product details
   }
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | object | Complete product object removed from wishlist |
-| `data.id` | string | Unique identifier of the removed product |
-| `data.categoryId` | string | UUID of the product category |
-| `data.name` | string | Name of the product |
-| `data.productCode` | string | Product code/SKU |
-| `data.productQuantity` | number | Available quantity |
-| `data.description` | string | Product description |
-| `data.price` | number | Regular price of the product |
-| `data.discountPrice` | number | Discounted price (0 if no discount) |
-| `data.status` | number | Product status code |
-| `data.hotDeal` | string | Hot deal indicator |
-| `data.bestRated` | string | Best rated indicator |
-| `data.buyOneGetOne` | string | Buy one get one offer indicator |
 
 ---
 
@@ -280,5 +247,5 @@ The API returns appropriate HTTP status codes and error messages:
 | `401` | Unauthorized - Invalid or missing authentication |
 | `403` | Forbidden - Insufficient privileges |
 | `404` | Not Found - Product not found or not in wishlist |
-| `409` | Conflict - Product already exists in wishlist |
+| `409` | Conflict - Product already exists in wishlist (on Add) |
 | `500` | Internal Server Error - Server error |

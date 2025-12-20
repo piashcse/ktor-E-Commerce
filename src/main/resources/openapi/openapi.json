@@ -3169,7 +3169,16 @@
                     {
                         "name": "limit",
                         "in": "query",
-                        "description": "(required)",
+                        "description": "(optional, default 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "(optional, default 1)",
                         "required": false,
                         "schema": {
                             "type": "string"
@@ -3222,6 +3231,36 @@
                     },
                     "400": {
                         "description": ""
+                    }
+                }
+            }
+        },
+        "/wishlist/check": {
+            "get": {
+                "tags": [
+                    "WishList"
+                ],
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "query",
+                        "description": "(required)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Response"
+                                }
+                            }
+                        }
                     }
                 }
             }
