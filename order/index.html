@@ -428,58 +428,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../auth-additional/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Auth Additional
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../profile/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Profile
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../shop-category/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Shop Category
     
   </span>
   
@@ -520,12 +474,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../shop-public/" class="md-nav__link">
+      <a href="../shop-category/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Shop Public
+    Shop Category
     
   </span>
   
@@ -543,12 +497,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../brand/" class="md-nav__link">
+      <a href="../product/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Brand
+    Product
     
   </span>
   
@@ -612,12 +566,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../product/" class="md-nav__link">
+      <a href="../brand/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Product
+    Brand
     
   </span>
   
@@ -635,12 +589,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../product-search/" class="md-nav__link">
+      <a href="../wishlist/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Product Search
+    Wishlist
     
   </span>
   
@@ -658,35 +612,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../product-seller/" class="md-nav__link">
+      <a href="../shipping/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Product Seller
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../product-special/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Product Special
+    Shipping
     
   </span>
   
@@ -710,29 +641,6 @@
   
   <span class="md-ellipsis">
     Review Rating
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../wishlist/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    WishList
     
   </span>
   
@@ -1146,12 +1054,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../shipping/" class="md-nav__link">
+      <a href="../privacy-policy/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Shipping
+    Privacy Policy & Consents
     
   </span>
   
@@ -1174,53 +1082,7 @@
   
   
   <span class="md-ellipsis">
-    Inventory
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../privacy-policy/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Privacy Policy
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../privacy-policy-consent/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Privacy Policy Consent
+    Inventory Management
     
   </span>
   
@@ -1929,7 +1791,7 @@
 </table>
 <hr />
 <h3 id="3-update-order-status">3. Update Order Status</h3>
-<p><strong><code>PATCH /order/{id}</code></strong></p>
+<p><strong><code>PATCH /order/status/{id}</code></strong></p>
 <p>Update the status of an existing order by its ID. This endpoint allows changing the order status (e.g., from pending to delivered).</p>
 <h4 id="path-parameters">Path Parameters</h4>
 <table>
@@ -1988,7 +1850,7 @@
 </table>
 <h4 id="example-request_2">Example Request</h4>
 <pre><code class="language-bash">curl -X 'PATCH' \
-  'http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered' \
+  'http://localhost:8080/order/status/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
