@@ -19,6 +19,7 @@ data class ProductRequest(
     val videoLink: String?,
     val hotDeal: Boolean,
     val featured: Boolean,
+    val freeShipping: Boolean?,
     val images: List<String>,
 ) {
     fun validation() {

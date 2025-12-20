@@ -2,6 +2,7 @@ package com.piashcse.feature.auth
 
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
+import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.model.request.*
 import com.piashcse.plugin.RoleManagement
@@ -93,7 +94,7 @@ fun Route.authRoutes(authController: AuthService) {
                 "email", "otp", "newPassword", "userType"
             ) ?: return@get
 
-            AuthService().resetPassword(
+            authController.resetPassword(
                 ResetRequest(
                     email, otp, newPassword, userType
                 )
@@ -119,7 +120,12 @@ fun Route.authRoutes(authController: AuthService) {
             }
         }
 
-        authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
+        authenticate(
+            RoleManagement.SUPER_ADMIN.role,
+            RoleManagement.ADMIN.role,
+            RoleManagement.SELLER.role,
+            RoleManagement.CUSTOMER.role
+        ) {
             /**
              * @tag Auth
              * @query oldPassword (required)
@@ -138,6 +144,151 @@ fun Route.authRoutes(authController: AuthService) {
                     ) else call.respond(
                         ApiResponse.failure(
                             "Old password is wrong", HttpStatusCode.OK
+                        )
+                    )
+                }
+            }
+        }
+
+        // Admin and Super Admin routes for user management
+        authenticate(RoleManagement.SUPER_ADMIN.role, RoleManagement.ADMIN.role) {
+            /**
+             * @tag Auth
+             * @path userId (required)
+             * @query userType (required)
+             * @response 200 [Response]
+             * @security jwtToken
+             */
+            put("/{userId}/change-user-type") {
+                val (userId) = call.requiredParameters("userId") ?: return@put
+                val userTypeParam = call.parameters["userType"] ?: run {
+                    call.respond(HttpStatusCode.BadRequest, "userType parameter is required")
+                    return@put
+                }
+
+                val newType = try {
+                    UserType.valueOf(userTypeParam.uppercase())
+                } catch (e: IllegalArgumentException) {
+                    call.respond(HttpStatusCode.BadRequest, "Invalid userType")
+                    return@put
+                }
+
+                val currentUser = call.principal<JwtTokenRequest>()
+                if (currentUser == null) {
+                    call.respond(HttpStatusCode.Unauthorized, "Unauthorized")
+                    return@put
+                }
+
+                try {
+                    val success = authController.changeUserType(
+                        currentUser.userId,
+                        userId,
+                        newType
+                    )
+
+                    if (success) {
+                        call.respond(
+                            ApiResponse.success(
+                                "User type changed successfully to $newType", HttpStatusCode.OK
+                            )
+                        )
+                    } else {
+                        call.respond(
+                            ApiResponse.failure(
+                                "Failed to change user type", HttpStatusCode.BadRequest
+                            )
+                        )
+                    }
+                } catch (e: Exception) {
+                    call.respond(
+                        ApiResponse.failure(
+                            e.message ?: "Error changing user type", HttpStatusCode.BadRequest
+                        )
+                    )
+                }
+            }
+
+            /**
+             * @tag Auth
+             * @path userId (required)
+             * @response 200 [Response]
+             * @security jwtToken
+             */
+            put("/{userId}/deactivate") {
+                val (userId) = call.requiredParameters("userId") ?: return@put
+                val currentUser = call.principal<JwtTokenRequest>()
+
+                if (currentUser == null) {
+                    call.respond(HttpStatusCode.Unauthorized, "Unauthorized")
+                    return@put
+                }
+
+                try {
+                    val success = authController.deactivateUser(
+                        currentUser.userId,
+                        userId
+                    )
+
+                    if (success) {
+                        call.respond(
+                            ApiResponse.success(
+                                "User deactivated successfully", HttpStatusCode.OK
+                            )
+                        )
+                    } else {
+                        call.respond(
+                            ApiResponse.failure(
+                                "Failed to deactivate user", HttpStatusCode.BadRequest
+                            )
+                        )
+                    }
+                } catch (e: Exception) {
+                    call.respond(
+                        ApiResponse.failure(
+                            e.message ?: "Error deactivating user", HttpStatusCode.BadRequest
+                        )
+                    )
+                }
+            }
+
+            /**
+             * @tag Auth
+             * @path userId (required)
+             * @response 200 [Response]
+             * @security jwtToken
+             */
+            put("/{userId}/activate") {
+                val (userId) = call.requiredParameters("userId") ?: return@put
+                val currentUser = call.principal<JwtTokenRequest>()
+
+                if (currentUser == null) {
+                    call.respond(HttpStatusCode.Unauthorized, "Unauthorized")
+                    return@put
+                }
+
+                try {
+                    val success = authController.activateUser(
+                        currentUser.userId,
+                        userId
+                    )
+
+                    if (success) {
+                        call.respond(
+                            ApiResponse.success(
+                                "User activated successfully", HttpStatusCode.OK
+                            )
+                        )
+                    } else {
+                        call.respond(
+                            ApiResponse.failure(
+                                "Failed to activate user", HttpStatusCode.BadRequest
+                            )
+                        )
+                    }
+                } catch (e: Exception) {
+                    call.respond(
+                        ApiResponse.failure(
+                            e.message ?: "Error activating user", HttpStatusCode.BadRequest
                         )
                     )
                 }

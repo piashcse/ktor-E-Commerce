@@ -23,7 +23,12 @@ import java.util.*
  * @param userProfileController The controller responsible for handling user profile-related operations.
  */
 fun Route.profileRoutes(userProfileController: ProfileService) {
-    authenticate(RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role) {
+    authenticate(
+        RoleManagement.SUPER_ADMIN.role,
+        RoleManagement.ADMIN.role,
+        RoleManagement.SELLER.role,
+        RoleManagement.CUSTOMER.role
+    ) {
         route("/profile") {
 
             /**

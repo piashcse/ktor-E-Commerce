@@ -45,7 +45,7 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
              * @body [ReviewRatingRequest]
              * @response 200 [Response]
              */
-            post() {
+            post {
                 val requestBody = call.receive<ReviewRatingRequest>()
                 call.respond(
                     ApiResponse.success(
@@ -84,7 +84,7 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
              * @response 200 [Response]
              * @response 400
              */
-            delete("/{id}") {
+            delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(

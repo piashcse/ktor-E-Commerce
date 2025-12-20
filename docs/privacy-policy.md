@@ -22,6 +22,9 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/policy` | Create a new policy | Yes |
 | `PUT` | `/policy/{id}` | Update an existing policy | Yes |
 | `POST` | `/policy/deactivate/{id}` | Deactivate a policy | Yes |
+| `POST` | `/policy-consent` | Create a policy consent record | Yes |
+| `GET` | `/policy-consents` | Retrieve all user consent records | Yes |
+| `GET` | `/policy-consents/{policyType}` | Check if user has consented to specific policy type | Yes |
 
 ---
 

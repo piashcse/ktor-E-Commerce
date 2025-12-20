@@ -282,6 +282,141 @@ curl -X 'PUT' \
 
 ---
 
+### 7. Change User Type
+
+**`PUT /auth/{userId}/change-user-type`**
+
+Change an existing user's account type. This endpoint is available to administrators.
+
+#### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userId` | string | Yes | Unique identifier of the user to update |
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userType` | string | Yes | New user type to assign (`CUSTOMER`, `SELLER`, `ADMIN`, `SUPER_ADMIN`) |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `accept` | `application/json` | Yes |
+| `Authorization` | `Bearer <access_token>` | Yes (Admin/Super Admin) |
+
+#### Example Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type?userType=ADMIN' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+```
+
+#### Example Response
+
+```json
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "User type changed successfully to ADMIN"
+}
+```
+
+---
+
+### 8. Deactivate User
+
+**`PUT /auth/{userId}/deactivate`**
+
+Deactivate a user account, preventing the user from logging in or accessing the system. This operation can be reversed with the activate endpoint.
+
+#### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userId` | string | Yes | Unique identifier of the user to deactivate |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `accept` | `application/json` | Yes |
+| `Authorization` | `Bearer <access_token>` | Yes (Admin/Super Admin) |
+
+#### Example Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+```
+
+#### Example Response
+
+```json
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "User deactivated successfully"
+}
+```
+
+---
+
+### 9. Activate User
+
+**`PUT /auth/{userId}/activate`**
+
+Activate a previously deactivated user account, allowing the user to log in and access the system again.
+
+#### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userId` | string | Yes | Unique identifier of the user to activate |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `accept` | `application/json` | Yes |
+| `Authorization` | `Bearer <access_token>` | Yes (Admin/Super Admin) |
+
+#### Example Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+```
+
+#### Example Response
+
+```json
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": "User activated successfully"
+}
+```
+
+---
+
 ## Response Format
 
 All API responses follow a consistent format:
@@ -317,5 +452,6 @@ The API returns appropriate HTTP status codes and error messages:
 | `200` | OK - Request successful |
 | `400` | Bad Request - Invalid parameters |
 | `401` | Unauthorized - Invalid or missing authentication |
+| `403` | Forbidden - Insufficient privileges |
 | `404` | Not Found - Resource not found |
 | `500` | Internal Server Error - Server error |

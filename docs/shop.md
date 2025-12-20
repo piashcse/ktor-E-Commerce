@@ -20,6 +20,14 @@ Authorization: Bearer <your_access_token>
 | `GET` | `/shop` | Retrieve list of shops | Yes |
 | `PUT` | `/shop/{id}` | Update an existing shop | Yes |
 | `DELETE` | `/shop/{id}` | Delete a shop | No |
+| `GET` | `/shop/public` | Retrieve list of public shops with filters | No |
+| `GET` | `/shop/category/{categoryId}` | Retrieve shops by category | No |
+| `GET` | `/shop/featured` | Retrieve featured shops | No |
+| `GET` | `/shop/status` | Retrieve shops by status | Yes (Admin/Super Admin) |
+| `PUT` | `/shop/approve/{id}` | Approve a shop | Yes (Admin/Super Admin) |
+| `PUT` | `/shop/reject/{id}` | Reject a shop | Yes (Admin/Super Admin) |
+| `PUT` | `/shop/suspend/{id}` | Suspend a shop | Yes (Admin/Super Admin) |
+| `PUT` | `/shop/activate/{id}` | Activate a shop | Yes (Admin/Super Admin) |
 
 ---
 

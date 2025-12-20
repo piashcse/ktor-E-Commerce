@@ -109,7 +109,7 @@ fun Route.productRoutes(productController: ProductService) {
                 )
                 call.respond(
                     ApiResponse.success(
-                        productController.getProductById(call.currentUser().userId, params), HttpStatusCode.OK
+                        productController.getProductsByUser(call.currentUser().userId, params), HttpStatusCode.OK
                     )
                 )
             }
@@ -122,7 +122,7 @@ fun Route.productRoutes(productController: ProductService) {
                 val requestBody = call.receive<ProductRequest>()
                 call.respond(
                     ApiResponse.success(
-                        productController.createProduct(call.currentUser().userId, requestBody), HttpStatusCode.OK
+                        productController.createProduct(call.currentUser().userId, null, requestBody), HttpStatusCode.OK
                     )
                 )
             }
@@ -159,6 +159,7 @@ fun Route.productRoutes(productController: ProductService) {
                     videoLink = call.parameters["videoLink"],
                     hotDeal = call.parameters["hotDeal"]?.toBoolean(),
                     featured = call.parameters["featured"]?.toBoolean(),
+                    freeShipping = call.parameters["freeShipping"]?.toBoolean(),
                     images = call.parameters["images"]?.split(",")?.toList() ?: emptyList()
                 )
                 val (id) = call.requiredParameters("id") ?: return@put
@@ -216,9 +217,8 @@ fun Route.productRoutes(productController: ProductService) {
             }
         }
 
-        // Routes for admins to manage all products
-        authenticate(RoleManagement.ADMIN.role) {
-
+        // Routes for admins and super admins to manage all products
+        authenticate(RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
             /**
              * @tag Product
              * @path id (required)

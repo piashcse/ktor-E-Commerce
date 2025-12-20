@@ -18,9 +18,10 @@ interface WishListRepository {
      *
      * @param userId The unique identifier of the user.
      * @param limit The maximum number of products to return.
+     * @param offset The number of products to skip.
      * @return A list of products in the user's wish list.
      */
-    suspend fun getWishList(userId: String, limit: Int): List<Product>
+    suspend fun getWishList(userId: String, limit: Int, offset: Long): List<Product>
 
     /**
      * Removes a product from the user's wish list.
@@ -30,4 +31,13 @@ interface WishListRepository {
      * @return The removed product.
      */
     suspend fun removeFromWishList(userId: String, productId: String): Product
+
+    /**
+     * Checks if a product is in the user's wish list.
+     *
+     * @param userId The unique identifier of the user.
+     * @param productId The unique identifier of the product.
+     * @return True if the product is in the wish list, false otherwise.
+     */
+    suspend fun isProductInWishList(userId: String, productId: String): Boolean
 }

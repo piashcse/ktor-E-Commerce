@@ -3,6 +3,8 @@ package com.piashcse.feature.auth
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
+import com.piashcse.constants.ShopStatus
+import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.ForgetPasswordRequest
 import com.piashcse.model.request.LoginRequest
@@ -10,13 +12,14 @@ import com.piashcse.model.request.RegisterRequest
 import com.piashcse.model.request.ResetRequest
 import com.piashcse.model.response.Registration
 import com.piashcse.utils.*
+import com.piashcse.utils.ValidationException
+import com.piashcse.utils.ValidationUtils
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.neq
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class AuthService : AuthRepository {
     /**
@@ -27,31 +30,43 @@ class AuthService : AuthRepository {
      * @return The response containing the registered user ID and email.
      */
     override suspend fun register(registerRequest: RegisterRequest): Any = query {
+        // Validate request data
+        validateRegisterRequest(registerRequest)
+
+        // Convert string userType to enum for the database query
+        val userTypeEnum = try {
+            UserType.valueOf(registerRequest.userType.uppercase())
+        } catch (e: IllegalArgumentException) {
+            // If the value is not valid, default to CUSTOMER
+            UserType.CUSTOMER
+        }
+
         // Check if user exists with the same email and userType
-        val userEntity =
-            UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType eq registerRequest.userType) }
-                .toList().singleOrNull()
+        val existingUserSameType =
+            UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType eq userTypeEnum) }
+                .singleOrNull()
 
         // Check if user exists with the same email but different userType
-        val existingUserWithDifferentType =
-            UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType neq registerRequest.userType) }
-                .toList().singleOrNull()
+        val existingUserDifferentType =
+            UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType neq userTypeEnum) }
+                .singleOrNull()
 
         val otp = generateOTP()
-        val now = LocalDateTime.now().plusHours(24) // 24 hours opt expire time
+        val now = LocalDateTime.now().plusHours(24) // 24 hours otp expire time
 
-        if (userEntity != null) {
+        if (existingUserSameType != null) {
             // User exists with the same email and userType
             // Check if the user is already verified
-            if (userEntity.isVerified) {
-                Message.USER_ALREADY_EXIST_WITH_THIS_EMAIL
+            if (existingUserSameType.isVerified) {
+                throw CommonException(Message.USER_ALREADY_EXIST_WITH_THIS_EMAIL)
             } else {
-                if (userEntity.otpExpiry!! < LocalDateTime.now()) {
-                    userEntity.otpCode = otp
-                    sendEmail(userEntity.email, otp)
-                    "${Message.NEW_OTP_SENT_TO} ${userEntity.email}"
+                // Resend OTP if expired
+                if (existingUserSameType.otpExpiry!! < LocalDateTime.now()) {
+                    existingUserSameType.otpCode = otp
+                    sendEmail(existingUserSameType.email, otp)
+                    "${Message.NEW_OTP_SENT_TO} ${existingUserSameType.email}"
                 } else {
-                    Message.OTP_ALREADY_SENT_WAIT_UNTIL_EXPIRY
+                    throw CommonException(Message.OTP_ALREADY_SENT_WAIT_UNTIL_EXPIRY)
                 }
             }
         } else {
@@ -61,13 +76,19 @@ class AuthService : AuthRepository {
                 otpCode = otp
                 otpExpiry = now
                 password = BCrypt.withDefaults().hashToString(12, registerRequest.password.toCharArray())
-                userType = registerRequest.userType
+                userType = userTypeEnum
             }
 
-            // If this is a new user (not existing with different role), create profile
-            if (existingUserWithDifferentType == null) {
-                UserProfileDAO.new {
+            // Create user profile
+            UserProfileDAO.new {
+                userId = inserted.id
+            }
+
+            // Create corresponding seller record if user is registering as a seller
+            if (userTypeEnum == UserType.SELLER) {
+                SellerDAO.new {
                     userId = inserted.id
+                    status = ShopStatus.PENDING // Default to pending approval
                 }
             }
 
@@ -75,18 +96,27 @@ class AuthService : AuthRepository {
             sendEmail(inserted.email, otp)
 
             // Return appropriate message
-            if (existingUserWithDifferentType != null) {
-                Registration(
-                    inserted.id.value,
-                    registerRequest.email,
-                    message = "${Message.OTP_SENT_TO} ${inserted.email}. You already have an account as ${existingUserWithDifferentType.userType}."
-                )
+            val messageSuffix = if (existingUserDifferentType != null) {
+                ". You already have an account as ${existingUserDifferentType.userType}."
             } else {
-                Registration(
-                    inserted.id.value, registerRequest.email, message = "${Message.OTP_SENT_TO} ${inserted.email}"
-                )
+                ""
             }
+
+            Registration(
+                inserted.id.value,
+                registerRequest.email,
+                message = "${Message.OTP_SENT_TO} ${inserted.email}$messageSuffix"
+            )
         }
+    }
+
+    private fun validateRegisterRequest(request: RegisterRequest) {
+        if (!ValidationUtils.validateEmail(request.email))
+            throw ValidationException("Invalid email format")
+        if (!ValidationUtils.validatePassword(request.password))
+            throw ValidationException("Password must be at least 8 characters with at least one letter and one number")
+        if (UserType.fromString(request.userType) == null)
+            throw ValidationException("Invalid user type. Must be one of: CUSTOMER, SELLER, ADMIN, SUPER_ADMIN")
     }
 
     /**
@@ -97,8 +127,17 @@ class AuthService : AuthRepository {
      * @return The response containing the authentication token.
      */
     override suspend fun login(loginRequest: LoginRequest): LoginResponse = query {
+        // Validate login request
+        validateLoginRequest(loginRequest)
+
+        // Convert string userType to enum for comparison
+        val userTypeEnum = UserType.fromString(loginRequest.userType) ?: run {
+            // If the value is not valid, return not found
+            throw loginRequest.email.notFoundException()
+        }
+
         val userEntity =
-            UserDAO.find { UserTable.email eq loginRequest.email and (UserTable.userType eq loginRequest.userType) }
+            UserDAO.find { UserTable.email eq loginRequest.email and (UserTable.userType eq userTypeEnum) }
                 .toList().singleOrNull()
         userEntity?.let {
             if (BCrypt.verifyer().verify(
@@ -106,7 +145,11 @@ class AuthService : AuthRepository {
                 ).verified
             ) {
                 if (it.isVerified) {
-                    it.loggedInWithToken()
+                    if (it.isActive) {
+                        it.loggedInWithToken()
+                    } else {
+                        throw CommonException(Message.ACCOUNT_DEACTIVATED)
+                    }
                 } else {
                     throw CommonException(Message.ACCOUNT_NOT_VERIFIED)
                 }
@@ -114,6 +157,15 @@ class AuthService : AuthRepository {
                 throw PasswordNotMatch()
             }
         } ?: throw loginRequest.email.notFoundException()
+    }
+
+    private fun validateLoginRequest(request: LoginRequest) {
+        if (!ValidationUtils.validateEmail(request.email))
+            throw ValidationException("Invalid email format")
+        if (UserType.fromString(request.userType) == null)
+            throw ValidationException("Invalid user type. Must be one of: CUSTOMER, SELLER, ADMIN, SUPER_ADMIN")
+        if (request.password.isBlank())
+            throw ValidationException("Password cannot be empty")
     }
 
     /**
@@ -174,8 +226,15 @@ class AuthService : AuthRepository {
             throw forgetPasswordRequest.email.notFoundException()
         }
 
+        // Convert string userType to enum for comparison
+        val userTypeEnum = try {
+            UserType.valueOf(forgetPasswordRequest.userType.uppercase())
+        } catch (e: IllegalArgumentException) {
+            throw forgetPasswordRequest.email.notFoundException()
+        }
+
         // Find the specific user with the given email and userType
-        val specificUser = userEntities.find { it.userType == forgetPasswordRequest.userType }
+        val specificUser = userEntities.find { it.userType == userTypeEnum }
         specificUser?.let {
             val otp = generateOTP()
             it.otpCode = otp
@@ -201,8 +260,15 @@ class AuthService : AuthRepository {
             throw resetPasswordRequest.email.notFoundException()
         }
 
+        // Convert string userType to enum for comparison
+        val userTypeEnum = try {
+            UserType.valueOf(resetPasswordRequest.userType.uppercase())
+        } catch (e: IllegalArgumentException) {
+            throw "${resetPasswordRequest.email} not found for ${resetPasswordRequest.userType} role".notFoundException()
+        }
+
         // Find the specific user with the given email and userType
-        val userEntity = userEntities.find { it.userType == resetPasswordRequest.userType }
+        val userEntity = userEntities.find { it.userType == userTypeEnum }
             ?: throw "${resetPasswordRequest.email} not found for ${resetPasswordRequest.userType} role".notFoundException()
 
         // Verify the code and update the password
@@ -218,5 +284,93 @@ class AuthService : AuthRepository {
         } else {
             AppConstants.DataBaseTransaction.NOT_FOUND
         }
+    }
+
+    /**
+     * Changes the user type for a specific user.
+     * Only admins and super admins can change user types, with proper validation.
+     */
+    override suspend fun changeUserType(currentUserId: String, targetUserId: String, newUserType: UserType): Boolean = query {
+        // Validate inputs
+        if (currentUserId.isBlank()) throw ValidationException("Current user ID cannot be blank")
+        if (targetUserId.isBlank()) throw ValidationException("Target user ID cannot be blank")
+
+        // Get the current user making the change
+        val currentUser = UserDAO.findById(currentUserId) ?: throw UserNotExistException()
+
+        // Get the target user
+        val targetUser = UserDAO.findById(targetUserId) ?: throw UserNotExistException()
+
+        // Check if the current user has permission to change user types
+        if (!RoleHierarchy.canManageUser(currentUser.userType, targetUser.userType)) {
+            throw CommonException("Insufficient permissions to change user type to $newUserType")
+        }
+
+        // Update the user type
+        targetUser.userType = newUserType
+
+        // Handle seller transition
+        handleSellerTransition(targetUser, newUserType)
+
+        true
+    }
+
+    /**
+     * Handles the transition when a user becomes a seller
+     */
+    private fun handleSellerTransition(user: UserDAO, newUserType: UserType) {
+        if (newUserType == UserType.SELLER) {
+            val existingSeller = SellerDAO.find { SellerTable.userId eq user.id }.singleOrNull()
+            if (existingSeller == null) {
+                SellerDAO.new {
+                    userId = user.id
+                    status = ShopStatus.PENDING // Default to pending approval
+                }
+            }
+        }
+    }
+
+    /**
+     * Deactivates a user account.
+     */
+    override suspend fun deactivateUser(currentUserId: String, targetUserId: String): Boolean = query {
+        // Get the current user making the change
+        val currentUser = UserDAO.find { UserTable.id eq currentUserId }.singleOrNull()
+            ?: throw UserNotExistException()
+
+        // Get the target user
+        val targetUser = UserDAO.find { UserTable.id eq targetUserId }.singleOrNull()
+            ?: throw UserNotExistException()
+
+        // Check if the current user has permission to deactivate this user
+        if (!RoleHierarchy.canManageUser(currentUser.userType, targetUser.userType)) {
+            throw CommonException("Insufficient permissions to deactivate user")
+        }
+
+        // Update user active status
+        targetUser.isActive = false
+        true
+    }
+
+    /**
+     * Activates a user account.
+     */
+    override suspend fun activateUser(currentUserId: String, targetUserId: String): Boolean = query {
+        // Get the current user making the change
+        val currentUser = UserDAO.find { UserTable.id eq currentUserId }.singleOrNull()
+            ?: throw UserNotExistException()
+
+        // Get the target user
+        val targetUser = UserDAO.find { UserTable.id eq targetUserId }.singleOrNull()
+            ?: throw UserNotExistException()
+
+        // Check if the current user has permission to activate this user
+        if (!RoleHierarchy.canManageUser(currentUser.userType, targetUser.userType)) {
+            throw CommonException("Insufficient permissions to activate user")
+        }
+
+        // Update user active status
+        targetUser.isActive = true
+        true
     }
 }

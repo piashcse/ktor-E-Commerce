@@ -13,19 +13,19 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
 
-abstract class BaseIntIdTable(name: String) : IdTable<String>(name) {
+abstract class BaseIdTable(name: String) : IdTable<String>(name) {
     override val id: Column<EntityID<String>> = varchar("id", 50).clientDefault { UUID.randomUUID().toString() }.uniqueIndex().entityId()
     val createdAt = datetime("created_at").clientDefault { currentUtc() }
     val updatedAt = datetime("updated_at").nullable()
     override val primaryKey = PrimaryKey(id)
 }
 
-abstract class BaseIntEntity(id: EntityID<String>, table: BaseIntIdTable) : Entity<String>(id) {
+abstract class BaseEntity(id: EntityID<String>, table: BaseIdTable) : Entity<String>(id) {
     val createdAt by table.createdAt
     var updatedAt by table.updatedAt
 }
 
-abstract class BaseIntEntityClass<E : BaseIntEntity>(table: BaseIntIdTable, entityType: Class<E>) : EntityClass<String, E>(table, entityType) {
+abstract class BaseEntityClass<E : BaseEntity>(table: BaseIdTable, entityType: Class<E>) : EntityClass<String, E>(table, entityType) {
     init {
         EntityHook.subscribe { action ->
             if (action.changeType == EntityChangeType.Updated) {

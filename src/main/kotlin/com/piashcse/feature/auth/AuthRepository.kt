@@ -1,5 +1,6 @@
 package com.piashcse.feature.auth
 
+import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.database.entities.LoginResponse
 import com.piashcse.model.request.ForgetPasswordRequest
@@ -27,10 +28,11 @@ interface AuthRepository {
     /**
      * Otp verification.
      *
-     * @param request the otp code.
+     * @param userId The user ID.
+     * @param otp The OTP code.
      * @return The success response.
      */
-    suspend fun otpVerification(userId: String,otp: String): Boolean
+    suspend fun otpVerification(userId: String, otp: String): Boolean
 
     /**
      * Changes the password for a user.
@@ -56,4 +58,32 @@ interface AuthRepository {
      * @return A status code representing the verification result.
      */
     suspend fun resetPassword(resetPasswordRequest: ResetRequest): Int
+
+    /**
+     * Changes the user type for a user.
+     *
+     * @param currentUserId The ID of the admin making the change.
+     * @param targetUserId The ID of the user whose type is being changed.
+     * @param newUserType The new user type to assign.
+     * @return `true` if the user type was changed successfully, `false` otherwise.
+     */
+    suspend fun changeUserType(currentUserId: String, targetUserId: String, newUserType: UserType): Boolean
+
+    /**
+     * Deactivates a user account.
+     *
+     * @param currentUserId The ID of the admin making the change.
+     * @param targetUserId The ID of the user to deactivate.
+     * @return `true` if the user was deactivated successfully, `false` otherwise.
+     */
+    suspend fun deactivateUser(currentUserId: String, targetUserId: String): Boolean
+
+    /**
+     * Activates a user account.
+     *
+     * @param currentUserId The ID of the admin making the change.
+     * @param targetUserId The ID of the user to activate.
+     * @return `true` if the user was activated successfully, `false` otherwise.
+     */
+    suspend fun activateUser(currentUserId: String, targetUserId: String): Boolean
 }

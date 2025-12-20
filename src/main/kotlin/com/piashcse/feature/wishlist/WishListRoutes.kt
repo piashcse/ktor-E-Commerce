@@ -27,6 +27,7 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
              */
             post {
                 val requestBody = call.receive<WishListRequest>()
+                requestBody.validation()
                 call.respond(
                     ApiResponse.success(
                         wishlistController.addToWishList(call.currentUser().userId, requestBody.productId),
@@ -37,15 +38,19 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
 
             /**
              * @tag WishList
-             * @query limit (required)
+             * @query limit (optional, default 10)
+             * @query page (optional, default 1)
              * @response 200 [Response]
              * @response 400
              */
             get {
-                val (limit) = call.requiredParameters("limit") ?: return@get
+                val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 10
+                val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
+                val offset = ((page - 1) * limit).toLong()
+                
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.getWishList(call.currentUser().userId, limit.toInt()),
+                        wishlistController.getWishList(call.currentUser().userId, limit, offset),
                         HttpStatusCode.OK
                     )
                 )
@@ -62,6 +67,21 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
                 call.respond(
                     ApiResponse.success(
                         wishlistController.removeFromWishList(call.currentUser().userId, productId), HttpStatusCode.OK
+                    )
+                )
+            }
+
+            /**
+             * @tag WishList
+             * @query productId (required)
+             * @response 200 [Response]
+             */
+            get("check") {
+                val (productId) = call.requiredParameters("productId") ?: return@get
+                call.respond(
+                    ApiResponse.success(
+                        wishlistController.isProductInWishList(call.currentUser().userId, productId),
+                        HttpStatusCode.OK
                     )
                 )
             }

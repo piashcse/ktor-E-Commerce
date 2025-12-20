@@ -76,7 +76,7 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
                     address = call.parameters["address"],
                     city = call.parameters["city"],
                     country = call.parameters["country"],
-                    phone = call.parameters["phone"]?.toInt(),
+                    phone = call.parameters["phone"],
                     email = call.parameters["email"],
                     shippingMethod = call.parameters["shippingMethod"],
                     status = null,

@@ -1,18 +1,18 @@
 package com.piashcse.database.entities
 
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.ProductCategory
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
-object ProductCategoryTable : BaseIntIdTable("category") {
+object ProductCategoryTable : BaseIdTable("category") {
     val name = text("name")
     val image = text("image").nullable()
 }
 
-class ProductCategoryDAO(id: EntityID<String>) : BaseIntEntity(id, ProductCategoryTable) {
-    companion object : BaseIntEntityClass<ProductCategoryDAO>(ProductCategoryTable, ProductCategoryDAO::class.java)
+class ProductCategoryDAO(id: EntityID<String>) : BaseEntity(id, ProductCategoryTable) {
+    companion object : BaseEntityClass<ProductCategoryDAO>(ProductCategoryTable, ProductCategoryDAO::class.java)
 
     var name by ProductCategoryTable.name
     private val subCategories by ProductSubCategoryDAO referrersOn ProductSubCategoryTable.categoryId

@@ -2,6 +2,10 @@ package com.piashcse.plugin
 
 import com.piashcse.constants.Message
 import com.piashcse.utils.*
+import com.piashcse.utils.UnauthorizedException
+import com.piashcse.utils.ValidationException
+import com.piashcse.utils.ForbiddenException
+import com.piashcse.utils.NotFoundException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -72,6 +76,30 @@ fun Application.configureStatusPage() {
                 is CommonException -> {
                     call.respond(
                         HttpStatusCode.BadRequest, ApiResponse.failure(error.message, HttpStatusCode.BadRequest)
+                    )
+                }
+
+                is UnauthorizedException -> {
+                    call.respond(
+                        HttpStatusCode.Unauthorized, ApiResponse.failure(error.message, error.code)
+                    )
+                }
+
+                is ValidationException -> {
+                    call.respond(
+                        HttpStatusCode.BadRequest, ApiResponse.failure(error.message, error.code)
+                    )
+                }
+
+                is ForbiddenException -> {
+                    call.respond(
+                        HttpStatusCode.Forbidden, ApiResponse.failure(error.message, error.code)
+                    )
+                }
+
+                is NotFoundException -> {
+                    call.respond(
+                        HttpStatusCode.NotFound, ApiResponse.failure(error.message, error.code)
                     )
                 }
 

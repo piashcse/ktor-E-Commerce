@@ -11,7 +11,7 @@ data class UpdateShippingRequest(
     val address: String?,
     val city: String?,
     val country: String?,
-    val phone: Int?,
+    val phone: String?,
     val shippingMethod: String?,
     val email: String?,
     val status: ShippingTable.ShippingStatus?,

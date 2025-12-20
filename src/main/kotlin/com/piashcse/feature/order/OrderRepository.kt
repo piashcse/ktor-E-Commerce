@@ -12,7 +12,7 @@ interface OrderRepository {
      * @param request The order details.
      * @return The created order.
      */
-    suspend fun createOrder(userId: String, orderRequest: OrderRequest): Order
+    suspend fun createOrder(userId: String, orderRequest: OrderRequest): List<Order>
 
     /**
      * Retrieves a list of orders for a user.

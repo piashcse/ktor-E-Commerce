@@ -1,18 +1,18 @@
 package com.piashcse.database.entities
 
-import com.piashcse.database.entities.base.BaseIntEntity
-import com.piashcse.database.entities.base.BaseIntEntityClass
-import com.piashcse.database.entities.base.BaseIntIdTable
+import com.piashcse.database.entities.base.BaseEntity
+import com.piashcse.database.entities.base.BaseEntityClass
+import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.Product
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
-object WishListTable : BaseIntIdTable("wishlist") {
+object WishListTable : BaseIdTable("wishlist") {
     val userId = reference("user_id", UserTable.id)
     val productId = reference("product_id", ProductTable.id)
 }
 
-class WishListDAO(id: EntityID<String>) : BaseIntEntity(id, WishListTable) {
-    companion object : BaseIntEntityClass<WishListDAO>(WishListTable,WishListDAO::class.java)
+class WishListDAO(id: EntityID<String>) : BaseEntity(id, WishListTable) {
+    companion object : BaseEntityClass<WishListDAO>(WishListTable,WishListDAO::class.java)
 
     var userId by WishListTable.userId
     var productId by WishListTable.productId

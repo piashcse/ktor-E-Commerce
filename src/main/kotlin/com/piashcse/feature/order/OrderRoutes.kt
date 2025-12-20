@@ -16,10 +16,11 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * Defines all order-related routes for customers and sellers.
+ * Defines all order-related routes for customers, sellers, and admins.
  *
  * - Customers can create orders and update their own orders to "CANCELED" or "RECEIVED".
  * - Sellers can update orders to "CONFIRMED" or "DELIVERED".
+ * - Admins can update all order statuses.
  *
  * @param orderController The service that handles order operations.
  */
@@ -97,6 +98,40 @@ fun Route.orderRoutes(orderController: OrderService) {
                         HttpStatusCode.Unauthorized, ApiResponse.failure(
                             "$YOU_ARE_NOT_ALLOWED_TO_SET_STATUS $status",
                             HttpStatusCode.Unauthorized
+                        )
+                    )
+                    return@patch
+                }
+
+                call.respond(
+                    ApiResponse.success(
+                        orderController.updateOrderStatus(user.userId, id, status),
+                        HttpStatusCode.OK
+                    )
+                )
+            }
+        }
+
+        // Admin and Super Admin routes for managing all orders
+        authenticate(RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
+            /**
+             * @tag Order
+             * @path id (required)
+             * @query status (required)
+             * @response 200 [Response]
+             * @security jwtToken
+             */
+            patch("status/{id}") {
+                val (id, statusParam) = call.requiredParameters("id", "status") ?: return@patch
+                val user = call.currentUser()
+
+                val status = try {
+                    OrderStatus.valueOf(statusParam.uppercase())
+                } catch (e: IllegalArgumentException) {
+                    call.respond(
+                        HttpStatusCode.BadRequest, ApiResponse.failure(
+                            "$INVALID_ORDER_STATUS $statusParam",
+                            HttpStatusCode.BadRequest
                         )
                     )
                     return@patch
