@@ -188,7 +188,7 @@ curl -X 'GET' \
 
 ### 3. Update Order Status
 
-**`PATCH /order/{id}`**
+**`PATCH /order/status/{id}`**
 
 Update the status of an existing order by its ID. This endpoint allows changing the order status (e.g., from pending to delivered).
 
@@ -214,7 +214,7 @@ Update the status of an existing order by its ID. This endpoint allows changing 
 
 ```bash
 curl -X 'PATCH' \
-  'http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered' \
+  'http://localhost:8080/order/status/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
