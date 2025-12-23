@@ -32,20 +32,22 @@ nav:
   - API Reference:
       - Auth: auth.md
       - Profile: profile.md
-      - Shop: shop.md
       - Shop Category: shop-category.md
-      - Product: product.md
+      - Shop: shop.md
+      - Shop Public: shop-public.md
+      - Brand: brand.md
       - Product Category: product-category.md
       - Product Sub Category: product-sub-category.md
-      - Brand: brand.md
-      - Wishlist: wishlist.md
-      - Shipping: shipping.md
+      - Product: product.md
       - Review Rating: review-rating.md
+      - WishList: wishlist.md
       - Cart: cart.md
       - Order: order.md
       - Payment: payment.md
-      - Privacy Policy & Consents: privacy-policy.md
-      - Inventory Management: inventory.md
+      - Shipping: shipping.md
+      - Inventory: inventory.md
+      - Privacy Policy: privacy-policy.md
+      - Privacy Policy Consent: privacy-policy-consent.md
   - Changelog: changelog.md
 
 repo_url: https://github.com/piashcse/ktor-ecommerce

@@ -149,8 +149,6 @@ The `.env` file is included in `.gitignore` to prevent sensitive information fro
 
 > **Note**: For email configuration, make sure to use a Gmail app password rather than your regular Gmail password. You can generate an app password in your Google Account settings under Security > 2-Step Verification > App passwords.
 
-For more detailed information about environment variables and how to use them, please refer to our [Environment Variables Documentation](docs/environment-variables.md).
-
 ## PgAdmin Setup
 
 On Terminal
