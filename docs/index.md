@@ -80,13 +80,13 @@ git clone git@github.com:piashcse/ktor-E-Commerce.git
 This project uses DotEnv for configuration management. Follow these steps to set up your environment:
 
 1. Create a `.env` file in the project root directory:
-   ```bash
+```bash
    touch .env
-   ```
+```
 
 2. Add the following variables to your `.env` file:
 
-   ```env
+```env
    # Database Configuration
    DB_HOST=localhost
    DB_PORT=5432
@@ -109,7 +109,7 @@ This project uses DotEnv for configuration management. Follow these steps to set
    EMAIL_PORT=587
    EMAIL_USERNAME=your-email@gmail.com
    EMAIL_PASSWORD=your-gmail-app-password
-   ```
+```
 
 3. Update the values as needed for your environment, especially:
     - Database credentials to match your PostgreSQL setup
