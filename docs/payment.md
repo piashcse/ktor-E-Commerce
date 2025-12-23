@@ -92,7 +92,69 @@ curl -X 'POST' \
 
 ---
 
-### 2. Get Payment by ID
+### 2. Get User Payments
+
+**`GET /payment`**
+
+Retrieve a list of payments associated with the authenticated user.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `limit` | number | No | Maximum number of payments to return (default: 10) |
+| `offset` | number | No | Number of payments to skip for pagination |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <access_token>` | Yes |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/payment?limit=10' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+```
+
+#### Example Response
+
+```json
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "4b68917d-4452-4d18-9012-47e843f05c15",
+      "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
+      "amount": 500,
+      "status": "COMPLETED",
+      "paymentMethod": "Bkash"
+    }
+  ]
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | array | Array of payment objects |
+| `data[].id` | string | Unique identifier for the payment |
+| `data[].orderId` | string | UUID of the associated order |
+| `data[].amount` | number | Payment amount |
+| `data[].status` | string | Current payment status |
+| `data[].paymentMethod` | string | Payment method used |
+
+---
+
+### 3. Get Payment by ID
 
 **`GET /payment/{id}`**
 

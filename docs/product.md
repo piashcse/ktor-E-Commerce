@@ -283,6 +283,330 @@ curl -X 'POST' \
 
 ---
 
+## Product Search Endpoints
+
+### Product Search Endpoints Table
+
+| Method | Endpoint | Description | Authentication Required |
+|--------|----------|-------------|------------------------|
+| `GET` | `/product/search` | Search products with filters | No |
+
+---
+
+### 4. Search Products
+
+**`GET /product/search`**
+
+Search for products using various filters including name, category, price range, and other attributes.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `limit` | number | No | Maximum number of products to return (default: 10) |
+| `name` | string | No | Search term to match against product names |
+| `categoryId` | string | No | UUID of the category to filter by |
+| `maxPrice` | number | No | Maximum price filter |
+| `minPrice` | number | No | Minimum price filter |
+| `subCategoryId` | string | No | UUID of the subcategory to filter by |
+| `brandId` | string | No | UUID of the brand to filter by |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `accept` | `application/json` | Yes |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/product/search?limit=10&name=smartphone&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&maxPrice=1000&minPrice=10' \
+  -H 'accept: application/json'
+```
+
+#### Example Response
+
+```json
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+      "name": "Smartphone",
+      "price": 599.99,
+      "status": "ACTIVE"
+    }
+  ]
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | array | Array of product objects matching the search criteria |
+| `data[].id` | string | Unique identifier for the product |
+| `data[].name` | string | Name of the product |
+| `data[].price` | number | Price of the product |
+| `data[].status` | string | Status of the product (ACTIVE, INACTIVE, etc.) |
+
+---
+
+## Product Seller Endpoints
+
+### Product Seller Endpoints Table
+
+| Method | Endpoint | Description | Authentication Required |
+|--------|----------|-------------|------------------------|
+| `GET` | `/product/seller` | Retrieve products belonging to the authenticated seller | Yes |
+
+---
+
+### 5. Get Seller Products
+
+**`GET /product/seller`**
+
+Retrieve a list of products belonging to the authenticated seller with optional filters.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `limit` | number | No | Maximum number of products to return (default: 10) |
+| `maxPrice` | number | No | Maximum price filter |
+| `minPrice` | number | No | Minimum price filter |
+| `categoryId` | string | No | UUID of the category to filter by |
+| `subCategoryId` | string | No | UUID of the subcategory to filter by |
+| `brandId` | string | No | UUID of the brand to filter by |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <access_token>` | Yes |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/product/seller?limit=10&maxPrice=100&minPrice=0&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&subCategoryId=70ac842b-7a81-4976-9564-d440880d1736&brandId=28918963-f932-425b-884b-a34d8ae69b2a' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+```
+
+#### Example Response
+
+```json
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+      "name": "Product Name",
+      "price": 99.99,
+      "status": "ACTIVE"
+    }
+  ]
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | array | Array of product objects belonging to the seller |
+| `data[].id` | string | Unique identifier for the product |
+| `data[].name` | string | Name of the product |
+| `data[].price` | number | Price of the product |
+| `data[].status` | string | Status of the product (ACTIVE, INACTIVE, etc.) |
+
+---
+
+## Product Special Endpoints
+
+### Product Special Endpoints Table
+
+| Method | Endpoint | Description | Authentication Required |
+|--------|----------|-------------|------------------------|
+| `GET` | `/product/featured` | Retrieve featured products | No |
+| `GET` | `/product/best-selling` | Retrieve best selling products | No |
+| `GET` | `/product/hot-deals` | Retrieve products on hot deals | No |
+
+---
+
+### 6. Get Featured Products
+
+**`GET /product/featured`**
+
+Retrieve a list of featured products that are highlighted for promotional purposes.
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `accept` | `application/json` | Yes |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/product/featured' \
+  -H 'accept: application/json'
+```
+
+#### Example Response
+
+```json
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+      "name": "Featured Product",
+      "price": 99.99,
+      "status": "ACTIVE",
+      "featured": true
+    }
+  ]
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | array | Array of featured product objects |
+| `data[].id` | string | Unique identifier for the product |
+| `data[].name` | string | Name of the product |
+| `data[].price` | number | Price of the product |
+| `data[].status` | string | Status of the product (ACTIVE, INACTIVE, etc.) |
+| `data[].featured` | boolean | Whether the product is featured |
+
+---
+
+### 7. Get Best Selling Products
+
+**`GET /product/best-selling`**
+
+Retrieve a list of best selling products based on sales data.
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `accept` | `application/json` | Yes |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/product/best-selling' \
+  -H 'accept: application/json'
+```
+
+#### Example Response
+
+```json
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+      "name": "Best Selling Product",
+      "price": 79.99,
+      "status": "ACTIVE",
+      "bestSelling": true
+    }
+  ]
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | array | Array of best selling product objects |
+| `data[].id` | string | Unique identifier for the product |
+| `data[].name` | string | Name of the product |
+| `data[].price` | number | Price of the product |
+| `data[].status` | string | Status of the product (ACTIVE, INACTIVE, etc.) |
+| `data[].bestSelling` | boolean | Whether the product is a best seller |
+
+---
+
+### 8. Get Hot Deal Products
+
+**`GET /product/hot-deals`**
+
+Retrieve a list of products currently on hot deals with special pricing or offers.
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `accept` | `application/json` | Yes |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/product/hot-deals' \
+  -H 'accept: application/json'
+```
+
+#### Example Response
+
+```json
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 200,
+    "description": "OK"
+  },
+  "data": [
+    {
+      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+      "name": "Hot Deal Product",
+      "price": 59.99,
+      "discountPrice": 49.99,
+      "status": "ACTIVE",
+      "hotDeal": true
+    }
+  ]
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | array | Array of hot deal product objects |
+| `data[].id` | string | Unique identifier for the product |
+| `data[].name` | string | Name of the product |
+| `data[].price` | number | Regular price of the product |
+| `data[].discountPrice` | number | Discounted price of the product |
+| `data[].status` | string | Status of the product (ACTIVE, INACTIVE, etc.) |
+| `data[].hotDeal` | boolean | Whether the product is a hot deal |
+
+---
+
 ## Response Format
 
 All API responses follow a consistent format:
@@ -322,3 +646,35 @@ The API returns appropriate HTTP status codes and error messages:
 | `404` | Not Found - Product or category not found |
 | `409` | Conflict - Product code already exists or invalid category |
 | `500` | Internal Server Error - Server error |
+
+---
+
+## Product Search Guidelines
+
+### Search Performance
+- Limit the number of results using the `limit` parameter to improve performance
+- Use specific search terms for more accurate results
+- Combine multiple filters for refined search results
+
+### Searchable Fields
+- Product name is the primary search field
+- Category and subcategory filters help narrow results
+- Price range filters can be combined with other criteria
+- Brand filtering allows for branded product searches
+
+## Special Product Management Guidelines
+
+### Featured Products
+- Selected by administrators for promotional exposure
+- Typically high-quality or premium products
+- Limited number shown to maintain exclusivity
+
+### Best Selling Products
+- Calculated based on sales volume and frequency
+- Automatically updated based on market performance
+- Helps customers identify popular choices
+
+### Hot Deal Products
+- Products with special discounts or offers
+- Time-limited promotions
+- Attracts price-sensitive customers

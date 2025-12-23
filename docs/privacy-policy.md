@@ -442,6 +442,81 @@ curl -X 'POST' \
 
 ---
 
+## Policy Consent Endpoints
+
+### Policy Consent Endpoints Table
+
+| Method | Endpoint | Description | Authentication Required |
+|--------|----------|-------------|------------------------|
+| `POST` | `/policy-consents/consent` | Create a new policy consent record | Yes |
+
+---
+
+### 7. Create Policy Consent
+
+**`POST /policy-consents/consent`**
+
+Create a new consent record when a user agrees to a privacy policy. This endpoint captures the policy ID and user information for audit purposes.
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <access_token>` | Yes |
+| `Content-Type` | `application/json` | Yes |
+
+#### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `policyId` | string | Yes | UUID of the policy being consented to |
+
+#### Example Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/policy-consents/consent' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "policyId": "550e8400-e29b-41d4-a716-446655440000"
+}'
+```
+
+#### Example Response
+
+```json
+{
+  "isSuccess": true,
+  "statusCode": {
+    "value": 201,
+    "description": "Created"
+  },
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440002",
+    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
+    "policyId": "550e8400-e29b-41d4-a716-446655440000",
+    "ipAddress": "127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "consentedAt": "2023-06-15T10:30:00Z"
+  }
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique identifier for the created consent record |
+| `userId` | string | UUID of the user who provided consent |
+| `policyId` | string | UUID of the policy that was consented to |
+| `ipAddress` | string | IP address from which consent was given |
+| `userAgent` | string | Browser user agent when consent was provided |
+| `consentedAt` | string | ISO 8601 timestamp when consent was recorded |
+
+---
+
 ## Response Format
 
 All API responses follow a consistent format:
@@ -475,10 +550,36 @@ The API returns appropriate HTTP status codes and error messages:
 | Status Code | Description |
 |-------------|-------------|
 | `200` | OK - Request successful |
-| `201` | Created - Policy successfully created |
+| `201` | Created - Policy successfully created or Consent record created successfully |
 | `400` | Bad Request - Invalid parameters or missing required fields |
 | `401` | Unauthorized - Invalid or missing authentication |
 | `403` | Forbidden - Insufficient privileges |
 | `404` | Not Found - Policy not found |
-| `409` | Conflict - Policy version conflict or duplicate policy |
+| `409` | Conflict - Policy version conflict, duplicate policy, or Consent already exists for this policy |
 | `500` | Internal Server Error - Server error |
+
+---
+
+## Business Rules
+
+### Consent Creation
+- Policy ID must reference an existing policy in the system
+- User consent is automatically linked to the authenticated user
+- IP address and user agent are captured automatically from the request
+- Duplicate consent records for the same policy may be prevented
+
+### Data Privacy
+- Consent records serve as legal documentation for compliance
+- IP addresses and user agents are stored for audit purposes
+- Consent timestamps use ISO 8601 format in UTC
+
+## Policy Types
+
+Common policy types supported by the system:
+
+| Policy Type | Description |
+|-------------|-------------|
+| `PRIVACY_POLICY` | Privacy policy consent |
+| `TERMS_OF_SERVICE` | Terms of service agreement |
+| `COOKIE_POLICY` | Cookie usage consent |
+| `MARKETING_CONSENT` | Marketing communication consent |
