@@ -75,20 +75,52 @@ scalable, and efficient service for handling your e-commerce needs.
 git clone git@github.com:piashcse/ktor-E-Commerce.git
 ```
 
-Note: some installation instructions are for mac, for windows/linux please install accordingly.
+## Environment Configuration
 
-### Postgres Setup
+This project uses DotEnv for configuration management. Follow these steps to set up your environment:
 
-- Create a database in postgreSQL
-- Change your db name, user, and password in `resources/hikari.properties` and replace them accordingly.
+1. Create a `.env` file in the project root directory:
+   ```bash
+   touch .env
+   ```
 
-```bash
-dataSource.user=postgres
-dataSource.password=p123
-dataSource.databaseName=ktor-1.0.0
-```
+2. Add the following variables to your `.env` file:
 
-### PgAdmin Setup
+   ```env
+   # Database Configuration
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=ktor-ecommerce
+   DB_USER=postgres
+   DB_PASSWORD=p123
+
+   # Server Configuration
+   PORT=8080
+   HOST=localhost
+
+   # JWT Configuration
+   JWT_SECRET=your-super-secret-jwt-secret-key-change-in-production
+   JWT_ISSUER=ktor-ecommerce-app
+   JWT_AUDIENCE=ktor-ecommerce
+   JWT_REALM=ktor-ecommerce
+
+   # Email Configuration
+   EMAIL_HOST=smtp.gmail.com
+   EMAIL_PORT=587
+   EMAIL_USERNAME=your-email@gmail.com
+   EMAIL_PASSWORD=your-gmail-app-password
+   ```
+
+3. Update the values as needed for your environment, especially:
+    - Database credentials to match your PostgreSQL setup
+    - JWT secret with a strong, unique value for production
+    - Email credentials with your actual Gmail and app password
+
+The `.env` file is included in `.gitignore` to prevent sensitive information from being committed to the repository.
+
+> **Note**: For email configuration, make sure to use a Gmail app password rather than your regular Gmail password. You can generate an app password in your Google Account settings under Security > 2-Step Verification > App passwords.
+
+## PgAdmin Setup
 
 On Terminal
 
@@ -117,31 +149,20 @@ Connection tab:
   <img width="60%" height="60%" src="https://raw.githubusercontent.com/piashcse/ktor-E-Commerce/master/screenshots/ktor-postgres.png" />
 </p>
 
-## Run the project
 
-On Terminal
+## 📧 SMTP Email Setup
 
-```
-./gradlew run
-```
+This project uses Gmail’s SMTP service to send emails (e.g., for password recovery). The email configuration is managed through environment variables in your `.env` file.
 
-### 📧 SMTP Email Setup
+### 🔧 SMTP Configuration
+Configure your email settings in the `.env` file:
 
-This project uses Gmail’s SMTP service to send emails (e.g., for password recovery). Follow the instructions below to configure it securely.
+- `EMAIL_HOST`: SMTP server host (e.g., `smtp.gmail.com`)
+- `EMAIL_PORT`: SMTP server port (e.g., `587` for TLS)
+- `EMAIL_USERNAME`: Your email address
+- `EMAIL_PASSWORD`: Your email app password
 
-### 🔧 Configuration SMTP Email
-Open the file constants/AppConstants.kt and update the SmtpServer object:
-
-```
-object SmtpServer {
-    const val HOST_NAME = "smtp.googlemail.com"
-    const val PORT = 465
-    const val DEFAULT_AUTHENTICATOR = "your-email@gmail.com" // Your Gmail address
-    const val DEFAULT_AUTHENTICATOR_PASSWORD = "your-app-password" // App-specific password
-    const val EMAIL_SUBJECT = "Forget Password"
-    const val SENDING_EMAIL = "your-email@gmail.com" // Sender email displayed to recipients
-}
-```
+> **Important**: Use Gmail app passwords instead of your regular Gmail password. Generate an app password in your Google Account settings under Security > 2-Step Verification > App passwords.
 
 ## API Documentation
 
@@ -150,9 +171,6 @@ For comprehensive API documentation, please refer to the following resources:
 - [Authentication API](auth.md) - User authentication and management
 - [Profile API](profile.md) - User profile management
 - [Product API](product.md) - Product management
-- [Product Search API](product-search.md) - Product search functionality
-- [Product Seller API](product-seller.md) - Seller-specific product features
-- [Product Special API](product-special.md) - Featured, best-selling, and hot deals
 - [Shop API](shop.md) - Shop management
 - [Shop Public API](shop-public.md) - Public shop features and admin operations
 - [Shop Category API](shop-category.md) - Shop category management
