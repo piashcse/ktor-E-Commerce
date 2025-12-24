@@ -1,8 +1,8 @@
 # Ktor-E-Commerce
 
 [![Ktor](https://img.shields.io/badge/ktor-3.3.3-blue.svg)](https://github.com/ktorio/ktor)
-[![Exposed](https://img.shields.io/badge/Exposed-1.0.0.rc3-blue.svg)](https://github.com/JetBrains/Exposed)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.1.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+[![Exposed](https://img.shields.io/badge/Exposed-1.0.0.rc4-blue.svg)](https://github.com/JetBrains/Exposed)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 ![Koin](https://img.shields.io/badge/Koin-4.1.1-29BEB0?logo=koin&logoColor=white)
 [![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-42.7.8-336791?logo=postgresql)](https://www.postgresql.org/)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
