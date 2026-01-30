@@ -15,7 +15,7 @@ fun Application.configureAuth() {
          * If the token is valid, the corresponding [User] is fetched from the database.
          * The [User] can then be accessed in each [ApplicationCall].
          */
-        jwt (RoleManagement.CUSTOMER.role) {
+        jwt(RoleManagement.CUSTOMER.role) {
             provideJwtAuthConfig(this, RoleManagement.CUSTOMER)
         }
         jwt(RoleManagement.SELLER.role) {
@@ -64,18 +64,4 @@ enum class RoleManagement(val role: String) {
             SELLER -> UserType.SELLER
             CUSTOMER -> UserType.CUSTOMER
         }
-
-    companion object {
-        fun fromUserType(userType: UserType): RoleManagement = when (userType) {
-            UserType.SUPER_ADMIN -> SUPER_ADMIN
-            UserType.ADMIN -> ADMIN
-            UserType.SELLER -> SELLER
-            UserType.CUSTOMER -> CUSTOMER
-        }
-
-        // Role hierarchy helpers
-        val adminRoles = setOf(SUPER_ADMIN, ADMIN)
-        val sellerRoles = setOf(SUPER_ADMIN, ADMIN, SELLER)
-        val customerRoles = setOf(SUPER_ADMIN, ADMIN, SELLER, CUSTOMER)
-    }
 }

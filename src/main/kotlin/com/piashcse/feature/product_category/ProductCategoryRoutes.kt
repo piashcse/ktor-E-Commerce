@@ -73,7 +73,7 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
             }
 
             /**
-             * @tag ProductDategory
+             * @tag ProductCategory
              * @path id (required)
              * @response 200 [Response]
              * @response 400

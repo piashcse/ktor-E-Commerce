@@ -9,7 +9,18 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import org.slf4j.event.Level
 
+import io.ktor.http.*
+import io.ktor.server.plugins.cors.routing.*
+
 fun Application.configureBasic() {
+    install(CORS) {
+        allowMethod(HttpMethod.Options)
+        allowMethod(HttpMethod.Put)
+        allowMethod(HttpMethod.Delete)
+        allowMethod(HttpMethod.Patch)
+        allowHeader(HttpHeaders.Authorization)
+        allowHeader(HttpHeaders.ContentType)
+    }
     install(ContentNegotiation) {
         gson {
             setPrettyPrinting()
