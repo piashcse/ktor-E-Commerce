@@ -20,7 +20,6 @@ fun Application.configureBasic() {
         allowMethod(HttpMethod.Patch)
         allowHeader(HttpHeaders.Authorization)
         allowHeader(HttpHeaders.ContentType)
-        anyHost() // In production, replace with specific domain like "http://localhost:3000"
     }
     install(ContentNegotiation) {
         gson {
