@@ -74,33 +74,11 @@ kotlin {
     jvmToolchain(17)
 }
 
-// Configure OpenAPI generation compiler plugin options
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-receivers")
-    }
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-}
-
 ktor {
     openApi {
         enabled = true
         codeInferenceEnabled = true
         onlyCommented = false
-    }
-}
-
-// Transform OpenAPI JSON to ensure Swagger UI compatibility
-val transformOpenApiJson by tasks.registering {
-    dependsOn("buildOpenApi") // Ensure the OpenAPI generation task runs first
-    doLast {
-        val openApiDir = project.layout.projectDirectory.dir("src/main/resources/openapi").asFile
-        openApiDir.mkdirs()
     }
 }
 
