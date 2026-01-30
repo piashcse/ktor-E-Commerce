@@ -1,6 +1,3 @@
-@file:OptIn(OpenApiPreview::class)
-import io.ktor.plugin.OpenApiPreview
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
@@ -33,6 +30,7 @@ dependencies {
     implementation(libs.ktor.server.status.pages)
     implementation(libs.ktor.server.call.logging)
     implementation(libs.ktor.server.request.validation)
+    implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.auth.jwt)
     implementation(libs.ktor.server.host.common)
@@ -91,15 +89,9 @@ java {
 
 ktor {
     openApi {
-        title = "Ktor E-Commerce API"
-        version = "1.0.0"
-        summary = "E-Commerce API built with Ktor framework"
-        description = "This is a complete E-Commerce API with user authentication, product management, cart functionality, and order processing."
-        termsOfService = "https://example.com/terms/"
-        contact = "support@example.com"
-        license = "MIT"
-        // Location of the generated specification (defaults to openapi/generated.json)
-        target = project.layout.buildDirectory.file("ktor/openapi/generated.json")
+        enabled = true
+        codeInferenceEnabled = true
+        onlyCommented = false
     }
 }
 
@@ -107,25 +99,9 @@ ktor {
 val transformOpenApiJson by tasks.registering {
     dependsOn("buildOpenApi") // Ensure the OpenAPI generation task runs first
     doLast {
-        val inputFile = project.layout.buildDirectory.file("ktor/openapi/generated.json").get().asFile
-        val outputFile = project.layout.projectDirectory.dir("src/main/resources/openapi").file("openapi.json").asFile
-
-        if (inputFile.exists()) {
-            val content = inputFile.readText()
-            // Replace OpenAPI 3.1 with 3.0 to ensure Swagger UI compatibility
-            val updatedContent = content.replace("\"openapi\": \"3.1.1\"", "\"openapi\": \"3.0.1\"")
-            outputFile.writeText(updatedContent)
-        }
+        val openApiDir = project.layout.projectDirectory.dir("src/main/resources/openapi").asFile
+        openApiDir.mkdirs()
     }
-}
-
-tasks.withType<ProcessResources> {
-    mustRunAfter(transformOpenApiJson) // Ensure our transformation runs after resources processing
-}
-
-// Make sure our transformation happens during the build process
-tasks.build {
-    dependsOn(transformOpenApiJson)
 }
 
 tasks.register("stage") {
