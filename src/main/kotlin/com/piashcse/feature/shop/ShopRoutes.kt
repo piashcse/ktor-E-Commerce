@@ -6,7 +6,7 @@ import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requiredParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -33,7 +33,7 @@ fun Route.shopRoutes(shopController: ShopService) {
              */
             post {
                 val requestBody = call.receive<ShopRequest>()
-                call.respond(ApiResponse.success(shopController.createShop(call.currentUser().userId, requestBody), HttpStatusCode.OK))
+                call.respond(ApiResponse.success(shopController.createShop(call.currentUserId, requestBody), HttpStatusCode.OK))
             }
 
             /**
@@ -48,7 +48,7 @@ fun Route.shopRoutes(shopController: ShopService) {
             put("/{id}") {
                 val (shopId) = call.requiredParameters("id") ?: return@put
                 val requestBody = call.receive<UpdateShopRequest>()
-                call.respond(ApiResponse.success(shopController.updateShop(call.currentUser().userId, shopId, requestBody), HttpStatusCode.OK))
+                call.respond(ApiResponse.success(shopController.updateShop(call.currentUserId, shopId, requestBody), HttpStatusCode.OK))
             }
 
             /**
@@ -59,7 +59,7 @@ fun Route.shopRoutes(shopController: ShopService) {
              * @security jwtToken
              */
             get {
-                call.respond(ApiResponse.success(shopController.getShopsByUser(call.currentUser().userId), HttpStatusCode.OK))
+                call.respond(ApiResponse.success(shopController.getShopsByUser(call.currentUserId), HttpStatusCode.OK))
             }
 
             /**

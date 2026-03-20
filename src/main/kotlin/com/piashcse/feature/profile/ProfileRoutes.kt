@@ -4,7 +4,7 @@ import com.piashcse.constants.AppConstants
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.fileExtension
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -41,7 +41,7 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
             get {
                 call.respond(
                     ApiResponse.success(
-                        userProfileController.getProfile(call.currentUser().userId), HttpStatusCode.OK
+                        userProfileController.getProfile(call.currentUserId), HttpStatusCode.OK
                     )
                 )
             }
@@ -80,7 +80,7 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
                 )
                 call.respond(
                     ApiResponse.success(
-                        userProfileController.updateProfile(call.currentUser().userId, params), HttpStatusCode.OK
+                        userProfileController.updateProfile(call.currentUserId, params), HttpStatusCode.OK
                     )
                 )
             }
@@ -110,7 +110,7 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
                                     })
                                 }
                                 val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
-                                userProfileController.updateProfileImage(call.currentUser().userId, fileNameInServer)
+                                userProfileController.updateProfileImage(call.currentUserId, fileNameInServer)
                                     .let {
                                         call.respond(
                                             ApiResponse.success(fileNameInServer, HttpStatusCode.OK)

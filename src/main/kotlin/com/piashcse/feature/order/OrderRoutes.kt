@@ -6,7 +6,7 @@ import com.piashcse.constants.OrderStatus
 import com.piashcse.model.request.OrderRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requiredParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -40,7 +40,7 @@ fun Route.orderRoutes(orderController: OrderService) {
                 val requestBody = call.receive<OrderRequest>()
                 call.respond(
                     ApiResponse.success(
-                        orderController.createOrder(call.currentUser().userId, requestBody),
+                        orderController.createOrder(call.currentUserId, requestBody),
                         HttpStatusCode.OK
                     )
                 )
@@ -58,7 +58,7 @@ fun Route.orderRoutes(orderController: OrderService) {
                 val (limit) = call.requiredParameters("limit") ?: return@get
                 call.respond(
                     ApiResponse.success(
-                        orderController.getOrders(call.currentUser().userId, limit.toInt()),
+                        orderController.getOrders(call.currentUserId, limit.toInt()),
                         HttpStatusCode.OK
                     )
                 )
@@ -77,7 +77,7 @@ fun Route.orderRoutes(orderController: OrderService) {
              */
             patch("status/{id}") {
                 val (id, statusParam) = call.requiredParameters("id", "status") ?: return@patch
-                val user = call.currentUser()
+                val userId = call.currentUserId
 
                 val status = try {
                     OrderStatus.valueOf(statusParam.uppercase())
@@ -111,7 +111,7 @@ fun Route.orderRoutes(orderController: OrderService) {
 
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrderStatus(user.userId, id, status),
+                        orderController.updateOrderStatus(userId, id, status),
                         HttpStatusCode.OK
                     )
                 )
@@ -130,7 +130,7 @@ fun Route.orderRoutes(orderController: OrderService) {
              */
             patch("status/{id}") {
                 val (id, statusParam) = call.requiredParameters("id", "status") ?: return@patch
-                val user = call.currentUser()
+                val userId = call.currentUserId
 
                 val status = try {
                     OrderStatus.valueOf(statusParam.uppercase())
@@ -146,7 +146,7 @@ fun Route.orderRoutes(orderController: OrderService) {
 
                 call.respond(
                     ApiResponse.success(
-                        orderController.updateOrderStatus(user.userId, id, status),
+                        orderController.updateOrderStatus(userId, id, status),
                         HttpStatusCode.OK
                     )
                 )

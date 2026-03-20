@@ -3,7 +3,7 @@ package com.piashcse.feature.wishlist
 import com.piashcse.model.request.WishListRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requiredParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -33,7 +33,7 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
                 requestBody.validation()
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.addToWishList(call.currentUser().userId, requestBody.productId),
+                        wishlistController.addToWishList(call.currentUserId, requestBody.productId),
                         HttpStatusCode.OK
                     )
                 )
@@ -56,7 +56,7 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
                 
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.getWishList(call.currentUser().userId, limit, offset),
+                        wishlistController.getWishList(call.currentUserId, limit, offset),
                         HttpStatusCode.OK
                     )
                 )
@@ -75,7 +75,7 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
                 val (productId) = call.requiredParameters("productId") ?: return@delete
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.removeFromWishList(call.currentUser().userId, productId), HttpStatusCode.OK
+                        wishlistController.removeFromWishList(call.currentUserId, productId), HttpStatusCode.OK
                     )
                 )
             }
@@ -92,7 +92,7 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
                 val (productId) = call.requiredParameters("productId") ?: return@get
                 call.respond(
                     ApiResponse.success(
-                        wishlistController.isProductInWishList(call.currentUser().userId, productId),
+                        wishlistController.isProductInWishList(call.currentUserId, productId),
                         HttpStatusCode.OK
                     )
                 )
