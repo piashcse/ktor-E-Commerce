@@ -20,9 +20,12 @@ fun Route.brandRoutes(brandController: BrandService) {
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
             /**
              * @tag Brand
-             * @query limit (required)
-             * @response 200 [Response]
-             * @response 400
+             * @description Retrieve a paginated list of all brands
+             * @operationId getBrands
+             * @query limit (required) Maximum number of brands to return
+             * @response 200 List of brands retrieved successfully
+             * @response 400 Invalid limit parameter
+             * @security jwtToken
              */
             get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
@@ -37,8 +40,11 @@ fun Route.brandRoutes(brandController: BrandService) {
         authenticate(RoleManagement.ADMIN.role) {
             /**
              * @tag Brand
-             * @body [BrandRequest]
-             * @response 200 [Response]
+             * @description Create a new brand with the provided name
+             * @operationId createBrand
+             * @body BrandRequest Brand creation request with name
+             * @response 200 Brand created successfully
+             * @security jwtToken
              */
             post {
                 val requestBody = call.receive<BrandRequest>()
@@ -51,10 +57,13 @@ fun Route.brandRoutes(brandController: BrandService) {
 
             /**
              * @tag Brand
-             * @path id (required)
-             * @query name (required)
-             * @response 200 [Response]
-             * @response 400
+             * @description Update the name of an existing brand by ID
+             * @operationId updateBrand
+             * @path id (required) Unique identifier of the brand to update
+             * @query name (required) New name for the brand
+             * @response 200 Brand updated successfully
+             * @response 400 Invalid brand ID or name parameter
+             * @security jwtToken
              */
             put("{id}") {
                 val (id, name) = call.requiredParameters("id", "name") ?: return@put
@@ -67,9 +76,12 @@ fun Route.brandRoutes(brandController: BrandService) {
 
             /**
              * @tag Brand
-             * @path id (required)
-             * @response 200 [ApiResponse]
-             * @response 400
+             * @description Permanently delete a brand by its ID
+             * @operationId deleteBrand
+             * @path id (required) Unique identifier of the brand to delete
+             * @response 200 Brand deleted successfully
+             * @response 400 Invalid brand ID
+             * @security jwtToken
              */
             delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete

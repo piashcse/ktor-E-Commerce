@@ -1,5 +1,8 @@
 package com.piashcse.model.request
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class UserProfileRequest(
     val firstName: String?,
     val lastName: String?,

@@ -1,8 +1,11 @@
 package com.piashcse.constants
 
+import kotlinx.serialization.Serializable
+
 /**
  * Status of orders throughout their lifecycle
  */
+@Serializable
 enum class OrderStatus {
     PENDING, CONFIRMED, PAID, DELIVERED, CANCELED, RECEIVED;
 
@@ -21,6 +24,7 @@ enum class OrderStatus {
 /**
  * Payment status throughout transaction lifecycle
  */
+@Serializable
 enum class PaymentStatus {
     PENDING, COMPLETED, FAILED, REFUNDED;
 
@@ -31,6 +35,7 @@ enum class PaymentStatus {
 /**
  * Product availability status
  */
+@Serializable
 enum class ProductStatus {
     ACTIVE, // Product is available for purchase
     OUT_OF_STOCK; // Product is not available
@@ -42,6 +47,7 @@ enum class ProductStatus {
 /**
  * Shop approval and operational status
  */
+@Serializable
 enum class ShopStatus {
     PENDING, // Shop application pending approval
     APPROVED, // Shop approved and active
@@ -55,6 +61,7 @@ enum class ShopStatus {
 /**
  * Inventory level status indicators
  */
+@Serializable
 enum class InventoryStatus {
     IN_STOCK, // Product is in stock
     LOW_STOCK, // Product has low stock
@@ -67,6 +74,7 @@ enum class InventoryStatus {
 /**
  * User role hierarchy and permissions
  */
+@Serializable
 enum class UserType {
     SUPER_ADMIN,
     ADMIN,

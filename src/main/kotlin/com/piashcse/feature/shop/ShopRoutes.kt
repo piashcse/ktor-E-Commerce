@@ -20,16 +20,16 @@ import io.ktor.server.routing.*
  * @param shopController The controller handling shop-related operations.
  */
 fun Route.shopRoutes(shopController: ShopService) {
-    // Main route for shop management
     route("/shop") {
-
-        // Routes for sellers to manage their shops
         authenticate(RoleManagement.SELLER.role) {
 
             /**
              * @tag Shop
-             * @body requestBody
-             * @response 200 [Response]
+             * @description Create a new shop for the authenticated seller
+             * @operationId createShop
+             * @body ShopRequest Shop creation request with shop details
+             * @response 200 Shop created successfully
+             * @security jwtToken
              */
             post {
                 val requestBody = call.receive<ShopRequest>()
@@ -38,9 +38,12 @@ fun Route.shopRoutes(shopController: ShopService) {
 
             /**
              * @tag Shop
-             * @path id (required)
-             * @body requestBody
-             * @response 200 [Response]
+             * @description Update shop details for the authenticated seller
+             * @operationId updateShop
+             * @path id (required) Unique identifier of the shop to update
+             * @body UpdateShopRequest Shop update request with new details
+             * @response 200 Shop updated successfully
+             * @security jwtToken
              */
             put("/{id}") {
                 val (shopId) = call.requiredParameters("id") ?: return@put
@@ -50,7 +53,10 @@ fun Route.shopRoutes(shopController: ShopService) {
 
             /**
              * @tag Shop
-             * @response 200 [Response]
+             * @description Retrieve all shops owned by the authenticated seller
+             * @operationId getShopsByUser
+             * @response 200 Seller's shops retrieved successfully
+             * @security jwtToken
              */
             get {
                 call.respond(ApiResponse.success(shopController.getShopsByUser(call.currentUser().userId), HttpStatusCode.OK))
@@ -58,8 +64,12 @@ fun Route.shopRoutes(shopController: ShopService) {
 
             /**
              * @tag Shop
-             * @path shopId (required)
-             * @response 200 [Response]
+             * @description Retrieve detailed information about a specific shop
+             * @operationId getShopById
+             * @path id (required) Unique identifier of the shop
+             * @response 200 Shop details retrieved successfully
+             * @response 404 Shop not found
+             * @security jwtToken
              */
             get("/{id}") {
                 val (shopId) = call.requiredParameters("id") ?: return@get
@@ -72,15 +82,17 @@ fun Route.shopRoutes(shopController: ShopService) {
             }
         }
 
-        // Routes for customers to view shops
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
 
             /**
              * @tag Shop
-             * @query status
-             * @query category
-             * @query limit
-             * @response 200 [Response]
+             * @description Retrieve a paginated list of shops with optional filters
+             * @operationId getShops
+             * @query status Filter shops by status
+             * @query category Filter shops by category
+             * @query limit Maximum number of shops to return (default 20)
+             * @response 200 Shops retrieved successfully
+             * @security jwtToken
              */
             get("/public") {
                 val status = call.parameters["status"]
@@ -91,8 +103,11 @@ fun Route.shopRoutes(shopController: ShopService) {
 
             /**
              * @tag Shop
-             * @path categoryId (required)
-             * @response 200 [Response]
+             * @description Retrieve all shops belonging to a specific category
+             * @operationId getShopsByCategory
+             * @path categoryId (required) Unique identifier of the shop category
+             * @response 200 Shops in category retrieved successfully
+             * @security jwtToken
              */
             get("/category/{categoryId}") {
                 val (categoryId) = call.requiredParameters("categoryId") ?: return@get
@@ -101,20 +116,26 @@ fun Route.shopRoutes(shopController: ShopService) {
 
             /**
              * @tag Shop
-             * @response 200 [Response]
+             * @description Retrieve all shops marked as featured
+             * @operationId getFeaturedShops
+             * @response 200 Featured shops retrieved successfully
+             * @security jwtToken
              */
             get("/featured") {
                 call.respond(ApiResponse.success(shopController.getFeaturedShops(), HttpStatusCode.OK))
             }
         }
 
-        // Routes for admins and super admins to manage all shops
         authenticate(RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
 
             /**
              * @tag Shop
-             * @query status
-             * @response 200 [Response]
+             * @description Admin-only: Retrieve shops filtered by their status
+             * @operationId getShopsByStatus
+             * @query status (required) Shop status to filter by (PENDING, APPROVED, REJECTED, SUSPENDED, etc.)
+             * @response 200 Shops filtered by status retrieved successfully
+             * @response 400 Invalid status parameter
+             * @security jwtToken
              */
             get("/status") {
                 val statusParam = call.parameters["status"] ?: return@get
@@ -129,8 +150,11 @@ fun Route.shopRoutes(shopController: ShopService) {
 
             /**
              * @tag Shop
-             * @path shopId (required)
-             * @response 200 [Response]
+             * @description Admin-only: Approve a pending shop for operation
+             * @operationId approveShop
+             * @path id (required) Unique identifier of the shop to approve
+             * @response 200 Shop approved successfully
+             * @security jwtToken
              */
             put("/approve/{id}") {
                 val (shopId) = call.requiredParameters("id") ?: return@put
@@ -139,8 +163,11 @@ fun Route.shopRoutes(shopController: ShopService) {
 
             /**
              * @tag Shop
-             * @path shopId (required)
-             * @response 200 [Response]
+             * @description Admin-only: Reject a shop application
+             * @operationId rejectShop
+             * @path id (required) Unique identifier of the shop to reject
+             * @response 200 Shop rejected successfully
+             * @security jwtToken
              */
             put("/reject/{id}") {
                 val (shopId) = call.requiredParameters("id") ?: return@put
@@ -149,8 +176,11 @@ fun Route.shopRoutes(shopController: ShopService) {
 
             /**
              * @tag Shop
-             * @path shopId (required)
-             * @response 200 [Response]
+             * @description Admin-only: Suspend an active shop temporarily
+             * @operationId suspendShop
+             * @path id (required) Unique identifier of the shop to suspend
+             * @response 200 Shop suspended successfully
+             * @security jwtToken
              */
             put("/suspend/{id}") {
                 val (shopId) = call.requiredParameters("id") ?: return@put
@@ -159,18 +189,16 @@ fun Route.shopRoutes(shopController: ShopService) {
 
             /**
              * @tag Shop
-             * @path shopId (required)
-             * @response 200 [Response]
+             * @description Admin-only: Activate a suspended or inactive shop
+             * @operationId activateShop
+             * @path id (required) Unique identifier of the shop to activate
+             * @response 200 Shop activated successfully
+             * @security jwtToken
              */
             put("/activate/{id}") {
                 val (shopId) = call.requiredParameters("id") ?: return@put
                 call.respond(ApiResponse.success(shopController.activateShop(shopId), HttpStatusCode.OK))
             }
-        }
-
-        // Super Admin specific routes (if any additional functionality needed)
-        authenticate(RoleManagement.SUPER_ADMIN.role) {
-            // Additional Super Admin specific functionality for shops could go here
         }
     }
 }

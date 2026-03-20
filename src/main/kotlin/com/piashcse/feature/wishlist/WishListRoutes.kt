@@ -22,8 +22,11 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
 
             /**
              * @tag WishList
-             * @body [WishListRequest]
-             * @response 200 [Response]
+             * @description Add a product to the user's wishlist
+             * @operationId addToWishList
+             * @body WishListRequest Wishlist request with product ID
+             * @response 200 Product added to wishlist successfully
+             * @security jwtToken
              */
             post {
                 val requestBody = call.receive<WishListRequest>()
@@ -38,10 +41,13 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
 
             /**
              * @tag WishList
-             * @query limit (optional, default 10)
-             * @query page (optional, default 1)
-             * @response 200 [Response]
-             * @response 400
+             * @description Retrieve all items in the user's wishlist with pagination
+             * @operationId getWishList
+             * @query limit (optional, default 10) Maximum number of items to return
+             * @query page (optional, default 1) Page number for pagination
+             * @response 200 Wishlist items retrieved successfully
+             * @response 400 Invalid pagination parameters
+             * @security jwtToken
              */
             get {
                 val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 10
@@ -58,9 +64,12 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
 
             /**
              * @tag WishList
-             * @query productId (required)
-             * @response 200 [Response]
-             * @response 400
+             * @description Remove a specific product from the user's wishlist
+             * @operationId removeFromWishList
+             * @query productId (required) Unique identifier of the product to remove
+             * @response 200 Product removed from wishlist successfully
+             * @response 400 Invalid product ID
+             * @security jwtToken
              */
             delete("remove") {
                 val (productId) = call.requiredParameters("productId") ?: return@delete
@@ -73,8 +82,11 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
 
             /**
              * @tag WishList
-             * @query productId (required)
-             * @response 200 [Response]
+             * @description Check whether a specific product is in the user's wishlist
+             * @operationId checkProductInWishList
+             * @query productId (required) Unique identifier of the product to check
+             * @response 200 Wishlist check completed successfully
+             * @security jwtToken
              */
             get("check") {
                 val (productId) = call.requiredParameters("productId") ?: return@get

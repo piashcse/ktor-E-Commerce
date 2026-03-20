@@ -1,5 +1,6 @@
 package com.piashcse.model.request
 
+import kotlinx.serialization.Serializable
 import com.piashcse.constants.UserType
 import com.piashcse.plugin.RoleManagement
 import org.valiktor.functions.hasSize
@@ -8,6 +9,7 @@ import org.valiktor.functions.isIn
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
+@Serializable
 data class LoginRequest(
    val email: String,
    val password: String,

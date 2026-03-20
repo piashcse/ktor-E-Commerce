@@ -22,9 +22,11 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
     route("/product-category") {
         /**
          * @tag ProductCategory
-         * @query limit (required)
-         * @response 200 [Response]
-         * @response 400
+         * @description Retrieve a paginated list of all product categories
+         * @operationId getCategories
+         * @query limit (required) Maximum number of categories to return
+         * @response 200 Product categories retrieved successfully
+         * @response 400 Invalid limit parameter
          */
         get {
             val (limit) = call.requiredParameters("limit") ?: return@get
@@ -36,12 +38,14 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
                 )
             )
         }
-        // Routes for admins to create, update, and delete product categories
         authenticate(RoleManagement.ADMIN.role) {
             /**
              * @tag ProductCategory
-             * @body [ProductCategoryRequest]
-             * @response 200 [Response]
+             * @description Create a new product category
+             * @operationId createCategory
+             * @body ProductCategoryRequest Category creation request with name
+             * @response 200 Product category created successfully
+             * @security jwtToken
              */
             post {
                 val requestBody = call.receive<ProductCategoryRequest>()
@@ -56,10 +60,13 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
 
             /**
              * @tag ProductCategory
-             * @path id (required)
-             * @query name
-             * @response 200 [Response]
-             * @response 400
+             * @description Update an existing product category name
+             * @operationId updateCategory
+             * @path id (required) Unique identifier of the category to update
+             * @query name (required) New name for the category
+             * @response 200 Product category updated successfully
+             * @response 400 Invalid category ID or name parameter
+             * @security jwtToken
              */
             put("{id}") {
                 val (id, name) = call.requiredParameters("id", "name") ?: return@put
@@ -74,9 +81,12 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
 
             /**
              * @tag ProductCategory
-             * @path id (required)
-             * @response 200 [Response]
-             * @response 400
+             * @description Permanently delete a product category
+             * @operationId deleteCategory
+             * @path id (required) Unique identifier of the category to delete
+             * @response 200 Product category deleted successfully
+             * @response 400 Invalid category ID
+             * @security jwtToken
              */
             delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete

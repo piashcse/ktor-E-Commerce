@@ -1,7 +1,9 @@
 package com.piashcse.model.response
 
+import kotlinx.serialization.Serializable
 import com.piashcse.constants.ProductStatus
 
+@Serializable
 data class Product(
     val id: String,
     val categoryId: String,

@@ -24,8 +24,11 @@ fun Route.authRoutes(authController: AuthService) {
     route("/auth") {
         /**
          * @tag Auth
-         * @body [LoginRequest]
-         * @response 200 [Response]
+         * @description Authenticate user with email, password and user type
+         * @operationId login
+         * @body LoginRequest
+         * @response 200 User authentication successful
+         * @response 400 Invalid credentials
          */
         post("login") {
             val requestBody = call.receive<LoginRequest>()
@@ -38,8 +41,11 @@ fun Route.authRoutes(authController: AuthService) {
 
         /**
          * @tag Auth
-         * @body [RegisterRequest]
-         * @response 200 [Response]
+         * @description Register a new user account
+         * @operationId register
+         * @body RegisterRequest
+         * @response 200 User registered successfully
+         * @response 400 Invalid registration data
          */
         post("register") {
             val requestBody = call.receive<RegisterRequest>()
@@ -48,9 +54,12 @@ fun Route.authRoutes(authController: AuthService) {
 
         /**
          * @tag Auth
-         * @query userId (required)
-         * @query otp (required)
-         * @response 200 [Response]
+         * @description Verify user account with OTP
+         * @operationId verifyOtp
+         * @query userId (required) User ID
+         * @query otp (required) One-time password
+         * @response 200 OTP verified successfully
+         * @response 400 Invalid OTP
          */
         get("otp-verification") {
             val (userId, otp) = call.requiredParameters("userId", "otp") ?: return@get
@@ -63,9 +72,12 @@ fun Route.authRoutes(authController: AuthService) {
 
         /**
          * @tag Auth
-         * @query email (required)
-         * @query userType (required)
-         * @response 200 [Response]
+         * @description Request password reset OTP
+         * @operationId forgetPassword
+         * @query email (required) User email
+         * @query userType (required) User type
+         * @response 200 OTP sent successfully
+         * @response 400 Invalid email or user type
          */
         get("forget-password") {
             val (email, userType) = call.requiredParameters("email", "userType") ?: return@get
@@ -83,11 +95,14 @@ fun Route.authRoutes(authController: AuthService) {
 
         /**
          * @tag Auth
-         * @query email (required)
-         * @query otp (required)
-         * @query newPassword (required)
-         * @query userType (required)
-         * @response 200 [Response]
+         * @description Reset password using OTP verification
+         * @operationId resetPassword
+         * @query email (required) User email
+         * @query otp (required) OTP received
+         * @query newPassword (required) New password
+         * @query userType (required) User type
+         * @response 200 Password reset successful
+         * @response 400 Invalid OTP or email
          */
         get("reset-password") {
             val (email, otp, newPassword, userType) = call.requiredParameters(
@@ -128,9 +143,12 @@ fun Route.authRoutes(authController: AuthService) {
         ) {
             /**
              * @tag Auth
-             * @query oldPassword (required)
-             * @query newPassword (required)
-             * @response 200 [Response]
+             * @description Change password for authenticated user
+             * @operationId changePassword
+             * @query oldPassword (required) Current password
+             * @query newPassword (required) New password
+             * @response 200 Password changed successfully
+             * @response 400 Invalid old password
              * @security jwtToken
              */
             put("change-password") {
@@ -150,13 +168,15 @@ fun Route.authRoutes(authController: AuthService) {
             }
         }
 
-        // Admin and Super Admin routes for user management
         authenticate(RoleManagement.SUPER_ADMIN.role, RoleManagement.ADMIN.role) {
             /**
              * @tag Auth
-             * @path userId (required)
-             * @query userType (required)
-             * @response 200 [Response]
+             * @description Change user type (Admin/Super Admin only)
+             * @operationId changeUserType
+             * @path userId (required) User ID to update
+             * @query userType (required) New user type
+             * @response 200 User type changed successfully
+             * @response 400 Invalid user type
              * @security jwtToken
              */
             put("/{userId}/change-user-type") {
@@ -210,8 +230,11 @@ fun Route.authRoutes(authController: AuthService) {
 
             /**
              * @tag Auth
-             * @path userId (required)
-             * @response 200 [Response]
+             * @description Deactivate a user account (Admin/Super Admin only)
+             * @operationId deactivateUser
+             * @path userId (required) User ID to deactivate
+             * @response 200 User deactivated successfully
+             * @response 400 Cannot deactivate user
              * @security jwtToken
              */
             put("/{userId}/deactivate") {
@@ -253,8 +276,11 @@ fun Route.authRoutes(authController: AuthService) {
 
             /**
              * @tag Auth
-             * @path userId (required)
-             * @response 200 [Response]
+             * @description Activate a previously deactivated user account
+             * @operationId activateUser
+             * @path userId (required) User ID to activate
+             * @response 200 User activated successfully
+             * @response 400 Cannot activate user
              * @security jwtToken
              */
             put("/{userId}/activate") {

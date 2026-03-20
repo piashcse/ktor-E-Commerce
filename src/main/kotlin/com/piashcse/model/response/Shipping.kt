@@ -1,7 +1,9 @@
 package com.piashcse.model.response
 
+import kotlinx.serialization.Serializable
 import com.piashcse.database.entities.ShippingTable
 
+@Serializable
 data class Shipping(
     val id: String,
     var orderId: String,

@@ -1,5 +1,8 @@
 package com.piashcse.model.response
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ProductCategory(
     val id: String,
     val name: String,

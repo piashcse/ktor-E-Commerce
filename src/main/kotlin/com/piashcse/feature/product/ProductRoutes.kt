@@ -27,13 +27,14 @@ import java.util.*
  * @param productController The controller handling product-related operations.
  */
 fun Route.productRoutes(productController: ProductService) {
-    // Main route for product management
     route("/product") {
 
         /**
          * @tag Product
-         * @path id (required)
-         * @response 200 [Response]
+         * @description Retrieve detailed information about a specific product
+         * @operationId getProductDetail
+         * @path id (required) Unique identifier of the product
+         * @response 200 Product details retrieved successfully
          */
         get("{id}") {
             val (productId) = call.requiredParameters("id") ?: return@get
@@ -42,13 +43,15 @@ fun Route.productRoutes(productController: ProductService) {
 
         /**
          * @tag Product
-         * @query limit (required)
-         * @query maxPrice
-         * @query minPrice
-         * @query categoryId
-         * @query subCategoryId
-         * @query brandId
-         * @response 200 [Response]
+         * @description Retrieve a paginated list of products with optional filters
+         * @operationId getProducts
+         * @query limit (required) Maximum number of products to return
+         * @query maxPrice Filter products by maximum price
+         * @query minPrice Filter products by minimum price
+         * @query categoryId Filter products by category ID
+         * @query subCategoryId Filter products by subcategory ID
+         * @query brandId Filter products by brand ID
+         * @response 200 Products retrieved successfully
          */
         get {
             val (limit) = call.requiredParameters("limit") ?: return@get
@@ -65,12 +68,14 @@ fun Route.productRoutes(productController: ProductService) {
 
         /**
          * @tag Product
-         * @query limit (required)
-         * @query name (required)
-         * @query categoryId
-         * @query maxPrice
-         * @query minPrice
-         * @response 200 [Response]
+         * @description Search for products by name with optional filters
+         * @operationId searchProduct
+         * @query limit (required) Maximum number of products to return
+         * @query name (required) Search term for product name
+         * @query categoryId Filter results by category ID
+         * @query maxPrice Filter results by maximum price
+         * @query minPrice Filter results by minimum price
+         * @response 200 Search results retrieved successfully
          */
         get("search") {
             val (limit) = call.requiredParameters("limit") ?: return@get
@@ -84,18 +89,20 @@ fun Route.productRoutes(productController: ProductService) {
             call.respond(ApiResponse.success(productController.searchProduct(queryParams), HttpStatusCode.OK))
         }
 
-        // Routes for sellers to manage their products
         authenticate(RoleManagement.SELLER.role) {
 
             /**
              * @tag Product
-             * @query limit (required)
-             * @query maxPrice
-             * @query minPrice
-             * @query categoryId
-             * @query subCategoryId
-             * @query brandId
-             * @response 200 [Response]
+             * @description Retrieve all products belonging to the authenticated seller
+             * @operationId getProductsByUser
+             * @query limit (required) Maximum number of products to return
+             * @query maxPrice Filter products by maximum price
+             * @query minPrice Filter products by minimum price
+             * @query categoryId Filter products by category ID
+             * @query subCategoryId Filter products by subcategory ID
+             * @query brandId Filter products by brand ID
+             * @response 200 Seller's products retrieved successfully
+             * @security jwtToken
              */
             get("seller") {
                 val (limit) = call.requiredParameters("limit") ?: return@get
@@ -116,7 +123,11 @@ fun Route.productRoutes(productController: ProductService) {
 
             /**
              * @tag Product
-             * @body requestBody
+             * @description Create a new product listing with all details
+             * @operationId createProduct
+             * @body ProductRequest Product creation request with all product details
+             * @response 200 Product created successfully
+             * @security jwtToken
              */
             post {
                 val requestBody = call.receive<ProductRequest>()
@@ -129,21 +140,24 @@ fun Route.productRoutes(productController: ProductService) {
 
             /**
              * @tag Product
-             * @path id (required)
-             * @query categoryId
-             * @query subCategoryId
-             * @query brandId
-             * @query name
-             * @query description
-             * @query stockQuantity
-             * @query price
-             * @query discountPrice
-             * @query status
-             * @query videoLink
-             * @query hotDeal
-             * @query featured
-             * @query images
-             * @response 200 [Response]
+             * @description Update product details including price, stock, images, and metadata
+             * @operationId updateProduct
+             * @path id (required) Unique identifier of the product to update
+             * @query categoryId Category ID to assign the product to
+             * @query subCategoryId Subcategory ID to assign the product to
+             * @query brandId Brand ID to assign the product to
+             * @query name Product name
+             * @query description Product description
+             * @query stockQuantity Current stock quantity
+             * @query price Product price
+             * @query discountPrice Discounted price
+             * @query status Product status (active, inactive, etc.)
+             * @query videoLink Product video URL
+             * @query hotDeal Mark as hot deal
+             * @query featured Mark as featured product
+             * @query images Comma-separated list of image URLs
+             * @response 200 Product updated successfully
+             * @security jwtToken
              */
             put("{id}") {
                 val params = UpdateProductRequest(
@@ -172,8 +186,11 @@ fun Route.productRoutes(productController: ProductService) {
 
             /**
              * @tag Product
-             * @path id (required)
-             * @response 200 [Response]
+             * @description Permanently delete a product listing by its ID
+             * @operationId deleteProduct
+             * @path id (required) Unique identifier of the product to delete
+             * @response 200 Product deleted successfully
+             * @security jwtToken
              */
             delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete
@@ -186,8 +203,11 @@ fun Route.productRoutes(productController: ProductService) {
 
             /**
              * @tag Product
-             * @param id
-             * @param image
+             * @description Upload an image file for a product
+             * @operationId uploadProductImage
+             * @form image (required) Image file to upload
+             * @response 200 Image uploaded successfully, returns image filename
+             * @security jwtToken
              */
             post("image-upload") {
                 val multipartData = call.receiveMultipart()
@@ -217,12 +237,14 @@ fun Route.productRoutes(productController: ProductService) {
             }
         }
 
-        // Routes for admins and super admins to manage all products
         authenticate(RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
             /**
              * @tag Product
-             * @path id (required)
-             * @response 200 [Response]
+             * @description Admin-only: Permanently delete any product by its ID
+             * @operationId deleteProductByAdmin
+             * @path id (required) Unique identifier of the product to delete
+             * @response 200 Product deleted successfully
+             * @security jwtToken
              */
             delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete

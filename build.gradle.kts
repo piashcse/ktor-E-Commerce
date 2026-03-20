@@ -79,6 +79,10 @@ ktor {
         enabled = true
         codeInferenceEnabled = true
         onlyCommented = false
+        // KTOR-9293: OpenAPI describe now supports defaults
+        // KTOR-9304: Path parameter order is now preserved in the spec
+        // KTOR-9004: Better support for types like UUID and Instant
+        // KTOR-9320: jsonSchema() now unwraps Kotlin value classes
     }
 }
 

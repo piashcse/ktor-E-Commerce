@@ -1,8 +1,11 @@
 package com.piashcse.model.response
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import com.piashcse.constants.InventoryStatus
 import java.time.LocalDateTime
 
+@Serializable
 data class InventoryResponse(
     val id: String,
     val productId: String,
@@ -12,7 +15,7 @@ data class InventoryResponse(
     val minimumStockLevel: Int,
     val maximumStockLevel: Int,
     val status: InventoryStatus,
-    val lastRestocked: LocalDateTime?,
-    val createdAt: LocalDateTime?,
-    val updatedAt: LocalDateTime?
+    val lastRestocked: @Contextual LocalDateTime?,
+    val createdAt: @Contextual LocalDateTime?,
+    val updatedAt: @Contextual LocalDateTime?
 )

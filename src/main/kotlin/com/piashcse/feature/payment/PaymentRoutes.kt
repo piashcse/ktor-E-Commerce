@@ -22,8 +22,11 @@ fun Route.paymentRoutes(paymentController: PaymentService) {
         authenticate(RoleManagement.CUSTOMER.role) {
             /**
              * @tag Payment
-             * @body [PaymentRequest]
-             * @response 200 [Response]
+             * @description Create a new payment record for an order
+             * @operationId createPayment
+             * @body PaymentRequest Payment creation request with payment details
+             * @response 200 Payment created successfully
+             * @security jwtToken
              */
             post {
                 val requestBody = call.receive<PaymentRequest>()
@@ -36,9 +39,12 @@ fun Route.paymentRoutes(paymentController: PaymentService) {
 
             /**
              * @tag Payment
-             * @path id (required)
-             * @response 200 [Response]
-             * @response 400
+             * @description Retrieve payment details by payment ID
+             * @operationId getPaymentById
+             * @path id (required) Unique identifier of the payment
+             * @response 200 Payment details retrieved successfully
+             * @response 400 Invalid payment ID
+             * @security jwtToken
              */
             get("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@get

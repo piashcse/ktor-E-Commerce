@@ -1,6 +1,9 @@
 package com.piashcse.model.response
 
+import kotlinx.serialization.Serializable
 
+
+@Serializable
 data class UserProfile(
     var userId: String,
     val image: String?,

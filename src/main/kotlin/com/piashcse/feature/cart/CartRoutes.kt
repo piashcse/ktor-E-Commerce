@@ -23,8 +23,11 @@ fun Route.cartRoutes(cartController: CartService) {
         authenticate(RoleManagement.CUSTOMER.role) {
             /**
              * @tag Cart
-             * @body [CartRequest]
-             * @response 200 [Response]
+             * @description Add a new product item to the user's shopping cart
+             * @operationId createCartItem
+             * @body CartRequest Cart item request with product ID and quantity
+             * @response 200 Item added to cart successfully
+             * @security jwtToken
              */
             post {
                 val requestBody = call.receive<CartRequest>()
@@ -41,9 +44,12 @@ fun Route.cartRoutes(cartController: CartService) {
 
             /**
              * @tag Cart
-             * @query limit (required)
-             * @response 200 [Response]
-             * @response 400
+             * @description Retrieve all items in the user's shopping cart
+             * @operationId getCartItems
+             * @query limit (required) Maximum number of cart items to return
+             * @response 200 Cart items retrieved successfully
+             * @response 400 Invalid limit parameter
+             * @security jwtToken
              */
             get {
                 val (limit) = call.requiredParameters("limit") ?: return@get
@@ -59,10 +65,13 @@ fun Route.cartRoutes(cartController: CartService) {
 
             /**
              * @tag Cart
-             * @query productId (required)
-             * @query quantity (required)
-             * @response 200 [Response]
-             * @response 400
+             * @description Update the quantity of a specific product in the cart
+             * @operationId updateCartQuantity
+             * @query productId (required) Unique identifier of the product
+             * @query quantity (required) New quantity value for the product
+             * @response 200 Cart item quantity updated successfully
+             * @response 400 Invalid product ID or quantity parameter
+             * @security jwtToken
              */
             put("update") {
                 val (productId, quantity) = call.requiredParameters("productId", "quantity") ?: return@put
@@ -76,9 +85,12 @@ fun Route.cartRoutes(cartController: CartService) {
 
             /**
              * @tag Cart
-             * @query productId (required)
-             * @response 200 [Response]
-             * @response 400
+             * @description Remove a specific product from the user's shopping cart
+             * @operationId removeCartItem
+             * @query productId (required) Unique identifier of the product to remove
+             * @response 200 Item removed from cart successfully
+             * @response 400 Invalid product ID
+             * @security jwtToken
              */
             delete("remove") {
                 val (productId) = call.requiredParameters("productId") ?: return@delete
@@ -92,7 +104,10 @@ fun Route.cartRoutes(cartController: CartService) {
 
             /**
              * @tag Cart
-             * @response 200 [Response]
+             * @description Remove all items from the user's shopping cart
+             * @operationId clearCart
+             * @response 200 Cart cleared successfully
+             * @security jwtToken
              */
             delete("all") {
                 call.respond(
