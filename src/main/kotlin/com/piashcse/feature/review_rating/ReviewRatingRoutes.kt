@@ -21,12 +21,14 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
 
         /**
          * @tag Review Rating
-         * @query productId (required)
-         * @query limit (required)
-         * @response 200 [Response]
-         * @response 400
+         * @description Retrieve reviews and ratings for a specific product
+         * @operationId getReviewRating
+         * @query productId (required) Unique identifier of the product
+         * @query limit (required) Maximum number of reviews to return
+         * @response 200 Product reviews retrieved successfully
+         * @response 400 Invalid product ID or limit parameter
          */
-        get() {
+        get {
             val (productId, limit) = call.requiredParameters("productId", "limit") ?: return@get
             call.respond(
                 ApiResponse.success(
@@ -36,14 +38,14 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
             )
         }
 
-        // Route for adding, updating, and deleting reviews and ratings
         authenticate(RoleManagement.CUSTOMER.role) {
-
-            // Route for posting a new review and rating
             /**
              * @tag Review Rating
-             * @body [ReviewRatingRequest]
-             * @response 200 [Response]
+             * @description Submit a new review and rating for a product
+             * @operationId addReviewRating
+             * @body ReviewRatingRequest Review and rating request with product ID, review text, and rating
+             * @response 200 Review and rating added successfully
+             * @security jwtToken
              */
             post {
                 val requestBody = call.receive<ReviewRatingRequest>()
@@ -55,14 +57,16 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
                 )
             }
 
-            // Route for updating an existing review and rating
             /**
              * @tag Review Rating
-             * @path id
-             * @query review
-             * @query rating
-             * @response 200 [Response]
-             * @response 400
+             * @description Update an existing review and rating
+             * @operationId updateReviewRating
+             * @path id (required) Unique identifier of the review to update
+             * @query review (required) Updated review text
+             * @query rating (required) Updated rating value (1-5)
+             * @response 200 Review and rating updated successfully
+             * @response 400 Invalid review ID, review text, or rating parameter
+             * @security jwtToken
              */
             put("{id}") {
                 val (id, review, rating) = call.requiredParameters("id", "review", "rating") ?: return@put
@@ -77,12 +81,14 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
                 )
             }
 
-            // Route for deleting a review and rating
             /**
              * @tag Review Rating
-             * @path id
-             * @response 200 [Response]
-             * @response 400
+             * @description Permanently delete a review and rating
+             * @operationId deleteReviewRating
+             * @path id (required) Unique identifier of the review to delete
+             * @response 200 Review and rating deleted successfully
+             * @response 400 Invalid review ID
+             * @security jwtToken
              */
             delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete

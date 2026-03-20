@@ -1,9 +1,11 @@
 package com.piashcse.model.request
 
+import kotlinx.serialization.Serializable
 import org.valiktor.functions.isNotNull
 import org.valiktor.functions.isNotZero
 import org.valiktor.validate
 
+@Serializable
 data class ProductWithFilterRequest(
     val limit: Int,
     val maxPrice: Double?,

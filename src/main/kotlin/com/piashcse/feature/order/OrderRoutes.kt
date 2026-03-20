@@ -30,8 +30,10 @@ fun Route.orderRoutes(orderController: OrderService) {
         authenticate(RoleManagement.CUSTOMER.role) {
             /**
              * @tag Order
-             * @body [OrderRequest]
-             * @response 200 [Response]
+             * @description Create a new order with the provided order details
+             * @operationId createOrder
+             * @body OrderRequest Order creation request with order items and shipping info
+             * @response 200 Order created successfully
              * @security jwtToken
              */
             post {
@@ -46,8 +48,10 @@ fun Route.orderRoutes(orderController: OrderService) {
 
             /**
              * @tag Order
-             * @query limit (required)
-             * @response 200 [Response]
+             * @description Retrieve all orders for the authenticated customer
+             * @operationId getOrders
+             * @query limit (required) Maximum number of orders to return
+             * @response 200 Orders retrieved successfully
              * @security jwtToken
              */
             get {
@@ -64,9 +68,11 @@ fun Route.orderRoutes(orderController: OrderService) {
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
             /**
              * @tag Order
-             * @path id (required)
-             * @query status (required)
-             * @response 200 [Response]
+             * @description Update the status of an order (customer: CANCELED/RECEIVED, seller: CONFIRMED/DELIVERED)
+             * @operationId updateOrderStatus
+             * @path id (required) Unique identifier of the order to update
+             * @query status (required) New order status (CANCELED, RECEIVED, CONFIRMED, or DELIVERED)
+             * @response 200 Order status updated successfully
              * @security jwtToken
              */
             patch("status/{id}") {
@@ -112,13 +118,14 @@ fun Route.orderRoutes(orderController: OrderService) {
             }
         }
 
-        // Admin and Super Admin routes for managing all orders
         authenticate(RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
             /**
              * @tag Order
-             * @path id (required)
-             * @query status (required)
-             * @response 200 [Response]
+             * @description Admin-only: Update the status of any order to any valid status
+             * @operationId updateOrderStatusByAdmin
+             * @path id (required) Unique identifier of the order to update
+             * @query status (required) New order status value
+             * @response 200 Order status updated successfully
              * @security jwtToken
              */
             patch("status/{id}") {

@@ -1,11 +1,13 @@
 package com.piashcse.model.request
 
+import kotlinx.serialization.Serializable
 import com.piashcse.constants.PaymentStatus
 import org.valiktor.functions.isGreaterThan
 import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
+@Serializable
 data class PaymentRequest(
     val orderId: String,
     val amount: Long,

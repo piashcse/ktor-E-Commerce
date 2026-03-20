@@ -22,10 +22,12 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
 
         /**
          * @tag ProductSubCategory
-         * @query categoryId (required)
-         * @query limit (required)
-         * @response 200 [Response]
-         * @response 400
+         * @description Retrieve subcategories for a specific category
+         * @operationId getProductSubCategory
+         * @query categoryId (required) Unique identifier of the parent category
+         * @query limit (required) Maximum number of subcategories to return
+         * @response 200 Product subcategories retrieved successfully
+         * @response 400 Invalid category ID or limit parameter
          */
         get {
             val (categoryId, limit) = call.requiredParameters("categoryId", "limit") ?: return@get
@@ -35,13 +37,14 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
                 )
             )
         }
-
-        // Routes for admins to manage product subcategories
         authenticate(RoleManagement.ADMIN.role) {
             /**
              * @tag ProductSubCategory
-             * @body [ProductSubCategoryRequest]
-             * @response 200 [Response]
+             * @description Create a new product subcategory
+             * @operationId addProductSubCategory
+             * @body ProductSubCategoryRequest Subcategory creation request with name and category ID
+             * @response 200 Product subcategory created successfully
+             * @security jwtToken
              */
             post {
                 val requestBody = call.receive<ProductSubCategoryRequest>()
@@ -54,10 +57,13 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
 
             /**
              * @tag ProductSubCategory
-             * @path id (required)
-             * @query name (required)
-             * @response 200 [Response]
-             * @response 400
+             * @description Update an existing product subcategory name
+             * @operationId updateProductSubCategory
+             * @path id (required) Unique identifier of the subcategory to update
+             * @query name (required) New name for the subcategory
+             * @response 200 Product subcategory updated successfully
+             * @response 400 Invalid subcategory ID or name parameter
+             * @security jwtToken
              */
             put("{id}") {
                 val (id, name) = call.requiredParameters("id", "name") ?: return@put
@@ -72,9 +78,12 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
 
             /**
              * @tag ProductSubCategory
-             * @path id (required)
-             * @response 200 [Response]
-             * @response 400
+             * @description Permanently delete a product subcategory
+             * @operationId deleteProductSubCategory
+             * @path id (required) Unique identifier of the subcategory to delete
+             * @response 200 Product subcategory deleted successfully
+             * @response 400 Invalid subcategory ID
+             * @security jwtToken
              */
             delete("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@delete

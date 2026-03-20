@@ -1,5 +1,8 @@
 package com.piashcse.model.response
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ReviewRating(
     val id: String,
     val userId: String,

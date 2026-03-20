@@ -19,12 +19,13 @@ import io.ktor.server.routing.*
  * @param policyController The controller handling policy-related operations.
  */
 fun Route.policyRoutes(policyController: PolicyService) {
-    // Main route for policy management
     route("/policy") {
         /**
          * @tag Privacy Policy
-         * @query type
-         * @response 200 [Response]
+         * @description Retrieve all policy documents with optional type filter
+         * @operationId getAllPolicies
+         * @query type Filter policies by type (PRIVACY_POLICY, TERMS_AND_CONDITIONS, REFUND_POLICY, etc.)
+         * @response 200 Policy documents retrieved successfully
          */
         get {
             val type = call.request.queryParameters["type"]
@@ -41,9 +42,11 @@ fun Route.policyRoutes(policyController: PolicyService) {
 
         /**
          * @tag Privacy Policy
-         * @path type (required)
-         * @response 200 [Response]
-         * @response 400
+         * @description Retrieve the latest policy document by policy type
+         * @operationId getPolicyByType
+         * @path type (required) Policy type (PRIVACY_POLICY, TERMS_AND_CONDITIONS, REFUND_POLICY, etc.)
+         * @response 200 Policy document retrieved successfully
+         * @response 400 Invalid policy type
          */
         get("{type}") {
             val (type) = call.requiredParameters("type") ?: return@get
@@ -60,21 +63,24 @@ fun Route.policyRoutes(policyController: PolicyService) {
 
         /**
          * @tag Privacy Policy
-         * @path id (required)
-         * @response 200 [Response]
-         * @response 400
+         * @description Retrieve a specific policy document by its ID
+         * @operationId getPolicyById
+         * @path id (required) Unique identifier of the policy document
+         * @response 200 Policy document retrieved successfully
+         * @response 400 Invalid policy ID
          */
         get("detail/{id}") {
             val (id) = call.requiredParameters("id") ?: return@get
             call.respond(ApiResponse.success(policyController.getPolicyById(id), HttpStatusCode.OK))
         }
-
-        // Admin routes for managing policies
         authenticate(RoleManagement.ADMIN.role) {
             /**
              * @tag Privacy Policy
-             * @body [CreatePolicyRequest]
-             * @response 201 [Response]
+             * @description Admin-only: Create a new policy document
+             * @operationId createPolicy
+             * @body CreatePolicyRequest Policy creation request with type, title, content, and version
+             * @response 201 Policy document created successfully
+             * @security jwtToken
              */
             post {
                 val createRequest = call.receive<CreatePolicyRequest>()
@@ -83,10 +89,13 @@ fun Route.policyRoutes(policyController: PolicyService) {
 
             /**
              * @tag Privacy Policy
-             * @path id
-             * @body [UpdatePolicyRequest]
-             * @response 200 [Response]
-             * @response 400
+             * @description Admin-only: Update an existing policy document
+             * @operationId updatePolicy
+             * @path id (required) Unique identifier of the policy to update
+             * @body UpdatePolicyRequest Policy update request with title, content, and version
+             * @response 200 Policy document updated successfully
+             * @response 400 Invalid policy ID
+             * @security jwtToken
              */
             put("{id}") {
                 val (id) = call.requiredParameters("id") ?: return@put
@@ -96,9 +105,12 @@ fun Route.policyRoutes(policyController: PolicyService) {
 
             /**
              * @tag Privacy Policy
-             * @path id
-             * @response 200 [Response]
-             * @response 400
+             * @description Admin-only: Deactivate an existing policy document
+             * @operationId deactivatePolicy
+             * @path id (required) Unique identifier of the policy to deactivate
+             * @response 200 Policy document deactivated successfully
+             * @response 400 Invalid policy ID
+             * @security jwtToken
              */
             post("deactivate/{id}") {
                 val (id) = call.requiredParameters("id") ?: return@post

@@ -33,7 +33,10 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
 
             /**
              * @tag Profile
-             * @response 200 [Response]
+             * @description Retrieve the authenticated user's profile information
+             * @operationId getUserProfile
+             * @response 200 User profile retrieved successfully
+             * @security jwtToken
              */
             get {
                 call.respond(
@@ -45,18 +48,21 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
 
             /**
              * @tag Profile
-             * @query firstName
-             * @query lastName
-             * @query mobile
-             * @query faxNumber
-             * @query streetAddress
-             * @query city
-             * @query identificationType
-             * @query identificationNo
-             * @query occupation
-             * @query postCode
-             * @query gender
-             * @response 200 [Response]
+             * @description Update the authenticated user's profile information
+             * @operationId updateUserProfile
+             * @query firstName User's first name
+             * @query lastName User's last name
+             * @query mobile Mobile phone number
+             * @query faxNumber Fax number
+             * @query streetAddress Street address
+             * @query city City of residence
+             * @query identificationType Type of identification document
+             * @query identificationNo Identification document number
+             * @query occupation User's occupation
+             * @query postCode Postal/ZIP code
+             * @query gender User's gender
+             * @response 200 User profile updated successfully
+             * @security jwtToken
              */
             put {
                 val params = UserProfileRequest(
@@ -81,7 +87,11 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
 
             /**
              * @tag Profile
-             * @response 200 [Response]
+             * @description Upload a new profile image for the authenticated user
+             * @operationId uploadProfileImage
+             * @form image (required) Profile image file to upload
+             * @response 200 Profile image uploaded successfully
+             * @security jwtToken
              */
             post("image-upload") {
                 val multipartData = call.receiveMultipart()

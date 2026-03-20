@@ -14,13 +14,15 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.consentRoutes(consentController: ConsentService) {
-    // User consent management routes
     route("/policy-consents") {
         authenticate(RoleManagement.CUSTOMER.role) {
             /**
              * @tag Privacy Policy Consent
-             * @body [PolicyConsentRequest]
-             * @response 201 [Response]
+             * @description Record user consent for a specific policy document
+             * @operationId recordConsent
+             * @body PolicyConsentRequest Consent request with policy ID
+             * @response 201 User consent recorded successfully
+             * @security jwtToken
              */
             post("consent") {
                 val consentRequest = call.receive<PolicyConsentRequest>()
@@ -45,7 +47,10 @@ fun Route.consentRoutes(consentController: ConsentService) {
         authenticate(RoleManagement.CUSTOMER.role, RoleManagement.ADMIN.role) {
             /**
              * @tag Privacy Policy Consent
-             * @response 200 [Response]
+             * @description Retrieve all consent records for the authenticated user
+             * @operationId getUserConsents
+             * @response 200 User consents retrieved successfully
+             * @security jwtToken
              */
             get {
                 val userId = call.currentUser().userId
@@ -54,9 +59,12 @@ fun Route.consentRoutes(consentController: ConsentService) {
 
             /**
              * @tag Privacy Policy Consent
-             * @path policyType (required)
-             * @response 200 [Response]
-             * @response 400
+             * @description Check if the user has consented to a specific policy type
+             * @operationId hasUserConsented
+             * @path policyType (required) Type of policy to check (PRIVACY_POLICY, TERMS_AND_CONDITIONS, etc.)
+             * @response 200 Consent status retrieved successfully
+             * @response 400 Invalid policy type
+             * @security jwtToken
              */
             get("{policyType}") {
                 val (policyType) = call.requiredParameters("policyType") ?: return@get
