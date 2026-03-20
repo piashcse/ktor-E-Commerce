@@ -3,7 +3,7 @@ package com.piashcse.feature.cart
 import com.piashcse.model.request.CartRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requiredParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -34,7 +34,7 @@ fun Route.cartRoutes(cartController: CartService) {
                 call.respond(
                     ApiResponse.success(
                         cartController.createCart(
-                            call.currentUser().userId,
+                            call.currentUserId,
                             requestBody.productId,
                             requestBody.quantity
                         ), HttpStatusCode.OK
@@ -56,7 +56,7 @@ fun Route.cartRoutes(cartController: CartService) {
                 call.respond(
                     ApiResponse.success(
                         cartController.getCartItems(
-                            call.currentUser().userId,
+                            call.currentUserId,
                             limit.toInt()
                         ), HttpStatusCode.OK
                     )
@@ -77,7 +77,7 @@ fun Route.cartRoutes(cartController: CartService) {
                 val (productId, quantity) = call.requiredParameters("productId", "quantity") ?: return@put
                 call.respond(
                     ApiResponse.success(
-                        cartController.updateCartQuantity(call.currentUser().userId, productId, quantity.toInt()),
+                        cartController.updateCartQuantity(call.currentUserId, productId, quantity.toInt()),
                         HttpStatusCode.OK
                     )
                 )
@@ -96,7 +96,7 @@ fun Route.cartRoutes(cartController: CartService) {
                 val (productId) = call.requiredParameters("productId") ?: return@delete
                 call.respond(
                     ApiResponse.success(
-                        cartController.removeCartItem(call.currentUser().userId, productId),
+                        cartController.removeCartItem(call.currentUserId, productId),
                         HttpStatusCode.OK
                     )
                 )
@@ -112,7 +112,7 @@ fun Route.cartRoutes(cartController: CartService) {
             delete("all") {
                 call.respond(
                     ApiResponse.success(
-                        cartController.clearCart(call.currentUser().userId), HttpStatusCode.OK
+                        cartController.clearCart(call.currentUserId), HttpStatusCode.OK
                     )
                 )
             }

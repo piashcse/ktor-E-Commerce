@@ -7,7 +7,7 @@ import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.fileExtension
 import com.piashcse.utils.extension.requiredParameters
 import io.ktor.http.*
@@ -116,7 +116,7 @@ fun Route.productRoutes(productController: ProductService) {
                 )
                 call.respond(
                     ApiResponse.success(
-                        productController.getProductsByUser(call.currentUser().userId, params), HttpStatusCode.OK
+                        productController.getProductsByUser(call.currentUserId, params), HttpStatusCode.OK
                     )
                 )
             }
@@ -133,7 +133,7 @@ fun Route.productRoutes(productController: ProductService) {
                 val requestBody = call.receive<ProductRequest>()
                 call.respond(
                     ApiResponse.success(
-                        productController.createProduct(call.currentUser().userId, null, requestBody), HttpStatusCode.OK
+                        productController.createProduct(call.currentUserId, null, requestBody), HttpStatusCode.OK
                     )
                 )
             }
@@ -179,7 +179,7 @@ fun Route.productRoutes(productController: ProductService) {
                 val (id) = call.requiredParameters("id") ?: return@put
                 call.respond(
                     ApiResponse.success(
-                        productController.updateProduct(call.currentUser().userId, id, params), HttpStatusCode.OK
+                        productController.updateProduct(call.currentUserId, id, params), HttpStatusCode.OK
                     )
                 )
             }
@@ -196,7 +196,7 @@ fun Route.productRoutes(productController: ProductService) {
                 val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(
-                        productController.deleteProduct(call.currentUser().userId, id), HttpStatusCode.OK
+                        productController.deleteProduct(call.currentUserId, id), HttpStatusCode.OK
                     )
                 )
             }
@@ -250,7 +250,7 @@ fun Route.productRoutes(productController: ProductService) {
                 val (id) = call.requiredParameters("id") ?: return@delete
                 call.respond(
                     ApiResponse.success(
-                        productController.deleteProduct(call.currentUser().userId, id), HttpStatusCode.OK
+                        productController.deleteProduct(call.currentUserId, id), HttpStatusCode.OK
                     )
                 )
             }

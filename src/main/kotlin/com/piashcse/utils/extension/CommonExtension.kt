@@ -5,14 +5,18 @@ import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.CommonException
 import com.piashcse.utils.Permission
-import com.piashcse.utils.Response
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
+import io.ktor.util.AttributeKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+
+// Attribute keys for caching - userId cached directly for maximum performance
+private val UserIdKey = AttributeKey<String>("UserId")
+private val CurrentUserKey = AttributeKey<JwtTokenRequest>("CurrentUser")
 
 fun String.notFoundException(): CommonException {
     return CommonException("$this is not Exist")
@@ -29,89 +33,113 @@ suspend fun <T> query(block: () -> T): T = withContext(Dispatchers.IO) {
     }
 }
 
+/**
+ * Get the current authenticated user with caching.
+ * Caches the user object to avoid repeated JWT principal lookups.
+ */
 fun ApplicationCall.currentUser(): JwtTokenRequest {
-    return this.principal<JwtTokenRequest>() ?: throw IllegalStateException("No authenticated user found")
+    return attributes.getOrNull(CurrentUserKey)
+        ?: principal<JwtTokenRequest>()?.also { attributes.put(CurrentUserKey, it) }
+        ?: throw IllegalStateException("No authenticated user found")
 }
 
 /**
- * Get the current user with optional role validation
+ * Get the current user or null if not authenticated.
+ * Uses caching to avoid repeated JWT principal lookups.
  */
 fun ApplicationCall.currentUserOrNull(): JwtTokenRequest? {
-    return this.principal<JwtTokenRequest>()
+    return attributes.getOrNull(CurrentUserKey) ?: principal<JwtTokenRequest>()?.also {
+        attributes.put(CurrentUserKey, it)
+    }
 }
 
 /**
- * Check if current user has a specific role
+ * Get the current authenticated user's ID with direct caching.
+ * This is the most efficient way to get userId - caches the String directly
+ * to avoid both JWT parsing and property access overhead.
+ */
+val ApplicationCall.currentUserId: String
+    get() = attributes.getOrNull(UserIdKey)
+        ?: currentUser().userId.also { attributes.put(UserIdKey, it) }
+
+/**
+ * Check if current user has a specific role.
+ * Uses cached user to avoid repeated JWT principal lookups.
  */
 fun ApplicationCall.hasRole(role: UserType): Boolean {
-    val user = this.principal<JwtTokenRequest>()
-    return user?.hasRole(role) ?: false
+    return currentUserOrNull()?.hasRole(role) ?: false
 }
 
 /**
- * Check if current user has access to specific role (with hierarchy)
+ * Check if current user has access to specific role (with hierarchy).
+ * Uses cached user to avoid repeated JWT principal lookups.
  */
 fun ApplicationCall.hasAccessTo(role: UserType): Boolean {
-    val user = this.principal<JwtTokenRequest>()
-    return user?.hasAccessTo(role) ?: false
+    return currentUserOrNull()?.hasAccessTo(role) ?: false
 }
 
 /**
- * Get current user's role
+ * Get current user's role.
+ * Uses cached user to avoid repeated JWT principal lookups.
  */
 fun ApplicationCall.getCurrentUserType(): UserType? {
-    val user = this.principal<JwtTokenRequest>()
-    return user?.getUserType()
+    return currentUserOrNull()?.getUserType()
 }
 
 /**
- * Require specific role with optional hierarchy check
+ * Require specific role with optional hierarchy check.
+ * Uses cached user and responds with appropriate HTTP status codes.
  */
 suspend fun ApplicationCall.requireRole(role: UserType, useHierarchy: Boolean = true): Boolean {
-    val user = this.principal<JwtTokenRequest>()
+    val user = currentUserOrNull()
     if (user == null) {
-        this.respond(HttpStatusCode.Unauthorized, "Unauthorized")
+        respond(HttpStatusCode.Unauthorized, "Unauthorized")
         return false
     }
 
     val hasAccess = if (useHierarchy) user.hasAccessTo(role) else user.hasRole(role)
     if (!hasAccess) {
-        this.respond(HttpStatusCode.Forbidden, "Forbidden: Insufficient permissions")
+        respond(HttpStatusCode.Forbidden, "Forbidden: Insufficient permissions")
         return false
     }
     return true
 }
 
 /**
- * Check if current user has a specific permission
+ * Check if current user has a specific permission.
+ * Uses cached user to avoid repeated JWT principal lookups.
  */
 fun ApplicationCall.hasPermission(permission: Permission): Boolean {
-    val user = this.principal<JwtTokenRequest>()
-    return com.piashcse.utils.Permissions.hasPermission(user, permission)
+    return currentUserOrNull()?.hasPermission(permission) ?: false
 }
 
 /**
- * Require specific permission
+ * Require specific permission.
+ * Uses cached user and responds with appropriate HTTP status codes.
  */
 suspend fun ApplicationCall.requirePermission(permission: Permission): Boolean {
-    val user = this.principal<JwtTokenRequest>()
+    val user = currentUserOrNull()
     if (user == null) {
-        this.respond(HttpStatusCode.Unauthorized, "Unauthorized")
+        respond(HttpStatusCode.Unauthorized, "Unauthorized")
         return false
     }
 
     if (!user.hasPermission(permission)) {
-        this.respond(HttpStatusCode.Forbidden, "Forbidden: Insufficient permissions")
+        respond(HttpStatusCode.Forbidden, "Forbidden: Insufficient permissions")
         return false
     }
     return true
 }
 
+/**
+ * Validate and retrieve required query parameters.
+ * Returns null and sends BadRequest response if any parameters are missing.
+ */
 suspend fun ApplicationCall.requiredParameters(vararg requiredParams: String): List<String>? {
-    val missingParams = requiredParams.filterNot { this.parameters.contains(it) }
+    val missingParams = requiredParams.filterNot { parameters.contains(it) }
     if (missingParams.isNotEmpty()) {
-        this.respond(ApiResponse.success("Missing parameters: $missingParams", HttpStatusCode.BadRequest))
+        respond(ApiResponse.success("Missing parameters: $missingParams", HttpStatusCode.BadRequest))
         return null
     }
-    return requiredParams.map { this.parameters[it]!! }
+    return requiredParams.map { parameters[it]!! }
 }

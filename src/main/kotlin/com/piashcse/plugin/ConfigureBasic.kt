@@ -11,6 +11,9 @@ import org.slf4j.event.Level
 
 import io.ktor.http.*
 import io.ktor.server.plugins.cors.routing.*
+import com.google.gson.JsonSerializer
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 fun Application.configureBasic() {
     install(CORS) {
@@ -24,6 +27,12 @@ fun Application.configureBasic() {
     install(ContentNegotiation) {
         gson {
             setPrettyPrinting()
+            registerTypeAdapter(
+                LocalDateTime::class.java,
+                JsonSerializer<LocalDateTime> { localDateTime, _, _ ->
+                    com.google.gson.JsonPrimitive(localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                }
+            )
             // serializeNulls()
         }
     }

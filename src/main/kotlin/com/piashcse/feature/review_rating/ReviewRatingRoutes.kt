@@ -3,7 +3,7 @@ package com.piashcse.feature.review_rating
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requiredParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -51,7 +51,7 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
                 val requestBody = call.receive<ReviewRatingRequest>()
                 call.respond(
                     ApiResponse.success(
-                        reviewRatingController.addReviewRating(call.currentUser().userId, requestBody),
+                        reviewRatingController.addReviewRating(call.currentUserId, requestBody),
                         HttpStatusCode.OK
                     )
                 )

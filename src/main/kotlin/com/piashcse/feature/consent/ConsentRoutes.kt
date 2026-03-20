@@ -4,7 +4,7 @@ import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.currentUser
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requiredParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -28,7 +28,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
                 val consentRequest = call.receive<PolicyConsentRequest>()
 
                 // Automatically collect all necessary information
-                val userId = call.currentUser().userId
+                val userId = call.currentUserId
                 val policyId = consentRequest.policyId
                 val userAgent = call.request.headers["User-Agent"]
                 val ipAddress = call.request.origin.remoteHost
@@ -53,7 +53,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
              * @security jwtToken
              */
             get {
-                val userId = call.currentUser().userId
+                val userId = call.currentUserId
                 call.respond(ApiResponse.success(consentController.getUserConsents(userId), HttpStatusCode.OK))
             }
 
@@ -68,7 +68,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
              */
             get("{policyType}") {
                 val (policyType) = call.requiredParameters("policyType") ?: return@get
-                val userId = call.currentUser().userId
+                val userId = call.currentUserId
 
                 val hasConsented = consentController.hasUserConsented(
                     userId,
