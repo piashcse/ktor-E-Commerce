@@ -1,6 +1,6 @@
 # Ktor-E-Commerce
 
-[![Ktor](https://img.shields.io/badge/ktor-3.4.1-blue.svg)](https://github.com/ktorio/ktor)
+[![Ktor](https://img.shields.io/badge/ktor-3.4.2-blue.svg)](https://github.com/ktorio/ktor)
 [![Exposed](https://img.shields.io/badge/Exposed-1.1.1-blue.svg)](https://github.com/JetBrains/Exposed)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.10-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 ![Koin](https://img.shields.io/badge/Koin-4.2.0-29BEB0?logo=koin&logoColor=white)
@@ -53,7 +53,12 @@ scalable, and efficient service for handling your e-commerce needs. For detailed
 
 ### 7. Security
 
-- **JWT Tokens**: Implement JSON Web Tokens for secure authentication.
+- **JWT Access & Refresh Tokens**: Short-lived access tokens with rotating refresh tokens for enhanced security.
+- **Token Revocation**: Logout and logout-all endpoints to revoke refresh tokens.
+- **Rate Limiting**: Brute-force protection on authentication endpoints (5 req/min) and search endpoints (30 req/min).
+- **Account Lockout**: Automatic account lockout after 5 failed login attempts (30-minute lockout period).
+- **Secure File Upload**: MIME type validation, file size limits (5MB), and UUID-based filenames prevent path traversal attacks.
+- **Database Indexes**: 50+ performance indexes on foreign keys and search columns.
 - **Input Validation**: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).
 
 ## Architecture
@@ -126,12 +131,21 @@ This project uses DotEnv for configuration management. Follow these steps to set
    # Server Configuration
    PORT=8080
    HOST=localhost
+   KTOR_ENV=development
 
    # JWT Configuration
    JWT_SECRET=your-super-secret-jwt-secret-key-change-in-production
+   JWT_REFRESH_SECRET=your-super-secret-refresh-token-key-change-in-production
    JWT_ISSUER=ktor-ecommerce-app
    JWT_AUDIENCE=ktor-ecommerce
    JWT_REALM=ktor-ecommerce
+   # Access token: 15 minutes (900000ms) recommended for production
+   JWT_ACCESS_TOKEN_VALIDITY_MS=86400000
+   # Refresh token: 7 days (604800000ms)
+   JWT_REFRESH_VALIDITY_MS=604800000
+
+   # CORS Configuration
+   ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080
 
    # Email Configuration
    EMAIL_HOST=smtp.gmail.com
@@ -276,7 +290,12 @@ curl -X 'POST' \
       "email": "customer@gmail.com",
       "userType": "customer"
     },
-    "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJjZTU2Mzc3NC1kM2Q1LTQ0MmUtYWQxYS1iODg0YmIwYTUzZjAiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI5NTkzMjQ5fQ.XWWEO1NFN3Gysb1Tghm1l1BcQ2NsYexXE2YmgeIvBv_Wq-DXgmihDed1zt3_TAJevM631vtMQ7LtwOXbYhKF9A"
+    "tokens": {
+      "accessToken": "eyJhbGci...",
+      "refreshToken": "eyJhbGci...",
+      "expiresIn": 900,
+      "tokenType": "Bearer"
+    }
   }
 }
 ```   
@@ -575,6 +594,95 @@ http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate
   },
   "data": "User activated successfully"
 }
+```
+
+</details>
+
+### TOKEN MANAGEMENT
+
+> **Note**: All token management endpoints use JSON request bodies with `{ "refreshToken": "string" }`.
+
+<details>
+
+<summary> <code>POST</code> <code>/auth/refresh</code></summary>
+
+### Description
+Exchange a valid refresh token for a new access/refresh token pair. The old refresh token is automatically revoked (token rotation).
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/auth/refresh' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "refreshToken": "eyJhbGci..."
+}'
+```
+
+### Response
+
+```
+{
+  "isSuccess": true,
+  "statusCode": { "value": 200, "description": "OK" },
+  "data": {
+    "accessToken": "eyJhbGci...",
+    "refreshToken": "eyJhbGci...",
+    "expiresIn": 900,
+    "tokenType": "Bearer"
+  }
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>POST</code> <code>/auth/logout</code></summary>
+
+### Description
+Revoke the provided refresh token (single device logout).
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/auth/logout' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{ "refreshToken": "eyJhbGci..." }'
+```
+
+### Response
+
+```
+{ "isSuccess": true, "statusCode": { "value": 200 }, "data": "Logged out successfully" }
+```
+
+</details>
+
+<details>
+
+<summary> <code>POST</code> <code>/auth/logout-all</code></summary>
+
+### Description
+Revoke all refresh tokens for the authenticated user (logout from all devices). Requires a valid access token.
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/auth/logout-all' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGci...'
+```
+
+### Response
+
+```
+{ "isSuccess": true, "statusCode": { "value": 200 }, "data": "Logged out from all devices" }
 ```
 
 </details>

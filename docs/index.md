@@ -51,7 +51,12 @@ scalable, and efficient service for handling your e-commerce needs.
 
 ### 7. Security
 
-- **JWT Tokens**: Implement JSON Web Tokens for secure authentication.
+- **JWT Access & Refresh Tokens**: Short-lived access tokens (15 min) with rotating refresh tokens (7 days) for enhanced security.
+- **Token Revocation**: Logout and logout-all endpoints to revoke refresh tokens.
+- **Rate Limiting**: Brute-force protection on authentication endpoints (5 req/min) and search endpoints (30 req/min).
+- **Account Lockout**: Automatic account lockout after 5 failed login attempts (30-minute lockout period).
+- **Secure File Upload**: MIME type validation, file size limits (5MB), and UUID-based filenames prevent path traversal attacks.
+- **Database Indexes**: 50+ performance indexes on foreign keys and search columns.
 - **Input Validation**: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).
 
 ## Architecture
@@ -97,12 +102,21 @@ This project uses DotEnv for configuration management. Follow these steps to set
    # Server Configuration
    PORT=8080
    HOST=localhost
+   KTOR_ENV=development
 
    # JWT Configuration
    JWT_SECRET=your-super-secret-jwt-secret-key-change-in-production
+   JWT_REFRESH_SECRET=your-super-secret-refresh-token-key-change-in-production
    JWT_ISSUER=ktor-ecommerce-app
    JWT_AUDIENCE=ktor-ecommerce
    JWT_REALM=ktor-ecommerce
+   # Access token: 15 minutes (900000ms) recommended for production
+   JWT_ACCESS_TOKEN_VALIDITY_MS=86400000
+   # Refresh token: 7 days (604800000ms)
+   JWT_REFRESH_VALIDITY_MS=604800000
+
+   # CORS Configuration
+   ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080
 
    # Email Configuration
    EMAIL_HOST=smtp.gmail.com
@@ -168,7 +182,8 @@ Configure your email settings in the `.env` file:
 
 For comprehensive API documentation, please refer to the following resources:
 
-- [Authentication API](auth.md) - User authentication and management
+- [Authentication API](auth.md) - User authentication, token refresh, and session management
+- [Token Management API](auth.md#token-management) - Refresh tokens, logout, and logout-all
 - [Profile API](profile.md) - User profile management
 - [Product API](product.md) - Product management
 - [Shop API](shop.md) - Shop management
