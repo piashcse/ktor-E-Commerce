@@ -2,9 +2,6 @@ package com.piashcse.plugin
 
 import com.piashcse.constants.Message
 import com.piashcse.utils.*
-import com.piashcse.utils.UnauthorizedException
-import com.piashcse.utils.ValidationException
-import com.piashcse.utils.ForbiddenException
 import com.piashcse.utils.NotFoundException
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -114,6 +111,12 @@ fun Application.configureStatusPage() {
         }
         status(HttpStatusCode.Unauthorized) { call, statusCode ->
             call.respond(HttpStatusCode.Unauthorized, ApiResponse.failure(Message.UNAUTHORIZED_API_CALL, statusCode))
+        }
+        status(HttpStatusCode.TooManyRequests) { call, statusCode ->
+            call.respond(
+                HttpStatusCode.TooManyRequests,
+                ApiResponse.failure(Message.TOO_MANY_REQUESTS, statusCode)
+            )
         }
     }
 }

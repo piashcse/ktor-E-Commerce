@@ -1,7 +1,7 @@
 package com.piashcse.model.request
 
-import kotlinx.serialization.Serializable
 import com.piashcse.database.entities.ShippingTable
+import kotlinx.serialization.Serializable
 import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate

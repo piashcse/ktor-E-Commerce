@@ -4,9 +4,7 @@ import com.piashcse.constants.InventoryStatus
 import com.piashcse.database.entities.InventoryDAO
 import com.piashcse.database.entities.InventoryTable
 import com.piashcse.database.entities.ProductDAO
-import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ShopDAO
-import com.piashcse.database.entities.ShopTable
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
 import com.piashcse.utils.ValidationException

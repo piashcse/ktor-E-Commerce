@@ -1,7 +1,6 @@
 package com.piashcse.feature.shop
 
 import com.piashcse.constants.ShopStatus
-import com.piashcse.constants.UserType
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.plugin.RoleManagement

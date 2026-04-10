@@ -5,12 +5,14 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.model.request.*
+import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.requiredParameters
 import com.piashcse.utils.sendEmail
 import io.ktor.http.*
 import io.ktor.server.auth.*
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -22,118 +24,121 @@ import io.ktor.server.routing.*
  */
 fun Route.authRoutes(authController: AuthService) {
     route("/auth") {
-        /**
-         * @tag Auth
-         * @description Authenticate user with email, password and user type
-         * @operationId login
-         * @body LoginRequest
-         * @response 200 User authentication successful
-         * @response 400 Invalid credentials
-         */
-        post("login") {
-            val requestBody = call.receive<LoginRequest>()
-            call.respond(
-                ApiResponse.success(
-                    authController.login(requestBody), HttpStatusCode.OK
-                )
-            )
-        }
-
-        /**
-         * @tag Auth
-         * @description Register a new user account
-         * @operationId register
-         * @body RegisterRequest
-         * @response 200 User registered successfully
-         * @response 400 Invalid registration data
-         */
-        post("register") {
-            val requestBody = call.receive<RegisterRequest>()
-            call.respond(ApiResponse.success(authController.register(requestBody), HttpStatusCode.OK))
-        }
-
-        /**
-         * @tag Auth
-         * @description Verify user account with OTP
-         * @operationId verifyOtp
-         * @query userId (required) User ID
-         * @query otp (required) One-time password
-         * @response 200 OTP verified successfully
-         * @response 400 Invalid OTP
-         */
-        get("otp-verification") {
-            val (userId, otp) = call.requiredParameters("userId", "otp") ?: return@get
-            call.respond(
-                ApiResponse.success(
-                    authController.otpVerification(userId, otp), HttpStatusCode.OK
-                )
-            )
-        }
-
-        /**
-         * @tag Auth
-         * @description Request password reset OTP
-         * @operationId forgetPassword
-         * @query email (required) User email
-         * @query userType (required) User type
-         * @response 200 OTP sent successfully
-         * @response 400 Invalid email or user type
-         */
-        get("forget-password") {
-            val (email, userType) = call.requiredParameters("email", "userType") ?: return@get
-            val requestBody = ForgetPasswordRequest(email, userType)
-            authController.forgetPassword(requestBody).let { otp ->
-                sendEmail(requestBody.email, otp)
+        // Apply rate limiting to auth endpoints
+        rateLimit(RateLimitName(RateLimitNames.AUTH)) {
+            /**
+             * @tag Auth
+             * @description Authenticate user with email, password and user type
+             * @operationId login
+             * @body LoginRequest
+             * @response 200 User authentication successful
+             * @response 400 Invalid credentials
+             */
+            post("login") {
+                val requestBody = call.receive<LoginRequest>()
                 call.respond(
                     ApiResponse.success(
-                        "${Message.VERIFICATION_CODE_SENT_TO} ${requestBody.email}",
-                        HttpStatusCode.OK
+                        authController.login(requestBody), HttpStatusCode.OK
                     )
                 )
             }
-        }
 
-        /**
-         * @tag Auth
-         * @description Reset password using OTP verification
-         * @operationId resetPassword
-         * @query email (required) User email
-         * @query otp (required) OTP received
-         * @query newPassword (required) New password
-         * @query userType (required) User type
-         * @response 200 Password reset successful
-         * @response 400 Invalid OTP or email
-         */
-        get("reset-password") {
-            val (email, otp, newPassword, userType) = call.requiredParameters(
-                "email", "otp", "newPassword", "userType"
-            ) ?: return@get
+            /**
+             * @tag Auth
+             * @description Register a new user account
+             * @operationId register
+             * @body RegisterRequest
+             * @response 200 User registered successfully
+             * @response 400 Invalid registration data
+             */
+            post("register") {
+                val requestBody = call.receive<RegisterRequest>()
+                call.respond(ApiResponse.success(authController.register(requestBody), HttpStatusCode.OK))
+            }
 
-            authController.resetPassword(
-                ResetRequest(
-                    email, otp, newPassword, userType
+            /**
+             * @tag Auth
+             * @description Verify user account with OTP
+             * @operationId verifyOtp
+             * @query userId (required) User ID
+             * @query otp (required) One-time password
+             * @response 200 OTP verified successfully
+             * @response 400 Invalid OTP
+             */
+            get("otp-verification") {
+                val (userId, otp) = call.requiredParameters("userId", "otp") ?: return@get
+                call.respond(
+                    ApiResponse.success(
+                        authController.otpVerification(userId, otp), HttpStatusCode.OK
+                    )
                 )
-            ).let {
-                when (it) {
-                    AppConstants.DataBaseTransaction.FOUND -> {
-                        call.respond(
-                            ApiResponse.success(
-                                Message.PASSWORD_CHANGE_SUCCESS, HttpStatusCode.OK
-                            )
-                        )
-                    }
+            }
 
-                    AppConstants.DataBaseTransaction.NOT_FOUND -> {
-                        call.respond(
-                            ApiResponse.success(
-                                Message.VERIFICATION_CODE_IS_NOT_VALID,
-                                HttpStatusCode.OK
-                            )
+            /**
+             * @tag Auth
+             * @description Request password reset OTP
+             * @operationId forgetPassword
+             * @query email (required) User email
+             * @query userType (required) User type
+             * @response 200 OTP sent successfully
+             * @response 400 Invalid email or user type
+             */
+            get("forget-password") {
+                val (email, userType) = call.requiredParameters("email", "userType") ?: return@get
+                val requestBody = ForgetPasswordRequest(email, userType)
+                authController.forgetPassword(requestBody).let { otp ->
+                    sendEmail(requestBody.email, otp)
+                    call.respond(
+                        ApiResponse.success(
+                            "${Message.VERIFICATION_CODE_SENT_TO} ${requestBody.email}",
+                            HttpStatusCode.OK
                         )
+                    )
+                }
+            }
+
+            /**
+             * @tag Auth
+             * @description Reset password using OTP verification
+             * @operationId resetPassword
+             * @query email (required) User email
+             * @query otp (required) OTP received
+             * @query newPassword (required) New password
+             * @query userType (required) User type
+             * @response 200 Password reset successful
+             * @response 400 Invalid OTP or email
+             */
+            get("reset-password") {
+                val (email, otp, newPassword, userType) = call.requiredParameters(
+                    "email", "otp", "newPassword", "userType"
+                ) ?: return@get
+
+                authController.resetPassword(
+                    ResetRequest(
+                        email, otp, newPassword, userType
+                    )
+                ).let {
+                    when (it) {
+                        AppConstants.DataBaseTransaction.FOUND -> {
+                            call.respond(
+                                ApiResponse.success(
+                                    Message.PASSWORD_CHANGE_SUCCESS, HttpStatusCode.OK
+                                )
+                            )
+                        }
+
+                        AppConstants.DataBaseTransaction.NOT_FOUND -> {
+                            call.respond(
+                                ApiResponse.success(
+                                    Message.VERIFICATION_CODE_IS_NOT_VALID,
+                                    HttpStatusCode.OK
+                                )
+                            )
+                        }
                     }
                 }
             }
-        }
+        } // end rateLimit(AUTH)
 
         authenticate(
             RoleManagement.SUPER_ADMIN.role,

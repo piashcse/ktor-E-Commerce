@@ -19,6 +19,12 @@ object DotEnvConfig {
     val jwtIssuer: String get() = DotEnv.get("JWT_ISSUER", "piashcse")
     val jwtAudience: String get() = DotEnv.get("JWT_AUDIENCE", "ktor-ecommerce")
     val jwtRealm: String get() = DotEnv.get("JWT_REALM", "ktor-ecommerce")
+    val jwtRefreshSecret: String get() = DotEnv.get("JWT_REFRESH_SECRET", DotEnv.get("JWT_SECRET", "zAP5MBA4B4Ijz0MZaS48"))
+    val jwtRefreshValidityMs: Long get() = DotEnv.getLong("JWT_REFRESH_VALIDITY_MS", 7 * 24 * 60 * 60 * 1000L) // 7 days
+    val jwtAccessTokenValidityMs: Long get() = DotEnv.getLong("JWT_ACCESS_TOKEN_VALIDITY_MS", 24 * 60 * 60 * 1000L) // 24h default, override in prod
+
+    // CORS
+    val allowedOrigins: String get() = DotEnv.get("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080")
     
     // Email configuration
     val emailHost: String get() = DotEnv.get("EMAIL_HOST", "smtp.gmail.com")

@@ -1,7 +1,9 @@
 package com.piashcse.plugin
 
 import com.piashcse.feature.auth.AuthService
+import com.piashcse.feature.auth.TokenService
 import com.piashcse.feature.auth.authRoutes
+import com.piashcse.feature.auth.tokenRoutes
 import com.piashcse.feature.brand.BrandService
 import com.piashcse.feature.brand.brandRoutes
 import com.piashcse.feature.cart.CartService
@@ -40,6 +42,7 @@ import org.koin.ktor.ext.inject
 
 fun Application.configureRoute() {
     val authController: AuthService by inject()
+    val tokenService: TokenService by inject()
     val userProfileController: ProfileService by inject()
     val shopCategoryController: ShopCategoryService by inject()
     val shopController: ShopService by inject()
@@ -58,6 +61,7 @@ fun Application.configureRoute() {
     val inventoryController: InventoryService by inject()
     routing {
         authRoutes(authController)
+        tokenRoutes(tokenService)
         profileRoutes(userProfileController)
         shopCategoryRoutes(shopCategoryController)
         shopRoutes(shopController)

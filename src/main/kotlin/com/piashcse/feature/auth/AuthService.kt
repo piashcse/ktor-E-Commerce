@@ -12,8 +12,6 @@ import com.piashcse.model.request.RegisterRequest
 import com.piashcse.model.request.ResetRequest
 import com.piashcse.model.response.Registration
 import com.piashcse.utils.*
-import com.piashcse.utils.ValidationException
-import com.piashcse.utils.ValidationUtils
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
@@ -122,6 +120,7 @@ class AuthService : AuthRepository {
     /**
      * Logs in a user with the given [loginRequest].
      * Throws an exception if the user does not exist or the password is incorrect.
+     * Locks account after 5 failed attempts for 30 minutes.
      *
      * @param loginRequest The request containing login credentials.
      * @return The response containing the authentication token.
@@ -132,21 +131,33 @@ class AuthService : AuthRepository {
 
         // Convert string userType to enum for comparison
         val userTypeEnum = UserType.fromString(loginRequest.userType) ?: run {
-            // If the value is not valid, return not found
             throw loginRequest.email.notFoundException()
         }
 
         val userEntity =
             UserDAO.find { UserTable.email eq loginRequest.email and (UserTable.userType eq userTypeEnum) }
                 .toList().singleOrNull()
-        userEntity?.let {
+
+        userEntity?.let { user ->
+            // Check if account is locked
+            val lockedUntilTime = user.lockedUntil
+            if (lockedUntilTime != null && lockedUntilTime > java.time.LocalDateTime.now()) {
+                val unlockTime = lockedUntilTime.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                throw CommonException("${Message.ACCOUNT_LOCKED_TRY_AGAIN_LATER}. Unlock time: $unlockTime")
+            }
+
+            // Check if password matches
             if (BCrypt.verifyer().verify(
-                    loginRequest.password.toCharArray(), it.password
+                    loginRequest.password.toCharArray(), user.password
                 ).verified
             ) {
-                if (it.isVerified) {
-                    if (it.isActive) {
-                        it.loggedInWithToken()
+                if (user.isVerified) {
+                    if (user.isActive) {
+                        // Reset failed attempts on successful login
+                        user.failedLoginAttempts = 0
+                        user.lockedUntil = null
+                        val tokens = user.loggedInWithToken()
+                        LoginResponse(user.response(), tokens)
                     } else {
                         throw CommonException(Message.ACCOUNT_DEACTIVATED)
                     }
@@ -154,6 +165,16 @@ class AuthService : AuthRepository {
                     throw CommonException(Message.ACCOUNT_NOT_VERIFIED)
                 }
             } else {
+                // Increment failed attempts
+                user.failedLoginAttempts = user.failedLoginAttempts + 1
+
+                // Lock account after 5 failed attempts
+                if (user.failedLoginAttempts >= 5) {
+                    user.lockedUntil = java.time.LocalDateTime.now().plusMinutes(30)
+                    throw CommonException(Message.ACCOUNT_LOCKED_DUE_TO_FAILED_ATTEMPTS)
+                }
+
+                val remaining = 5 - user.failedLoginAttempts
                 throw PasswordNotMatch()
             }
         } ?: throw loginRequest.email.notFoundException()

@@ -5,36 +5,80 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.piashcse.config.DotEnvConfig
 import com.piashcse.model.request.JwtTokenRequest
-import io.ktor.server.config.*
 import java.util.*
 
+/**
+ * JWT configuration supporting both access tokens and refresh tokens.
+ * Access tokens are short-lived (15 minutes default).
+ * Refresh tokens are long-lived (7 days default) and stored in database.
+ */
 object JwtConfig {
-    private lateinit var secret: String
+    private lateinit var accessSecret: String
+    private lateinit var refreshSecret: String
     private lateinit var issuer: String
-    private lateinit var algorithm: Algorithm
-    private const val VALIDITY_MS = 24 * 60 * 60 * 1000L // 24 hours in milliseconds
+    private lateinit var accessAlgorithm: Algorithm
+    private lateinit var refreshAlgorithm: Algorithm
 
-    lateinit var verifier: JWTVerifier
+    // Token validity from environment (defaults: 15 min access, 7 days refresh)
+    val accessTokenValidityMs: Long
+        get() = DotEnvConfig.jwtAccessTokenValidityMs
+
+    val refreshTokenValidityMs: Long
+        get() = DotEnvConfig.jwtRefreshValidityMs
+
+    lateinit var accessVerifier: JWTVerifier
         private set
 
+    lateinit var refreshVerifier: JWTVerifier
+        private set
+
+    /**
+     * Alias for backward compatibility - uses access token verifier
+     */
+    val verifier: JWTVerifier
+        get() = accessVerifier
+
     fun init() {
-        secret = DotEnvConfig.jwtSecret
+        accessSecret = DotEnvConfig.jwtSecret
+        refreshSecret = DotEnvConfig.jwtRefreshSecret
         issuer = DotEnvConfig.jwtIssuer
-        algorithm = Algorithm.HMAC512(secret)
-        verifier = JWT.require(algorithm).withIssuer(issuer).build()
+        accessAlgorithm = Algorithm.HMAC512(accessSecret)
+        refreshAlgorithm = Algorithm.HMAC512(refreshSecret)
+
+        accessVerifier = JWT.require(accessAlgorithm).withIssuer(issuer).build()
+        refreshVerifier = JWT.require(refreshAlgorithm).withIssuer(issuer).build()
     }
 
     /**
-     * Produce a token for the given JwtTokenBody
+     * Generate an access token (short-lived, used for API calls)
      */
-    fun tokenProvider(jwtTokenBody: JwtTokenRequest): String = JWT.create()
+    fun generateAccessToken(jwtTokenBody: JwtTokenRequest): String = JWT.create()
         .withSubject("Authentication")
         .withIssuer(issuer)
         .withClaim("email", jwtTokenBody.email)
         .withClaim("userId", jwtTokenBody.userId)
         .withClaim("userType", jwtTokenBody.userType)
-        .withExpiresAt(getExpiration())
-        .sign(algorithm)
+        .withClaim("tokenType", "access")
+        .withExpiresAt(getExpiration(accessTokenValidityMs))
+        .sign(accessAlgorithm)
 
-    private fun getExpiration() = Date(System.currentTimeMillis() + VALIDITY_MS)
+    /**
+     * Generate a refresh token (long-lived, used to obtain new access tokens)
+     */
+    fun generateRefreshToken(jwtTokenBody: JwtTokenRequest): String = JWT.create()
+        .withSubject("Refresh")
+        .withIssuer(issuer)
+        .withClaim("email", jwtTokenBody.email)
+        .withClaim("userId", jwtTokenBody.userId)
+        .withClaim("userType", jwtTokenBody.userType)
+        .withClaim("tokenType", "refresh")
+        .withExpiresAt(getExpiration(refreshTokenValidityMs))
+        .sign(refreshAlgorithm)
+
+    /**
+     * Produce an access token for the given JwtTokenBody (backward compatibility alias)
+     */
+    fun tokenProvider(jwtTokenBody: JwtTokenRequest): String = generateAccessToken(jwtTokenBody)
+
+    private fun getExpiration(validityMs: Long) = Date(System.currentTimeMillis() + validityMs)
 }

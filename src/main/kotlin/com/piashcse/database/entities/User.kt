@@ -6,10 +6,10 @@ import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.feature.auth.JwtConfig
 import com.piashcse.model.request.JwtTokenRequest
+import com.piashcse.model.response.TokenPair
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.datetime
-import java.time.LocalDateTime
 
 object UserTable : BaseIdTable("user") {
     val email = varchar("email", 255) // Nullable for mobile users
@@ -19,6 +19,8 @@ object UserTable : BaseIdTable("user") {
     val otpExpiry = datetime("otp_expiry").nullable()
     val isVerified = bool("is_verified").default(false)
     val isActive = bool("is_active").default(true)
+    val failedLoginAttempts = integer("failed_login_attempts").default(0)
+    val lockedUntil = datetime("locked_until").nullable()
     override val primaryKey = PrimaryKey(id)
 
     // Create a composite unique index on email and userType
@@ -37,6 +39,8 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     var otpExpiry by UserTable.otpExpiry
     var isVerified by UserTable.isVerified
     var isActive by UserTable.isActive
+    var failedLoginAttempts by UserTable.failedLoginAttempts
+    var lockedUntil by UserTable.lockedUntil
 
     /**
      * Get the user response with role-based information
@@ -47,6 +51,8 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
         isVerified,
         userType,
         isActive,
+        failedLoginAttempts,
+        lockedUntil,
         createdAt,
         updatedAt
     )
@@ -61,11 +67,18 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     }
 
     /**
-     * Generate login response with JWT token
+     * Generate login response with JWT access and refresh token pair
      */
-    fun loggedInWithToken() = LoginResponse(
-        response(), JwtConfig.tokenProvider(JwtTokenRequest(id.value, email, userType.name))
-    )
+    fun loggedInWithToken(): TokenPair {
+        val jwtRequest = JwtTokenRequest(id.value, email, userType.name)
+        val accessToken = JwtConfig.generateAccessToken(jwtRequest)
+        val refreshToken = JwtConfig.generateRefreshToken(jwtRequest)
+        return TokenPair(
+            accessToken = accessToken,
+            refreshToken = refreshToken,
+            expiresIn = JwtConfig.accessTokenValidityMs / 1000
+        )
+    }
 
     /**
      * Check if the user has a specific role
@@ -110,9 +123,11 @@ data class UserResponse(
     val isVerified: Boolean?,
     var userType: UserType,
     val isActive: Boolean,
-    val createdAt: LocalDateTime?,
-    val updatedAt: LocalDateTime?
+    val failedLoginAttempts: Int = 0,
+    val lockedUntil: java.time.LocalDateTime? = null,
+    val createdAt: java.time.LocalDateTime?,
+    val updatedAt: java.time.LocalDateTime?
 )
 
-data class LoginResponse(val user: UserResponse?, val accessToken: String)
+data class LoginResponse(val user: UserResponse?, val tokens: TokenPair?)
 data class ChangePassword(val oldPassword: String, val newPassword: String)

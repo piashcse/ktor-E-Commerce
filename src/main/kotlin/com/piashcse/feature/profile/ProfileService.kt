@@ -1,8 +1,8 @@
 package com.piashcse.feature.profile
 
 import com.piashcse.constants.AppConstants
-import com.piashcse.database.entities.UserProfileTable
 import com.piashcse.database.entities.UserProfileDAO
+import com.piashcse.database.entities.UserProfileTable
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.model.response.UserProfile
 import com.piashcse.utils.extension.notFoundException

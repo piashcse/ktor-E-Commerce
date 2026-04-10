@@ -1,28 +1,39 @@
 package com.piashcse.plugin
 
 
+import com.google.gson.JsonSerializer
+import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.request.*
 import org.slf4j.event.Level
-
-import io.ktor.http.*
-import io.ktor.server.plugins.cors.routing.*
-import com.google.gson.JsonSerializer
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 fun Application.configureBasic() {
     install(CORS) {
-        allowMethod(HttpMethod.Options)
+        // Allow any host in development, restrict in production
+        anyHost()
+
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Post)
         allowMethod(HttpMethod.Put)
         allowMethod(HttpMethod.Delete)
         allowMethod(HttpMethod.Patch)
+        allowMethod(HttpMethod.Options)
+
         allowHeader(HttpHeaders.Authorization)
         allowHeader(HttpHeaders.ContentType)
+        allowHeader(HttpHeaders.Accept)
+        allowHeader(HttpHeaders.Origin)
+        allowHeader("X-Requested-With")
+        allowHeader("X-Request-ID")
+
+        allowCredentials = true
     }
     install(ContentNegotiation) {
         gson {

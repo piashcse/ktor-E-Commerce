@@ -10,6 +10,8 @@ import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import java.math.BigDecimal
+import java.time.LocalDateTime
 
 /**
  * Controller for managing payment-related operations.
@@ -28,10 +30,12 @@ class PaymentService : PaymentRepository {
         isOrderExist?.let {
             PaymentDAO.new {
                 orderId = EntityID(paymentRequest.orderId, PaymentTable)
-                amount = paymentRequest.amount
+                userId = it.userId
+                amount = BigDecimal.valueOf(paymentRequest.amount)
                 status = paymentRequest.status
                 paymentMethod = paymentRequest.paymentMethod
                 transactionId = paymentRequest.transactionId
+                currency = paymentRequest.currency
             }.response()
         } ?: throw paymentRequest.orderId.notFoundException()
     }
@@ -44,7 +48,54 @@ class PaymentService : PaymentRepository {
      * @throws Exception if no payment is found for the given payment ID.
      */
     override suspend fun getPaymentById(paymentId: String): Payment = query {
-        val isOrderExist = PaymentDAO.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
-        isOrderExist?.response() ?: throw paymentId.notFoundException()
+        val payment = PaymentDAO.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
+        payment?.response() ?: throw paymentId.notFoundException()
+    }
+
+    /**
+     * Retrieves a payment by order ID.
+     *
+     * @param orderId The ID of the order.
+     * @return The payment entity associated with the order, or null if not found.
+     */
+    suspend fun getPaymentByOrderId(orderId: String): Payment? = query {
+        val payment = PaymentDAO.find { PaymentTable.orderId eq orderId }.toList().firstOrNull()
+        payment?.response()
+    }
+
+    /**
+     * Marks a payment as paid.
+     *
+     * @param paymentId The ID of the payment.
+     * @param transactionId The transaction ID from the payment gateway.
+     * @return The updated payment.
+     */
+    suspend fun markAsPaid(paymentId: String, transactionId: String?): Payment = query {
+        val payment = PaymentDAO.find { PaymentTable.id eq paymentId }.singleOrNull()
+            ?: throw paymentId.notFoundException()
+
+        payment.status = com.piashcse.constants.PaymentStatus.COMPLETED
+        payment.transactionId = transactionId ?: payment.transactionId
+        payment.paidAt = LocalDateTime.now()
+        payment.response()
+    }
+
+    /**
+     * Processes a refund for a payment.
+     *
+     * @param paymentId The ID of the payment.
+     * @param refundAmount The amount to refund (null for full refund).
+     * @param reason The reason for the refund.
+     * @return The updated payment.
+     */
+    suspend fun processRefund(paymentId: String, refundAmount: Double?, reason: String?): Payment = query {
+        val payment = PaymentDAO.find { PaymentTable.id eq paymentId }.singleOrNull()
+            ?: throw paymentId.notFoundException()
+
+        val refundAmt = refundAmount ?: payment.amount.toDouble()
+        payment.refundAmount = BigDecimal.valueOf(refundAmt)
+        payment.refundReason = reason
+        payment.status = com.piashcse.constants.PaymentStatus.REFUNDED
+        payment.response()
     }
 }

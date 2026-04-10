@@ -3,7 +3,6 @@ package com.piashcse.feature.inventory
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.requiredParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*

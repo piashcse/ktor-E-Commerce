@@ -2,12 +2,7 @@ package com.piashcse.feature.product
 
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.ProductStatus
-import com.piashcse.database.entities.ProductDAO
-import com.piashcse.database.entities.ProductTable
-import com.piashcse.database.entities.SellerDAO
-import com.piashcse.database.entities.SellerTable
-import com.piashcse.database.entities.ShopDAO
-import com.piashcse.database.entities.ShopTable
+import com.piashcse.database.entities.*
 import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
@@ -15,13 +10,11 @@ import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.model.response.Product
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
-import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.lessEq
-import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.io.File
@@ -386,5 +379,15 @@ class ProductService : ProductRepository {
         ProductDAO.find {
             ProductTable.hotDeal eq true and (ProductTable.status eq ProductStatus.ACTIVE)
         }.orderBy(ProductTable.discountPercentage to org.jetbrains.exposed.v1.core.SortOrder.DESC).limit(10).map { it.response() }
+    }
+
+    /**
+     * Deletes a product by ID (admin - no ownership check).
+     */
+    suspend fun deleteProductByAdmin(productId: String): String = query {
+        val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
+            ?: throw productId.notFoundException()
+        product.delete()
+        productId
     }
 }

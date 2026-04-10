@@ -1,6 +1,7 @@
 package com.piashcse.di
 
 import com.piashcse.feature.auth.AuthService
+import com.piashcse.feature.auth.TokenService
 import com.piashcse.feature.brand.BrandService
 import com.piashcse.feature.cart.CartService
 import com.piashcse.feature.consent.ConsentService
@@ -30,6 +31,7 @@ val serviceModule = module {
     single { ShopService() }
     single { ShopCategoryService() }
     single { AuthService() }
+    single { TokenService() }
     single { ProfileService() }
     single { WishListService() }
     single { PaymentService() }

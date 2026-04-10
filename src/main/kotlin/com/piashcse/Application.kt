@@ -20,6 +20,8 @@ fun main() {
 fun Application.configureAll() {
     configureDataBase()
     configureBasic()
+    configureSecurityHeaders()
+    configureRateLimit()
     configureKoin()
     configureRequestValidation()
     configureAuth()

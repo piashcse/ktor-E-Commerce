@@ -1,7 +1,7 @@
 package com.piashcse.model.request
 
-import kotlinx.serialization.Serializable
 import com.piashcse.constants.PaymentStatus
+import kotlinx.serialization.Serializable
 import org.valiktor.functions.isGreaterThan
 import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
@@ -10,17 +10,18 @@ import org.valiktor.validate
 @Serializable
 data class PaymentRequest(
     val orderId: String,
-    val amount: Long,
+    val amount: Double,
     val status: PaymentStatus,
     val paymentMethod: String,
     val transactionId: String?,
+    val currency: String = "USD",
 ) {
     fun validation() {
         validate(this) {
             validate(PaymentRequest::orderId).isNotNull().isNotEmpty()
-            validate(PaymentRequest::amount).isNotNull().isGreaterThan(0)
+            validate(PaymentRequest::amount).isNotNull().isGreaterThan(0.0)
             validate(PaymentRequest::status).isNotNull()
-            validate(PaymentRequest::paymentMethod).isNotNull()
+            validate(PaymentRequest::paymentMethod).isNotNull().isNotEmpty()
         }
     }
 }

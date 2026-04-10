@@ -1,8 +1,7 @@
 package com.piashcse.model.request
 
-import kotlinx.serialization.Serializable
-import com.piashcse.constants.UserType
 import com.piashcse.plugin.RoleManagement
+import kotlinx.serialization.Serializable
 import org.valiktor.functions.hasSize
 import org.valiktor.functions.isEmail
 import org.valiktor.functions.isIn

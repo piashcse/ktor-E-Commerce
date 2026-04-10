@@ -1,24 +1,15 @@
 package com.piashcse.feature.shop
 
 import com.piashcse.constants.ShopStatus
-import com.piashcse.database.entities.ProductDAO
-import com.piashcse.database.entities.SellerDAO
-import com.piashcse.database.entities.SellerTable
-import com.piashcse.database.entities.ShopDAO
-import com.piashcse.database.entities.ShopTable
-import com.piashcse.database.entities.UserDAO
-import com.piashcse.database.entities.UserTable
+import com.piashcse.database.entities.*
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.model.response.Shop
 import com.piashcse.utils.extension.notFoundException
 import com.piashcse.utils.extension.query
-import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.javatime.CurrentTimestamp
-import java.time.LocalDateTime
 
 class ShopService : ShopRepository {
     /**

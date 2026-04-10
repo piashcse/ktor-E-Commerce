@@ -17,5 +17,7 @@ object DotEnv {
 
     fun getInt(key: String, defaultValue: Int): Int = dotenv[key]?.toIntOrNull() ?: defaultValue
 
+    fun getLong(key: String, defaultValue: Long): Long = dotenv[key]?.toLongOrNull() ?: defaultValue
+
     fun getBoolean(key: String, defaultValue: Boolean): Boolean = dotenv[key]?.toBoolean() ?: defaultValue
 }
