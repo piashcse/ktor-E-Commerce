@@ -52,32 +52,18 @@ curl -X 'POST' \
 
 #### Example Response
 
+**Status: 200 OK**
+
 ```json
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
+  "user": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "email": "customer@gmail.com",
+    "userType": "customer"
   },
-  "data": {
-    "user": {
-      "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-      "email": "customer@gmail.com",
-      "userType": "customer"
-    },
-    "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9..."
-  }
+  "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9..."
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `isSuccess` | boolean | Indicates if the request was successful |
-| `statusCode` | object | HTTP status code and description |
-| `data.user` | object | User information |
-| `data.accessToken` | string | JWT token for authentication |
 
 ---
 
@@ -116,17 +102,12 @@ curl -X 'POST' \
 
 #### Example Response
 
+**Status: 201 Created**
+
 ```json
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
-    "id": "f48ec4f9-5482-4a23-9e49-e69f97bd20a6",
-    "email": "piash@gmail.com"
-  }
+  "id": "f48ec4f9-5482-4a23-9e49-e69f97bd20a6",
+  "email": "piash@gmail.com"
 }
 ```
 
@@ -155,15 +136,10 @@ curl -X 'GET' \
 
 #### Example Response
 
+**Status: 200 OK**
+
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": true
-}
+true
 ```
 
 ---
@@ -191,15 +167,10 @@ curl -X 'GET' \
 
 #### Example Response
 
+**Status: 200 OK**
+
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "verification code sent to piash@gmail.com"
-}
+"verification code sent to piash@gmail.com"
 ```
 
 ---
@@ -229,15 +200,10 @@ curl -X 'GET' \
 
 #### Example Response
 
+**Status: 200 OK**
+
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "Password change successful"
-}
+"Password change successful"
 ```
 
 ---
@@ -272,15 +238,10 @@ curl -X 'PUT' \
 
 #### Example Response
 
+**Status: 200 OK**
+
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "Password has been changed"
-}
+"Password has been changed"
 ```
 
 ---
@@ -321,15 +282,10 @@ curl -X 'PUT' \
 
 #### Example Response
 
+**Status: 200 OK**
+
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "User type changed successfully to ADMIN"
-}
+"User type changed successfully to ADMIN"
 ```
 
 ---
@@ -365,14 +321,7 @@ curl -X 'PUT' \
 #### Example Response
 
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "User deactivated successfully"
-}
+"User deactivated successfully"
 ```
 
 ---
@@ -408,14 +357,7 @@ curl -X 'PUT' \
 #### Example Response
 
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "User activated successfully"
-}
+"User activated successfully"
 ```
 
 ---
@@ -469,14 +411,7 @@ curl -X 'PUT' \
 #### Example Response
 
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "User type changed successfully to ADMIN"
-}
+"User type changed successfully to ADMIN"
 ```
 
 #### Response Fields
@@ -518,14 +453,7 @@ curl -X 'PUT' \
 #### Example Response
 
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "User deactivated successfully"
-}
+"User deactivated successfully"
 ```
 
 #### Response Fields
@@ -567,14 +495,7 @@ curl -X 'PUT' \
 #### Example Response
 
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "User activated successfully"
-}
+"User activated successfully"
 ```
 
 #### Response Fields
@@ -585,44 +506,47 @@ curl -X 'PUT' \
 
 ---
 
-## Response Format
+## Error Handling
 
-All API responses follow a consistent format:
+This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
 
+### Success Responses
+- **HTTP status code indicates success** (200, 201, 204)
+- **Response body contains data directly** (no wrapper object)
+- No `isSuccess` or `statusCode` fields needed
+
+### Error Responses
+
+**Standard Error (400/401/403/404/500):**
 ```json
 {
-  "isSuccess": boolean,
-  "statusCode": {
-    "value": number,
-    "description": string
-  },
-  "data": any
+  "message": "Error description"
 }
 ```
 
-### Response Fields
+**Validation Error (400):**
+```json
+{
+  "message": "Validation failed",
+  "errors": [
+    {"field": "email", "message": "Invalid email format"},
+    {"field": "password", "message": "Password must be at least 8 characters"}
+  ]
+}
+```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `isSuccess` | boolean | Indicates if the operation was successful |
-| `statusCode.value` | number | HTTP status code |
-| `statusCode.description` | string | HTTP status description |
-| `data` | any | Response data (varies by endpoint) |
+### Common Error Codes
 
----
+| Status Code | Description | Example Message |
+|-------------|-------------|-----------------|
+| `400` | Bad Request | `"Invalid email or password"` |
+| `401` | Unauthorized | `"Authentication required"` |
+| `403` | Forbidden | `"Insufficient permissions"` |
+| `404` | Not Found | `"Product not found"` |
+| `409` | Conflict | `"User already exists with this email"` |
+| `500` | Internal Server Error | `"Internal server error"` |
 
-## Error Handling
-
-The API returns appropriate HTTP status codes and error messages:
-
-| Status Code | Description |
-|-------------|-------------|
-| `200` | OK - Request successful |
-| `400` | Bad Request - Invalid parameters |
-| `401` | Unauthorized - Invalid or missing authentication |
-| `403` | Forbidden - Insufficient privileges |
-| `404` | Not Found - Resource not found |
-| `500` | Internal Server Error - Server error |
+All error messages are centralized and consistent across all endpoints.
 
 ---
 

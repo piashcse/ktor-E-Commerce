@@ -222,6 +222,66 @@ On Terminal
 ./gradlew run
 ```
 
+## API Response Format
+
+This API follows industry-standard patterns (Stripe, GitHub, OpenAI) for clean, predictable responses.
+
+### Success Responses
+
+- **HTTP status code indicates success** (200, 201, 204)
+- **Response body contains data directly** - no wrapper objects
+- No `isSuccess` or `statusCode` fields needed
+
+**Example (200 OK):**
+```json
+{
+  "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+  "email": "customer@gmail.com",
+  "userType": "customer"
+}
+```
+
+### Error Responses
+
+**Standard Error (400/401/403/404/500):**
+```json
+{
+  "message": "Invalid email or password"
+}
+```
+
+**Validation Error (400):**
+```json
+{
+  "message": "Validation failed",
+  "errors": [
+    {"field": "email", "message": "Invalid email format"},
+    {"field": "password", "message": "Password must be at least 8 characters with uppercase, lowercase, digit, and special character"}
+  ]
+}
+```
+
+### Common Error Codes
+
+| Status Code | Description | Example Message |
+|-------------|-------------|-----------------|
+| `400` | Bad Request | `"Invalid email address"` |
+| `401` | Unauthorized | `"Authentication required"` |
+| `403` | Forbidden | `"Insufficient permissions"` |
+| `404` | Not Found | `"Product not found"` |
+| `409` | Conflict | `"User already exists with this email"` |
+| `500` | Internal Server Error | `"Internal server error"` |
+
+### Message Constants
+
+All error messages are centralized in `Message.kt` for consistency and maintainability:
+- **Validation**: Field-level validation messages
+- **Auth**: Authentication and authorization errors  
+- **Orders/Products/Shops**: Domain-specific errors
+- **General**: Common error messages
+
+This ensures consistent, actionable error messages across all endpoints.
+
 ## Documentation
 
 ### ROLE MANAGEMENT
@@ -263,23 +323,16 @@ curl -X 'POST' \
 
 ### Response
 
-```
+```json
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
+  "user": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "email": "customer@gmail.com",
+    "userType": "customer"
   },
-  "data": {
-    "user": {
-      "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-      "email": "customer@gmail.com",
-      "userType": "customer"
-    },
-    "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJjZTU2Mzc3NC1kM2Q1LTQ0MmUtYWQxYS1iODg0YmIwYTUzZjAiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI5NTkzMjQ5fQ.XWWEO1NFN3Gysb1Tghm1l1BcQ2NsYexXE2YmgeIvBv_Wq-DXgmihDed1zt3_TAJevM631vtMQ7LtwOXbYhKF9A"
-  }
+  "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9..."
 }
-```   
+```
 
 </details>
 
@@ -317,12 +370,6 @@ curl -X 'POST' \
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "f48ec4f9-5482-4a23-9e49-e69f97bd20a6",
     "email": "piash@gmail.com"
   }
@@ -356,14 +403,7 @@ curl -X 'GET' \
 
 Response body
 Download
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": true
-}
+true
 
 ```   
 
@@ -393,14 +433,7 @@ http://localhost:8080/auth/forget-password?email=piash@gmail.com&userType=custom
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "verification code sent to piash@gmail.com"
-}
+"verification code sent to piash@gmail.com"
 
 ```   
 
@@ -430,14 +463,7 @@ http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&otp=9189&ne
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "Password change successful"
-}
+"Password change successful"
 
 ```   
 
@@ -465,14 +491,7 @@ http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "Password has been changed"
-}
+"Password has been changed"
 ```
 
 </details>
@@ -499,14 +518,7 @@ http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "User type changed successfully to ADMIN"
-}
+"User type changed successfully to ADMIN"
 ```
 
 </details>
@@ -533,14 +545,7 @@ http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "User deactivated successfully"
-}
+"User deactivated successfully"
 ```
 
 </details>
@@ -567,14 +572,7 @@ http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "User activated successfully"
-}
+"User activated successfully"
 ```
 
 </details>
@@ -605,12 +603,6 @@ http://localhost:8080/profile
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "userId": "707ac264-be2e-4e89-b6d3-7a49b14263d2",
     "firstName": "Mehedi ",
     "lastName": "Hassan",
@@ -652,12 +644,6 @@ http://localhost:8080/profile?firstName=Mehedi%20&lastName=Hassan&mobile=0181235
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "userId": "707ac264-be2e-4e89-b6d3-7a49b14263d2",
     "firstName": "Mehedi ",
     "lastName": "Hassan",
@@ -699,14 +685,7 @@ http://localhost:8080/profile/image-upload
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "73b21d27-466e-45c6-bc2b-0480eb4db2d2.jpg"
-}
+"73b21d27-466e-45c6-bc2b-0480eb4db2d2.jpg"
 
 ```   
 
@@ -741,12 +720,6 @@ http://localhost:8080/shop-category
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "28918963-f932-425b-884b-a34d8ae69b2a",
     "name": "New digital Shop"
   }
@@ -777,13 +750,7 @@ http://localhost:8080/shop-category?limit=10
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "9c95c44c-3767-4ca2-9486-e28e390b3741",
       "name": "New Electronics"
@@ -816,14 +783,7 @@ http://localhost:8080/shop-category/2a17da31-7517-41db-b7d3-f77d0ddd52a5
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "2a17da31-7517-41db-b7d3-f77d0ddd52a5"
-}
+"2a17da31-7517-41db-b7d3-f77d0ddd52a5"
 ```   
 
 </details>
@@ -852,12 +812,6 @@ http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Pi
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "9c95c44c-3767-4ca2-9486-e28e390b3741",
     "name": "Piash Digital shop"
   }
@@ -891,12 +845,6 @@ http://localhost:8080/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "cbfdcfa3-fb65-4fa3-9078-e0f8cc63ddbc",
     "name": "Royal Shop"
   }
@@ -926,13 +874,7 @@ http://localhost:8080/shop?limit=10
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
       "name": "Piash Shop update",
@@ -966,12 +908,6 @@ http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20agai
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
     "name": "Shop again update",
     "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
@@ -1003,12 +939,6 @@ http://localhost:8080/shop/d2836959-6bc5-49d0-bd98-e73255a915c5
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "d2836959-6bc5-49d0-bd98-e73255a915c5",
   }
 }
@@ -1037,13 +967,7 @@ http://localhost:8080/shop/public?status=APPROVED&category=5e67ec97-9ed6-48ee-9d
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
       "name": "Shop Name",
@@ -1077,13 +1001,7 @@ http://localhost:8080/shop/category/5e67ec97-9ed6-48ee-9d56-4163fe1711cb
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
       "name": "Shop Name",
@@ -1117,13 +1035,7 @@ http://localhost:8080/shop/featured
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
       "name": "Featured Shop",
@@ -1157,13 +1069,7 @@ http://localhost:8080/shop/status?status=APPROVED
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
       "name": "Approved Shop",
@@ -1198,12 +1104,6 @@ http://localhost:8080/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
     "name": "Approved Shop",
     "status": "APPROVED"
@@ -1235,12 +1135,6 @@ http://localhost:8080/shop/reject/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
     "name": "Rejected Shop",
     "status": "REJECTED"
@@ -1272,12 +1166,6 @@ http://localhost:8080/shop/suspend/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
     "name": "Suspended Shop",
     "status": "SUSPENDED"
@@ -1309,12 +1197,6 @@ http://localhost:8080/shop/activate/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
     "name": "Activated Shop",
     "status": "APPROVED"
@@ -1368,12 +1250,6 @@ http://localhost:8080/product
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
     "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
     "name": "Smart watch",
@@ -1414,12 +1290,6 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
     "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
     "name": "Smart watch",
@@ -1467,12 +1337,6 @@ http://localhost:8080/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
     "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
     "name": "Smart watch",
@@ -1513,13 +1377,7 @@ http://localhost:8080/product/seller?limit=10&maxPrice=100&minPrice=0&categoryId
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
       "name": "Product Name",
@@ -1554,13 +1412,7 @@ http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
      "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
     "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
@@ -1602,13 +1454,7 @@ http://localhost:8080/product/search?limit=10&name=smartphone&categoryId=5e67ec9
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
       "name": "Smartphone",
@@ -1643,14 +1489,7 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "79a97389-78d5-4dff-a1f7-13bc7ae10a8d"
-}
+"79a97389-78d5-4dff-a1f7-13bc7ae10a8d"
 ```   
 
 </details>
@@ -1680,12 +1519,6 @@ http://localhost:8080/product/image-upload
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "cc38e31e-3a7f-435c-9e86-293daf0d6877",
     "imageUrl": "bf68a3f9-d131-4bee-bbbc-80264a3da437.png"
   }
@@ -1720,12 +1553,6 @@ http://localhost:8080/product-category?name=Kids
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "75b44e08-2c94-438f-b500-b204c7c90cca",
     "name": "Kids",
     "subCategories": []
@@ -1758,13 +1585,7 @@ http://localhost:8080/product-category?limit=10
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "58f5c085-d04a-47de-beab-1d476b6ce432",
       "name": "Mens Cloth",
@@ -1804,12 +1625,6 @@ http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
     "name": "Education 3.0",
     "subCategories": []
@@ -1841,14 +1656,7 @@ http://localhost:8080/product-category/75b44e08-2c94-438f-b500-b204c7c90cca
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "75b44e08-2c94-438f-b500-b204c7c90cca"
-}
+"75b44e08-2c94-438f-b500-b204c7c90cca"
 ```   
 
 </details>
@@ -1883,12 +1691,6 @@ http://localhost:8080/product-subcategory
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "70ac842b-7a81-4976-9564-d440880d1736",
     "name": "Electronics Subcategory",
     "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
@@ -1920,13 +1722,7 @@ http://localhost:8080/product-subcategory?categoryId=5e67ec97-9ed6-48ee-9d56-416
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "70ac842b-7a81-4976-9564-d440880d1736",
       "name": "Electronics Subcategory",
@@ -1961,12 +1757,6 @@ http://localhost:8080/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736?n
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "70ac842b-7a81-4976-9564-d440880d1736",
     "name": "Updated Electronics Subcategory",
     "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
@@ -1999,12 +1789,6 @@ http://localhost:8080/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "70ac842b-7a81-4976-9564-d440880d1736"
   }
 }
@@ -2038,12 +1822,6 @@ http://localhost:8080/brand?name=Nike
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
     "name": "Nike"
   }
@@ -2074,13 +1852,7 @@ http://localhost:8080/brand?limit=10
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
       "name": "Nike"
@@ -2118,12 +1890,6 @@ http://localhost:8080/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
     "name": "Addidas"
   }
@@ -2154,14 +1920,7 @@ http://localhost:8080/brand/19dd1021-432c-473c-8b19-0f56d19af9ad
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "19dd1021-432c-473c-8b19-0f56d19af9ad"
-}
+"19dd1021-432c-473c-8b19-0f56d19af9ad"
 ```   
 
 </details>
@@ -2195,12 +1954,6 @@ http://localhost:8080/wishlist
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "product": {
       "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
       "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
@@ -2235,13 +1988,7 @@ http://localhost:8080/wishlist?page=1&limit=10
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
       "name": "Polo T Shirt",
@@ -2275,14 +2022,7 @@ http://localhost:8080/wishlist/check?productId=5b24d429-c981-47c8-9318-f4d61dd2c
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": true
-}
+true
 ```
 
 </details>
@@ -2310,12 +2050,6 @@ http://localhost:8080/wishlist/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
     // ...
   }
@@ -2362,12 +2096,6 @@ http://localhost:8080/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "5489a8b4-7a16-4854-b157-396a8a731032",
     "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
     "orderId": "c7f38846-4f63-460f-b956-f2b6758dbffd",
@@ -2416,12 +2144,6 @@ http://localhost:8080/shipping
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "471ebc82-80e7-4da0-a472-d1c8835f57b8",
     "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
     "shipAddress": "Dhaka Bangladesh",
@@ -2459,12 +2181,6 @@ http://localhost:8080/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "5489a8b4-7a16-4854-b157-396a8a731032",
     "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
     "orderId": "c7f38846-4f63-460f-b956-f2b6758dbffd",
@@ -2502,14 +2218,7 @@ http://localhost:8080/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "471ebc82-80e7-4da0-a472-d1c8835f57b8"
-}
+"471ebc82-80e7-4da0-a472-d1c8835f57b8"
 ```   
 
 </details>
@@ -2538,13 +2247,7 @@ http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "70ac842b-7a81-4976-9564-d440880d1736",
       "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
@@ -2587,12 +2290,6 @@ http://localhost:8080/review-rating
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "70ac842b-7a81-4976-9564-d440880d1736",
     "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
     "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
@@ -2627,12 +2324,6 @@ http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "70ac842b-7a81-4976-9564-d440880d1736",
     "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
     "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
@@ -2666,14 +2357,7 @@ http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "70ac842b-7a81-4976-9564-d440880d1736"
-}
+"70ac842b-7a81-4976-9564-d440880d1736"
 ```   
 
 </details>
@@ -2704,12 +2388,6 @@ http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quanti
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
     "quantity": 1
   }
@@ -2740,13 +2418,7 @@ http://localhost:8080/cart?limit=10
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "productId": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
       "quantity": 3,
@@ -2819,12 +2491,6 @@ http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quanti
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
     "quantity": 2,
     "product": {
@@ -2870,12 +2536,6 @@ http://localhost:8080/cart/71b26dd9-b4b5-4f87-a84d-c8daa506018a
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
     "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
     "productName": "Smartch watch",
@@ -2923,14 +2583,7 @@ http://localhost:8080/cart/all
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": true
-}
+true
 ```   
 
 </details>
@@ -2974,12 +2627,6 @@ http://localhost:8080/order
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "orderId": "b177431f-22f2-4c01-8ad6-da5319e2c7b9"
   }
 }
@@ -3009,13 +2656,7 @@ http://localhost:8080/order?limit=10
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "orderId": "04675b54-a9df-4200-a526-0b15f6a85930",
       "quantity": 1,
@@ -3075,12 +2716,6 @@ http://localhost:8080/order/status/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=d
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
     "quantity": 1073741824,
     "subTotal": 0.1,
@@ -3126,12 +2761,6 @@ http://localhost:8080/payment
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "4b68917d-4452-4d18-9012-47e843f05c15",
     "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
     "amount": 500,
@@ -3164,12 +2793,6 @@ http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "4b68917d-4452-4d18-9012-47e843f05c15",
     "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
     "amount": 500,
@@ -3204,13 +2827,7 @@ http://localhost:8080/policy
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "550e8400-e29b-41d4-a716-446655440000",
       "type": "PRIVACY_POLICY",
@@ -3261,12 +2878,6 @@ http://localhost:8080/policy/PRIVACY_POLICY
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "type": "PRIVACY_POLICY",
     "title": "Privacy Policy",
@@ -3304,12 +2915,6 @@ http://localhost:8080/policy/detail/550e8400-e29b-41d4-a716-446655440000
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "type": "PRIVACY_POLICY",
     "title": "Privacy Policy",
@@ -3356,12 +2961,6 @@ http://localhost:8080/policy
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 201,
-    "description": "Created"
-  },
-  "data": {
     "id": "550e8400-e29b-41d4-a716-446655440003",
     "type": "PRIVACY_POLICY",
     "title": "Updated Privacy Policy",
@@ -3405,12 +3004,6 @@ http://localhost:8080/policy/550e8400-e29b-41d4-a716-446655440003
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "550e8400-e29b-41d4-a716-446655440003",
     "type": "PRIVACY_POLICY",
     "title": "Updated Privacy Policy v2",
@@ -3447,12 +3040,6 @@ http://localhost:8080/policy/deactivate/550e8400-e29b-41d4-a716-446655440003
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "550e8400-e29b-41d4-a716-446655440003",
     "type": "PRIVACY_POLICY",
     "title": "Updated Privacy Policy v2",
@@ -3493,12 +3080,6 @@ http://localhost:8080/policy-consents/consent
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 201,
-    "description": "Created"
-  },
-  "data": {
     "id": "550e8400-e29b-41d4-a716-446655440002",
     "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
     "policyId": "550e8400-e29b-41d4-a716-446655440000",
@@ -3542,12 +3123,6 @@ http://localhost:8080/inventory
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "12345678-1234-1234-1234-123456789012",
     "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
     "quantity": 100,
@@ -3588,12 +3163,6 @@ http://localhost:8080/inventory/12345678-1234-1234-1234-123456789012
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "12345678-1234-1234-1234-123456789012",
     "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
     "quantity": 150,
@@ -3628,12 +3197,6 @@ http://localhost:8080/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quant
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
     "newQuantity": 200,
     "operation": "add"
@@ -3666,12 +3229,6 @@ http://localhost:8080/inventory/cbd630f6-bf9f-48ad-ac51-f806807d99fd
 
 ```
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
     "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
     "quantity": 200,
@@ -3705,13 +3262,7 @@ http://localhost:8080/inventory/shop?shopId=12345678-1234-1234-1234-123456789012
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "12345678-1234-1234-1234-123456789012",
       "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
@@ -3747,13 +3298,7 @@ http://localhost:8080/inventory/low-stock
 ### Response
 
 ```
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "12345678-1234-1234-1234-123456789012",
       "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",

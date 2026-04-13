@@ -106,24 +106,17 @@ curl -X 'POST' \
 
 ```json
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
-    "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
-    "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
-    "name": "Smart watch",
-    "description": "Good watch",
-    "minOrderQuantity": 1,
-    "stockQuantity": 1,
-    "price": 100,
-    "hotDeal": true,
-    "featured": true,
-    "images": "[string]",
-    "status": "ACTIVE"
-  }
+  "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
+  "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
+  "name": "Smart watch",
+  "description": "Good watch",
+  "minOrderQuantity": 1,
+  "stockQuantity": 1,
+  "price": 100,
+  "hotDeal": true,
+  "featured": true,
+  "images": "[string]",
+  "status": "ACTIVE"
 }
 ```
 
@@ -269,12 +262,6 @@ curl -X 'POST' \
 
 ```json
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "cc38e31e-3a7f-435c-9e86-293daf0d6877",
     "imageUrl": "bf68a3f9-d131-4bee-bbbc-80264a3da437.png"
   }
@@ -328,13 +315,7 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
       "name": "Smartphone",
@@ -402,13 +383,7 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
       "name": "Product Name",
@@ -466,13 +441,7 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
       "name": "Featured Product",
@@ -520,13 +489,7 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
       "name": "Best Selling Product",
@@ -574,13 +537,7 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
       "name": "Hot Deal Product",
@@ -607,45 +564,47 @@ curl -X 'GET' \
 
 ---
 
-## Response Format
+## Error Handling
 
-All API responses follow a consistent format:
+This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
 
+### Success Responses
+- **HTTP status code indicates success** (200, 201, 204)
+- **Response body contains data directly** (no wrapper object)
+- No `isSuccess` or `statusCode` fields needed
+
+### Error Responses
+
+**Standard Error (400/401/403/404/500):**
 ```json
 {
-  "isSuccess": boolean,
-  "statusCode": {
-    "value": number,
-    "description": string
-  },
-  "data": any
+  "message": "Error description"
 }
 ```
 
-### Response Fields
+**Validation Error (400):**
+```json
+{
+  "message": "Validation failed",
+  "errors": [
+    {"field": "email", "message": "Invalid email format"},
+    {"field": "password", "message": "Password must be at least 8 characters"}
+  ]
+}
+```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `isSuccess` | boolean | Indicates if the operation was successful |
-| `statusCode.value` | number | HTTP status code |
-| `statusCode.description` | string | HTTP status description |
-| `data` | any | Response data (varies by endpoint) |
+### Common Error Codes
 
----
+| Status Code | Description | Example Message |
+|-------------|-------------|-----------------|
+| `400` | Bad Request | `"Invalid email or password"` |
+| `401` | Unauthorized | `"Authentication required"` |
+| `403` | Forbidden | `"Insufficient permissions"` |
+| `404` | Not Found | `"Product not found"` |
+| `409` | Conflict | `"User already exists with this email"` |
+| `500` | Internal Server Error | `"Internal server error"` |
 
-## Error Handling
-
-The API returns appropriate HTTP status codes and error messages:
-
-| Status Code | Description |
-|-------------|-------------|
-| `200` | OK - Request successful |
-| `400` | Bad Request - Invalid parameters or missing required fields |
-| `401` | Unauthorized - Invalid or missing authentication |
-| `403` | Forbidden - Insufficient privileges |
-| `404` | Not Found - Product or category not found |
-| `409` | Conflict - Product code already exists or invalid category |
-| `500` | Internal Server Error - Server error |
+All error messages are centralized and consistent across all endpoints.
 
 ---
 
