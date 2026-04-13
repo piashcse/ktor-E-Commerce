@@ -34,7 +34,7 @@ class ProfileService : ProfileRepository {
     override suspend fun getProfile(userId: String): UserProfile = query {
         val isProfileExist =
             UserProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
-        isProfileExist?.response() ?: throw userId.throwNotFound("Resource")
+        isProfileExist?.response() ?: userId.throwNotFound("User")
     }
 
     /**
@@ -61,7 +61,7 @@ class ProfileService : ProfileRepository {
             it.postCode = userProfile?.postCode ?: it.postCode
             it.gender = userProfile?.gender ?: it.gender
             it.response()
-        } ?: throw userId.throwNotFound("Resource")
+        } ?: userId.throwNotFound("User")
     }
 
     /**
@@ -84,6 +84,6 @@ class ProfileService : ProfileRepository {
         userProfileEntity?.let {
             it.image = imageUrl ?: it.image
             it.response()
-        } ?: throw userId.throwNotFound("Resource")
+        } ?: userId.throwNotFound("User")
     }
 }

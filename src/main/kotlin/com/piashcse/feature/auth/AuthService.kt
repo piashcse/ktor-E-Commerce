@@ -67,19 +67,19 @@ class AuthService(
 
     private fun validatePasswordStrength(password: String) {
         if (password.length < 8) {
-            throw ValidationException("Password must be at least 8 characters long")
+            throw ValidationException(Message.Validation.WEAK_PASSWORD)
         }
         if (!password.any { it.isUpperCase() }) {
-            throw ValidationException("Password must contain at least one uppercase letter")
+            throw ValidationException(Message.Validation.WEAK_PASSWORD)
         }
         if (!password.any { it.isLowerCase() }) {
-            throw ValidationException("Password must contain at least one lowercase letter")
+            throw ValidationException(Message.Validation.WEAK_PASSWORD)
         }
         if (!password.any { it.isDigit() }) {
-            throw ValidationException("Password must contain at least one digit")
+            throw ValidationException(Message.Validation.WEAK_PASSWORD)
         }
         if (!password.any { !it.isLetterOrDigit() }) {
-            throw ValidationException("Password must contain at least one special character")
+            throw ValidationException(Message.Validation.WEAK_PASSWORD)
         }
     }
     /**
@@ -118,15 +118,15 @@ class AuthService(
             // User exists with the same email and userType
             // Check if the user is already verified
             if (existingUserSameType.isVerified) {
-                throw ValidationException(Message.USER_ALREADY_EXIST_WITH_THIS_EMAIL)
+                throw ValidationException(Message.Auth.USER_EXISTS)
             } else {
                 // Resend OTP if expired
                 if (existingUserSameType.otpExpiry!! < LocalDateTime.now()) {
                     existingUserSameType.otpCode = otp
                     sendEmail(existingUserSameType.email, otp)
-                    "${Message.NEW_OTP_SENT_TO} ${existingUserSameType.email}"
+                    Message.Auth.OTP_SENT
                 } else {
-                    throw ValidationException(Message.OTP_ALREADY_SENT_WAIT_UNTIL_EXPIRY)
+                    throw ValidationException(Message.Auth.OTP_ALREADY_SENT)
                 }
             }
         } else {
@@ -155,17 +155,10 @@ class AuthService(
             // Send OTP
             sendEmail(inserted.email, otp)
 
-            // Return appropriate message
-            val messageSuffix = if (existingUserDifferentType != null) {
-                ". You already have an account as ${existingUserDifferentType.userType}."
-            } else {
-                ""
-            }
-
             Registration(
                 inserted.id.value,
                 registerRequest.email,
-                message = "${Message.OTP_SENT_TO} ${inserted.email}$messageSuffix"
+                message = Message.Auth.OTP_SENT
             )
         }
     }
@@ -174,7 +167,7 @@ class AuthService(
         requireValidEmail(request.email)
         validatePasswordStrength(request.password)
         if (UserType.fromString(request.userType) == null)
-            throw ValidationException("Invalid user type. Must be one of: CUSTOMER, SELLER, ADMIN, SUPER_ADMIN")
+            throw ValidationException(Message.Validation.INVALID_USER_TYPE)
     }
 
     /**
@@ -190,7 +183,7 @@ class AuthService(
 
         // Convert string userType to enum for comparison
         val userTypeEnum = UserType.fromString(loginRequest.userType) ?: run {
-            throw loginRequest.email.throwNotFound("Resource")
+            loginRequest.email.throwNotFound("User")
         }
 
         val userEntity = query {
@@ -198,7 +191,7 @@ class AuthService(
                 .toList().singleOrNull()
         }
 
-        val user = userEntity ?: throw loginRequest.email.throwNotFound("Resource")
+        val user = userEntity ?: loginRequest.email.throwNotFound("User")
 
         if (BCrypt.verifyer().verify(
                 loginRequest.password.toCharArray(), user.password
@@ -210,10 +203,10 @@ class AuthService(
                     storeRefreshToken(user.id.value, tokenPair.refreshToken)
                     return LoginResponse(user.response(), tokenPair.accessToken, tokenPair.refreshToken, tokenPair.expiresIn)
                 } else {
-                    throw ValidationException(Message.ACCOUNT_DEACTIVATED)
+                    throw ValidationException(Message.Auth.ACCOUNT_DEACTIVATED)
                 }
             } else {
-                throw ValidationException(Message.ACCOUNT_NOT_VERIFIED)
+                throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)
             }
         } else {
             throw InvalidCredentialsException()
@@ -223,9 +216,9 @@ class AuthService(
     private fun validateLoginRequest(request: LoginRequest) {
         requireValidEmail(request.email)
         if (UserType.fromString(request.userType) == null)
-            throw ValidationException("Invalid user type. Must be one of: CUSTOMER, SELLER, ADMIN, SUPER_ADMIN")
+            throw ValidationException(Message.Validation.INVALID_USER_TYPE)
         if (request.password.isBlank())
-            throw ValidationException("Password cannot be empty")
+            throw ValidationException(Message.Validation.EMPTY_PASSWORD)
     }
 
     /**
@@ -244,7 +237,7 @@ class AuthService(
             } else {
                 false
             }
-        } ?: throw NotFoundException("User not found", "USER_NOT_FOUND")
+        } ?: throw NotFoundException(Message.Errors.NOT_FOUND)
     }
 
     /**
@@ -261,14 +254,14 @@ class AuthService(
             if (BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), it.password).verified) {
                 // Check if new password is same as old password
                 if (changePassword.oldPassword == changePassword.newPassword) {
-                    throw ValidationException(Message.NEW_PASSWORD_CANNOT_BE_SAME_AS_OLD_PASSWORD)
+                    throw ValidationException(Message.Auth.PASSWORD_SAME)
                 }
                 it.password = BCrypt.withDefaults().hashToString(12, changePassword.newPassword.toCharArray())
                 true
             } else {
                 false
             }
-        } ?: throw NotFoundException("User not found", "USER_NOT_FOUND")
+        } ?: throw NotFoundException(Message.Errors.NOT_FOUND)
     }
 
     /**
@@ -283,14 +276,14 @@ class AuthService(
         val userEntities = UserDAO.find { UserTable.email eq forgetPasswordRequest.email }.toList()
 
         if (userEntities.isEmpty()) {
-            throw forgetPasswordRequest.email.throwNotFound("Resource")
+            forgetPasswordRequest.email.throwNotFound("User")
         }
 
         // Convert string userType to enum for comparison
         val userTypeEnum = try {
             UserType.valueOf(forgetPasswordRequest.userType.uppercase())
         } catch (e: IllegalArgumentException) {
-            throw forgetPasswordRequest.email.throwNotFound("Resource")
+            forgetPasswordRequest.email.throwNotFound("User")
         }
 
         // Find the specific user with the given email and userType
@@ -299,8 +292,7 @@ class AuthService(
             val otp = generateOTP()
             it.otpCode = otp
             otp
-        }
-            ?: throw "${forgetPasswordRequest.email} not found for ${forgetPasswordRequest.userType} role".throwNotFound("Resource")
+        } ?: throw NotFoundException(Message.Auth.userNotFoundForRole(forgetPasswordRequest.email, forgetPasswordRequest.userType))
     }
 
     /**
@@ -317,19 +309,19 @@ class AuthService(
         val userEntities = UserDAO.find { UserTable.email eq resetPasswordRequest.email }.toList()
 
         if (userEntities.isEmpty()) {
-            throw resetPasswordRequest.email.throwNotFound("Resource")
+            resetPasswordRequest.email.throwNotFound("User")
         }
 
         // Convert string userType to enum for comparison
         val userTypeEnum = try {
             UserType.valueOf(resetPasswordRequest.userType.uppercase())
         } catch (e: IllegalArgumentException) {
-            throw "${resetPasswordRequest.email} not found for ${resetPasswordRequest.userType} role".throwNotFound("Resource")
+            throw NotFoundException(Message.Auth.userNotFoundForRole(resetPasswordRequest.email, resetPasswordRequest.userType))
         }
 
         // Find the specific user with the given email and userType
         val userEntity = userEntities.find { it.userType == userTypeEnum }
-            ?: throw "${resetPasswordRequest.email} not found for ${resetPasswordRequest.userType} role".throwNotFound("Resource")
+            ?: throw NotFoundException(Message.Auth.userNotFoundForRole(resetPasswordRequest.email, resetPasswordRequest.userType))
 
         // Verify the code and update the password
         if (userEntity.otpCode == resetPasswordRequest.verificationCode) {
@@ -337,7 +329,7 @@ class AuthService(
             if (BCrypt.verifyer()
                     .verify(resetPasswordRequest.newPassword.toCharArray(), userEntity.password).verified
             ) {
-                throw ValidationException(Message.NEW_PASSWORD_CANNOT_BE_SAME_AS_CURRENT_PASSWORD)
+                throw ValidationException(Message.Auth.PASSWORD_SAME)
             }
             userEntity.password = BCrypt.withDefaults().hashToString(12, resetPasswordRequest.newPassword.toCharArray())
             AppConstants.DataBaseTransaction.FOUND
@@ -352,18 +344,18 @@ class AuthService(
      */
     override suspend fun changeUserType(currentUserId: String, targetUserId: String, newUserType: UserType): Boolean = query {
         // Validate inputs
-        if (currentUserId.isBlank()) throw ValidationException("Current user ID cannot be blank")
-        if (targetUserId.isBlank()) throw ValidationException("Target user ID cannot be blank")
+        if (currentUserId.isBlank()) throw ValidationException(Message.Validation.blankField("Current user ID"))
+        if (targetUserId.isBlank()) throw ValidationException(Message.Validation.blankField("Target user ID"))
 
         // Get the current user making the change
-        val currentUser = UserDAO.findById(currentUserId) ?: throw NotFoundException("User not found", "USER_NOT_FOUND")
+        val currentUser = UserDAO.findById(currentUserId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
 
         // Get the target user
-        val targetUser = UserDAO.findById(targetUserId) ?: throw NotFoundException("User not found", "USER_NOT_FOUND")
+        val targetUser = UserDAO.findById(targetUserId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
 
         // Check if the current user has permission to change user types
         if (!RoleHierarchy.canManageUser(currentUser.userType, targetUser.userType)) {
-            throw ValidationException("Insufficient permissions to change user type to $newUserType")
+            throw ValidationException(Message.Auth.insufficientPermissions("change user type to $newUserType"))
         }
 
         // Update the user type
@@ -396,15 +388,15 @@ class AuthService(
     override suspend fun deactivateUser(currentUserId: String, targetUserId: String): Boolean = query {
         // Get the current user making the change
         val currentUser = UserDAO.find { UserTable.id eq currentUserId }.singleOrNull()
-            ?: throw NotFoundException("User not found", "USER_NOT_FOUND")
+            ?: throw NotFoundException(Message.Errors.NOT_FOUND)
 
         // Get the target user
         val targetUser = UserDAO.find { UserTable.id eq targetUserId }.singleOrNull()
-            ?: throw NotFoundException("User not found", "USER_NOT_FOUND")
+            ?: throw NotFoundException(Message.Errors.NOT_FOUND)
 
         // Check if the current user has permission to deactivate this user
         if (!RoleHierarchy.canManageUser(currentUser.userType, targetUser.userType)) {
-            throw ValidationException("Insufficient permissions to deactivate user")
+            throw ValidationException(Message.Auth.insufficientPermissions("deactivate user"))
         }
 
         // Update user active status
@@ -418,15 +410,15 @@ class AuthService(
     override suspend fun activateUser(currentUserId: String, targetUserId: String): Boolean = query {
         // Get the current user making the change
         val currentUser = UserDAO.find { UserTable.id eq currentUserId }.singleOrNull()
-            ?: throw NotFoundException("User not found", "USER_NOT_FOUND")
+            ?: throw NotFoundException(Message.Errors.NOT_FOUND)
 
         // Get the target user
         val targetUser = UserDAO.find { UserTable.id eq targetUserId }.singleOrNull()
-            ?: throw NotFoundException("User not found", "USER_NOT_FOUND")
+            ?: throw NotFoundException(Message.Errors.NOT_FOUND)
 
         // Check if the current user has permission to activate this user
         if (!RoleHierarchy.canManageUser(currentUser.userType, targetUser.userType)) {
-            throw ValidationException("Insufficient permissions to activate user")
+            throw ValidationException(Message.Auth.insufficientPermissions("activate user"))
         }
 
         // Update user active status
@@ -442,16 +434,16 @@ class AuthService(
 
         val tokenHash = hashRefreshToken(request.refreshToken)
         val storedToken = refreshTokenRepository.getRefreshTokenByHash(tokenHash)
-            ?: throw "Invalid refresh token".throwNotFound("Resource")
+            ?: throw NotFoundException(Message.Auth.INVALID_REFRESH_TOKEN)
 
         if (!storedToken.isValid) {
             refreshTokenRepository.revokeRefreshToken(tokenHash)
-            throw "Refresh token expired or revoked".throwNotFound("Resource")
+            throw NotFoundException(Message.Auth.TOKEN_EXPIRED)
         }
 
         val user = query {
             UserDAO.findById(storedToken.userId.value)
-                ?: throw "User not found".throwNotFound("Resource")
+                ?: throw NotFoundException(Message.Errors.NOT_FOUND)
         }
 
         // Revoke old token and issue new pair

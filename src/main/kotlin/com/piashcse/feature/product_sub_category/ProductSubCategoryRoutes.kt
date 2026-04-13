@@ -2,7 +2,6 @@ package com.piashcse.feature.product_sub_category
 
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -32,9 +31,8 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
         get {
             val params = call.requireParameters("categoryId", "limit")
             call.respond(
-                ApiResponse.ok(
-                    subCategoryController.getProductSubCategory(params[0], params[1].toInt())
-                )
+                HttpStatusCode.OK,
+                subCategoryController.getProductSubCategory(params[0], params[1].toInt())
             )
         }
         authenticate(RoleManagement.ADMIN.role) {
@@ -49,9 +47,8 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
             post {
                 val requestBody = call.receive<ProductSubCategoryRequest>()
                 call.respond(
-                    ApiResponse.ok(
-                        subCategoryController.addProductSubCategory(requestBody)
-                    )
+                    HttpStatusCode.OK,
+                    subCategoryController.addProductSubCategory(requestBody)
                 )
             }
 
@@ -68,10 +65,9 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
             put("{id}") {
                 val params = call.requireParameters("id", "name")
                 call.respond(
-                    ApiResponse.ok(
-                        subCategoryController.updateProductSubCategory(
-                            params[0], params[1]
-                        )
+                    HttpStatusCode.OK,
+                    subCategoryController.updateProductSubCategory(
+                        params[0], params[1]
                     )
                 )
             }
@@ -88,10 +84,9 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
             delete("{id}") {
                 val id = call.requireParameters("id")
                 call.respond(
-                    ApiResponse.ok(
-                        subCategoryController.deleteProductSubCategory(
-                            id.first()
-                        )
+                    HttpStatusCode.OK,
+                    subCategoryController.deleteProductSubCategory(
+                        id.first()
                     )
                 )
             }

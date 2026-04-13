@@ -1,8 +1,9 @@
 package com.piashcse.feature.inventory
 
+import com.piashcse.constants.Message
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
+import com.piashcse.utils.MissingParameterException
 import com.piashcse.utils.NotFoundException
 import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.requireParameters
@@ -31,7 +32,7 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
              */
             post {
                 val requestBody = call.receive<InventoryRequest>()
-                call.respond(ApiResponse.ok(inventoryController.createOrUpdateInventory(requestBody)))
+                call.respond(HttpStatusCode.OK, inventoryController.createOrUpdateInventory(requestBody))
             }
 
             /**
@@ -46,9 +47,9 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
             put("/{id}") {
                 val productId = call.requireParameters("id")
                 val requestBody = call.receive<InventoryRequest>()
-                call.respond(ApiResponse.ok(
+                call.respond(HttpStatusCode.OK,
                     inventoryController.createOrUpdateInventory(requestBody.copy(productId = productId.first())),
-                ))
+                )
             }
 
             /**
@@ -64,11 +65,11 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
             put("/stock/{id}") {
                 val productId = call.requireParameters("id")
                 val quantity = call.parameters["quantity"]?.toIntOrNull()
-                    ?: throw IllegalArgumentException("Missing required parameter: quantity")
+                    ?: throw MissingParameterException("quantity")
                 val operation = call.parameters["operation"] ?: "add"
-                call.respond(ApiResponse.ok(
+                call.respond(HttpStatusCode.OK,
                     inventoryController.updateStock(productId.first(), quantity, operation),
-                ))
+                )
             }
 
             /**
@@ -83,8 +84,8 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
             get("/{id}") {
                 val productId = call.requireParameters("id")
                 val inventory = inventoryController.getInventoryByProduct(productId.first())
-                    ?: throw NotFoundException("Inventory not found", "INVENTORY_NOT_FOUND")
-                call.respond(ApiResponse.ok(inventory))
+                    ?: throw NotFoundException(Message.Inventory.NOT_FOUND)
+                call.respond(HttpStatusCode.OK, inventory)
             }
         }
 
@@ -100,8 +101,8 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
              */
             get("/shop") {
                 val shopId = call.parameters["shopId"]
-                    ?: throw IllegalArgumentException("Missing required parameter: shopId")
-                call.respond(ApiResponse.ok(inventoryController.getInventoryByShop(shopId)))
+                    ?: throw MissingParameterException("shopId")
+                call.respond(HttpStatusCode.OK, inventoryController.getInventoryByShop(shopId))
             }
 
             /**
@@ -114,7 +115,7 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
              */
             get("/low-stock") {
                 val limit = call.parameters["limit"]?.toIntOrNull() ?: 10
-                call.respond(ApiResponse.ok(inventoryController.getLowStockProducts(limit)))
+                call.respond(HttpStatusCode.OK, inventoryController.getLowStockProducts(limit))
             }
         }
     }

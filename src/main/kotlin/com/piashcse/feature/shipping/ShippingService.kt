@@ -29,7 +29,7 @@ class ShippingService : ShippingRepository {
             ShippingTable.orderId eq shippingRequest.orderId
         }.toList().singleOrNull()
         isShippingExist?.let {
-            throw shippingRequest.orderId.throwConflict("Resource")
+            throw shippingRequest.orderId.throwConflict("Shipping")
         } ?: ShippingDAO.new {
             this.orderId = EntityID(shippingRequest.orderId, ShippingTable)
             address = shippingRequest.address
@@ -54,7 +54,7 @@ class ShippingService : ShippingRepository {
         val isShippingExist = ShippingDAO.find {
             ShippingTable.orderId eq orderId
         }.toList().singleOrNull()
-        isShippingExist?.response() ?: throw orderId.throwNotFound("Resource")
+        isShippingExist?.response() ?: orderId.throwNotFound("Order")
     }
 
     /**
@@ -80,7 +80,7 @@ class ShippingService : ShippingRepository {
             it.status = updateShipping.status ?: it.status
             it.trackingNumber = updateShipping.trackingNumber ?: it.trackingNumber
             it.response()
-        } ?: throw updateShipping.id.throwConflict("Resource")
+        } ?: throw updateShipping.id.throwConflict("Shipping")
     }
 
     /**
@@ -98,6 +98,6 @@ class ShippingService : ShippingRepository {
         isShippingExist?.let {
             it.delete()
             id
-        } ?: throw id.throwNotFound("Resource")
+        } ?: id.throwNotFound("Shipping")
     }
 }

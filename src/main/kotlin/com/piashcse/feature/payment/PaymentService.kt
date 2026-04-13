@@ -33,7 +33,7 @@ class PaymentService : PaymentRepository {
                 paymentMethod = paymentRequest.paymentMethod
                 transactionId = paymentRequest.transactionId
             }.response()
-        } ?: throw paymentRequest.orderId.throwNotFound("Resource")
+        } ?: paymentRequest.orderId.throwNotFound("Order")
     }
 
     /**
@@ -45,6 +45,6 @@ class PaymentService : PaymentRepository {
      */
     override suspend fun getPaymentById(paymentId: String): Payment = query {
         val isOrderExist = PaymentDAO.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
-        isOrderExist?.response() ?: throw paymentId.throwNotFound("Resource")
+        isOrderExist?.response() ?: paymentId.throwNotFound("Payment")
     }
 }

@@ -24,7 +24,7 @@ class ProductCategoryService : ProductCategoryRepository {
         val isCategoryExist =
             ProductCategoryDAO.find { ProductCategoryTable.name eq name }.toList().singleOrNull()
         isCategoryExist?.let {
-            throw name.throwConflict("Resource")
+            throw name.throwConflict("Category")
         } ?: ProductCategoryDAO.new {
             this.name = name
         }.response()
@@ -57,7 +57,7 @@ class ProductCategoryService : ProductCategoryRepository {
         isCategoryExist?.let {
             it.name = name
             it.response()
-        } ?: throw categoryId.throwNotFound("Resource")
+        } ?: categoryId.throwNotFound("Category")
     }
 
     /**
@@ -73,6 +73,6 @@ class ProductCategoryService : ProductCategoryRepository {
         isCategoryExist?.let {
             isCategoryExist.delete()
             categoryId
-        } ?: throw categoryId.throwNotFound("Resource")
+        } ?: categoryId.throwNotFound("Category")
     }
 }

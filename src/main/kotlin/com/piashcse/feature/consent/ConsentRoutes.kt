@@ -3,7 +3,6 @@ package com.piashcse.feature.consent
 import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.InvalidEnumValueException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requireParameters
@@ -36,9 +35,8 @@ fun Route.consentRoutes(consentController: ConsentService) {
 
                 val updatedRequest = consentRequest.copy(policyId, ipAddress, userAgent)
                 call.respond(
-                    ApiResponse.ok(
-                        consentController.recordConsent(userId, updatedRequest)
-                    )
+                    HttpStatusCode.OK,
+                    consentController.recordConsent(userId, updatedRequest)
                 )
             }
         }
@@ -53,7 +51,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
              */
             get {
                 val userId = call.currentUserId
-                call.respond(ApiResponse.ok(consentController.getUserConsents(userId)))
+                call.respond(HttpStatusCode.OK, consentController.getUserConsents(userId))
             }
 
             /**
@@ -80,7 +78,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
                 }
 
                 val hasConsented = consentController.hasUserConsented(userId, policyTypeValue)
-                call.respond(ApiResponse.ok(mapOf("hasConsented" to hasConsented)))
+                call.respond(HttpStatusCode.OK, mapOf("hasConsented" to hasConsented))
             }
         }
     }

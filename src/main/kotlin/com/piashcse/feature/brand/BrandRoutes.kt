@@ -2,7 +2,6 @@ package com.piashcse.feature.brand
 
 import com.piashcse.model.request.BrandRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -30,9 +29,8 @@ fun Route.brandRoutes(brandController: BrandService) {
             get {
                 val limit = call.requireParameters("limit")
                 call.respond(
-                    ApiResponse.ok(
-                        brandController.getBrands(limit.first().toInt())
-                    )
+                    HttpStatusCode.OK,
+                    brandController.getBrands(limit.first().toInt())
                 )
             }
         }
@@ -49,9 +47,8 @@ fun Route.brandRoutes(brandController: BrandService) {
             post {
                 val requestBody = call.receive<BrandRequest>()
                 call.respond(
-                    ApiResponse.ok(
-                        brandController.createBrand(requestBody.name)
-                    )
+                    HttpStatusCode.OK,
+                    brandController.createBrand(requestBody.name)
                 )
             }
 
@@ -68,9 +65,8 @@ fun Route.brandRoutes(brandController: BrandService) {
             put("{id}") {
                 val params = call.requireParameters("id", "name")
                 call.respond(
-                    ApiResponse.ok(
-                        brandController.updateBrand(params[0], params[1])
-                    )
+                    HttpStatusCode.OK,
+                    brandController.updateBrand(params[0], params[1])
                 )
             }
 
@@ -86,9 +82,8 @@ fun Route.brandRoutes(brandController: BrandService) {
             delete("{id}") {
                 val id = call.requireParameters("id")
                 call.respond(
-                    ApiResponse.ok(
-                        brandController.deleteBrand(id.first())
-                    )
+                    HttpStatusCode.OK,
+                    brandController.deleteBrand(id.first())
                 )
             }
         }

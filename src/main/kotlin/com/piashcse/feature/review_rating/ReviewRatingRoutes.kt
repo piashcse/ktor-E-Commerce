@@ -2,7 +2,6 @@ package com.piashcse.feature.review_rating
 
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -31,9 +30,8 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
         get {
             val params = call.requireParameters("productId", "limit")
             call.respond(
-                ApiResponse.ok(
-                    reviewRatingController.getReviewRating(params[0], params[1].toInt())
-                )
+                HttpStatusCode.OK,
+                reviewRatingController.getReviewRating(params[0], params[1].toInt())
             )
         }
 
@@ -49,9 +47,8 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
             post {
                 val requestBody = call.receive<ReviewRatingRequest>()
                 call.respond(
-                    ApiResponse.ok(
-                        reviewRatingController.addReviewRating(call.currentUserId, requestBody)
-                    )
+                    HttpStatusCode.OK,
+                    reviewRatingController.addReviewRating(call.currentUserId, requestBody)
                 )
             }
 
@@ -69,12 +66,11 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
             put("{id}") {
                 val params = call.requireParameters("id", "review", "rating")
                 call.respond(
-                    ApiResponse.ok(
-                        reviewRatingController.updateReviewRating(
-                            params[0],
-                            params[1],
-                            params[2].toInt()
-                        )
+                    HttpStatusCode.OK,
+                    reviewRatingController.updateReviewRating(
+                        params[0],
+                        params[1],
+                        params[2].toInt()
                     )
                 )
             }
@@ -91,9 +87,8 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
             delete("{id}") {
                 val id = call.requireParameters("id")
                 call.respond(
-                    ApiResponse.ok(
-                        reviewRatingController.deleteReviewRating(id.first())
-                    )
+                    HttpStatusCode.OK,
+                    reviewRatingController.deleteReviewRating(id.first())
                 )
             }
         }

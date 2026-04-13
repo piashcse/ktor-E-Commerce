@@ -47,7 +47,7 @@ class ReviewRatingService : ReviewRatingRepository {
             ReviewRatingDAO.find { ReviewRatingTable.id eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
                 .singleOrNull()
         isReviewRatingExist?.let {
-            throw it.productId.value.throwConflict("Resource")
+            throw it.productId.value.throwConflict("Product")
         } ?: ReviewRatingDAO.new {
             this.userId = EntityID(userId, ReviewRatingTable)
             productId = EntityID(reviewRating.productId, ReviewRatingTable)
@@ -78,7 +78,7 @@ class ReviewRatingService : ReviewRatingRepository {
             it.reviewText = review
             it.rating = rating
             it.response()
-        } ?: throw review.throwNotFound("Resource")
+        } ?: review.throwNotFound("Review")
     }
 
     /**
@@ -95,6 +95,6 @@ class ReviewRatingService : ReviewRatingRepository {
         isReviewRatingExist?.let {
             it.delete()
             reviewId
-        } ?: throw reviewId.throwNotFound("Resource")
+        } ?: reviewId.throwNotFound("Review")
     }
 }

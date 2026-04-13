@@ -1,5 +1,6 @@
 package com.piashcse.feature.brand
 
+import com.piashcse.constants.Message
 import com.piashcse.database.entities.BrandDAO
 import com.piashcse.database.entities.BrandTable
 import com.piashcse.model.response.Brand
@@ -22,15 +23,15 @@ class BrandService : BrandRepository {
      */
     override suspend fun createBrand(name: String): Brand = query {
         if (name.isBlank()) {
-            throw ValidationException("Brand name cannot be blank")
+            throw ValidationException(Message.Brands.BLANK_NAME)
         }
         if (name.length > 255) {
-            throw ValidationException("Brand name cannot exceed 255 characters")
+            throw ValidationException(Message.Brands.nameTooLong(255))
         }
 
         val isBrandExist = BrandDAO.find { BrandTable.name eq name }.singleOrNull()
         isBrandExist?.let {
-            throw name.throwConflict("Resource")
+            throw name.throwConflict("Brand")
         } ?: BrandDAO.new {
             this.name = name
         }.response()
@@ -58,14 +59,14 @@ class BrandService : BrandRepository {
      */
     override suspend fun updateBrand(brandId: String, name: String): Brand = query {
         if (name.isBlank()) {
-            throw ValidationException("Brand name cannot be blank")
+            throw ValidationException(Message.Brands.BLANK_NAME)
         }
         if (name.length > 255) {
-            throw ValidationException("Brand name cannot exceed 255 characters")
+            throw ValidationException(Message.Brands.nameTooLong(255))
         }
 
         val brand = BrandDAO.find { BrandTable.id eq brandId }.singleOrNull()
-            ?: throw brandId.throwNotFound("Resource")
+            ?: brandId.throwNotFound("Brand")
 
         brand.name = name
         brand.response()
@@ -83,6 +84,6 @@ class BrandService : BrandRepository {
         isBrandExist?.let {
             it.delete()
             brandId
-        } ?: throw brandId.throwNotFound("Resource")
+        } ?: brandId.throwNotFound("Brand")
     }
 }

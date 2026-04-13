@@ -1,6 +1,7 @@
 package com.piashcse.feature.product
 
 import com.piashcse.constants.AppConstants
+import com.piashcse.constants.Message
 import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.BrandTable
 import com.piashcse.database.entities.ProductCategoryTable
@@ -17,6 +18,7 @@ import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.model.response.Product
+import com.piashcse.utils.NotFoundException
 import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.Op
@@ -85,7 +87,7 @@ class ProductService : ProductRepository {
             SellerTable.userId eq userId
         }.singleOrNull()
         if (seller == null) {
-            throw "User is not registered as a seller".throwNotFound("Resource")
+            throw NotFoundException(Message.Errors.SELLER_REQUIRED)
         }
 
         // If shopId is provided, verify that the user is authorized to add products to that shop
@@ -95,7 +97,7 @@ class ProductService : ProductRepository {
                 (ShopTable.userId eq userId)
             }.singleOrNull()
             if (shop == null) {
-                throw "User is not authorized to add products to this shop".throwNotFound("Resource")
+                throw NotFoundException(Message.Products.UNAUTHORIZED_ADD)
             }
         }
     }
@@ -131,12 +133,12 @@ class ProductService : ProductRepository {
                 SellerTable.userId eq userId
             }.singleOrNull()
             if (seller == null) {
-                throw "User is not registered as a seller".throwNotFound("Resource")
+                throw NotFoundException(Message.Errors.SELLER_REQUIRED)
             }
 
             // Verify user has access to this product
             val product = ProductDAO.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.singleOrNull()
-                ?: throw productId.throwNotFound("Resource")
+                ?: productId.throwNotFound("Product")
 
             product.apply {
                 this.userId = EntityID(userId, UserTable)
@@ -260,7 +262,7 @@ class ProductService : ProductRepository {
      */
     override suspend fun getProductDetail(productId: String): Product = query {
         val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
-        product?.response() ?: throw productId.throwNotFound("Resource")
+        product?.response() ?: productId.throwNotFound("Product")
     }
 
     /**
@@ -277,7 +279,7 @@ class ProductService : ProductRepository {
         // Find the product and verify user ownership
         val product = ProductDAO.find {
             ProductTable.userId eq userId and (ProductTable.id eq productId)
-        }.singleOrNull() ?: throw productId.throwNotFound("Resource")
+        }.singleOrNull() ?: productId.throwNotFound("Product")
 
         product.delete()
         productId
@@ -292,7 +294,7 @@ class ProductService : ProductRepository {
      */
     suspend fun deleteProductAsAdmin(productId: String): String = query {
         val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
-            ?: throw productId.throwNotFound("Resource")
+            ?: productId.throwNotFound("Product")
         product.delete()
         productId
     }

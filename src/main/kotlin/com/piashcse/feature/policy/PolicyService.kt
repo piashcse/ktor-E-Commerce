@@ -1,5 +1,6 @@
 package com.piashcse.feature.policy
 
+import com.piashcse.constants.Message
 import com.piashcse.database.entities.PolicyDocumentDAO
 import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.CreatePolicyRequest
@@ -45,7 +46,7 @@ class PolicyService : PolicyRepository {
      */
     override suspend fun updatePolicy(id: String, updatePolicyRequest: UpdatePolicyRequest): PolicyDocument =
         query {
-            val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.throwNotFound("Resource")
+            val policyDocument = PolicyDocumentDAO.findById(id) ?: id.throwNotFound("Policy")
 
             // Update only the fields that are provided
             updatePolicyRequest.title?.let { policyDocument.title = it }
@@ -73,7 +74,7 @@ class PolicyService : PolicyRepository {
     override suspend fun getPolicyByType(type: PolicyDocumentTable.PolicyType): PolicyDocument = query {
         val policyDocument = PolicyDocumentDAO.find {
             PolicyDocumentTable.type eq type and (PolicyDocumentTable.isActive eq true)
-        }.firstOrNull() ?: throw ValidationException("No active $type found")
+        }.firstOrNull() ?: throw ValidationException(Message.Policy.noActivePolicy(type.name))
 
         policyDocument.response()
     }
@@ -82,7 +83,7 @@ class PolicyService : PolicyRepository {
      * Gets a policy document by ID
      */
     override suspend fun getPolicyById(id: String): PolicyDocument = query {
-        val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.throwNotFound("Resource")
+        val policyDocument = PolicyDocumentDAO.findById(id) ?: id.throwNotFound("Policy")
         policyDocument.response()
     }
 
@@ -103,7 +104,7 @@ class PolicyService : PolicyRepository {
      * Deactivates a policy document (doesn't delete, just marks as inactive)
      */
     override suspend fun deactivatePolicy(id: String): Boolean = query {
-        val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.throwNotFound("Resource")
+        val policyDocument = PolicyDocumentDAO.findById(id) ?: id.throwNotFound("Policy")
         policyDocument.isActive = false
         true
     }

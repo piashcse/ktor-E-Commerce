@@ -2,7 +2,6 @@ package com.piashcse.feature.shop_category
 
 import com.piashcse.model.request.ShopCategoryRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -32,9 +31,8 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
             post {
                 val requestBody = call.receive<ShopCategoryRequest>()
                 call.respond(
-                    ApiResponse.ok(
-                        shopCategoryController.createCategory(requestBody.name)
-                    )
+                    HttpStatusCode.OK,
+                    shopCategoryController.createCategory(requestBody.name)
                 )
             }
 
@@ -50,9 +48,8 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
             get {
                 val limit = call.requireParameters("limit")
                 call.respond(
-                    ApiResponse.ok(
-                        shopCategoryController.getCategories(limit.first().toInt())
-                    )
+                    HttpStatusCode.OK,
+                    shopCategoryController.getCategories(limit.first().toInt())
                 )
             }
 
@@ -68,9 +65,8 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
             delete("{id}") {
                 val id = call.requireParameters("id")
                 call.respond(
-                    ApiResponse.ok(
-                        shopCategoryController.deleteCategory(id.first())
-                    )
+                    HttpStatusCode.OK,
+                    shopCategoryController.deleteCategory(id.first())
                 )
             }
 
@@ -87,9 +83,8 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
             put("{id}") {
                 val params = call.requireParameters("id", "name")
                 call.respond(
-                    ApiResponse.ok(
-                        shopCategoryController.updateCategory(params[0], params[1])
-                    )
+                    HttpStatusCode.OK,
+                    shopCategoryController.updateCategory(params[0], params[1])
                 )
             }
         }

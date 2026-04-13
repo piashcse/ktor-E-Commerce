@@ -3,7 +3,6 @@ package com.piashcse.feature.profile
 import com.piashcse.constants.AppConstants
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.fileExtension
 import io.ktor.http.*
@@ -40,9 +39,8 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
              */
             get {
                 call.respond(
-                    ApiResponse.ok(
-                        userProfileController.getProfile(call.currentUserId)
-                    )
+                    HttpStatusCode.OK,
+                    userProfileController.getProfile(call.currentUserId)
                 )
             }
 
@@ -79,9 +77,8 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
                     gender = call.parameters["gender"],
                 )
                 call.respond(
-                    ApiResponse.ok(
-                        userProfileController.updateProfile(call.currentUserId, params)
-                    )
+                    HttpStatusCode.OK,
+                    userProfileController.updateProfile(call.currentUserId, params)
                 )
             }
 
@@ -113,7 +110,7 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
                                 userProfileController.updateProfileImage(call.currentUserId, fileNameInServer)
                                     .let {
                                         call.respond(
-                                            ApiResponse.ok(fileNameInServer)
+                                            HttpStatusCode.OK, fileNameInServer
                                         )
                                     }
                             }

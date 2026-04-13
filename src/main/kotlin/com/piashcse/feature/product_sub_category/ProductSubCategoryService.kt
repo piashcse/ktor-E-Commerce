@@ -38,12 +38,12 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
                         .toList()
                         .singleOrNull()
                 isSubCategoryExist?.let {
-                    throw productSubCategory.name.throwConflict("Resource")
+                    throw productSubCategory.name.throwConflict("Subcategory")
                 } ?: ProductSubCategoryDAO.new {
                     categoryId = EntityID(productSubCategory.categoryId, ProductSubCategoryTable)
                     name = productSubCategory.name
                 }.response()
-            } ?: throw productSubCategory.categoryId.throwNotFound("Resource")
+            } ?: productSubCategory.categoryId.throwNotFound("Category")
         }
 
     /**
@@ -78,7 +78,7 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
         suCategoryExist?.let {
             it.name = name
             it.response()
-        } ?: throw id.throwNotFound("Resource")
+        } ?: id.throwNotFound("Subcategory")
     }
 
     /**
@@ -94,6 +94,6 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
         isSubCategoryExist?.let {
             isSubCategoryExist.delete()
             subCategoryId
-        } ?: throw subCategoryId.throwNotFound("Resource")
+        } ?: subCategoryId.throwNotFound("Subcategory")
     }
 }

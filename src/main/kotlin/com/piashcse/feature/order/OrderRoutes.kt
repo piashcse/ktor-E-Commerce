@@ -1,9 +1,9 @@
 package com.piashcse.feature.order
 
+import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.model.request.OrderRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.InvalidEnumValueException
 import com.piashcse.utils.UnauthorizedException
 import com.piashcse.utils.extension.currentUserId
@@ -38,7 +38,7 @@ fun Route.orderRoutes(orderController: OrderService) {
              */
             post {
                 val requestBody = call.receive<OrderRequest>()
-                call.respond(ApiResponse.ok(orderController.createOrder(call.currentUserId, requestBody)))
+                call.respond(HttpStatusCode.OK, orderController.createOrder(call.currentUserId, requestBody))
             }
 
             /**
@@ -51,7 +51,7 @@ fun Route.orderRoutes(orderController: OrderService) {
              */
             get {
                 val (limit) = call.requireParameters("limit")
-                call.respond(ApiResponse.ok(orderController.getOrders(call.currentUserId, limit.toInt())))
+                call.respond(HttpStatusCode.OK, orderController.getOrders(call.currentUserId, limit.toInt()))
             }
         }
 
@@ -88,10 +88,10 @@ fun Route.orderRoutes(orderController: OrderService) {
                 val customerOnlyStatuses = listOf(OrderStatus.CANCELED, OrderStatus.RECEIVED)
 
                 if ((status in sellerOnlyStatuses && !isSeller) || (status in customerOnlyStatuses && !isCustomer)) {
-                    throw UnauthorizedException("You are not allowed to set status to $status")
+                    throw UnauthorizedException(Message.Orders.STATUS_NOT_ALLOWED)
                 }
 
-                call.respond(ApiResponse.ok(orderController.updateOrderStatus(userId, id, status)))
+                call.respond(HttpStatusCode.OK, orderController.updateOrderStatus(userId, id, status))
             }
         }
 
@@ -119,7 +119,7 @@ fun Route.orderRoutes(orderController: OrderService) {
                     )
                 }
 
-                call.respond(ApiResponse.ok(orderController.updateOrderStatus(userId, id, status)))
+                call.respond(HttpStatusCode.OK, orderController.updateOrderStatus(userId, id, status))
             }
         }
     }

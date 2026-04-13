@@ -24,7 +24,7 @@ class ShopCategoryService : ShopCategoryRepository {
         val isExistShopCategory =
             ShopCategoryDAO.find { ShopCategoryTable.name eq name }.toList().singleOrNull()
         isExistShopCategory?.let {
-            throw name.throwConflict("Resource")
+            throw name.throwConflict("Category")
         } ?: ShopCategoryDAO.new {
             this.name = name
         }.response()
@@ -57,7 +57,7 @@ class ShopCategoryService : ShopCategoryRepository {
         isShopCategoryExist?.let {
             it.name = name
             it.response()
-        } ?: throw categoryId.throwNotFound("Resource")
+        } ?: categoryId.throwNotFound("Category")
     }
 
     /**
@@ -73,6 +73,6 @@ class ShopCategoryService : ShopCategoryRepository {
         shopCategoryExist?.let {
             it.delete()
             categoryId
-        } ?: throw categoryId.throwNotFound("Resource")
+        } ?: categoryId.throwNotFound("Category")
     }
 }

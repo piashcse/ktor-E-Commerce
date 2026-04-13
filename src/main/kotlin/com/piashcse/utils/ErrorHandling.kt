@@ -1,133 +1,122 @@
 package com.piashcse.utils
 
+import com.piashcse.constants.Message
 import io.ktor.http.*
 
 // ============================================================================
-//  CENTRALIZED EXCEPTION HIERARCHY
+//  INDUSTRY-STANDARD EXCEPTION HIERARCHY
 //
-//  Every business exception extends AppException:
-//    - code        → HTTP status  (auto-used by StatusPages)
-//    - errorCode   → machine-readable string for API consumers
+//  Based on Stripe, GitHub, OpenAI best practices:
+//  - HTTP status code is the ONLY source of truth
+//  - No error codes in response body
+//  - Clear, user-facing messages
+//  - Minimal, focused hierarchy
 //
-//  To add a new exception: create a class below.
-//  StatusPages needs ZERO changes — it catches AppException and reads
-//  the status/errorCode directly from the exception.
+//  To add new exception: create class extending AppException
+//  StatusPages auto-handles it - no configuration needed
 // ============================================================================
 
 /** Base exception for all application errors. */
 open class AppException(
     message: String,
-    val code: HttpStatusCode = HttpStatusCode.BadRequest,
-    val errorCode: String = "BAD_REQUEST"
+    val code: HttpStatusCode = HttpStatusCode.BadRequest
 ) : Exception(message)
 
-// ─── HttpStatusCode.BadRequest ─────────────────────────────────────────────
+// ─── 400 Bad Request ───────────────────────────────────────────────────────
 
-class ValidationException(message: String, errorCode: String = "VALIDATION_ERROR")
-    : AppException(message, HttpStatusCode.BadRequest, errorCode)
+class ValidationException(message: String) : AppException(message, HttpStatusCode.BadRequest)
 
-// ─── HttpStatusCode.Unauthorized ───────────────────────────────────────────
-
-class UnauthorizedException(message: String = "Unauthorized", errorCode: String = "UNAUTHORIZED")
-    : AppException(message, HttpStatusCode.Unauthorized, errorCode)
-
-class InvalidCredentialsException(message: String = "Invalid email or password", errorCode: String = "INVALID_CREDENTIALS")
-    : AppException(message, HttpStatusCode.Unauthorized, errorCode)
-
-class UnverifiedAccountException(message: String = "Account is not verified", errorCode: String = "UNVERIFIED_ACCOUNT")
-    : AppException(message, HttpStatusCode.Unauthorized, errorCode)
-
-class DeactivatedAccountException(message: String = "Account has been deactivated", errorCode: String = "DEACTIVATED_ACCOUNT")
-    : AppException(message, HttpStatusCode.Unauthorized, errorCode)
-
-// ─── HttpStatusCode.Forbidden ──────────────────────────────────────────────
-
-class ForbiddenException(message: String = "Insufficient permissions", errorCode: String = "FORBIDDEN")
-    : AppException(message, HttpStatusCode.Forbidden, errorCode)
-
-// ─── HttpStatusCode.NotFound ───────────────────────────────────────────────
-
-class NotFoundException(message: String, errorCode: String = "NOT_FOUND")
-    : AppException(message, HttpStatusCode.NotFound, errorCode)
-
-// ─── HttpStatusCode.Conflict ───────────────────────────────────────────────
-
-class ConflictException(message: String, errorCode: String = "CONFLICT")
-    : AppException(message, HttpStatusCode.Conflict, errorCode)
-
-// ─── HttpStatusCode.TooManyRequests ────────────────────────────────────────
-
-class RateLimitExceededException(message: String = "Too many requests", errorCode: String = "RATE_LIMITED")
-    : AppException(message, HttpStatusCode.TooManyRequests, errorCode)
-
-// ─── HttpStatusCode.InternalServerError ────────────────────────────────────
-
-class InternalServerException(message: String = "Internal server error", errorCode: String = "INTERNAL_ERROR")
-    : AppException(message, HttpStatusCode.InternalServerError, errorCode)
-
-// ─── Business logic exceptions (domain-specific) ──────────────────────────
-
-/** For invalid enum values (e.g., invalid order status, user type) */
 class InvalidEnumValueException(
     message: String,
-    errorCode: String = "INVALID_ENUM_VALUE",
     val enumName: String,
     val invalidValue: String
-) : AppException(message, HttpStatusCode.BadRequest, errorCode)
+) : AppException(message, HttpStatusCode.BadRequest)
 
-/** For missing required parameters (replaces direct response in routes) */
 class MissingParameterException(parameterName: String)
-    : AppException("Missing required parameter: $parameterName", HttpStatusCode.BadRequest, "MISSING_PARAMETER")
+    : AppException("Missing required parameter: $parameterName", HttpStatusCode.BadRequest)
 
-/** For database operation failures */
-class DatabaseException(message: String, errorCode: String = "DATABASE_ERROR")
-    : AppException(message, HttpStatusCode.InternalServerError, errorCode)
+// ─── 401 Unauthorized ──────────────────────────────────────────────────────
+
+class UnauthorizedException(message: String = Message.Errors.UNAUTHORIZED)
+    : AppException(message, HttpStatusCode.Unauthorized)
+
+class InvalidCredentialsException(message: String = Message.Auth.INVALID_CREDENTIALS)
+    : AppException(message, HttpStatusCode.Unauthorized)
+
+class UnverifiedAccountException(message: String = Message.Auth.ACCOUNT_NOT_VERIFIED)
+    : AppException(message, HttpStatusCode.Unauthorized)
+
+class DeactivatedAccountException(message: String = Message.Auth.ACCOUNT_DEACTIVATED)
+    : AppException(message, HttpStatusCode.Unauthorized)
+
+// ─── 403 Forbidden ─────────────────────────────────────────────────────────
+
+class ForbiddenException(message: String = Message.Errors.FORBIDDEN)
+    : AppException(message, HttpStatusCode.Forbidden)
+
+// ─── 404 Not Found ─────────────────────────────────────────────────────────
+
+class NotFoundException(message: String = Message.Errors.NOT_FOUND)
+    : AppException(message, HttpStatusCode.NotFound)
+
+// ─── 409 Conflict ──────────────────────────────────────────────────────────
+
+class ConflictException(message: String) : AppException(message, HttpStatusCode.Conflict)
+
+// ─── 429 Too Many Requests ─────────────────────────────────────────────────
+
+class RateLimitExceededException(message: String = "Too many requests")
+    : AppException(message, HttpStatusCode.TooManyRequests)
+
+// ─── 500 Internal Server Error ─────────────────────────────────────────────
+
+class InternalServerException(message: String = Message.Errors.INTERNAL)
+    : AppException(message, HttpStatusCode.InternalServerError)
+
+class DatabaseException(message: String) : AppException(message, HttpStatusCode.InternalServerError)
 
 // ============================================================================
-//  VALIDATION FACTORS — one-liners that throw typed exceptions
+//  VALIDATION HELPERS - Uses Message constants for consistency
 //  Usage:  requireNotBlank(userId, "User ID")
 //          requirePositive(quantity, "Quantity")
 // ============================================================================
 
 fun requireNotBlank(value: String, fieldName: String) {
-    if (value.isBlank()) throw ValidationException("$fieldName cannot be blank", "BLANK_FIELD")
+    if (value.isBlank()) throw ValidationException(Message.Validation.blankField(fieldName))
 }
 
 fun requirePositive(value: Number, fieldName: String) {
-    if (value.toDouble() <= 0) throw ValidationException("$fieldName must be greater than 0", "NOT_POSITIVE")
+    if (value.toDouble() <= 0) throw ValidationException(Message.Validation.notPositive(fieldName))
 }
 
 fun requireNonNegative(value: Number, fieldName: String) {
-    if (value.toDouble() < 0) throw ValidationException("$fieldName cannot be negative", "NEGATIVE_VALUE")
+    if (value.toDouble() < 0) throw ValidationException(Message.Validation.negativeValue(fieldName))
 }
 
 fun requireValidEmail(email: String) {
     val regex = Regex("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$")
-    if (!regex.matches(email)) throw ValidationException("Invalid email format", "INVALID_EMAIL")
+    if (!regex.matches(email)) throw ValidationException(Message.Validation.INVALID_EMAIL)
 }
 
 fun requireValidPassword(password: String, minLength: Int = 8) {
-    if (password.length < minLength) throw ValidationException("Password must be at least $minLength characters", "WEAK_PASSWORD")
+    if (password.length < minLength) throw ValidationException(Message.Validation.WEAK_PASSWORD)
 }
 
 // ============================================================================
-//  STRING EXTENSIONS — concise throw syntax in service/repository code
+//  STRING EXTENSIONS — concise throw syntax for common patterns
 //  Usage:  productId.throwNotFound("Product")
-//          brandName.throwConflict("Brand")
+//          email.throwConflict("User")
 // ============================================================================
 
-/** Throw NotFoundException with auto-generated error code. */
-fun String.throwNotFound(resourceName: String = "Resource"): Nothing =
-    throw NotFoundException("$resourceName not found: $this", "${resourceName.uppercase()}_NOT_FOUND")
+/** Throw NotFoundException with specific entity type */
+fun String.throwNotFound(resourceName: String): Nothing =
+    throw NotFoundException("$resourceName not found")
 
-/** Throw ConflictException with auto-generated error code. */
-fun String.throwConflict(resourceName: String = "Resource"): Nothing =
-    throw ConflictException("$resourceName already exists: $this", "${resourceName.uppercase()}_EXISTS")
+/** Throw NotFoundException with default message */
+fun String.throwNotFound(): Nothing =
+    throw NotFoundException()
 
-/** Throw InvalidEnumValueException with auto-generated error code. */
-fun String.throwInvalidEnumValue(enumName: String, resourceName: String = "Value"): Nothing =
-    throw InvalidEnumValueException(
-        message = "Invalid $resourceName: $this. Must be one of $enumName",
-        enumName = enumName,
-        invalidValue = this
-    )
+/** Throw ConflictException */
+fun String.throwConflict(resourceName: String): Nothing =
+    throw ConflictException("$resourceName already exists")
+

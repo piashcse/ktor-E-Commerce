@@ -4,7 +4,6 @@ import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.InvalidEnumValueException
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -42,9 +41,8 @@ fun Route.policyRoutes(policyController: PolicyService) {
                 }
             }
             call.respond(
-                ApiResponse.ok(
-                    policyController.getAllPolicies(policyType)
-                )
+                HttpStatusCode.OK,
+                policyController.getAllPolicies(policyType)
             )
         }
 
@@ -68,9 +66,8 @@ fun Route.policyRoutes(policyController: PolicyService) {
                 )
             }
             call.respond(
-                ApiResponse.ok(
-                    policyController.getPolicyByType(policyTypeValue)
-                )
+                HttpStatusCode.OK,
+                policyController.getPolicyByType(policyTypeValue)
             )
         }
 
@@ -84,7 +81,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
          */
         get("detail/{id}") {
             val id = call.requireParameters("id")
-            call.respond(ApiResponse.ok(policyController.getPolicyById(id.first())))
+            call.respond(HttpStatusCode.OK, policyController.getPolicyById(id.first()))
         }
         authenticate(RoleManagement.ADMIN.role) {
             /**
@@ -97,7 +94,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
              */
             post {
                 val createRequest = call.receive<CreatePolicyRequest>()
-                call.respond(ApiResponse.ok(policyController.createPolicy(createRequest)))
+                call.respond(HttpStatusCode.OK, policyController.createPolicy(createRequest))
             }
 
             /**
@@ -113,7 +110,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
             put("{id}") {
                 val id = call.requireParameters("id")
                 val updateRequest = call.receive<UpdatePolicyRequest>()
-                call.respond(ApiResponse.ok(policyController.updatePolicy(id.first(), updateRequest)))
+                call.respond(HttpStatusCode.OK, policyController.updatePolicy(id.first(), updateRequest))
             }
 
             /**
@@ -127,7 +124,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
              */
             post("deactivate/{id}") {
                 val id = call.requireParameters("id")
-                call.respond(ApiResponse.ok(policyController.deactivatePolicy(id.first())))
+                call.respond(HttpStatusCode.OK, policyController.deactivatePolicy(id.first()))
             }
         }
     }

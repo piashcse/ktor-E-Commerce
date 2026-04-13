@@ -2,7 +2,7 @@ package com.piashcse.utils.extension
 
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.JwtTokenRequest
-import com.piashcse.utils.ApiResponse
+import com.piashcse.utils.ApiError
 import com.piashcse.utils.ErrorCodes
 import com.piashcse.utils.MissingParameterException
 import com.piashcse.utils.Permission
@@ -100,7 +100,7 @@ fun ApplicationCall.requireParameters(vararg requiredParams: String): List<Strin
 }
 
 /**
- * @deprecated Use requireParameters() which throws exceptions for centralized handling
+ * @deprecated Use requireParameters() instead. This function bypasses StatusPages.
  */
 @Deprecated(
     "Use requireParameters() instead. This function bypasses StatusPages.",
@@ -111,7 +111,7 @@ suspend fun ApplicationCall.requiredParameters(vararg requiredParams: String): L
     if (missingParams.isNotEmpty()) {
         respond(
             io.ktor.http.HttpStatusCode.BadRequest,
-            com.piashcse.utils.ApiResponse.badRequest("Missing parameters: ${missingParams.joinToString()}")
+            com.piashcse.utils.ApiError("Missing parameters: ${missingParams.joinToString()}")
         )
         return null
     }

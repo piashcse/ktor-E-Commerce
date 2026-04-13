@@ -2,7 +2,6 @@ package com.piashcse.feature.cart
 
 import com.piashcse.model.request.CartRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -32,12 +31,11 @@ fun Route.cartRoutes(cartController: CartService) {
             post {
                 val requestBody = call.receive<CartRequest>()
                 call.respond(
-                    ApiResponse.ok(
-                        cartController.createCart(
-                            call.currentUserId,
-                            requestBody.productId,
-                            requestBody.quantity
-                        )
+                    HttpStatusCode.OK,
+                    cartController.createCart(
+                        call.currentUserId,
+                        requestBody.productId,
+                        requestBody.quantity
                     )
                 )
             }
@@ -54,11 +52,10 @@ fun Route.cartRoutes(cartController: CartService) {
             get {
                 val limit = call.requireParameters("limit")
                 call.respond(
-                    ApiResponse.ok(
-                        cartController.getCartItems(
-                            call.currentUserId,
-                            limit.first().toInt()
-                        )
+                    HttpStatusCode.OK,
+                    cartController.getCartItems(
+                        call.currentUserId,
+                        limit.first().toInt()
                     )
                 )
             }
@@ -76,9 +73,8 @@ fun Route.cartRoutes(cartController: CartService) {
             put("update") {
                 val params = call.requireParameters("productId", "quantity")
                 call.respond(
-                    ApiResponse.ok(
-                        cartController.updateCartQuantity(call.currentUserId, params[0], params[1].toInt())
-                    )
+                    HttpStatusCode.OK,
+                    cartController.updateCartQuantity(call.currentUserId, params[0], params[1].toInt())
                 )
             }
 
@@ -94,9 +90,8 @@ fun Route.cartRoutes(cartController: CartService) {
             delete("remove") {
                 val productId = call.requireParameters("productId")
                 call.respond(
-                    ApiResponse.ok(
-                        cartController.removeCartItem(call.currentUserId, productId.first())
-                    )
+                    HttpStatusCode.OK,
+                    cartController.removeCartItem(call.currentUserId, productId.first())
                 )
             }
 
@@ -109,9 +104,8 @@ fun Route.cartRoutes(cartController: CartService) {
              */
             delete("all") {
                 call.respond(
-                    ApiResponse.ok(
-                        cartController.clearCart(call.currentUserId)
-                    )
+                    HttpStatusCode.OK,
+                    cartController.clearCart(call.currentUserId)
                 )
             }
         }
