@@ -40,8 +40,8 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
              */
             get {
                 call.respond(
-                    ApiResponse.success(
-                        userProfileController.getProfile(call.currentUserId), HttpStatusCode.OK
+                    ApiResponse.ok(
+                        userProfileController.getProfile(call.currentUserId)
                     )
                 )
             }
@@ -79,8 +79,8 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
                     gender = call.parameters["gender"],
                 )
                 call.respond(
-                    ApiResponse.success(
-                        userProfileController.updateProfile(call.currentUserId, params), HttpStatusCode.OK
+                    ApiResponse.ok(
+                        userProfileController.updateProfile(call.currentUserId, params)
                     )
                 )
             }
@@ -113,7 +113,7 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
                                 userProfileController.updateProfileImage(call.currentUserId, fileNameInServer)
                                     .let {
                                         call.respond(
-                                            ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
+                                            ApiResponse.ok(fileNameInServer)
                                         )
                                     }
                             }

@@ -5,7 +5,8 @@ import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.requiredParameters
+import com.piashcse.utils.InvalidEnumValueException
+import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -30,12 +31,19 @@ fun Route.policyRoutes(policyController: PolicyService) {
         get {
             val type = call.request.queryParameters["type"]
             val policyType = type?.let {
-                PolicyDocumentTable.PolicyType.valueOf(type)
+                runCatching {
+                    PolicyDocumentTable.PolicyType.valueOf(type)
+                }.getOrElse {
+                    throw InvalidEnumValueException(
+                        "Invalid policy type: $type",
+                        enumName = "PolicyType",
+                        invalidValue = type
+                    )
+                }
             }
             call.respond(
-                ApiResponse.success(
-                    policyController.getAllPolicies(policyType),
-                    HttpStatusCode.OK
+                ApiResponse.ok(
+                    policyController.getAllPolicies(policyType)
                 )
             )
         }
@@ -49,14 +57,19 @@ fun Route.policyRoutes(policyController: PolicyService) {
          * @response 400 Invalid policy type
          */
         get("{type}") {
-            val (type) = call.requiredParameters("type") ?: return@get
+            val type = call.requireParameters("type")
+            val policyTypeValue = runCatching {
+                PolicyDocumentTable.PolicyType.valueOf(type.first())
+            }.getOrElse {
+                throw InvalidEnumValueException(
+                    "Invalid policy type: ${type.first()}",
+                    enumName = "PolicyType",
+                    invalidValue = type.first()
+                )
+            }
             call.respond(
-                ApiResponse.success(
-                    policyController.getPolicyByType(
-                        PolicyDocumentTable.PolicyType.valueOf(
-                            type
-                        )
-                    ), HttpStatusCode.OK
+                ApiResponse.ok(
+                    policyController.getPolicyByType(policyTypeValue)
                 )
             )
         }
@@ -70,8 +83,8 @@ fun Route.policyRoutes(policyController: PolicyService) {
          * @response 400 Invalid policy ID
          */
         get("detail/{id}") {
-            val (id) = call.requiredParameters("id") ?: return@get
-            call.respond(ApiResponse.success(policyController.getPolicyById(id), HttpStatusCode.OK))
+            val id = call.requireParameters("id")
+            call.respond(ApiResponse.ok(policyController.getPolicyById(id.first())))
         }
         authenticate(RoleManagement.ADMIN.role) {
             /**
@@ -84,7 +97,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
              */
             post {
                 val createRequest = call.receive<CreatePolicyRequest>()
-                call.respond(ApiResponse.success(policyController.createPolicy(createRequest), HttpStatusCode.Created))
+                call.respond(ApiResponse.ok(policyController.createPolicy(createRequest)))
             }
 
             /**
@@ -98,9 +111,9 @@ fun Route.policyRoutes(policyController: PolicyService) {
              * @security jwtToken
              */
             put("{id}") {
-                val (id) = call.requiredParameters("id") ?: return@put
+                val id = call.requireParameters("id")
                 val updateRequest = call.receive<UpdatePolicyRequest>()
-                call.respond(ApiResponse.success(policyController.updatePolicy(id, updateRequest), HttpStatusCode.OK))
+                call.respond(ApiResponse.ok(policyController.updatePolicy(id.first(), updateRequest)))
             }
 
             /**
@@ -113,8 +126,8 @@ fun Route.policyRoutes(policyController: PolicyService) {
              * @security jwtToken
              */
             post("deactivate/{id}") {
-                val (id) = call.requiredParameters("id") ?: return@post
-                call.respond(ApiResponse.success(policyController.deactivatePolicy(id), HttpStatusCode.OK))
+                val id = call.requireParameters("id")
+                call.respond(ApiResponse.ok(policyController.deactivatePolicy(id.first())))
             }
         }
     }

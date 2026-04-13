@@ -5,8 +5,8 @@ import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.model.response.PolicyDocument
-import com.piashcse.utils.CommonException
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.ValidationException
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
@@ -45,7 +45,7 @@ class PolicyService : PolicyRepository {
      */
     override suspend fun updatePolicy(id: String, updatePolicyRequest: UpdatePolicyRequest): PolicyDocument =
         query {
-            val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.notFoundException()
+            val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.throwNotFound("Resource")
 
             // Update only the fields that are provided
             updatePolicyRequest.title?.let { policyDocument.title = it }
@@ -73,7 +73,7 @@ class PolicyService : PolicyRepository {
     override suspend fun getPolicyByType(type: PolicyDocumentTable.PolicyType): PolicyDocument = query {
         val policyDocument = PolicyDocumentDAO.find {
             PolicyDocumentTable.type eq type and (PolicyDocumentTable.isActive eq true)
-        }.firstOrNull() ?: throw CommonException("No active $type found")
+        }.firstOrNull() ?: throw ValidationException("No active $type found")
 
         policyDocument.response()
     }
@@ -82,7 +82,7 @@ class PolicyService : PolicyRepository {
      * Gets a policy document by ID
      */
     override suspend fun getPolicyById(id: String): PolicyDocument = query {
-        val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.notFoundException()
+        val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.throwNotFound("Resource")
         policyDocument.response()
     }
 
@@ -103,7 +103,7 @@ class PolicyService : PolicyRepository {
      * Deactivates a policy document (doesn't delete, just marks as inactive)
      */
     override suspend fun deactivatePolicy(id: String): Boolean = query {
-        val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.notFoundException()
+        val policyDocument = PolicyDocumentDAO.findById(id) ?: throw id.throwNotFound("Resource")
         policyDocument.isActive = false
         true
     }

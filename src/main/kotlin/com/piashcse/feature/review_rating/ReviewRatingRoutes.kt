@@ -4,7 +4,7 @@ import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.requiredParameters
+import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -29,11 +29,10 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
          * @response 400 Invalid product ID or limit parameter
          */
         get {
-            val (productId, limit) = call.requiredParameters("productId", "limit") ?: return@get
+            val params = call.requireParameters("productId", "limit")
             call.respond(
-                ApiResponse.success(
-                    reviewRatingController.getReviewRating(productId, limit.toInt()),
-                    HttpStatusCode.OK
+                ApiResponse.ok(
+                    reviewRatingController.getReviewRating(params[0], params[1].toInt())
                 )
             )
         }
@@ -50,9 +49,8 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
             post {
                 val requestBody = call.receive<ReviewRatingRequest>()
                 call.respond(
-                    ApiResponse.success(
-                        reviewRatingController.addReviewRating(call.currentUserId, requestBody),
-                        HttpStatusCode.OK
+                    ApiResponse.ok(
+                        reviewRatingController.addReviewRating(call.currentUserId, requestBody)
                     )
                 )
             }
@@ -69,14 +67,14 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
              * @security jwtToken
              */
             put("{id}") {
-                val (id, review, rating) = call.requiredParameters("id", "review", "rating") ?: return@put
+                val params = call.requireParameters("id", "review", "rating")
                 call.respond(
-                    ApiResponse.success(
+                    ApiResponse.ok(
                         reviewRatingController.updateReviewRating(
-                            id,
-                            review,
-                            rating.toInt()
-                        ), HttpStatusCode.OK
+                            params[0],
+                            params[1],
+                            params[2].toInt()
+                        )
                     )
                 )
             }
@@ -91,10 +89,10 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
              * @security jwtToken
              */
             delete("{id}") {
-                val (id) = call.requiredParameters("id") ?: return@delete
+                val id = call.requireParameters("id")
                 call.respond(
-                    ApiResponse.success(
-                        reviewRatingController.deleteReviewRating(id), HttpStatusCode.OK
+                    ApiResponse.ok(
+                        reviewRatingController.deleteReviewRating(id.first())
                     )
                 )
             }

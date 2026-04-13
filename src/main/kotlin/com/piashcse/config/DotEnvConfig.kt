@@ -19,6 +19,9 @@ object DotEnvConfig {
     val jwtIssuer: String get() = DotEnv.get("JWT_ISSUER", "piashcse")
     val jwtAudience: String get() = DotEnv.get("JWT_AUDIENCE", "ktor-ecommerce")
     val jwtRealm: String get() = DotEnv.get("JWT_REALM", "ktor-ecommerce")
+
+    // CORS configuration
+    val allowedOrigins: String get() = DotEnv.get("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080")
     
     // Email configuration
     val emailHost: String get() = DotEnv.get("EMAIL_HOST", "smtp.gmail.com")

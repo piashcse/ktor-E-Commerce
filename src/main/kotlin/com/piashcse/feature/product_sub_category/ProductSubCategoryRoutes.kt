@@ -3,7 +3,7 @@ package com.piashcse.feature.product_sub_category
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.requiredParameters
+import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -30,10 +30,10 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
          * @response 400 Invalid category ID or limit parameter
          */
         get {
-            val (categoryId, limit) = call.requiredParameters("categoryId", "limit") ?: return@get
+            val params = call.requireParameters("categoryId", "limit")
             call.respond(
-                ApiResponse.success(
-                    subCategoryController.getProductSubCategory(categoryId, limit.toInt()), HttpStatusCode.OK
+                ApiResponse.ok(
+                    subCategoryController.getProductSubCategory(params[0], params[1].toInt())
                 )
             )
         }
@@ -49,8 +49,8 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
             post {
                 val requestBody = call.receive<ProductSubCategoryRequest>()
                 call.respond(
-                    ApiResponse.success(
-                        subCategoryController.addProductSubCategory(requestBody), HttpStatusCode.OK
+                    ApiResponse.ok(
+                        subCategoryController.addProductSubCategory(requestBody)
                     )
                 )
             }
@@ -66,12 +66,12 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
              * @security jwtToken
              */
             put("{id}") {
-                val (id, name) = call.requiredParameters("id", "name") ?: return@put
+                val params = call.requireParameters("id", "name")
                 call.respond(
-                    ApiResponse.success(
+                    ApiResponse.ok(
                         subCategoryController.updateProductSubCategory(
-                            id, name
-                        ), HttpStatusCode.OK
+                            params[0], params[1]
+                        )
                     )
                 )
             }
@@ -86,12 +86,12 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
              * @security jwtToken
              */
             delete("{id}") {
-                val (id) = call.requiredParameters("id") ?: return@delete
+                val id = call.requireParameters("id")
                 call.respond(
-                    ApiResponse.success(
+                    ApiResponse.ok(
                         subCategoryController.deleteProductSubCategory(
-                            id
-                        ), HttpStatusCode.OK
+                            id.first()
+                        )
                     )
                 )
             }

@@ -1,46 +1,82 @@
 package com.piashcse.utils
 
 import io.ktor.http.*
+import java.time.Instant
 
-data class Response(
-    val isSuccess: Boolean,
-    val statusCode: HttpStatusCode? = null,
-    val data: Any? = null,
-    val error: Any? = null
+/**
+ * Industry-standard API response envelope.
+ *
+ * Based on Stripe, GitHub, OpenAI, and major REST API standards:
+ * - Success: { "success": true, "data": {...} }
+ * - Error: { "success": false, "message": "..." } (HTTP status code is the source of truth)
+ * - Validation errors include structured field-level details
+ *
+ * No redundant metadata (path, timestamp, code) - HTTP headers and status code already provide this.
+ */
+data class ApiResponse<T>(
+    val success: Boolean,
+    val data: T? = null,
+    val message: String? = null,
+    val errors: List<FieldError>? = null
+) {
+    companion object {
+        // ── Success ───────────────────────────────────────────────────────
+        fun <T> ok(data: T): ApiResponse<T> = ApiResponse(success = true, data = data)
+        fun okMessage(message: String): ApiResponse<Nothing> = ApiResponse(success = true, message = message)
+
+        // ── Error factories (minimal, HTTP status is the source of truth) ─
+        fun badRequest(message: String): ApiResponse<Nothing> =
+            ApiResponse(success = false, message = message)
+
+        fun unauthorized(message: String = ErrorMessages.UNAUTHORIZED): ApiResponse<Nothing> =
+            ApiResponse(success = false, message = message)
+
+        fun forbidden(message: String = ErrorMessages.FORBIDDEN): ApiResponse<Nothing> =
+            ApiResponse(success = false, message = message)
+
+        fun notFound(message: String): ApiResponse<Nothing> =
+            ApiResponse(success = false, message = message)
+
+        fun conflict(message: String): ApiResponse<Nothing> =
+            ApiResponse(success = false, message = message)
+
+        fun validationError(message: String = "Validation failed", errors: List<FieldError>? = null): ApiResponse<Nothing> =
+            ApiResponse(success = false, message = message, errors = errors)
+
+        fun internalError(message: String = ErrorMessages.INTERNAL_ERROR): ApiResponse<Nothing> =
+            ApiResponse(success = false, message = message)
+
+        fun fromException(ex: AppException): ApiResponse<Nothing> =
+            ApiResponse(success = false, message = ex.message ?: ErrorMessages.UNKNOWN)
+
+        fun error(message: String): ApiResponse<Nothing> =
+            ApiResponse(success = false, message = message)
+
+        // ── Legacy (backward compat) ──────────────────────────────────────
+        @Deprecated("Use ok(data)", ReplaceWith("ok(data)"))
+        fun <T> success(data: T, statusCode: HttpStatusCode? = null): ApiResponse<T> = ok(data)
+
+        @Deprecated("Use okMessage(msg)", ReplaceWith("okMessage(message)"))
+        fun success(message: String, statusCode: HttpStatusCode? = null): ApiResponse<Nothing> = okMessage(message)
+
+        @Deprecated("Use badRequest(msg)", ReplaceWith("badRequest(message)"))
+        fun <T> failure(message: T, statusCode: HttpStatusCode? = null): ApiResponse<Nothing> =
+            ApiResponse(success = false, message = message.toString())
+
+        @Deprecated("Use error(msg)", ReplaceWith("error(message)"))
+        fun failureWithStatus(message: String, statusCode: HttpStatusCode): ApiResponse<Nothing> =
+            ApiResponse(success = false, message = message)
+    }
+}
+
+/**
+ * Structured field-level validation error (only present when errors has items).
+ */
+data class FieldError(
+    val field: String,
+    val message: String
 )
 
-/**
- * Sealed class for representing API responses
- */
-sealed class DetailedApiResponse<out T> {
-    data class Success<T>(val data: T, val message: String = "Success", val code: HttpStatusCode = HttpStatusCode.OK) : DetailedApiResponse<T>()
-    data class Error(val message: String, val code: HttpStatusCode = HttpStatusCode.BadRequest) : DetailedApiResponse<Nothing>()
-}
-
-object ApiResponse {
-    fun <T> success(data: T, statsCode: HttpStatusCode?) = Response(true, data = data, statusCode = statsCode)
-    fun <T> failure(error: T, statsCode: HttpStatusCode?) = Response(false, error = error, statusCode = statsCode)
-
-    /**
-     * New structure for more detailed API responses
-     */
-    fun <T> successDetailed(data: T, message: String = "Success", code: HttpStatusCode = HttpStatusCode.OK): DetailedApiResponse<T> {
-        return DetailedApiResponse.Success(data, message, code)
-    }
-
-    fun errorDetailed(message: String, code: HttpStatusCode = HttpStatusCode.BadRequest): DetailedApiResponse<Nothing> {
-        return DetailedApiResponse.Error(message, code)
-    }
-}
-
-/**
- * Extension functions for easy response creation
- */
-fun <T> successResponse(data: T, message: String = "Success", code: HttpStatusCode = HttpStatusCode.OK) =
-    ApiResponse.successDetailed(data, message, code)
-
-fun errorResponse(message: String, code: HttpStatusCode = HttpStatusCode.BadRequest) =
-    ApiResponse.errorDetailed(message, code)
-
-fun <T> AppException.toErrorResponse(): DetailedApiResponse<Nothing> =
-    errorResponse(this.message ?: "An error occurred", this.code)
+/** Convert any AppException → (HttpStatusCode, ApiResponse) pair. */
+fun AppException.toResponse(): Pair<HttpStatusCode, ApiResponse<Nothing>> =
+    code to ApiResponse.fromException(this)

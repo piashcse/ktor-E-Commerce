@@ -3,8 +3,8 @@ package com.piashcse.feature.cart
 import com.piashcse.database.entities.*
 import com.piashcse.model.response.Product
 import com.piashcse.utils.ValidationException
-import com.piashcse.utils.extension.alreadyExistException
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.throwConflict
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
@@ -31,7 +31,7 @@ class CartService : CartRepository {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
         }.singleOrNull()
         existingCartItem?.let {
-            throw productId.alreadyExistException()
+            throw productId.throwConflict("Resource")
         } ?: CartItemDAO.new {
             this.userId = EntityID(userId, CartItemTable)
             this.productId = EntityID(productId, CartItemTable)
@@ -73,7 +73,7 @@ class CartService : CartRepository {
 
         val cartItem = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
-        }.singleOrNull() ?: throw productId.notFoundException()
+        }.singleOrNull() ?: throw productId.throwNotFound("Resource")
 
         // Calculate new quantity, ensuring it doesn't go below 0
         val newQuantity = (cartItem.quantity + quantity).coerceAtLeast(0)
@@ -82,11 +82,11 @@ class CartService : CartRepository {
         // If quantity becomes 0, remove the item from cart
         if (newQuantity == 0) {
             cartItem.delete()
-            throw productId.notFoundException()
+            throw productId.throwNotFound("Resource")
         }
 
         val product = ProductDAO.findById(cartItem.productId) ?:
-            throw "Product not found".notFoundException()
+            throw "Product not found".throwNotFound("Resource")
 
         cartItem.response(product.response())
     }
@@ -105,10 +105,10 @@ class CartService : CartRepository {
 
         val cartItem = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
-        }.singleOrNull() ?: throw productId.notFoundException()
+        }.singleOrNull() ?: throw productId.throwNotFound("Resource")
 
         val product = ProductDAO.findById(cartItem.productId) ?:
-            throw "Product not found".notFoundException()
+            throw "Product not found".throwNotFound("Resource")
 
         cartItem.delete()
         product.response()

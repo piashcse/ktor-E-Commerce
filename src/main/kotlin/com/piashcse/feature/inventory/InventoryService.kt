@@ -10,10 +10,11 @@ import com.piashcse.database.entities.ShopTable
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
 import com.piashcse.utils.ValidationException
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.jdbc.update
 
 class InventoryService : InventoryRepository {
     /**
@@ -27,8 +28,8 @@ class InventoryService : InventoryRepository {
         validateInventoryRequest(inventoryRequest)
 
         // Validate related entities exist
-        val product = ProductDAO.findById(inventoryRequest.productId) ?: throw inventoryRequest.productId.notFoundException()
-        val shop = ShopDAO.findById(inventoryRequest.shopId) ?: throw inventoryRequest.shopId.notFoundException()
+        val product = ProductDAO.findById(inventoryRequest.productId) ?: throw inventoryRequest.productId.throwNotFound("Resource")
+        val shop = ShopDAO.findById(inventoryRequest.shopId) ?: throw inventoryRequest.shopId.throwNotFound("Resource")
 
         val existingInventory = InventoryDAO.find {
             InventoryTable.productId eq inventoryRequest.productId
@@ -86,23 +87,25 @@ class InventoryService : InventoryRepository {
      */
     override suspend fun updateStock(productId: String, quantity: Int, operation: String): InventoryResponse = query {
         val inventory = InventoryDAO.find { InventoryTable.productId eq productId }.singleOrNull()
-            ?: throw productId.notFoundException()
+            ?: throw productId.throwNotFound("Resource")
 
-        val updatedStock = when (operation.lowercase()) {
+        require(quantity > 0) { "Quantity must be positive for $operation operation" }
+
+        val newStock = when (operation.lowercase()) {
             "add" -> inventory.stockQuantity + quantity
             "subtract" -> {
-                val newStock = inventory.stockQuantity - quantity
-                if (newStock < 0) 0 else newStock
+                val newQty = inventory.stockQuantity - quantity
+                if (newQty < 0) {
+                    throw "Insufficient stock quantity. Available: ${inventory.stockQuantity}, Requested: $quantity".throwNotFound("Resource")
+                }
+                newQty
             }
             "set" -> quantity
-            else -> inventory.stockQuantity
+            else -> throw "Invalid operation: $operation. Use add, subtract, or set".throwNotFound("Resource")
         }
 
-        inventory.apply {
-            stockQuantity = updatedStock
-            status = determineInventoryStatus(stockQuantity, minimumStockLevel)
-        }
-
+        inventory.stockQuantity = newStock
+        inventory.status = determineInventoryStatus(inventory.stockQuantity, inventory.minimumStockLevel)
 
         inventory.response()
     }

@@ -6,7 +6,7 @@ import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.database.entities.PaymentTable
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.Payment
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -33,7 +33,7 @@ class PaymentService : PaymentRepository {
                 paymentMethod = paymentRequest.paymentMethod
                 transactionId = paymentRequest.transactionId
             }.response()
-        } ?: throw paymentRequest.orderId.notFoundException()
+        } ?: throw paymentRequest.orderId.throwNotFound("Resource")
     }
 
     /**
@@ -45,6 +45,6 @@ class PaymentService : PaymentRepository {
      */
     override suspend fun getPaymentById(paymentId: String): Payment = query {
         val isOrderExist = PaymentDAO.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
-        isOrderExist?.response() ?: throw paymentId.notFoundException()
+        isOrderExist?.response() ?: throw paymentId.throwNotFound("Resource")
     }
 }

@@ -1,119 +1,103 @@
 package com.piashcse.plugin
 
-import com.piashcse.constants.Message
 import com.piashcse.utils.*
-import com.piashcse.utils.UnauthorizedException
-import com.piashcse.utils.ValidationException
-import com.piashcse.utils.ForbiddenException
-import com.piashcse.utils.NotFoundException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import org.valiktor.ConstraintViolationException
 import org.valiktor.i18n.mapToMessage
 import java.util.*
 
+/**
+ * Global exception handler — Industry-standard error responses.
+ *
+ * Error handling:
+ *   AppException             → HTTP status from exception, message only
+ *   ConstraintViolation      → 400 with structured field errors
+ *   Ktor framework errors    → 400 Bad Request
+ *   else                     → 500 Internal Server Error + log
+ *
+ * HTTP status code is the source of truth — no redundant codes in response body.
+ */
 fun Application.configureStatusPage() {
     install(StatusPages) {
         exception<Throwable> { call, error ->
             when (error) {
+                // ── 1. Invalid enum value ─────────────────────────────────
+                is InvalidEnumValueException -> {
+                    call.application.environment.log.warn("Invalid enum: ${error.invalidValue} for ${error.enumName}")
+                    call.respond(error.code, ApiResponse.error(error.message ?: "Invalid value"))
+                }
+
+                // ── 2. Missing parameter ──────────────────────────────────
+                is MissingParameterException -> {
+                    call.respond(error.code, ApiResponse.badRequest(error.message ?: "Missing parameter"))
+                }
+
+                // ── 3. All application exceptions ─────────────────────────
+                is AppException -> {
+                    call.application.environment.log.warn("${error::class.simpleName}: ${error.message}")
+                    call.respond(error.code, ApiResponse.fromException(error))
+                }
+
+                // ── 4. Validation failures (structured) ──────────────────
                 is ConstraintViolationException -> {
-                    val errorMessage =
-                        error.constraintViolations.mapToMessage(baseName = "messages", locale = Locale.ENGLISH)
-                            .map { "${it.property}: ${it.message}" }
-                    call.respond(
-                        HttpStatusCode.BadRequest, ApiResponse.failure(
-                            errorMessage, HttpStatusCode.BadRequest
-                        )
-                    )
-                }
+                    val fieldErrors = error.constraintViolations
+                        .mapToMessage(baseName = "messages", locale = Locale.ENGLISH)
+                        .map { FieldError(field = it.property, message = it.message) }
 
-                is MissingRequestParameterException -> {
-                    call.respond(
-                        HttpStatusCode.BadRequest, ApiResponse.failure(
-                            "${error.message}", HttpStatusCode.BadRequest
-                        )
-                    )
-                }
-
-                is EmailNotExist -> {
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        ApiResponse.failure(Message.USER_NOT_EXIST, HttpStatusCode.BadRequest)
+                        ApiResponse.validationError(errors = fieldErrors)
                     )
                 }
 
-                is NullPointerException -> {
-                    call.respond(
-                        ApiResponse.failure(
-                            "${Message.NULL_POINTER_ERROR} ${error.message}", HttpStatusCode.BadRequest
-                        )
-                    )
-                }
-
-                is UserNotExistException -> {
+                // ── 5. Ktor framework exceptions ─────────────────────────
+                is MissingRequestParameterException ->
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        ApiResponse.failure(Message.USER_NOT_EXIST, HttpStatusCode.BadRequest)
+                        ApiResponse.badRequest("Missing parameter: ${error.parameterName}")
                     )
-                }
 
-                is PasswordNotMatch -> {
+                is NumberFormatException ->
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        ApiResponse.failure(Message.PASSWORD_IS_WRONG, HttpStatusCode.BadRequest)
+                        ApiResponse.badRequest("Invalid numeric value")
                     )
-                }
 
-                is TypeCastException -> {
+                is IllegalArgumentException ->
                     call.respond(
-                        ApiResponse.failure(Message.TYPE_CAST_EXCEPTION, HttpStatusCode.BadRequest)
+                        HttpStatusCode.BadRequest,
+                        ApiResponse.badRequest(error.message ?: "Invalid argument")
                     )
-                }
 
-                is CommonException -> {
-                    call.respond(
-                        HttpStatusCode.BadRequest, ApiResponse.failure(error.message, HttpStatusCode.BadRequest)
-                    )
-                }
-
-                is UnauthorizedException -> {
-                    call.respond(
-                        HttpStatusCode.Unauthorized, ApiResponse.failure(error.message, error.code)
-                    )
-                }
-
-                is ValidationException -> {
-                    call.respond(
-                        HttpStatusCode.BadRequest, ApiResponse.failure(error.message, error.code)
-                    )
-                }
-
-                is ForbiddenException -> {
-                    call.respond(
-                        HttpStatusCode.Forbidden, ApiResponse.failure(error.message, error.code)
-                    )
-                }
-
-                is NotFoundException -> {
-                    call.respond(
-                        HttpStatusCode.NotFound, ApiResponse.failure(error.message, error.code)
-                    )
-                }
-
+                // ── 6. Catch-all (500 errors) ────────────────────────────
                 else -> {
+                    call.application.environment.log.error("Unhandled: ${error::class.simpleName}", error)
                     call.respond(
-                        HttpStatusCode.InternalServerError, ApiResponse.failure(
-                            "${Message.INTERNAL_SERVER_ERROR} ${error.message}", HttpStatusCode.InternalServerError
-                        )
+                        HttpStatusCode.InternalServerError,
+                        ApiResponse.internalError()
                     )
                 }
             }
         }
-        status(HttpStatusCode.Unauthorized) { call, statusCode ->
-            call.respond(HttpStatusCode.Unauthorized, ApiResponse.failure(Message.UNAUTHORIZED_API_CALL, statusCode))
+
+        // JWT auth returns raw 401 — standardize
+        status(HttpStatusCode.Unauthorized) { call, _ ->
+            call.respond(HttpStatusCode.Unauthorized, ApiResponse.unauthorized())
+        }
+
+        // 404 Not Found
+        status(HttpStatusCode.NotFound) { call, _ ->
+            call.respond(HttpStatusCode.NotFound, ApiResponse.notFound("Resource not found"))
+        }
+
+        // 405 Method Not Allowed
+        status(HttpStatusCode.MethodNotAllowed) { call, _ ->
+            call.respond(HttpStatusCode.MethodNotAllowed, ApiResponse.error("Method not allowed"))
         }
     }
 }

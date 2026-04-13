@@ -36,7 +36,7 @@ fun sendEmail(
             }
         }
     } catch (e: EmailException) {
-        throw CommonException(Message.SENDING_EMAIL_FAILED)
+        throw ValidationException(Message.SENDING_EMAIL_FAILED, "EMAIL_SEND_FAILED")
     }
 }
 

@@ -1,13 +1,14 @@
 package com.piashcse.feature.shop
 
 import com.piashcse.constants.ShopStatus
-import com.piashcse.constants.UserType
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
+import com.piashcse.utils.InvalidEnumValueException
+import com.piashcse.utils.NotFoundException
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.requiredParameters
+import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -33,7 +34,7 @@ fun Route.shopRoutes(shopController: ShopService) {
              */
             post {
                 val requestBody = call.receive<ShopRequest>()
-                call.respond(ApiResponse.success(shopController.createShop(call.currentUserId, requestBody), HttpStatusCode.OK))
+                call.respond(ApiResponse.ok(shopController.createShop(call.currentUserId, requestBody)))
             }
 
             /**
@@ -46,9 +47,9 @@ fun Route.shopRoutes(shopController: ShopService) {
              * @security jwtToken
              */
             put("/{id}") {
-                val (shopId) = call.requiredParameters("id") ?: return@put
+                val (shopId) = call.requireParameters("id")
                 val requestBody = call.receive<UpdateShopRequest>()
-                call.respond(ApiResponse.success(shopController.updateShop(call.currentUserId, shopId, requestBody), HttpStatusCode.OK))
+                call.respond(ApiResponse.ok(shopController.updateShop(call.currentUserId, shopId, requestBody)))
             }
 
             /**
@@ -59,7 +60,7 @@ fun Route.shopRoutes(shopController: ShopService) {
              * @security jwtToken
              */
             get {
-                call.respond(ApiResponse.success(shopController.getShopsByUser(call.currentUserId), HttpStatusCode.OK))
+                call.respond(ApiResponse.ok(shopController.getShopsByUser(call.currentUserId)))
             }
 
             /**
@@ -72,13 +73,10 @@ fun Route.shopRoutes(shopController: ShopService) {
              * @security jwtToken
              */
             get("/{id}") {
-                val (shopId) = call.requiredParameters("id") ?: return@get
+                val (shopId) = call.requireParameters("id")
                 val shop = shopController.getShopById(shopId)
-                if (shop != null) {
-                    call.respond(ApiResponse.success(shop, HttpStatusCode.OK))
-                } else {
-                    call.respond(HttpStatusCode.NotFound)
-                }
+                    ?: throw NotFoundException("Shop not found", "SHOP_NOT_FOUND")
+                call.respond(ApiResponse.ok(shop))
             }
         }
 
@@ -98,7 +96,7 @@ fun Route.shopRoutes(shopController: ShopService) {
                 val status = call.parameters["status"]
                 val category = call.parameters["category"]
                 val limit = call.parameters["limit"]?.toIntOrNull() ?: 20
-                call.respond(ApiResponse.success(shopController.getShops(status, category, limit), HttpStatusCode.OK))
+                call.respond(ApiResponse.ok(shopController.getShops(status, category, limit)))
             }
 
             /**
@@ -110,8 +108,8 @@ fun Route.shopRoutes(shopController: ShopService) {
              * @security jwtToken
              */
             get("/category/{categoryId}") {
-                val (categoryId) = call.requiredParameters("categoryId") ?: return@get
-                call.respond(ApiResponse.success(shopController.getShopsByCategory(categoryId), HttpStatusCode.OK))
+                val (categoryId) = call.requireParameters("categoryId")
+                call.respond(ApiResponse.ok(shopController.getShopsByCategory(categoryId)))
             }
 
             /**
@@ -122,7 +120,7 @@ fun Route.shopRoutes(shopController: ShopService) {
              * @security jwtToken
              */
             get("/featured") {
-                call.respond(ApiResponse.success(shopController.getFeaturedShops(), HttpStatusCode.OK))
+                call.respond(ApiResponse.ok(shopController.getFeaturedShops()))
             }
         }
 
@@ -138,14 +136,19 @@ fun Route.shopRoutes(shopController: ShopService) {
              * @security jwtToken
              */
             get("/status") {
-                val statusParam = call.parameters["status"] ?: return@get
+                val statusParam = call.parameters["status"]
+                    ?: throw IllegalArgumentException("status parameter is required")
+                
                 val status = try {
                     ShopStatus.valueOf(statusParam.uppercase())
                 } catch (e: IllegalArgumentException) {
-                    call.respond(HttpStatusCode.BadRequest, "Invalid status")
-                    return@get
+                    throw InvalidEnumValueException(
+                        message = "Invalid shop status: $statusParam",
+                        enumName = ShopStatus.values().joinToString(", ") { it.name },
+                        invalidValue = statusParam
+                    )
                 }
-                call.respond(ApiResponse.success(shopController.getShopsByStatus(status), HttpStatusCode.OK))
+                call.respond(ApiResponse.ok(shopController.getShopsByStatus(status)))
             }
 
             /**
@@ -157,8 +160,8 @@ fun Route.shopRoutes(shopController: ShopService) {
              * @security jwtToken
              */
             put("/approve/{id}") {
-                val (shopId) = call.requiredParameters("id") ?: return@put
-                call.respond(ApiResponse.success(shopController.approveShop(shopId), HttpStatusCode.OK))
+                val (shopId) = call.requireParameters("id")
+                call.respond(ApiResponse.ok(shopController.approveShop(shopId)))
             }
 
             /**
@@ -170,8 +173,8 @@ fun Route.shopRoutes(shopController: ShopService) {
              * @security jwtToken
              */
             put("/reject/{id}") {
-                val (shopId) = call.requiredParameters("id") ?: return@put
-                call.respond(ApiResponse.success(shopController.rejectShop(shopId), HttpStatusCode.OK))
+                val (shopId) = call.requireParameters("id")
+                call.respond(ApiResponse.ok(shopController.rejectShop(shopId)))
             }
 
             /**
@@ -183,8 +186,8 @@ fun Route.shopRoutes(shopController: ShopService) {
              * @security jwtToken
              */
             put("/suspend/{id}") {
-                val (shopId) = call.requiredParameters("id") ?: return@put
-                call.respond(ApiResponse.success(shopController.suspendShop(shopId), HttpStatusCode.OK))
+                val (shopId) = call.requireParameters("id")
+                call.respond(ApiResponse.ok(shopController.suspendShop(shopId)))
             }
 
             /**
@@ -196,8 +199,8 @@ fun Route.shopRoutes(shopController: ShopService) {
              * @security jwtToken
              */
             put("/activate/{id}") {
-                val (shopId) = call.requiredParameters("id") ?: return@put
-                call.respond(ApiResponse.success(shopController.activateShop(shopId), HttpStatusCode.OK))
+                val (shopId) = call.requireParameters("id")
+                call.respond(ApiResponse.ok(shopController.activateShop(shopId)))
             }
         }
     }

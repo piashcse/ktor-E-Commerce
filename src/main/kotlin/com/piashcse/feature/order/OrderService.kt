@@ -6,7 +6,7 @@ import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.request.OrderRequest
 import com.piashcse.model.response.Order
 import com.piashcse.utils.ValidationException
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID

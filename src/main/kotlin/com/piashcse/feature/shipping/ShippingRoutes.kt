@@ -5,7 +5,7 @@ import com.piashcse.model.request.UpdateShippingRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.requiredParameters
+import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -35,9 +35,8 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
             post {
                 val requestBody = call.receive<ShippingRequest>()
                 call.respond(
-                    ApiResponse.success(
-                        shippingController.createShipping(call.currentUserId, requestBody),
-                        HttpStatusCode.OK
+                    ApiResponse.ok(
+                        shippingController.createShipping(call.currentUserId, requestBody)
                     )
                 )
             }
@@ -52,11 +51,10 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
              * @security jwtToken
              */
             get {
-                val (orderId) = call.requiredParameters("orderId") ?: return@get
+                val orderId = call.requireParameters("orderId")
                 call.respond(
-                    ApiResponse.success(
-                        shippingController.getShipping(call.currentUserId, orderId),
-                        HttpStatusCode.OK
+                    ApiResponse.ok(
+                        shippingController.getShipping(call.currentUserId, orderId.first())
                     )
                 )
             }
@@ -78,9 +76,9 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
              * @security jwtToken
              */
             put("{id}") {
-                val (id) = call.requiredParameters("id") ?: return@put
+                val id = call.requireParameters("id")
                 val params = UpdateShippingRequest(
-                    id = id,
+                    id = id.first(),
                     address = call.parameters["address"],
                     city = call.parameters["city"],
                     country = call.parameters["country"],
@@ -92,9 +90,8 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
                 )
 
                 call.respond(
-                    ApiResponse.success(
-                        shippingController.updateShipping(call.currentUserId, params),
-                        HttpStatusCode.OK
+                    ApiResponse.ok(
+                        shippingController.updateShipping(call.currentUserId, params)
                     )
                 )
             }
@@ -109,10 +106,10 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
              * @security jwtToken
              */
             delete("{id}") {
-                val (id) = call.requiredParameters("id") ?: return@delete
+                val id = call.requireParameters("id")
                 call.respond(
-                    ApiResponse.success(
-                        shippingController.deleteShipping(call.currentUserId, id), HttpStatusCode.OK
+                    ApiResponse.ok(
+                        shippingController.deleteShipping(call.currentUserId, id.first())
                     )
                 )
             }

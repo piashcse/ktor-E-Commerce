@@ -4,7 +4,7 @@ import com.piashcse.model.request.WishListRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.requiredParameters
+import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -32,9 +32,8 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
                 val requestBody = call.receive<WishListRequest>()
                 requestBody.validation()
                 call.respond(
-                    ApiResponse.success(
-                        wishlistController.addToWishList(call.currentUserId, requestBody.productId),
-                        HttpStatusCode.OK
+                    ApiResponse.ok(
+                        wishlistController.addToWishList(call.currentUserId, requestBody.productId)
                     )
                 )
             }
@@ -53,11 +52,10 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
                 val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 10
                 val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
                 val offset = ((page - 1) * limit).toLong()
-                
+
                 call.respond(
-                    ApiResponse.success(
-                        wishlistController.getWishList(call.currentUserId, limit, offset),
-                        HttpStatusCode.OK
+                    ApiResponse.ok(
+                        wishlistController.getWishList(call.currentUserId, limit, offset)
                     )
                 )
             }
@@ -72,10 +70,10 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
              * @security jwtToken
              */
             delete("remove") {
-                val (productId) = call.requiredParameters("productId") ?: return@delete
+                val productId = call.requireParameters("productId")
                 call.respond(
-                    ApiResponse.success(
-                        wishlistController.removeFromWishList(call.currentUserId, productId), HttpStatusCode.OK
+                    ApiResponse.ok(
+                        wishlistController.removeFromWishList(call.currentUserId, productId.first())
                     )
                 )
             }
@@ -89,11 +87,10 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
              * @security jwtToken
              */
             get("check") {
-                val (productId) = call.requiredParameters("productId") ?: return@get
+                val productId = call.requireParameters("productId")
                 call.respond(
-                    ApiResponse.success(
-                        wishlistController.isProductInWishList(call.currentUserId, productId),
-                        HttpStatusCode.OK
+                    ApiResponse.ok(
+                        wishlistController.isProductInWishList(call.currentUserId, productId.first())
                     )
                 )
             }

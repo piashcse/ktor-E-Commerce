@@ -2,8 +2,8 @@ package com.piashcse.feature.wishlist
 
 import com.piashcse.database.entities.*
 import com.piashcse.model.response.Product
-import com.piashcse.utils.extension.alreadyExistException
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.throwConflict
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
@@ -27,7 +27,7 @@ class WishListService : WishListRepository {
      * @throws notFoundException If the product does not exist.
      */
     override suspend fun addToWishList(userId: String, productId: String): WishList = query {
-        val product = ProductDAO.findById(productId) ?: throw productId.notFoundException()
+        val product = ProductDAO.findById(productId) ?: throw productId.throwNotFound("Resource")
         
         val isExits = WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
                 .toList()
@@ -39,7 +39,7 @@ class WishListService : WishListRepository {
                 this.productId = EntityID(productId, WishListTable)
             }.response(product.response())
         } else {
-            throw productId.alreadyExistException()
+            throw productId.throwConflict("Resource")
         }
     }
 
@@ -71,9 +71,9 @@ class WishListService : WishListRepository {
      */
     override suspend fun removeFromWishList(userId: String, productId: String): Product = query {
         val wishListItem = WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
-            .singleOrNull() ?: throw productId.notFoundException()
+            .singleOrNull() ?: throw productId.throwNotFound("Resource")
         
-        val productResponse = ProductDAO.findById(productId)?.response()?: throw productId.notFoundException()
+        val productResponse = ProductDAO.findById(productId)?.response()?: throw productId.throwNotFound("Resource")
         wishListItem.delete()
         productResponse
     }

@@ -3,7 +3,7 @@ package com.piashcse.feature.payment
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.requiredParameters
+import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -31,8 +31,8 @@ fun Route.paymentRoutes(paymentController: PaymentService) {
             post {
                 val requestBody = call.receive<PaymentRequest>()
                 call.respond(
-                    ApiResponse.success(
-                        paymentController.createPayment(requestBody), HttpStatusCode.OK
+                    ApiResponse.ok(
+                        paymentController.createPayment(requestBody)
                     )
                 )
             }
@@ -47,10 +47,10 @@ fun Route.paymentRoutes(paymentController: PaymentService) {
              * @security jwtToken
              */
             get("{id}") {
-                val (id) = call.requiredParameters("id") ?: return@get
+                val id = call.requireParameters("id")
                 call.respond(
-                    ApiResponse.success(
-                        paymentController.getPaymentById(id), HttpStatusCode.OK
+                    ApiResponse.ok(
+                        paymentController.getPaymentById(id.first())
                     )
                 )
             }
