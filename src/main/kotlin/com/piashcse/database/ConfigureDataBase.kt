@@ -36,7 +36,8 @@ fun configureDataBase() {
             PolicyDocumentTable,
             PolicyConsentTable,
             InventoryTable,
-            SellerTable
+            SellerTable,
+            RefreshTokenTable
         )
     }
 }

@@ -5,8 +5,8 @@ import com.piashcse.database.entities.ShippingTable
 import com.piashcse.model.request.ShippingRequest
 import com.piashcse.model.request.UpdateShippingRequest
 import com.piashcse.model.response.Shipping
-import com.piashcse.utils.extension.alreadyExistException
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.throwConflict
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -29,7 +29,7 @@ class ShippingService : ShippingRepository {
             ShippingTable.orderId eq shippingRequest.orderId
         }.toList().singleOrNull()
         isShippingExist?.let {
-            throw shippingRequest.orderId.alreadyExistException()
+            throw shippingRequest.orderId.throwConflict("Shipping")
         } ?: ShippingDAO.new {
             this.orderId = EntityID(shippingRequest.orderId, ShippingTable)
             address = shippingRequest.address
@@ -54,7 +54,7 @@ class ShippingService : ShippingRepository {
         val isShippingExist = ShippingDAO.find {
             ShippingTable.orderId eq orderId
         }.toList().singleOrNull()
-        isShippingExist?.response() ?: throw orderId.notFoundException()
+        isShippingExist?.response() ?: orderId.throwNotFound("Order")
     }
 
     /**
@@ -80,7 +80,7 @@ class ShippingService : ShippingRepository {
             it.status = updateShipping.status ?: it.status
             it.trackingNumber = updateShipping.trackingNumber ?: it.trackingNumber
             it.response()
-        } ?: throw updateShipping.id.alreadyExistException()
+        } ?: throw updateShipping.id.throwConflict("Shipping")
     }
 
     /**
@@ -98,6 +98,6 @@ class ShippingService : ShippingRepository {
         isShippingExist?.let {
             it.delete()
             id
-        } ?: throw id.notFoundException()
+        } ?: id.throwNotFound("Shipping")
     }
 }

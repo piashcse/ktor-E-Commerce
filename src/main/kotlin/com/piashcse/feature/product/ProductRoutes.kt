@@ -1,15 +1,17 @@
 package com.piashcse.feature.product
 
 import com.piashcse.constants.AppConstants
+import com.piashcse.constants.Message
 import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
+import com.piashcse.utils.MissingParameterException
+import com.piashcse.utils.ValidationException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.fileExtension
-import com.piashcse.utils.extension.requiredParameters
+import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.auth.*
@@ -37,8 +39,8 @@ fun Route.productRoutes(productController: ProductService) {
          * @response 200 Product details retrieved successfully
          */
         get("{id}") {
-            val (productId) = call.requiredParameters("id") ?: return@get
-            call.respond(ApiResponse.success(productController.getProductDetail(productId), HttpStatusCode.OK))
+            val productId = call.requireParameters("id")
+            call.respond(HttpStatusCode.OK, productController.getProductDetail(productId.first()))
         }
 
         /**
@@ -54,16 +56,16 @@ fun Route.productRoutes(productController: ProductService) {
          * @response 200 Products retrieved successfully
          */
         get {
-            val (limit) = call.requiredParameters("limit") ?: return@get
+            val limit = call.requireParameters("limit")
             val params = ProductWithFilterRequest(
-                limit = limit.toInt(),
+                limit = limit.first().toInt(),
                 maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
                 minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
                 categoryId = call.parameters["categoryId"],
                 subCategoryId = call.parameters["subCategoryId"],
                 brandId = call.parameters["brandId"]
             )
-            call.respond(ApiResponse.success(productController.getProducts(params), HttpStatusCode.OK))
+            call.respond(HttpStatusCode.OK, productController.getProducts(params))
         }
 
         /**
@@ -78,15 +80,17 @@ fun Route.productRoutes(productController: ProductService) {
          * @response 200 Search results retrieved successfully
          */
         get("search") {
-            val (limit) = call.requiredParameters("limit") ?: return@get
+            val limit = call.requireParameters("limit")
+            val name = call.parameters["name"]
+                ?: throw MissingParameterException("name")
             val queryParams = ProductSearchRequest(
-                limit = limit.toInt(),
-                name = call.parameters["name"] ?: return@get,
+                limit = limit.first().toInt(),
+                name = name,
                 maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
                 minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
                 categoryId = call.parameters["categoryId"]
             )
-            call.respond(ApiResponse.success(productController.searchProduct(queryParams), HttpStatusCode.OK))
+            call.respond(HttpStatusCode.OK, productController.searchProduct(queryParams))
         }
 
         authenticate(RoleManagement.SELLER.role) {
@@ -105,9 +109,9 @@ fun Route.productRoutes(productController: ProductService) {
              * @security jwtToken
              */
             get("seller") {
-                val (limit) = call.requiredParameters("limit") ?: return@get
+                val limit = call.requireParameters("limit")
                 val params = ProductWithFilterRequest(
-                    limit = limit.toInt(),
+                    limit = limit.first().toInt(),
                     maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
                     minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
                     categoryId = call.parameters["categoryId"],
@@ -115,9 +119,8 @@ fun Route.productRoutes(productController: ProductService) {
                     brandId = call.parameters["brandId"]
                 )
                 call.respond(
-                    ApiResponse.success(
-                        productController.getProductsByUser(call.currentUserId, params), HttpStatusCode.OK
-                    )
+                    HttpStatusCode.OK,
+                    productController.getProductsByUser(call.currentUserId, params)
                 )
             }
 
@@ -132,9 +135,8 @@ fun Route.productRoutes(productController: ProductService) {
             post {
                 val requestBody = call.receive<ProductRequest>()
                 call.respond(
-                    ApiResponse.success(
-                        productController.createProduct(call.currentUserId, null, requestBody), HttpStatusCode.OK
-                    )
+                    HttpStatusCode.OK,
+                    productController.createProduct(call.currentUserId, null, requestBody)
                 )
             }
 
@@ -166,7 +168,7 @@ fun Route.productRoutes(productController: ProductService) {
                     brandId = call.parameters["brandId"],
                     name = call.parameters["name"],
                     description = call.parameters["description"],
-                    stockQuantity = call.parameters["stockQuantity"]?.toInt() ?: 0,
+                    stockQuantity = call.parameters["stockQuantity"]?.toInt(),
                     price = call.parameters["price"]?.toDoubleOrNull(),
                     discountPrice = call.parameters["discountPrice"]?.toDoubleOrNull(),
                     status = call.parameters["status"],
@@ -176,11 +178,10 @@ fun Route.productRoutes(productController: ProductService) {
                     freeShipping = call.parameters["freeShipping"]?.toBoolean(),
                     images = call.parameters["images"]?.split(",")?.toList() ?: emptyList()
                 )
-                val (id) = call.requiredParameters("id") ?: return@put
+                val id = call.requireParameters("id")
                 call.respond(
-                    ApiResponse.success(
-                        productController.updateProduct(call.currentUserId, id, params), HttpStatusCode.OK
-                    )
+                    HttpStatusCode.OK,
+                    productController.updateProduct(call.currentUserId, id.first(), params)
                 )
             }
 
@@ -193,12 +194,15 @@ fun Route.productRoutes(productController: ProductService) {
              * @security jwtToken
              */
             delete("{id}") {
-                val (id) = call.requiredParameters("id") ?: return@delete
-                call.respond(
-                    ApiResponse.success(
-                        productController.deleteProduct(call.currentUserId, id), HttpStatusCode.OK
-                    )
-                )
+                val id = call.requireParameters("id")
+                val currentUserId = call.currentUserId
+                val userType = call.principal<com.piashcse.model.request.JwtTokenRequest>()?.userType
+                if (userType == "ADMIN" || userType == "SUPER_ADMIN") {
+                    productController.deleteProductAsAdmin(id.first())
+                } else {
+                    productController.deleteProduct(currentUserId, id.first())
+                }
+                call.respond(HttpStatusCode.OK, mapOf("message" to "Product deleted successfully"))
             }
 
             /**
@@ -211,28 +215,41 @@ fun Route.productRoutes(productController: ProductService) {
              */
             post("image-upload") {
                 val multipartData = call.receiveMultipart()
+                var uploadedFileName: String? = null
+
                 multipartData.forEachPart { part ->
                     when (part) {
                         is PartData.FileItem -> {
+                            val fileName = part.originalFileName
+                            if (fileName.isNullOrBlank()) {
+                                throw ValidationException(Message.Validation.FILE_NAME_REQUIRED)
+                            }
+
+                            val extension = fileName.substringAfterLast('.', "").lowercase()
+                            val allowedExtensions = listOf("jpg", "jpeg", "png", "webp", "gif")
+                            if (extension !in allowedExtensions) {
+                                throw ValidationException(Message.Validation.INVALID_FILE_TYPE)
+                            }
+
                             UUID.randomUUID()?.let { imageId ->
-                                val fileName = part.originalFileName as String
-                                val fileLocation = fileName.let {
-                                    "${AppConstants.ImageFolder.PRODUCT_IMAGE_LOCATION}$imageId${it.fileExtension()}"
-                                }
-                                fileLocation.let {
-                                    File(it).writeBytes(withContext(Dispatchers.IO) {
-                                        part.streamProvider().readBytes()
-                                    })
-                                }
-                                val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
+                                val fileLocation = "${AppConstants.ImageFolder.PRODUCT_IMAGE_LOCATION}$imageId.$extension"
+                                File(fileLocation).writeBytes(withContext(Dispatchers.IO) {
+                                    part.streamProvider().readBytes()
+                                })
+                                uploadedFileName = "$imageId.$extension"
                                 call.respond(
-                                    ApiResponse.success(fileNameInServer, HttpStatusCode.OK)
+                                    HttpStatusCode.OK, uploadedFileName
                                 )
                             }
                         }
 
                         else -> Unit
                     }
+                    part.dispose()
+                }
+
+                if (uploadedFileName == null) {
+                    throw ValidationException(Message.Validation.FILE_REQUIRED)
                 }
             }
         }
@@ -246,12 +263,11 @@ fun Route.productRoutes(productController: ProductService) {
              * @response 200 Product deleted successfully
              * @security jwtToken
              */
-            delete("{id}") {
-                val (id) = call.requiredParameters("id") ?: return@delete
+            delete("/admin/{id}") {
+                val id = call.requireParameters("id")
                 call.respond(
-                    ApiResponse.success(
-                        productController.deleteProduct(call.currentUserId, id), HttpStatusCode.OK
-                    )
+                    HttpStatusCode.OK,
+                    productController.deleteProduct(call.currentUserId, id.first())
                 )
             }
         }

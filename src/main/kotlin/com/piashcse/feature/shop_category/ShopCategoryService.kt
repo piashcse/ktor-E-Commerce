@@ -3,8 +3,8 @@ package com.piashcse.feature.shop_category
 import com.piashcse.database.entities.ShopCategoryDAO
 import com.piashcse.database.entities.ShopCategoryTable
 import com.piashcse.model.response.ShopCategory
-import com.piashcse.utils.extension.alreadyExistException
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.throwConflict
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.eq
 
@@ -24,7 +24,7 @@ class ShopCategoryService : ShopCategoryRepository {
         val isExistShopCategory =
             ShopCategoryDAO.find { ShopCategoryTable.name eq name }.toList().singleOrNull()
         isExistShopCategory?.let {
-            throw name.alreadyExistException()
+            throw name.throwConflict("Category")
         } ?: ShopCategoryDAO.new {
             this.name = name
         }.response()
@@ -57,7 +57,7 @@ class ShopCategoryService : ShopCategoryRepository {
         isShopCategoryExist?.let {
             it.name = name
             it.response()
-        } ?: throw categoryId.notFoundException()
+        } ?: categoryId.throwNotFound("Category")
     }
 
     /**
@@ -73,6 +73,6 @@ class ShopCategoryService : ShopCategoryRepository {
         shopCategoryExist?.let {
             it.delete()
             categoryId
-        } ?: throw categoryId.notFoundException()
+        } ?: categoryId.throwNotFound("Category")
     }
 }

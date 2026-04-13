@@ -1,10 +1,11 @@
 package com.piashcse.feature.consent
 
+import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.model.response.UserPolicyConsent
 import com.piashcse.utils.ValidationException
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
@@ -19,16 +20,16 @@ class ConsentService: ConsentRepository {
         consentRequest: PolicyConsentRequest
     ): UserPolicyConsent = query {
         if (currentUserId.isBlank()) {
-            throw ValidationException("User ID cannot be blank")
+            throw ValidationException(Message.Validation.blankField("User ID"))
         }
         if (consentRequest.policyId.isBlank()) {
-            throw ValidationException("Policy ID cannot be blank")
+            throw ValidationException(Message.Validation.blankField("Policy ID"))
         }
 
         // Verify user and policy exist
-        val user = UserDAO.findById(currentUserId) ?: throw currentUserId.notFoundException()
+        val user = UserDAO.findById(currentUserId) ?: currentUserId.throwNotFound("User")
         val policy = PolicyDocumentDAO.findById(consentRequest.policyId)
-            ?: throw consentRequest.policyId.notFoundException()
+            ?: consentRequest.policyId.throwNotFound("Policy")
 
         // Check if consent already exists, if so update it
         val existingConsent = PolicyConsentDAO.find {
@@ -57,7 +58,7 @@ class ConsentService: ConsentRepository {
      * Gets all consents for a user
      */
     override suspend fun getUserConsents(userId: String): List<UserPolicyConsent> = query {
-        val user = UserDAO.findById(userId) ?: throw userId.notFoundException()
+        val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
 
         PolicyConsentDAO.find { PolicyConsentTable.userId eq user.id }
             .map { it.response() }
@@ -67,7 +68,7 @@ class ConsentService: ConsentRepository {
      * Checks if a user has consented to a specific policy
      */
     override suspend fun hasUserConsented(userId: String, policyType: PolicyDocumentTable.PolicyType): Boolean = query {
-        val user = UserDAO.findById(userId) ?: throw userId.notFoundException()
+        val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
 
         // Find the active policy of the specified type
         val activePolicy = PolicyDocumentDAO.find {

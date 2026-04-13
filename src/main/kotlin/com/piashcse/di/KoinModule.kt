@@ -1,6 +1,8 @@
 package com.piashcse.di
 
 import com.piashcse.feature.auth.AuthService
+import com.piashcse.feature.auth.RefreshTokenRepository
+import com.piashcse.feature.auth.RefreshTokenRepositoryImpl
 import com.piashcse.feature.brand.BrandService
 import com.piashcse.feature.cart.CartService
 import com.piashcse.feature.consent.ConsentService
@@ -29,7 +31,8 @@ val serviceModule = module {
     single { ShippingService() }
     single { ShopService() }
     single { ShopCategoryService() }
-    single { AuthService() }
+    single { RefreshTokenRepositoryImpl() as RefreshTokenRepository }
+    single { AuthService(get<RefreshTokenRepository>()) }
     single { ProfileService() }
     single { WishListService() }
     single { PaymentService() }

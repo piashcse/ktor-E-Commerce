@@ -1,19 +1,25 @@
 package com.piashcse.feature.product
 
 import com.piashcse.constants.AppConstants
+import com.piashcse.constants.Message
 import com.piashcse.constants.ProductStatus
+import com.piashcse.database.entities.BrandTable
+import com.piashcse.database.entities.ProductCategoryTable
 import com.piashcse.database.entities.ProductDAO
+import com.piashcse.database.entities.ProductSubCategoryTable
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.ShopTable
+import com.piashcse.database.entities.UserTable
 import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.model.response.Product
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.NotFoundException
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.and
@@ -22,8 +28,6 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.core.like
-import org.jetbrains.exposed.v1.jdbc.andWhere
-import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.io.File
 
 /**
@@ -52,11 +56,11 @@ class ProductService : ProductRepository {
         validateProductForSeller(userId, shopId)
 
         val product = ProductDAO.new {
-            this.userId = EntityID(userId, ProductTable)
-            this.shopId = shopId?.let { EntityID(shopId, ProductTable) }
-            categoryId = EntityID(productRequest.categoryId, ProductTable)
-            subCategoryId = productRequest.subCategoryId?.let { EntityID(productRequest.subCategoryId, ProductTable) }
-            brandId = productRequest.brandId?.let { EntityID(productRequest.brandId, ProductTable) }
+            this.userId = EntityID(userId, UserTable)
+            this.shopId = shopId?.let { EntityID(shopId, ShopTable) }
+            categoryId = EntityID(productRequest.categoryId, ProductCategoryTable)
+            subCategoryId = productRequest.subCategoryId?.let { EntityID(it, ProductSubCategoryTable) }
+            brandId = productRequest.brandId?.let { EntityID(it, BrandTable) }
             sku = generateSKU(productRequest.name)
             name = productRequest.name
             description = productRequest.description
@@ -83,7 +87,7 @@ class ProductService : ProductRepository {
             SellerTable.userId eq userId
         }.singleOrNull()
         if (seller == null) {
-            throw "User is not registered as a seller".notFoundException()
+            throw NotFoundException(Message.Errors.SELLER_REQUIRED)
         }
 
         // If shopId is provided, verify that the user is authorized to add products to that shop
@@ -93,7 +97,7 @@ class ProductService : ProductRepository {
                 (ShopTable.userId eq userId)
             }.singleOrNull()
             if (shop == null) {
-                throw "User is not authorized to add products to this shop".notFoundException()
+                throw NotFoundException(Message.Products.UNAUTHORIZED_ADD)
             }
         }
     }
@@ -129,20 +133,20 @@ class ProductService : ProductRepository {
                 SellerTable.userId eq userId
             }.singleOrNull()
             if (seller == null) {
-                throw "User is not registered as a seller".notFoundException()
+                throw NotFoundException(Message.Errors.SELLER_REQUIRED)
             }
 
             // Verify user has access to this product
             val product = ProductDAO.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.singleOrNull()
-                ?: throw productId.notFoundException()
+                ?: productId.throwNotFound("Product")
 
             product.apply {
-                this.userId = EntityID(userId, ProductTable)
+                this.userId = EntityID(userId, UserTable)
                 categoryId =
-                    updateProduct.categoryId?.let { EntityID(updateProduct.categoryId, ProductTable) } ?: categoryId
-                subCategoryId = updateProduct.subCategoryId?.let { EntityID(updateProduct.subCategoryId, ProductTable) }
+                    updateProduct.categoryId?.let { EntityID(updateProduct.categoryId, ProductCategoryTable) } ?: categoryId
+                subCategoryId = updateProduct.subCategoryId?.let { EntityID(updateProduct.subCategoryId, ProductSubCategoryTable) }
                     ?: subCategoryId
-                brandId = updateProduct.brandId?.let { EntityID(updateProduct.brandId, ProductTable) } ?: brandId
+                brandId = updateProduct.brandId?.let { EntityID(updateProduct.brandId, BrandTable) } ?: brandId
                 name = updateProduct.name ?: name
                 description = updateProduct.description ?: description
                 // Don't update sku, barcode, weight, dimensions, minOrderQuantity, discountPercentage, bestSeller, newProduct, viewCount, rating, totalReviews, totalSales
@@ -164,34 +168,27 @@ class ProductService : ProductRepository {
      * @return A list of products matching the provided filters.
      */
     override suspend fun getProducts(productQuery: ProductWithFilterRequest): List<Product> = query {
-        val query = ProductTable.selectAll()
-        productQuery.maxPrice?.let {
-            query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
-        }
-        productQuery.minPrice?.let {
-            query.andWhere {
-                ProductTable.price greaterEq java.math.BigDecimal.valueOf(it)
-            }
-        }
+        var condition: Op<Boolean> = ProductTable.status eq ProductStatus.ACTIVE
+
         productQuery.categoryId?.let {
-            query.adjustWhere {
-                ProductTable.categoryId eq it
-            }
+            condition = condition and (ProductTable.categoryId eq EntityID(it, ProductCategoryTable))
         }
         productQuery.subCategoryId?.let {
-            query.adjustWhere {
-                ProductTable.subCategoryId eq it
-            }
+            condition = condition and (ProductTable.subCategoryId eq EntityID(it, ProductSubCategoryTable))
         }
         productQuery.brandId?.let {
-            query.adjustWhere {
-                ProductTable.brandId eq it
-            }
+            condition = condition and (ProductTable.brandId eq EntityID(it, BrandTable))
         }
-        query.andWhere { ProductTable.status eq ProductStatus.ACTIVE }
-        query.limit(productQuery.limit).map {
-            ProductDAO.wrapRow(it).response()
+        productQuery.minPrice?.let {
+            condition = condition and (ProductTable.price greaterEq java.math.BigDecimal.valueOf(it))
         }
+        productQuery.maxPrice?.let {
+            condition = condition and (ProductTable.price lessEq java.math.BigDecimal.valueOf(it))
+        }
+
+        ProductDAO.find { condition }
+            .limit(productQuery.limit)
+            .map { it.response() }
     }
 
     /**
@@ -202,36 +199,27 @@ class ProductService : ProductRepository {
      * @return A list of products for the specific shop.
      */
     override suspend fun getProductsByShop(shopId: String, productQuery: ProductWithFilterRequest): List<Product> = query {
-        val query = ProductTable.selectAll()
-        query.andWhere { ProductTable.shopId eq shopId }
+        var condition: Op<Boolean> = (ProductTable.shopId eq shopId) and (ProductTable.status eq ProductStatus.ACTIVE)
 
-        productQuery.maxPrice?.let {
-            query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
-        }
-        productQuery.minPrice?.let {
-            query.andWhere {
-                ProductTable.price greaterEq java.math.BigDecimal.valueOf(it)
-            }
-        }
         productQuery.categoryId?.let {
-            query.adjustWhere {
-                ProductTable.categoryId eq it
-            }
+            condition = condition and (ProductTable.categoryId eq EntityID(it, ProductCategoryTable))
         }
         productQuery.subCategoryId?.let {
-            query.adjustWhere {
-                ProductTable.subCategoryId eq it
-            }
+            condition = condition and (ProductTable.subCategoryId eq EntityID(it, ProductSubCategoryTable))
         }
         productQuery.brandId?.let {
-            query.adjustWhere {
-                ProductTable.brandId eq it
-            }
+            condition = condition and (ProductTable.brandId eq EntityID(it, BrandTable))
         }
-        query.andWhere { ProductTable.status eq ProductStatus.ACTIVE }
-        query.limit(productQuery.limit).map {
-            ProductDAO.wrapRow(it).response()
+        productQuery.minPrice?.let {
+            condition = condition and (ProductTable.price greaterEq java.math.BigDecimal.valueOf(it))
         }
+        productQuery.maxPrice?.let {
+            condition = condition and (ProductTable.price lessEq java.math.BigDecimal.valueOf(it))
+        }
+
+        ProductDAO.find { condition }
+            .limit(productQuery.limit)
+            .map { it.response() }
     }
 
     /**
@@ -242,36 +230,27 @@ class ProductService : ProductRepository {
      * @return A list of products (even if only one product matches).
      */
     override suspend fun getProductsByUser(userId: String, productQuery: ProductWithFilterRequest): List<Product> = query {
-        val query = ProductTable.selectAll()
-        query.andWhere { ProductTable.userId eq userId }
+        var condition: Op<Boolean> = (ProductTable.userId eq userId) and (ProductTable.status eq ProductStatus.ACTIVE)
 
-        productQuery.maxPrice?.let {
-            query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
-        }
-        productQuery.minPrice?.let {
-            query.andWhere {
-                ProductTable.price greaterEq java.math.BigDecimal.valueOf(it)
-            }
-        }
         productQuery.categoryId?.let {
-            query.adjustWhere {
-                ProductTable.categoryId eq it
-            }
+            condition = condition and (ProductTable.categoryId eq EntityID(it, ProductCategoryTable))
         }
         productQuery.subCategoryId?.let {
-            query.adjustWhere {
-                ProductTable.subCategoryId eq it
-            }
+            condition = condition and (ProductTable.subCategoryId eq EntityID(it, ProductSubCategoryTable))
         }
         productQuery.brandId?.let {
-            query.adjustWhere {
-                ProductTable.brandId eq it
-            }
+            condition = condition and (ProductTable.brandId eq EntityID(it, BrandTable))
         }
-        query.andWhere { ProductTable.status eq ProductStatus.ACTIVE }
-        query.limit(productQuery.limit).map {
-            ProductDAO.wrapRow(it).response()
+        productQuery.minPrice?.let {
+            condition = condition and (ProductTable.price greaterEq java.math.BigDecimal.valueOf(it))
         }
+        productQuery.maxPrice?.let {
+            condition = condition and (ProductTable.price lessEq java.math.BigDecimal.valueOf(it))
+        }
+
+        ProductDAO.find { condition }
+            .limit(productQuery.limit)
+            .map { it.response() }
     }
 
     /**
@@ -283,7 +262,7 @@ class ProductService : ProductRepository {
      */
     override suspend fun getProductDetail(productId: String): Product = query {
         val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
-        product?.response() ?: throw productId.notFoundException()
+        product?.response() ?: productId.throwNotFound("Product")
     }
 
     /**
@@ -300,8 +279,22 @@ class ProductService : ProductRepository {
         // Find the product and verify user ownership
         val product = ProductDAO.find {
             ProductTable.userId eq userId and (ProductTable.id eq productId)
-        }.singleOrNull() ?: throw productId.notFoundException()
+        }.singleOrNull() ?: productId.throwNotFound("Product")
 
+        product.delete()
+        productId
+    }
+
+    /**
+     * Deletes a product by its ID (admin - no ownership check).
+     *
+     * @param productId The ID of the product to be deleted.
+     * @return The ID of the deleted product.
+     * @throws Exception if the product with the provided ID is not found.
+     */
+    suspend fun deleteProductAsAdmin(productId: String): String = query {
+        val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
+            ?: productId.throwNotFound("Product")
         product.delete()
         productId
     }
@@ -325,22 +318,24 @@ class ProductService : ProductRepository {
      * @return A list of products matching the search criteria.
      */
     override suspend fun searchProduct(productQuery: ProductSearchRequest): List<Product> = query {
-        var products = ProductDAO.all().toList()
+        var condition: Op<Boolean> = ProductTable.status eq ProductStatus.ACTIVE
 
         if (productQuery.name.isNotEmpty()) {
-            products = products.filter { it.name.contains(productQuery.name, ignoreCase = true) }
+            condition = condition and ProductTable.name.like("%${productQuery.name}%")
         }
         if (!productQuery.categoryId.isNullOrEmpty()) {
-            products = products.filter { it.categoryId.value == productQuery.categoryId }
+            condition = condition and (ProductTable.categoryId eq EntityID(productQuery.categoryId, ProductCategoryTable))
         }
-        if (productQuery.maxPrice != null) {
-            products = products.filter { it.price.toDouble() <= productQuery.maxPrice }
+        productQuery.minPrice?.let {
+            condition = condition and (ProductTable.price greaterEq java.math.BigDecimal.valueOf(it))
         }
-        if (productQuery.minPrice != null) {
-            products = products.filter { it.price.toDouble() >= productQuery.minPrice }
+        productQuery.maxPrice?.let {
+            condition = condition and (ProductTable.price lessEq java.math.BigDecimal.valueOf(it))
         }
 
-        return@query products.map { it.response() }
+        ProductDAO.find { condition }
+            .limit(productQuery.limit)
+            .map { it.response() }
     }
 
     /**

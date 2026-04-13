@@ -30,13 +30,13 @@ fun sendEmail(
                 isSSLOnConnect = true
                 setFrom(fromEmail)
                 this.subject = subject
-                setMsg("${Message.VERIFICATION_CODE_SENT_TO} $verificationCode")
+                setMsg(Message.Auth.OTP_SENT)
                 addTo(toEmail)
                 send()
             }
         }
     } catch (e: EmailException) {
-        throw CommonException(Message.SENDING_EMAIL_FAILED)
+        throw ValidationException(Message.Errors.EMAIL_FAILED)
     }
 }
 

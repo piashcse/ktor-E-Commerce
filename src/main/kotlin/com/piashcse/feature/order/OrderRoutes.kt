@@ -1,13 +1,13 @@
 package com.piashcse.feature.order
 
-import com.piashcse.constants.Message.INVALID_ORDER_STATUS
-import com.piashcse.constants.Message.YOU_ARE_NOT_ALLOWED_TO_SET_STATUS
+import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.model.request.OrderRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
+import com.piashcse.utils.InvalidEnumValueException
+import com.piashcse.utils.UnauthorizedException
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.requiredParameters
+import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -38,12 +38,7 @@ fun Route.orderRoutes(orderController: OrderService) {
              */
             post {
                 val requestBody = call.receive<OrderRequest>()
-                call.respond(
-                    ApiResponse.success(
-                        orderController.createOrder(call.currentUserId, requestBody),
-                        HttpStatusCode.OK
-                    )
-                )
+                call.respond(HttpStatusCode.OK, orderController.createOrder(call.currentUserId, requestBody))
             }
 
             /**
@@ -55,13 +50,8 @@ fun Route.orderRoutes(orderController: OrderService) {
              * @security jwtToken
              */
             get {
-                val (limit) = call.requiredParameters("limit") ?: return@get
-                call.respond(
-                    ApiResponse.success(
-                        orderController.getOrders(call.currentUserId, limit.toInt()),
-                        HttpStatusCode.OK
-                    )
-                )
+                val (limit) = call.requireParameters("limit")
+                call.respond(HttpStatusCode.OK, orderController.getOrders(call.currentUserId, limit.toInt()))
             }
         }
 
@@ -76,19 +66,17 @@ fun Route.orderRoutes(orderController: OrderService) {
              * @security jwtToken
              */
             patch("status/{id}") {
-                val (id, statusParam) = call.requiredParameters("id", "status") ?: return@patch
+                val (id, statusParam) = call.requireParameters("id", "status")
                 val userId = call.currentUserId
 
                 val status = try {
                     OrderStatus.valueOf(statusParam.uppercase())
                 } catch (e: IllegalArgumentException) {
-                    call.respond(
-                        HttpStatusCode.BadRequest, ApiResponse.failure(
-                            "$INVALID_ORDER_STATUS $statusParam",
-                            HttpStatusCode.BadRequest
-                        )
+                    throw InvalidEnumValueException(
+                        message = "Invalid order status: $statusParam",
+                        enumName = OrderStatus.values().joinToString(", ") { it.name },
+                        invalidValue = statusParam
                     )
-                    return@patch
                 }
 
                 val isSeller =
@@ -100,21 +88,10 @@ fun Route.orderRoutes(orderController: OrderService) {
                 val customerOnlyStatuses = listOf(OrderStatus.CANCELED, OrderStatus.RECEIVED)
 
                 if ((status in sellerOnlyStatuses && !isSeller) || (status in customerOnlyStatuses && !isCustomer)) {
-                    call.respond(
-                        HttpStatusCode.Unauthorized, ApiResponse.failure(
-                            "$YOU_ARE_NOT_ALLOWED_TO_SET_STATUS $status",
-                            HttpStatusCode.Unauthorized
-                        )
-                    )
-                    return@patch
+                    throw UnauthorizedException(Message.Orders.STATUS_NOT_ALLOWED)
                 }
 
-                call.respond(
-                    ApiResponse.success(
-                        orderController.updateOrderStatus(userId, id, status),
-                        HttpStatusCode.OK
-                    )
-                )
+                call.respond(HttpStatusCode.OK, orderController.updateOrderStatus(userId, id, status))
             }
         }
 
@@ -129,27 +106,20 @@ fun Route.orderRoutes(orderController: OrderService) {
              * @security jwtToken
              */
             patch("status/{id}") {
-                val (id, statusParam) = call.requiredParameters("id", "status") ?: return@patch
+                val (id, statusParam) = call.requireParameters("id", "status")
                 val userId = call.currentUserId
 
                 val status = try {
                     OrderStatus.valueOf(statusParam.uppercase())
                 } catch (e: IllegalArgumentException) {
-                    call.respond(
-                        HttpStatusCode.BadRequest, ApiResponse.failure(
-                            "$INVALID_ORDER_STATUS $statusParam",
-                            HttpStatusCode.BadRequest
-                        )
+                    throw InvalidEnumValueException(
+                        message = "Invalid order status: $statusParam",
+                        enumName = OrderStatus.values().joinToString(", ") { it.name },
+                        invalidValue = statusParam
                     )
-                    return@patch
                 }
 
-                call.respond(
-                    ApiResponse.success(
-                        orderController.updateOrderStatus(userId, id, status),
-                        HttpStatusCode.OK
-                    )
-                )
+                call.respond(HttpStatusCode.OK, orderController.updateOrderStatus(userId, id, status))
             }
         }
     }

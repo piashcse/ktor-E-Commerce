@@ -2,8 +2,8 @@ package com.piashcse.feature.wishlist
 
 import com.piashcse.database.entities.*
 import com.piashcse.model.response.Product
-import com.piashcse.utils.extension.alreadyExistException
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.throwConflict
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
@@ -27,19 +27,19 @@ class WishListService : WishListRepository {
      * @throws notFoundException If the product does not exist.
      */
     override suspend fun addToWishList(userId: String, productId: String): WishList = query {
-        val product = ProductDAO.findById(productId) ?: throw productId.notFoundException()
-        
+        val product = ProductDAO.findById(productId) ?: productId.throwNotFound("Product")
+
         val isExits = WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
                 .toList()
                 .singleOrNull()
-        
+
         if (isExits == null) {
             WishListDAO.new {
                 this.userId = EntityID(userId, WishListTable)
                 this.productId = EntityID(productId, WishListTable)
             }.response(product.response())
         } else {
-            throw productId.alreadyExistException()
+            throw productId.throwConflict("Product")
         }
     }
 
@@ -71,9 +71,9 @@ class WishListService : WishListRepository {
      */
     override suspend fun removeFromWishList(userId: String, productId: String): Product = query {
         val wishListItem = WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
-            .singleOrNull() ?: throw productId.notFoundException()
-        
-        val productResponse = ProductDAO.findById(productId)?.response()?: throw productId.notFoundException()
+            .singleOrNull() ?: productId.throwNotFound("Product")
+
+        val productResponse = ProductDAO.findById(productId)?.response()?: productId.throwNotFound("Product")
         wishListItem.delete()
         productResponse
     }

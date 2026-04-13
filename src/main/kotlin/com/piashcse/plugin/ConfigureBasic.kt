@@ -12,17 +12,42 @@ import org.slf4j.event.Level
 import io.ktor.http.*
 import io.ktor.server.plugins.cors.routing.*
 import com.google.gson.JsonSerializer
+import com.piashcse.config.DotEnvConfig
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 fun Application.configureBasic() {
     install(CORS) {
-        allowMethod(HttpMethod.Options)
-        allowMethod(HttpMethod.Put)
-        allowMethod(HttpMethod.Delete)
-        allowMethod(HttpMethod.Patch)
-        allowHeader(HttpHeaders.Authorization)
+        val allowedOrigins = DotEnvConfig.allowedOrigins.split(",")
+        
+        // Allow all origins if "*" is in the list
+        if (allowedOrigins.any { it.trim() == "*" }) {
+            anyHost()
+        } else {
+            allowedOrigins.forEach { origin ->
+                val trimmed = origin.trim()
+                // Parse the URL to extract host and scheme
+                val url = Url(trimmed)
+                allowHost(
+                    host = url.host,
+                    schemes = listOf(url.protocol.name)
+                )
+            }
+        }
+        
+        allowCredentials = true
+        allowNonSimpleContentTypes = true
+        listOf(
+            HttpMethod.Put,
+            HttpMethod.Post,
+            HttpMethod.Delete,
+            HttpMethod.Patch,
+            HttpMethod.Options
+        ).forEach { allowMethod(it) }
         allowHeader(HttpHeaders.ContentType)
+        allowHeader(HttpHeaders.Authorization)
+        allowHeader("X-Requested-With")
+        exposeHeader("X-Request-ID")
     }
     install(ContentNegotiation) {
         gson {

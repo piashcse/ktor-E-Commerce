@@ -6,8 +6,8 @@ import com.piashcse.database.entities.ProductSubCategoryDAO
 import com.piashcse.database.entities.ProductSubCategoryTable
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.model.response.ProductSubCategory
-import com.piashcse.utils.extension.alreadyExistException
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.throwConflict
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -22,8 +22,8 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
      *
      * @param productSubCategory The details of the product subcategory to be added.
      * @return The added product subcategory.
-     * @throws productSubCategory.subCategoryName.alreadyExistException() If a subcategory with the same name already exists.
-     * @throws productSubCategory.categoryId.notFoundException() If the provided category ID does not exist.
+     * @throws productSubCategory.subCategoryName.throwConflict("Resource") If a subcategory with the same name already exists.
+     * @throws productSubCategory.categoryId.throwNotFound("Resource") If the provided category ID does not exist.
      */
     override suspend fun addProductSubCategory(productSubCategory: ProductSubCategoryRequest): ProductSubCategory =
         query {
@@ -38,12 +38,12 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
                         .toList()
                         .singleOrNull()
                 isSubCategoryExist?.let {
-                    throw productSubCategory.name.alreadyExistException()
+                    throw productSubCategory.name.throwConflict("Subcategory")
                 } ?: ProductSubCategoryDAO.new {
                     categoryId = EntityID(productSubCategory.categoryId, ProductSubCategoryTable)
                     name = productSubCategory.name
                 }.response()
-            } ?: throw productSubCategory.categoryId.notFoundException()
+            } ?: productSubCategory.categoryId.throwNotFound("Category")
         }
 
     /**
@@ -69,7 +69,7 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
      * @param id The ID of the product subcategory to update.
      * @param subCategoryName The new name for the subcategory.
      * @return The updated product subcategory.
-     * @throws id.notFoundException() If the subcategory ID does not exist.
+     * @throws id.throwNotFound("Resource") If the subcategory ID does not exist.
      */
     override suspend fun updateProductSubCategory(id: String, name: String): ProductSubCategory = query {
         val suCategoryExist =
@@ -78,7 +78,7 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
         suCategoryExist?.let {
             it.name = name
             it.response()
-        } ?: throw id.notFoundException()
+        } ?: id.throwNotFound("Subcategory")
     }
 
     /**
@@ -86,7 +86,7 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
      *
      * @param subCategoryId The ID of the product subcategory to delete.
      * @return The ID of the deleted subcategory.
-     * @throws subCategoryId.notFoundException() If the subcategory ID does not exist.
+     * @throws subCategoryId.throwNotFound("Resource") If the subcategory ID does not exist.
      */
     override suspend fun deleteProductSubCategory(subCategoryId: String): String = query {
         val isSubCategoryExist =
@@ -94,6 +94,6 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
         isSubCategoryExist?.let {
             isSubCategoryExist.delete()
             subCategoryId
-        } ?: throw subCategoryId.notFoundException()
+        } ?: subCategoryId.throwNotFound("Subcategory")
     }
 }

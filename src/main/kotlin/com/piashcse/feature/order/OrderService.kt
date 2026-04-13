@@ -1,12 +1,13 @@
 package com.piashcse.feature.order
 
 import com.piashcse.constants.OrderStatus
+import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.request.OrderRequest
 import com.piashcse.model.response.Order
 import com.piashcse.utils.ValidationException
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
@@ -30,8 +31,8 @@ class OrderService : OrderRepository {
      */
     override suspend fun createOrder(userId: String, orderRequest: OrderRequest): List<Order> = query {
         orderRequest.validation()
-        if (userId.isBlank()) throw ValidationException("User ID cannot be blank")
-        if (orderRequest.orderItems.isEmpty()) throw ValidationException("Order must contain at least one item")
+        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
+        if (orderRequest.orderItems.isEmpty()) throw ValidationException(Message.Validation.INVALID_ORDER_ITEMS)
 
         // 1. Fetch all products and validate existence and stock
         val productIds = orderRequest.orderItems.map { it.productId }.distinct()
@@ -42,13 +43,13 @@ class OrderService : OrderRepository {
         // Validate all products found
         orderRequest.orderItems.forEach { item ->
             val product = productsMap[item.productId]
-                ?: throw ValidationException("Product with ID ${item.productId} not found")
-            
+                ?: throw ValidationException(Message.Validation.productNotFound(item.productId))
+
             if (product.stockQuantity < item.quantity) {
-                throw ValidationException("Insufficient stock for product: ${product.name}. Available: ${product.stockQuantity}")
+                throw ValidationException(Message.Validation.insufficientStock(product.name, product.stockQuantity))
             }
             if (product.shopId == null) {
-                 throw ValidationException("Product ${product.name} does not belong to any shop.")
+                 throw ValidationException(Message.Orders.productDoesNotBelongToShop(product.name))
             }
         }
 
@@ -146,14 +147,14 @@ class OrderService : OrderRepository {
      * @throws Exception if the order does not exist for the given user.
      */
     override suspend fun updateOrderStatus(userId: String, orderId: String, status: OrderStatus): Order = query {
-        if (userId.isBlank()) throw ValidationException("User ID cannot be blank")
-        if (orderId.isBlank()) throw ValidationException("Order ID cannot be blank")
+        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
+        if (orderId.isBlank()) throw ValidationException(Message.Validation.blankField("Order ID"))
 
-        val order = OrderDAO.findById(orderId) ?: throw ValidationException("Order not found")
+        val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
 
         // Fetch User to check role and permissions
-        val user = UserDAO.findById(userId) ?: throw ValidationException("User not found")
-        
+        val user = UserDAO.findById(userId) ?: throw ValidationException(Message.Errors.NOT_FOUND)
+
         // 1. Check if user is the Customer
         val isCustomer = order.userId.value == userId
 
@@ -168,11 +169,11 @@ class OrderService : OrderRepository {
         }
 
         // 3. Check if Admin
-        val isAdmin = user.userType == com.piashcse.constants.UserType.ADMIN || 
+        val isAdmin = user.userType == com.piashcse.constants.UserType.ADMIN ||
                       user.userType == com.piashcse.constants.UserType.SUPER_ADMIN
 
         if (!isCustomer && !isSeller && !isAdmin) {
-            throw ValidationException("You are not authorized to update this order")
+            throw ValidationException(Message.Orders.UNAUTHORIZED)
         }
 
         // Note: Specific status transitions (e.g. only Seller can mark DELIVERED) are handled in Routes or can be added here.

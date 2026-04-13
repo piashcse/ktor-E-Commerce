@@ -56,13 +56,7 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": [
+[
     {
       "id": "70ac842b-7a81-4976-9564-d440880d1736",
       "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
@@ -127,12 +121,6 @@ curl -X 'POST' \
 
 ```json
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "70ac842b-7a81-4976-9564-d440880d1736",
     "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
     "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
@@ -192,12 +180,6 @@ curl -X 'PUT' \
 
 ```json
 {
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": {
     "id": "70ac842b-7a81-4976-9564-d440880d1736",
     "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
     "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
@@ -249,14 +231,7 @@ curl -X 'DELETE' \
 #### Example Response
 
 ```json
-{
-  "isSuccess": true,
-  "statusCode": {
-    "value": 200,
-    "description": "OK"
-  },
-  "data": "70ac842b-7a81-4976-9564-d440880d1736"
-}
+"70ac842b-7a81-4976-9564-d440880d1736"
 ```
 
 #### Response Fields
@@ -267,42 +242,46 @@ curl -X 'DELETE' \
 
 ---
 
-## Response Format
+## Error Handling
 
-All API responses follow a consistent format:
+This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
 
+### Success Responses
+- **HTTP status code indicates success** (200, 201, 204)
+- **Response body contains data directly** (no wrapper object)
+- No `isSuccess` or `statusCode` fields needed
+
+### Error Responses
+
+**Standard Error (400/401/403/404/500):**
 ```json
 {
-  "isSuccess": boolean,
-  "statusCode": {
-    "value": number,
-    "description": string
-  },
-  "data": any
+  "message": "Error description"
 }
 ```
 
-### Response Fields
+**Validation Error (400):**
+```json
+{
+  "message": "Validation failed",
+  "errors": [
+    {"field": "email", "message": "Invalid email format"},
+    {"field": "password", "message": "Password must be at least 8 characters"}
+  ]
+}
+```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `isSuccess` | boolean | Indicates if the operation was successful |
-| `statusCode.value` | number | HTTP status code |
-| `statusCode.description` | string | HTTP status description |
-| `data` | any | Response data (varies by endpoint) |
+### Common Error Codes
+
+| Status Code | Description | Example Message |
+|-------------|-------------|-----------------|
+| `400` | Bad Request | `"Invalid email or password"` |
+| `401` | Unauthorized | `"Authentication required"` |
+| `403` | Forbidden | `"Insufficient permissions"` |
+| `404` | Not Found | `"Product not found"` |
+| `409` | Conflict | `"User already exists with this email"` |
+| `500` | Internal Server Error | `"Internal server error"` |
+
+All error messages are centralized and consistent across all endpoints.
 
 ---
-
-## Error Handling
-
-The API returns appropriate HTTP status codes and error messages:
-
-| Status Code | Description |
-|-------------|-------------|
-| `200` | OK - Request successful |
-| `400` | Bad Request - Invalid parameters or missing required fields |
-| `401` | Unauthorized - Invalid or missing authentication |
-| `403` | Forbidden - Insufficient privileges or not review owner |
-| `404` | Not Found - Review or product not found |
-| `409` | Conflict - User already reviewed this product |
-| `500` | Internal Server Error - Server error |

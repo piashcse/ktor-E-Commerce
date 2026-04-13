@@ -2,8 +2,7 @@ package com.piashcse.feature.shop_category
 
 import com.piashcse.model.request.ShopCategoryRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.requiredParameters
+import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -32,9 +31,8 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
             post {
                 val requestBody = call.receive<ShopCategoryRequest>()
                 call.respond(
-                    ApiResponse.success(
-                        shopCategoryController.createCategory(requestBody.name), HttpStatusCode.OK
-                    )
+                    HttpStatusCode.OK,
+                    shopCategoryController.createCategory(requestBody.name)
                 )
             }
 
@@ -48,12 +46,10 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
              * @security jwtToken
              */
             get {
-                val (limit) = call.requiredParameters("limit") ?: return@get
+                val limit = call.requireParameters("limit")
                 call.respond(
-                    ApiResponse.success(
-                        shopCategoryController.getCategories(limit.toInt()),
-                        HttpStatusCode.OK
-                    )
+                    HttpStatusCode.OK,
+                    shopCategoryController.getCategories(limit.first().toInt())
                 )
             }
 
@@ -67,11 +63,10 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
              * @security jwtToken
              */
             delete("{id}") {
-                val (id) = call.requiredParameters("id") ?: return@delete
+                val id = call.requireParameters("id")
                 call.respond(
-                    ApiResponse.success(
-                        shopCategoryController.deleteCategory(id), HttpStatusCode.OK
-                    )
+                    HttpStatusCode.OK,
+                    shopCategoryController.deleteCategory(id.first())
                 )
             }
 
@@ -86,11 +81,10 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
              * @security jwtToken
              */
             put("{id}") {
-                val (id, name) = call.requiredParameters("id", "name") ?: return@put
+                val params = call.requireParameters("id", "name")
                 call.respond(
-                    ApiResponse.success(
-                        shopCategoryController.updateCategory(id, name), HttpStatusCode.OK
-                    )
+                    HttpStatusCode.OK,
+                    shopCategoryController.updateCategory(params[0], params[1])
                 )
             }
         }

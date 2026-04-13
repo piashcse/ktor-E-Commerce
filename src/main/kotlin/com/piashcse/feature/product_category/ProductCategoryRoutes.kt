@@ -2,8 +2,7 @@ package com.piashcse.feature.product_category
 
 import com.piashcse.model.request.ProductCategoryRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.requiredParameters
+import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -29,12 +28,11 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
          * @response 400 Invalid limit parameter
          */
         get {
-            val (limit) = call.requiredParameters("limit") ?: return@get
+            val limit = call.requireParameters("limit")
             call.respond(
-                ApiResponse.success(
-                    productCategoryController.getCategories(
-                        limit.toInt()
-                    ), HttpStatusCode.OK
+                HttpStatusCode.OK,
+                productCategoryController.getCategories(
+                    limit.first().toInt()
                 )
             )
         }
@@ -50,10 +48,9 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
             post {
                 val requestBody = call.receive<ProductCategoryRequest>()
                 call.respond(
-                    ApiResponse.success(
-                        productCategoryController.createCategory(
-                            requestBody.name
-                        ), HttpStatusCode.OK
+                    HttpStatusCode.OK,
+                    productCategoryController.createCategory(
+                        requestBody.name
                     )
                 )
             }
@@ -69,12 +66,11 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
              * @security jwtToken
              */
             put("{id}") {
-                val (id, name) = call.requiredParameters("id", "name") ?: return@put
+                val params = call.requireParameters("id", "name")
                 call.respond(
-                    ApiResponse.success(
-                        productCategoryController.updateCategory(
-                            id, name
-                        ), HttpStatusCode.OK
+                    HttpStatusCode.OK,
+                    productCategoryController.updateCategory(
+                        params[0], params[1]
                     )
                 )
             }
@@ -89,12 +85,11 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
              * @security jwtToken
              */
             delete("{id}") {
-                val (id) = call.requiredParameters("id") ?: return@delete
+                val id = call.requireParameters("id")
                 call.respond(
-                    ApiResponse.success(
-                        productCategoryController.deleteCategory(
-                            id
-                        ), HttpStatusCode.OK
+                    HttpStatusCode.OK,
+                    productCategoryController.deleteCategory(
+                        id.first()
                     )
                 )
             }

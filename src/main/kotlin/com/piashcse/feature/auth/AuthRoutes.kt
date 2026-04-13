@@ -6,8 +6,13 @@ import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.model.request.*
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.requiredParameters
+import com.piashcse.utils.ApiError
+import com.piashcse.utils.InvalidEnumValueException
+import com.piashcse.utils.MissingParameterException
+import com.piashcse.utils.UnauthorizedException
+import com.piashcse.utils.ValidationException
+import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.extension.requireParameters
 import com.piashcse.utils.sendEmail
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -32,11 +37,7 @@ fun Route.authRoutes(authController: AuthService) {
          */
         post("login") {
             val requestBody = call.receive<LoginRequest>()
-            call.respond(
-                ApiResponse.success(
-                    authController.login(requestBody), HttpStatusCode.OK
-                )
-            )
+            call.respond(HttpStatusCode.OK, authController.login(requestBody))
         }
 
         /**
@@ -49,7 +50,7 @@ fun Route.authRoutes(authController: AuthService) {
          */
         post("register") {
             val requestBody = call.receive<RegisterRequest>()
-            call.respond(ApiResponse.success(authController.register(requestBody), HttpStatusCode.OK))
+            call.respond(HttpStatusCode.OK, authController.register(requestBody))
         }
 
         /**
@@ -62,34 +63,23 @@ fun Route.authRoutes(authController: AuthService) {
          * @response 400 Invalid OTP
          */
         get("otp-verification") {
-            val (userId, otp) = call.requiredParameters("userId", "otp") ?: return@get
-            call.respond(
-                ApiResponse.success(
-                    authController.otpVerification(userId, otp), HttpStatusCode.OK
-                )
-            )
+            val (userId, otp) = call.requireParameters("userId", "otp")
+            call.respond(HttpStatusCode.OK, authController.otpVerification(userId, otp))
         }
 
         /**
          * @tag Auth
          * @description Request password reset OTP
          * @operationId forgetPassword
-         * @query email (required) User email
-         * @query userType (required) User type
+         * @body ForgetPasswordRequest
          * @response 200 OTP sent successfully
          * @response 400 Invalid email or user type
          */
-        get("forget-password") {
-            val (email, userType) = call.requiredParameters("email", "userType") ?: return@get
-            val requestBody = ForgetPasswordRequest(email, userType)
+        post("forget-password") {
+            val requestBody = call.receive<ForgetPasswordRequest>()
             authController.forgetPassword(requestBody).let { otp ->
                 sendEmail(requestBody.email, otp)
-                call.respond(
-                    ApiResponse.success(
-                        "${Message.VERIFICATION_CODE_SENT_TO} ${requestBody.email}",
-                        HttpStatusCode.OK
-                    )
-                )
+                call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_SENT))
             }
         }
 
@@ -97,42 +87,39 @@ fun Route.authRoutes(authController: AuthService) {
          * @tag Auth
          * @description Reset password using OTP verification
          * @operationId resetPassword
-         * @query email (required) User email
-         * @query otp (required) OTP received
-         * @query newPassword (required) New password
-         * @query userType (required) User type
+         * @body ResetRequest
          * @response 200 Password reset successful
          * @response 400 Invalid OTP or email
          */
-        get("reset-password") {
-            val (email, otp, newPassword, userType) = call.requiredParameters(
-                "email", "otp", "newPassword", "userType"
-            ) ?: return@get
+        post("reset-password") {
+            val requestBody = call.receive<ResetRequest>()
+            requestBody.validation()
 
-            authController.resetPassword(
-                ResetRequest(
-                    email, otp, newPassword, userType
-                )
-            ).let {
+            authController.resetPassword(requestBody).let {
                 when (it) {
                     AppConstants.DataBaseTransaction.FOUND -> {
-                        call.respond(
-                            ApiResponse.success(
-                                Message.PASSWORD_CHANGE_SUCCESS, HttpStatusCode.OK
-                            )
-                        )
+                        call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
                     }
 
                     AppConstants.DataBaseTransaction.NOT_FOUND -> {
-                        call.respond(
-                            ApiResponse.success(
-                                Message.VERIFICATION_CODE_IS_NOT_VALID,
-                                HttpStatusCode.OK
-                            )
-                        )
+                        call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_INVALID))
                     }
                 }
             }
+        }
+
+        /**
+         * @tag Auth
+         * @description Refresh access token using refresh token
+         * @operationId refreshToken
+         * @body RefreshTokenRequest
+         * @response 200 Token refreshed successfully
+         * @response 401 Invalid or expired refresh token
+         */
+        post("refresh-token") {
+            val requestBody = call.receive<RefreshTokenRequest>()
+            val tokenPair = authController.refreshAccessToken(requestBody)
+            call.respond(HttpStatusCode.OK, tokenPair)
         }
 
         authenticate(
@@ -141,6 +128,21 @@ fun Route.authRoutes(authController: AuthService) {
             RoleManagement.SELLER.role,
             RoleManagement.CUSTOMER.role
         ) {
+            /**
+             * @tag Auth
+             * @description Logout authenticated user
+             * @operationId logout
+             * @body LogoutRequest
+             * @response 200 Logged out successfully
+             * @security jwtToken
+             */
+            post("logout") {
+                val userId = call.currentUserId
+                val requestBody = call.receive<LogoutRequest>()
+                authController.logout(userId, requestBody.refreshToken)
+                call.respond(HttpStatusCode.OK, mapOf("message" to "Logged out successfully"))
+            }
+
             /**
              * @tag Auth
              * @description Change password for authenticated user
@@ -152,18 +154,11 @@ fun Route.authRoutes(authController: AuthService) {
              * @security jwtToken
              */
             put("change-password") {
-                val (oldPassword, newPassword) = call.requiredParameters("oldPassword", "newPassword") ?: return@put
+                val (oldPassword, newPassword) = call.requireParameters("oldPassword", "newPassword")
                 val loginUser = call.principal<JwtTokenRequest>()
                 authController.changePassword(loginUser?.userId!!, ChangePassword(oldPassword, newPassword)).let {
-                    if (it) call.respond(
-                        ApiResponse.success(
-                            "Password has been changed", HttpStatusCode.OK
-                        )
-                    ) else call.respond(
-                        ApiResponse.failure(
-                            "Old password is wrong", HttpStatusCode.OK
-                        )
-                    )
+                    if (it) call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
+                    else call.respond(HttpStatusCode.Unauthorized, mapOf("message" to Message.Auth.INVALID_CREDENTIALS))
                 }
             }
         }
@@ -180,51 +175,33 @@ fun Route.authRoutes(authController: AuthService) {
              * @security jwtToken
              */
             put("/{userId}/change-user-type") {
-                val (userId) = call.requiredParameters("userId") ?: return@put
-                val userTypeParam = call.parameters["userType"] ?: run {
-                    call.respond(HttpStatusCode.BadRequest, "userType parameter is required")
-                    return@put
-                }
+                val (userId) = call.requireParameters("userId")
+                val userTypeParam = call.parameters["userType"]
+                    ?: throw MissingParameterException("userType")
 
                 val newType = try {
                     UserType.valueOf(userTypeParam.uppercase())
                 } catch (e: IllegalArgumentException) {
-                    call.respond(HttpStatusCode.BadRequest, "Invalid userType")
-                    return@put
+                    throw InvalidEnumValueException(
+                        message = "Invalid userType: $userTypeParam",
+                        enumName = UserType.values().joinToString(", ") { it.name },
+                        invalidValue = userTypeParam
+                    )
                 }
 
                 val currentUser = call.principal<JwtTokenRequest>()
-                if (currentUser == null) {
-                    call.respond(HttpStatusCode.Unauthorized, "Unauthorized")
-                    return@put
-                }
+                    ?: throw UnauthorizedException()
 
-                try {
-                    val success = authController.changeUserType(
-                        currentUser.userId,
-                        userId,
-                        newType
-                    )
+                val success = authController.changeUserType(
+                    currentUser.userId,
+                    userId,
+                    newType
+                )
 
-                    if (success) {
-                        call.respond(
-                            ApiResponse.success(
-                                "User type changed successfully to $newType", HttpStatusCode.OK
-                            )
-                        )
-                    } else {
-                        call.respond(
-                            ApiResponse.failure(
-                                "Failed to change user type", HttpStatusCode.BadRequest
-                            )
-                        )
-                    }
-                } catch (e: Exception) {
-                    call.respond(
-                        ApiResponse.failure(
-                            e.message ?: "Error changing user type", HttpStatusCode.BadRequest
-                        )
-                    )
+                if (success) {
+                    call.respond(HttpStatusCode.OK, mapOf("message" to "User type changed successfully to $newType"))
+                } else {
+                    throw ValidationException("Failed to change user type")
                 }
             }
 
@@ -238,39 +215,16 @@ fun Route.authRoutes(authController: AuthService) {
              * @security jwtToken
              */
             put("/{userId}/deactivate") {
-                val (userId) = call.requiredParameters("userId") ?: return@put
+                val (userId) = call.requireParameters("userId")
                 val currentUser = call.principal<JwtTokenRequest>()
+                    ?: throw UnauthorizedException()
 
-                if (currentUser == null) {
-                    call.respond(HttpStatusCode.Unauthorized, "Unauthorized")
-                    return@put
-                }
+                val success = authController.deactivateUser(currentUser.userId, userId)
 
-                try {
-                    val success = authController.deactivateUser(
-                        currentUser.userId,
-                        userId
-                    )
-
-                    if (success) {
-                        call.respond(
-                            ApiResponse.success(
-                                "User deactivated successfully", HttpStatusCode.OK
-                            )
-                        )
-                    } else {
-                        call.respond(
-                            ApiResponse.failure(
-                                "Failed to deactivate user", HttpStatusCode.BadRequest
-                            )
-                        )
-                    }
-                } catch (e: Exception) {
-                    call.respond(
-                        ApiResponse.failure(
-                            e.message ?: "Error deactivating user", HttpStatusCode.BadRequest
-                        )
-                    )
+                if (success) {
+                    call.respond(HttpStatusCode.OK, mapOf("message" to "User deactivated successfully"))
+                } else {
+                    throw ValidationException("Failed to deactivate user")
                 }
             }
 
@@ -284,39 +238,16 @@ fun Route.authRoutes(authController: AuthService) {
              * @security jwtToken
              */
             put("/{userId}/activate") {
-                val (userId) = call.requiredParameters("userId") ?: return@put
+                val (userId) = call.requireParameters("userId")
                 val currentUser = call.principal<JwtTokenRequest>()
+                    ?: throw UnauthorizedException()
 
-                if (currentUser == null) {
-                    call.respond(HttpStatusCode.Unauthorized, "Unauthorized")
-                    return@put
-                }
+                val success = authController.activateUser(currentUser.userId, userId)
 
-                try {
-                    val success = authController.activateUser(
-                        currentUser.userId,
-                        userId
-                    )
-
-                    if (success) {
-                        call.respond(
-                            ApiResponse.success(
-                                "User activated successfully", HttpStatusCode.OK
-                            )
-                        )
-                    } else {
-                        call.respond(
-                            ApiResponse.failure(
-                                "Failed to activate user", HttpStatusCode.BadRequest
-                            )
-                        )
-                    }
-                } catch (e: Exception) {
-                    call.respond(
-                        ApiResponse.failure(
-                            e.message ?: "Error activating user", HttpStatusCode.BadRequest
-                        )
-                    )
+                if (success) {
+                    call.respond(HttpStatusCode.OK, mapOf("message" to "User activated successfully"))
+                } else {
+                    throw ValidationException("Failed to activate user")
                 }
             }
         }

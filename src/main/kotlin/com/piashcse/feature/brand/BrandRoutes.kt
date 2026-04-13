@@ -2,8 +2,7 @@ package com.piashcse.feature.brand
 
 import com.piashcse.model.request.BrandRequest
 import com.piashcse.plugin.RoleManagement
-import com.piashcse.utils.ApiResponse
-import com.piashcse.utils.extension.requiredParameters
+import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -28,11 +27,10 @@ fun Route.brandRoutes(brandController: BrandService) {
              * @security jwtToken
              */
             get {
-                val (limit) = call.requiredParameters("limit") ?: return@get
+                val limit = call.requireParameters("limit")
                 call.respond(
-                    ApiResponse.success(
-                        brandController.getBrands(limit.toInt()), HttpStatusCode.OK
-                    )
+                    HttpStatusCode.OK,
+                    brandController.getBrands(limit.first().toInt())
                 )
             }
         }
@@ -49,9 +47,8 @@ fun Route.brandRoutes(brandController: BrandService) {
             post {
                 val requestBody = call.receive<BrandRequest>()
                 call.respond(
-                    ApiResponse.success(
-                        brandController.createBrand(requestBody.name), HttpStatusCode.OK
-                    )
+                    HttpStatusCode.OK,
+                    brandController.createBrand(requestBody.name)
                 )
             }
 
@@ -66,11 +63,10 @@ fun Route.brandRoutes(brandController: BrandService) {
              * @security jwtToken
              */
             put("{id}") {
-                val (id, name) = call.requiredParameters("id", "name") ?: return@put
+                val params = call.requireParameters("id", "name")
                 call.respond(
-                    ApiResponse.success(
-                        brandController.updateBrand(id, name), HttpStatusCode.OK
-                    )
+                    HttpStatusCode.OK,
+                    brandController.updateBrand(params[0], params[1])
                 )
             }
 
@@ -84,11 +80,10 @@ fun Route.brandRoutes(brandController: BrandService) {
              * @security jwtToken
              */
             delete("{id}") {
-                val (id) = call.requiredParameters("id") ?: return@delete
+                val id = call.requireParameters("id")
                 call.respond(
-                    ApiResponse.success(
-                        brandController.deleteBrand(id), HttpStatusCode.OK
-                    )
+                    HttpStatusCode.OK,
+                    brandController.deleteBrand(id.first())
                 )
             }
         }

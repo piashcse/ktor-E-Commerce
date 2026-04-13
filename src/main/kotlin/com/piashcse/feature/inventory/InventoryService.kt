@@ -1,6 +1,7 @@
 package com.piashcse.feature.inventory
 
 import com.piashcse.constants.InventoryStatus
+import com.piashcse.constants.Message
 import com.piashcse.database.entities.InventoryDAO
 import com.piashcse.database.entities.InventoryTable
 import com.piashcse.database.entities.ProductDAO
@@ -9,11 +10,13 @@ import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
+import com.piashcse.utils.NotFoundException
 import com.piashcse.utils.ValidationException
-import com.piashcse.utils.extension.notFoundException
+import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.jdbc.update
 
 class InventoryService : InventoryRepository {
     /**
@@ -27,8 +30,8 @@ class InventoryService : InventoryRepository {
         validateInventoryRequest(inventoryRequest)
 
         // Validate related entities exist
-        val product = ProductDAO.findById(inventoryRequest.productId) ?: throw inventoryRequest.productId.notFoundException()
-        val shop = ShopDAO.findById(inventoryRequest.shopId) ?: throw inventoryRequest.shopId.notFoundException()
+        val product = ProductDAO.findById(inventoryRequest.productId) ?: inventoryRequest.productId.throwNotFound("Product")
+        val shop = ShopDAO.findById(inventoryRequest.shopId) ?: inventoryRequest.shopId.throwNotFound("Shop")
 
         val existingInventory = InventoryDAO.find {
             InventoryTable.productId eq inventoryRequest.productId
@@ -58,11 +61,11 @@ class InventoryService : InventoryRepository {
     }
 
     private fun validateInventoryRequest(request: InventoryRequest) {
-        if (request.productId.isBlank()) throw ValidationException("Product ID cannot be blank")
-        if (request.shopId.isBlank()) throw ValidationException("Shop ID cannot be blank")
-        if (request.stockQuantity < 0) throw ValidationException("Stock quantity cannot be negative")
-        if (request.minimumStockLevel != null && request.minimumStockLevel!! < 0) throw ValidationException("Minimum stock level cannot be negative")
-        if (request.maximumStockLevel != null && request.maximumStockLevel!! < 0) throw ValidationException("Maximum stock level cannot be negative")
+        if (request.productId.isBlank()) throw ValidationException(Message.Validation.blankField("Product ID"))
+        if (request.shopId.isBlank()) throw ValidationException(Message.Validation.blankField("Shop ID"))
+        if (request.stockQuantity < 0) throw ValidationException(Message.Inventory.NEGATIVE_STOCK)
+        if (request.minimumStockLevel != null && request.minimumStockLevel!! < 0) throw ValidationException(Message.Validation.negativeValue("Minimum stock level"))
+        if (request.maximumStockLevel != null && request.maximumStockLevel!! < 0) throw ValidationException(Message.Validation.negativeValue("Maximum stock level"))
     }
 
     /**
@@ -86,23 +89,25 @@ class InventoryService : InventoryRepository {
      */
     override suspend fun updateStock(productId: String, quantity: Int, operation: String): InventoryResponse = query {
         val inventory = InventoryDAO.find { InventoryTable.productId eq productId }.singleOrNull()
-            ?: throw productId.notFoundException()
+            ?: productId.throwNotFound("Product")
 
-        val updatedStock = when (operation.lowercase()) {
+        require(quantity > 0) { "Quantity must be positive for $operation operation" }
+
+        val newStock = when (operation.lowercase()) {
             "add" -> inventory.stockQuantity + quantity
             "subtract" -> {
-                val newStock = inventory.stockQuantity - quantity
-                if (newStock < 0) 0 else newStock
+                val newQty = inventory.stockQuantity - quantity
+                if (newQty < 0) {
+                    throw NotFoundException(Message.Inventory.insufficientStock(inventory.stockQuantity, quantity))
+                }
+                newQty
             }
             "set" -> quantity
-            else -> inventory.stockQuantity
+            else -> throw NotFoundException(Message.Inventory.invalidOperation(operation))
         }
 
-        inventory.apply {
-            stockQuantity = updatedStock
-            status = determineInventoryStatus(stockQuantity, minimumStockLevel)
-        }
-
+        inventory.stockQuantity = newStock
+        inventory.status = determineInventoryStatus(inventory.stockQuantity, inventory.minimumStockLevel)
 
         inventory.response()
     }

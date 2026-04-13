@@ -114,5 +114,11 @@ data class UserResponse(
     val updatedAt: LocalDateTime?
 )
 
-data class LoginResponse(val user: UserResponse?, val accessToken: String)
+data class LoginResponse(
+    val user: UserResponse?,
+    val accessToken: String,
+    val refreshToken: String = "",
+    val expiresIn: Long = 86400,
+    val tokenType: String = "Bearer"
+)
 data class ChangePassword(val oldPassword: String, val newPassword: String)
