@@ -2957,6 +2957,236 @@ http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15
 
 </details>
 
+### REFUND REQUEST
+
+<details>
+
+<summary> <code>POST</code> <code>/refund-requests/{orderId}</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/refund-requests/ORD-20260414-0001' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "orderItemId": "item-uuid-123",
+  "reason": "Product received damaged",
+  "images": "https://example.com/img1.jpg,https://example.com/img2.jpg"
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/refund-requests/ORD-20260414-0001
+```
+
+### Response
+
+```json
+{
+  "id": "refund-uuid-123",
+  "orderItemId": "item-uuid-123",
+  "orderId": "ORD-20260414-0001",
+  "userId": "user-uuid-123",
+  "reason": "Product received damaged",
+  "images": "https://example.com/img1.jpg,https://example.com/img2.jpg",
+  "status": "PENDING",
+  "refundAmount": null,
+  "refundMethod": null,
+  "trackingNumber": null,
+  "requestedAt": "2026-04-14T10:30:00",
+  "resolvedAt": null,
+  "createdAt": "2026-04-14T10:30:00",
+  "updatedAt": "2026-04-14T10:30:00"
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/refund-requests/order/{orderId}</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/refund-requests/order/ORD-20260414-0001' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+```
+
+### Request URL
+
+```
+http://localhost:8080/refund-requests/order/ORD-20260414-0001
+```
+
+### Response
+
+```json
+[
+  {
+    "id": "refund-uuid-123",
+    "orderItemId": "item-uuid-123",
+    "orderId": "ORD-20260414-0001",
+    "userId": "user-uuid-123",
+    "reason": "Product received damaged",
+    "images": "https://example.com/img1.jpg",
+    "status": "APPROVED",
+    "refundAmount": 50.0,
+    "refundMethod": "original_payment",
+    "trackingNumber": null,
+    "requestedAt": "2026-04-14T10:30:00",
+    "resolvedAt": "2026-04-14T12:00:00",
+    "createdAt": "2026-04-14T10:30:00",
+    "updatedAt": "2026-04-14T12:00:00"
+  }
+]
+```
+
+</details>
+
+<details>
+
+<summary> <code>GET</code> <code>/refund-requests/{id}</code></summary>
+
+### Curl
+
+```
+curl -X 'GET' \
+  'http://localhost:8080/refund-requests/refund-uuid-123' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+```
+
+### Request URL
+
+```
+http://localhost:8080/refund-requests/refund-uuid-123
+```
+
+### Response
+
+```json
+{
+  "id": "refund-uuid-123",
+  "orderItemId": "item-uuid-123",
+  "orderId": "ORD-20260414-0001",
+  "userId": "user-uuid-123",
+  "reason": "Product received damaged",
+  "images": "https://example.com/img1.jpg",
+  "status": "APPROVED",
+  "refundAmount": 50.0,
+  "refundMethod": "original_payment",
+  "trackingNumber": null,
+  "requestedAt": "2026-04-14T10:30:00",
+  "resolvedAt": "2026-04-14T12:00:00",
+  "createdAt": "2026-04-14T10:30:00",
+  "updatedAt": "2026-04-14T12:00:00"
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>PUT</code> <code>/refund-requests/{id}/status</code></summary>
+
+### Curl
+
+```
+curl -X 'PUT' \
+  'http://localhost:8080/refund-requests/refund-uuid-123/status' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "status": "APPROVED",
+  "refundAmount": 50.0,
+  "refundMethod": "original_payment"
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/refund-requests/refund-uuid-123/status
+```
+
+### Response
+
+```json
+{
+  "id": "refund-uuid-123",
+  "orderItemId": "item-uuid-123",
+  "orderId": "ORD-20260414-0001",
+  "userId": "user-uuid-123",
+  "reason": "Product received damaged",
+  "images": "https://example.com/img1.jpg",
+  "status": "APPROVED",
+  "refundAmount": 50.0,
+  "refundMethod": "original_payment",
+  "trackingNumber": null,
+  "requestedAt": "2026-04-14T10:30:00",
+  "resolvedAt": "2026-04-14T12:00:00",
+  "createdAt": "2026-04-14T10:30:00",
+  "updatedAt": "2026-04-14T12:00:00"
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>POST</code> <code>/refund-requests/{id}/ship</code></summary>
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/refund-requests/refund-uuid-123/ship' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "trackingNumber": "TRK123456789"
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/refund-requests/refund-uuid-123/ship
+```
+
+### Response
+
+```json
+{
+  "id": "refund-uuid-123",
+  "orderItemId": "item-uuid-123",
+  "orderId": "ORD-20260414-0001",
+  "userId": "user-uuid-123",
+  "reason": "Product received damaged",
+  "images": "https://example.com/img1.jpg",
+  "status": "SHIPPED",
+  "refundAmount": 50.0,
+  "refundMethod": "original_payment",
+  "trackingNumber": "TRK123456789",
+  "requestedAt": "2026-04-14T10:30:00",
+  "resolvedAt": "2026-04-14T12:00:00",
+  "createdAt": "2026-04-14T10:30:00",
+  "updatedAt": "2026-04-14T14:00:00"
+}
+```
+
+</details>
+
 ### PRIVACY POLICY & CONSENTS
 
 <details>
