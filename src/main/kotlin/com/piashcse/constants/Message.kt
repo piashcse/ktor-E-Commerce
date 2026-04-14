@@ -51,7 +51,9 @@ object Message {
         const val PASSWORD_RESET_SUCCESS = "Password reset successful"
         const val INVALID_REFRESH_TOKEN = "Invalid or expired refresh token"
         const val TOKEN_EXPIRED = "Refresh token expired or revoked"
-        
+
+        fun accountLocked(lockoutMinutes: Long) = "Account locked due to too many failed login attempts. Try again in $lockoutMinutes minutes"
+
         // Permissions
         fun insufficientPermissions(action: String) = "Insufficient permissions to $action"
         fun userNotFoundForRole(email: String, userType: String) = "User with email $email not found for $userType role"

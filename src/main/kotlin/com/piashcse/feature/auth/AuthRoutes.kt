@@ -14,8 +14,10 @@ import com.piashcse.utils.ValidationException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requireParameters
 import com.piashcse.utils.sendEmail
+import com.piashcse.plugin.RateLimitNames
 import io.ktor.http.*
 import io.ktor.server.auth.*
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -27,30 +29,74 @@ import io.ktor.server.routing.*
  */
 fun Route.authRoutes(authController: AuthService) {
     route("/auth") {
-        /**
-         * @tag Auth
-         * @description Authenticate user with email, password and user type
-         * @operationId login
-         * @body LoginRequest
-         * @response 200 User authentication successful
-         * @response 400 Invalid credentials
-         */
-        post("login") {
-            val requestBody = call.receive<LoginRequest>()
-            call.respond(HttpStatusCode.OK, authController.login(requestBody))
-        }
+        // Rate-limited endpoints (brute-force protection)
+        rateLimit(RateLimitName(RateLimitNames.AUTH)) {
+            /**
+             * @tag Auth
+             * @description Authenticate user with email, password and user type
+             * @operationId login
+             * @body LoginRequest
+             * @response 200 User authentication successful
+             * @response 400 Invalid credentials
+             */
+            post("login") {
+                val requestBody = call.receive<LoginRequest>()
+                call.respond(HttpStatusCode.OK, authController.login(requestBody))
+            }
 
-        /**
-         * @tag Auth
-         * @description Register a new user account
-         * @operationId register
-         * @body RegisterRequest
-         * @response 200 User registered successfully
-         * @response 400 Invalid registration data
-         */
-        post("register") {
-            val requestBody = call.receive<RegisterRequest>()
-            call.respond(HttpStatusCode.OK, authController.register(requestBody))
+            /**
+             * @tag Auth
+             * @description Register a new user account
+             * @operationId register
+             * @body RegisterRequest
+             * @response 200 User registered successfully
+             * @response 400 Invalid registration data
+             */
+            post("register") {
+                val requestBody = call.receive<RegisterRequest>()
+                call.respond(HttpStatusCode.OK, authController.register(requestBody))
+            }
+
+            /**
+             * @tag Auth
+             * @description Request password reset OTP
+             * @operationId forgetPassword
+             * @body ForgetPasswordRequest
+             * @response 200 OTP sent successfully
+             * @response 400 Invalid email or user type
+             */
+            post("forget-password") {
+                val requestBody = call.receive<ForgetPasswordRequest>()
+                authController.forgetPassword(requestBody).let { otp ->
+                    sendEmail(requestBody.email, otp)
+                    call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_SENT))
+                }
+            }
+
+            /**
+             * @tag Auth
+             * @description Reset password using OTP verification
+             * @operationId resetPassword
+             * @body ResetRequest
+             * @response 200 Password reset successful
+             * @response 400 Invalid OTP or email
+             */
+            post("reset-password") {
+                val requestBody = call.receive<ResetRequest>()
+                requestBody.validation()
+
+                authController.resetPassword(requestBody).let {
+                    when (it) {
+                        AppConstants.DataBaseTransaction.FOUND -> {
+                            call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
+                        }
+
+                        AppConstants.DataBaseTransaction.NOT_FOUND -> {
+                            call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_INVALID))
+                        }
+                    }
+                }
+            }
         }
 
         /**
@@ -65,47 +111,6 @@ fun Route.authRoutes(authController: AuthService) {
         get("otp-verification") {
             val (userId, otp) = call.requireParameters("userId", "otp")
             call.respond(HttpStatusCode.OK, authController.otpVerification(userId, otp))
-        }
-
-        /**
-         * @tag Auth
-         * @description Request password reset OTP
-         * @operationId forgetPassword
-         * @body ForgetPasswordRequest
-         * @response 200 OTP sent successfully
-         * @response 400 Invalid email or user type
-         */
-        post("forget-password") {
-            val requestBody = call.receive<ForgetPasswordRequest>()
-            authController.forgetPassword(requestBody).let { otp ->
-                sendEmail(requestBody.email, otp)
-                call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_SENT))
-            }
-        }
-
-        /**
-         * @tag Auth
-         * @description Reset password using OTP verification
-         * @operationId resetPassword
-         * @body ResetRequest
-         * @response 200 Password reset successful
-         * @response 400 Invalid OTP or email
-         */
-        post("reset-password") {
-            val requestBody = call.receive<ResetRequest>()
-            requestBody.validation()
-
-            authController.resetPassword(requestBody).let {
-                when (it) {
-                    AppConstants.DataBaseTransaction.FOUND -> {
-                        call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
-                    }
-
-                    AppConstants.DataBaseTransaction.NOT_FOUND -> {
-                        call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_INVALID))
-                    }
-                }
-            }
         }
 
         /**

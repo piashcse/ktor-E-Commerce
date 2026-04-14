@@ -40,8 +40,18 @@ class MissingParameterException(parameterName: String)
 class UnauthorizedException(message: String = Message.Errors.UNAUTHORIZED)
     : AppException(message, HttpStatusCode.Unauthorized)
 
-class InvalidCredentialsException(message: String = Message.Auth.INVALID_CREDENTIALS)
-    : AppException(message, HttpStatusCode.Unauthorized)
+class InvalidCredentialsException(
+    remainingAttempts: Int? = null
+) : AppException(
+    buildMessage(remainingAttempts),
+    HttpStatusCode.Unauthorized
+) {
+    companion object {
+        private fun buildMessage(remaining: Int?): String =
+            if (remaining != null && remaining > 0) "${Message.Auth.INVALID_CREDENTIALS}. $remaining attempts remaining."
+            else Message.Auth.INVALID_CREDENTIALS
+    }
+}
 
 class UnverifiedAccountException(message: String = Message.Auth.ACCOUNT_NOT_VERIFIED)
     : AppException(message, HttpStatusCode.Unauthorized)

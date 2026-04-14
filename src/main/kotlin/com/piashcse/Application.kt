@@ -23,6 +23,7 @@ fun Application.configureAll() {
     configureKoin()
     configureRequestValidation()
     configureAuth()
+    configureRateLimiting()
     configureSwagger()
     configureStatusPage()
     configureRoute()

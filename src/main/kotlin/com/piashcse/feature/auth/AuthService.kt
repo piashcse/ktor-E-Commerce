@@ -37,11 +37,14 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class AuthService(
-    private val refreshTokenRepository: RefreshTokenRepository = RefreshTokenRepositoryImpl()
+    private val refreshTokenRepository: RefreshTokenRepository = RefreshTokenRepositoryImpl(),
+    private val loginAttemptRepository: LoginAttemptRepository = LoginAttemptRepositoryImpl()
 ) : AuthRepository {
 
     companion object {
         private const val REFRESH_TOKEN_EXPIRY_SECONDS = 7L * 24 * 60 * 60 // 7 days
+        private const val MAX_LOGIN_ATTEMPTS = 5
+        private const val ACCOUNT_LOCKOUT_MINUTES = 30L
     }
 
     private fun hashRefreshToken(token: String): String {
@@ -173,44 +176,71 @@ class AuthService(
     /**
      * Logs in a user with the given [loginRequest].
      * Throws an exception if the user does not exist or the password is incorrect.
+     * Tracks failed login attempts and locks the account after too many failures.
      *
      * @param loginRequest The request containing login credentials.
      * @return The response containing the user info and tokens.
      */
     override suspend fun login(loginRequest: LoginRequest): LoginResponse {
-        // Validate login request
         validateLoginRequest(loginRequest)
 
-        // Convert string userType to enum for comparison
-        val userTypeEnum = UserType.fromString(loginRequest.userType) ?: run {
-            loginRequest.email.throwNotFound("User")
-        }
+        val userTypeEnum = UserType.fromString(loginRequest.userType)
+            ?: loginRequest.email.throwNotFound("User")
 
-        val userEntity = query {
-            UserDAO.find { UserTable.email eq loginRequest.email and (UserTable.userType eq userTypeEnum) }
-                .toList().singleOrNull()
-        }
+        checkAccountLockout(loginRequest.email, userTypeEnum)
 
-        val user = userEntity ?: loginRequest.email.throwNotFound("User")
-
-        if (BCrypt.verifyer().verify(
-                loginRequest.password.toCharArray(), user.password
-            ).verified
-        ) {
-            if (user.isVerified) {
-                if (user.isActive) {
-                    val tokenPair = generateTokenPair(user.id.value, user.email, user.userType.name)
-                    storeRefreshToken(user.id.value, tokenPair.refreshToken)
-                    return LoginResponse(user.response(), tokenPair.accessToken, tokenPair.refreshToken, tokenPair.expiresIn)
-                } else {
-                    throw ValidationException(Message.Auth.ACCOUNT_DEACTIVATED)
-                }
-            } else {
-                throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)
+        val user = findUserByEmailAndType(loginRequest.email, userTypeEnum)
+            ?: run {
+                loginAttemptRepository.recordFailedAttempt(loginRequest.email, userTypeEnum, null)
+                loginRequest.email.throwNotFound("User")
             }
-        } else {
-            throw InvalidCredentialsException()
+
+        if (!isPasswordValid(loginRequest.password, user.password)) {
+            handleFailedLogin(loginRequest.email, userTypeEnum)
         }
+
+        validateUserState(user)
+
+        // Successful login
+        loginAttemptRepository.resetAttempts(loginRequest.email, userTypeEnum)
+        return issueTokensAndLogin(user)
+    }
+
+    private suspend fun checkAccountLockout(email: String, userTypeEnum: UserType) {
+        loginAttemptRepository.getAttempt(email, userTypeEnum)?.let { attempt ->
+            if (attempt.isLocked) {
+                throw ValidationException(Message.Auth.accountLocked(ACCOUNT_LOCKOUT_MINUTES))
+            }
+        }
+    }
+
+    private suspend fun findUserByEmailAndType(email: String, userTypeEnum: UserType): UserDAO? = query {
+        UserDAO.find { UserTable.email eq email and (UserTable.userType eq userTypeEnum) }.singleOrNull()
+    }
+
+    private fun isPasswordValid(rawPassword: String, hashedPassword: String): Boolean =
+        BCrypt.verifyer().verify(rawPassword.toCharArray(), hashedPassword).verified
+
+    private suspend fun handleFailedLogin(email: String, userTypeEnum: UserType) {
+        val attemptCount = loginAttemptRepository.recordFailedAttempt(email, userTypeEnum, null)
+        if (attemptCount >= MAX_LOGIN_ATTEMPTS) {
+            loginAttemptRepository.lockAccount(email, userTypeEnum, ACCOUNT_LOCKOUT_MINUTES)
+            throw ValidationException(Message.Auth.accountLocked(ACCOUNT_LOCKOUT_MINUTES))
+        }
+        throw InvalidCredentialsException(remainingAttempts = MAX_LOGIN_ATTEMPTS - attemptCount)
+    }
+
+    private fun validateUserState(user: UserDAO) {
+        when {
+            !user.isActive -> throw ValidationException(Message.Auth.ACCOUNT_DEACTIVATED)
+            !user.isVerified -> throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)
+        }
+    }
+
+    private suspend fun issueTokensAndLogin(user: UserDAO): LoginResponse {
+        val tokenPair = generateTokenPair(user.id.value, user.email, user.userType.name)
+        storeRefreshToken(user.id.value, tokenPair.refreshToken)
+        return LoginResponse(user.response(), tokenPair.accessToken, tokenPair.refreshToken, tokenPair.expiresIn)
     }
 
     private fun validateLoginRequest(request: LoginRequest) {
@@ -325,6 +355,9 @@ class AuthService(
 
         // Verify the code and update the password
         if (userEntity.otpCode == resetPasswordRequest.verificationCode) {
+            // Validate new password strength
+            validatePasswordStrength(resetPasswordRequest.newPassword)
+
             // Check if new password is same as current password
             if (BCrypt.verifyer()
                     .verify(resetPasswordRequest.newPassword.toCharArray(), userEntity.password).verified
