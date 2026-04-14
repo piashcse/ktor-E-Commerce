@@ -159,7 +159,9 @@ curl -X 'PUT' \
 
 **`PUT /inventory/stock/{id}`**
 
-Update the stock quantity for a specific product with addition or subtraction operations.
+Update the stock quantity for a specific product with atomic operations. This endpoint ensures thread-safe stock updates.
+
+> **Note**: Stock operations are performed atomically within a database transaction to prevent race conditions during concurrent updates.
 
 #### Path Parameters
 
@@ -171,8 +173,16 @@ Update the stock quantity for a specific product with addition or subtraction op
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `quantity` | number | Yes | Amount to add or subtract |
-| `operation` | string | Yes | Operation to perform: "add" or "subtract" |
+| `quantity` | number | Yes | Amount to add or subtract (must be positive) |
+| `operation` | string | Yes | Operation to perform: `add`, `subtract`, or `set` |
+
+#### Operations
+
+| Operation | Description | Validation |
+|-----------|-------------|------------|
+| `add` | Increases stock by the specified quantity | Quantity must be positive |
+| `subtract` | Decreases stock by the specified quantity | Stock must be sufficient |
+| `set` | Sets stock to the exact specified quantity | Quantity must be non-negative |
 
 #### Headers
 
@@ -194,19 +204,27 @@ curl -X 'PUT' \
 ```json
 {
     "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "newQuantity": 200,
-    "operation": "add"
-  }
+    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
+    "shopId": "shop-uuid-here",
+    "stockQuantity": 250,
+    "reservedQuantity": 0,
+    "minimumStockLevel": 10,
+    "maximumStockLevel": 1000,
+    "status": "IN_STOCK",
+    "lastRestocked": null,
+    "createdAt": "2024-01-15T10:30:00",
+    "updatedAt": "2024-01-15T11:45:00"
 }
 ```
 
-#### Response Fields
+#### Error Responses
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Product ID that was updated |
-| `data.newQuantity` | number | New quantity after the operation |
-| `data.operation` | string | Operation that was performed ("add" or "subtract") |
+**Insufficient Stock (404):**
+```json
+{
+  "message": "Insufficient stock. Available: 10, Requested: 50"
+}
+```
 
 ---
 

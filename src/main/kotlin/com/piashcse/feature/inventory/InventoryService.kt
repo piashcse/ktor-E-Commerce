@@ -14,6 +14,8 @@ import com.piashcse.utils.NotFoundException
 import com.piashcse.utils.ValidationException
 import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
+import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.update
@@ -92,24 +94,39 @@ class InventoryService : InventoryRepository {
             ?: productId.throwNotFound("Product")
 
         require(quantity > 0) { "Quantity must be positive for $operation operation" }
+        requireValidOperation(operation)
 
-        val newStock = when (operation.lowercase()) {
-            "add" -> inventory.stockQuantity + quantity
-            "subtract" -> {
-                val newQty = inventory.stockQuantity - quantity
-                if (newQty < 0) {
-                    throw NotFoundException(Message.Inventory.insufficientStock(inventory.stockQuantity, quantity))
-                }
-                newQty
-            }
-            "set" -> quantity
-            else -> throw NotFoundException(Message.Inventory.invalidOperation(operation))
+        val newStock = computeNewStock(inventory.stockQuantity, quantity, operation)
+        updateStockQuantity(inventory.id.value, newStock, inventory.stockQuantity, quantity)
+        refreshInventoryStatus(productId)
+    }
+
+    private fun computeNewStock(current: Int, quantity: Int, operation: String): Int = when (operation.lowercase()) {
+        "add" -> current + quantity
+        "subtract" -> current.takeIf { it >= quantity }
+            ?: throw NotFoundException(Message.Inventory.insufficientStock(current, quantity))
+        "set" -> quantity.also { require(it >= 0) { "Quantity cannot be negative for set operation" } }
+        else -> throw NotFoundException(Message.Inventory.invalidOperation(operation))
+    }
+
+    private fun updateStockQuantity(inventoryId: String, newStock: Int, currentStock: Int, requestedQty: Int) {
+        InventoryTable.update({ InventoryTable.id eq EntityID(inventoryId, InventoryTable) }) {
+            it[stockQuantity] = newStock
+        }.takeIf { it > 0 }
+            ?: throw NotFoundException(Message.Inventory.insufficientStock(currentStock, requestedQty))
+    }
+
+    private fun refreshInventoryStatus(productId: String): InventoryResponse {
+        val updated = InventoryDAO.find { InventoryTable.productId eq productId }.singleOrNull()
+            ?: throw NotFoundException(Message.Inventory.NOT_FOUND)
+        updated.status = determineInventoryStatus(updated.stockQuantity, updated.minimumStockLevel)
+        return updated.response()
+    }
+
+    private fun requireValidOperation(operation: String) {
+        if (operation.lowercase() !in listOf("add", "subtract", "set")) {
+            throw NotFoundException(Message.Inventory.invalidOperation(operation))
         }
-
-        inventory.stockQuantity = newStock
-        inventory.status = determineInventoryStatus(inventory.stockQuantity, inventory.minimumStockLevel)
-
-        inventory.response()
     }
 
     /**
@@ -121,7 +138,7 @@ class InventoryService : InventoryRepository {
     override suspend fun getLowStockProducts(limit: Int): List<InventoryResponse> = query {
         InventoryDAO.find {
             InventoryTable.stockQuantity lessEq InventoryTable.minimumStockLevel
-        }.orderBy(InventoryTable.stockQuantity to org.jetbrains.exposed.v1.core.SortOrder.ASC)
+        }.orderBy(InventoryTable.stockQuantity to SortOrder.ASC)
          .limit(limit)
          .map { it.response() }
     }

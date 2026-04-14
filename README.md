@@ -54,7 +54,12 @@ scalable, and efficient service for handling your e-commerce needs. For detailed
 ### 7. Security
 
 - **JWT Tokens**: Implement JSON Web Tokens for secure authentication.
+- **Refresh Tokens**: Secure token refresh with hashed storage and automatic revocation.
+- **Rate Limiting**: Auth endpoints protected against brute-force attacks (5 req/10min).
+- **Account Lockout**: Automatic 30-minute lockout after 5 failed login attempts.
+- **Password Strength**: Enforced password complexity requirements (min 8 chars, mixed case, digit, special char).
 - **Input Validation**: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).
+- **Atomic Stock Operations**: Thread-safe inventory updates within database transactions.
 
 ## Architecture
 
@@ -301,6 +306,10 @@ This ensures consistent, actionable error messages across all endpoints.
 
 <summary> <code>POST </code> <code>/auth/login</code></summary>
 
+### Description
+Authenticate a user with email, password and userType. Returns access token, refresh token, and user info.
+> **Security**: Rate limited to 5 requests per 10 minutes. Account locked after 5 failed attempts for 30 minutes.
+
 ### Curl
 
 ```
@@ -319,7 +328,7 @@ curl -X 'POST' \
 
 ```
   http://localhost:8080/auth/Login
-``` 
+```
 
 ### Response
 
@@ -330,7 +339,9 @@ curl -X 'POST' \
     "email": "customer@gmail.com",
     "userType": "customer"
   },
-  "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9..."
+  "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "expiresIn": 86400
 }
 ```
 
@@ -341,10 +352,11 @@ curl -X 'POST' \
 <summary> <code>POST</code> <code>/auth/register</code></summary>
 
 ### Description
-Register a new user with the specified email, password, and userType. 
+Register a new user with the specified email, password, and userType.
 - Users can register with the same email for different roles (customer and seller).
 - If a user is already registered as a customer and wants to become a seller, they can register with the same email but different userType.
 - If a user is already verified and tries to register with the same email and userType, they will receive a message indicating that the user already exists.
+> **Security**: Password must be at least 8 characters with uppercase, lowercase, digit, and special character. Rate limited to 5 requests per 10 minutes.
 
 ### Curl
 
@@ -355,16 +367,16 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "email": "piash@gmail.com",
-  "password": "p1234",
+  "password": "Str0ng!Pass",
   "userType": "admin"
 }'
-``` 
+```
 
 ### Request URL
 
 ```
     http://localhost:8080/auth/register
-``` 
+```
 
 ### Response
 
@@ -375,7 +387,7 @@ curl -X 'POST' \
   }
 }
 
-```   
+```
 
 </details>
 
@@ -389,13 +401,13 @@ curl -X 'POST' \
 curl -X 'GET' \
   'http://localhost:8080/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d' \
   -H 'accept: application/json'
-``` 
+```
 
 ### Request URL
 
 ```
    http://localhost:8080/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d
-``` 
+```
 
 ### Response
 
@@ -405,67 +417,156 @@ Response body
 Download
 true
 
-```   
+```
 
 </details>
 <details>
 
-<summary><code>GET </code> <code>/auth/forget-password</code></summary>
+<summary><code>POST </code> <code>/auth/forget-password</code></summary>
 
 ### Description
 Send a password reset verification code to the specified email. If the user has multiple accounts with the same email but different roles, the userType parameter can be used to specify which account to reset the password for.
+> **Security**: Rate limited to 5 requests per 10 minutes.
 
 ### Curl
 
 ```
- curl -X 'GET' \
-  'http://localhost:8080/auth/forget-password?email=piash@gmail.com&userType=customer' \
-  -H 'accept: application/json'
-``` 
+curl -X 'POST' \
+  'http://localhost:8080/auth/forget-password' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "piash@gmail.com",
+  "userType": "customer"
+}'
+```
 
 ### Request URL
 
 ```
-http://localhost:8080/auth/forget-password?email=piash@gmail.com&userType=customer
-
-``` 
+http://localhost:8080/auth/forget-password
+```
 
 ### Response
 
+```json
+{
+  "message": "Verification code sent to your email"
+}
 ```
-"verification code sent to piash@gmail.com"
-
-```   
 
 </details>
 
 <details>
 
-<summary><code>GET </code> <code>/auth/reset-password</code></summary>
+<summary><code>POST </code> <code>/auth/reset-password</code></summary>
 
 ### Description
 Reset the password for a user account using the verification code sent to their email. If the user has multiple accounts with the same email but different roles, the userType parameter can be used to specify which account to reset the password for.
+> **Security**: Password must be at least 8 characters with uppercase, lowercase, digit, and special character. Rate limited to 5 requests per 10 minutes.
 
 ### Curl
 
 ```
-curl -X 'GET' \
-  'http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&otp=9889&newPassword=p1234&userType=customer' \
-  -H 'accept: application/json'
-``` 
+curl -X 'POST' \
+  'http://localhost:8080/auth/reset-password' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "piash599@gmail.com",
+  "otp": "9889",
+  "newPassword": "Str0ng!NewPass",
+  "userType": "customer"
+}'
+```
 
 ### Request URL
 
 ```
-http://localhost:8080/auth/reset-password?email=piash599%40gmail.com&otp=9189&newPassword=p1234&userType=customer
-``` 
+http://localhost:8080/auth/reset-password
+```
 
 ### Response
 
-```
-"Password change successful"
+```json
+{
+  "message": "Password reset successful"
+}
 
-```   
+```
+
+</details>
+
+<details>
+
+<summary> <code>POST </code> <code>/auth/refresh-token</code></summary>
+
+### Description
+Refresh an expired access token using a valid refresh token. Returns a new access token and refresh token pair. The old refresh token is automatically revoked.
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/auth/refresh-token' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "refreshToken": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/auth/refresh-token
+```
+
+### Response
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "b2c3d4e5-f6g7-8901-bcde-fg2345678901",
+  "expiresIn": 86400
+}
+```
+
+</details>
+
+<details>
+
+<summary> <code>POST </code> <code>/auth/logout</code></summary>
+
+### Description
+Logout the authenticated user and revoke the refresh token to prevent further token refreshes. If a specific refresh token is provided, only that token is revoked. Otherwise, all user refresh tokens are revoked.
+
+### Curl
+
+```
+curl -X 'POST' \
+  'http://localhost:8080/auth/logout' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "refreshToken": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+}'
+```
+
+### Request URL
+
+```
+http://localhost:8080/auth/logout
+```
+
+### Response
+
+```json
+{
+  "message": "Logged out successfully"
+}
+```
 
 </details>
 

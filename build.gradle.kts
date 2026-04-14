@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.ktor.server.call.logging)
     implementation(libs.ktor.server.request.validation)
     implementation(libs.ktor.server.cors)
+    implementation(libs.ktor.server.rateLimit)
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.auth.jwt)
     implementation(libs.ktor.server.host.common)
