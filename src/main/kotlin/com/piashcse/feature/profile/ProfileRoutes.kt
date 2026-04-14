@@ -1,20 +1,16 @@
 package com.piashcse.feature.profile
 
-import com.piashcse.constants.AppConstants
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.plugin.RoleManagement
+import com.piashcse.service.UploadService
+import com.piashcse.utils.ValidationException
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.fileExtension
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.util.*
 
 /**
  * Route for managing user profile-related operations.
@@ -84,42 +80,26 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
 
             /**
              * @tag Profile
-             * @description Upload a new profile image for the authenticated user
+             * @description Upload a profile image (JPG, PNG, WebP, GIF - max 5MB)
              * @operationId uploadProfileImage
-             * @form image (required) Profile image file to upload
-             * @response 200 Profile image uploaded successfully
+             * @form image (required) Profile image file
+             * @response 200 Returns image URL
              * @security jwtToken
              */
             post("image-upload") {
-                val multipartData = call.receiveMultipart()
+                val multipart = call.receiveMultipart()
+                var imageUrl: String? = null
 
-                multipartData.forEachPart { part ->
-                    when (part) {
-                        is PartData.FileItem -> {
-                            UUID.randomUUID()?.let { imageId ->
-                                val fileName = part.originalFileName as String
-                                val fileLocation = fileName.let {
-                                    "${AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION}$imageId${it.fileExtension()}"
-                                }
-                                fileLocation.let {
-                                    File(it).writeBytes(withContext(Dispatchers.IO) {
-                                        part.streamProvider().readBytes()
-                                    })
-                                }
-                                val fileNameInServer = imageId.toString().plus(fileLocation.fileExtension())
-                                userProfileController.updateProfileImage(call.currentUserId, fileNameInServer)
-                                    .let {
-                                        call.respond(
-                                            HttpStatusCode.OK, fileNameInServer
-                                        )
-                                    }
-                            }
-                        }
-
-                        else -> {}
+                multipart.forEachPart { part ->
+                    if (part is PartData.FileItem) {
+                        val fileName = UploadService.uploadProfileImage(part)
+                        imageUrl = UploadService.getProfileImageUrl(fileName)
+                        userProfileController.updateProfileImage(call.currentUserId, imageUrl)
                     }
                     part.dispose()
                 }
+
+                call.respond(HttpStatusCode.OK, imageUrl ?: throw ValidationException("No file uploaded"))
             }
         }
     }

@@ -1,16 +1,15 @@
 package com.piashcse.feature.product
 
-import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.plugin.RoleManagement
+import com.piashcse.service.UploadService
 import com.piashcse.utils.MissingParameterException
 import com.piashcse.utils.ValidationException
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.fileExtension
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -207,50 +206,25 @@ fun Route.productRoutes(productController: ProductService) {
 
             /**
              * @tag Product
-             * @description Upload an image file for a product
+             * @description Upload a product image (JPG, PNG, WebP, GIF - max 10MB)
              * @operationId uploadProductImage
-             * @form image (required) Image file to upload
-             * @response 200 Image uploaded successfully, returns image filename
+             * @form image (required) Product image file
+             * @response 200 Returns image URL
              * @security jwtToken
              */
             post("image-upload") {
-                val multipartData = call.receiveMultipart()
-                var uploadedFileName: String? = null
+                val multipart = call.receiveMultipart()
+                var imageUrl: String? = null
 
-                multipartData.forEachPart { part ->
-                    when (part) {
-                        is PartData.FileItem -> {
-                            val fileName = part.originalFileName
-                            if (fileName.isNullOrBlank()) {
-                                throw ValidationException(Message.Validation.FILE_NAME_REQUIRED)
-                            }
-
-                            val extension = fileName.substringAfterLast('.', "").lowercase()
-                            val allowedExtensions = listOf("jpg", "jpeg", "png", "webp", "gif")
-                            if (extension !in allowedExtensions) {
-                                throw ValidationException(Message.Validation.INVALID_FILE_TYPE)
-                            }
-
-                            UUID.randomUUID()?.let { imageId ->
-                                val fileLocation = "${AppConstants.ImageFolder.PRODUCT_IMAGE_LOCATION}$imageId.$extension"
-                                File(fileLocation).writeBytes(withContext(Dispatchers.IO) {
-                                    part.streamProvider().readBytes()
-                                })
-                                uploadedFileName = "$imageId.$extension"
-                                call.respond(
-                                    HttpStatusCode.OK, uploadedFileName
-                                )
-                            }
-                        }
-
-                        else -> Unit
+                multipart.forEachPart { part ->
+                    if (part is PartData.FileItem) {
+                        val fileName = UploadService.uploadProductImage(part)
+                        imageUrl = UploadService.getProductImageUrl(fileName)
                     }
                     part.dispose()
                 }
 
-                if (uploadedFileName == null) {
-                    throw ValidationException(Message.Validation.FILE_REQUIRED)
-                }
+                call.respond(HttpStatusCode.OK, imageUrl ?: throw ValidationException("No file uploaded"))
             }
         }
 
