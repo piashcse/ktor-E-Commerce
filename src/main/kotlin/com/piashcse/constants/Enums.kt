@@ -18,6 +18,8 @@ enum class OrderStatus {
             CANCELED -> false // Canceled orders cannot transition to other statuses
             RECEIVED -> false // Completed orders remain in received status
         }
+
+        fun canBeCanceled(current: OrderStatus): Boolean = current in listOf(PENDING, CONFIRMED)
     }
 }
 

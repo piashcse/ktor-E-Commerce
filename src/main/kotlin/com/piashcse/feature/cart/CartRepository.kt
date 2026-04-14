@@ -1,6 +1,7 @@
 package com.piashcse.feature.cart
 
 import com.piashcse.database.entities.Cart
+import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.Product
 
 interface CartRepository {
@@ -49,4 +50,12 @@ interface CartRepository {
      * @return `true` if the cart was cleared successfully, `false` otherwise.
      */
     suspend fun clearCart(userId: String): Boolean
+
+    /**
+     * Returns a summary of the user's cart including items, subtotal, tax, and item count.
+     *
+     * @param userId The unique identifier of the user.
+     * @return CartSummaryResponse containing cart details.
+     */
+    suspend fun getCartSummary(userId: String): CartSummaryResponse
 }

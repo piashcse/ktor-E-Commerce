@@ -67,6 +67,8 @@ object Message {
         const val UNAUTHORIZED = "You do not have permission to update this order"
         const val PRODUCT_NOT_FOUND = "Product not found"
         const val OUT_OF_STOCK = "Product is out of stock"
+        const val CANNOT_CANCEL = "Order cannot be cancelled in current status"
+        const val CANCEL_REASON_REQUIRED = "Cancellation reason is required"
         fun productDoesNotBelongToShop(productName: String) = "$productName does not belong to any shop"
     }
     

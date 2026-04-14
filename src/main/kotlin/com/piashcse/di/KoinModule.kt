@@ -16,6 +16,7 @@ import com.piashcse.feature.product.ProductService
 import com.piashcse.feature.product_category.ProductCategoryService
 import com.piashcse.feature.product_sub_category.ProductSubCategoryService
 import com.piashcse.feature.profile.ProfileService
+import com.piashcse.feature.refund_request.RefundRequestService
 import com.piashcse.feature.review_rating.ReviewRatingService
 import com.piashcse.feature.shipping.ShippingService
 import com.piashcse.feature.shop.ShopService
@@ -43,4 +44,5 @@ val serviceModule = module {
     single { PolicyService() }
     single { ConsentService() }
     single { InventoryService() }
+    single { RefundRequestService() }
 }

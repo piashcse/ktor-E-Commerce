@@ -1,7 +1,16 @@
 package com.piashcse.feature.cart
 
 import com.piashcse.constants.Message
-import com.piashcse.database.entities.*
+import com.piashcse.database.entities.Cart
+import com.piashcse.database.entities.CartItemDAO
+import com.piashcse.database.entities.CartItemTable
+import com.piashcse.database.entities.InventoryDAO
+import com.piashcse.database.entities.InventoryTable
+import com.piashcse.database.entities.ProductDAO
+import com.piashcse.database.entities.ProductTable
+import com.piashcse.database.entities.ShopDAO
+import com.piashcse.model.response.CartItemSummary
+import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.Product
 import com.piashcse.utils.NotFoundException
 import com.piashcse.utils.ValidationException
@@ -128,5 +137,59 @@ class CartService : CartRepository {
         val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
         cartItems.forEach { it.delete() }
         true
+    }
+
+    /**
+     * Returns a summary of the user's cart including items, subtotal, tax, and item count.
+     *
+     * @param userId The ID of the user for whom to retrieve the cart summary.
+     * @return CartSummaryResponse containing cart items, subtotal, estimated tax, and item count.
+     */
+    override suspend fun getCartSummary(userId: String): CartSummaryResponse = query {
+        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
+
+        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
+
+        val items = cartItems.mapNotNull { cartItem ->
+            val product = ProductDAO.findById(cartItem.productId.value) ?: return@mapNotNull null
+            val shopName = product.shopId?.value?.let { shopId ->
+                ShopDAO.findById(shopId)?.name
+            }
+
+            val price = product.discountPrice?.toDouble() ?: product.price.toDouble()
+
+            CartItemSummary(
+                productId = product.id.value,
+                productName = product.name,
+                price = price,
+                quantity = cartItem.quantity,
+                image = product.images.split(",").firstOrNull()?.takeIf { it.isNotBlank() },
+                stockQuantity = getEffectiveStockQuantity(product),
+                shopId = product.shopId?.value,
+                shopName = shopName
+            )
+        }
+
+        val subtotal = items.sumOf { it.price * it.quantity }
+        val estimatedTax = subtotal * 0.1 // 10% tax rate - configurable
+
+        CartSummaryResponse(
+            items = items,
+            subtotal = subtotal,
+            estimatedTax = estimatedTax,
+            itemCount = items.size
+        )
+    }
+
+    /**
+     * Returns the effective stock quantity for a product.
+     * If an inventory record exists, uses inventory.stockQuantity; otherwise uses product.stockQuantity.
+     */
+    private fun getEffectiveStockQuantity(product: ProductDAO): Int {
+        val inventory = InventoryDAO.find {
+            InventoryTable.productId eq product.id
+        }.firstOrNull()
+
+        return inventory?.stockQuantity ?: product.stockQuantity
     }
 }

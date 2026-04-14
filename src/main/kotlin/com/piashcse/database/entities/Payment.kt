@@ -21,6 +21,7 @@ class PaymentDAO(id: EntityID<String>) : BaseEntity(id, PaymentTable) {
 
     var paymentId by PaymentTable.id
     var orderId by PaymentTable.orderId
+    var userId by PaymentTable.userId
     var amount by PaymentTable.amount
     var status by PaymentTable.status
     var paymentMethod by PaymentTable.paymentMethod

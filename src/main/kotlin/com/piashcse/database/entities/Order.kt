@@ -14,6 +14,7 @@ object OrderTable : BaseIdTable("order") {
     val userId = reference("user_id", UserTable.id)
     val shopId = reference("shop_id", ShopTable.id).nullable() // Which shop the order belongs to (for multi-vendor)
     val orderNumber = varchar("order_number", 50).uniqueIndex() // Unique order number for tracking
+    val idempotencyKey = varchar("idempotency_key", 100).uniqueIndex().nullable() // Idempotency key to prevent duplicate orders
     val subTotal = decimal("sub_total", 10, 2)
     val shippingCost = decimal("shipping_cost", 10, 2).default(BigDecimal("0.00"))
     val taxAmount = decimal("tax_amount", 10, 2).default(BigDecimal("0.00"))
@@ -39,6 +40,7 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
     var userId by OrderTable.userId
     var shopId by OrderTable.shopId
     var orderNumber by OrderTable.orderNumber
+    var idempotencyKey by OrderTable.idempotencyKey
     var subTotal by OrderTable.subTotal
     var shippingCost by OrderTable.shippingCost
     var taxAmount by OrderTable.taxAmount

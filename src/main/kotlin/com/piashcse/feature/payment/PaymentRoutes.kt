@@ -51,6 +51,22 @@ fun Route.paymentRoutes(paymentController: PaymentService) {
                     paymentController.getPaymentById(id.first())
                 )
             }
+
+            /**
+             * @tag Payment
+             * @description Retrieve all payments for a specific order
+             * @operationId getPaymentsByOrderId
+             * @path orderId (required) Unique identifier of the order
+             * @response 200 Payments retrieved successfully
+             * @security jwtToken
+             */
+            get("order/{orderId}") {
+                val orderId = call.requireParameters("orderId")
+                call.respond(
+                    HttpStatusCode.OK,
+                    paymentController.getPaymentsByOrderId(orderId.first())
+                )
+            }
         }
     }
 }

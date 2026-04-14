@@ -19,4 +19,12 @@ interface PaymentRepository {
      * @return The payment details.
      */
     suspend fun getPaymentById(paymentId: String): Payment
+
+    /**
+     * Retrieves all payments for a specific order.
+     *
+     * @param orderId The unique identifier of the order.
+     * @return A list of payments for the order.
+     */
+    suspend fun getPaymentsByOrderId(orderId: String): List<Payment>
 }
