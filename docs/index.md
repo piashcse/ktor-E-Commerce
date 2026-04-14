@@ -52,7 +52,12 @@ scalable, and efficient service for handling your e-commerce needs.
 ### 7. Security
 
 - **JWT Tokens**: Implement JSON Web Tokens for secure authentication.
+- **Refresh Tokens**: Secure token refresh with hashed storage and automatic revocation.
+- **Rate Limiting**: Auth endpoints protected against brute-force attacks (5 req/10min).
+- **Account Lockout**: Automatic 30-minute lockout after 5 failed login attempts.
+- **Password Strength**: Enforced password complexity requirements.
 - **Input Validation**: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).
+- **Atomic Stock Operations**: Thread-safe inventory updates within database transactions.
 
 ## Architecture
 

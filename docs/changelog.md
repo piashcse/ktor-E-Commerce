@@ -4,6 +4,47 @@ hide:
 ---
 # Changelog
 
+## [3.4.0] - Latest
+
+### Security & Bug Fixes
+
+- **(security)** - Implemented rate limiting on auth endpoints (5 req/10min) to prevent brute-force attacks
+- **(security)** - Added login attempt tracking with automatic account lockout after 5 failed attempts (30min lock)
+- **(security)** - Enforced password strength validation on registration and password reset
+- **(security)** - Converted forget-password and reset-password to POST endpoints with JSON body
+- **(security)** - Implemented refresh token system with hashed storage and automatic revocation
+- **(security)** - Added logout endpoint to revoke refresh tokens
+- **(fix)** - Fixed inventory concurrency race condition with atomic stock operations in transaction
+- **(fix)** - Fixed EntityID table references in ProductService for all foreign key lookups
+- **(fix)** - Fixed duplicate DELETE route in ProductRoutes (merged seller/admin handlers)
+- **(fix)** - Fixed searchProduct memory explosion with SQL-level filtering
+- **(fix)** - Fixed adjustWhere filter logic bug with proper incremental AND chain
+- **(fix)** - Fixed getShops memory explosion with SQL-level filtering
+- **(fix)** - Fixed stockQuantity defaulting to 0 in update (now preserves existing value)
+- **(fix)** - Fixed image upload null cast with file type validation
+- **(fix)** - Fixed CORS configuration to use allowed origins from environment
+
+### Code Improvements
+
+- Extracted helper methods in InventoryService.updateStock for cleaner maintenance
+- Flattened nested conditionals in AuthService.login with single-responsibility methods
+- Extracted reusable predicate in LoginAttemptRepository
+- Simplified InvalidCredentialsException with companion object builder
+
+### New Endpoints
+
+- `POST /auth/refresh-token` - Refresh access token
+- `POST /auth/logout` - Logout and revoke tokens
+
+### Documentation
+
+- Updated auth.md with rate limiting, account lockout, and refresh token documentation
+- Updated inventory.md with atomic stock operations documentation
+
+**Full Changelog**: [3.3.0...3.4.0](https://github.com/piashcse/ktor-E-Commerce/compare/3.3.0...3.4.0)
+
+---
+
 ## [3.3.0] - Latest
 
 ### What's Changed
