@@ -35,6 +35,7 @@ fun Route.shopRoutes(shopController: ShopService) {
              */
             post {
                 val requestBody = call.receive<ShopRequest>()
+                requestBody.validation()
                 call.respond(HttpStatusCode.OK, shopController.createShop(call.currentUserId, requestBody))
             }
 
@@ -50,6 +51,7 @@ fun Route.shopRoutes(shopController: ShopService) {
             put("/{id}") {
                 val (shopId) = call.requireParameters("id")
                 val requestBody = call.receive<UpdateShopRequest>()
+                requestBody.validation()
                 call.respond(HttpStatusCode.OK, shopController.updateShop(call.currentUserId, shopId, requestBody))
             }
 

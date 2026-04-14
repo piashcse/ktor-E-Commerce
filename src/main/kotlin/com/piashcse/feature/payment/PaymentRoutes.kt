@@ -29,6 +29,7 @@ fun Route.paymentRoutes(paymentController: PaymentService) {
              */
             post {
                 val requestBody = call.receive<PaymentRequest>()
+                requestBody.validation()
                 call.respond(
                     HttpStatusCode.OK,
                     paymentController.createPayment(requestBody)

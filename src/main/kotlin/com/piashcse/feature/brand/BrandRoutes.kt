@@ -46,6 +46,7 @@ fun Route.brandRoutes(brandController: BrandService) {
              */
             post {
                 val requestBody = call.receive<BrandRequest>()
+                requestBody.validation()
                 call.respond(
                     HttpStatusCode.OK,
                     brandController.createBrand(requestBody.name)

@@ -46,6 +46,7 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
              */
             post {
                 val requestBody = call.receive<ReviewRatingRequest>()
+                requestBody.validation()
                 call.respond(
                     HttpStatusCode.OK,
                     reviewRatingController.addReviewRating(call.currentUserId, requestBody)

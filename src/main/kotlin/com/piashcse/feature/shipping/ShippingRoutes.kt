@@ -33,6 +33,7 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
              */
             post {
                 val requestBody = call.receive<ShippingRequest>()
+                requestBody.validation()
                 call.respond(
                     HttpStatusCode.OK,
                     shippingController.createShipping(call.currentUserId, requestBody)

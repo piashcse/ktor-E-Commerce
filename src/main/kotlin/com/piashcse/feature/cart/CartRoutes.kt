@@ -1,6 +1,8 @@
 package com.piashcse.feature.cart
 
 import com.piashcse.model.request.CartRequest
+import com.piashcse.model.request.RemoveCartItemRequest
+import com.piashcse.model.request.UpdateCartItemRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requireParameters
@@ -30,6 +32,7 @@ fun Route.cartRoutes(cartController: CartService) {
              */
             post {
                 val requestBody = call.receive<CartRequest>()
+                requestBody.validation()
                 call.respond(
                     HttpStatusCode.OK,
                     cartController.createCart(
@@ -64,17 +67,16 @@ fun Route.cartRoutes(cartController: CartService) {
              * @tag Cart
              * @description Update the quantity of a specific product in the cart
              * @operationId updateCartQuantity
-             * @query productId (required) Unique identifier of the product
-             * @query quantity (required) New quantity value for the product
+             * @body UpdateCartItemRequest Cart item update request with product ID and quantity
              * @response 200 Cart item quantity updated successfully
-             * @response 400 Invalid product ID or quantity parameter
              * @security jwtToken
              */
             put("update") {
-                val params = call.requireParameters("productId", "quantity")
+                val requestBody = call.receive<UpdateCartItemRequest>()
+                requestBody.validation()
                 call.respond(
                     HttpStatusCode.OK,
-                    cartController.updateCartQuantity(call.currentUserId, params[0], params[1].toInt())
+                    cartController.updateCartQuantity(call.currentUserId, requestBody.productId, requestBody.quantity)
                 )
             }
 
@@ -82,16 +84,16 @@ fun Route.cartRoutes(cartController: CartService) {
              * @tag Cart
              * @description Remove a specific product from the user's shopping cart
              * @operationId removeCartItem
-             * @query productId (required) Unique identifier of the product to remove
+             * @body RemoveCartItemRequest Request with product ID to remove
              * @response 200 Item removed from cart successfully
-             * @response 400 Invalid product ID
              * @security jwtToken
              */
             delete("remove") {
-                val productId = call.requireParameters("productId")
+                val requestBody = call.receive<RemoveCartItemRequest>()
+                requestBody.validation()
                 call.respond(
                     HttpStatusCode.OK,
-                    cartController.removeCartItem(call.currentUserId, productId.first())
+                    cartController.removeCartItem(call.currentUserId, requestBody.productId)
                 )
             }
 

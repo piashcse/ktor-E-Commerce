@@ -46,6 +46,7 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
              */
             post {
                 val requestBody = call.receive<ProductSubCategoryRequest>()
+                requestBody.validation()
                 call.respond(
                     HttpStatusCode.OK,
                     subCategoryController.addProductSubCategory(requestBody)

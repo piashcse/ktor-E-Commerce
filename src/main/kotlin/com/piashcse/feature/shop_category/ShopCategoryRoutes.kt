@@ -30,6 +30,7 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
              */
             post {
                 val requestBody = call.receive<ShopCategoryRequest>()
+                requestBody.validation()
                 call.respond(
                     HttpStatusCode.OK,
                     shopCategoryController.createCategory(requestBody.name)

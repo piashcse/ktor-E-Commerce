@@ -1,6 +1,9 @@
 package com.piashcse.model.request
 
 import kotlinx.serialization.Serializable
+import org.valiktor.functions.isNotNull
+import org.valiktor.functions.isNotEmpty
+import org.valiktor.validate
 
 @Serializable
 data class UpdateShopRequest(
@@ -11,4 +14,15 @@ data class UpdateShopRequest(
     val email: String? = null,
     val logo: String? = null,
     val coverImage: String? = null
-)
+) {
+    fun validation() {
+        validate(this) {
+            name?.let {
+                validate(UpdateShopRequest::name).isNotEmpty()
+            }
+            email?.let {
+                validate(UpdateShopRequest::email).isNotEmpty()
+            }
+        }
+    }
+}

@@ -15,24 +15,17 @@ import java.util.*
  * Global exception handler — Industry-standard (Stripe/GitHub/OpenAI).
  *
  * Success: Return data directly (HTTP status = source of truth)
- * Error: Return ApiError { message, errors? }
+ * Error: Return ApiError { message, errorCode?, errors? }
+ * 
+ * Error codes are centralized in ErrorCodes object - no hardcoding.
  */
 fun Application.configureStatusPage() {
     install(StatusPages) {
         exception<Throwable> { call, error ->
             when (error) {
-                is InvalidEnumValueException -> {
-                    call.application.environment.log.warn("Invalid enum: ${error.invalidValue} for ${error.enumName}")
-                    call.respond(error.code, ApiError(error.message ?: "Invalid value"))
-                }
-
-                is MissingParameterException -> {
-                    call.respond(error.code, ApiError(error.message ?: "Missing parameter"))
-                }
-
                 is AppException -> {
                     call.application.environment.log.warn("${error::class.simpleName}: ${error.message}")
-                    call.respond(error.code, ApiError(error.message ?: "Unknown error"))
+                    call.respond(error.code, ApiError(error.message ?: "Unknown error", errorCode = error.errorCode))
                 }
 
                 is ConstraintViolationException -> {
@@ -42,36 +35,36 @@ fun Application.configureStatusPage() {
 
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        ApiError(message = "Validation failed", errors = fieldErrors)
+                        ApiError(message = "Validation failed", errorCode = ErrorCodes.VALIDATION_ERROR, errors = fieldErrors)
                     )
                 }
 
                 is MissingRequestParameterException ->
-                    call.respond(HttpStatusCode.BadRequest, ApiError("Missing parameter: ${error.parameterName}"))
+                    call.respond(HttpStatusCode.BadRequest, ApiError("Missing parameter: ${error.parameterName}", errorCode = ErrorCodes.MISSING_PARAMETER))
 
                 is NumberFormatException ->
-                    call.respond(HttpStatusCode.BadRequest, ApiError("Invalid numeric value"))
+                    call.respond(HttpStatusCode.BadRequest, ApiError("Invalid numeric value", errorCode = ErrorCodes.INVALID_NUMBER))
 
                 is IllegalArgumentException ->
-                    call.respond(HttpStatusCode.BadRequest, ApiError(error.message ?: "Invalid argument"))
+                    call.respond(HttpStatusCode.BadRequest, ApiError(error.message ?: "Invalid argument", errorCode = ErrorCodes.INVALID_ARGUMENT))
 
                 else -> {
                     call.application.environment.log.error("Unhandled: ${error::class.simpleName}", error)
-                    call.respond(HttpStatusCode.InternalServerError, ApiError("Internal server error"))
+                    call.respond(HttpStatusCode.InternalServerError, ApiError("Internal server error", errorCode = ErrorCodes.INTERNAL_ERROR))
                 }
             }
         }
 
         status(HttpStatusCode.Unauthorized) { call, _ ->
-            call.respond(HttpStatusCode.Unauthorized, ApiError("Authentication required"))
+            call.respond(HttpStatusCode.Unauthorized, ApiError("Authentication required", errorCode = ErrorCodes.UNAUTHORIZED))
         }
 
         status(HttpStatusCode.NotFound) { call, _ ->
-            call.respond(HttpStatusCode.NotFound, ApiError("Resource not found"))
+            call.respond(HttpStatusCode.NotFound, ApiError("Resource not found", errorCode = ErrorCodes.NOT_FOUND))
         }
 
         status(HttpStatusCode.MethodNotAllowed) { call, _ ->
-            call.respond(HttpStatusCode.MethodNotAllowed, ApiError("Method not allowed"))
+            call.respond(HttpStatusCode.MethodNotAllowed, ApiError("Method not allowed", errorCode = ErrorCodes.BAD_REQUEST))
         }
     }
 }

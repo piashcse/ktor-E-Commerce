@@ -7,8 +7,8 @@ import io.ktor.http.*
 //  INDUSTRY-STANDARD EXCEPTION HIERARCHY
 //
 //  Based on Stripe, GitHub, OpenAI best practices:
-//  - HTTP status code is the ONLY source of truth
-//  - No error codes in response body
+//  - HTTP status code is the primary source of truth
+//  - Centralized error codes via ErrorCodes object
 //  - Clear, user-facing messages
 //  - Minimal, focused hierarchy
 //
@@ -19,32 +19,35 @@ import io.ktor.http.*
 /** Base exception for all application errors. */
 open class AppException(
     message: String,
-    val code: HttpStatusCode = HttpStatusCode.BadRequest
+    val code: HttpStatusCode = HttpStatusCode.BadRequest,
+    val errorCode: String = ErrorCodes.BAD_REQUEST
 ) : Exception(message)
 
 // ─── 400 Bad Request ───────────────────────────────────────────────────────
 
-class ValidationException(message: String) : AppException(message, HttpStatusCode.BadRequest)
+class ValidationException(message: String)
+    : AppException(message, HttpStatusCode.BadRequest, ErrorCodes.VALIDATION_ERROR)
 
 class InvalidEnumValueException(
     message: String,
     val enumName: String,
     val invalidValue: String
-) : AppException(message, HttpStatusCode.BadRequest)
+) : AppException(message, HttpStatusCode.BadRequest, ErrorCodes.INVALID_ENUM_VALUE)
 
 class MissingParameterException(parameterName: String)
-    : AppException("Missing required parameter: $parameterName", HttpStatusCode.BadRequest)
+    : AppException("Missing required parameter: $parameterName", HttpStatusCode.BadRequest, ErrorCodes.MISSING_PARAMETER)
 
 // ─── 401 Unauthorized ──────────────────────────────────────────────────────
 
 class UnauthorizedException(message: String = Message.Errors.UNAUTHORIZED)
-    : AppException(message, HttpStatusCode.Unauthorized)
+    : AppException(message, HttpStatusCode.Unauthorized, ErrorCodes.UNAUTHORIZED)
 
 class InvalidCredentialsException(
     remainingAttempts: Int? = null
 ) : AppException(
     buildMessage(remainingAttempts),
-    HttpStatusCode.Unauthorized
+    HttpStatusCode.Unauthorized,
+    ErrorCodes.INVALID_CREDENTIALS
 ) {
     companion object {
         private fun buildMessage(remaining: Int?): String =
@@ -54,36 +57,38 @@ class InvalidCredentialsException(
 }
 
 class UnverifiedAccountException(message: String = Message.Auth.ACCOUNT_NOT_VERIFIED)
-    : AppException(message, HttpStatusCode.Unauthorized)
+    : AppException(message, HttpStatusCode.Unauthorized, ErrorCodes.UNVERIFIED_ACCOUNT)
 
 class DeactivatedAccountException(message: String = Message.Auth.ACCOUNT_DEACTIVATED)
-    : AppException(message, HttpStatusCode.Unauthorized)
+    : AppException(message, HttpStatusCode.Unauthorized, ErrorCodes.DEACTIVATED_ACCOUNT)
 
 // ─── 403 Forbidden ─────────────────────────────────────────────────────────
 
 class ForbiddenException(message: String = Message.Errors.FORBIDDEN)
-    : AppException(message, HttpStatusCode.Forbidden)
+    : AppException(message, HttpStatusCode.Forbidden, ErrorCodes.FORBIDDEN)
 
 // ─── 404 Not Found ─────────────────────────────────────────────────────────
 
 class NotFoundException(message: String = Message.Errors.NOT_FOUND)
-    : AppException(message, HttpStatusCode.NotFound)
+    : AppException(message, HttpStatusCode.NotFound, ErrorCodes.NOT_FOUND)
 
 // ─── 409 Conflict ──────────────────────────────────────────────────────────
 
-class ConflictException(message: String) : AppException(message, HttpStatusCode.Conflict)
+class ConflictException(message: String)
+    : AppException(message, HttpStatusCode.Conflict, ErrorCodes.CONFLICT)
 
 // ─── 429 Too Many Requests ─────────────────────────────────────────────────
 
 class RateLimitExceededException(message: String = "Too many requests")
-    : AppException(message, HttpStatusCode.TooManyRequests)
+    : AppException(message, HttpStatusCode.TooManyRequests, ErrorCodes.RATE_LIMITED)
 
 // ─── 500 Internal Server Error ─────────────────────────────────────────────
 
 class InternalServerException(message: String = Message.Errors.INTERNAL)
-    : AppException(message, HttpStatusCode.InternalServerError)
+    : AppException(message, HttpStatusCode.InternalServerError, ErrorCodes.INTERNAL_ERROR)
 
-class DatabaseException(message: String) : AppException(message, HttpStatusCode.InternalServerError)
+class DatabaseException(message: String)
+    : AppException(message, HttpStatusCode.InternalServerError, ErrorCodes.DATABASE_ERROR)
 
 // ============================================================================
 //  VALIDATION HELPERS - Uses Message constants for consistency

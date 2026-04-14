@@ -94,6 +94,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
              */
             post {
                 val createRequest = call.receive<CreatePolicyRequest>()
+                createRequest.validation()
                 call.respond(HttpStatusCode.OK, policyController.createPolicy(createRequest))
             }
 
@@ -110,6 +111,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
             put("{id}") {
                 val id = call.requireParameters("id")
                 val updateRequest = call.receive<UpdatePolicyRequest>()
+                updateRequest.validation()
                 call.respond(HttpStatusCode.OK, policyController.updatePolicy(id.first(), updateRequest))
             }
 

@@ -133,6 +133,7 @@ fun Route.productRoutes(productController: ProductService) {
              */
             post {
                 val requestBody = call.receive<ProductRequest>()
+                requestBody.validation()
                 call.respond(
                     HttpStatusCode.OK,
                     productController.createProduct(call.currentUserId, null, requestBody)

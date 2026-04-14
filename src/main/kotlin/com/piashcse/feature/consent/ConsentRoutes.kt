@@ -27,6 +27,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
              */
             post("consent") {
                 val consentRequest = call.receive<PolicyConsentRequest>()
+                consentRequest.validation()
 
                 val userId = call.currentUserId
                 val policyId = consentRequest.policyId

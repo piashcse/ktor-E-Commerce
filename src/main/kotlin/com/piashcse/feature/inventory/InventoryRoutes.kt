@@ -2,6 +2,7 @@ package com.piashcse.feature.inventory
 
 import com.piashcse.constants.Message
 import com.piashcse.model.request.InventoryRequest
+import com.piashcse.model.request.UpdateStockRequest
 import com.piashcse.plugin.RoleManagement
 import com.piashcse.utils.MissingParameterException
 import com.piashcse.utils.NotFoundException
@@ -32,6 +33,7 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
              */
             post {
                 val requestBody = call.receive<InventoryRequest>()
+                requestBody.validation()
                 call.respond(HttpStatusCode.OK, inventoryController.createOrUpdateInventory(requestBody))
             }
 
@@ -47,6 +49,7 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
             put("/{id}") {
                 val productId = call.requireParameters("id")
                 val requestBody = call.receive<InventoryRequest>()
+                requestBody.validation()
                 call.respond(HttpStatusCode.OK,
                     inventoryController.createOrUpdateInventory(requestBody.copy(productId = productId.first())),
                 )
@@ -57,18 +60,16 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
              * @description Update stock quantity for a product with add, subtract, or set operation
              * @operationId updateStock
              * @path id (required) Unique identifier of the product
-             * @query quantity (required) Quantity value to add, subtract, or set
-             * @query operation (optional) Stock operation type: add, subtract, or set (default: add)
+             * @body UpdateStockRequest Stock update request with quantity and operation
              * @response 200 Stock quantity updated successfully
              * @security jwtToken
              */
             put("/stock/{id}") {
                 val productId = call.requireParameters("id")
-                val quantity = call.parameters["quantity"]?.toIntOrNull()
-                    ?: throw MissingParameterException("quantity")
-                val operation = call.parameters["operation"] ?: "add"
+                val requestBody = call.receive<UpdateStockRequest>()
+                requestBody.validation()
                 call.respond(HttpStatusCode.OK,
-                    inventoryController.updateStock(productId.first(), quantity, operation),
+                    inventoryController.updateStock(productId.first(), requestBody.quantity, requestBody.operation),
                 )
             }
 
