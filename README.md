@@ -39,12 +39,30 @@ scalable, and efficient service for handling your e-commerce needs. For detailed
 ### 4. Shopping Cart and Checkout
 
 - **Shopping Cart**: Add and remove products, update quantities, and calculate totals.
+- **Cart Summary**: Retrieve detailed cart summary with subtotal, tax, and item count.
 - **Checkout**: Streamline the checkout process for quick and secure payments.
+- **Stock Validation**: Automatic stock validation during checkout using effective inventory levels.
+- **Price Validation**: Order totals validated against database prices to prevent tampering.
+- **Cart Clearing**: Automatic cart clearing after successful order placement.
 
 ### 5. Order Management
 
 - **Order Processing**: Handle order creation, status updates, and order history.
+- **Order Cancellation**: Customers can cancel PENDING/CONFIRMED orders with automatic stock restoration.
+- **Seller Orders**: Sellers can view and manage orders from their shop.
+- **Admin Orders**: Admins can view all orders with advanced filters (status, date range).
+- **Human-Readable Order Numbers**: Sequential order numbers in format ORD-YYYYMMDD-XXXX.
+- **Idempotency Support**: Prevent duplicate orders with idempotency keys.
 - **Payment Integration**: Integrate with popular payment gateways for seamless transactions.
+- **Payment Validation**: Payment amounts validated against order totals.
+- **Payment History**: Track all payments for each order.
+
+### 6. Refund Management
+
+- **Refund Requests**: Customers can request refunds for order items with reasons and evidence images.
+- **Refund Approval**: Sellers and admins can approve, reject, or process refunds.
+- **Return Shipping**: Customers can mark approved refunds as shipped with tracking numbers.
+- **Refund Tracking**: Complete refund lifecycle tracking from request to resolution.
 
 ### 6. Scalability and Performance
 
@@ -288,6 +306,40 @@ All error messages are centralized in `Message.kt` for consistency and maintaina
 This ensures consistent, actionable error messages across all endpoints.
 
 ## Documentation
+
+### 📖 MkDocs Documentation
+
+Comprehensive API documentation is maintained using [MkDocs](https://www.mkdocs.org/) and available in the `docs/` directory. To view the documentation locally:
+
+1. Install MkDocs: `pip install mkdocs-material`
+2. Run the documentation server: `mkdocs serve`
+3. Open [http://localhost:8000](http://localhost:8000) in your browser
+
+### 🔗 API Endpoints
+
+The API is organized into the following modules:
+
+- **Authentication** - Login, register, OTP, password reset
+- **Profile** - User profile management
+- **Shop** - Shop management for sellers
+- **Product** - Product catalog management
+- **Cart** - Shopping cart operations and summary
+- **Order** - Order processing, cancellation, and management
+- **Payment** - Payment processing and history
+- **Refund Request** - Refund lifecycle management
+- **Inventory** - Stock management
+- **Wishlist** - Product wishlist
+- **Shipping** - Shipping management
+- **Review & Rating** - Product reviews
+- **Brand** - Brand management
+- **Product Category** - Product categories
+- **Shop Category** - Shop categories
+- **Privacy Policy** - Policy management
+- **Policy Consent** - User consent tracking
+
+### 🌐 Swagger/OpenAPI
+
+Interactive API documentation is available via Swagger UI at `http://localhost:8080/swagger` when the application is running.
 
 ### ROLE MANAGEMENT
 

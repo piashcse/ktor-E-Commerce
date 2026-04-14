@@ -26,6 +26,8 @@ import com.piashcse.feature.profile.ProfileService
 import com.piashcse.feature.profile.profileRoutes
 import com.piashcse.feature.review_rating.ReviewRatingService
 import com.piashcse.feature.review_rating.reviewRatingRoutes
+import com.piashcse.feature.refund_request.RefundRequestService
+import com.piashcse.feature.refund_request.refundRequestRoutes
 import com.piashcse.feature.shipping.ShippingService
 import com.piashcse.feature.shipping.shippingRoutes
 import com.piashcse.feature.shop.ShopService
@@ -56,6 +58,7 @@ fun Application.configureRoute() {
     val policyController: PolicyService by inject()
     val consentController: ConsentService by inject()
     val inventoryController: InventoryService by inject()
+    val returnRequestController: RefundRequestService by inject()
     routing {
         authRoutes(authController)
         profileRoutes(userProfileController)
@@ -74,5 +77,6 @@ fun Application.configureRoute() {
         policyRoutes(policyController)
         consentRoutes(consentController)
         inventoryRoutes(inventoryController)
+        refundRequestRoutes(returnRequestController)
     }
 }

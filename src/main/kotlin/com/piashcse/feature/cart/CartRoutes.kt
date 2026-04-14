@@ -108,6 +108,20 @@ fun Route.cartRoutes(cartController: CartService) {
                     cartController.clearCart(call.currentUserId)
                 )
             }
+
+            /**
+             * @tag Cart
+             * @description Retrieve a summary of items in the user's shopping cart including subtotal and tax
+             * @operationId getCartSummary
+             * @response 200 Cart summary retrieved successfully
+             * @security jwtToken
+             */
+            get("summary") {
+                call.respond(
+                    HttpStatusCode.OK,
+                    cartController.getCartSummary(call.currentUserId)
+                )
+            }
         }
     }
 }

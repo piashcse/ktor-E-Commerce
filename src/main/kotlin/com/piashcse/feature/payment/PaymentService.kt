@@ -4,12 +4,16 @@ import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.database.entities.PaymentTable
+import com.piashcse.database.entities.UserTable
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.Payment
+import com.piashcse.utils.ValidationException
 import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.SortOrder
 
 /**
  * Controller for managing payment-related operations.
@@ -24,16 +28,46 @@ class PaymentService : PaymentRepository {
      * @throws Exception if the order with the provided order ID is not found.
      */
     override suspend fun createPayment(paymentRequest: PaymentRequest): Payment = query {
-        val isOrderExist = OrderDAO.find { OrderTable.id eq paymentRequest.orderId }.toList().singleOrNull()
-        isOrderExist?.let {
-            PaymentDAO.new {
-                orderId = EntityID(paymentRequest.orderId, PaymentTable)
-                amount = paymentRequest.amount
-                status = paymentRequest.status
-                paymentMethod = paymentRequest.paymentMethod
-                transactionId = paymentRequest.transactionId
-            }.response()
-        } ?: paymentRequest.orderId.throwNotFound("Order")
+        paymentRequest.validation()
+
+        val order = OrderDAO.findById(paymentRequest.orderId)
+            ?: return@query paymentRequest.orderId.throwNotFound("Order")
+
+        // Validate amount matches order total
+        val orderTotal = order.total.toLong()
+        if (paymentRequest.amount != orderTotal) {
+            throw com.piashcse.utils.ValidationException(
+                "Payment amount (${paymentRequest.amount}) does not match order total ($orderTotal)"
+            )
+        }
+
+        // Check if already fully paid
+        val existingPayments = PaymentDAO.find {
+            (PaymentTable.orderId eq EntityID(paymentRequest.orderId, OrderTable)) and
+            (PaymentTable.status eq com.piashcse.constants.PaymentStatus.COMPLETED)
+        }.toList()
+
+        val paidAmount = existingPayments.sumOf { it.amount }
+        if (paidAmount >= orderTotal) {
+            throw com.piashcse.utils.ValidationException("Order already fully paid")
+        }
+
+        // Create payment
+        val payment = PaymentDAO.new {
+            this.orderId = EntityID(paymentRequest.orderId, OrderTable)
+            this.userId = order.userId
+            this.amount = paymentRequest.amount
+            this.status = paymentRequest.status
+            this.paymentMethod = paymentRequest.paymentMethod
+            this.transactionId = paymentRequest.transactionId
+        }
+
+        // Update order payment status if fully paid
+        if (paidAmount + paymentRequest.amount >= orderTotal) {
+            order.paymentStatus = com.piashcse.constants.PaymentStatus.COMPLETED
+        }
+
+        payment.response()
     }
 
     /**
@@ -46,5 +80,18 @@ class PaymentService : PaymentRepository {
     override suspend fun getPaymentById(paymentId: String): Payment = query {
         val isOrderExist = PaymentDAO.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
         isOrderExist?.response() ?: paymentId.throwNotFound("Payment")
+    }
+
+    /**
+     * Retrieves all payments for a specific order.
+     *
+     * @param orderId The ID of the order.
+     * @return A list of payments for the order.
+     */
+    override suspend fun getPaymentsByOrderId(orderId: String): List<Payment> = query {
+        PaymentDAO.find { PaymentTable.orderId eq EntityID(orderId, PaymentTable) }
+            .orderBy(PaymentTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.DESC)
+            .toList()
+            .map { it.response() }
     }
 }

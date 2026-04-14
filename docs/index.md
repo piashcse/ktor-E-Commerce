@@ -37,12 +37,26 @@ scalable, and efficient service for handling your e-commerce needs.
 ### 4. Shopping Cart and Checkout
 
 - **Shopping Cart**: Add and remove products, update quantities, and calculate totals.
-- **Checkout**: Streamline the checkout process for quick and secure payments.
+- **Cart Summary**: Retrieve detailed cart summary with subtotal, tax, and item count.
+- **Checkout**: Streamline the checkout process with automatic stock and price validation.
+- **Cart Clearing**: Automatic cart clearing after successful order placement.
 
 ### 5. Order Management
 
-- **Order Processing**: Handle order creation, status updates, and order history.
-- **Payment Integration**: Integrate with popular payment gateways for seamless transactions.
+- **Order Processing**: Handle order creation with human-readable order numbers (ORD-YYYYMMDD-XXXX).
+- **Order Cancellation**: Cancel PENDING/CONFIRMED orders with automatic stock restoration.
+- **Seller Orders**: Sellers can view and manage orders from their shop.
+- **Admin Orders**: Admins can view all orders with advanced filters (status, date range).
+- **Idempotency Support**: Prevent duplicate orders with idempotency keys.
+- **Payment Integration**: Secure payment processing with amount validation.
+- **Payment History**: Track all payments for each order.
+
+### 6. Refund Management
+
+- **Refund Requests**: Customers can request refunds with reasons and evidence images.
+- **Refund Approval**: Sellers and admins can approve, reject, or process refunds.
+- **Return Shipping**: Track return shipments with tracking numbers.
+- **Refund Lifecycle**: Complete refund tracking from request to resolution.
 
 ### 6. Scalability and Performance
 
@@ -182,11 +196,12 @@ For comprehensive API documentation, please refer to the following resources:
 - [Product Category API](product-category.md) - Product category management
 - [Product Sub-Category API](product-sub-category.md) - Product sub-category management
 - [Brand API](brand.md) - Brand management
-- [Cart API](cart.md) - Shopping cart functionality
+- [Cart API](cart.md) - Shopping cart functionality and summary
 - [Wishlist API](wishlist.md) - Wishlist functionality
-- [Order API](order.md) - Order management
+- [Order API](order.md) - Order management, cancellation, and admin views
+- [Refund Request API](refund-request.md) - Refund lifecycle management
 - [Shipping API](shipping.md) - Shipping address management
-- [Payment API](payment.md) - Payment processing
+- [Payment API](payment.md) - Payment processing and order lookup
 - [Review Rating API](review-rating.md) - Product reviews and ratings
 - [Inventory API](inventory.md) - Inventory management
 - [Privacy Policy API](privacy-policy.md) - Privacy policy management
