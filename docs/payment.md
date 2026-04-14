@@ -18,6 +18,7 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/payment` | Create a new payment | Yes |
 | `GET` | `/payment` | Retrieve user's payments | Yes |
 | `GET` | `/payment/{id}` | Retrieve payment by ID | Yes |
+| `GET` | `/payment/order/{orderId}` | Retrieve all payments for an order | Yes |
 
 ---
 
@@ -191,6 +192,70 @@ curl -X 'GET' \
 | `amount` | number | Payment amount |
 | `status` | string | Current payment status |
 | `paymentMethod` | string | Payment method used |
+
+---
+
+### 4. Get Payments by Order
+
+**`GET /payment/order/{orderId}`**
+
+Retrieve all payments associated with a specific order. This is useful for tracking payment history and partial payments.
+
+#### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `orderId` | string | Yes | UUID of the order |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <access_token>` | Yes |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/payment/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+```
+
+#### Example Response
+
+**Status: 200 OK**
+
+```json
+[
+  {
+    "id": "4b68917d-4452-4d18-9012-47e843f05c15",
+    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
+    "amount": 500,
+    "status": "COMPLETED",
+    "paymentMethod": "Bkash",
+    "transactionId": "TXN123456"
+  }
+]
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | array | Array of payment objects |
+| `data[].id` | string | Unique identifier for the payment |
+| `data[].orderId` | string | UUID of the associated order |
+| `data[].amount` | number | Payment amount |
+| `data[].status` | string | Current payment status |
+| `data[].paymentMethod` | string | Payment method used |
+| `data[].transactionId` | string | Transaction reference ID (nullable) |
+
+#### Notes
+
+- Payments are returned in descending order by creation date (newest first)
+- This endpoint validates that the authenticated user owns the order
+- Payment amount is validated against order total during creation
 
 ---
 

@@ -17,10 +17,11 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `POST` | `/order` | Create a new order | Yes |
-| `GET` | `/order` | Retrieve list of orders | Yes |
-| `GET` | `/order/seller` | Retrieve orders belonging to seller | Yes |
-| `GET` | `/order/admin` | Retrieve all orders (Admin/Super Admin) | Yes |
+| `GET` | `/order` | Retrieve customer orders | Yes |
+| `GET` | `/order/seller` | Retrieve seller's shop orders | Yes (Seller) |
+| `GET` | `/order/admin` | Retrieve all orders with filters | Yes (Admin) |
 | `PATCH` | `/order/status/{id}` | Update order status | Yes |
+| `POST` | `/order/{id}/cancel` | Cancel an order | Yes |
 
 ---
 
@@ -236,6 +237,186 @@ curl -X 'PATCH' \
 | `cancelOrder` | boolean | Whether the order is cancelled |
 | `status` | string | Updated status of the order |
 | `statusCode` | number | Numeric status code for the order |
+
+---
+
+### 4. Cancel Order
+
+**`POST /order/{id}/cancel`**
+
+Cancel an existing order. Only orders with PENDING or CONFIRMED status can be cancelled. This endpoint automatically restores stock quantities.
+
+#### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | Yes | Unique identifier of the order to cancel |
+
+#### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `reason` | string | Yes | Reason for cancellation (max 500 characters) |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <access_token>` | Yes |
+| `Content-Type` | `application/json` | Yes |
+
+#### Permissions
+
+- **Customer**: Can cancel their own orders only
+- **Seller**: Can cancel orders from their shop
+- **Admin/Super Admin**: Can cancel any order
+
+#### Example Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7/cancel' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "reason": "Customer requested cancellation"
+}'
+```
+
+#### Example Response
+
+**Status: 200 OK**
+
+```json
+{
+  "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
+  "subTotal": 10.0,
+  "total": 10.0,
+  "status": "CANCELED"
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `orderId` | string | Unique identifier of the cancelled order |
+| `subTotal` | number | Subtotal amount before shipping |
+| `total` | number | Total order amount |
+| `status` | string | Updated status (CANCELED) |
+
+#### Error Responses
+
+| Status Code | Description |
+|-------------|-------------|
+| `400` | Order cannot be cancelled in current status |
+| `401` | Unauthorized - not the order owner |
+| `404` | Order not found |
+
+---
+
+### 5. Get Seller Orders
+
+**`GET /order/seller`**
+
+Retrieve all orders for the authenticated seller's shop with optional status filter and pagination.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `limit` | number | Yes | Maximum number of orders to return |
+| `offset` | number | No | Number of orders to skip (default: 0) |
+| `status` | string | No | Filter by order status |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <access_token>` | Yes |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/order/seller?limit=20&offset=0&status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+```
+
+#### Example Response
+
+```json
+[
+  {
+    "orderId": "ORD-20260414-0001",
+    "subTotal": 50.0,
+    "total": 50.0,
+    "status": "PENDING"
+  }
+]
+```
+
+---
+
+### 6. Get Admin Orders
+
+**`GET /order/admin`**
+
+Retrieve all orders with advanced filters for admin users. Returns orders with pagination and total count.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `limit` | number | Yes | Maximum number of orders to return |
+| `offset` | number | No | Number of orders to skip (default: 0) |
+| `status` | string | No | Filter by order status |
+| `startDate` | string | No | Filter by start date (ISO 8601 format) |
+| `endDate` | string | No | Filter by end date (ISO 8601 format) |
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <access_token>` | Yes |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/order/admin?limit=20&offset=0&status=PENDING&startDate=2026-04-01T00:00:00Z' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+```
+
+#### Example Response
+
+```json
+{
+  "orders": [
+    {
+      "orderId": "ORD-20260414-0001",
+      "subTotal": 50.0,
+      "total": 50.0,
+      "status": "PENDING"
+    }
+  ],
+  "total": 150,
+  "page": 1,
+  "limit": 20
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `orders` | array | Array of order objects |
+| `total` | number | Total number of orders matching filters |
+| `page` | number | Current page number |
+| `limit` | number | Number of orders per page |
 
 ---
 

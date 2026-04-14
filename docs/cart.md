@@ -18,8 +18,9 @@ Authorization: Bearer <your_access_token>
 |--------|----------|-------------|------------------------|
 | `POST` | `/cart` | Add product to cart | Yes |
 | `GET` | `/cart` | Retrieve cart items | Yes |
-| `PUT` | `/cart` | Update product quantity in cart | Yes |
-| `DELETE` | `/cart` | Remove specific product from cart | Yes |
+| `GET` | `/cart/summary` | Retrieve cart summary with totals | Yes |
+| `PUT` | `/cart/update` | Update product quantity in cart | Yes |
+| `DELETE` | `/cart/remove` | Remove specific product from cart | Yes |
 | `DELETE` | `/cart/all` | Clear entire cart | Yes |
 
 ---
@@ -307,6 +308,70 @@ true
 | Field | Type | Description |
 |-------|------|-------------|
 | `data` | boolean | Indicates successful cart clearance |
+
+---
+
+### 6. Get Cart Summary
+
+**`GET /cart/summary`**
+
+Retrieve a summary of the user's cart including all items with product details, subtotal, estimated tax, and item count. This endpoint provides enriched data for checkout pages.
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <access_token>` | Yes |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/cart/summary' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+```
+
+#### Example Response
+
+**Status: 200 OK**
+
+```json
+{
+  "items": [
+    {
+      "productId": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
+      "productName": "Smart Watch",
+      "price": 10.0,
+      "quantity": 3,
+      "image": "https://example.com/image1.jpg",
+      "stockQuantity": 50,
+      "shopId": "shop-uuid-1",
+      "shopName": "Electronics Shop"
+    }
+  ],
+  "subtotal": 30.0,
+  "estimatedTax": 3.0,
+  "itemCount": 1
+}
+```
+
+#### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `items` | array | Array of cart item objects with product details |
+| `items[].productId` | string | UUID of the product |
+| `items[].productName` | string | Name of the product |
+| `items[].price` | number | Effective price (discount price if available, otherwise regular price) |
+| `items[].quantity` | number | Quantity of this product in cart |
+| `items[].image` | string | Primary product image URL |
+| `items[].stockQuantity` | number | Current effective stock quantity |
+| `items[].shopId` | string | Shop UUID (nullable) |
+| `items[].shopName` | string | Shop name (nullable) |
+| `subtotal` | number | Total price of all items before tax |
+| `estimatedTax` | number | Estimated tax amount (10% of subtotal) |
+| `itemCount` | number | Number of unique products in cart |
 
 ---
 
