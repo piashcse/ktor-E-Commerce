@@ -22,6 +22,7 @@ import com.piashcse.feature.shipping.ShippingService
 import com.piashcse.feature.shop.ShopService
 import com.piashcse.feature.shop_category.ShopCategoryService
 import com.piashcse.feature.wishlist.WishListService
+import com.piashcse.service.UploadService
 import org.koin.dsl.module
 
 val serviceModule = module {
@@ -45,4 +46,5 @@ val serviceModule = module {
     single { ConsentService() }
     single { InventoryService() }
     single { RefundRequestService() }
+    single { UploadService }
 }

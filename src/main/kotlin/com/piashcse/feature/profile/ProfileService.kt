@@ -1,28 +1,20 @@
 package com.piashcse.feature.profile
 
-import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.UserProfileTable
 import com.piashcse.database.entities.UserProfileDAO
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.model.response.UserProfile
+import com.piashcse.service.UploadService
 import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.eq
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
 
 /**
  * Controller for managing user profiles. Provides methods to retrieve, update, and change user profile details and images.
  */
 class ProfileService : ProfileRepository {
 
-    init {
-        // Create the profile image directory if it does not exist.
-        if (!File(AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION).exists()) {
-            File(AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION).mkdirs()
-        }
-    }
+    // UploadService init block handles directory creation
 
     /**
      * Retrieves the user profile based on the given user ID.
@@ -68,7 +60,7 @@ class ProfileService : ProfileRepository {
      * Updates the user's profile image and replaces the old one if it exists.
      *
      * @param userId The ID of the user whose profile image is to be updated.
-     * @param imageUrl The new profile image file name.
+     * @param imageUrl The new profile image URL.
      * @return The updated user profile with the new image.
      * @throws userId.throwNotFound("Resource") If no user profile is found for the given user ID.
      */
@@ -76,9 +68,11 @@ class ProfileService : ProfileRepository {
         val userProfileEntity =
             UserProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
 
-        // Delete previous profile image if it exists, as the new one will replace it.
-        userProfileEntity?.image?.let {
-            Files.deleteIfExists(Paths.get("${AppConstants.ImageFolder.PROFILE_IMAGE_LOCATION}$it"))
+        // Delete previous profile image if it exists
+        userProfileEntity?.image?.let { oldImageUrl ->
+            // Extract filename from URL and delete old image
+            val oldFileName = oldImageUrl.substringAfterLast("/")
+            UploadService.deleteProfileImage(oldFileName)
         }
 
         userProfileEntity?.let {

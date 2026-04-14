@@ -5,3 +5,8 @@
 /out/
 /src/main/resources/hikari.properties
 .env
+
+# Upload directories (should not be versioned)
+/uploads/
+/src/main/resources/profile-image/
+/src/main/resources/product-image/

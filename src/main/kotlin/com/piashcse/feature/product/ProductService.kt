@@ -1,6 +1,5 @@
 package com.piashcse.feature.product
 
-import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.BrandTable
@@ -28,21 +27,13 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.core.like
-import java.io.File
 
 /**
  * Controller for managing products.
  */
 class ProductService : ProductRepository {
 
-    /**
-     * Initializes the product image folder if it does not exist.
-     */
-    init {
-        if (!File(AppConstants.ImageFolder.PRODUCT_IMAGE_LOCATION).exists()) {
-            File(AppConstants.ImageFolder.PRODUCT_IMAGE_LOCATION).mkdirs()
-        }
-    }
+    // UploadService init block handles directory creation
 
     /**
      * Creates a new product.

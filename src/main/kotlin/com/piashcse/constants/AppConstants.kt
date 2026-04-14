@@ -1,5 +1,11 @@
 package com.piashcse.constants
 
+/**
+ * Application-wide constants.
+ *
+ * Note: Upload directory configuration has been moved to UploadService
+ * which supports configurable paths via UPLOAD_DIR environment variable.
+ */
 object AppConstants {
 
     object DataBaseTransaction {
@@ -16,8 +22,14 @@ object AppConstants {
         const val SENDING_EMAIL = "sendingemail.@gmail.com" // The email from where it will send to user
     }
 
+    /**
+     * @deprecated Use UploadService instead.
+     * Upload paths are now configurable via UPLOAD_DIR environment variable.
+     * See UploadService.kt for details.
+     */
+    @Deprecated("Use UploadService instead", ReplaceWith("UploadService"))
     object ImageFolder {
-        const val PROFILE_IMAGE_LOCATION = "src/main/resources/profile-image/"
-        const val PRODUCT_IMAGE_LOCATION = "src/main/resources/product-image/"
+        const val PROFILE_IMAGE_LOCATION = "uploads/profile-images/"
+        const val PRODUCT_IMAGE_LOCATION = "uploads/product-images/"
     }
 }

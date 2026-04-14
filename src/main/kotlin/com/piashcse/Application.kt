@@ -26,5 +26,6 @@ fun Application.configureAll() {
     configureRateLimiting()
     configureSwagger()
     configureStatusPage()
+    configureStaticContent()
     configureRoute()
 }
