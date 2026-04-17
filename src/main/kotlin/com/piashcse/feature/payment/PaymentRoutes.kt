@@ -1,7 +1,7 @@
 package com.piashcse.feature.payment
 
 import com.piashcse.model.request.PaymentRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -18,7 +18,7 @@ import io.ktor.server.routing.*
  * @param paymentController The controller handling payment-related operations.
  */
 fun Route.paymentRoutes(paymentController: PaymentService) {
-    authenticate(RoleManagement.CUSTOMER.role) {
+    customerAuth {
             /**
              * @tag Payment
              * @description Create a new payment record for an order

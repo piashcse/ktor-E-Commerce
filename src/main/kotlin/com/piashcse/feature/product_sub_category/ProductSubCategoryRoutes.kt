@@ -1,7 +1,7 @@
 package com.piashcse.feature.product_sub_category
 
 import com.piashcse.model.request.ProductSubCategoryRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -37,7 +37,7 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
                 subCategoryController.getProductSubCategory(categoryId, limit, offset)
             )
         }
-        authenticate(RoleManagement.ADMIN.role) {
+        adminAuth {
             /**
              * @tag ProductSubCategory
              * @description Create a new product subcategory

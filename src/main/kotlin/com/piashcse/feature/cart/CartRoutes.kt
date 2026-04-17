@@ -1,7 +1,7 @@
 package com.piashcse.feature.cart
 
 import com.piashcse.model.request.CartRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
@@ -19,7 +19,7 @@ import io.ktor.server.routing.*
  * @param cartController The controller handling cart-related operations.
  */
 fun Route.cartRoutes(cartController: CartService) {
-    authenticate(RoleManagement.CUSTOMER.role) {
+    customerAuth {
             /**
              * @tag Cart
              * @description Add a new product item to the user's shopping cart

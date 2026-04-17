@@ -1,7 +1,7 @@
 package com.piashcse.feature.wishlist
 
 import com.piashcse.model.request.WishListRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
@@ -17,7 +17,7 @@ import io.ktor.server.routing.*
  * @param wishlistController The controller responsible for handling wish list operations.
  */
 fun Route.wishListRoutes(wishlistController: WishListService) {
-    authenticate(RoleManagement.CUSTOMER.role) {
+    customerAuth {
 
             /**
              * @tag WishList

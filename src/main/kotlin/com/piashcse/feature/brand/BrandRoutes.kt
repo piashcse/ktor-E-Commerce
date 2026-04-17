@@ -1,7 +1,8 @@
 package com.piashcse.feature.brand
 
 import com.piashcse.model.request.BrandRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.constants.UserType
+import com.piashcse.plugin.*
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -16,7 +17,7 @@ import io.ktor.server.routing.*
  * @param brandController The controller handling brand-related operations.
  */
 fun Route.brandRoutes(brandController: BrandService) {
-    authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
+    requireRole(UserType.CUSTOMER, UserType.SELLER, UserType.ADMIN) {
             /**
              * @tag Brand
              * @description Retrieve a paginated list of all brands
@@ -36,7 +37,7 @@ fun Route.brandRoutes(brandController: BrandService) {
             }
         }
 
-        authenticate(RoleManagement.ADMIN.role) {
+        adminAuth {
             /**
              * @tag Brand
              * @description Create a new brand with the provided name

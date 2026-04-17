@@ -5,7 +5,6 @@ import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.utils.ApiError
 import com.piashcse.utils.ErrorCodes
 import com.piashcse.utils.MissingParameterException
-import com.piashcse.utils.Permission
 import com.piashcse.utils.throwNotFound
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -69,15 +68,7 @@ suspend fun ApplicationCall.requireRole(role: UserType, useHierarchy: Boolean = 
     return true
 }
 
-fun ApplicationCall.hasPermission(permission: Permission): Boolean =
-    currentUserOrNull()?.hasPermission(permission) ?: false
 
-suspend fun ApplicationCall.requirePermission(permission: Permission): Boolean {
-    val user = currentUserOrNull()
-        ?: run { respond(HttpStatusCode.Unauthorized, "Unauthorized"); return false }
-    if (!user.hasPermission(permission)) { respond(HttpStatusCode.Forbidden, "Forbidden"); return false }
-    return true
-}
 
 // ============================================================================
 //  REQUEST PARAMETER HELPERS

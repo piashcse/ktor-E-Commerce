@@ -18,7 +18,6 @@ import com.piashcse.model.request.RegisterRequest
 import com.piashcse.model.request.ResetRequest
 import com.piashcse.model.request.TokenPair
 import com.piashcse.model.response.Registration
-import com.piashcse.utils.RoleHierarchy
 import com.piashcse.utils.ValidationException
 import com.piashcse.utils.InvalidCredentialsException
 import com.piashcse.utils.NotFoundException
@@ -387,7 +386,7 @@ class AuthService(
         val targetUser = UserDAO.findById(targetUserId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
 
         // Check if the current user has permission to change user types
-        if (!RoleHierarchy.canManageUser(currentUser.userType, targetUser.userType)) {
+        if (!currentUser.userType.canManage(targetUser.userType)) {
             throw ValidationException(Message.Auth.insufficientPermissions("change user type to $newUserType"))
         }
 
@@ -428,7 +427,7 @@ class AuthService(
             ?: throw NotFoundException(Message.Errors.NOT_FOUND)
 
         // Check if the current user has permission to deactivate this user
-        if (!RoleHierarchy.canManageUser(currentUser.userType, targetUser.userType)) {
+        if (!currentUser.userType.canManage(targetUser.userType)) {
             throw ValidationException(Message.Auth.insufficientPermissions("deactivate user"))
         }
 
@@ -450,7 +449,7 @@ class AuthService(
             ?: throw NotFoundException(Message.Errors.NOT_FOUND)
 
         // Check if the current user has permission to activate this user
-        if (!RoleHierarchy.canManageUser(currentUser.userType, targetUser.userType)) {
+        if (!currentUser.userType.canManage(targetUser.userType)) {
             throw ValidationException(Message.Auth.insufficientPermissions("activate user"))
         }
 

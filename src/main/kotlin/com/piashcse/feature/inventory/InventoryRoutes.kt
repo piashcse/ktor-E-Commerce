@@ -2,7 +2,7 @@ package com.piashcse.feature.inventory
 
 import com.piashcse.constants.Message
 import com.piashcse.model.request.InventoryRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.utils.MissingParameterException
 import com.piashcse.utils.NotFoundException
 import com.piashcse.utils.extension.currentUser
@@ -20,7 +20,7 @@ import io.ktor.server.routing.*
  * @param inventoryController The controller handling inventory-related operations.
  */
 fun Route.inventoryRoutes(inventoryController: InventoryService) {
-    authenticate(RoleManagement.SELLER.role) {
+    sellerAuth {
 
             /**
              * @tag Inventory
@@ -89,7 +89,7 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
             }
         }
 
-        authenticate(RoleManagement.ADMIN.role) {
+        adminAuth {
 
             /**
              * @tag Inventory

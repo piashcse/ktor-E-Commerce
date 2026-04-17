@@ -5,7 +5,7 @@ import com.piashcse.constants.UserType
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.utils.UnauthorizedException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.getCurrentUserType
@@ -20,7 +20,7 @@ import io.ktor.server.routing.*
 fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
 
         // Create refund request - customer only
-        authenticate(RoleManagement.CUSTOMER.role) {
+        customerAuth {
             /**
              * @tag Refund
              * @description Create a refund request for an order item
@@ -69,12 +69,7 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
         }
 
         // Get refunds by order - customer/seller/admin
-        authenticate(
-            RoleManagement.CUSTOMER.role,
-            RoleManagement.SELLER.role,
-            RoleManagement.ADMIN.role,
-            RoleManagement.SUPER_ADMIN.role
-        ) {
+        requireRole {
             /**
              * @tag Refund
              * @description Get all refund requests for an order with pagination
@@ -122,7 +117,7 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
             }
 
             // Update refund status - seller/admin only
-            authenticate(RoleManagement.SELLER.role, RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
+            requireRole(UserType.SELLER, UserType.ADMIN, UserType.SUPER_ADMIN) {
                 /**
                  * @tag Refund
                  * @description Update refund request status (approve/reject/refund)

@@ -75,7 +75,7 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     /**
      * Check if the user has access to a specific role (with hierarchy)
      */
-    fun hasAccessTo(role: UserType): Boolean = com.piashcse.utils.RoleHierarchy.hasAccess(this.userType, role)
+    fun hasAccessTo(role: UserType): Boolean = this.userType.hasAccessTo(role)
 
     /**
      * Check if user is active and verified

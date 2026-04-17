@@ -5,7 +5,7 @@ import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.service.UploadService
 import com.piashcse.utils.MissingParameterException
 import com.piashcse.utils.ValidationException
@@ -96,7 +96,7 @@ fun Route.productRoutes(productController: ProductService) {
             call.respond(HttpStatusCode.OK, productController.searchProduct(queryParams))
         }
 
-        authenticate(RoleManagement.SELLER.role) {
+        sellerAuth {
             /**
              * @tag Product
              * @description Retrieve a paginated list of products belonging to the authenticated seller
@@ -209,7 +209,7 @@ fun Route.productRoutes(productController: ProductService) {
             }
         }
 
-        authenticate(RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
+        adminAuth {
             /**
              * @tag Product
              * @description Admin-only: Permanently delete any product by its ID

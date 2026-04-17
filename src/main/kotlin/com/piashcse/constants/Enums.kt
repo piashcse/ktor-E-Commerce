@@ -83,9 +83,24 @@ enum class UserType {
     SELLER,
     CUSTOMER;
 
+    val isSuperAdmin get() = this == SUPER_ADMIN
     val isAdminOrHigher get() = this in listOf(SUPER_ADMIN, ADMIN)
     val isSellerOrHigher get() = this in listOf(SUPER_ADMIN, ADMIN, SELLER)
     val isCustomerOrHigher get() = true // All roles can act as customers
+
+    fun canManage(targetUserType: UserType): Boolean = when (this) {
+        SUPER_ADMIN -> true
+        ADMIN -> targetUserType != SUPER_ADMIN && targetUserType != ADMIN
+        SELLER -> targetUserType == CUSTOMER
+        CUSTOMER -> targetUserType == CUSTOMER
+    }
+
+    fun hasAccessTo(role: UserType): Boolean = when (role) {
+        SUPER_ADMIN -> this == SUPER_ADMIN
+        ADMIN -> this.isAdminOrHigher
+        SELLER -> this.isSellerOrHigher
+        CUSTOMER -> this.isCustomerOrHigher
+    }
 
     companion object {
         fun fromString(role: String): UserType? =
