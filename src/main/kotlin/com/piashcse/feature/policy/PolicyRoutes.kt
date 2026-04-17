@@ -3,11 +3,10 @@ package com.piashcse.feature.policy
 import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
-import com.piashcse.plugin.*
+import com.piashcse.plugin.adminAuth
 import com.piashcse.utils.InvalidEnumValueException
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
-import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*

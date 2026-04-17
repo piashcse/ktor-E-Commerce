@@ -1,25 +1,17 @@
 package com.piashcse.feature.shop
 
-import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.Message
-import com.piashcse.database.entities.ProductDAO
-import com.piashcse.database.entities.SellerDAO
-import com.piashcse.database.entities.SellerTable
-import com.piashcse.database.entities.ShopDAO
-import com.piashcse.database.entities.ShopTable
-import com.piashcse.database.entities.UserDAO
-import com.piashcse.database.entities.UserTable
+import com.piashcse.constants.ShopStatus
+import com.piashcse.database.entities.*
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.model.response.Shop
-import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.PaginationMetadata
 import com.piashcse.utils.ConflictException
 import com.piashcse.utils.NotFoundException
-import com.piashcse.utils.throwNotFound
+import com.piashcse.utils.PaginatedResponse
 import com.piashcse.utils.extension.query
-import com.piashcse.database.entities.ShopCategoryTable
-import org.jetbrains.exposed.v1.core.Op
+import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.throwNotFound
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
@@ -27,7 +19,6 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import java.time.LocalDateTime
 
 class ShopService : ShopRepository {
     /**
@@ -117,19 +108,10 @@ class ShopService : ShopRepository {
      * @return A list of shops for the user.
      */
     override suspend fun getShopsByUser(userId: String, limit: Int, offset: Int): PaginatedResponse<Shop> = query {
-        val query = ShopTable.selectAll().andWhere { ShopTable.userId eq userId }
-        val totalCount = query.count()
-        val data = query.limit(limit)
-            .offset(offset.toLong())
-            .map { ShopDAO.wrapRow(it).shopResponse() }
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        ShopTable.selectAll().andWhere { ShopTable.userId eq userId }
+            .toPaginatedResponse(limit, offset) {
+                ShopDAO.wrapRow(it).shopResponse()
+            }
     }
 
     /**
@@ -165,20 +147,9 @@ class ShopService : ShopRepository {
             query.andWhere { ShopTable.categoryId eq EntityID(category, ShopCategoryTable) }
         }
 
-        val totalCount = query.count()
-        val data = query.orderBy(ShopTable.createdAt to SortOrder.DESC)
-            .limit(limit)
-            .offset(offset.toLong())
-            .map { ShopDAO.wrapRow(it).shopResponse() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        query.orderBy(ShopTable.createdAt to SortOrder.DESC).toPaginatedResponse(limit, offset) {
+            ShopDAO.wrapRow(it).shopResponse()
+        }
     }
 
     /**
@@ -188,21 +159,11 @@ class ShopService : ShopRepository {
      * @return A list of shops in the category.
      */
     override suspend fun getShopsByCategory(categoryId: String, limit: Int, offset: Int): PaginatedResponse<Shop> = query {
-        val query = ShopTable.selectAll().andWhere { 
+        ShopTable.selectAll().andWhere { 
             ShopTable.categoryId eq categoryId and (ShopTable.status neq ShopStatus.REJECTED) and (ShopTable.status neq ShopStatus.SUSPENDED)
+        }.toPaginatedResponse(limit, offset) {
+            ShopDAO.wrapRow(it).shopResponse()
         }
-        val totalCount = query.count()
-        val data = query.limit(limit)
-            .offset(offset.toLong())
-            .map { ShopDAO.wrapRow(it).shopResponse() }
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
     }
 
     /**
@@ -212,21 +173,11 @@ class ShopService : ShopRepository {
      */
     override suspend fun getFeaturedShops(limit: Int, offset: Int): PaginatedResponse<Shop> = query {
         // For now, just return shops with highest ratings, in the future this could be more complex
-        val query = ShopTable.selectAll().andWhere { ShopTable.status eq ShopStatus.APPROVED }
-        val totalCount = query.count()
-        val data = query.orderBy(ShopTable.rating to SortOrder.DESC)
-            .limit(limit)
-            .offset(offset.toLong())
-            .map { ShopDAO.wrapRow(it).shopResponse() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        ShopTable.selectAll().andWhere { ShopTable.status eq ShopStatus.APPROVED }
+            .orderBy(ShopTable.rating to SortOrder.DESC)
+            .toPaginatedResponse(limit, offset) {
+                ShopDAO.wrapRow(it).shopResponse()
+            }
     }
 
     /**
@@ -236,19 +187,10 @@ class ShopService : ShopRepository {
      * @return A list of shops with the specified status.
      */
     override suspend fun getShopsByStatus(status: ShopStatus, limit: Int, offset: Int): PaginatedResponse<Shop> = query {
-        val query = ShopTable.selectAll().andWhere { ShopTable.status eq status }
-        val totalCount = query.count()
-        val data = query.limit(limit)
-            .offset(offset.toLong())
-            .map { ShopDAO.wrapRow(it).shopResponse() }
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        ShopTable.selectAll().andWhere { ShopTable.status eq status }
+            .toPaginatedResponse(limit, offset) {
+                ShopDAO.wrapRow(it).shopResponse()
+            }
     }
 
     /**

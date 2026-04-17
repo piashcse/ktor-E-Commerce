@@ -5,8 +5,8 @@ import com.piashcse.database.entities.*
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.model.response.UserPolicyConsent
 import com.piashcse.utils.ValidationException
-import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.throwNotFound
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import java.time.LocalDateTime

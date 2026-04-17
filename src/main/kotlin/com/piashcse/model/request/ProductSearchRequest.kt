@@ -3,7 +3,6 @@ package com.piashcse.model.request
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
-import org.valiktor.functions.isNotZero
 import org.valiktor.validate
 
 @Serializable

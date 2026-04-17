@@ -5,7 +5,6 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.piashcse.config.DotEnvConfig
 import com.piashcse.model.request.JwtTokenRequest
-import io.ktor.server.config.*
 import java.util.*
 
 object JwtConfig {

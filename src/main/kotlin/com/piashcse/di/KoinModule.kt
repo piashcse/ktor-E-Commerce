@@ -1,10 +1,6 @@
 package com.piashcse.di
 
-import com.piashcse.feature.auth.AuthService
-import com.piashcse.feature.auth.RefreshTokenRepository
-import com.piashcse.feature.auth.RefreshTokenRepositoryImpl
-import com.piashcse.feature.auth.LoginAttemptRepository
-import com.piashcse.feature.auth.LoginAttemptRepositoryImpl
+import com.piashcse.feature.auth.*
 import com.piashcse.feature.brand.BrandService
 import com.piashcse.feature.cart.CartService
 import com.piashcse.feature.consent.ConsentService

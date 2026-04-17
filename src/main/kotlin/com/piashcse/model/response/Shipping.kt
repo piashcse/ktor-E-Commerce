@@ -1,7 +1,7 @@
 package com.piashcse.model.response
 
-import kotlinx.serialization.Serializable
 import com.piashcse.database.entities.ShippingTable
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class Shipping(

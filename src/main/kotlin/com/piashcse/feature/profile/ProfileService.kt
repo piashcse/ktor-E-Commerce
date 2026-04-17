@@ -1,12 +1,12 @@
 package com.piashcse.feature.profile
 
-import com.piashcse.database.entities.UserProfileTable
 import com.piashcse.database.entities.UserProfileDAO
+import com.piashcse.database.entities.UserProfileTable
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.model.response.UserProfile
 import com.piashcse.service.UploadService
-import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.throwNotFound
 import org.jetbrains.exposed.v1.core.eq
 
 /**

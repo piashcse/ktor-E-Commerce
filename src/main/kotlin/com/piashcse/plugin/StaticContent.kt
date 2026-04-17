@@ -4,8 +4,8 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
 import io.ktor.server.routing.*
-import io.ktor.server.routing.openapi.hide
-import io.ktor.utils.io.ExperimentalKtorApi
+import io.ktor.server.routing.openapi.*
+import io.ktor.utils.io.*
 import java.io.File
 
 /**

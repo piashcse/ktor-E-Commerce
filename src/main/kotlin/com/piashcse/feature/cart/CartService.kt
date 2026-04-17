@@ -1,25 +1,13 @@
 package com.piashcse.feature.cart
 
 import com.piashcse.constants.Message
-import com.piashcse.database.entities.Cart
-import com.piashcse.database.entities.CartItemDAO
-import com.piashcse.database.entities.CartItemTable
-import com.piashcse.database.entities.InventoryDAO
-import com.piashcse.database.entities.InventoryTable
-import com.piashcse.database.entities.ProductDAO
-import com.piashcse.database.entities.ProductTable
-import com.piashcse.database.entities.ShopDAO
+import com.piashcse.database.entities.*
+import com.piashcse.model.response.CartItemSummary
 import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.Product
-import com.piashcse.model.response.*
-import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.PaginationMetadata
-import com.piashcse.utils.ConflictException
-import com.piashcse.utils.NotFoundException
-import com.piashcse.utils.ValidationException
-import com.piashcse.utils.throwConflict
-import com.piashcse.utils.throwNotFound
+import com.piashcse.utils.*
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.toPaginatedResponse
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -69,22 +57,12 @@ class CartService : CartRepository {
      * @return A list of cart item entities with associated product details.
      */
     override suspend fun getCartItems(userId: String, limit: Int, offset: Int): PaginatedResponse<Cart> = query {
-        val query = CartItemTable.selectAll().andWhere { CartItemTable.userId eq userId }
-        val totalCount = query.count()
-        val data = query.limit(limit)
-            .offset(offset.toLong())
-            .map {
-                CartItemDAO.wrapRow(it).response(ProductDAO.find { ProductTable.id eq it[CartItemTable.productId] }.first().response())
+        CartItemTable.selectAll().andWhere { CartItemTable.userId eq userId }
+            .toPaginatedResponse(limit, offset) {
+                CartItemDAO.wrapRow(it).response(
+                    ProductDAO.find { ProductTable.id eq it[CartItemTable.productId] }.first().response()
+                )
             }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
     }
 
     /**

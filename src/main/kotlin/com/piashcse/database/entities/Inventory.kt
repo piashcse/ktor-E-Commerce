@@ -7,7 +7,6 @@ import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.InventoryResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
-import java.time.LocalDateTime
 
 object InventoryTable : BaseIdTable("inventory") {
     val productId = reference("product_id", ProductTable.id)

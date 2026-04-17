@@ -7,10 +7,10 @@ import com.piashcse.database.entities.ProductSubCategoryTable
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.model.response.ProductSubCategory
 import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.PaginationMetadata
+import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.throwConflict
 import com.piashcse.utils.throwNotFound
-import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -62,20 +62,10 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
             limit: Int,
             offset: Int
     ): PaginatedResponse<ProductSubCategory> = query {
-        val query = ProductSubCategoryTable.selectAll().andWhere { ProductSubCategoryTable.categoryId eq categoryId }
-        val totalCount = query.count()
-        val data = query.limit(limit)
-                .offset(offset.toLong())
-                .map { ProductSubCategoryDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        ProductSubCategoryTable.selectAll().andWhere { ProductSubCategoryTable.categoryId eq categoryId }
+            .toPaginatedResponse(limit, offset) {
+                ProductSubCategoryDAO.wrapRow(it).response()
+            }
     }
 
     /**

@@ -3,11 +3,7 @@ package com.piashcse.database.entities.base
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.dao.id.IdTable
-import org.jetbrains.exposed.v1.dao.Entity
-import org.jetbrains.exposed.v1.dao.EntityChangeType
-import org.jetbrains.exposed.v1.dao.EntityClass
-import org.jetbrains.exposed.v1.dao.EntityHook
-import org.jetbrains.exposed.v1.dao.toEntity
+import org.jetbrains.exposed.v1.dao.*
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.time.LocalDateTime
 import java.time.ZoneOffset

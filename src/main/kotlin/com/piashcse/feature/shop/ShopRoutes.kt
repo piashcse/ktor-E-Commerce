@@ -2,10 +2,12 @@ package com.piashcse.feature.shop
 
 import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
+import com.piashcse.constants.UserType
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
-import com.piashcse.constants.UserType
-import com.piashcse.plugin.*
+import com.piashcse.plugin.adminAuth
+import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.sellerAuth
 import com.piashcse.utils.InvalidEnumValueException
 import com.piashcse.utils.MissingParameterException
 import com.piashcse.utils.NotFoundException
@@ -13,7 +15,6 @@ import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
-import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*

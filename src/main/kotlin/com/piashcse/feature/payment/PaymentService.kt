@@ -4,14 +4,12 @@ import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.database.entities.PaymentTable
-import com.piashcse.database.entities.UserTable
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.Payment
 import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.PaginationMetadata
-import com.piashcse.utils.ValidationException
-import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.throwNotFound
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
@@ -93,20 +91,10 @@ class PaymentService : PaymentRepository {
      * @return A list of payments for the order.
      */
     override suspend fun getPaymentsByOrderId(orderId: String, limit: Int, offset: Int): PaginatedResponse<Payment> = query {
-        val query = PaymentTable.selectAll().andWhere { PaymentTable.orderId eq EntityID(orderId, PaymentTable) }
-        val totalCount = query.count()
-        val data = query.orderBy(PaymentTable.createdAt to SortOrder.DESC)
-            .limit(limit)
-            .offset(offset.toLong())
-            .map { PaymentDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        PaymentTable.selectAll().andWhere { PaymentTable.orderId eq EntityID(orderId, PaymentTable) }
+            .orderBy(PaymentTable.createdAt to SortOrder.DESC)
+            .toPaginatedResponse(limit, offset) {
+                PaymentDAO.wrapRow(it).response()
+            }
     }
 }

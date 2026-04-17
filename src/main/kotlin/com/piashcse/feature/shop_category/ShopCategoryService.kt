@@ -4,10 +4,10 @@ import com.piashcse.database.entities.ShopCategoryDAO
 import com.piashcse.database.entities.ShopCategoryTable
 import com.piashcse.model.response.ShopCategory
 import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.PaginationMetadata
+import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.throwConflict
 import com.piashcse.utils.throwNotFound
-import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
@@ -40,20 +40,9 @@ class ShopCategoryService : ShopCategoryRepository {
      * @return A list of shop categories.
      */
     override suspend fun getCategories(limit: Int, offset: Int): PaginatedResponse<ShopCategory> = query {
-        val query = ShopCategoryTable.selectAll()
-        val totalCount = query.count()
-        val data = query.limit(limit)
-            .offset(offset.toLong())
-            .map { ShopCategoryDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        ShopCategoryTable.selectAll().toPaginatedResponse(limit, offset) {
+            ShopCategoryDAO.wrapRow(it).response()
+        }
     }
 
     /**

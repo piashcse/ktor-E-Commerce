@@ -6,7 +6,6 @@ import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.PolicyDocument
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
-import java.time.LocalDateTime
 
 /**
  * Table for storing various policy documents like privacy policy, terms, etc.

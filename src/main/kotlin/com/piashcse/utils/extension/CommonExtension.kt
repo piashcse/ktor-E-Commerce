@@ -2,15 +2,12 @@ package com.piashcse.utils.extension
 
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.JwtTokenRequest
-import com.piashcse.utils.ApiError
-import com.piashcse.utils.ErrorCodes
 import com.piashcse.utils.MissingParameterException
-import com.piashcse.utils.throwNotFound
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
-import io.ktor.util.AttributeKey
+import io.ktor.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction

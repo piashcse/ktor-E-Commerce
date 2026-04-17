@@ -4,7 +4,6 @@ import com.piashcse.constants.UserType
 import com.piashcse.model.request.JwtTokenRequest
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.application.hooks.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
