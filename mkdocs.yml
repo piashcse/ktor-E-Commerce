@@ -46,6 +46,7 @@ nav:
       - Payment: payment.md
       - Shipping: shipping.md
       - Inventory: inventory.md
+      - Refund Request: refund-request.md
       - Privacy Policy: privacy-policy.md
       - Privacy Policy Consent: privacy-policy-consent.md
   - Changelog: changelog.md
