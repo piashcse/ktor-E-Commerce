@@ -18,7 +18,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
-    route("/refund-requests") {
 
         // Create refund request - customer only
         authenticate(RoleManagement.CUSTOMER.role) {
@@ -149,4 +148,3 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
             }
         }
     }
-}

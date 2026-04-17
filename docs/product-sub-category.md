@@ -91,8 +91,8 @@ Retrieve a list of product sub categories with optional filtering and pagination
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | No | Filter by specific category ID (returns sub categories for that category) |
-| `limit` | number | No | Maximum number of sub categories to return (default: 10) |
-| `offset` | number | No | Number of sub categories to skip for pagination |
+| `limit` | number | No | Maximum number of sub-categories to return (default: 20) |
+| `offset` | number | No | Number of sub-categories to skip for pagination (default: 0) |
 
 #### Headers
 

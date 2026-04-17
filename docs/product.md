@@ -192,7 +192,8 @@ Retrieve a list of products with optional filtering and pagination.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of products to return |
+| `limit` | number | No | Maximum number of products to return (default: 20) |
+| `offset` | number | No | Number of products to skip (default: 0) |
 | `maxPrice` | number | No | Maximum price filter |
 | `minPrice` | number | No | Minimum price filter |
 
@@ -290,7 +291,8 @@ Search for products using various filters including name, category, price range,
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of products to return (default: 10) |
+| `limit` | number | No | Maximum number of products to return (default: 20) |
+| `offset` | number | No | Number of products to skip (default: 0) |
 | `name` | string | No | Search term to match against product names |
 | `categoryId` | string | No | UUID of the category to filter by |
 | `maxPrice` | number | No | Maximum price filter |
@@ -315,14 +317,20 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-[
+{
+  "data": [
     {
       "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
       "name": "Smartphone",
       "price": 599.99,
       "status": "ACTIVE"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 
@@ -358,7 +366,8 @@ Retrieve a list of products belonging to the authenticated seller with optional 
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of products to return (default: 10) |
+| `limit` | number | No | Maximum number of products to return (default: 20) |
+| `offset` | number | No | Number of products to skip (default: 0) |
 | `maxPrice` | number | No | Maximum price filter |
 | `minPrice` | number | No | Minimum price filter |
 | `categoryId` | string | No | UUID of the category to filter by |

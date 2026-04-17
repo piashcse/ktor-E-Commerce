@@ -84,8 +84,8 @@ Retrieve a list of product categories with optional pagination support.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of categories to return (default: 10) |
-| `offset` | number | No | Number of categories to skip for pagination |
+| `limit` | number | No | Maximum number of categories to return (default: 20) |
+| `offset` | number | No | Number of categories to skip for pagination (default: 0) |
 
 #### Headers
 
@@ -105,7 +105,8 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-[
+{
+  "data": [
     {
       "id": "58f5c085-d04a-47de-beab-1d476b6ce432",
       "name": "Mens Cloth",
@@ -116,7 +117,12 @@ curl -X 'GET' \
       "name": "Kids",
       "subCategories": []
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 2,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 

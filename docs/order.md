@@ -104,8 +104,8 @@ Retrieve a list of orders with optional pagination support.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of orders to return (default: 10) |
-| `offset` | number | No | Number of orders to skip for pagination |
+| `limit` | number | No | Maximum number of orders to return (default: 20) |
+| `offset` | number | No | Number of orders to skip (default: 0) |
 
 #### Headers
 
@@ -125,7 +125,8 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-[
+{
+  "data": [
     {
       "orderId": "04675b54-a9df-4200-a526-0b15f6a85930",
       "quantity": 1,
@@ -135,28 +136,13 @@ curl -X 'GET' \
       "cancelOrder": false,
       "status": "pending",
       "statusCode": 0
-    },
-    {
-      "orderId": "f88ab61d-5e52-431b-82e8-48e5b607085c",
-      "quantity": 1,
-      "subTotal": 10,
-      "total": 10,
-      "shippingCharge": 100,
-      "cancelOrder": false,
-      "status": "pending",
-      "statusCode": 0
-    },
-    {
-      "orderId": "b177431f-22f2-4c01-8ad6-da5319e2c7b9",
-      "quantity": 1,
-      "subTotal": 10,
-      "total": 10,
-      "shippingCharge": 5,
-      "cancelOrder": false,
-      "status": "pending",
-      "statusCode": 0
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 15,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 
@@ -173,6 +159,10 @@ curl -X 'GET' \
 | `data[].cancelOrder` | boolean | Whether the order is cancelled |
 | `data[].status` | string | Current status of the order |
 | `data[].statusCode` | number | Numeric status code for the order |
+| `metadata` | object | Pagination metadata |
+| `metadata.totalCount` | number | Total number of items matching filters |
+| `metadata.limit` | number | Maximum number of items requested |
+| `metadata.skip` | number | Number of items skipped |
 
 ---
 
@@ -348,14 +338,21 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-[
-  {
-    "orderId": "ORD-20260414-0001",
-    "subTotal": 50.0,
-    "total": 50.0,
-    "status": "PENDING"
+{
+  "data": [
+    {
+      "orderId": "ORD-20260414-0001",
+      "subTotal": 50.0,
+      "total": 50.0,
+      "status": "PENDING"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "skip": 0
   }
-]
+}
 ```
 
 ---
@@ -395,7 +392,7 @@ curl -X 'GET' \
 
 ```json
 {
-  "orders": [
+  "data": [
     {
       "orderId": "ORD-20260414-0001",
       "subTotal": 50.0,
@@ -403,9 +400,11 @@ curl -X 'GET' \
       "status": "PENDING"
     }
   ],
-  "total": 150,
-  "page": 1,
-  "limit": 20
+  "metadata": {
+    "totalCount": 150,
+    "limit": 20,
+    "skip": 0
+  }
 }
 ```
 

@@ -19,8 +19,7 @@ import io.ktor.server.routing.*
  * @param cartController The controller handling cart-related operations.
  */
 fun Route.cartRoutes(cartController: CartService) {
-    route("/cart") {
-        authenticate(RoleManagement.CUSTOMER.role) {
+    authenticate(RoleManagement.CUSTOMER.role) {
             /**
              * @tag Cart
              * @description Add a new product item to the user's shopping cart
@@ -127,4 +126,3 @@ fun Route.cartRoutes(cartController: CartService) {
             }
         }
     }
-}

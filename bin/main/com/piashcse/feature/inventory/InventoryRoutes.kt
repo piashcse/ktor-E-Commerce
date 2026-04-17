@@ -20,8 +20,7 @@ import io.ktor.server.routing.*
  * @param inventoryController The controller handling inventory-related operations.
  */
 fun Route.inventoryRoutes(inventoryController: InventoryService) {
-    route("/inventory") {
-        authenticate(RoleManagement.SELLER.role) {
+    authenticate(RoleManagement.SELLER.role) {
 
             /**
              * @tag Inventory
@@ -124,4 +123,3 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
             }
         }
     }
-}

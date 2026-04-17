@@ -16,8 +16,7 @@ import io.ktor.server.routing.*
  * @param brandController The controller handling brand-related operations.
  */
 fun Route.brandRoutes(brandController: BrandService) {
-    route("brand") {
-        authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
+    authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role, RoleManagement.ADMIN.role) {
             /**
              * @tag Brand
              * @description Retrieve a paginated list of all brands
@@ -90,4 +89,3 @@ fun Route.brandRoutes(brandController: BrandService) {
             }
         }
     }
-}

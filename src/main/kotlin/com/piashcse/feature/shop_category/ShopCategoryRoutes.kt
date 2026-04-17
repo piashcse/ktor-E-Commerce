@@ -18,8 +18,7 @@ import io.ktor.server.routing.*
  * @param shopCategoryController The controller responsible for handling shop category operations.
  */
 fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
-    route("/shop-category") {
-        authenticate(RoleManagement.ADMIN.role) {
+    authenticate(RoleManagement.ADMIN.role) {
 
             /**
              * @tag Shop Category
@@ -91,4 +90,3 @@ fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
             }
         }
     }
-}

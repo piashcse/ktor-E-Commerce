@@ -19,9 +19,7 @@ import io.ktor.server.routing.*
  * @param shippingController The controller responsible for handling shipping operations.
  */
 fun Route.shippingRoutes(shippingController: ShippingService) {
-    route("/shipping") {
-
-        authenticate(RoleManagement.CUSTOMER.role) {
+    authenticate(RoleManagement.CUSTOMER.role) {
 
             /**
              * @tag Shipping
@@ -110,4 +108,3 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
             }
         }
     }
-}

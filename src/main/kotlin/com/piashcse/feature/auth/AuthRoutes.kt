@@ -28,9 +28,8 @@ import io.ktor.server.routing.*
  * @param authController The controller handling authentication-related operations.
  */
 fun Route.authRoutes(authController: AuthService) {
-    route("/auth") {
-        // Rate-limited endpoints (brute-force protection)
-        rateLimit(RateLimitName(RateLimitNames.AUTH)) {
+    // Rate-limited endpoints (brute-force protection)
+    rateLimit(RateLimitName(RateLimitNames.AUTH)) {
             /**
              * @tag Auth
              * @description Authenticate user with email, password and user type
@@ -254,7 +253,6 @@ fun Route.authRoutes(authController: AuthService) {
                 } else {
                     throw ValidationException("Failed to activate user")
                 }
-            }
         }
     }
 }

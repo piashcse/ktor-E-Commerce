@@ -291,6 +291,8 @@ Retrieve inventory records associated with a specific shop.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `shopId` | string | Yes | UUID of the shop to get inventory for |
+| `limit` | number | No | Maximum number of items to return (default: 20) |
+| `offset` | number | No | Number of items to skip for pagination (default: 0) |
 
 #### Headers
 
@@ -310,7 +312,8 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-[
+{
+  "data": [
     {
       "id": "12345678-1234-1234-1234-123456789012",
       "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
@@ -318,7 +321,12 @@ curl -X 'GET' \
       "reserved": 20,
       "available": 180
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "skip": 0
+  }
 }
 ```
 

@@ -29,7 +29,6 @@ import io.ktor.server.routing.*
  * @param orderController The service that handles order operations.
  */
 fun Route.orderRoutes(orderController: OrderService) {
-    route("/order") {
 
         authenticate(RoleManagement.CUSTOMER.role) {
             /**
@@ -222,4 +221,3 @@ fun Route.orderRoutes(orderController: OrderService) {
             }
         }
     }
-}

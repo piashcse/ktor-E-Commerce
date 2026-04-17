@@ -18,7 +18,6 @@ import io.ktor.server.routing.*
  * @param subCategoryController The controller handling product subcategory operations.
  */
 fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryService) {
-    route("/product-subcategory") {
 
         /**
          * @tag ProductSubCategory
@@ -95,4 +94,3 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
             }
         }
     }
-}

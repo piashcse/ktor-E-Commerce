@@ -86,8 +86,8 @@ Retrieve a list of shop categories with optional pagination support.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of categories to return (default: 10) |
-| `offset` | number | No | Number of categories to skip for pagination |
+| `limit` | number | No | Maximum number of categories to return (default: 20) |
+| `offset` | number | No | Number of categories to skip for pagination (default: 0) |
 
 #### Headers
 
@@ -107,12 +107,22 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-[
+{
+  "data": [
     {
-      "id": "9c95c44c-3767-4ca2-9486-e28e390b3741",
-      "name": "New Electronics"
+      "id": "58f5c085-d04a-47de-beab-1d476b6ce432",
+      "name": "Electronics"
+    },
+    {
+      "id": "75b44e08-2c94-438f-b500-b204c7c90cca",
+      "name": "Fashion"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 2,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 
@@ -123,6 +133,10 @@ curl -X 'GET' \
 | `data` | array | Array of shop category objects |
 | `data[].id` | string | Unique identifier for the shop category |
 | `data[].name` | string | Name of the shop category |
+| `metadata` | object | Pagination metadata |
+| `metadata.totalCount` | number | Total number of items |
+| `metadata.limit` | number | Limit applied |
+| `metadata.skip` | number | Offset applied |
 
 ---
 
