@@ -3,7 +3,7 @@ package com.piashcse.feature.policy
 import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.utils.InvalidEnumValueException
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -82,7 +82,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
             val id = call.requireParameters("id")
             call.respond(HttpStatusCode.OK, policyController.getPolicyById(id.first()))
         }
-        authenticate(RoleManagement.ADMIN.role) {
+        adminAuth {
             /**
              * @tag Privacy Policy
              * @description Admin-only: Create a new policy document

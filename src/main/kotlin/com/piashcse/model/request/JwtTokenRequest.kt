@@ -1,8 +1,6 @@
 package com.piashcse.model.request
 
 import com.piashcse.constants.UserType
-import com.piashcse.utils.RoleBasedAuth
-import com.piashcse.utils.RoleHierarchy
 import io.ktor.server.auth.*
 
 data class JwtTokenRequest(val userId: String, val email: String, val userType: String) : Principal {
@@ -16,7 +14,7 @@ data class JwtTokenRequest(val userId: String, val email: String, val userType: 
         } catch (e: IllegalArgumentException) {
             return false
         }
-        return RoleHierarchy.hasAccess(currentUserType, role)
+        return currentUserType.hasAccessTo(role)
     }
 
     /**
@@ -44,33 +42,25 @@ data class JwtTokenRequest(val userId: String, val email: String, val userType: 
     /**
      * Check if user is super admin
      */
-    fun isSuperAdmin(): Boolean = RoleBasedAuth.isSuperAdmin(this.userType)
+    fun isSuperAdmin(): Boolean = getUserType()?.isSuperAdmin == true
 
     /**
      * Check if user is admin
      */
-    fun isAdmin(): Boolean = RoleBasedAuth.isAdmin(this.userType)
+    fun isAdmin(): Boolean = getUserType()?.isAdminOrHigher == true
 
     /**
      * Check if user is seller
      */
-    fun isSeller(): Boolean = RoleBasedAuth.isSeller(this.userType)
+    fun isSeller(): Boolean = getUserType()?.isSellerOrHigher == true
 
     /**
      * Check if user is customer
      */
-    fun isCustomer(): Boolean = RoleBasedAuth.isCustomer(this.userType)
+    fun isCustomer(): Boolean = getUserType()?.isCustomerOrHigher == true
 
     /**
      * Check if user has a specific permission
      */
-    fun hasPermission(permission: com.piashcse.utils.Permission): Boolean =
-        com.piashcse.utils.Permissions.hasPermission(this, permission)
-
-    /**
-     * Get user's permissions
-     */
-    fun getPermissions(): Set<com.piashcse.utils.Permission> {
-        return com.piashcse.utils.Permissions.getPermissions(this.getUserType() ?: return emptySet())
-    }
+    
 }

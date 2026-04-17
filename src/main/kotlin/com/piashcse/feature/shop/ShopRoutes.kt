@@ -4,7 +4,8 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.constants.UserType
+import com.piashcse.plugin.*
 import com.piashcse.utils.InvalidEnumValueException
 import com.piashcse.utils.MissingParameterException
 import com.piashcse.utils.NotFoundException
@@ -23,7 +24,7 @@ import io.ktor.server.routing.*
  * @param shopController The controller handling shop-related operations.
  */
 fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
-    authenticate(RoleManagement.SELLER.role) {
+    sellerAuth {
 
         if (version == 1) {
             /**
@@ -109,7 +110,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
         }
     }
 
-    authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
+    requireRole(UserType.CUSTOMER, UserType.SELLER) {
         if (version == 1) {
             /**
              * @tag Shop
@@ -161,7 +162,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
         }
     }
 
-    authenticate(RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
+    adminAuth {
         if (version == 1) {
             /**
              * @tag Shop

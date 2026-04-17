@@ -2,7 +2,8 @@ package com.piashcse.feature.consent
 
 import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.PolicyConsentRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.constants.UserType
+import com.piashcse.plugin.*
 import com.piashcse.utils.InvalidEnumValueException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requireParameters
@@ -15,7 +16,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.consentRoutes(consentController: ConsentService) {
-    authenticate(RoleManagement.CUSTOMER.role) {
+    customerAuth {
             /**
              * @tag Privacy Policy Consent
              * @description Record user consent for a specific policy document
@@ -40,7 +41,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
             }
         }
 
-        authenticate(RoleManagement.CUSTOMER.role, RoleManagement.ADMIN.role) {
+        requireRole(UserType.CUSTOMER, UserType.ADMIN) {
             /**
              * @tag Privacy Policy Consent
              * @description Retrieve all consent records for the authenticated user

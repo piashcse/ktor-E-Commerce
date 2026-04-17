@@ -5,7 +5,7 @@ import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.CancelOrderRequest
 import com.piashcse.model.request.OrderRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.utils.InvalidEnumValueException
 import com.piashcse.utils.UnauthorizedException
 import com.piashcse.utils.extension.currentUserId
@@ -30,7 +30,7 @@ import io.ktor.server.routing.*
  */
 fun Route.orderRoutes(orderController: OrderService) {
 
-        authenticate(RoleManagement.CUSTOMER.role) {
+        customerAuth {
             /**
              * @tag Order
              * @description Create a new order with the provided order details
@@ -62,7 +62,7 @@ fun Route.orderRoutes(orderController: OrderService) {
             }
         }
 
-        authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
+        requireRole(UserType.CUSTOMER, UserType.SELLER) {
             /**
              * @tag Order
              * @description Update the status of an order (customer: CANCELED/RECEIVED, seller: CONFIRMED/DELIVERED)
@@ -87,9 +87,9 @@ fun Route.orderRoutes(orderController: OrderService) {
                 }
 
                 val isSeller =
-                    call.principal<JWTPrincipal>()?.payload?.getClaim("role")?.asString() == RoleManagement.SELLER.role
+                    call.principal<JWTPrincipal>()?.payload?.getClaim("role")?.asString() == UserType.SELLER.name.lowercase()
                 val isCustomer = call.principal<JWTPrincipal>()?.payload?.getClaim("role")
-                    ?.asString() == RoleManagement.CUSTOMER.role
+                    ?.asString() == UserType.CUSTOMER.name.lowercase()
 
                 val sellerOnlyStatuses = listOf(OrderStatus.CONFIRMED, OrderStatus.DELIVERED)
                 val customerOnlyStatuses = listOf(OrderStatus.CANCELED, OrderStatus.RECEIVED)
@@ -102,7 +102,7 @@ fun Route.orderRoutes(orderController: OrderService) {
             }
         }
 
-        authenticate(RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
+        adminAuth {
             /**
              * @tag Order
              * @description Admin-only: Update the status of any order to any valid status
@@ -131,12 +131,7 @@ fun Route.orderRoutes(orderController: OrderService) {
         }
 
         // Cancel order - accessible by customer, seller, admin
-        authenticate(
-            RoleManagement.CUSTOMER.role,
-            RoleManagement.SELLER.role,
-            RoleManagement.ADMIN.role,
-            RoleManagement.SUPER_ADMIN.role
-        ) {
+        requireRole {
             /**
              * @tag Order
              * @description Cancel an order (only PENDING or CONFIRMED orders can be canceled)
@@ -166,7 +161,7 @@ fun Route.orderRoutes(orderController: OrderService) {
         }
 
         // Seller order listing
-        authenticate(RoleManagement.SELLER.role) {
+        sellerAuth {
             /**
              * @tag Order
              * @description Retrieve orders for the seller's shop with pagination and status filter
@@ -189,7 +184,7 @@ fun Route.orderRoutes(orderController: OrderService) {
         }
 
         // Admin order listing with filters
-        authenticate(RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
+        adminAuth {
             /**
              * @tag Order
              * @description Admin-only: Retrieve all orders with pagination and advanced filtering

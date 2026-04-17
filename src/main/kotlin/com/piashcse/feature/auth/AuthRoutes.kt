@@ -5,7 +5,7 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.model.request.*
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.utils.ApiError
 import com.piashcse.utils.InvalidEnumValueException
 import com.piashcse.utils.MissingParameterException
@@ -126,12 +126,7 @@ fun Route.authRoutes(authController: AuthService) {
             call.respond(HttpStatusCode.OK, tokenPair)
         }
 
-        authenticate(
-            RoleManagement.SUPER_ADMIN.role,
-            RoleManagement.ADMIN.role,
-            RoleManagement.SELLER.role,
-            RoleManagement.CUSTOMER.role
-        ) {
+        requireRole {
             /**
              * @tag Auth
              * @description Logout authenticated user
@@ -167,7 +162,7 @@ fun Route.authRoutes(authController: AuthService) {
             }
         }
 
-        authenticate(RoleManagement.SUPER_ADMIN.role, RoleManagement.ADMIN.role) {
+        adminAuth {
             /**
              * @tag Auth
              * @description Change user type (Admin/Super Admin only)

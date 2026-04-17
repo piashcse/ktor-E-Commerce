@@ -2,7 +2,7 @@ package com.piashcse.feature.shipping
 
 import  com.piashcse.model.request.ShippingRequest
 import com.piashcse.model.request.UpdateShippingRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -19,7 +19,7 @@ import io.ktor.server.routing.*
  * @param shippingController The controller responsible for handling shipping operations.
  */
 fun Route.shippingRoutes(shippingController: ShippingService) {
-    authenticate(RoleManagement.CUSTOMER.role) {
+    customerAuth {
 
             /**
              * @tag Shipping

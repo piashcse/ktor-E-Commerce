@@ -1,7 +1,7 @@
 package com.piashcse.feature.review_rating
 
 import com.piashcse.model.request.ReviewRatingRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
@@ -36,7 +36,7 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
                 reviewRatingController.getReviewRating(productId, limit, offset)
             )
         }
-        authenticate(RoleManagement.CUSTOMER.role) {
+        customerAuth {
             /**
              * @tag Review Rating
              * @description Submit a new review and rating for a product

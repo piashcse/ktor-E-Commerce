@@ -1,7 +1,7 @@
 package com.piashcse.feature.product_category
 
 import com.piashcse.model.request.ProductCategoryRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -35,7 +35,7 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
                 productCategoryController.getCategories(limit, offset)
             )
         }
-        authenticate(RoleManagement.ADMIN.role) {
+        adminAuth {
             /**
              * @tag ProductCategory
              * @description Create a new product category

@@ -1,7 +1,7 @@
 package com.piashcse.feature.shop_category
 
 import com.piashcse.model.request.ShopCategoryRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -18,7 +18,7 @@ import io.ktor.server.routing.*
  * @param shopCategoryController The controller responsible for handling shop category operations.
  */
 fun Route.shopCategoryRoutes(shopCategoryController: ShopCategoryService) {
-    authenticate(RoleManagement.ADMIN.role) {
+    adminAuth {
 
             /**
              * @tag Shop Category

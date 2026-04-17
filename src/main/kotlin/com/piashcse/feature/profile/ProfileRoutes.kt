@@ -1,7 +1,7 @@
 package com.piashcse.feature.profile
 
 import com.piashcse.model.request.UserProfileRequest
-import com.piashcse.plugin.RoleManagement
+import com.piashcse.plugin.*
 import com.piashcse.service.UploadService
 import com.piashcse.utils.ValidationException
 import com.piashcse.utils.extension.currentUserId
@@ -18,12 +18,7 @@ import io.ktor.server.routing.*
  * @param userProfileController The controller responsible for handling user profile-related operations.
  */
 fun Route.profileRoutes(userProfileController: ProfileService) {
-    authenticate(
-        RoleManagement.SUPER_ADMIN.role,
-        RoleManagement.ADMIN.role,
-        RoleManagement.SELLER.role,
-        RoleManagement.CUSTOMER.role
-    ) {
+    requireRole {
 
             /**
              * @tag Profile

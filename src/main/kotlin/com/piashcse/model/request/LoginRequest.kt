@@ -2,7 +2,7 @@ package com.piashcse.model.request
 
 import kotlinx.serialization.Serializable
 import com.piashcse.constants.UserType
-import com.piashcse.plugin.RoleManagement
+
 import org.valiktor.functions.hasSize
 import org.valiktor.functions.isEmail
 import org.valiktor.functions.isIn
@@ -20,7 +20,7 @@ data class LoginRequest(
             validate(LoginRequest::email).isNotNull().isEmail()
             validate(LoginRequest::password).isNotNull().hasSize(4, 10)
             validate(LoginRequest::userType).isNotNull()
-                .isIn(RoleManagement.SUPER_ADMIN.role, RoleManagement.ADMIN.role, RoleManagement.SELLER.role, RoleManagement.CUSTOMER.role)
+                .isIn(UserType.SUPER_ADMIN.name.lowercase(), UserType.ADMIN.name.lowercase(), UserType.SELLER.name.lowercase(), UserType.CUSTOMER.name.lowercase())
         }
     }
 }
