@@ -1,13 +1,12 @@
 package com.piashcse.feature.product
 
-import com.piashcse.constants.Message
 import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
-import com.piashcse.plugin.*
+import com.piashcse.plugin.adminAuth
+import com.piashcse.plugin.sellerAuth
 import com.piashcse.service.UploadService
-import com.piashcse.utils.MissingParameterException
 import com.piashcse.utils.ValidationException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
@@ -18,10 +17,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.util.*
 
 /**
  * Defines routes for managing products. Different routes are available based on user roles (CUSTOMER, SELLER, ADMIN).

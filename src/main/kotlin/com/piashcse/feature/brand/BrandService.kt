@@ -5,11 +5,11 @@ import com.piashcse.database.entities.BrandDAO
 import com.piashcse.database.entities.BrandTable
 import com.piashcse.model.response.Brand
 import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.PaginationMetadata
 import com.piashcse.utils.ValidationException
+import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.throwConflict
 import com.piashcse.utils.throwNotFound
-import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
@@ -47,20 +47,9 @@ class BrandService : BrandRepository {
      * @return A list of brand entities.
      */
     override suspend fun getBrands(limit: Int, offset: Int): PaginatedResponse<Brand> = query {
-        val query = BrandTable.selectAll()
-        val totalCount = query.count()
-        val data = query.limit(limit)
-            .offset(offset.toLong())
-            .map { BrandDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        BrandTable.selectAll().toPaginatedResponse(limit, offset) {
+            BrandDAO.wrapRow(it).response()
+        }
     }
 
     /**

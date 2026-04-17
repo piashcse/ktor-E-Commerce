@@ -1,15 +1,14 @@
 package com.piashcse.feature.consent
 
+import com.piashcse.constants.UserType
 import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.PolicyConsentRequest
-import com.piashcse.constants.UserType
-import com.piashcse.plugin.*
+import com.piashcse.plugin.customerAuth
+import com.piashcse.plugin.requireRole
 import com.piashcse.utils.InvalidEnumValueException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*

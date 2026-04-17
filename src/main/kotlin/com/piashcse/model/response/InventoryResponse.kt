@@ -1,8 +1,8 @@
 package com.piashcse.model.response
 
+import com.piashcse.constants.InventoryStatus
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import com.piashcse.constants.InventoryStatus
 import java.time.LocalDateTime
 
 @Serializable

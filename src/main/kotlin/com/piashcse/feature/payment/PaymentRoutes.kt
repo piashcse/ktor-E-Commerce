@@ -1,11 +1,10 @@
 package com.piashcse.feature.payment
 
 import com.piashcse.model.request.PaymentRequest
-import com.piashcse.plugin.*
+import com.piashcse.plugin.customerAuth
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
-import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*

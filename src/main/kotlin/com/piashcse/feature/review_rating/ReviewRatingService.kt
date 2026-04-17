@@ -5,10 +5,10 @@ import com.piashcse.database.entities.ReviewRatingTable
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.model.response.ReviewRating
 import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.PaginationMetadata
+import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.throwConflict
 import com.piashcse.utils.throwNotFound
-import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -30,21 +30,10 @@ class ReviewRatingService : ReviewRatingRepository {
     override suspend fun getReviewRating(
         productId: String, limit: Int, offset: Int
     ): PaginatedResponse<ReviewRating> = query {
-        val query = ReviewRatingTable.selectAll().andWhere { ReviewRatingTable.productId eq productId }
-        val totalCount = query.count()
-        val data = query.limit(limit)
-                .offset(offset.toLong())
-                .map {
-                    ReviewRatingDAO.wrapRow(it).response()
-                }
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        ReviewRatingTable.selectAll().andWhere { ReviewRatingTable.productId eq productId }
+            .toPaginatedResponse(limit, offset) {
+                ReviewRatingDAO.wrapRow(it).response()
+            }
     }
 
     /**

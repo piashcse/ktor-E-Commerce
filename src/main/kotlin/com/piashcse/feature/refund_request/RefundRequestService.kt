@@ -8,9 +8,9 @@ import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
 import com.piashcse.model.response.RefundRequestResponse
 import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.PaginationMetadata
 import com.piashcse.utils.ValidationException
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.toPaginatedResponse
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -93,20 +93,11 @@ class RefundRequestService : RefundRequestRepository {
             throw ValidationException(Message.Orders.UNAUTHORIZED)
         }
 
-        val query = RefundRequestTable.selectAll().andWhere { RefundRequestTable.orderId eq EntityID(orderId, OrderTable) }
-        val totalCount = query.count()
-        val data = query.limit(limit)
-            .offset(offset.toLong())
-            .map { RefundRequestDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        RefundRequestTable.selectAll()
+            .andWhere { RefundRequestTable.orderId eq EntityID(orderId, OrderTable) }
+            .toPaginatedResponse(limit, offset) {
+                RefundRequestDAO.wrapRow(it).response()
+            }
     }
 
     override suspend fun getRefundById(refundId: String): RefundRequestResponse? = query {

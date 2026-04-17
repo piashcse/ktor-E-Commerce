@@ -1,31 +1,21 @@
 package com.piashcse.feature.order
 
-import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.Message
+import com.piashcse.constants.OrderStatus
 import com.piashcse.database.entities.*
-import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.request.CancelOrderRequest
 import com.piashcse.model.request.OrderRequest
 import com.piashcse.model.response.Order
 import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.PaginationMetadata
 import com.piashcse.utils.ValidationException
-import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
-import org.jetbrains.exposed.v1.core.and
+import com.piashcse.utils.extension.toPaginatedResponse
+import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.greaterEq
-import org.jetbrains.exposed.v1.core.inList
-import org.jetbrains.exposed.v1.core.lessEq
-import org.jetbrains.exposed.v1.core.like
-import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 /**
  * Controller for managing order-related operations.
@@ -227,21 +217,11 @@ class OrderService : OrderRepository {
      * @return A list of order entities for the user.
      */
     override suspend fun getOrders(userId: String, limit: Int, offset: Int): PaginatedResponse<Order> = query {
-        val query = OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
-        val totalCount = query.count()
-        val data = query.orderBy(OrderTable.createdAt to SortOrder.DESC)
-            .limit(limit)
-            .offset(offset.toLong())
-            .map { OrderDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
+            .orderBy(OrderTable.createdAt to SortOrder.DESC)
+            .toPaginatedResponse(limit, offset) {
+                OrderDAO.wrapRow(it).response()
+            }
     }
 
     /**
@@ -404,20 +384,9 @@ class OrderService : OrderRepository {
             query.andWhere { OrderTable.status eq OrderStatus.valueOf(status.uppercase()) }
         }
 
-        val totalCount = query.count()
-        val orders = query.orderBy(OrderTable.createdAt to SortOrder.DESC)
-            .limit(limit)
-            .offset(offset.toLong())
-            .map { OrderDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = orders,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        query.orderBy(OrderTable.createdAt to SortOrder.DESC).toPaginatedResponse(limit, offset) {
+            OrderDAO.wrapRow(it).response()
+        }
     }
 
     /**
@@ -451,19 +420,8 @@ class OrderService : OrderRepository {
             query.andWhere { OrderTable.createdAt lessEq localDateTime }
         }
 
-        val totalCount = query.count()
-        val orders = query.orderBy(OrderTable.createdAt to SortOrder.DESC)
-            .limit(limit)
-            .offset(offset.toLong())
-            .map { OrderDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = orders,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        query.orderBy(OrderTable.createdAt to SortOrder.DESC).toPaginatedResponse(limit, offset) {
+            OrderDAO.wrapRow(it).response()
+        }
     }
 }

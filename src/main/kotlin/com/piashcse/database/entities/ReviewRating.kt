@@ -6,7 +6,6 @@ import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.ReviewRating
 import org.jetbrains.exposed.v1.core.between
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
-import org.jetbrains.exposed.v1.javatime.datetime
 
 object ReviewRatingTable : BaseIdTable("review_rating") {
     val userId = reference("user_id", UserTable.id)

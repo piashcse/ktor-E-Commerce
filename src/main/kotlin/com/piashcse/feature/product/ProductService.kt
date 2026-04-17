@@ -2,16 +2,7 @@ package com.piashcse.feature.product
 
 import com.piashcse.constants.Message
 import com.piashcse.constants.ProductStatus
-import com.piashcse.database.entities.BrandTable
-import com.piashcse.database.entities.ProductCategoryTable
-import com.piashcse.database.entities.ProductDAO
-import com.piashcse.database.entities.ProductSubCategoryTable
-import com.piashcse.database.entities.ProductTable
-import com.piashcse.database.entities.SellerDAO
-import com.piashcse.database.entities.SellerTable
-import com.piashcse.database.entities.ShopDAO
-import com.piashcse.database.entities.ShopTable
-import com.piashcse.database.entities.UserTable
+import com.piashcse.database.entities.*
 import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
@@ -20,20 +11,13 @@ import com.piashcse.model.response.Product
 import com.piashcse.utils.NotFoundException
 import com.piashcse.utils.PaginatedResponse
 import com.piashcse.utils.PaginationMetadata
-import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
-import org.jetbrains.exposed.v1.core.Op
-import org.jetbrains.exposed.v1.core.and
+import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.throwNotFound
+import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.greaterEq
-import org.jetbrains.exposed.v1.core.inList
-import org.jetbrains.exposed.v1.core.lessEq
-import org.jetbrains.exposed.v1.core.like
-import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import java.math.BigDecimal
 
 /**
  * Controller for managing products.
@@ -184,19 +168,9 @@ class ProductService : ProductRepository {
             query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
         }
 
-        val totalCount = query.count()
-        val data = query.limit(productQuery.limit)
-            .offset(productQuery.offset.toLong())
-            .map { ProductDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = productQuery.limit,
-                skip = productQuery.offset
-            )
-        )
+        query.toPaginatedResponse(productQuery.limit, productQuery.offset) {
+            ProductDAO.wrapRow(it).response()
+        }
     }
 
     /**
@@ -227,19 +201,9 @@ class ProductService : ProductRepository {
             query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
         }
 
-        val totalCount = query.count()
-        val data = query.limit(productQuery.limit)
-            .offset(productQuery.offset.toLong())
-            .map { ProductDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = productQuery.limit,
-                skip = productQuery.offset
-            )
-        )
+        query.toPaginatedResponse(productQuery.limit, productQuery.offset) {
+            ProductDAO.wrapRow(it).response()
+        }
     }
 
     /**
@@ -270,19 +234,9 @@ class ProductService : ProductRepository {
             query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
         }
 
-        val totalCount = query.count()
-        val data = query.limit(productQuery.limit)
-            .offset(productQuery.offset.toLong())
-            .map { ProductDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = productQuery.limit,
-                skip = productQuery.offset
-            )
-        )
+        query.toPaginatedResponse(productQuery.limit, productQuery.offset) {
+            ProductDAO.wrapRow(it).response()
+        }
     }
 
     /**
@@ -365,19 +319,9 @@ class ProductService : ProductRepository {
             query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
         }
 
-        val totalCount = query.count()
-        val data = query.limit(productQuery.limit)
-            .offset(productQuery.offset.toLong())
-            .map { ProductDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = productQuery.limit,
-                skip = productQuery.offset
-            )
-        )
+        query.toPaginatedResponse(productQuery.limit, productQuery.offset) {
+            ProductDAO.wrapRow(it).response()
+        }
     }
 
     /**

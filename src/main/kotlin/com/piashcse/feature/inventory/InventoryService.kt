@@ -5,25 +5,21 @@ import com.piashcse.constants.Message
 import com.piashcse.database.entities.InventoryDAO
 import com.piashcse.database.entities.InventoryTable
 import com.piashcse.database.entities.ProductDAO
-import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ShopDAO
-import com.piashcse.database.entities.ShopTable
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
-import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.PaginationMetadata
 import com.piashcse.utils.NotFoundException
+import com.piashcse.utils.PaginatedResponse
 import com.piashcse.utils.ValidationException
-import com.piashcse.utils.throwNotFound
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.throwNotFound
 import org.jetbrains.exposed.v1.core.SortOrder
-import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.update
 
 class InventoryService : InventoryRepository {
@@ -142,21 +138,11 @@ class InventoryService : InventoryRepository {
      * @return A list of products with low stock.
      */
     override suspend fun getLowStockProducts(limit: Int, offset: Int): PaginatedResponse<InventoryResponse> = query {
-        val query = InventoryTable.selectAll().andWhere { InventoryTable.stockQuantity lessEq InventoryTable.minimumStockLevel }
-        val totalCount = query.count()
-        val data = query.orderBy(InventoryTable.stockQuantity to SortOrder.ASC)
-          .limit(limit)
-          .offset(offset.toLong())
-          .map { InventoryDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        InventoryTable.selectAll().andWhere { InventoryTable.stockQuantity lessEq InventoryTable.minimumStockLevel }
+            .orderBy(InventoryTable.stockQuantity to SortOrder.ASC)
+            .toPaginatedResponse(limit, offset) {
+                InventoryDAO.wrapRow(it).response()
+            }
     }
 
     /**
@@ -166,20 +152,10 @@ class InventoryService : InventoryRepository {
      * @return A list of inventory records for the shop.
      */
     override suspend fun getInventoryByShop(shopId: String, limit: Int, offset: Int): PaginatedResponse<InventoryResponse> = query {
-        val query = InventoryTable.selectAll().andWhere { InventoryTable.shopId eq shopId }
-        val totalCount = query.count()
-        val data = query.limit(limit)
-          .offset(offset.toLong())
-          .map { InventoryDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+        InventoryTable.selectAll().andWhere { InventoryTable.shopId eq shopId }
+            .toPaginatedResponse(limit, offset) {
+                InventoryDAO.wrapRow(it).response()
+            }
     }
 
     private fun determineInventoryStatus(stock: Int, minLevel: Int): InventoryStatus {

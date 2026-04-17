@@ -1,10 +1,9 @@
 package com.piashcse.plugin
 
-import io.ktor.openapi.OpenApiInfo
+import io.ktor.openapi.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.routing.*
-import kotlin.contracts.contract
 
 fun Application.configureSwagger() {
     routing {

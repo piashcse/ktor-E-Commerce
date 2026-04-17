@@ -2,14 +2,13 @@ package com.piashcse.feature.inventory
 
 import com.piashcse.constants.Message
 import com.piashcse.model.request.InventoryRequest
-import com.piashcse.plugin.*
+import com.piashcse.plugin.adminAuth
+import com.piashcse.plugin.sellerAuth
 import com.piashcse.utils.MissingParameterException
 import com.piashcse.utils.NotFoundException
-import com.piashcse.utils.extension.currentUser
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
-import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*

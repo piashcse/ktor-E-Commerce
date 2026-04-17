@@ -1,13 +1,12 @@
 package com.piashcse.feature.wishlist
 
 import com.piashcse.database.entities.*
-import com.piashcse.database.entities.WishList
 import com.piashcse.model.response.Product
 import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.PaginationMetadata
+import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.throwConflict
 import com.piashcse.utils.throwNotFound
-import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -56,23 +55,12 @@ class WishListService : WishListRepository {
      * @return A list of products in the user's wishlist.
      */
     override suspend fun getWishList(userId: String, limit: Int, offset: Int): PaginatedResponse<Product> = query {
-        val query = WishListTable.innerJoin(ProductTable)
+        WishListTable.innerJoin(ProductTable)
             .selectAll()
             .andWhere { WishListTable.userId eq userId }
-        
-        val totalCount = query.count()
-        val data = query.limit(limit)
-            .offset(offset.toLong())
-            .map { ProductDAO.wrapRow(it).response() }
-
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = totalCount,
-                limit = limit,
-                skip = offset
-            )
-        )
+            .toPaginatedResponse(limit, offset) {
+                ProductDAO.wrapRow(it).response()
+            }
     }
 
     /**

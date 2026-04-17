@@ -6,8 +6,6 @@ import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.Product
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
 
 object ProductTable : BaseIdTable("product") {

@@ -6,7 +6,6 @@ import com.piashcse.database.entities.base.BaseIdTable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.timestamp
 import java.time.Instant
-import java.time.LocalDateTime
 
 object LoginAttemptTable : BaseIdTable("login_attempt") {
     val email = varchar("email", 255)

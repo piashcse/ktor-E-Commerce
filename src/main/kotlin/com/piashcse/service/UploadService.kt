@@ -5,7 +5,7 @@ import io.ktor.http.content.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.UUID
+import java.util.*
 
 /**
  * Industry-standard file upload service with security and validation.
