@@ -789,19 +789,37 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#response-format" class="md-nav__link">
+  <a href="#error-handling" class="md-nav__link">
     <span class="md-ellipsis">
-      Response Format
+      Error Handling
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Response Format">
+    <nav class="md-nav" aria-label="Error Handling">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#response-fields_4" class="md-nav__link">
+  <a href="#success-responses" class="md-nav__link">
     <span class="md-ellipsis">
-      Response Fields
+      Success Responses
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Responses
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-error-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Error Codes
     </span>
   </a>
   
@@ -809,15 +827,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      Error Handling
-    </span>
-  </a>
   
 </li>
       
@@ -1119,6 +1128,29 @@
   
   <span class="md-ellipsis">
     Inventory
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../refund-request/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Refund Request
     
   </span>
   
@@ -1519,19 +1551,37 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#response-format" class="md-nav__link">
+  <a href="#error-handling" class="md-nav__link">
     <span class="md-ellipsis">
-      Response Format
+      Error Handling
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Response Format">
+    <nav class="md-nav" aria-label="Error Handling">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#response-fields_4" class="md-nav__link">
+  <a href="#success-responses" class="md-nav__link">
     <span class="md-ellipsis">
-      Response Fields
+      Success Responses
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Responses
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-error-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Error Codes
     </span>
   </a>
   
@@ -1539,15 +1589,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      Error Handling
-    </span>
-  </a>
   
 </li>
       
@@ -1672,12 +1713,6 @@
 </code></pre>
 <h4 id="example-response">Example Response</h4>
 <pre><code class="language-json">{
-  &quot;isSuccess&quot;: true,
-  &quot;statusCode&quot;: {
-    &quot;value&quot;: 200,
-    &quot;description&quot;: &quot;OK&quot;
-  },
-  &quot;data&quot;: {
     &quot;id&quot;: &quot;28918963-f932-425b-884b-a34d8ae69b2a&quot;,
     &quot;name&quot;: &quot;New digital Shop&quot;
   }
@@ -1724,13 +1759,13 @@
 <td><code>limit</code></td>
 <td>number</td>
 <td>No</td>
-<td>Maximum number of categories to return (default: 10)</td>
+<td>Maximum number of categories to return (default: 20)</td>
 </tr>
 <tr>
 <td><code>offset</code></td>
 <td>number</td>
 <td>No</td>
-<td>Number of categories to skip for pagination</td>
+<td>Number of categories to skip for pagination (default: 0)</td>
 </tr>
 </tbody>
 </table>
@@ -1759,17 +1794,21 @@
 </code></pre>
 <h4 id="example-response_1">Example Response</h4>
 <pre><code class="language-json">{
-  &quot;isSuccess&quot;: true,
-  &quot;statusCode&quot;: {
-    &quot;value&quot;: 200,
-    &quot;description&quot;: &quot;OK&quot;
-  },
   &quot;data&quot;: [
     {
-      &quot;id&quot;: &quot;9c95c44c-3767-4ca2-9486-e28e390b3741&quot;,
-      &quot;name&quot;: &quot;New Electronics&quot;
+      &quot;id&quot;: &quot;58f5c085-d04a-47de-beab-1d476b6ce432&quot;,
+      &quot;name&quot;: &quot;Electronics&quot;
+    },
+    {
+      &quot;id&quot;: &quot;75b44e08-2c94-438f-b500-b204c7c90cca&quot;,
+      &quot;name&quot;: &quot;Fashion&quot;
     }
-  ]
+  ],
+  &quot;metadata&quot;: {
+    &quot;totalCount&quot;: 2,
+    &quot;limit&quot;: 10,
+    &quot;skip&quot;: 0
+  }
 }
 </code></pre>
 <h4 id="response-fields_1">Response Fields</h4>
@@ -1796,6 +1835,26 @@
 <td><code>data[].name</code></td>
 <td>string</td>
 <td>Name of the shop category</td>
+</tr>
+<tr>
+<td><code>metadata</code></td>
+<td>object</td>
+<td>Pagination metadata</td>
+</tr>
+<tr>
+<td><code>metadata.totalCount</code></td>
+<td>number</td>
+<td>Total number of items</td>
+</tr>
+<tr>
+<td><code>metadata.limit</code></td>
+<td>number</td>
+<td>Limit applied</td>
+</tr>
+<tr>
+<td><code>metadata.skip</code></td>
+<td>number</td>
+<td>Offset applied</td>
 </tr>
 </tbody>
 </table>
@@ -1866,12 +1925,6 @@
 </code></pre>
 <h4 id="example-response_2">Example Response</h4>
 <pre><code class="language-json">{
-  &quot;isSuccess&quot;: true,
-  &quot;statusCode&quot;: {
-    &quot;value&quot;: 200,
-    &quot;description&quot;: &quot;OK&quot;
-  },
-  &quot;data&quot;: {
     &quot;id&quot;: &quot;9c95c44c-3767-4ca2-9486-e28e390b3741&quot;,
     &quot;name&quot;: &quot;Piash Digital shop&quot;
   }
@@ -1946,14 +1999,7 @@
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
 <h4 id="example-response_3">Example Response</h4>
-<pre><code class="language-json">{
-  &quot;isSuccess&quot;: true,
-  &quot;statusCode&quot;: {
-    &quot;value&quot;: 200,
-    &quot;description&quot;: &quot;OK&quot;
-  },
-  &quot;data&quot;: &quot;2a17da31-7517-41db-b7d3-f77d0ddd52a5&quot;
-}
+<pre><code class="language-json">&quot;2a17da31-7517-41db-b7d3-f77d0ddd52a5&quot;
 </code></pre>
 <h4 id="response-fields_3">Response Fields</h4>
 <table>
@@ -1973,90 +2019,73 @@
 </tbody>
 </table>
 <hr />
-<h2 id="response-format">Response Format</h2>
-<p>All API responses follow a consistent format:</p>
+<h2 id="error-handling">Error Handling</h2>
+<p>This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):</p>
+<h3 id="success-responses">Success Responses</h3>
+<ul>
+<li><strong>HTTP status code indicates success</strong> (200, 201, 204)</li>
+<li><strong>Response body contains data directly</strong> (no wrapper object)</li>
+<li>No <code>isSuccess</code> or <code>statusCode</code> fields needed</li>
+</ul>
+<h3 id="error-responses">Error Responses</h3>
+<p><strong>Standard Error (400/401/403/404/500):</strong></p>
 <pre><code class="language-json">{
-  &quot;isSuccess&quot;: boolean,
-  &quot;statusCode&quot;: {
-    &quot;value&quot;: number,
-    &quot;description&quot;: string
-  },
-  &quot;data&quot;: any
+  &quot;message&quot;: &quot;Error description&quot;
 }
 </code></pre>
-<h3 id="response-fields_4">Response Fields</h3>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>isSuccess</code></td>
-<td>boolean</td>
-<td>Indicates if the operation was successful</td>
-</tr>
-<tr>
-<td><code>statusCode.value</code></td>
-<td>number</td>
-<td>HTTP status code</td>
-</tr>
-<tr>
-<td><code>statusCode.description</code></td>
-<td>string</td>
-<td>HTTP status description</td>
-</tr>
-<tr>
-<td><code>data</code></td>
-<td>any</td>
-<td>Response data (varies by endpoint)</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="error-handling">Error Handling</h2>
-<p>The API returns appropriate HTTP status codes and error messages:</p>
+<p><strong>Validation Error (400):</strong></p>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Validation failed&quot;,
+  &quot;errors&quot;: [
+    {&quot;field&quot;: &quot;email&quot;, &quot;message&quot;: &quot;Invalid email format&quot;},
+    {&quot;field&quot;: &quot;password&quot;, &quot;message&quot;: &quot;Password must be at least 8 characters&quot;}
+  ]
+}
+</code></pre>
+<h3 id="common-error-codes">Common Error Codes</h3>
 <table>
 <thead>
 <tr>
 <th>Status Code</th>
 <th>Description</th>
+<th>Example Message</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>200</code></td>
-<td>OK - Request successful</td>
-</tr>
-<tr>
 <td><code>400</code></td>
-<td>Bad Request - Invalid parameters or missing required fields</td>
+<td>Bad Request</td>
+<td><code>"Invalid email or password"</code></td>
 </tr>
 <tr>
 <td><code>401</code></td>
-<td>Unauthorized - Invalid or missing authentication</td>
+<td>Unauthorized</td>
+<td><code>"Authentication required"</code></td>
 </tr>
 <tr>
 <td><code>403</code></td>
-<td>Forbidden - Insufficient privileges (admin required)</td>
+<td>Forbidden</td>
+<td><code>"Insufficient permissions"</code></td>
 </tr>
 <tr>
 <td><code>404</code></td>
-<td>Not Found - Shop category not found</td>
+<td>Not Found</td>
+<td><code>"Product not found"</code></td>
 </tr>
 <tr>
 <td><code>409</code></td>
-<td>Conflict - Category name already exists</td>
+<td>Conflict</td>
+<td><code>"User already exists with this email"</code></td>
 </tr>
 <tr>
 <td><code>500</code></td>
-<td>Internal Server Error - Server error</td>
+<td>Internal Server Error</td>
+<td><code>"Internal server error"</code></td>
 </tr>
 </tbody>
 </table>
+<p>All error messages are centralized and consistent across all endpoints.</p>
+<hr />
 
 
 

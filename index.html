@@ -451,6 +451,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#6-refund-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Refund Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#6-scalability-and-performance" class="md-nav__link">
     <span class="md-ellipsis">
       6. Scalability and Performance
@@ -999,6 +1008,29 @@
   
   
     <li class="md-nav__item">
+      <a href="refund-request/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Refund Request
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="privacy-policy/" class="md-nav__link">
         
   
@@ -1154,6 +1186,15 @@
   <a href="#5-order-management" class="md-nav__link">
     <span class="md-ellipsis">
       5. Order Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-refund-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Refund Management
     </span>
   </a>
   
@@ -1336,12 +1377,26 @@ scalable, and efficient service for handling your e-commerce needs.</p>
 <h3 id="4-shopping-cart-and-checkout">4. Shopping Cart and Checkout</h3>
 <ul>
 <li><strong>Shopping Cart</strong>: Add and remove products, update quantities, and calculate totals.</li>
-<li><strong>Checkout</strong>: Streamline the checkout process for quick and secure payments.</li>
+<li><strong>Cart Summary</strong>: Retrieve detailed cart summary with subtotal, tax, and item count.</li>
+<li><strong>Checkout</strong>: Streamline the checkout process with automatic stock and price validation.</li>
+<li><strong>Cart Clearing</strong>: Automatic cart clearing after successful order placement.</li>
 </ul>
 <h3 id="5-order-management">5. Order Management</h3>
 <ul>
-<li><strong>Order Processing</strong>: Handle order creation, status updates, and order history.</li>
-<li><strong>Payment Integration</strong>: Integrate with popular payment gateways for seamless transactions.</li>
+<li><strong>Order Processing</strong>: Handle order creation with human-readable order numbers (ORD-YYYYMMDD-XXXX).</li>
+<li><strong>Order Cancellation</strong>: Cancel PENDING/CONFIRMED orders with automatic stock restoration.</li>
+<li><strong>Seller Orders</strong>: Sellers can view and manage orders from their shop.</li>
+<li><strong>Admin Orders</strong>: Admins can view all orders with advanced filters (status, date range).</li>
+<li><strong>Idempotency Support</strong>: Prevent duplicate orders with idempotency keys.</li>
+<li><strong>Payment Integration</strong>: Secure payment processing with amount validation.</li>
+<li><strong>Payment History</strong>: Track all payments for each order.</li>
+</ul>
+<h3 id="6-refund-management">6. Refund Management</h3>
+<ul>
+<li><strong>Refund Requests</strong>: Customers can request refunds with reasons and evidence images.</li>
+<li><strong>Refund Approval</strong>: Sellers and admins can approve, reject, or process refunds.</li>
+<li><strong>Return Shipping</strong>: Track return shipments with tracking numbers.</li>
+<li><strong>Refund Lifecycle</strong>: Complete refund tracking from request to resolution.</li>
 </ul>
 <h3 id="6-scalability-and-performance">6. Scalability and Performance</h3>
 <ul>
@@ -1351,7 +1406,12 @@ scalable, and efficient service for handling your e-commerce needs.</p>
 <h3 id="7-security">7. Security</h3>
 <ul>
 <li><strong>JWT Tokens</strong>: Implement JSON Web Tokens for secure authentication.</li>
+<li><strong>Refresh Tokens</strong>: Secure token refresh with hashed storage and automatic revocation.</li>
+<li><strong>Rate Limiting</strong>: Auth endpoints protected against brute-force attacks (5 req/10min).</li>
+<li><strong>Account Lockout</strong>: Automatic 30-minute lockout after 5 failed login attempts.</li>
+<li><strong>Password Strength</strong>: Enforced password complexity requirements.</li>
 <li><strong>Input Validation</strong>: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).</li>
+<li><strong>Atomic Stock Operations</strong>: Thread-safe inventory updates within database transactions.</li>
 </ul>
 <h2 id="architecture">Architecture</h2>
 <p align="center">
@@ -1463,11 +1523,12 @@ scalable, and efficient service for handling your e-commerce needs.</p>
 <li><a href="product-category/">Product Category API</a> - Product category management</li>
 <li><a href="product-sub-category/">Product Sub-Category API</a> - Product sub-category management</li>
 <li><a href="brand/">Brand API</a> - Brand management</li>
-<li><a href="cart/">Cart API</a> - Shopping cart functionality</li>
+<li><a href="cart/">Cart API</a> - Shopping cart functionality and summary</li>
 <li><a href="wishlist/">Wishlist API</a> - Wishlist functionality</li>
-<li><a href="order/">Order API</a> - Order management</li>
+<li><a href="order/">Order API</a> - Order management, cancellation, and admin views</li>
+<li><a href="refund-request/">Refund Request API</a> - Refund lifecycle management</li>
 <li><a href="shipping/">Shipping API</a> - Shipping address management</li>
-<li><a href="payment/">Payment API</a> - Payment processing</li>
+<li><a href="payment/">Payment API</a> - Payment processing and order lookup</li>
 <li><a href="review-rating/">Review Rating API</a> - Product reviews and ratings</li>
 <li><a href="inventory/">Inventory API</a> - Inventory management</li>
 <li><a href="privacy-policy/">Privacy Policy API</a> - Privacy policy management</li>
