@@ -284,6 +284,84 @@ This API follows industry-standard patterns (Stripe, GitHub, OpenAI) for clean, 
 }
 ```
 
+### Pagination
+
+All collection-based endpoints support standardized pagination using `limit` and `offset` query parameters.
+
+- **`limit`**: Maximum number of items to return (default: 20)
+- **`offset`**: Number of items to skip (default: 0)
+
+**Paginated Response Format:**
+```json
+{
+  "data": [
+    { ... item 1 ... },
+    { ... item 2 ... }
+  ],
+  "metadata": {
+    "totalCount": 100,
+    "limit": 20,
+    "skip": 0
+  }
+}
+```
+
+### API Versioning
+
+The API uses **per-domain versioning** — each feature domain (auth, product, order, etc.) has its own independent version lifecycle. This follows the approach used by Stripe, Shopify, and Square.
+
+**Base URL pattern:**
+```
+/api/v{version}/{domain}/{endpoint}
+```
+
+**Examples:**
+```
+GET  /api/v1/auth/login
+GET  /api/v1/product
+GET  /api/v1/order
+POST /api/v1/cart
+```
+
+**API Discovery Endpoint:**
+```
+GET /api
+```
+
+Returns a list of all API domains with their current, supported, and deprecated versions:
+```json
+{
+  "service": "ktor-ecommerce",
+  "versions": [
+    {
+      "domain": "auth",
+      "current": "v1",
+      "supported": ["v1"],
+      "deprecated": []
+    },
+    {
+      "domain": "product",
+      "current": "v1",
+      "supported": ["v1"],
+      "deprecated": []
+    }
+  ]
+}
+```
+
+**Version Response Headers:**
+
+Every API response includes version metadata headers:
+
+| Header | Description |
+|--------|-------------|
+| `X-Api-Version` | The version number used for this request |
+| `X-Api-Domain` | The API domain that handled this request |
+| `Sunset` | (deprecated versions only) ISO-8601 date when this version will be removed |
+| `Deprecation` | (deprecated versions only) Set to `true` for deprecated versions |
+| `Link` | (deprecated versions only) Points to the successor version URL |
+
+
 ### Common Error Codes
 
 | Status Code | Description | Example Message |
@@ -293,6 +371,7 @@ This API follows industry-standard patterns (Stripe, GitHub, OpenAI) for clean, 
 | `403` | Forbidden | `"Insufficient permissions"` |
 | `404` | Not Found | `"Product not found"` |
 | `409` | Conflict | `"User already exists with this email"` |
+| `410` | Gone | `"API version v0 for 'product' is no longer available"` |
 | `500` | Internal Server Error | `"Internal server error"` |
 
 ### Message Constants
@@ -633,13 +712,13 @@ curl -X 'PUT' \
   'http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234
-``` 
+```
 
 ### Response
 
@@ -744,13 +823,13 @@ curl -X 'GET' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJwaWFzaDU5OUBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MDdhYzI2NC1iZTJlLTRlODktYjZkMy03YTQ5YjE0MjYzZDIiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzQ0NzMyNzg4fQ.xJQw7NLnXzBO5yIAbK3HJtIFge4n0-z-SNk6l9ZmajbHNqFN4NtH-u2Lwt48kbL1W_xc-jUKNmqmhaamLuj9dg'
 
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/profile
-``` 
+```
 
 ### Response
 
@@ -767,7 +846,7 @@ http://localhost:8080/profile
     "gender": "Malde"
   }
 }
-```   
+```
 
 </details>
 
@@ -784,14 +863,14 @@ curl -X 'PUT' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJwaWFzaDU5OUBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MDdhYzI2NC1iZTJlLTRlODktYjZkMy03YTQ5YjE0MjYzZDIiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzQ0NzMyNzg4fQ.xJQw7NLnXzBO5yIAbK3HJtIFge4n0-z-SNk6l9ZmajbHNqFN4NtH-u2Lwt48kbL1W_xc-jUKNmqmhaamLuj9dg'
 
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/profile?firstName=Mehedi%20&lastName=Hassan&mobile=01812353930&faxNumber=454&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Malde
 
-``` 
+```
 
 ### Response
 
@@ -809,7 +888,7 @@ http://localhost:8080/profile?firstName=Mehedi%20&lastName=Hassan&mobile=0181235
   }
 }
 
-```   
+```
 
 </details>
 
@@ -826,21 +905,21 @@ curl -X 'POST' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJwaWFzaDU5OUBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MDdhYzI2NC1iZTJlLTRlODktYjZkMy03YTQ5YjE0MjYzZDIiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzQ0NzMyNzg4fQ.xJQw7NLnXzBO5yIAbK3HJtIFge4n0-z-SNk6l9ZmajbHNqFN4NtH-u2Lwt48kbL1W_xc-jUKNmqmhaamLuj9dg' \
   -H 'Content-Type: multipart/form-data' \
   -F 'image=@piashdp.jpg;type=image/jpeg'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/profile/image-upload
 
-``` 
+```
 
 ### Response
 
 ```
 "73b21d27-466e-45c6-bc2b-0480eb4db2d2.jpg"
 
-```   
+```
 
 </details>
 
@@ -861,13 +940,13 @@ curl -X 'POST' \
   -d '{
   "name": "New digital Shop"
 }'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/shop-category
-``` 
+```
 
 ### Response
 
@@ -877,7 +956,7 @@ http://localhost:8080/shop-category
     "name": "New digital Shop"
   }
 }
-```   
+```
 
 </details>
 
@@ -892,25 +971,31 @@ curl -X 'GET' \
   'http://localhost:8080/shop-category?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/shop-category?limit=10
-``` 
+```
 
 ### Response
 
-```
-[
+```json
+{
+  "data": [
     {
       "id": "9c95c44c-3767-4ca2-9486-e28e390b3741",
       "name": "New Electronics"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
-```   
+```
 
 </details>
 
@@ -925,19 +1010,19 @@ curl -X 'DELETE' \
   'http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/shop-category/2a17da31-7517-41db-b7d3-f77d0ddd52a5
-``` 
+```
 
 ### Response
 
 ```
 "2a17da31-7517-41db-b7d3-f77d0ddd52a5"
-```   
+```
 
 </details>
 
@@ -953,13 +1038,13 @@ curl -X 'PUT' \
   'http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop
-``` 
+```
 
 ### Response
 
@@ -969,7 +1054,7 @@ http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Pi
     "name": "Piash Digital shop"
   }
 }
-```   
+```
 
 </details>
 
@@ -986,13 +1071,13 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ' \
   -d ''
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb
-``` 
+```
 
 ### Response
 
@@ -1002,7 +1087,7 @@ http://localhost:8080/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-
     "name": "Royal Shop"
   }
 }
-```   
+```
 
 </details>
 
@@ -1016,26 +1101,32 @@ curl -X 'GET' \
   'http://localhost:8080/shop?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/shop?limit=10
-``` 
+```
 
 ### Response
 
-```
-[
+```json
+{
+  "data": [
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
       "name": "Piash Shop update",
       "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
-```   
+```
 
 </details>
 
@@ -1049,13 +1140,13 @@ curl -X 'PUT' \
   'http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20again%20update' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20again%20update
-``` 
+```
 
 ### Response
 
@@ -1066,7 +1157,7 @@ http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20agai
     "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
   }
 }
-```   
+```
 
 </details>
 
@@ -1079,14 +1170,14 @@ http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20agai
 curl -X 'DELETE' \
   'http://localhost:8080/shop/d2836959-6bc5-49d0-bd98-e73255a915c5' \
   -H 'accept: application/json'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/shop/d2836959-6bc5-49d0-bd98-e73255a915c5
 
-``` 
+```
 
 ### Response
 
@@ -1120,14 +1211,20 @@ http://localhost:8080/shop/public?status=APPROVED&category=5e67ec97-9ed6-48ee-9d
 ### Response
 
 ```
-[
+{
+  "data": [
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
       "name": "Shop Name",
       "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
       "status": "APPROVED"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 
@@ -1154,14 +1251,20 @@ http://localhost:8080/shop/category/5e67ec97-9ed6-48ee-9d56-4163fe1711cb
 ### Response
 
 ```
-[
+{
+  "data": [
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
       "name": "Shop Name",
       "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
       "status": "APPROVED"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 
@@ -1187,15 +1290,21 @@ http://localhost:8080/shop/featured
 
 ### Response
 
-```
-[
+```json
+{
+  "data": [
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
       "name": "Featured Shop",
       "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
       "status": "APPROVED"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 
@@ -1222,14 +1331,20 @@ http://localhost:8080/shop/status?status=APPROVED
 ### Response
 
 ```
-[
+{
+  "data": [
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
       "name": "Approved Shop",
       "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
       "status": "APPROVED"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 
@@ -1391,13 +1506,13 @@ curl -X 'POST' \
   "subCategoryId": null,
   "videoLink": null
 }'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/product
-``` 
+```
 
 ### Response
 
@@ -1416,7 +1531,7 @@ http://localhost:8080/product
     "status": "ACTIVE"
   }
 }
-```   
+```
 
 </details>
 
@@ -1431,13 +1546,13 @@ curl -X 'GET' \
   'http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
-``` 
+```
 
 ### Response
 
@@ -1456,7 +1571,7 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
     "status": "ACTIVE"
   }
 }
-```   
+```
 
 </details>
 
@@ -1478,13 +1593,13 @@ curl -X 'PUT' \
   "detail":"Xiaomi Smart Watch"
 
 }'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5
-``` 
+```
 
 ### Response
 
@@ -1503,7 +1618,7 @@ http://localhost:8080/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5
     "status": "ACTIVE"
   }
 }
-```   
+```
 
 </details>
 
@@ -1530,14 +1645,20 @@ http://localhost:8080/product/seller?limit=10&maxPrice=100&minPrice=0&categoryId
 ### Response
 
 ```
-[
+{
+  "data": [
     {
       "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
       "name": "Product Name",
       "price": 99.99,
       "status": "ACTIVE"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 
@@ -1565,7 +1686,8 @@ http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
 ### Response
 
 ```
-[
+{
+  "data": [
     {
      "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
     "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
@@ -1579,7 +1701,12 @@ http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
     "images": "[string]",
     "status": "ACTIVE"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 
@@ -1607,14 +1734,20 @@ http://localhost:8080/product/search?limit=10&name=smartphone&categoryId=5e67ec9
 ### Response
 
 ```
-[
+{
+  "data": [
     {
       "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
       "name": "Smartphone",
       "price": 599.99,
       "status": "ACTIVE"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 
@@ -1643,7 +1776,7 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 
 ```
 "79a97389-78d5-4dff-a1f7-13bc7ae10a8d"
-```   
+```
 
 </details>
 
@@ -1676,7 +1809,7 @@ http://localhost:8080/product/image-upload
     "imageUrl": "bf68a3f9-d131-4bee-bbbc-80264a3da437.png"
   }
 }
-```   
+```
 
 </details>
 
@@ -1694,13 +1827,13 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ' \
   -d ''
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/product-category?name=Kids
-``` 
+```
 
 ### Response
 
@@ -1711,7 +1844,7 @@ http://localhost:8080/product-category?name=Kids
     "subCategories": []
   }
 }
-```   
+```
 
 </details>
 
@@ -1727,18 +1860,19 @@ curl -X 'GET' \
   'http://localhost:8080/product-category?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/product-category?limit=10
-``` 
+```
 
 ### Response
 
-```
-[
+```json
+{
+  "data": [
     {
       "id": "58f5c085-d04a-47de-beab-1d476b6ce432",
       "name": "Mens Cloth",
@@ -1749,9 +1883,14 @@ http://localhost:8080/product-category?limit=10
       "name": "Kids",
       "subCategories": []
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 2,
+    "limit": 10,
+    "skip": 0
+  }
 }
-```   
+```
 
 </details>
 
@@ -1766,13 +1905,13 @@ curl -X 'PUT' \
   'http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiIzYTRhZTAzMi02ODAxLTQ3NWItOTUxYS0yNjE0ZjA0YTliYjAiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTExNTEyfQ._VBrVUeHJ2gOpCvmNHLhkjn5RMZUpf0B35uy_0k1cAQMMuDG7EDgGHzG3eq6PWpNYjMKBeNRrIByGG0lWSYpjg'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0
-``` 
+```
 
 ### Response
 
@@ -1783,7 +1922,7 @@ http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name
     "subCategories": []
   }
 }
-```   
+```
 
 </details>
 
@@ -1798,19 +1937,19 @@ curl -X 'DELETE' \
   'http://localhost:8080/product-category/75b44e08-2c94-438f-b500-b204c7c90cca' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/product-category/75b44e08-2c94-438f-b500-b204c7c90cca
-``` 
+```
 
 ### Response
 
 ```
 "75b44e08-2c94-438f-b500-b204c7c90cca"
-```   
+```
 
 </details>
 
@@ -1874,14 +2013,20 @@ http://localhost:8080/product-subcategory?categoryId=5e67ec97-9ed6-48ee-9d56-416
 
 ### Response
 
-```
-[
+```json
+{
+  "data": [
     {
       "id": "70ac842b-7a81-4976-9564-d440880d1736",
       "name": "Electronics Subcategory",
       "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 
@@ -1963,13 +2108,13 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg' \
   -d ''
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/brand?name=Nike
-``` 
+```
 
 ### Response
 
@@ -1979,7 +2124,7 @@ http://localhost:8080/brand?name=Nike
     "name": "Nike"
   }
 }
-```   
+```
 
 </details>
 
@@ -1994,18 +2139,19 @@ curl -X 'GET' \
   'http://localhost:8080/brand?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/brand?limit=10
-``` 
+```
 
 ### Response
 
-```
-[
+```json
+{
+  "data": [
     {
       "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
       "name": "Nike"
@@ -2014,9 +2160,14 @@ http://localhost:8080/brand?limit=10
       "id": "19dd1021-432c-473c-8b19-0f56d19af9ad",
       "name": "PUMA"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 2,
+    "limit": 10,
+    "skip": 0
+  }
 }
-```   
+```
 
 </details>
 
@@ -2031,13 +2182,13 @@ curl -X 'PUT' \
   'http://localhost:8080/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas
-``` 
+```
 
 ### Response
 
@@ -2047,7 +2198,7 @@ http://localhost:8080/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas
     "name": "Addidas"
   }
 }
-```   
+```
 
 </details>
 
@@ -2062,19 +2213,19 @@ curl -X 'DELETE' \
   'http://localhost:8080/brand/19dd1021-432c-473c-8b19-0f56d19af9ad' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/brand/19dd1021-432c-473c-8b19-0f56d19af9ad
-``` 
+```
 
 ### Response
 
 ```
 "19dd1021-432c-473c-8b19-0f56d19af9ad"
-```   
+```
 
 </details>
 
@@ -2140,14 +2291,20 @@ http://localhost:8080/wishlist?page=1&limit=10
 
 ### Response
 
-```
-[
+```json
+{
+  "data": [
     {
       "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-      "name": "Polo T Shirt",
+      "name": "Polo T Shirt"
       // ...
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 
@@ -2220,7 +2377,7 @@ http://localhost:8080/wishlist/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2
     "buyOneGetOne": "string"
   }
 }
-```   
+```
 
 </details>
 
@@ -2237,13 +2394,13 @@ curl -X 'GET' \
   'http://localhost:8080/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd
-``` 
+```
 
 ### Response
 
@@ -2260,7 +2417,7 @@ http://localhost:8080/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd
     "shipCountry": "Bangladesh"
   }
 }
-```   
+```
 
 </details>
 
@@ -2285,13 +2442,13 @@ curl -X 'POST' \
   "shipName": "string",
   "shipPhone": 1073741824
 }'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/shipping
-``` 
+```
 
 ### Response
 
@@ -2307,7 +2464,7 @@ http://localhost:8080/shipping
     "shipCountry": "Bangladesh"
   }
 }
-```   
+```
 
 </details>
 
@@ -2322,13 +2479,13 @@ curl -X 'PUT' \
   'http://localhost:8080/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=Updated%20shipping%20address' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=Updated%20shipping%20address
-``` 
+```
 
 ### Response
 
@@ -2345,7 +2502,7 @@ http://localhost:8080/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=
     "shipCountry": "Bangladesh"
   }
 }
-```   
+```
 
 </details>
 
@@ -2360,19 +2517,19 @@ curl -X 'DELETE' \
   'http://localhost:8080/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8
-``` 
+```
 
 ### Response
 
 ```
 "471ebc82-80e7-4da0-a472-d1c8835f57b8"
-```   
+```
 
 </details>
 
@@ -2389,18 +2546,19 @@ curl -X 'GET' \
   'http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10
-``` 
+```
 
 ### Response
 
-```
-[
+```json
+{
+  "data": [
     {
       "id": "70ac842b-7a81-4976-9564-d440880d1736",
       "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
@@ -2408,9 +2566,14 @@ http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99
       "reviewText": "Good product",
       "rating": 2
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
-```   
+```
 
 </details>
 
@@ -2431,13 +2594,13 @@ curl -X 'POST' \
   "rating": 2,
   "reviewText": "Good product"
 }'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/review-rating
-``` 
+```
 
 ### Response
 
@@ -2450,7 +2613,7 @@ http://localhost:8080/review-rating
     "rating": 2
   }
 }
-```   
+```
 
 </details>
 
@@ -2465,13 +2628,13 @@ curl -X 'PUT' \
   'http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&rating=5' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&rating=5
-``` 
+```
 
 ### Response
 
@@ -2484,7 +2647,7 @@ http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=
     "rating": 5
   }
 }
-```   
+```
 
 </details>
 
@@ -2499,19 +2662,19 @@ curl -X 'DELETE' \
   'http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736
-``` 
+```
 
 ### Response
 
 ```
 "70ac842b-7a81-4976-9564-d440880d1736"
-```   
+```
 
 </details>
 
@@ -2529,13 +2692,13 @@ curl -X 'POST' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ' \
   -d ''
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1
-``` 
+```
 
 ### Response
 
@@ -2545,7 +2708,7 @@ http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quanti
     "quantity": 1
   }
 }
-```   
+```
 
 </details>
 
@@ -2560,18 +2723,19 @@ curl -X 'GET' \
   'http://localhost:8080/cart?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/cart?limit=10
-``` 
+```
 
 ### Response
 
-```
-[
+```json
+{
+  "data": [
     {
       "productId": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
       "quantity": 3,
@@ -2615,9 +2779,14 @@ http://localhost:8080/cart?limit=10
         "buyOneGetOne": "string"
       }
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 2,
+    "limit": 10,
+    "skip": 0
+  }
 }
-```   
+```
 
 </details>
 
@@ -2632,13 +2801,13 @@ curl -X 'PUT' \
   'http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1
-``` 
+```
 
 ### Response
 
@@ -2662,7 +2831,7 @@ http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quanti
     }
   }
 }
-```   
+```
 
 </details>
 
@@ -2677,13 +2846,13 @@ curl -X 'DELETE' \
   'http://localhost:8080/cart?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/cart/71b26dd9-b4b5-4f87-a84d-c8daa506018a
-``` 
+```
 
 ### Response
 
@@ -2710,7 +2879,7 @@ http://localhost:8080/cart/71b26dd9-b4b5-4f87-a84d-c8daa506018a
     "imageTwo": "string"
   }
 }
-```   
+```
 
 </details>
 
@@ -2725,19 +2894,19 @@ curl -X 'DELETE' \
   'http://localhost:8080/cart/all' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NzU3MX0.rRj8mHIqG-d78t_H54HjiWl7GBzgH4KOWUKAWsDveolmBcxTfyCJKzWd4K8Jwq5MKvJ3xa8J1vf0E34DSHA4sw'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/cart/all
-``` 
+```
 
 ### Response
 
 ```
 true
-```   
+```
 
 </details>
 
@@ -2768,13 +2937,13 @@ curl -X 'POST' \
     }
   ]
 }'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/order
-``` 
+```
 
 ### Response
 
@@ -2783,7 +2952,7 @@ http://localhost:8080/order
     "orderId": "b177431f-22f2-4c01-8ad6-da5319e2c7b9"
   }
 }
-```   
+```
 
 </details>
 
@@ -2798,18 +2967,19 @@ curl -X 'GET' \
   'http://localhost:8080/order?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDk1NjIzNX0.Go4nLzsiOruUKTtETn1Yc35BNjlo79_3Vs8LfW9LJG1nvogqIR0mG9JQOUxP8YclsVBzGV0j0IIv7svTaDMxTg'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/order?limit=10
-``` 
+```
 
 ### Response
 
-```
-[
+```json
+{
+  "data": [
     {
       "orderId": "04675b54-a9df-4200-a526-0b15f6a85930",
       "quantity": 1,
@@ -2840,9 +3010,14 @@ http://localhost:8080/order?limit=10
       "status": "pending",
       "statusCode": 0
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 3,
+    "limit": 10,
+    "skip": 0
+  }
 }
-```   
+```
 
 </details>
 
@@ -2902,13 +3077,13 @@ curl -X 'POST' \
   "paymentMethod": "Bkash",
   "status": "COMPLETED"
 }'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/payment
-``` 
+```
 
 ### Response
 
@@ -2921,7 +3096,7 @@ http://localhost:8080/payment
     "paymentMethod": "Bkash"
   }
 }
-```   
+```
 
 </details>
 <details>
@@ -2934,13 +3109,13 @@ curl -X 'GET' \
   'http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
-``` 
+```
 
 ### Request URL
 
 ```
 http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15
-``` 
+```
 
 ### Response
 
@@ -2953,7 +3128,7 @@ http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15
     "paymentMethod": "Bkash"
   }
 }
-```   
+```
 
 </details>
 
@@ -3029,24 +3204,32 @@ http://localhost:8080/refund-requests/order/ORD-20260414-0001
 ### Response
 
 ```json
-[
-  {
-    "id": "refund-uuid-123",
-    "orderItemId": "item-uuid-123",
-    "orderId": "ORD-20260414-0001",
-    "userId": "user-uuid-123",
-    "reason": "Product received damaged",
-    "images": "https://example.com/img1.jpg",
-    "status": "APPROVED",
-    "refundAmount": 50.0,
-    "refundMethod": "original_payment",
-    "trackingNumber": null,
-    "requestedAt": "2026-04-14T10:30:00",
-    "resolvedAt": "2026-04-14T12:00:00",
-    "createdAt": "2026-04-14T10:30:00",
-    "updatedAt": "2026-04-14T12:00:00"
+```json
+{
+  "data": [
+    {
+      "id": "refund-uuid-123",
+      "orderItemId": "item-uuid-123",
+      "orderId": "ORD-20260414-0001",
+      "userId": "user-uuid-123",
+      "reason": "Product received damaged",
+      "images": "https://example.com/img1.jpg",
+      "status": "APPROVED",
+      "refundAmount": 50.0,
+      "refundMethod": "original_payment",
+      "trackingNumber": null,
+      "requestedAt": "2026-04-14T10:30:00",
+      "resolvedAt": "2026-04-14T12:00:00",
+      "createdAt": "2026-04-14T10:30:00",
+      "updatedAt": "2026-04-14T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "skip": 0
   }
-]
+}
 ```
 
 </details>
@@ -3205,12 +3388,13 @@ curl -X 'GET' \
 
 ```
 http://localhost:8080/policy
-``` 
+```
 
 ### Response
 
-```
-[
+```json
+{
+  "data": [
     {
       "id": "550e8400-e29b-41d4-a716-446655440000",
       "type": "PRIVACY_POLICY",
@@ -3233,9 +3417,14 @@ http://localhost:8080/policy
       "createdAt": "2023-01-01T00:00:00Z",
       "updatedAt": "2023-01-01T00:00:00Z"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 2,
+    "limit": 20,
+    "skip": 0
+  }
 }
-```   
+```
 
 </details>
 
@@ -3255,7 +3444,7 @@ curl -X 'GET' \
 
 ```
 http://localhost:8080/policy/PRIVACY_POLICY
-``` 
+```
 
 ### Response
 
@@ -3272,7 +3461,7 @@ http://localhost:8080/policy/PRIVACY_POLICY
     "updatedAt": "2023-01-01T00:00:00Z"
   }
 }
-```   
+```
 
 </details>
 
@@ -3292,7 +3481,7 @@ curl -X 'GET' \
 
 ```
 http://localhost:8080/policy/detail/550e8400-e29b-41d4-a716-446655440000
-``` 
+```
 
 ### Response
 
@@ -3309,7 +3498,7 @@ http://localhost:8080/policy/detail/550e8400-e29b-41d4-a716-446655440000
     "updatedAt": "2023-01-01T00:00:00Z"
   }
 }
-```   
+```
 
 </details>
 
@@ -3338,7 +3527,7 @@ curl -X 'POST' \
 
 ```
 http://localhost:8080/policy
-``` 
+```
 
 ### Response
 
@@ -3353,7 +3542,7 @@ http://localhost:8080/policy
     "isActive": true
   }
 }
-```   
+```
 
 </details>
 
@@ -3381,7 +3570,7 @@ curl -X 'PUT' \
 
 ```
 http://localhost:8080/policy/550e8400-e29b-41d4-a716-446655440003
-``` 
+```
 
 ### Response
 
@@ -3396,7 +3585,7 @@ http://localhost:8080/policy/550e8400-e29b-41d4-a716-446655440003
     "isActive": true
   }
 }
-```   
+```
 
 </details>
 
@@ -3417,7 +3606,7 @@ curl -X 'POST' \
 
 ```
 http://localhost:8080/policy/deactivate/550e8400-e29b-41d4-a716-446655440003
-``` 
+```
 
 ### Response
 
@@ -3432,7 +3621,7 @@ http://localhost:8080/policy/deactivate/550e8400-e29b-41d4-a716-446655440003
     "isActive": false
   }
 }
-```   
+```
 
 </details>
 
@@ -3644,8 +3833,9 @@ http://localhost:8080/inventory/shop?shopId=12345678-1234-1234-1234-123456789012
 
 ### Response
 
-```
-[
+```json
+{
+  "data": [
     {
       "id": "12345678-1234-1234-1234-123456789012",
       "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
@@ -3653,7 +3843,12 @@ http://localhost:8080/inventory/shop?shopId=12345678-1234-1234-1234-123456789012
       "reserved": 20,
       "available": 180
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "skip": 0
+  }
 }
 ```
 
@@ -3680,8 +3875,9 @@ http://localhost:8080/inventory/low-stock
 
 ### Response
 
-```
-[
+```json
+{
+  "data": [
     {
       "id": "12345678-1234-1234-1234-123456789012",
       "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
@@ -3689,7 +3885,12 @@ http://localhost:8080/inventory/low-stock
       "reserved": 2,
       "available": 3
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "skip": 0
+  }
 }
 ```
 </details>
@@ -3722,6 +3923,3 @@ You may obtain a copy of the License at
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```

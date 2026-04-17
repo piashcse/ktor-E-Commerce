@@ -4,6 +4,37 @@ hide:
 ---
 # Changelog
 
+## [3.6.0] - Latest
+
+### Per-Domain API Versioning
+
+- **(feat)** - Implemented per-domain API versioning with independent version lifecycle per feature (Stripe/Shopify pattern)
+- **(feat)** - Added `ApiVersionRegistry` as single source of truth for all domain version metadata
+- **(feat)** - Added `versionedRoute()` DSL extension using route-scoped plugin for automatic version headers
+- **(feat)** - Added `GET /api` discovery endpoint listing all domains with current, supported, and deprecated versions
+- **(feat)** - Automatic `X-Api-Version` and `X-Api-Domain` response headers on every API response
+- **(feat)** - RFC 8594 compliant `Sunset`, `Deprecation`, and `Link` headers for deprecated versions
+- **(feat)** - HTTP 410 Gone response for unsupported API versions
+- **(refactor)** - Migrated all 18 route files from inner `route()` wrappers to parent `versionedRoute()` DSL
+- **(refactor)** - Refactored `ConfigureRouting.kt` to use per-domain versioned route registration
+- **(docs)** - Added API Versioning section to README with discovery endpoint and header documentation
+- **(docs)** - Updated error codes table with HTTP 410 Gone status
+
+**URL Migration**: `/api/v1/*` → `/api/v1/*` (backward-compatible, no breaking changes)
+
+---
+
+## [3.5.0]
+
+### API Standardization & Pagination
+
+- **(feat)** - Standardized pagination across all collection-based endpoints using `limit` and `offset` query parameters
+- **(feat)** - Implemented a unified `PaginatedResponse` wrapper for consistent data delivery
+- **(refactor)** - Transitioned all database services to use Exposed DSL pattern (`selectAll().limit().offset()`) for robust positional pagination support
+- **(fix)** - Resolved "Too many arguments for limit" compilation errors by moving away from SizedIterable pagination
+- **(docs)** - Standardized OpenAPI documentation across all features with proper pagination metadata
+- **(docs)** - Updated README andMkDocs with the new pagination standard
+
 ## [3.4.0] - Latest
 
 ### Security & Bug Fixes

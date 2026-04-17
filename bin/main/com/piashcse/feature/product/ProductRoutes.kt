@@ -29,7 +29,6 @@ import java.util.*
  * @param productController The controller handling product-related operations.
  */
 fun Route.productRoutes(productController: ProductService) {
-    route("/product") {
 
         /**
          * @tag Product
@@ -228,4 +227,3 @@ fun Route.productRoutes(productController: ProductService) {
             }
         }
     }
-}

@@ -15,8 +15,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.consentRoutes(consentController: ConsentService) {
-    route("/policy-consents") {
-        authenticate(RoleManagement.CUSTOMER.role) {
+    authenticate(RoleManagement.CUSTOMER.role) {
             /**
              * @tag Privacy Policy Consent
              * @description Record user consent for a specific policy document
@@ -82,4 +81,3 @@ fun Route.consentRoutes(consentController: ConsentService) {
             }
         }
     }
-}

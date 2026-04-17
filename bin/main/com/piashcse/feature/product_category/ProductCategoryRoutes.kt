@@ -19,8 +19,7 @@ import io.ktor.server.routing.*
  * @param productCategoryController The controller handling product category-related operations.
  */
 fun Route.productCategoryRoutes(productCategoryController: ProductCategoryService) {
-    route("/product-category") {
-        /**
+    /**
          * @tag ProductCategory
          * @description Retrieve a paginated list of all product categories
          * @operationId getCategories
@@ -95,4 +94,3 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
             }
         }
     }
-}

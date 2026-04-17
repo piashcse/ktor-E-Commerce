@@ -17,8 +17,7 @@ import io.ktor.server.routing.*
  * @param wishlistController The controller responsible for handling wish list operations.
  */
 fun Route.wishListRoutes(wishlistController: WishListService) {
-    route("/wishlist") {
-        authenticate(RoleManagement.CUSTOMER.role) {
+    authenticate(RoleManagement.CUSTOMER.role) {
 
             /**
              * @tag WishList
@@ -41,14 +40,14 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
              * @tag WishList
              * @description Retrieve all items in the user's wishlist with pagination
              * @operationId getWishList
-             * @query limit Maximum number of items to return (default 10)
+             * @query limit Maximum number of items to return (default 20)
              * @query offset Number of items to skip (default 0)
              * @response 200 Wishlist items retrieved successfully
              * @response 400 Invalid pagination parameters
              * @security jwtToken
              */
             get {
-                val (limit, offset) = call.paginationParameters(defaultLimit = 10)
+                val (limit, offset) = call.paginationParameters(defaultLimit = 20)
 
                 call.respond(
                     HttpStatusCode.OK,
@@ -90,4 +89,3 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
             }
         }
     }
-}

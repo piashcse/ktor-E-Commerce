@@ -24,7 +24,6 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
         RoleManagement.SELLER.role,
         RoleManagement.CUSTOMER.role
     ) {
-        route("/profile") {
 
             /**
              * @tag Profile
@@ -103,4 +102,3 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
             }
         }
     }
-}

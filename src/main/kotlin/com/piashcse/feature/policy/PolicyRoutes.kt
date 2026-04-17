@@ -19,8 +19,7 @@ import io.ktor.server.routing.*
  * @param policyController The controller handling policy-related operations.
  */
 fun Route.policyRoutes(policyController: PolicyService) {
-    route("/policy") {
-        /**
+    /**
          * @tag Privacy Policy
          * @description Retrieve all policy documents with optional type filter
          * @operationId getAllPolicies
@@ -128,4 +127,3 @@ fun Route.policyRoutes(policyController: PolicyService) {
             }
         }
     }
-}

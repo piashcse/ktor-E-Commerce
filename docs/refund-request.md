@@ -131,6 +131,8 @@ Retrieve all refund requests for a specific order. Accessible by the order owner
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `orderId` | string | Yes | UUID of the order |
+| `limit` | number | No | Maximum number of refunds to return (default: 20) |
+| `offset` | number | No | Number of refunds to skip for pagination (default: 0) |
 
 #### Headers
 
@@ -152,24 +154,31 @@ curl -X 'GET' \
 **Status: 200 OK**
 
 ```json
-[
-  {
-    "id": "refund-uuid-123",
-    "orderItemId": "item-uuid-123",
-    "orderId": "ORD-20260414-0001",
-    "userId": "user-uuid-123",
-    "reason": "Product received damaged",
-    "images": "https://example.com/img1.jpg",
-    "status": "APPROVED",
-    "refundAmount": 50.0,
-    "refundMethod": "original_payment",
-    "trackingNumber": null,
-    "requestedAt": "2026-04-14T10:30:00",
-    "resolvedAt": "2026-04-14T12:00:00",
-    "createdAt": "2026-04-14T10:30:00",
-    "updatedAt": "2026-04-14T12:00:00"
+{
+  "data": [
+    {
+      "id": "refund-uuid-123",
+      "orderItemId": "item-uuid-123",
+      "orderId": "ORD-20260414-0001",
+      "userId": "user-uuid-123",
+      "reason": "Product received damaged",
+      "images": "https://example.com/img1.jpg",
+      "status": "APPROVED",
+      "refundAmount": 50.0,
+      "refundMethod": "original_payment",
+      "trackingNumber": null,
+      "requestedAt": "2026-04-14T10:30:00",
+      "resolvedAt": "2026-04-14T12:00:00",
+      "createdAt": "2026-04-14T10:30:00",
+      "updatedAt": "2026-04-14T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "skip": 0
   }
-]
+}
 ```
 
 #### Permissions

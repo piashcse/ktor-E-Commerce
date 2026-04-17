@@ -36,7 +36,8 @@ Retrieve reviews for a specific product with optional pagination support.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the product to get reviews for |
-| `limit` | number | No | Maximum number of reviews to return (default: 10) |
+| `limit` | number | No | Maximum number of reviews to return (default: 20) |
+| `offset` | number | No | Number of reviews to skip for pagination (default: 0) |
 
 #### Headers
 
@@ -56,7 +57,8 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-[
+{
+  "data": [
     {
       "id": "70ac842b-7a81-4976-9564-d440880d1736",
       "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
@@ -64,7 +66,12 @@ curl -X 'GET' \
       "reviewText": "Good product",
       "rating": 2
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 

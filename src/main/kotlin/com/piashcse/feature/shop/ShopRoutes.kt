@@ -22,10 +22,10 @@ import io.ktor.server.routing.*
  *
  * @param shopController The controller handling shop-related operations.
  */
-fun Route.shopRoutes(shopController: ShopService) {
-    route("/shop") {
-        authenticate(RoleManagement.SELLER.role) {
+fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
+    authenticate(RoleManagement.SELLER.role) {
 
+        if (version == 1) {
             /**
              * @tag Shop
              * @description Create a new shop for the authenticated seller
@@ -85,8 +85,32 @@ fun Route.shopRoutes(shopController: ShopService) {
             }
         }
 
-        authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
+        // ==========================================
+        // 🔴 VERSION-SPECIFIC ENDPOINTS 
+        // ==========================================
 
+        if (version >= 2) {
+            /**
+             * @tag Shop
+             * @description (V2) Update shop details with advanced options
+             * @operationId updateShopV2
+             * @path id (required) Unique identifier of the shop to update
+             * @body UpdateShopRequest Shop update request with new details
+             * @response 200 Shop updated successfully via V2 API
+             * @security jwtToken
+             */
+            put("/{id}") {
+                val (shopId) = call.requireParameters("id")
+                val requestBody = call.receive<UpdateShopRequest>()
+                val response = shopController.updateShop(call.currentUserId, shopId, requestBody)
+                // Demonstrating returning a different response mapped to V2!
+                call.respond(HttpStatusCode.OK, mapOf("v2_migration" to true, "data" to response))
+            }
+        }
+    }
+
+    authenticate(RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role) {
+        if (version == 1) {
             /**
              * @tag Shop
              * @description Retrieve a paginated list of shops with optional filters
@@ -135,9 +159,10 @@ fun Route.shopRoutes(shopController: ShopService) {
                 call.respond(HttpStatusCode.OK, shopController.getFeaturedShops(limit, offset))
             }
         }
+    }
 
-        authenticate(RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
-
+    authenticate(RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
+        if (version == 1) {
             /**
              * @tag Shop
              * @description Admin-only: Retrieve shops filtered by their status with pagination

@@ -60,26 +60,34 @@ fun Application.configureRoute() {
     val consentController: ConsentService by inject()
     val inventoryController: InventoryService by inject()
     val returnRequestController: RefundRequestService by inject()
+
     routing {
-        route("/api/v1") {
-            authRoutes(authController)
-            profileRoutes(userProfileController)
-            shopCategoryRoutes(shopCategoryController)
-            shopRoutes(shopController)
-            brandRoutes(brandController)
-            productCategoryRoutes(productCategoryController)
-            productSubCategoryRoutes(productSubCategoryController)
-            productRoutes(productController)
-            reviewRatingRoutes(reviewRatingController)
-            cartRoutes(cartController)
-            wishListRoutes(wishListController)
-            shippingRoutes(shippingController)
-            orderRoutes(orderController)
-            paymentRoutes(paymentController)
-            policyRoutes(policyController)
-            consentRoutes(consentController)
-            inventoryRoutes(inventoryController)
-            refundRequestRoutes(returnRequestController)
+
+        route("/api") {
+            route("v1") {
+                route("auth") { authRoutes(authController) }
+                route("profile") { profileRoutes(userProfileController) }
+                route("shop-category") { shopCategoryRoutes(shopCategoryController) }
+                route("shop") { shopRoutes(shopController, version = 1) } 
+                route("brand") { brandRoutes(brandController) }
+                route("product-category") { productCategoryRoutes(productCategoryController) }
+                route("product-subcategory") { productSubCategoryRoutes(productSubCategoryController) }
+                route("product") { productRoutes(productController) }
+                route("review-rating") { reviewRatingRoutes(reviewRatingController) }
+                route("cart") { cartRoutes(cartController) }
+                route("wishlist") { wishListRoutes(wishListController) }
+                route("shipping") { shippingRoutes(shippingController) }
+                route("order") { orderRoutes(orderController) }
+                route("payment") { paymentRoutes(paymentController) }
+                route("policy") { policyRoutes(policyController) }
+                route("policy-consents") { consentRoutes(consentController) }
+                route("inventory") { inventoryRoutes(inventoryController) }
+                route("refund-requests") { refundRequestRoutes(returnRequestController) }
+            }
+
+            route("v2") {
+                route("shop") { shopRoutes(shopController, version = 2) } 
+            }
         }
     }
 }

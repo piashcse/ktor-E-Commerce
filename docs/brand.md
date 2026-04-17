@@ -81,8 +81,8 @@ Retrieve a list of brands with optional pagination support.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of brands to return (default: 10) |
-| `offset` | number | No | Number of brands to skip for pagination |
+| `limit` | number | No | Maximum number of brands to return (default: 20) |
+| `offset` | number | No | Number of brands to skip for pagination (default: 0) |
 
 #### Headers
 
@@ -102,7 +102,8 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-[
+{
+  "data": [
     {
       "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
       "name": "Nike"
@@ -111,7 +112,12 @@ curl -X 'GET' \
       "id": "19dd1021-432c-473c-8b19-0f56d19af9ad",
       "name": "PUMA"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 2,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 

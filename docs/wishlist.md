@@ -83,8 +83,8 @@ Retrieve all products in the authenticated user's wishlist with pagination.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `page` | integer | No | Page number (default: 1) |
-| `limit` | integer | No | Items per page (default: 10) |
+| `limit` | number | No | Maximum number of items to return (default: 20) |
+| `offset` | number | No | Number of items to skip for pagination (default: 0) |
 
 #### Headers
 
@@ -104,13 +104,19 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-[
+{
+  "data": [
     {
       "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-      "name": "Polo T Shirt",
+      "name": "Polo T Shirt"
       // ... product details
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 

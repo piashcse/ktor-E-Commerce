@@ -91,8 +91,8 @@ Retrieve a list of shops with optional pagination support.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of shops to return (default: 10) |
-| `offset` | number | No | Number of shops to skip for pagination |
+| `limit` | number | No | Maximum number of shops to return (default: 20) |
+| `offset` | number | No | Number of shops to skip for pagination (default: 0) |
 | `categoryId` | string | No | Filter shops by category ID |
 
 #### Headers
@@ -113,13 +113,19 @@ curl -X 'GET' \
 #### Example Response
 
 ```json
-[
+{
+  "data": [
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
       "name": "Piash Shop update",
       "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
     }
-  ]
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 10,
+    "skip": 0
+  }
 }
 ```
 
@@ -261,7 +267,8 @@ Retrieve a list of public shops with optional status and category filters.
 |-----------|------|----------|-------------|
 | `status` | string | No | Shop status to filter by (APPROVED, etc.) |
 | `category` | string | No | UUID of the category to filter by |
-| `limit` | number | No | Maximum number of shops to return (default: 10) |
+| `limit` | number | No | Maximum number of shops to return (default: 20) |
+| `offset` | number | No | Number of shops to skip for pagination (default: 0) |
 
 #### Headers
 
