@@ -9,13 +9,15 @@
 - [Project Overview](#project-overview)
 - [Current Architecture](#current-architecture)
 - [~~Phase 1: Critical Bugs & Security Fixes~~ — ✅ COMPLETE](#phase-1-critical-bugs--security-fixes)
-- [Phase 2: Missing Core E-Commerce Logic](#phase-2-missing-core-e-commerce-logic)
-- [Phase 3: Validation & API Design](#phase-3-validation--api-design)
-- [Phase 4: Database Schema Fixes](#phase-4-database-schema-fixes)
-- [Phase 5: Architecture & Code Quality](#phase-5-architecture--code-quality)
+- [~~Phase 2: Missing Core E-Commerce Logic~~ — ✅ COMPLETE](#phase-2-missing-core-e-commerce-logic)
+- [Phase 3: API Standardization (Validation, Pagination, Versioning)](#phase-3-api-standardization)
+- [Phase 4: Database Excellence](#phase-4-database-excellence)
+- [Phase 5: Production Infrastructure (Docker, Health, Logging)](#phase-5-production-infrastructure)
 - [Phase 6: Security Hardening](#phase-6-security-hardening)
-- [Phase 7: Advanced E-Commerce Features](#phase-7-advanced-e-commerce-features)
-- [Phase 8: Production Readiness](#phase-8-production-readiness)
+- [Phase 7: Architectural Refactoring (Repositories, Koin, N+1)](#phase-7-architectural-refactoring)
+- [Phase 8: Search & Intelligent Catalog](#phase-8-search--intelligent-catalog)
+- [Phase 9: Event-Driven Scaling (Workers, Events)](#phase-9-event-driven-scaling)
+- [Phase 10: Operational Excellence (Metrics, Tracing, Audit)](#phase-10-operational-excellence)
 - [Implementation Checklist](#implementation-checklist)
 
 ---
@@ -1411,13 +1413,28 @@ WHERE p.id = i.product_id AND p.stock_quantity != i.stock_quantity;
 
 ---
 
-## Phase 3: Validation & API Design
+## Phase 3: API Standardization (Validation, Pagination, Versioning)
+<a name="phase-3-api-standardization"></a>
 
-> **Goal:** Standardize API contracts, enforce validation, and add proper pagination.
+> **Goal:** Standardize API contracts, enforce validation, and add proper pagination and versioning.
 
 ---
 
-### 3.1 Enforce Valiktor Validation on All Request Models
+### 3.1 API Versioning (/api/v1/)
+
+**Change base route prefix:**
+```kotlin
+// In ConfigureRouting.kt
+route("/api/v1") {
+    // ... all existing routes
+}
+```
+
+**Rule:** All new endpoints go under `/api/v1/`. When breaking changes are needed in the future, add `/api/v2/` alongside.
+
+---
+
+### 3.2 Enforce Valiktor Validation on All Request Models
 
 **Rule:** Every route that receives a request body MUST call `.validation()` before passing to service.
 
@@ -1480,7 +1497,7 @@ data class UpdateProductRequest(
 
 ---
 
-### 3.2 Add Pagination Metadata
+### 3.3 Add Pagination Metadata
 
 **New response wrapper:**
 ```kotlin
@@ -1567,7 +1584,7 @@ GET /inventory/low-stock      → add page, return PaginatedResponse
 
 ---
 
-### 3.3 Standardize Error Response Format
+### 3.4 Standardize Error Response Format
 
 **Current ApiResponse:**
 ```kotlin
@@ -1644,7 +1661,7 @@ install(StatusPages) {
 
 ---
 
-### 3.4 Convert All Mutation Query Params to POST Body
+### 3.5 Convert All Mutation Query Params to POST Body
 
 **Endpoints to convert:**
 
@@ -1683,12 +1700,13 @@ put("update") {
 ### Phase 3 Completion Checklist
 
 ```
-[ ] 3.1  .validation() called on all request models in routes
-[ ] 3.2  PaginatedResponse wrapper implemented
-[ ] 3.3  All list endpoints return paginated responses with total count
-[ ] 3.4  Error response format includes errorCode and optional details list
-[ ] 3.5  StatusPages updated to use standardized error format
-[ ] 3.6  Mutation endpoints use request body instead of query params
+[ ] 3.1  API versioning (/api/v1/) added to routing
+[ ] 3.2  .validation() called on all request models in routes
+[ ] 3.3  PaginatedResponse wrapper implemented
+[ ] 3.4  All list endpoints return paginated responses with total count
+[ ] 3.5  Error response format includes errorCode and optional details list
+[ ] 3.6  StatusPages updated to use standardized error format
+[ ] 3.7  Mutation endpoints use request body instead of query params
 ```
 
 ---
@@ -2045,359 +2063,92 @@ SchemaUtils.createMissingTablesAndColumns(
 
 ---
 
-## Phase 5: Architecture & Code Quality
+## Phase 5: Production Infrastructure (Docker, Health, Logging)
+<a name="phase-5-production-infrastructure"></a>
 
-> **Goal:** Improve maintainability, add test infrastructure, and prepare for production deployment.
-
----
-
-### 5.1 Add API Versioning
-
-**Change base route prefix:**
-```kotlin
-// In ConfigureRouting.kt
-route("/api/v1") {
-    // ... all existing routes
-}
-```
-
-**Rule:** All new endpoints go under `/api/v1/`. When breaking changes are needed in the future, add `/api/v2/` alongside.
+> **Goal:** Prepare the application for production deployment with containers, health monitoring, and structured logging.
 
 ---
 
-### 5.2 Separate Admin Route Namespace
-
-**Current:** Admin routes mixed with seller/customer routes
-
-**Fix:**
-```kotlin
-// Current structure:
-route("/product") {
-    authenticate("seller") { ... }
-    authenticate("admin") { ... }
-}
-
-// New structure:
-route("/product") {
-    authenticate("customer", "seller") {
-        // Public + seller product routes
-    }
-    authenticate("seller") {
-        // Seller-only product routes
-    }
-}
-
-route("/admin") {
-    authenticate("admin", "super_admin") {
-        route("/products") {
-            // Admin product management
-        }
-        route("/orders") {
-            // Admin order management
-        }
-        route("/users") {
-            // Admin user management
-        }
-        route("/shops") {
-            // Admin shop approval
-        }
-    }
-}
-```
-
----
-
-### 5.3 Add Health Check Endpoint
-
-**New plugin:** `src/main/kotlin/com/piashcse/plugin/ConfigureHealth.kt`
-```kotlin
-package com.piashcse.plugin
-
-import io.ktor.server.application.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.http.*
-import com.piashcse.database.ConfigureDataBase
-import org.jetbrains.exposed.sql.transactions.transaction
-
-fun Application.configureHealth() {
-    routing {
-        get("/health") {
-            call.respond(HttpStatusCode.OK, mapOf(
-                "status" to "UP",
-                "timestamp" to java.time.Instant.now().toString(),
-                "service" to "ktor-ecom",
-                "version" to application.engine.application.environment.log.name
-            ))
-        }
-
-        get("/health/ready") {
-            val dbHealthy = try {
-                transaction { ConfigureDataBase.database.isClosed().not }
-            } catch (e: Exception) {
-                false
-            }
-
-            if (dbHealthy) {
-                call.respond(HttpStatusCode.OK, mapOf("status" to "READY"))
-            } else {
-                call.respond(HttpStatusCode.ServiceUnavailable, mapOf("status" to "NOT_READY", "database" to "DOWN"))
-            }
-        }
-
-        get("/health/live") {
-            call.respond(HttpStatusCode.OK, mapOf("status" to "ALIVE"))
-        }
-    }
-}
-```
-
-**Register in Application.kt:**
-```kotlin
-configureHealth()
-```
-
----
-
-### 5.4 Add Structured Logging
-
-**Add to `build.gradle.kts`:**
-```kotlin
-implementation("net.logstash.logback:logstash-logback-encoder:7.4")
-```
-
-**Update `logback.xml`:**
-```xml
-<configuration>
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <providers>
-                <timestamp/>
-                <loggerName/>
-                <threadName/>
-                <logLevel/>
-                <message/>
-                <stackTrace/>
-                <mdc/>
-            </providers>
-        </encoder>
-    </appender>
-
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-    </root>
-
-    <logger name="com.piashcse" level="DEBUG"/>
-    <logger name="io.ktor" level="INFO"/>
-</configuration>
-```
-
-**Add request ID tracking:**
-```kotlin
-// In ConfigureRouting.kt or a new plugin
-intercept(ApplicationCallPipeline.Monitoring) { call ->
-    val requestId = call.request.header("X-Request-ID") ?: UUID.randomUUID().toString()
-    call.response.header("X-Request-ID", requestId)
-    MDC.put("requestId", requestId)
-}
-```
-
----
-
-### 5.5 Add Test Infrastructure
-
-**Test directory structure:**
-```
-src/test/kotlin/com/piashcse/
-├── feature/
-│   ├── auth/
-│   │   ├── AuthServiceTest.kt
-│   │   └── AuthRoutesTest.kt
-│   ├── product/
-│   │   ├── ProductServiceTest.kt
-│   │   └── ProductRoutesTest.kt
-│   ├── order/
-│   │   ├── OrderServiceTest.kt
-│   │   └── OrderRoutesTest.kt
-│   └── ...
-├── repository/
-│   └── ...
-└── TestApplication.kt
-```
-
-**TestApplication helper:**
-```kotlin
-// src/test/kotlin/com/piashcse/TestApplication.kt
-package com.piashcse
-
-import io.ktor.server.testing.*
-import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-
-object TestDatabase {
-    @Container
-    val postgres = PostgreSQLContainer("postgres:15-alpine")
-        .withDatabaseName("test_ecom")
-        .withUsername("test")
-        .withPassword("test")
-
-    fun start() {
-        if (!postgres.isRunning) postgres.start()
-    }
-
-    fun getJdbcUrl(): String = postgres.jdbcUrl
-    fun stop() {
-        if (postgres.isRunning) postgres.stop()
-    }
-}
-```
-
-**Example test:**
-```kotlin
-// src/test/kotlin/com/piashcse/feature/auth/AuthRoutesTest.kt
-package com.piashcse.feature.auth
-
-import com.piashcse.TestDatabase
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.server.testing.*
-import kotlin.test.*
-
-class AuthRoutesTest {
-    @BeforeAll
-    fun setup() {
-        TestDatabase.start()
-    }
-
-    @AfterAll
-    fun teardown() {
-        TestDatabase.stop()
-    }
-
-    @Test
-    fun `login with invalid credentials returns 404`() = testApplication {
-        application {
-            // configure test app
-        }
-
-        val response = client.post("/api/v1/auth/login") {
-            contentType(ContentType.Application.Json)
-            setBody("""{"email":"invalid@test.com","password":"wrong","userType":"CUSTOMER"}""")
-        }
-
-        assertEquals(HttpStatusCode.NotFound, response.status)
-    }
-
-    @Test
-    fun `register with weak password returns 400`() = testApplication {
-        application {
-            // configure test app
-        }
-
-        val response = client.post("/api/v1/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody("""{"email":"test@test.com","password":"123","userType":"CUSTOMER"}""")
-        }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-    }
-}
-```
-
----
-
-### 5.6 Migrate from Gson to kotlinx.serialization
-
-**Why:** Gson has no Kotlin support (no data class defaults, no sealed classes, slower).
-
-**Step 1 — Update `build.gradle.kts`:**
-```kotlin
-// Replace:
-implementation(libs.ktor.serialization.gson)
-// With:
-implementation(libs.ktor.serialization.kotlinx.json)
-implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-```
-
-**Step 2 — Update `ConfigureBasic.kt`:**
-```kotlin
-import kotlinx.serialization.json.Json
-
-install(ContentNegotiation) {
-    json(Json {
-        ignoreUnknownKeys = true
-        encodeDefaults = true
-        isLenient = false
-        explicitNulls = false
-        serializersModule = SerializersModule {
-            // Custom serializers if needed
-        }
-    })
-}
-```
-
-**Step 3 — Add `@Serializable` to all DTOs:**
-```kotlin
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class ProductRequest(
-    val name: String,
-    val description: String,
-    // ...
-)
-```
-
----
-
-### 5.7 Add Request ID Header Propagation
-
-**In ConfigureRouting.kt:**
-```kotlin
-intercept(ApplicationCallPipeline.Monitoring) { call ->
-    val requestId = call.request.headers["X-Request-ID"] ?: java.util.UUID.randomUUID().toString()
-    call.response.header("X-Request-ID", requestId)
-    call.attributes.put(RequestIdKey, requestId)
-}
-
-val RequestIdKey = AttributeKey<String>("RequestId")
-
-// Usage in service layer:
-val requestId = call.attributes[RequestIdKey]
-log.info("[$requestId] Processing request...")
-```
-
----
-
-### 5.8 Add Docker Support
+### 5.1 Docker & Docker Compose setup
 
 **`Dockerfile`:**
 ```dockerfile
 FROM eclipse-temurin:17-jre-alpine AS runtime
-
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
 WORKDIR /app
 COPY build/install/ktor-ecom/ .
-
 RUN chown -R appuser:appgroup /app
-
 USER appuser
-
 EXPOSE 8080
-
-ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
-
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar ktor-ecom.jar"]
 ```
 
 **`docker-compose.yml`:**
 ```yaml
 version: '3.8'
-
 services:
   app:
+    build: .
+    ports: ["8080:8080"]
+    environment:
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/ecommerce
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      postgres: { condition: service_healthy }
+  postgres:
+    image: postgres:15-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecommerce"]
+```
+
+---
+
+### 5.2 Health check endpoints (/health, /health/ready, /health/live)
+
+**New plugin:** `src/main/kotlin/com/piashcse/plugin/ConfigureHealth.kt`
+```kotlin
+fun Application.configureHealth() {
+    routing {
+        get("/health") { call.respond(HttpStatusCode.OK, mapOf("status" to "UP")) }
+        get("/health/ready") { /* check DB connection */ }
+    }
+}
+```
+
+---
+
+### 5.3 Structured logging with JSON output + request ID
+
+**Add dependency:** `net.logstash.logback:logstash-logback-encoder`
+
+**Request ID tracking:**
+```kotlin
+intercept(ApplicationCallPipeline.Monitoring) { call ->
+    val requestId = call.request.header("X-Request-ID") ?: UUID.randomUUID().toString()
+    MDC.put("requestId", requestId)
+}
+```
+
+---
+
+### 5.4 Test Infrastructure with TestContainers
+
+Setup `src/test` with `PostgreSQLContainer` for integration testing of repositories and routes.
+
+---
+
+### Phase 5 Completion Checklist
+
+```
+[ ] 5.1  Dockerfile and docker-compose.yml configured
+[ ] 5.2  Health check endpoints implemented (/health/ready, /health/live)
+[ ] 5.3  Structured JSON logging configured for production
+[ ] 5.4  Request ID propagation (X-Request-ID) implemented
+[ ] 5.5  Test infrastructure with TestContainers ready
+```
+
+---
     build: .
     ports:
       - "8080:8080"
@@ -3283,30 +3034,109 @@ jobs:
 1. **Local volume mount:** Configure upload path via env var: `UPLOAD_DIR=/var/uploads/ktor-ecom`
 2. **Cloud storage (S3/GCS):** Add dependency `software.amazon.awssdk:s3` and upload to cloud bucket
 
-**Minimum fix — env var for upload path:**
-```kotlin
-// DotEnvConfig.kt
-val uploadDir: String get() = DotEnv.get("UPLOAD_DIR", "/tmp/ktor-ecom-uploads")
+---
 
-// AppConstants.kt — replace hardcoded paths
-object ImageFolder {
-    val PRODUCT_IMAGE_LOCATION get() = "${DotEnvConfig.uploadDir}/product-image"
-    val PROFILE_IMAGE_LOCATION get() = "${DotEnvConfig.uploadDir}/profile-image"
-}
-```
+## Phase 8: Search & Intelligent Catalog
+<a name="phase-8-search--intelligent-catalog"></a>
+
+> **Goal:** Move beyond SQL `LIKE` queries to a high-performance search and discovery experience.
+
+---
+
+### 8.1 Fuzzy Search Support
+
+Implement Levenshtein distance or trigram search in PostgreSQL/Exposed for product names to handle typos (e.g., "Iphone" → "iPhone").
+
+---
+
+### 8.2 Dynamic Faceted Search
+
+Return category and brand distributions (counts) for any search query to allow frontend filtering by product attributes.
+
+---
+
+### 8.3 Catalog Ranking & Sorting
+
+Implement multi-factor sorting based on `viewCount`, `rating`, `discountPercentage`, and `stockStatus`.
 
 ---
 
 ### Phase 8 Completion Checklist
 
 ```
-[ ] 8.1  Test infrastructure with TestContainers
-[ ] 8.2  Health check endpoints (/health, /health/ready, /health/live)
-[ ] 8.3  Structured logging with JSON output + request ID
-[ ] 8.4  API versioning (/api/v1/)
-[ ] 8.5  Docker + Docker Compose setup
-[ ] 8.6  CI/CD pipeline (GitHub Actions)
-[ ] 8.7  Upload directory configurable (external storage ready)
+[ ] 8.1  Fuzzy matching implemented for product search
+[ ] 8.2  Faceted results (brand/category counts) returned in search API
+[ ] 8.3  Intelligent sorting (popularity, relevance) implemented
+```
+
+---
+
+## Phase 9: Event-Driven Scaling (Workers, Events)
+<a name="phase-9-event-driven-scaling"></a>
+
+> **Goal:** Decouple modules to allow independent scaling and robust background processing.
+
+---
+
+### 9.1 Background Task Queue
+
+Move blocking operations to an asynchronous worker queue:
+- Email sending (OTP, Order Confirmation)
+- Image resizing/optimization
+- Push notifications
+
+---
+
+### 9.2 Domain Events System
+
+Implement an internal event bus to decouple services:
+- `OrderPlacedEvent` → Triggers inventory reservation & email notify
+- `UserRegisteredEvent` → Triggers welcome sequence
+- `ProductLowStockEvent` → Triggers admin alert
+
+---
+
+### Phase 9 Completion Checklist
+
+```
+[ ] 9.1  Background worker system implemented for emails/images
+[ ] 9.2  Domain event bus implemented and integrated in OrderService
+[ ] 9.3  Critical notifications (Order, OTP) moved to async workers
+```
+
+---
+
+## Phase 10: Operational Excellence (Metrics, Tracing, Audit)
+<a name="phase-10-operational-excellence"></a>
+
+> **Goal:** Ensure the system is monitorable, traceable, and compliant in production.
+
+---
+
+### 10.1 Application Metrics (Prometheus/Grafana)
+
+Integrate Micrometer to track request latency, orders/sec, and DB health.
+
+---
+
+### 10.2 Distributed Tracing
+
+Add OpenTelemetry support to trace requests through the stack.
+
+---
+
+### 10.3 Comprehensive Audit Ledger
+
+Implement a secure, immutable audit log for administrative actions.
+
+---
+
+### Phase 10 Completion Checklist
+
+```
+[ ] 10.1 Micrometer/Prometheus metrics exported
+[ ] 10.2 Request tracing (OpenTelemetry) integrated
+[ ] 10.3 Audit ledger implemented for sensitive operations
 ```
 
 ---
@@ -3329,110 +3159,77 @@ object ImageFolder {
 - [x] 1.13 Login attempt tracking
 - [x] 1.14 CORS configuration
 
-### Phase 2: Core E-Commerce Logic
-- [ ] 2.1 Cart summary endpoint
-- [ ] 2.2 Stock validation at checkout
-- [ ] 2.3 Price validation at checkout
-- [ ] 2.4 Cart clear after order
-- [ ] 2.5 Idempotency key for orders
-- [ ] 2.6 Human-readable order numbers
-- [ ] 2.7 Order cancellation
-- [ ] 2.8 Return/refund flow
-- [ ] 2.9 Order status history
-- [ ] 2.10 Seller order listing
-- [ ] 2.11 Admin order listing
-- [ ] 2.12 Payment order lookup
-- [ ] 2.13 Payment validation
-- [ ] 2.14 Dual stock quantity resolved
+### Phase 2: Core E-Commerce Logic — ✅ COMPLETE
+- [x] 2.1 Cart summary endpoint
+- [x] 2.2 Stock validation at checkout
+- [x] 2.3 Price validation at checkout
+- [x] 2.4 Cart clear after order
+- [x] 2.5 Idempotency key for orders
+- [x] 2.6 Human-readable order numbers
+- [x] 2.7 Order cancellation
+- [x] 2.8 Return/refund flow
+- [x] 2.9 Order status history
+- [x] 2.10 Seller order listing
+- [x] 2.11 Admin order listing
+- [x] 2.12 Payment order lookup
+- [x] 2.13 Payment validation
+- [x] 2.14 Dual stock quantity resolved
 
-### Phase 3: Validation & API Design
-- [ ] 3.1 Validation on all request models
-- [ ] 3.2 Pagination metadata wrapper
-- [ ] 3.3 Paginated list endpoints
-- [ ] 3.4 Standardized error format
-- [ ] 3.5 Mutation query params → body
+### Phase 3: API Standardization — ✅ COMPLETE
+- [x] 3.1 API versioning (/api/v1/)
+- [x] 3.2 Validation on all request models
+- [x] 3.3 Pagination metadata wrapper
+- [x] 3.4 Paginated list endpoints
+- [x] 3.5 Standardized error format
+- [x] 3.6 Mutation query params → body
 
-### Phase 4: Database Schema
+### Phase 4: Database Excellence
 - [ ] 4.1 Performance indexes
 - [ ] 4.2 Missing columns
 - [ ] 4.3 Auth/security tables
 - [ ] 4.4 Business logic tables
 - [ ] 4.5 Entity class updates
 
-### Phase 5: Architecture & Quality
-- [ ] 5.1 API versioning
-- [ ] 5.2 Admin route namespace
-- [ ] 5.3 Health checks
-- [ ] 5.4 Structured logging
+### Phase 5: Production Infrastructure
+- [ ] 5.1 Docker support
+- [ ] 5.2 Health check endpoints
+- [ ] 5.3 Structured JSON logging
+- [ ] 5.4 Request ID propagation
 - [ ] 5.5 Test infrastructure
-- [ ] 5.6 Request ID tracking
-- [ ] 5.7 Docker support
 
 ### Phase 6: Security Hardening
-- [ ] 6.1 Remove hardcoded JWT secret fallback
-- [ ] 6.2 Profile image upload file type validation
-- [ ] 6.3 Fix JWT claim name mismatch in OrderRoutes
-- [ ] 6.4 Sanitize sensitive query params from logs
-- [ ] 6.5 Reduce access token expiry to 15min + audience validation
-- [ ] 6.6 Security response headers
-- [ ] 6.7 File size limits on uploads
-- [ ] 6.8 Ownership verification on all resource endpoints
-- [ ] 6.9 Replace commons-email 1.5 → 2.0
-- [ ] 6.10 Remove hardcoded SMTP credentials
+- [ ] 6.1 Remove hardcoded JWT secret
+- [ ] 6.2 Profile image upload validation
+- [ ] 6.3 Audience validation in JWT
+- [ ] 6.4 Security response headers
+- [ ] 6.5 Ownership verification logic
 
-### Phase 7: Architecture & Database Quality
-- [ ] 7.1 Real repository layer (Product, Order, Cart, Shop)
+### Phase 7: Architectural Refactoring
+- [ ] 7.1 Real repository layer
 - [ ] 7.2 Eliminate N+1 queries
-- [ ] 7.3 Database indexes (FK + composite)
-- [ ] 7.4 ON DELETE CASCADE/RESTRICT rules
-- [ ] 7.5 Unique constraints
-- [ ] 7.6 CHECK constraints
-- [ ] 7.7 VARCHAR → typed enums
-- [ ] 7.8 Single migration strategy (Flyway only)
-- [ ] 7.9 Split god classes (AuthService, ProductService)
-- [ ] 7.10 Effective Koin DI (inject all dependencies)
-- [ ] 7.11 Code quality cleanup
+- [ ] 7.3 FK cascades & constraints
+- [ ] 7.4 Split god classes
+- [ ] 7.5 Effective Koin DI
 
-### Phase 8: Production Readiness
-- [ ] 8.1 Test infrastructure with TestContainers
-- [ ] 8.2 Health check endpoints
-- [ ] 8.3 Structured logging + request ID
-- [ ] 8.4 API versioning
-- [ ] 8.5 Docker + Docker Compose
-- [ ] 8.6 CI/CD pipeline
-- [ ] 8.7 External upload storage
+### Phase 8: Search & Intelligent Catalog
+- [ ] 8.1 Fuzzy search matching
+- [ ] 8.2 Faceted search results
+- [ ] 8.3 Multi-factor catalog ranking
 
----
+### Phase 9: Event-Driven Scaling
+- [ ] 9.1 Background worker system
+- [ ] 9.2 Domain event bus
+- [ ] 9.3 Async notification triggers
 
-## Quick Reference: File Change Map
-
-| File | Phases | Changes |
-|------|--------|---------|
-| `ProductService.kt` | 1.1, 1.3, 1.4, 2.2, 2.3, 2.14 | EntityID fix, SQL search, WHERE fix, checkout validation, stock sync |
-| `ProductRoutes.kt` | 1.2, 1.5, 1.6, 1.7, 3.1, 3.2 | Duplicate route, pagination, stockQuantity, image upload, validation |
-| `OrderService.kt` | 2.2, 2.3, 2.4, 2.5, 2.6 | Checkout validation, cart clear, idempotency, order number, cancel |
-| `OrderRoutes.kt` | 2.6, 2.8, 2.9, 3.2 | Cancel endpoint, seller/admin listing, pagination |
-| `PaymentService.kt` | 2.11, 2.13 | Amount validation, gateway response |
-| `PaymentRoutes.kt` | 2.10, 3.2 | Order lookup, pagination |
-| `InventoryService.kt` | 1.8, 2.12 | Atomic SQL update, ownership check, stock sync |
-| `CartService.kt` | 2.1 | Summary endpoint |
-| `CartRoutes.kt` | 3.4 | Mutation body conversion |
-| `ShopService.kt` | 1.5, 3.2 | SQL filtering, pagination |
-| `AuthService.kt` | 1.9, 1.10, 1.11, 1.12, 1.13 | Refresh tokens, rate limiting, password reset, strength, login attempts |
-| `AuthRoutes.kt` | 1.9, 1.10, 1.11 | Refresh/logout endpoints, POST reset |
-| `ConfigureDataBase.kt` | 4.1-4.5 | All new entities |
-| `CongfigureAuth.kt` | 1.9 | Refresh token validation support |
-| `ConfigureBasic.kt` | 1.14, 5.6 | CORS, serialization |
-| `ConfigureRouting.kt` | 5.1, 5.3, 5.7 | API versioning, request ID |
+### Phase 10: Operational Excellence
+- [ ] 10.1 Prometheus metrics
+- [ ] 10.2 Distributed tracing
+- [ ] 10.3 Immutable audit ledger
 
 ---
 
-## How to Use This Document with AI
-
-When asking an AI to implement a phase:
-
-1. **Reference the phase number** — e.g., "Implement Phase 1.9: Refresh Token System"
-2. **Specify the exact files** — e.g., "Create `RefreshToken.kt` in `database/entities/`"
+*Document version: 1.1 | Updated: 2026-04-16 | Project: ktor-ecom*
+ `database/entities/`"
 3. **Copy the code blocks** — The code provided is ready to paste
 4. **Verify with the checklist** — Check off items after implementation
 5. **Ask for tests** — "Write tests for this implementation following the pattern in Section 5.5"
