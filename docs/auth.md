@@ -16,9 +16,9 @@ This documentation provides comprehensive details for the Authentication API end
 | `POST` | `/auth/refresh-token` | Refresh access token using refresh token | No |
 | `POST` | `/auth/logout` | Logout and revoke refresh token | Yes |
 | `PUT` | `/auth/change-password` | Change password for authenticated user | Yes |
-| `PUT` | `/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin/Super Admin) |
-| `PUT` | `/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin/Super Admin) |
-| `PUT` | `/auth/{userId}/activate` | Activate user account | Yes (Admin/Super Admin) |
+| `PUT` | `/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin/Super Admin) |
+| `PUT` | `/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin/Super Admin) |
+| `PUT` | `/admin/auth/{userId}/activate` | Activate user account | Yes (Admin/Super Admin) |
 
 ---
 
@@ -384,7 +384,7 @@ curl -X 'PUT' \
 
 ### 9. Change User Type
 
-**`PUT /auth/{userId}/change-user-type`**
+**`PUT /admin/auth/{userId}/change-user-type`**
 
 Change an existing user's account type. This endpoint is available to administrators.
 
@@ -411,7 +411,7 @@ Change an existing user's account type. This endpoint is available to administra
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type?userType=ADMIN' \
+  'http://localhost:8080/api/v1/admin/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type?userType=ADMIN' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -428,7 +428,7 @@ curl -X 'PUT' \
 
 ### 10. Deactivate User
 
-**`PUT /auth/{userId}/deactivate`**
+**`PUT /admin/auth/{userId}/deactivate`**
 
 Deactivate a user account, preventing the user from logging in or accessing the system. This operation can be reversed with the activate endpoint.
 
@@ -449,7 +449,7 @@ Deactivate a user account, preventing the user from logging in or accessing the 
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate' \
+  'http://localhost:8080/api/v1/admin/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -464,7 +464,7 @@ curl -X 'PUT' \
 
 ### 11. Activate User
 
-**`PUT /auth/{userId}/activate`**
+**`PUT /admin/auth/{userId}/activate`**
 
 Activate a previously deactivated user account, allowing the user to log in and access the system again.
 
@@ -485,7 +485,7 @@ Activate a previously deactivated user account, allowing the user to log in and 
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate' \
+  'http://localhost:8080/api/v1/admin/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -504,9 +504,9 @@ curl -X 'PUT' \
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `PUT` | `/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin/Super Admin) |
-| `PUT` | `/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin/Super Admin) |
-| `PUT` | `/auth/{userId}/activate` | Activate user account | Yes (Admin/Super Admin) |
+| `PUT` | `/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin/Super Admin) |
+| `PUT` | `/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin/Super Admin) |
+| `PUT` | `/admin/auth/{userId}/activate` | Activate user account | Yes (Admin/Super Admin) |
 
 ---
 

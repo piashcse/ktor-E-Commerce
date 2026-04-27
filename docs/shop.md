@@ -23,11 +23,11 @@ Authorization: Bearer <your_access_token>
 | `GET` | `/shop/public` | Retrieve list of public shops with filters | No |
 | `GET` | `/shop/category/{categoryId}` | Retrieve shops by category | No |
 | `GET` | `/shop/featured` | Retrieve featured shops | No |
-| `GET` | `/shop/status` | Retrieve shops by status | Yes (Admin/Super Admin) |
-| `PUT` | `/shop/approve/{id}` | Approve a shop | Yes (Admin/Super Admin) |
-| `PUT` | `/shop/reject/{id}` | Reject a shop | Yes (Admin/Super Admin) |
-| `PUT` | `/shop/suspend/{id}` | Suspend a shop | Yes (Admin/Super Admin) |
-| `PUT` | `/shop/activate/{id}` | Activate a shop | Yes (Admin/Super Admin) |
+| `GET` | `/admin/shop/status` | Retrieve shops by status | Yes (Admin/Super Admin) |
+| `PUT` | `/admin/shop/approve/{id}` | Approve a shop | Yes (Admin/Super Admin) |
+| `PUT` | `/admin/shop/reject/{id}` | Reject a shop | Yes (Admin/Super Admin) |
+| `PUT` | `/admin/shop/suspend/{id}` | Suspend a shop | Yes (Admin/Super Admin) |
+| `PUT` | `/admin/shop/activate/{id}` | Activate a shop | Yes (Admin/Super Admin) |
 
 ---
 
@@ -247,11 +247,11 @@ curl -X 'DELETE' \
 | `GET` | `/shop/public` | Retrieve public shops with filters | No |
 | `GET` | `/shop/category/{categoryId}` | Retrieve shops by category | No |
 | `GET` | `/shop/featured` | Retrieve featured shops | No |
-| `GET` | `/shop/status` | Retrieve shops by status | Yes (Admin/Super Admin) |
-| `PUT` | `/shop/approve/{id}` | Approve a shop (Admin/Super Admin) | Yes |
-| `PUT` | `/shop/reject/{id}` | Reject a shop (Admin/Super Admin) | Yes |
-| `PUT` | `/shop/suspend/{id}` | Suspend a shop (Admin/Super Admin) | Yes |
-| `PUT` | `/shop/activate/{id}` | Activate a shop (Admin/Super Admin) | Yes |
+| `GET` | `/admin/shop/status` | Retrieve shops by status | Yes (Admin/Super Admin) |
+| `PUT` | `/admin/shop/approve/{id}` | Approve a shop (Admin/Super Admin) | Yes |
+| `PUT` | `/admin/shop/reject/{id}` | Reject a shop (Admin/Super Admin) | Yes |
+| `PUT` | `/admin/shop/suspend/{id}` | Suspend a shop (Admin/Super Admin) | Yes |
+| `PUT` | `/admin/shop/activate/{id}` | Activate a shop (Admin/Super Admin) | Yes |
 
 ---
 
@@ -410,7 +410,7 @@ curl -X 'GET' \
 
 ### 8. Get Shops by Status
 
-**`GET /shop/status`**
+**`GET /admin/shop/status`**
 
 Retrieve shops filtered by status.
 
@@ -431,7 +431,7 @@ Retrieve shops filtered by status.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/shop/status?status=APPROVED' \
+  'http://localhost:8080/api/v1/admin/shop/status?status=APPROVED' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -464,7 +464,7 @@ curl -X 'GET' \
 
 ### 9. Approve Shop
 
-**`PUT /shop/approve/{id}`**
+**`PUT /admin/shop/approve/{id}`**
 
 Approve a shop (Admin/Super Admin only).
 
@@ -485,7 +485,7 @@ Approve a shop (Admin/Super Admin only).
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
+  'http://localhost:8080/api/v1/admin/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -513,7 +513,7 @@ curl -X 'PUT' \
 
 ### 10. Reject Shop
 
-**`PUT /shop/reject/{id}`**
+**`PUT /admin/shop/reject/{id}`**
 
 Reject a shop (Admin/Super Admin only).
 
@@ -534,7 +534,7 @@ Reject a shop (Admin/Super Admin only).
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/shop/reject/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
+  'http://localhost:8080/api/v1/admin/shop/reject/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -562,7 +562,7 @@ curl -X 'PUT' \
 
 ### 11. Suspend Shop
 
-**`PUT /shop/suspend/{id}`**
+**`PUT /admin/shop/suspend/{id}`**
 
 Suspend a shop (Admin/Super Admin only).
 
@@ -583,7 +583,7 @@ Suspend a shop (Admin/Super Admin only).
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/shop/suspend/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
+  'http://localhost:8080/api/v1/admin/shop/suspend/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -611,7 +611,7 @@ curl -X 'PUT' \
 
 ### 12. Activate Shop
 
-**`PUT /shop/activate/{id}`**
+**`PUT /admin/shop/activate/{id}`**
 
 Activate a shop (Admin/Super Admin only).
 
@@ -632,7 +632,7 @@ Activate a shop (Admin/Super Admin only).
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/shop/activate/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
+  'http://localhost:8080/api/v1/admin/shop/activate/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```

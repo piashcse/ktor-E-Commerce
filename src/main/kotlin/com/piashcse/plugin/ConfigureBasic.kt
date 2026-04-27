@@ -45,7 +45,6 @@ fun Application.configureBasic() {
         allowHeader(HttpHeaders.ContentType)
         allowHeader(HttpHeaders.Authorization)
         allowHeader("X-Requested-With")
-        exposeHeader("X-Request-ID")
     }
     install(ContentNegotiation) {
         gson {

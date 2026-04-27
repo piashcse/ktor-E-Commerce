@@ -52,7 +52,7 @@ Create a new inventory record for a specific product with initial quantities.
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/inventory' \
+  'http://localhost:8080/api/v1/inventory' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -119,7 +119,7 @@ Update an existing inventory record by its ID. You can modify the quantity and r
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/inventory/12345678-1234-1234-1234-123456789012' \
+  'http://localhost:8080/api/v1/inventory/12345678-1234-1234-1234-123456789012' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -194,7 +194,7 @@ Update the stock quantity for a specific product with atomic operations. This en
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add' \
+  'http://localhost:8080/api/v1/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -250,7 +250,7 @@ Retrieve detailed inventory information for a specific product.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/inventory/cbd630f6-bf9f-48ad-ac51-f806807d99fd' \
+  'http://localhost:8080/api/v1/inventory/cbd630f6-bf9f-48ad-ac51-f806807d99fd' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -304,7 +304,7 @@ Retrieve inventory records associated with a specific shop.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/inventory/shop?shopId=12345678-1234-1234-1234-123456789012' \
+  'http://localhost:8080/api/v1/inventory/shop?shopId=12345678-1234-1234-1234-123456789012' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -359,7 +359,7 @@ Retrieve inventory records that have low stock levels, typically used for restoc
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/inventory/low-stock' \
+  'http://localhost:8080/api/v1/inventory/low-stock' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```

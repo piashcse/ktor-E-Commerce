@@ -72,6 +72,8 @@ scalable, and efficient service for handling your e-commerce needs.
 - **Password Strength**: Enforced password complexity requirements.
 - **Input Validation**: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).
 - **Atomic Stock Operations**: Thread-safe inventory updates within database transactions.
+- **Health Checks**: Comprehensive health monitoring with `/health`, `/health/live`, and `/health/ready` endpoints.
+- **Structured Logging**: Production-ready JSON logging with correlation IDs (Request IDs) for easier debugging and log aggregation.
 
 ## Architecture
 
@@ -206,6 +208,7 @@ For comprehensive API documentation, please refer to the following resources:
 - [Inventory API](inventory.md) - Inventory management
 - [Privacy Policy API](privacy-policy.md) - Privacy policy management
 - [Privacy Policy Consent API](privacy-policy-consent.md) - User consent tracking
+- [Monitoring & Health](monitoring.md) - System health and monitoring endpoints
 
 
 ## 👨 Developed By

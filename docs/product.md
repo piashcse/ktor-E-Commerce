@@ -16,17 +16,21 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/product` | Create a new product | Yes |
+| `POST` | `/admin/product` | Create a new product (Admin) | Yes (Admin) |
+| `POST` | `/product` | Create a new product (Seller) | Yes (Seller) |
 | `GET` | `/product/{id}` | Retrieve a specific product | Yes |
-| `PUT` | `/product/{id}` | Update an existing product | Yes |
+| `PUT` | `/admin/product/{id}` | Update an existing product (Admin) | Yes (Admin) |
+| `PUT` | `/product/{id}` | Update an existing product (Seller) | Yes (Seller) |
 | `GET` | `/product` | Retrieve list of products with filters | Yes |
 | `GET` | `/product/search` | Search products with filters | No |
-| `GET` | `/product/seller` | Retrieve products belonging to seller | Yes |
+| `GET` | `/product/seller` | Retrieve products belonging to seller | Yes (Seller) |
 | `GET` | `/product/featured` | Retrieve featured products | No |
 | `GET` | `/product/best-selling` | Retrieve best selling products | No |
 | `GET` | `/product/hot-deals` | Retrieve products on hot deals | No |
-| `DELETE` | `/product/{id}` | Delete a product | Yes |
-| `POST` | `/product/image-upload` | Upload product image | Yes |
+| `DELETE` | `/admin/product/{id}` | Delete a product (Admin) | Yes (Admin) |
+| `DELETE` | `/product/{id}` | Delete a product (Seller) | Yes (Seller) |
+| `POST` | `/admin/product/image-upload` | Upload product image (Admin) | Yes (Admin) |
+| `POST` | `/product/image-upload` | Upload product image (Seller) | Yes (Seller) |
 
 ---
 
@@ -34,7 +38,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Product
 
-**`POST /product`**
+**`POST /admin/product`** (Admin) or **`POST /product`** (Seller)
 
 Create a new product with specified details including name, description, price, and category information.
 
@@ -80,7 +84,7 @@ Create a new product with specified details including name, description, price, 
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/product' \
+  'http://localhost:8080/api/v1/admin/product' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <your_token>' \
   -H 'Content-Type: application/json' \
@@ -147,7 +151,7 @@ curl -X 'GET' \
 
 ### 3. Update Product
 
-**`PUT /product/{id}`**
+**`PUT /admin/product/{id}`** (Admin) or **`PUT /product/{id}`** (Seller)
 
 Update an existing product's information.
 
@@ -170,7 +174,7 @@ Update an existing product's information.
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5' \
+  'http://localhost:8080/api/v1/admin/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <your_token>' \
   -H 'Content-Type: application/json' \
@@ -210,7 +214,7 @@ curl -X 'GET' \
 
 ### 5. Delete Product
 
-**`DELETE /product/{id}`**
+**`DELETE /admin/product/{id}`** (Admin) or **`DELETE /product/{id}`** (Seller)
 
 Delete a product by its ID.
 
@@ -224,7 +228,7 @@ Delete a product by its ID.
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/product?productId=79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
+  'http://localhost:8080/api/v1/admin/product?productId=79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <your_token>'
 ```
@@ -233,7 +237,7 @@ curl -X 'DELETE' \
 
 ### 6. Upload Product Image
 
-**`POST /product/image-upload`**
+**`POST /admin/product/image-upload`** (Admin) or **`POST /product/image-upload`** (Seller)
 
 Upload an image for a specific product.
 
@@ -252,7 +256,7 @@ Form data with file upload:
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/product/image-upload?id=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
+  'http://localhost:8080/api/v1/admin/product/image-upload?id=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <your_token>' \
   -H 'Content-Type: multipart/form-data' \

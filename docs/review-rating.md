@@ -49,7 +49,7 @@ Retrieve reviews for a specific product with optional pagination support.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10' \
+  'http://localhost:8080/api/v1/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -113,7 +113,7 @@ Create a new review and rating for a product. The review will be associated with
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/review-rating' \
+  'http://localhost:8080/api/v1/review-rating' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -178,7 +178,7 @@ Update an existing review by its ID. You can modify both the review text and rat
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&rating=5' \
+  'http://localhost:8080/api/v1/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&rating=5' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -230,7 +230,7 @@ Delete a review by its ID. This operation permanently removes the review from th
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736' \
+  'http://localhost:8080/api/v1/review-rating/70ac842b-7a81-4976-9564-d440880d1736' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```

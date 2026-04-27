@@ -47,7 +47,7 @@ Retrieve shipping information associated with a specific order ID.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd' \
+  'http://localhost:8080/api/v1/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -114,7 +114,7 @@ Create a new shipping address for a specific order.
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/shipping' \
+  'http://localhost:8080/api/v1/shipping' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -193,7 +193,7 @@ Update an existing shipping address by its ID. You can modify any of the shippin
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=Updated%20shipping%20address' \
+  'http://localhost:8080/api/v1/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=Updated%20shipping%20address' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -253,7 +253,7 @@ Delete a shipping address by its ID. This operation permanently removes the ship
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8' \
+  'http://localhost:8080/api/v1/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```

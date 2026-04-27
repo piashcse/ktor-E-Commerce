@@ -16,10 +16,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/product-category` | Create a new product category | Yes |
+| `POST` | `/admin/product-category` | Create a new product category | Yes (Admin) |
 | `GET` | `/product-category` | Retrieve list of product categories | Yes |
-| `PUT` | `/product-category/{id}` | Update an existing product category | Yes |
-| `DELETE` | `/product-category/{id}` | Delete a product category | Yes |
+| `PUT` | `/admin/product-category/{id}` | Update an existing product category | Yes (Admin) |
+| `DELETE` | `/admin/product-category/{id}` | Delete a product category | Yes (Admin) |
 
 ---
 
@@ -27,7 +27,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Product Category
 
-**`POST /product-category`**
+**`POST /admin/product-category`**
 
 Create a new product category with a specified name. The category will be created with an empty sub-categories array.
 
@@ -47,7 +47,7 @@ Create a new product category with a specified name. The category will be create
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/product-category?categoryName=Kids' \
+  'http://localhost:8080/api/v1/admin/product-category?categoryName=Kids' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -d ''
@@ -139,7 +139,7 @@ curl -X 'GET' \
 
 ### 3. Update Product Category
 
-**`PUT /product-category/{id}`**
+**`PUT /admin/product-category/{id}`**
 
 Update an existing product category by its ID. You can modify the category name.
 
@@ -165,7 +165,7 @@ Update an existing product category by its ID. You can modify the category name.
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0' \
+  'http://localhost:8080/api/v1/admin/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -193,7 +193,7 @@ curl -X 'PUT' \
 
 ### 4. Delete Product Category
 
-**`DELETE /product-category/{id}`**
+**`DELETE /admin/product-category/{id}`**
 
 Delete a product category by its ID. This operation permanently removes the category from the system.
 
@@ -213,7 +213,7 @@ Delete a product category by its ID. This operation permanently removes the cate
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/product-category/75b44e08-2c94-438f-b500-b204c7c90cca' \
+  'http://localhost:8080/api/v1/admin/product-category/75b44e08-2c94-438f-b500-b204c7c90cca' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```

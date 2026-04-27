@@ -16,15 +16,9 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/policy` | Retrieve list of all policies | No |
-| `GET` | `/policy/{type}` | Retrieve policy by type | No |
-| `GET` | `/policy/detail/{id}` | Retrieve policy by ID | No |
-| `POST` | `/policy` | Create a new policy | Yes |
-| `PUT` | `/policy/{id}` | Update an existing policy | Yes |
-| `POST` | `/policy/deactivate/{id}` | Deactivate a policy | Yes |
-| `POST` | `/policy-consent` | Create a policy consent record | Yes |
-| `GET` | `/policy-consents` | Retrieve all user consent records | Yes |
-| `GET` | `/policy-consents/{policyType}` | Check if user has consented to specific policy type | Yes |
+| `GET` | `/policy/{type}` | Retrieve latest active policy by type | No |
+| `POST` | `/admin/policy` | Create a new policy or version | Yes (Admin) |
+| `GET` | `/admin/policy/{type}/history` | Retrieve all versions of a policy type | Yes (Admin) |
 
 ---
 
@@ -32,7 +26,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Get All Policies
 
-**`GET /policy`**
+**`GET /policy/{type}`**
 
 Retrieve a list of all policies including Privacy Policies and Terms & Conditions.
 
@@ -46,7 +40,7 @@ Retrieve a list of all policies including Privacy Policies and Terms & Condition
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/policy' \
+  'http://localhost:8080/api/v1/policy/PRIVACY_POLICY' \
   -H 'accept: application/json'
 ```
 
@@ -207,7 +201,7 @@ Same as "Get Policy by Type" response fields.
 
 ### 4. Create Policy
 
-**`POST /policy`**
+**`POST /admin/policy`**
 
 Create a new policy with specified type, title, content, version, and effective date.
 
@@ -233,7 +227,7 @@ Create a new policy with specified type, title, content, version, and effective 
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/policy' \
+  'http://localhost:8080/api/v1/admin/policy' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -351,7 +345,7 @@ curl -X 'PUT' \
 
 ### 6. Deactivate Policy
 
-**`POST /policy/deactivate/{id}`**
+**`GET /admin/policy/{type}/history`**
 
 Deactivate a policy by its ID. This sets the policy's isActive flag to false without deleting it.
 
@@ -372,7 +366,7 @@ Deactivate a policy by its ID. This sets the policy's isActive flag to false wit
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/policy/deactivate/550e8400-e29b-41d4-a716-446655440003' \
+  'http://localhost:8080/api/v1/admin/policy/PRIVACY_POLICY/history' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```

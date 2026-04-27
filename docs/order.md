@@ -19,7 +19,7 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/order` | Create a new order | Yes |
 | `GET` | `/order` | Retrieve customer orders | Yes |
 | `GET` | `/order/seller` | Retrieve seller's shop orders | Yes (Seller) |
-| `GET` | `/order/admin` | Retrieve all orders with filters | Yes (Admin) |
+| `GET` | `/admin/order` | Retrieve all orders with filters | Yes (Admin) |
 | `PATCH` | `/order/status/{id}` | Update order status | Yes |
 | `POST` | `/order/{id}/cancel` | Cancel an order | Yes |
 
@@ -359,7 +359,7 @@ curl -X 'GET' \
 
 ### 6. Get Admin Orders
 
-**`GET /order/admin`**
+**`GET /admin/order`**
 
 Retrieve all orders with advanced filters for admin users. Returns orders with pagination and total count.
 
@@ -383,7 +383,7 @@ Retrieve all orders with advanced filters for admin users. Returns orders with p
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/order/admin?limit=20&offset=0&status=PENDING&startDate=2026-04-01T00:00:00Z' \
+  'http://localhost:8080/api/v1/admin/order?limit=20&offset=0&status=PENDING&startDate=2026-04-01T00:00:00Z' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
