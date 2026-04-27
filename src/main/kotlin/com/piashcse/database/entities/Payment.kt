@@ -4,7 +4,7 @@ import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.Payment
+import com.piashcse.model.response.PaymentResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object PaymentTable : BaseIdTable("payment") {
@@ -26,7 +26,7 @@ class PaymentDAO(id: EntityID<String>) : BaseEntity(id, PaymentTable) {
     var status by PaymentTable.status
     var paymentMethod by PaymentTable.paymentMethod
     var transactionId by PaymentTable.transactionId
-    fun response() = Payment(
+    fun response() = PaymentResponse(
         id = paymentId.value,
         orderId = orderId.value,
         amount = amount,

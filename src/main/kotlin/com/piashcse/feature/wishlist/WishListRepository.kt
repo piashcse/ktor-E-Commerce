@@ -1,7 +1,7 @@
 package com.piashcse.feature.wishlist
 
 import com.piashcse.database.entities.WishList
-import com.piashcse.model.response.Product
+import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
 
 interface WishListRepository {
@@ -22,7 +22,7 @@ interface WishListRepository {
      * @param offset The number of products to skip.
      * @return A list of products in the user's wish list.
      */
-    suspend fun getWishList(userId: String, limit: Int, offset: Int): PaginatedResponse<Product>
+    suspend fun getWishList(userId: String, limit: Int, offset: Int): PaginatedResponse<ProductResponse>
 
     /**
      * Removes a product from the user's wish list.
@@ -31,7 +31,7 @@ interface WishListRepository {
      * @param productId The unique identifier of the product to remove.
      * @return The removed product.
      */
-    suspend fun removeFromWishList(userId: String, productId: String): Product
+    suspend fun removeFromWishList(userId: String, productId: String): ProductResponse
 
     /**
      * Checks if a product is in the user's wish list.

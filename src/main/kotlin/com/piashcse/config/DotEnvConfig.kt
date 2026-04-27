@@ -1,7 +1,5 @@
 package com.piashcse.config
 
-import com.piashcse.config.DotEnv
-
 object DotEnvConfig {
     // Database configuration
     val dbHost: String get() = DotEnv.get("DB_HOST", "localhost")

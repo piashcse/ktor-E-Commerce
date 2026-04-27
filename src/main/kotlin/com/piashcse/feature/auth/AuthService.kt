@@ -1,5 +1,4 @@
 package com.piashcse.feature.auth
-import com.piashcse.utils.extension.*
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.constants.AppConstants
@@ -8,11 +7,15 @@ import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.*
-import com.piashcse.model.response.Registration
-import com.piashcse.utils.validator.*
-import com.piashcse.utils.common.*
+import com.piashcse.model.response.RegistrationResponse
+import com.piashcse.utils.common.generateOTP
 import com.piashcse.utils.email.sendEmail
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.validator.InvalidCredentialsException
+import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.validator.ValidationException
+import com.piashcse.utils.validator.requireValidEmail
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.neq
@@ -143,7 +146,7 @@ class AuthService(
             // Send OTP
             sendEmail(inserted.email, otp)
 
-            Registration(
+            RegistrationResponse(
                 inserted.id.value,
                 registerRequest.email,
                 message = Message.Auth.OTP_SENT

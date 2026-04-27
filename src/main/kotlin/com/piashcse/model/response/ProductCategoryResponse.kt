@@ -3,9 +3,9 @@ package com.piashcse.model.response
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ProductCategory(
+data class ProductCategoryResponse(
     val id: String,
     val name: String,
-    val subCategories: List<ProductSubCategory>,
+    val subCategories: List<ProductSubCategoryResponse>,
     val image: String?
 )

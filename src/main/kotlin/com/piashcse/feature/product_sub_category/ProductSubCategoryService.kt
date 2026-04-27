@@ -1,24 +1,23 @@
 package com.piashcse.feature.product_sub_category
-import com.piashcse.utils.extension.*
 
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductCategoryTable
 import com.piashcse.database.entities.ProductSubCategoryDAO
 import com.piashcse.database.entities.ProductSubCategoryTable
 import com.piashcse.model.request.ProductSubCategoryRequest
-import com.piashcse.model.response.ProductSubCategory
+import com.piashcse.model.response.ProductSubCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.toPaginatedResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 /**
- * Controller for managing product subcategories. Provides methods to add, update, retrieve, and delete product subcategories.
+ * Service for managing product subcategories. Provides methods to add, update, retrieve, and delete product subcategories.
  */
 class ProductSubCategoryService : ProductSubCategoryRepository {
 
@@ -30,7 +29,7 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
      * @throws productSubCategory.subCategoryName.throwConflict("Resource") If a subcategory with the same name already exists.
      * @throws productSubCategory.categoryId.throwNotFound("Resource") If the provided category ID does not exist.
      */
-    override suspend fun addProductSubCategory(productSubCategory: ProductSubCategoryRequest): ProductSubCategory =
+    override suspend fun addProductSubCategory(productSubCategory: ProductSubCategoryRequest): ProductSubCategoryResponse =
         query {
             val isCategoryIdExist =
                 ProductCategoryDAO.find { ProductCategoryTable.id eq productSubCategory.categoryId }.toList()
@@ -62,7 +61,7 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
             categoryId: String,
             limit: Int,
             offset: Int
-    ): PaginatedResponse<ProductSubCategory> = query {
+    ): PaginatedResponse<ProductSubCategoryResponse> = query {
         ProductSubCategoryTable.selectAll().andWhere { ProductSubCategoryTable.categoryId eq categoryId }
             .toPaginatedResponse(limit, offset) {
                 ProductSubCategoryDAO.wrapRow(it).response()
@@ -77,7 +76,7 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
      * @return The updated product subcategory.
      * @throws id.throwNotFound("Resource") If the subcategory ID does not exist.
      */
-    override suspend fun updateProductSubCategory(id: String, name: String): ProductSubCategory = query {
+    override suspend fun updateProductSubCategory(id: String, name: String): ProductSubCategoryResponse = query {
         val suCategoryExist =
             ProductSubCategoryDAO.find { ProductSubCategoryTable.id eq id }
                 .toList().singleOrNull()

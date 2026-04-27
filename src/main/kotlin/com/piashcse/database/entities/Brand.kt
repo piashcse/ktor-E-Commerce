@@ -3,7 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.Brand
+import com.piashcse.model.response.BrandResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object BrandTable : BaseIdTable("brand") {
@@ -16,5 +16,5 @@ class BrandDAO(id: EntityID<String>) : BaseEntity(id, BrandTable) {
 
     var name by BrandTable.name
     var logo by BrandTable.logo
-    fun response() = Brand(id.value, name, logo)
+    fun response() = BrandResponse(id.value, name, logo)
 }

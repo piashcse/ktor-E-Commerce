@@ -3,33 +3,33 @@ package com.piashcse.feature.policy
 import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
-import com.piashcse.model.response.PolicyDocument
+import com.piashcse.model.response.PolicyDocumentResponse
 
 interface PolicyRepository {
     /**
      * Creates a new policy document
      */
-    suspend fun createPolicy(createPolicyRequest: CreatePolicyRequest): PolicyDocument
+    suspend fun createPolicy(createPolicyRequest: CreatePolicyRequest): PolicyDocumentResponse
 
     /**
      * Updates an existing policy document
      */
-    suspend fun updatePolicy(id: String, updatePolicyRequest: UpdatePolicyRequest): PolicyDocument
+    suspend fun updatePolicy(id: String, updatePolicyRequest: UpdatePolicyRequest): PolicyDocumentResponse
 
     /**
      * Gets a policy document by type, returning the latest active version
      */
-    suspend fun getPolicyByType(type: PolicyDocumentTable.PolicyType): PolicyDocument
+    suspend fun getPolicyByType(type: PolicyDocumentTable.PolicyType): PolicyDocumentResponse
 
     /**
      * Gets a policy document by ID
      */
-    suspend fun getPolicyById(id: String): PolicyDocument
+    suspend fun getPolicyById(id: String): PolicyDocumentResponse
 
     /**
      * Gets all policy documents, optionally filtered by type
      */
-    suspend fun getAllPolicies(type: PolicyDocumentTable.PolicyType? = null): List<PolicyDocument>
+    suspend fun getAllPolicies(type: PolicyDocumentTable.PolicyType? = null): List<PolicyDocumentResponse>
 
     /**
      * Deactivates a policy document (doesn't delete, just marks as inactive)

@@ -13,7 +13,7 @@ import io.ktor.server.routing.*
 /**
  * Customer wishlist management routes.
  */
-fun Route.wishListRoutes(wishlistController: WishListService) {
+fun Route.wishListRoutes(wishlistService: WishListService) {
     requireRole {
         /**
          * @tag WishList
@@ -24,7 +24,7 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
             requestBody.validation()
             call.respond(
                 HttpStatusCode.OK,
-                wishlistController.addToWishList(call.currentUserId, requestBody.productId)
+                wishlistService.addToWishList(call.currentUserId, requestBody.productId)
             )
         }
 
@@ -36,7 +36,7 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
             val (limit, offset) = call.paginationParameters()
             call.respond(
                 HttpStatusCode.OK,
-                wishlistController.getWishList(call.currentUserId, limit, offset)
+                wishlistService.getWishList(call.currentUserId, limit, offset)
             )
         }
 
@@ -48,7 +48,7 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
             val productId = call.requireParameters("productId")
             call.respond(
                 HttpStatusCode.OK,
-                wishlistController.removeFromWishList(call.currentUserId, productId.first())
+                wishlistService.removeFromWishList(call.currentUserId, productId.first())
             )
         }
 
@@ -60,7 +60,7 @@ fun Route.wishListRoutes(wishlistController: WishListService) {
             val productId = call.requireParameters("productId")
             call.respond(
                 HttpStatusCode.OK,
-                wishlistController.isProductInWishList(call.currentUserId, productId.first())
+                wishlistService.isProductInWishList(call.currentUserId, productId.first())
             )
         }
     }

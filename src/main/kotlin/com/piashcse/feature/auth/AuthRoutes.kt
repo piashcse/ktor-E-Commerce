@@ -8,11 +8,11 @@ import com.piashcse.model.request.*
 import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.requireRole
-import com.piashcse.utils.validator.InvalidEnumValueException
-import com.piashcse.utils.validator.MissingParameterException
 import com.piashcse.utils.email.sendEmail
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requireParameters
+import com.piashcse.utils.validator.InvalidEnumValueException
+import com.piashcse.utils.validator.MissingParameterException
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.ratelimit.*
@@ -23,7 +23,7 @@ import io.ktor.server.routing.*
 /**
  * Authentication and registration routes.
  */
-fun Route.authRoutes(authController: AuthService) {
+fun Route.authRoutes(authService: AuthService) {
     // Rate-limited endpoints (brute-force protection)
     rateLimit(RateLimitName(RateLimitNames.AUTH)) {
         /**
@@ -32,7 +32,7 @@ fun Route.authRoutes(authController: AuthService) {
          */
         post("login") {
             val requestBody = call.receive<LoginRequest>()
-            call.respond(HttpStatusCode.OK, authController.login(requestBody))
+            call.respond(HttpStatusCode.OK, authService.login(requestBody))
         }
 
         /**
@@ -41,7 +41,7 @@ fun Route.authRoutes(authController: AuthService) {
          */
         post("register") {
             val requestBody = call.receive<RegisterRequest>()
-            call.respond(HttpStatusCode.OK, authController.register(requestBody))
+            call.respond(HttpStatusCode.OK, authService.register(requestBody))
         }
 
         /**
@@ -50,7 +50,7 @@ fun Route.authRoutes(authController: AuthService) {
          */
         post("forget-password") {
             val requestBody = call.receive<ForgetPasswordRequest>()
-            authController.forgetPassword(requestBody).let { otp ->
+            authService.forgetPassword(requestBody).let { otp ->
                 sendEmail(requestBody.email, otp)
                 call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_SENT))
             }
@@ -64,7 +64,7 @@ fun Route.authRoutes(authController: AuthService) {
             val requestBody = call.receive<ResetRequest>()
             requestBody.validation()
 
-            authController.resetPassword(requestBody).let {
+            authService.resetPassword(requestBody).let {
                 when (it) {
                     AppConstants.DataBaseTransaction.FOUND -> {
                         call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
@@ -84,7 +84,7 @@ fun Route.authRoutes(authController: AuthService) {
      */
     get("otp-verification") {
         val (userId, otp) = call.requireParameters("userId", "otp")
-        call.respond(HttpStatusCode.OK, authController.otpVerification(userId, otp))
+        call.respond(HttpStatusCode.OK, authService.otpVerification(userId, otp))
     }
 
     /**
@@ -93,7 +93,7 @@ fun Route.authRoutes(authController: AuthService) {
      */
     post("refresh-token") {
         val requestBody = call.receive<RefreshTokenRequest>()
-        val tokenPair = authController.refreshAccessToken(requestBody)
+        val tokenPair = authService.refreshAccessToken(requestBody)
         call.respond(HttpStatusCode.OK, tokenPair)
     }
 
@@ -105,7 +105,7 @@ fun Route.authRoutes(authController: AuthService) {
         post("logout") {
             val userId = call.currentUserId
             val requestBody = call.receive<LogoutRequest>()
-            authController.logout(userId, requestBody.refreshToken)
+            authService.logout(userId, requestBody.refreshToken)
             call.respond(HttpStatusCode.OK, mapOf("message" to "Logged out successfully"))
         }
 
@@ -116,7 +116,7 @@ fun Route.authRoutes(authController: AuthService) {
         put("change-password") {
             val (oldPassword, newPassword) = call.requireParameters("oldPassword", "newPassword")
             val loginUser = call.principal<JwtTokenRequest>()
-            authController.changePassword(loginUser?.userId!!, ChangePassword(oldPassword, newPassword)).let {
+            authService.changePassword(loginUser?.userId!!, ChangePassword(oldPassword, newPassword)).let {
                 if (it) call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
                 else call.respond(HttpStatusCode.Unauthorized, mapOf("message" to Message.Auth.INVALID_CREDENTIALS))
             }
@@ -127,7 +127,7 @@ fun Route.authRoutes(authController: AuthService) {
 /**
  * Administrative authentication/user management routes.
  */
-fun Route.authAdminRoutes(authController: AuthService) {
+fun Route.authAdminRoutes(authService: AuthService) {
     adminAuth {
         /**
          * @tag Auth
@@ -149,7 +149,7 @@ fun Route.authAdminRoutes(authController: AuthService) {
             }
 
             val currentUser = call.principal<JwtTokenRequest>()
-            if (authController.changeUserType(currentUser?.userId!!, userId, newType)) {
+            if (authService.changeUserType(currentUser?.userId!!, userId, newType)) {
                 call.respond(HttpStatusCode.OK, mapOf("message" to "User type updated successfully"))
             } else {
                 call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to update user type"))
@@ -163,7 +163,7 @@ fun Route.authAdminRoutes(authController: AuthService) {
         put("/{userId}/deactivate") {
             val (userId) = call.requireParameters("userId")
             val currentUser = call.principal<JwtTokenRequest>()
-            if (authController.deactivateUser(currentUser?.userId!!, userId)) {
+            if (authService.deactivateUser(currentUser?.userId!!, userId)) {
                 call.respond(HttpStatusCode.OK, mapOf("message" to "User deactivated successfully"))
             } else {
                 call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to deactivate user"))
@@ -177,7 +177,7 @@ fun Route.authAdminRoutes(authController: AuthService) {
         put("/{userId}/activate") {
             val (userId) = call.requireParameters("userId")
             val currentUser = call.principal<JwtTokenRequest>()
-            if (authController.activateUser(currentUser?.userId!!, userId)) {
+            if (authService.activateUser(currentUser?.userId!!, userId)) {
                 call.respond(HttpStatusCode.OK, mapOf("message" to "User activated successfully"))
             } else {
                 call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to activate user"))

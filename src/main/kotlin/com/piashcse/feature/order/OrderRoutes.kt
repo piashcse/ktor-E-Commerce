@@ -9,12 +9,12 @@ import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.sellerAuth
-import com.piashcse.utils.validator.InvalidEnumValueException
-import com.piashcse.utils.validator.UnauthorizedException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.getCurrentUserType
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
+import com.piashcse.utils.validator.InvalidEnumValueException
+import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -25,7 +25,7 @@ import io.ktor.server.routing.*
 /**
  * Order-related routes for customers and sellers.
  */
-fun Route.orderRoutes(orderController: OrderService) {
+fun Route.orderRoutes(orderService: OrderService) {
     customerAuth {
         /**
          * @tag Order
@@ -35,7 +35,7 @@ fun Route.orderRoutes(orderController: OrderService) {
             val requestBody = call.receive<OrderRequest>()
             requestBody.validation()
             val idempotencyKey = call.request.headers["Idempotency-Key"]
-            call.respond(HttpStatusCode.OK, orderController.createOrder(call.currentUserId, requestBody, idempotencyKey))
+            call.respond(HttpStatusCode.OK, orderService.createOrder(call.currentUserId, requestBody, idempotencyKey))
         }
 
         /**
@@ -44,7 +44,7 @@ fun Route.orderRoutes(orderController: OrderService) {
          */
         get {
             val (limit, offset) = call.paginationParameters()
-            call.respond(HttpStatusCode.OK, orderController.getOrders(call.currentUserId, limit, offset))
+            call.respond(HttpStatusCode.OK, orderService.getOrders(call.currentUserId, limit, offset))
         }
     }
 
@@ -77,7 +77,7 @@ fun Route.orderRoutes(orderController: OrderService) {
                 throw UnauthorizedException(Message.Orders.STATUS_NOT_ALLOWED)
             }
 
-            call.respond(HttpStatusCode.OK, orderController.updateOrderStatus(userId, id, status))
+            call.respond(HttpStatusCode.OK, orderService.updateOrderStatus(userId, id, status))
         }
     }
 
@@ -93,7 +93,7 @@ fun Route.orderRoutes(orderController: OrderService) {
             val requestBody = call.receive<CancelOrderRequest>()
             requestBody.validation()
 
-            call.respond(HttpStatusCode.OK, orderController.cancelOrder(id, userId, requestBody.reason, userType))
+            call.respond(HttpStatusCode.OK, orderService.cancelOrder(id, userId, requestBody.reason, userType))
         }
     }
 
@@ -105,7 +105,7 @@ fun Route.orderRoutes(orderController: OrderService) {
         get("seller") {
             val (limit, offset) = call.paginationParameters()
             val status = call.parameters["status"]
-            call.respond(HttpStatusCode.OK, orderController.getSellerOrders(call.currentUserId, limit, offset, status))
+            call.respond(HttpStatusCode.OK, orderService.getSellerOrders(call.currentUserId, limit, offset, status))
         }
     }
 }
@@ -113,7 +113,7 @@ fun Route.orderRoutes(orderController: OrderService) {
 /**
  * Admin order management routes.
  */
-fun Route.orderAdminRoutes(orderController: OrderService) {
+fun Route.orderAdminRoutes(orderService: OrderService) {
     adminAuth {
         /**
          * @tag Order
@@ -133,7 +133,7 @@ fun Route.orderAdminRoutes(orderController: OrderService) {
                 )
             }
 
-            call.respond(HttpStatusCode.OK, orderController.updateOrderStatus(userId, id, status))
+            call.respond(HttpStatusCode.OK, orderService.updateOrderStatus(userId, id, status))
         }
 
         /**
@@ -147,7 +147,7 @@ fun Route.orderAdminRoutes(orderController: OrderService) {
             val requestBody = call.receive<CancelOrderRequest>()
             requestBody.validation()
 
-            call.respond(HttpStatusCode.OK, orderController.cancelOrder(id, userId, requestBody.reason, userType))
+            call.respond(HttpStatusCode.OK, orderService.cancelOrder(id, userId, requestBody.reason, userType))
         }
 
         /**
@@ -164,7 +164,7 @@ fun Route.orderAdminRoutes(orderController: OrderService) {
                 try { java.time.Instant.parse(it) } catch (e: Exception) { null }
             }
 
-            call.respond(HttpStatusCode.OK, orderController.getAdminOrders(limit, offset, status, startDate, endDate))
+            call.respond(HttpStatusCode.OK, orderService.getAdminOrders(limit, offset, status, startDate, endDate))
         }
     }
 }

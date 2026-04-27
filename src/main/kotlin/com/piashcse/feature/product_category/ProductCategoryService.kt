@@ -1,19 +1,18 @@
 package com.piashcse.feature.product_category
-import com.piashcse.utils.extension.*
 
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductCategoryTable
-import com.piashcse.model.response.ProductCategory
+import com.piashcse.model.response.ProductCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.toPaginatedResponse
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 /**
- * Controller for managing product categories.
+ * Service for managing product categories.
  */
 class ProductCategoryService : ProductCategoryRepository {
 
@@ -24,7 +23,7 @@ class ProductCategoryService : ProductCategoryRepository {
      * @return The created product category entity.
      * @throws Exception if a category with the provided name already exists.
      */
-    override suspend fun createCategory(name: String): ProductCategory = query {
+    override suspend fun createCategory(name: String): ProductCategoryResponse = query {
         val isCategoryExist =
             ProductCategoryDAO.find { ProductCategoryTable.name eq name }.toList().singleOrNull()
         isCategoryExist?.let {
@@ -40,7 +39,7 @@ class ProductCategoryService : ProductCategoryRepository {
      * @param limit The maximum number of categories to retrieve.
      * @return A list of product category entities.
      */
-    override suspend fun getCategories(limit: Int, offset: Int): PaginatedResponse<ProductCategory> = query {
+    override suspend fun getCategories(limit: Int, offset: Int): PaginatedResponse<ProductCategoryResponse> = query {
         ProductCategoryTable.selectAll().toPaginatedResponse(limit, offset) {
             ProductCategoryDAO.wrapRow(it).response()
         }
@@ -54,7 +53,7 @@ class ProductCategoryService : ProductCategoryRepository {
      * @return The updated product category entity.
      * @throws Exception if no category is found with the provided category ID.
      */
-    override suspend fun updateCategory(categoryId: String, name: String): ProductCategory = query {
+    override suspend fun updateCategory(categoryId: String, name: String): ProductCategoryResponse = query {
         val isCategoryExist =
             ProductCategoryDAO.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
         isCategoryExist?.let {

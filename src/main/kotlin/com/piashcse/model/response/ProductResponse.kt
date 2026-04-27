@@ -4,7 +4,7 @@ import com.piashcse.constants.ProductStatus
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Product(
+data class ProductResponse(
     val id: String,
     val categoryId: String,
     val subCategoryId: String?,

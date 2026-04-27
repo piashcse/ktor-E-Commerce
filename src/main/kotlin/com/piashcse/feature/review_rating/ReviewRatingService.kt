@@ -1,15 +1,14 @@
 package com.piashcse.feature.review_rating
-import com.piashcse.utils.extension.*
 
 import com.piashcse.database.entities.ReviewRatingDAO
 import com.piashcse.database.entities.ReviewRatingTable
 import com.piashcse.model.request.ReviewRatingRequest
-import com.piashcse.model.response.ReviewRating
+import com.piashcse.model.response.ReviewRatingResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.toPaginatedResponse
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -17,7 +16,7 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 /**
- * Controller for managing product reviews and ratings. Provides methods to get, add, update, and delete review ratings.
+ * Service for managing product reviews and ratings. Provides methods to get, add, update, and delete review ratings.
  */
 class ReviewRatingService : ReviewRatingRepository {
 
@@ -30,7 +29,7 @@ class ReviewRatingService : ReviewRatingRepository {
      */
     override suspend fun getReviewRating(
         productId: String, limit: Int, offset: Int
-    ): PaginatedResponse<ReviewRating> = query {
+    ): PaginatedResponse<ReviewRatingResponse> = query {
         ReviewRatingTable.selectAll().andWhere { ReviewRatingTable.productId eq productId }
             .toPaginatedResponse(limit, offset) {
                 ReviewRatingDAO.wrapRow(it).response()
@@ -45,7 +44,7 @@ class ReviewRatingService : ReviewRatingRepository {
      * @return The added review and rating.
      * @throws alreadyExistException If the user has already reviewed the specified product.
      */
-    override suspend fun addReviewRating(userId: String, reviewRating: ReviewRatingRequest): ReviewRating = query {
+    override suspend fun addReviewRating(userId: String, reviewRating: ReviewRatingRequest): ReviewRatingResponse = query {
         val isReviewRatingExist =
             ReviewRatingDAO.find { ReviewRatingTable.id eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
                 .singleOrNull()
@@ -72,7 +71,7 @@ class ReviewRatingService : ReviewRatingRepository {
         reviewId: String,
         review: String,
         rating: Int
-    ): ReviewRating = query {
+    ): ReviewRatingResponse = query {
         val isReviewRatingExist =
             ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
                 .singleOrNull()

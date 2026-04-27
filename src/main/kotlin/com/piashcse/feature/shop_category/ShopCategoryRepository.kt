@@ -1,6 +1,6 @@
 package com.piashcse.feature.shop_category
 
-import com.piashcse.model.response.ShopCategory
+import com.piashcse.model.response.ShopCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 
 interface ShopCategoryRepository {
@@ -10,7 +10,7 @@ interface ShopCategoryRepository {
      * @param categoryName The name of the shop category.
      * @return The created shop category.
      */
-    suspend fun createCategory(name: String): ShopCategory
+    suspend fun createCategory(name: String): ShopCategoryResponse
 
     /**
      * Retrieves a list of shop categories with a limit.
@@ -18,7 +18,7 @@ interface ShopCategoryRepository {
      * @param limit The maximum number of categories to return.
      * @return A list of shop categories.
      */
-    suspend fun getCategories(limit: Int, offset: Int = 0): PaginatedResponse<ShopCategory>
+    suspend fun getCategories(limit: Int, offset: Int = 0): PaginatedResponse<ShopCategoryResponse>
 
     /**
      * Updates an existing shop category.
@@ -27,7 +27,7 @@ interface ShopCategoryRepository {
      * @param categoryName The updated name of the shop category.
      * @return The updated shop category.
      */
-    suspend fun updateCategory(categoryId: String, name: String): ShopCategory
+    suspend fun updateCategory(categoryId: String, name: String): ShopCategoryResponse
 
     /**
      * Deletes a specific shop category.

@@ -1,21 +1,20 @@
 package com.piashcse.feature.brand
-import com.piashcse.utils.extension.*
 
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.BrandDAO
 import com.piashcse.database.entities.BrandTable
-import com.piashcse.model.response.Brand
+import com.piashcse.model.response.BrandResponse
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.validator.ValidationException
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 /**
- * Controller for managing brand-related operations.
+ * Service for managing brand-related operations.
  */
 class BrandService : BrandRepository {
     /**
@@ -25,7 +24,7 @@ class BrandService : BrandRepository {
      * @return The created brand entity.
      * @throws Exception if the brand name already exists.
      */
-    override suspend fun createBrand(name: String): Brand = query {
+    override suspend fun createBrand(name: String): BrandResponse = query {
         if (name.isBlank()) {
             throw ValidationException(Message.Brands.BLANK_NAME)
         }
@@ -35,7 +34,7 @@ class BrandService : BrandRepository {
 
         val isBrandExist = BrandDAO.find { BrandTable.name eq name }.singleOrNull()
         isBrandExist?.let {
-            throw name.throwConflict("Brand")
+            throw name.throwConflict("BrandResponse")
         } ?: BrandDAO.new {
             this.name = name
         }.response()
@@ -47,7 +46,7 @@ class BrandService : BrandRepository {
      * @param limit The maximum number of brands to retrieve.
      * @return A list of brand entities.
      */
-    override suspend fun getBrands(limit: Int, offset: Int): PaginatedResponse<Brand> = query {
+    override suspend fun getBrands(limit: Int, offset: Int): PaginatedResponse<BrandResponse> = query {
         BrandTable.selectAll().toPaginatedResponse(limit, offset) {
             BrandDAO.wrapRow(it).response()
         }
@@ -61,7 +60,7 @@ class BrandService : BrandRepository {
      * @return The updated brand entity.
      * @throws Exception if the brand ID is not found.
      */
-    override suspend fun updateBrand(brandId: String, name: String): Brand = query {
+    override suspend fun updateBrand(brandId: String, name: String): BrandResponse = query {
         if (name.isBlank()) {
             throw ValidationException(Message.Brands.BLANK_NAME)
         }
@@ -70,7 +69,7 @@ class BrandService : BrandRepository {
         }
 
         val brand = BrandDAO.find { BrandTable.id eq brandId }.singleOrNull()
-            ?: brandId.throwNotFound("Brand")
+            ?: brandId.throwNotFound("BrandResponse")
 
         brand.name = name
         brand.response()
@@ -88,6 +87,6 @@ class BrandService : BrandRepository {
         isBrandExist?.let {
             it.delete()
             brandId
-        } ?: brandId.throwNotFound("Brand")
+        } ?: brandId.throwNotFound("BrandResponse")
     }
 }

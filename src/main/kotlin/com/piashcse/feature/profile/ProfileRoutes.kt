@@ -3,8 +3,8 @@ package com.piashcse.feature.profile
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.plugin.requireRole
 import com.piashcse.service.UploadService
-import com.piashcse.utils.validator.ValidationException
 import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.request.*
@@ -14,7 +14,7 @@ import io.ktor.server.routing.*
 /**
  * User profile management routes.
  */
-fun Route.profileRoutes(userProfileController: ProfileService) {
+fun Route.profileRoutes(userProfileService: ProfileService) {
     requireRole {
         /**
          * @tag Profile
@@ -23,7 +23,7 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
         get {
             call.respond(
                 HttpStatusCode.OK,
-                userProfileController.getProfile(call.currentUserId)
+                userProfileService.getProfile(call.currentUserId)
             )
         }
 
@@ -47,7 +47,7 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
             )
             call.respond(
                 HttpStatusCode.OK,
-                userProfileController.updateProfile(call.currentUserId, params)
+                userProfileService.updateProfile(call.currentUserId, params)
             )
         }
 
@@ -63,7 +63,7 @@ fun Route.profileRoutes(userProfileController: ProfileService) {
                 if (part is PartData.FileItem) {
                     val fileName = UploadService.uploadProfileImage(part)
                     imageUrl = UploadService.getProfileImageUrl(fileName)
-                    userProfileController.updateProfileImage(call.currentUserId, imageUrl)
+                    userProfileService.updateProfileImage(call.currentUserId, imageUrl)
                 }
                 part.dispose()
             }

@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
  * Response model for user policy consents
  */
 @Serializable
-data class UserPolicyConsent(
+data class UserPolicyConsentResponse(
     val id: String,
     val userId: String,
     val policyId: String,

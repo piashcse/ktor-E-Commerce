@@ -12,7 +12,7 @@ import io.ktor.server.routing.*
 /**
  * Public product subcategory routes.
  */
-fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryService) {
+fun Route.productSubCategoryRoutes(subCategoryService: ProductSubCategoryService) {
     /**
      * @tag ProductSubCategory
      * @description Retrieve subcategories for a specific category
@@ -22,7 +22,7 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
         val (limit, offset) = call.paginationParameters()
         call.respond(
             HttpStatusCode.OK,
-            subCategoryController.getProductSubCategory(categoryId, limit, offset)
+            subCategoryService.getProductSubCategory(categoryId, limit, offset)
         )
     }
 }
@@ -30,7 +30,7 @@ fun Route.productSubCategoryRoutes(subCategoryController: ProductSubCategoryServ
 /**
  * Admin product subcategory management routes.
  */
-fun Route.productSubCategoryAdminRoutes(subCategoryController: ProductSubCategoryService) {
+fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategoryService) {
     adminAuth {
         /**
          * @tag ProductSubCategory
@@ -40,7 +40,7 @@ fun Route.productSubCategoryAdminRoutes(subCategoryController: ProductSubCategor
             val requestBody = call.receive<ProductSubCategoryRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                subCategoryController.addProductSubCategory(requestBody)
+                subCategoryService.addProductSubCategory(requestBody)
             )
         }
 
@@ -52,7 +52,7 @@ fun Route.productSubCategoryAdminRoutes(subCategoryController: ProductSubCategor
             val params = call.requireParameters("id", "name")
             call.respond(
                 HttpStatusCode.OK,
-                subCategoryController.updateProductSubCategory(params[0], params[1])
+                subCategoryService.updateProductSubCategory(params[0], params[1])
             )
         }
 
@@ -64,7 +64,7 @@ fun Route.productSubCategoryAdminRoutes(subCategoryController: ProductSubCategor
             val id = call.requireParameters("id")
             call.respond(
                 HttpStatusCode.OK,
-                subCategoryController.deleteProductSubCategory(id.first())
+                subCategoryService.deleteProductSubCategory(id.first())
             )
         }
     }

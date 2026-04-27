@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
  * Response model for policy documents
  */
 @Serializable
-data class PolicyDocument(
+data class PolicyDocumentResponse(
     val id: String,
     val title: String,
     val type: String,

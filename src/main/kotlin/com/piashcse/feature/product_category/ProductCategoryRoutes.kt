@@ -12,7 +12,7 @@ import io.ktor.server.routing.*
 /**
  * Public product category routes.
  */
-fun Route.productCategoryRoutes(productCategoryController: ProductCategoryService) {
+fun Route.productCategoryRoutes(productCategoryService: ProductCategoryService) {
     /**
      * @tag ProductCategory
      * @description Retrieve a paginated list of all product categories
@@ -21,7 +21,7 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
         val (limit, offset) = call.paginationParameters()
         call.respond(
             HttpStatusCode.OK,
-            productCategoryController.getCategories(limit, offset)
+            productCategoryService.getCategories(limit, offset)
         )
     }
 }
@@ -29,7 +29,7 @@ fun Route.productCategoryRoutes(productCategoryController: ProductCategoryServic
 /**
  * Admin product category management routes.
  */
-fun Route.productCategoryAdminRoutes(productCategoryController: ProductCategoryService) {
+fun Route.productCategoryAdminRoutes(productCategoryService: ProductCategoryService) {
     adminAuth {
         /**
          * @tag ProductCategory
@@ -39,7 +39,7 @@ fun Route.productCategoryAdminRoutes(productCategoryController: ProductCategoryS
             val requestBody = call.receive<ProductCategoryRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                productCategoryController.createCategory(requestBody.name)
+                productCategoryService.createCategory(requestBody.name)
             )
         }
 
@@ -51,7 +51,7 @@ fun Route.productCategoryAdminRoutes(productCategoryController: ProductCategoryS
             val params = call.requireParameters("id", "name")
             call.respond(
                 HttpStatusCode.OK,
-                productCategoryController.updateCategory(params[0], params[1])
+                productCategoryService.updateCategory(params[0], params[1])
             )
         }
 
@@ -63,7 +63,7 @@ fun Route.productCategoryAdminRoutes(productCategoryController: ProductCategoryS
             val id = call.requireParameters("id")
             call.respond(
                 HttpStatusCode.OK,
-                productCategoryController.deleteCategory(id.first())
+                productCategoryService.deleteCategory(id.first())
             )
         }
     }

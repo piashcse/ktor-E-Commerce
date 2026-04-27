@@ -1,6 +1,6 @@
 package com.piashcse.feature.brand
 
-import com.piashcse.model.response.Brand
+import com.piashcse.model.response.BrandResponse
 import com.piashcse.utils.common.PaginatedResponse
 
 interface BrandRepository {
@@ -10,14 +10,14 @@ interface BrandRepository {
      * @param name The name of the brand.
      * @return The created brand.
      */
-    suspend fun createBrand(name: String): Brand
+    suspend fun createBrand(name: String): BrandResponse
     /**
      * Retrieves all available brands with a limit.
      *
      * @param limit The maximum number of brands to return.
      * @return A list of brands.
      */
-    suspend fun getBrands(limit: Int, offset: Int = 0): PaginatedResponse<Brand>
+    suspend fun getBrands(limit: Int, offset: Int = 0): PaginatedResponse<BrandResponse>
     /**
      * Updates an existing brand.
      *
@@ -25,7 +25,7 @@ interface BrandRepository {
      * @param name The updated name of the brand.
      * @return The updated brand.
      */
-    suspend fun updateBrand(brandId: String, name: String): Brand
+    suspend fun updateBrand(brandId: String, name: String): BrandResponse
     /**
      * Deletes a brand by its ID.
      *

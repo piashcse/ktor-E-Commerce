@@ -7,13 +7,12 @@ import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.sellerAuth
 import com.piashcse.service.UploadService
-import com.piashcse.utils.validator.ValidationException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
+import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -21,14 +20,14 @@ import io.ktor.server.routing.*
 /**
  * Public and seller product routes.
  */
-fun Route.productRoutes(productController: ProductService) {
+fun Route.productRoutes(productService: ProductService) {
     /**
      * @tag Product
      * @description Retrieve detailed information about a specific product
      */
     get("{id}") {
         val productId = call.requireParameters("id")
-        call.respond(HttpStatusCode.OK, productController.getProductDetail(productId.first()))
+        call.respond(HttpStatusCode.OK, productService.getProductDetail(productId.first()))
     }
 
     /**
@@ -47,7 +46,7 @@ fun Route.productRoutes(productController: ProductService) {
             brandId = call.parameters["brandId"]
         )
         params.validation()
-        call.respond(HttpStatusCode.OK, productController.getProducts(params))
+        call.respond(HttpStatusCode.OK, productService.getProducts(params))
     }
 
     /**
@@ -65,7 +64,7 @@ fun Route.productRoutes(productController: ProductService) {
             categoryId = call.parameters["categoryId"]
         )
         queryParams.validation()
-        call.respond(HttpStatusCode.OK, productController.searchProduct(queryParams))
+        call.respond(HttpStatusCode.OK, productService.searchProduct(queryParams))
     }
 
     sellerAuth {
@@ -87,7 +86,7 @@ fun Route.productRoutes(productController: ProductService) {
             params.validation()
             call.respond(
                 HttpStatusCode.OK,
-                productController.getProductsByUser(call.currentUserId, params)
+                productService.getProductsByUser(call.currentUserId, params)
             )
         }
 
@@ -100,7 +99,7 @@ fun Route.productRoutes(productController: ProductService) {
             requestBody.validation()
             call.respond(
                 HttpStatusCode.OK,
-                productController.createProduct(call.currentUserId, null, requestBody)
+                productService.createProduct(call.currentUserId, null, requestBody)
             )
         }
 
@@ -113,7 +112,7 @@ fun Route.productRoutes(productController: ProductService) {
             val requestBody = call.receive<UpdateProductRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                productController.updateProduct(call.currentUserId, productId, requestBody)
+                productService.updateProduct(call.currentUserId, productId, requestBody)
             )
         }
 
@@ -124,7 +123,7 @@ fun Route.productRoutes(productController: ProductService) {
         delete("{id}") {
             val id = call.requireParameters("id")
             val currentUserId = call.currentUserId
-            productController.deleteProduct(currentUserId, id.first())
+            productService.deleteProduct(currentUserId, id.first())
             call.respond(HttpStatusCode.OK, mapOf("message" to "Product deleted successfully"))
         }
 
@@ -152,7 +151,7 @@ fun Route.productRoutes(productController: ProductService) {
 /**
  * Admin product management routes.
  */
-fun Route.productAdminRoutes(productController: ProductService) {
+fun Route.productAdminRoutes(productService: ProductService) {
     adminAuth {
         /**
          * @tag Product
@@ -162,7 +161,7 @@ fun Route.productAdminRoutes(productController: ProductService) {
             val id = call.requireParameters("id")
             call.respond(
                 HttpStatusCode.OK,
-                productController.deleteProductAsAdmin(id.first())
+                productService.deleteProductAsAdmin(id.first())
             )
         }
     }

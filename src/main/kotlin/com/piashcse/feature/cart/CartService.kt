@@ -1,15 +1,17 @@
 package com.piashcse.feature.cart
-import com.piashcse.utils.extension.*
 
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.model.response.CartItemSummary
 import com.piashcse.model.response.CartSummaryResponse
-import com.piashcse.model.response.Product
-import com.piashcse.utils.validator.*
-import com.piashcse.utils.common.*
+import com.piashcse.model.response.ProductResponse
+import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.throwConflict
+import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -17,7 +19,7 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 /**
- * Controller for managing cart-related operations.
+ * Service for managing cart-related operations.
  */
 class CartService : CartRepository {
 
@@ -37,7 +39,7 @@ class CartService : CartRepository {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
         }.singleOrNull()
         existingCartItem?.let {
-            throw productId.throwConflict("Product")
+            throw productId.throwConflict("ProductResponse")
         } ?: CartItemDAO.new {
             this.userId = EntityID(userId, CartItemTable)
             this.productId = EntityID(productId, CartItemTable)
@@ -47,7 +49,7 @@ class CartService : CartRepository {
 
     private fun validateCartInput(userId: String, productId: String, quantity: Int) {
         if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
-        if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("Product ID"))
+        if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("ProductResponse ID"))
         if (quantity <= 0) throw ValidationException(Message.Validation.notPositive("Quantity"))
     }
 
@@ -78,11 +80,11 @@ class CartService : CartRepository {
      */
     override suspend fun updateCartQuantity(userId: String, productId: String, quantity: Int): Cart = query {
         if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
-        if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("Product ID"))
+        if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("ProductResponse ID"))
 
         val cartItem = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
-        }.singleOrNull() ?: productId.throwNotFound("Product")
+        }.singleOrNull() ?: productId.throwNotFound("ProductResponse")
 
         // Calculate new quantity, ensuring it doesn't go below 0
         val newQuantity = (cartItem.quantity + quantity).coerceAtLeast(0)
@@ -108,13 +110,13 @@ class CartService : CartRepository {
      * @return The product entity that was removed from the cart.
      * @throws Exception if the product does not exist in the user's cart.
      */
-    override suspend fun removeCartItem(userId: String, productId: String): Product = query {
+    override suspend fun removeCartItem(userId: String, productId: String): ProductResponse = query {
         if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
-        if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("Product ID"))
+        if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("ProductResponse ID"))
 
         val cartItem = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
-        }.singleOrNull() ?: productId.throwNotFound("Product")
+        }.singleOrNull() ?: productId.throwNotFound("ProductResponse")
 
         val product = ProductDAO.findById(cartItem.productId) ?:
             throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)

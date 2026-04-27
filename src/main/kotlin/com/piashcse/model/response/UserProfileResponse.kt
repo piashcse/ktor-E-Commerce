@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 
 @Serializable
-data class UserProfile(
+data class UserProfileResponse(
     var userId: String,
     val image: String?,
     val firstName: String?,

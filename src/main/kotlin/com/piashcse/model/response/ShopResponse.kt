@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
 @Serializable
-data class Shop(
+data class ShopResponse(
     val id: String,
     val name: String,
     val categoryId: String,

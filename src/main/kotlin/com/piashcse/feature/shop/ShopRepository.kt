@@ -3,7 +3,7 @@ package com.piashcse.feature.shop
 import com.piashcse.constants.ShopStatus
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
-import com.piashcse.model.response.Shop
+import com.piashcse.model.response.ShopResponse
 import com.piashcse.utils.common.PaginatedResponse
 
 interface ShopRepository {
@@ -14,7 +14,7 @@ interface ShopRepository {
      * @param shopRequest The shop details to create.
      * @return The created shop.
      */
-    suspend fun createShop(userId: String, shopRequest: ShopRequest): Shop
+    suspend fun createShop(userId: String, shopRequest: ShopRequest): ShopResponse
 
     /**
      * Updates an existing shop.
@@ -24,7 +24,7 @@ interface ShopRepository {
      * @param shopRequest The shop details to update.
      * @return The updated shop.
      */
-    suspend fun updateShop(userId: String, shopId: String, shopRequest: UpdateShopRequest): Shop
+    suspend fun updateShop(userId: String, shopId: String, shopRequest: UpdateShopRequest): ShopResponse
 
     /**
      * Gets a shop by ID.
@@ -32,7 +32,7 @@ interface ShopRepository {
      * @param shopId The shop ID to retrieve.
      * @return The shop details.
      */
-    suspend fun getShopById(shopId: String): Shop?
+    suspend fun getShopById(shopId: String): ShopResponse?
 
     /**
      * Gets shops by user ID (seller).
@@ -42,7 +42,7 @@ interface ShopRepository {
      * @param offset Number of shops to skip.
      * @return A list of shops for the user.
      */
-    suspend fun getShopsByUser(userId: String, limit: Int = 20, offset: Int = 0): PaginatedResponse<Shop>
+    suspend fun getShopsByUser(userId: String, limit: Int = 20, offset: Int = 0): PaginatedResponse<ShopResponse>
 
     /**
      * Gets all shops with optional filtering.
@@ -53,7 +53,7 @@ interface ShopRepository {
      * @param offset Number of shops to skip.
      * @return A list of shops matching the criteria.
      */
-    suspend fun getShops(status: String? = null, category: String? = null, limit: Int = 20, offset: Int = 0): PaginatedResponse<Shop>
+    suspend fun getShops(status: String? = null, category: String? = null, limit: Int = 20, offset: Int = 0): PaginatedResponse<ShopResponse>
 
     /**
      * Gets shops by category.
@@ -63,7 +63,7 @@ interface ShopRepository {
      * @param offset Number of shops to skip.
      * @return A list of shops in the category.
      */
-    suspend fun getShopsByCategory(categoryId: String, limit: Int = 20, offset: Int = 0): PaginatedResponse<Shop>
+    suspend fun getShopsByCategory(categoryId: String, limit: Int = 20, offset: Int = 0): PaginatedResponse<ShopResponse>
 
     /**
      * Gets featured shops.
@@ -72,7 +72,7 @@ interface ShopRepository {
      * @param offset Number of shops to skip.
      * @return A list of featured shops.
      */
-    suspend fun getFeaturedShops(limit: Int = 20, offset: Int = 0): PaginatedResponse<Shop>
+    suspend fun getFeaturedShops(limit: Int = 20, offset: Int = 0): PaginatedResponse<ShopResponse>
 
     /**
      * Gets shops by status.
@@ -82,7 +82,7 @@ interface ShopRepository {
      * @param offset Number of shops to skip.
      * @return A list of shops with the specified status.
      */
-    suspend fun getShopsByStatus(status: ShopStatus, limit: Int = 20, offset: Int = 0): PaginatedResponse<Shop>
+    suspend fun getShopsByStatus(status: ShopStatus, limit: Int = 20, offset: Int = 0): PaginatedResponse<ShopResponse>
 
     /**
      * Approves a shop application.
@@ -90,7 +90,7 @@ interface ShopRepository {
      * @param shopId The shop ID to approve.
      * @return The updated shop.
      */
-    suspend fun approveShop(shopId: String): Shop
+    suspend fun approveShop(shopId: String): ShopResponse
 
     /**
      * Rejects a shop application.
@@ -98,7 +98,7 @@ interface ShopRepository {
      * @param shopId The shop ID to reject.
      * @return The updated shop.
      */
-    suspend fun rejectShop(shopId: String): Shop
+    suspend fun rejectShop(shopId: String): ShopResponse
 
     /**
      * Suspends a shop.
@@ -106,7 +106,7 @@ interface ShopRepository {
      * @param shopId The shop ID to suspend.
      * @return The updated shop.
      */
-    suspend fun suspendShop(shopId: String): Shop
+    suspend fun suspendShop(shopId: String): ShopResponse
 
     /**
      * Activates a suspended shop.
@@ -114,5 +114,5 @@ interface ShopRepository {
      * @param shopId The shop ID to activate.
      * @return The updated shop.
      */
-    suspend fun activateShop(shopId: String): Shop
+    suspend fun activateShop(shopId: String): ShopResponse
 }

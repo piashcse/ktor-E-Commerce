@@ -3,7 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.ReviewRating
+import com.piashcse.model.response.ReviewRatingResponse
 import org.jetbrains.exposed.v1.core.between
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
@@ -33,7 +33,7 @@ class ReviewRatingDAO(id: EntityID<String>) : BaseEntity(id, ReviewRatingTable) 
     var notHelpfulCount by ReviewRatingTable.notHelpfulCount
     var status by ReviewRatingTable.status
 
-    fun response() = ReviewRating(
+    fun response() = ReviewRatingResponse(
         id = id.value,
         userId = userId.value,
         productId = productId.value,
