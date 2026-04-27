@@ -1,11 +1,9 @@
 package com.piashcse.feature.inventory
 
-import com.piashcse.constants.Message
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.sellerAuth
-import com.piashcse.utils.validator.MissingParameterException
-import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -14,111 +12,82 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * Defines routes for managing inventory.
- *
- * @param inventoryController The controller handling inventory-related operations.
+ * Seller inventory management routes.
  */
 fun Route.inventoryRoutes(inventoryController: InventoryService) {
     sellerAuth {
+        /**
+         * @tag Inventory
+         * @description Seller: Initialize or update inventory for a product
+         */
+        post {
+            val requestBody = call.receive<InventoryRequest>()
+            call.respond(
+                HttpStatusCode.OK,
+                inventoryController.createOrUpdateInventory(requestBody)
+            )
+        }
 
-            /**
-             * @tag Inventory
-             * @description Create new inventory record or update existing one for a product
-             * @operationId createOrUpdateInventory
-             * @body InventoryRequest Inventory request with product ID and stock details
-             * @response 200 Inventory created or updated successfully
-             * @security jwtToken
-             */
-            post {
-                val requestBody = call.receive<InventoryRequest>()
-                call.respond(HttpStatusCode.OK, inventoryController.createOrUpdateInventory(requestBody))
-            }
+        /**
+         * @tag Inventory
+         * @description Seller: Update stock quantity
+         */
+        put("/stock/{productId}") {
+            val productId = call.parameters["productId"] ?: return@put call.respond(HttpStatusCode.BadRequest, "productId is required")
+            val quantity = call.parameters["quantity"]?.toIntOrNull() ?: return@put call.respond(HttpStatusCode.BadRequest, "quantity is required and must be an integer")
+            val operation = call.parameters["operation"] ?: "set"
+            call.respond(
+                HttpStatusCode.OK,
+                inventoryController.updateStock(productId, quantity, operation)
+            )
+        }
 
-            /**
-             * @tag Inventory
-             * @description Update inventory for a specific product by ID
-             * @operationId updateInventory
-             * @path id (required) Unique identifier of the product
-             * @body InventoryRequest Inventory request with updated stock details
-             * @response 200 Inventory updated successfully
-             * @security jwtToken
-             */
-            put("/{id}") {
-                val productId = call.requireParameters("id")
-                val requestBody = call.receive<InventoryRequest>()
-                call.respond(HttpStatusCode.OK,
-                    inventoryController.createOrUpdateInventory(requestBody.copy(productId = productId.first())),
-                )
-            }
-
-            /**
-             * @tag Inventory
-             * @description Update stock quantity for a product with add, subtract, or set operation
-             * @operationId updateStock
-             * @path id (required) Unique identifier of the product
-             * @query quantity (required) Quantity value to add, subtract, or set
-             * @query operation (optional) Stock operation type: add, subtract, or set (default: add)
-             * @response 200 Stock quantity updated successfully
-             * @security jwtToken
-             */
-            put("/stock/{id}") {
-                val productId = call.requireParameters("id")
-                val quantity = call.parameters["quantity"]?.toIntOrNull()
-                    ?: throw MissingParameterException("quantity")
-                val operation = call.parameters["operation"] ?: "add"
-                call.respond(HttpStatusCode.OK,
-                    inventoryController.updateStock(productId.first(), quantity, operation),
-                )
-            }
-
-            /**
-             * @tag Inventory
-             * @description Retrieve inventory details for a specific product
-             * @operationId getInventoryByProduct
-             * @path id (required) Unique identifier of the product
-             * @response 200 Inventory details retrieved successfully
-             * @response 404 Product inventory not found
-             * @security jwtToken
-             */
-            get("/{id}") {
-                val productId = call.requireParameters("id")
-                val inventory = inventoryController.getInventoryByProduct(productId.first())
-                    ?: throw NotFoundException(Message.Inventory.NOT_FOUND)
+        /**
+         * @tag Inventory
+         * @description Seller: Retrieve inventory item details by product ID
+         */
+        get("/product/{productId}") {
+            val productId = call.parameters["productId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "productId is required")
+            val inventory = inventoryController.getInventoryByProduct(productId)
+            if (inventory != null) {
                 call.respond(HttpStatusCode.OK, inventory)
+            } else {
+                call.respond(HttpStatusCode.NotFound, "Inventory not found for product")
             }
         }
 
-        adminAuth {
+        /**
+         * @tag Inventory
+         * @description Seller: Retrieve all inventory items for a shop
+         */
+        get("/shop/{shopId}") {
+            val shopId = call.parameters["shopId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "shopId is required")
+            val (limit, offset) = call.paginationParameters()
+            call.respond(
+                HttpStatusCode.OK,
+                inventoryController.getInventoryByShop(shopId, limit, offset)
+            )
+        }
 
-            /**
-             * @tag Inventory
-             * @description Admin-only: Retrieve all inventory items for a specific shop with pagination
-             * @operationId getInventoryByShop
-             * @query shopId (required) Unique identifier of the shop
-             * @query limit Maximum number of inventory items to return (default 20)
-             * @query offset Number of inventory items to skip (default 0)
-             * @response 200 Shop inventory retrieved successfully
-             * @security jwtToken
-             */
-            get("/shop") {
-                val shopId = call.parameters["shopId"]
-                    ?: throw MissingParameterException("shopId")
-                val (limit, offset) = call.paginationParameters()
-                call.respond(HttpStatusCode.OK, inventoryController.getInventoryByShop(shopId, limit, offset))
-            }
-
-            /**
-             * @tag Inventory
-             * @description Admin-only: Retrieve products with low stock levels with pagination
-             * @operationId getLowStockProducts
-             * @query limit Maximum number of low stock products to return (default 10)
-             * @query offset Number of low stock products to skip (default 0)
-             * @response 200 Low stock products retrieved successfully
-             * @security jwtToken
-             */
-            get("/low-stock") {
-                val (limit, offset) = call.paginationParameters(defaultLimit = 10)
-                call.respond(HttpStatusCode.OK, inventoryController.getLowStockProducts(limit, offset))
-            }
+        /**
+         * @tag Inventory
+         * @description Seller: Retrieve items with stock below a threshold
+         */
+        get("/low-stock") {
+            val (limit, offset) = call.paginationParameters()
+            call.respond(
+                HttpStatusCode.OK,
+                inventoryController.getLowStockProducts(limit, offset)
+            )
         }
     }
+}
+
+/**
+ * Admin inventory routes.
+ */
+fun Route.inventoryAdminRoutes(inventoryController: InventoryService) {
+    adminAuth {
+        // Admin specific inventory management could be added here
+    }
+}

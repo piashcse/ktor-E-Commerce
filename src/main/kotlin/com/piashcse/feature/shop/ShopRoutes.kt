@@ -20,21 +20,14 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * Defines routes for managing shops.
- *
- * @param shopController The controller handling shop-related operations.
+ * Public and seller-specific shop routes.
  */
 fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
     sellerAuth {
-
         if (version == 1) {
             /**
              * @tag Shop
-             * @description Create a new shop for the authenticated seller
-             * @operationId createShop
-             * @body ShopRequest Shop creation request with shop details
-             * @response 200 Shop created successfully
-             * @security jwtToken
+             * @description Seller: Create a new shop
              */
             post {
                 val requestBody = call.receive<ShopRequest>()
@@ -43,12 +36,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
 
             /**
              * @tag Shop
-             * @description Update shop details for the authenticated seller
-             * @operationId updateShop
-             * @path id (required) Unique identifier of the shop to update
-             * @body UpdateShopRequest Shop update request with new details
-             * @response 200 Shop updated successfully
-             * @security jwtToken
+             * @description Seller: Update shop details
              */
             put("/{id}") {
                 val (shopId) = call.requireParameters("id")
@@ -58,12 +46,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
 
             /**
              * @tag Shop
-             * @description Retrieve all shops owned by the authenticated seller with pagination
-             * @operationId getShopsByUser
-             * @query limit Maximum number of shops to return (default 20)
-             * @query offset Number of shops to skip (default 0)
-             * @response 200 Seller's shops retrieved successfully
-             * @security jwtToken
+             * @description Seller: Retrieve owned shops
              */
             get {
                 val (limit, offset) = call.paginationParameters()
@@ -73,11 +56,6 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
             /**
              * @tag Shop
              * @description Retrieve detailed information about a specific shop
-             * @operationId getShopById
-             * @path id (required) Unique identifier of the shop
-             * @response 200 Shop details retrieved successfully
-             * @response 404 Shop not found
-             * @security jwtToken
              */
             get("/{id}") {
                 val (shopId) = call.requireParameters("id")
@@ -87,25 +65,15 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
             }
         }
 
-        // ==========================================
-        // 🔴 VERSION-SPECIFIC ENDPOINTS 
-        // ==========================================
-
         if (version >= 2) {
             /**
              * @tag Shop
-             * @description (V2) Update shop details with advanced options
-             * @operationId updateShopV2
-             * @path id (required) Unique identifier of the shop to update
-             * @body UpdateShopRequest Shop update request with new details
-             * @response 200 Shop updated successfully via V2 API
-             * @security jwtToken
+             * @description (V2) Seller: Update shop details
              */
             put("/{id}") {
                 val (shopId) = call.requireParameters("id")
                 val requestBody = call.receive<UpdateShopRequest>()
                 val response = shopController.updateShop(call.currentUserId, shopId, requestBody)
-                // Demonstrating returning a different response mapped to V2!
                 call.respond(HttpStatusCode.OK, mapOf("v2_migration" to true, "data" to response))
             }
         }
@@ -115,14 +83,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
         if (version == 1) {
             /**
              * @tag Shop
-             * @description Retrieve a paginated list of shops with optional filters
-             * @operationId getShops
-             * @query status Filter shops by status
-             * @query category Filter shops by category
-             * @query limit Maximum number of shops to return (default 20)
-             * @query offset Number of shops to skip (default 0)
-             * @response 200 Shops retrieved successfully
-             * @security jwtToken
+             * @description Retrieve public shops with filters
              */
             get("/public") {
                 val status = call.parameters["status"]
@@ -133,13 +94,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
 
             /**
              * @tag Shop
-             * @description Retrieve all shops belonging to a specific category with pagination
-             * @operationId getShopsByCategory
-             * @path categoryId (required) Unique identifier of the shop category
-             * @query limit Maximum number of shops to return (default 20)
-             * @query offset Number of shops to skip (default 0)
-             * @response 200 Shops in category retrieved successfully
-             * @security jwtToken
+             * @description Retrieve shops by category
              */
             get("/category/{categoryId}") {
                 val (categoryId) = call.requireParameters("categoryId")
@@ -149,12 +104,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
 
             /**
              * @tag Shop
-             * @description Retrieve all shops marked as featured with pagination
-             * @operationId getFeaturedShops
-             * @query limit Maximum number of shops to return (default 20)
-             * @query offset Number of shops to skip (default 0)
-             * @response 200 Featured shops retrieved successfully
-             * @security jwtToken
+             * @description Retrieve featured shops
              */
             get("/featured") {
                 val (limit, offset) = call.paginationParameters()
@@ -162,88 +112,68 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
             }
         }
     }
+}
 
+/**
+ * Admin shop management routes.
+ */
+fun Route.shopAdminRoutes(shopController: ShopService) {
     adminAuth {
-        if (version == 1) {
-            /**
-             * @tag Shop
-             * @description Admin-only: Retrieve shops filtered by their status with pagination
-             * @operationId getShopsByStatus
-             * @query status (required) Shop status to filter by (PENDING, APPROVED, REJECTED, SUSPENDED, etc.)
-             * @query limit Maximum number of shops to return (default 20)
-             * @query offset Number of shops to skip (default 0)
-             * @response 200 Shops filtered by status retrieved successfully
-             * @response 400 Invalid status parameter
-             * @security jwtToken
-             */
-            get("/status") {
-                val statusParam = call.parameters["status"]
-                    ?: throw MissingParameterException("status")
+        /**
+         * @tag Shop
+         * @description Admin: Retrieve shops filtered by status
+         */
+        get("/status") {
+            val statusParam = call.parameters["status"]
+                ?: throw MissingParameterException("status")
 
-                val status = try {
-                    ShopStatus.valueOf(statusParam.uppercase())
-                } catch (e: IllegalArgumentException) {
-                    throw InvalidEnumValueException(
-                        message = "Invalid shop status: $statusParam",
-                        enumName = ShopStatus.values().joinToString(", ") { it.name },
-                        invalidValue = statusParam
-                    )
-                }
-                val (limit, offset) = call.paginationParameters()
-                call.respond(HttpStatusCode.OK, shopController.getShopsByStatus(status, limit, offset))
+            val status = try {
+                ShopStatus.valueOf(statusParam.uppercase())
+            } catch (e: IllegalArgumentException) {
+                throw InvalidEnumValueException(
+                    message = "Invalid shop status: $statusParam",
+                    enumName = ShopStatus.values().joinToString(", ") { it.name },
+                    invalidValue = statusParam
+                )
             }
+            val (limit, offset) = call.paginationParameters()
+            call.respond(HttpStatusCode.OK, shopController.getShopsByStatus(status, limit, offset))
+        }
 
-            /**
-             * @tag Shop
-             * @description Admin-only: Approve a pending shop for operation
-             * @operationId approveShop
-             * @path id (required) Unique identifier of the shop to approve
-             * @response 200 Shop approved successfully
-             * @security jwtToken
-             */
-            put("/approve/{id}") {
-                val (shopId) = call.requireParameters("id")
-                call.respond(HttpStatusCode.OK, shopController.approveShop(shopId))
-            }
+        /**
+         * @tag Shop
+         * @description Admin: Approve a pending shop
+         */
+        put("/approve/{id}") {
+            val (shopId) = call.requireParameters("id")
+            call.respond(HttpStatusCode.OK, shopController.approveShop(shopId))
+        }
 
-            /**
-             * @tag Shop
-             * @description Admin-only: Reject a shop application
-             * @operationId rejectShop
-             * @path id (required) Unique identifier of the shop to reject
-             * @response 200 Shop rejected successfully
-             * @security jwtToken
-             */
-            put("/reject/{id}") {
-                val (shopId) = call.requireParameters("id")
-                call.respond(HttpStatusCode.OK, shopController.rejectShop(shopId))
-            }
+        /**
+         * @tag Shop
+         * @description Admin: Reject a shop application
+         */
+        put("/reject/{id}") {
+            val (shopId) = call.requireParameters("id")
+            call.respond(HttpStatusCode.OK, shopController.rejectShop(shopId))
+        }
 
-            /**
-             * @tag Shop
-             * @description Admin-only: Suspend an active shop temporarily
-             * @operationId suspendShop
-             * @path id (required) Unique identifier of the shop to suspend
-             * @response 200 Shop suspended successfully
-             * @security jwtToken
-             */
-            put("/suspend/{id}") {
-                val (shopId) = call.requireParameters("id")
-                call.respond(HttpStatusCode.OK, shopController.suspendShop(shopId))
-            }
+        /**
+         * @tag Shop
+         * @description Admin: Suspend an active shop
+         */
+        put("/suspend/{id}") {
+            val (shopId) = call.requireParameters("id")
+            call.respond(HttpStatusCode.OK, shopController.suspendShop(shopId))
+        }
 
-            /**
-             * @tag Shop
-             * @description Admin-only: Activate a suspended or inactive shop
-             * @operationId activateShop
-             * @path id (required) Unique identifier of the shop to activate
-             * @response 200 Shop activated successfully
-             * @security jwtToken
-             */
-            put("/activate/{id}") {
-                val (shopId) = call.requireParameters("id")
-                call.respond(HttpStatusCode.OK, shopController.activateShop(shopId))
-            }
+        /**
+         * @tag Shop
+         * @description Admin: Activate a shop
+         */
+        put("/activate/{id}") {
+            val (shopId) = call.requireParameters("id")
+            call.respond(HttpStatusCode.OK, shopController.activateShop(shopId))
         }
     }
 }

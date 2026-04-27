@@ -46,9 +46,7 @@ class RoleAuthorizationConfig {
  * Inherently allows ANY valid token if parameters are empty.
  */
 fun Route.requireRole(vararg roles: UserType, build: Route.() -> Unit) {
-    // 1. Authenticate the JWT globally (only ONE provider executes)
     authenticate("jwt-auth") {
-        // 2. Perform the fast RBAC interceptor check
         val routeWithAuth = createChild(object : RouteSelector() {
             override suspend fun evaluate(context: RoutingResolveContext, segmentIndex: Int) = RouteSelectorEvaluation.Constant
         })
