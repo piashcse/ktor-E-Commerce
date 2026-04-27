@@ -4,7 +4,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.UserProfile
+import com.piashcse.model.response.UserProfileResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.datetime.date
 
@@ -54,7 +54,7 @@ class UserProfileDAO(id: EntityID<String>) : BaseEntity(id, UserProfileTable) {
     var isActive by UserProfileTable.isActive
     var verified by UserProfileTable.verified
 
-    fun response() = UserProfile(
+    fun response() = UserProfileResponse(
         userId = userId.value,
         image = image,
         firstName = firstName,

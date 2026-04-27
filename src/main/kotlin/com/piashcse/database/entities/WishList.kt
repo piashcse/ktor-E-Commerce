@@ -3,7 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.Product
+import com.piashcse.model.response.ProductResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object WishListTable : BaseIdTable("wishlist") {
@@ -16,7 +16,7 @@ class WishListDAO(id: EntityID<String>) : BaseEntity(id, WishListTable) {
 
     var userId by WishListTable.userId
     var productId by WishListTable.productId
-    fun response(product: Product? = null) = WishList(product)
+    fun response(product: ProductResponse? = null) = WishList(product)
 }
 
-data class WishList(val product: Product? = null)
+data class WishList(val product: ProductResponse? = null)

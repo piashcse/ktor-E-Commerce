@@ -12,7 +12,7 @@ import io.ktor.server.routing.*
 /**
  * Admin shop category management routes.
  */
-fun Route.shopCategoryAdminRoutes(shopCategoryController: ShopCategoryService) {
+fun Route.shopCategoryAdminRoutes(shopCategoryService: ShopCategoryService) {
     adminAuth {
         /**
          * @tag ShopCategory
@@ -22,7 +22,7 @@ fun Route.shopCategoryAdminRoutes(shopCategoryController: ShopCategoryService) {
             val requestBody = call.receive<ShopCategoryRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                shopCategoryController.createCategory(requestBody.name)
+                shopCategoryService.createCategory(requestBody.name)
             )
         }
 
@@ -34,7 +34,7 @@ fun Route.shopCategoryAdminRoutes(shopCategoryController: ShopCategoryService) {
             val (limit, offset) = call.paginationParameters()
             call.respond(
                 HttpStatusCode.OK,
-                shopCategoryController.getCategories(limit, offset)
+                shopCategoryService.getCategories(limit, offset)
             )
         }
 
@@ -46,7 +46,7 @@ fun Route.shopCategoryAdminRoutes(shopCategoryController: ShopCategoryService) {
             val id = call.requireParameters("id")
             call.respond(
                 HttpStatusCode.OK,
-                shopCategoryController.deleteCategory(id.first())
+                shopCategoryService.deleteCategory(id.first())
             )
         }
 
@@ -58,7 +58,7 @@ fun Route.shopCategoryAdminRoutes(shopCategoryController: ShopCategoryService) {
             val params = call.requireParameters("id", "name")
             call.respond(
                 HttpStatusCode.OK,
-                shopCategoryController.updateCategory(params[0], params[1])
+                shopCategoryService.updateCategory(params[0], params[1])
             )
         }
     }

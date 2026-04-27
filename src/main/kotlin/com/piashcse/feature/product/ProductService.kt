@@ -1,5 +1,4 @@
 package com.piashcse.feature.product
-import com.piashcse.utils.extension.*
 
 import com.piashcse.constants.Message
 import com.piashcse.constants.ProductStatus
@@ -8,20 +7,20 @@ import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
-import com.piashcse.model.response.Product
-import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.validator.NotFoundException
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 /**
- * Controller for managing products.
+ * Service for managing products.
  */
 class ProductService : ProductRepository {
 
@@ -35,7 +34,7 @@ class ProductService : ProductRepository {
      * @param productRequest The request object containing product details.
      * @return The created product entity.
      */
-    override suspend fun createProduct(userId: String, shopId: String?, productRequest: ProductRequest): Product = query {
+    override suspend fun createProduct(userId: String, shopId: String?, productRequest: ProductRequest): ProductResponse = query {
         validateProductForSeller(userId, shopId)
 
         val product = ProductDAO.new {
@@ -109,7 +108,7 @@ class ProductService : ProductRepository {
      * @return The updated product entity.
      * @throws Exception if the product with the provided ID is not found.
      */
-    override suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProductRequest): Product =
+    override suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProductRequest): ProductResponse =
         query {
             // Verify that the user is a seller
             val seller = SellerDAO.find {
@@ -121,7 +120,7 @@ class ProductService : ProductRepository {
 
             // Verify user has access to this product
             val product = ProductDAO.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.singleOrNull()
-                ?: productId.throwNotFound("Product")
+                ?: productId.throwNotFound("ProductResponse")
 
             product.apply {
                 this.userId = EntityID(userId, UserTable)
@@ -150,7 +149,7 @@ class ProductService : ProductRepository {
      * @param productQuery The filter request containing the parameters to filter products.
      * @return A list of products matching the provided filters.
      */
-    override suspend fun getProducts(productQuery: ProductWithFilterRequest): PaginatedResponse<Product> = query {
+    override suspend fun getProducts(productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
         val query = ProductTable.selectAll().andWhere { ProductTable.status eq ProductStatus.ACTIVE }
 
         productQuery.categoryId?.let {
@@ -181,7 +180,7 @@ class ProductService : ProductRepository {
      * @param productQuery The filter request containing the parameters to filter products.
      * @return A list of products for the specific shop.
      */
-    override suspend fun getProductsByShop(shopId: String, productQuery: ProductWithFilterRequest): PaginatedResponse<Product> = query {
+    override suspend fun getProductsByShop(shopId: String, productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
         val query = ProductTable.selectAll().andWhere { 
             (ProductTable.shopId eq shopId) and (ProductTable.status eq ProductStatus.ACTIVE)
         }
@@ -214,7 +213,7 @@ class ProductService : ProductRepository {
      * @param productQuery The filter request containing product details.
      * @return A list of products (even if only one product matches).
      */
-    override suspend fun getProductsByUser(userId: String, productQuery: ProductWithFilterRequest): PaginatedResponse<Product> = query {
+    override suspend fun getProductsByUser(userId: String, productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
         val query = ProductTable.selectAll().andWhere { 
             (ProductTable.userId eq userId) and (ProductTable.status eq ProductStatus.ACTIVE)
         }
@@ -247,9 +246,9 @@ class ProductService : ProductRepository {
      * @return The product entity with full details.
      * @throws Exception if the product with the provided ID is not found.
      */
-    override suspend fun getProductDetail(productId: String): Product = query {
+    override suspend fun getProductDetail(productId: String): ProductResponse = query {
         val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
-        product?.response() ?: productId.throwNotFound("Product")
+        product?.response() ?: productId.throwNotFound("ProductResponse")
     }
 
     /**
@@ -266,7 +265,7 @@ class ProductService : ProductRepository {
         // Find the product and verify user ownership
         val product = ProductDAO.find {
             ProductTable.userId eq userId and (ProductTable.id eq productId)
-        }.singleOrNull() ?: productId.throwNotFound("Product")
+        }.singleOrNull() ?: productId.throwNotFound("ProductResponse")
 
         product.delete()
         productId
@@ -281,7 +280,7 @@ class ProductService : ProductRepository {
      */
     suspend fun deleteProductAsAdmin(productId: String): String = query {
         val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
-            ?: productId.throwNotFound("Product")
+            ?: productId.throwNotFound("ProductResponse")
         product.delete()
         productId
     }
@@ -304,7 +303,7 @@ class ProductService : ProductRepository {
      * @param productQuery The search request containing the parameters for searching products.
      * @return A list of products matching the search criteria.
      */
-    override suspend fun searchProduct(productQuery: ProductSearchRequest): PaginatedResponse<Product> = query {
+    override suspend fun searchProduct(productQuery: ProductSearchRequest): PaginatedResponse<ProductResponse> = query {
         val query = ProductTable.selectAll().andWhere { ProductTable.status eq ProductStatus.ACTIVE }
 
         if (productQuery.name.isNotEmpty()) {
@@ -331,7 +330,7 @@ class ProductService : ProductRepository {
      * @param categoryId The category ID to filter by.
      * @return A list of products in the category.
      */
-    override suspend fun getProductsByCategory(categoryId: String): PaginatedResponse<Product> = query {
+    override suspend fun getProductsByCategory(categoryId: String): PaginatedResponse<ProductResponse> = query {
         val condition: Op<Boolean> = ProductTable.categoryId eq categoryId and (ProductTable.status eq ProductStatus.ACTIVE)
         val data = ProductDAO.find { condition }.map { it.response() }
 
@@ -350,7 +349,7 @@ class ProductService : ProductRepository {
      *
      * @return A list of featured products.
      */
-    override suspend fun getFeaturedProducts(): PaginatedResponse<Product> = query {
+    override suspend fun getFeaturedProducts(): PaginatedResponse<ProductResponse> = query {
         val condition: Op<Boolean> = ProductTable.featured eq true and (ProductTable.status eq ProductStatus.ACTIVE)
         val data = ProductDAO.find { condition }.orderBy(ProductTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.DESC).map { it.response() }
 
@@ -369,7 +368,7 @@ class ProductService : ProductRepository {
      *
      * @return A list of best selling products.
      */
-    override suspend fun getBestSellingProducts(): PaginatedResponse<Product> = query {
+    override suspend fun getBestSellingProducts(): PaginatedResponse<ProductResponse> = query {
         val condition: Op<Boolean> = ProductTable.bestSeller eq true and (ProductTable.status eq ProductStatus.ACTIVE)
         val data = ProductDAO.find { condition }.orderBy(ProductTable.totalSales to org.jetbrains.exposed.v1.core.SortOrder.DESC).limit(10).map { it.response() }
 
@@ -388,7 +387,7 @@ class ProductService : ProductRepository {
      *
      * @return A list of hot deal products.
      */
-    override suspend fun getHotDealProducts(): PaginatedResponse<Product> = query {
+    override suspend fun getHotDealProducts(): PaginatedResponse<ProductResponse> = query {
         val condition: Op<Boolean> = ProductTable.hotDeal eq true and (ProductTable.status eq ProductStatus.ACTIVE)
         val data = ProductDAO.find { condition }.orderBy(ProductTable.discountPercentage to org.jetbrains.exposed.v1.core.SortOrder.DESC).limit(10).map { it.response() }
 

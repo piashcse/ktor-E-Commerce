@@ -5,7 +5,7 @@ import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.Order
+import com.piashcse.model.response.OrderResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
@@ -58,7 +58,7 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
     var canceledDate by OrderTable.canceledDate
     var completedDate by OrderTable.completedDate
 
-    fun response() = Order(
+    fun response() = OrderResponse(
         orderId = id.value,
         subTotal = subTotal.toFloat(),
         total = total.toFloat(),

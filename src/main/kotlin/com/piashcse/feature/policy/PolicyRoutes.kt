@@ -11,7 +11,7 @@ import io.ktor.server.routing.*
 /**
  * Public policy routes.
  */
-fun Route.policyRoutes(policyController: PolicyService) {
+fun Route.policyRoutes(policyService: PolicyService) {
     /**
      * @tag Privacy Policy
      * @description Retrieve the latest active version of a policy by type
@@ -24,7 +24,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
             return@get call.respond(HttpStatusCode.BadRequest, "Invalid policy type")
         }
         
-        val policy = policyController.getPolicyByType(policyType)
+        val policy = policyService.getPolicyByType(policyType)
         call.respond(HttpStatusCode.OK, policy)
     }
 }
@@ -32,7 +32,7 @@ fun Route.policyRoutes(policyController: PolicyService) {
 /**
  * Admin policy management routes.
  */
-fun Route.policyAdminRoutes(policyController: PolicyService) {
+fun Route.policyAdminRoutes(policyService: PolicyService) {
     adminAuth {
         /**
          * @tag Privacy Policy
@@ -40,7 +40,7 @@ fun Route.policyAdminRoutes(policyController: PolicyService) {
          */
         post {
             val requestBody = call.receive<CreatePolicyRequest>()
-            call.respond(HttpStatusCode.Created, policyController.createPolicy(requestBody))
+            call.respond(HttpStatusCode.Created, policyService.createPolicy(requestBody))
         }
 
         /**
@@ -54,7 +54,7 @@ fun Route.policyAdminRoutes(policyController: PolicyService) {
             } catch (e: IllegalArgumentException) {
                 return@get call.respond(HttpStatusCode.BadRequest, "Invalid policy type")
             }
-            call.respond(HttpStatusCode.OK, policyController.getAllPolicies(policyType))
+            call.respond(HttpStatusCode.OK, policyService.getAllPolicies(policyType))
         }
     }
 }

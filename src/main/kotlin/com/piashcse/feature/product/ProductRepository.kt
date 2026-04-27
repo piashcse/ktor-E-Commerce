@@ -4,7 +4,7 @@ import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
-import com.piashcse.model.response.Product
+import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
 
 interface ProductRepository {
@@ -16,7 +16,7 @@ interface ProductRepository {
      * @param productRequest The details of the product to create.
      * @return The created product.
      */
-    suspend fun createProduct(userId: String, shopId: String?, productRequest: ProductRequest): Product
+    suspend fun createProduct(userId: String, shopId: String?, productRequest: ProductRequest): ProductResponse
 
     /**
      * Updates an existing product.
@@ -26,7 +26,7 @@ interface ProductRepository {
      * @param update The product details to update.
      * @return The updated product.
      */
-    suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProductRequest): Product
+    suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProductRequest): ProductResponse
 
     /**
      * Retrieves a list of products based on filters.
@@ -34,7 +34,7 @@ interface ProductRepository {
      * @param query The filters to apply when retrieving products.
      * @return A list of products matching the filters.
      */
-    suspend fun getProducts(productQuery: ProductWithFilterRequest): PaginatedResponse<Product>
+    suspend fun getProducts(productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse>
 
     /**
      * Retrieves products by shop ID (for seller dashboard).
@@ -43,7 +43,7 @@ interface ProductRepository {
      * @param query The filters to apply when retrieving the product.
      * @return A list of products for the specific shop.
      */
-    suspend fun getProductsByShop(shopId: String, productQuery: ProductWithFilterRequest): PaginatedResponse<Product>
+    suspend fun getProductsByShop(shopId: String, productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse>
 
     /**
      * Retrieves products by seller/user ID.
@@ -52,7 +52,7 @@ interface ProductRepository {
      * @param query The filters to apply when retrieving the product.
      * @return A list of products (even if only one product matches).
      */
-    suspend fun getProductsByUser(userId: String, productQuery: ProductWithFilterRequest): PaginatedResponse<Product>
+    suspend fun getProductsByUser(userId: String, productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse>
 
     /**
      * Retrieves detailed information about a specific product.
@@ -60,7 +60,7 @@ interface ProductRepository {
      * @param productId The unique identifier of the product.
      * @return The product details.
      */
-    suspend fun getProductDetail(productId: String): Product
+    suspend fun getProductDetail(productId: String): ProductResponse
 
     /**
      * Increments the view count for a product.
@@ -84,7 +84,7 @@ interface ProductRepository {
      * @param query The search parameters.
      * @return A list of products matching the search.
      */
-    suspend fun searchProduct(productQuery: ProductSearchRequest): PaginatedResponse<Product>
+    suspend fun searchProduct(productQuery: ProductSearchRequest): PaginatedResponse<ProductResponse>
 
     /**
      * Gets products by category.
@@ -92,26 +92,26 @@ interface ProductRepository {
      * @param categoryId The category ID to filter by.
      * @return A list of products in the category.
      */
-    suspend fun getProductsByCategory(categoryId: String): PaginatedResponse<Product>
+    suspend fun getProductsByCategory(categoryId: String): PaginatedResponse<ProductResponse>
 
     /**
      * Gets featured products.
      *
      * @return A list of featured products.
      */
-    suspend fun getFeaturedProducts(): PaginatedResponse<Product>
+    suspend fun getFeaturedProducts(): PaginatedResponse<ProductResponse>
 
     /**
      * Gets best selling products.
      *
      * @return A list of best selling products.
      */
-    suspend fun getBestSellingProducts(): PaginatedResponse<Product>
+    suspend fun getBestSellingProducts(): PaginatedResponse<ProductResponse>
 
     /**
      * Gets hot deals.
      *
      * @return A list of hot deal products.
      */
-    suspend fun getHotDealProducts(): PaginatedResponse<Product>
+    suspend fun getHotDealProducts(): PaginatedResponse<ProductResponse>
 }

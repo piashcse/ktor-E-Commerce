@@ -1,13 +1,12 @@
 package com.piashcse.feature.consent
-import com.piashcse.utils.extension.*
 
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.PolicyConsentRequest
-import com.piashcse.model.response.UserPolicyConsent
-import com.piashcse.utils.validator.ValidationException
+import com.piashcse.model.response.UserPolicyConsentResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import java.time.LocalDateTime
@@ -19,7 +18,7 @@ class ConsentService: ConsentRepository {
     override suspend fun recordConsent(
         currentUserId: String,
         consentRequest: PolicyConsentRequest
-    ): UserPolicyConsent = query {
+    ): UserPolicyConsentResponse = query {
         if (currentUserId.isBlank()) {
             throw ValidationException(Message.Validation.blankField("User ID"))
         }
@@ -58,7 +57,7 @@ class ConsentService: ConsentRepository {
     /**
      * Gets all consents for a user
      */
-    override suspend fun getUserConsents(userId: String): List<UserPolicyConsent> = query {
+    override suspend fun getUserConsents(userId: String): List<UserPolicyConsentResponse> = query {
         val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
 
         PolicyConsentDAO.find { PolicyConsentTable.userId eq user.id }

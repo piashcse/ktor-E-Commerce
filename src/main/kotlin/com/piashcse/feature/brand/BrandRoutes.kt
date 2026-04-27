@@ -14,7 +14,7 @@ import io.ktor.server.routing.*
 /**
  * Public brand routes.
  */
-fun Route.brandRoutes(brandController: BrandService) {
+fun Route.brandRoutes(brandService: BrandService) {
     requireRole(UserType.CUSTOMER, UserType.SELLER, UserType.ADMIN) {
         /**
          * @tag Brand
@@ -24,7 +24,7 @@ fun Route.brandRoutes(brandController: BrandService) {
             val (limit, offset) = call.paginationParameters()
             call.respond(
                 HttpStatusCode.OK,
-                brandController.getBrands(limit, offset)
+                brandService.getBrands(limit, offset)
             )
         }
     }
@@ -33,7 +33,7 @@ fun Route.brandRoutes(brandController: BrandService) {
 /**
  * Admin brand management routes.
  */
-fun Route.brandAdminRoutes(brandController: BrandService) {
+fun Route.brandAdminRoutes(brandService: BrandService) {
     adminAuth {
         /**
          * @tag Brand
@@ -43,7 +43,7 @@ fun Route.brandAdminRoutes(brandController: BrandService) {
             val requestBody = call.receive<BrandRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                brandController.createBrand(requestBody.name)
+                brandService.createBrand(requestBody.name)
             )
         }
 
@@ -55,7 +55,7 @@ fun Route.brandAdminRoutes(brandController: BrandService) {
             val params = call.requireParameters("id", "name")
             call.respond(
                 HttpStatusCode.OK,
-                brandController.updateBrand(params[0], params[1])
+                brandService.updateBrand(params[0], params[1])
             )
         }
 
@@ -67,7 +67,7 @@ fun Route.brandAdminRoutes(brandController: BrandService) {
             val id = call.requireParameters("id")
             call.respond(
                 HttpStatusCode.OK,
-                brandController.deleteBrand(id.first())
+                brandService.deleteBrand(id.first())
             )
         }
     }

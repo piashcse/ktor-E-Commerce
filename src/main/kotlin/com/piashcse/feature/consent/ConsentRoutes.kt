@@ -5,9 +5,9 @@ import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
-import com.piashcse.utils.validator.InvalidEnumValueException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requireParameters
+import com.piashcse.utils.validator.InvalidEnumValueException
 import io.ktor.http.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
@@ -17,7 +17,7 @@ import io.ktor.server.routing.*
 /**
  * Routes for managing user policy consents.
  */
-fun Route.consentRoutes(consentController: ConsentService) {
+fun Route.consentRoutes(consentService: ConsentService) {
     customerAuth {
         /**
          * @tag Privacy Policy Consent
@@ -33,7 +33,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
             val updatedRequest = consentRequest.copy(policyId, ipAddress, userAgent)
             call.respond(
                 HttpStatusCode.OK,
-                consentController.recordConsent(userId, updatedRequest)
+                consentService.recordConsent(userId, updatedRequest)
             )
         }
     }
@@ -45,7 +45,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
          */
         get {
             val userId = call.currentUserId
-            call.respond(HttpStatusCode.OK, consentController.getUserConsents(userId))
+            call.respond(HttpStatusCode.OK, consentService.getUserConsents(userId))
         }
 
         /**
@@ -66,7 +66,7 @@ fun Route.consentRoutes(consentController: ConsentService) {
                 )
             }
 
-            val hasConsented = consentController.hasUserConsented(userId, policyTypeValue)
+            val hasConsented = consentService.hasUserConsented(userId, policyTypeValue)
             call.respond(HttpStatusCode.OK, mapOf("hasConsented" to hasConsented))
         }
     }

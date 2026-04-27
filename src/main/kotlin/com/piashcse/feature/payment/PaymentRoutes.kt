@@ -12,7 +12,7 @@ import io.ktor.server.routing.*
 /**
  * Customer payment routes.
  */
-fun Route.paymentRoutes(paymentController: PaymentService) {
+fun Route.paymentRoutes(paymentService: PaymentService) {
     customerAuth {
         /**
          * @tag Payment
@@ -22,7 +22,7 @@ fun Route.paymentRoutes(paymentController: PaymentService) {
             val requestBody = call.receive<PaymentRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                paymentController.createPayment(requestBody)
+                paymentService.createPayment(requestBody)
             )
         }
 
@@ -34,7 +34,7 @@ fun Route.paymentRoutes(paymentController: PaymentService) {
             val id = call.requireParameters("id")
             call.respond(
                 HttpStatusCode.OK,
-                paymentController.getPaymentById(id.first())
+                paymentService.getPaymentById(id.first())
             )
         }
 
@@ -47,7 +47,7 @@ fun Route.paymentRoutes(paymentController: PaymentService) {
             val (limit, offset) = call.paginationParameters()
             call.respond(
                 HttpStatusCode.OK,
-                paymentController.getPaymentsByOrderId(orderId, limit, offset)
+                paymentService.getPaymentsByOrderId(orderId, limit, offset)
             )
         }
     }

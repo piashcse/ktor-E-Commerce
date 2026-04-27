@@ -3,7 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.PolicyDocument
+import com.piashcse.model.response.PolicyDocumentResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 
@@ -49,7 +49,7 @@ class PolicyDocumentDAO(id: EntityID<String>) : BaseEntity(id, PolicyDocumentTab
     var effectiveDate by PolicyDocumentTable.effectiveDate
     var isActive by PolicyDocumentTable.isActive
 
-    fun response() = PolicyDocument(
+    fun response() = PolicyDocumentResponse(
         id.value,
         title,
         type.name,

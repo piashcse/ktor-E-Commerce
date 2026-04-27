@@ -4,7 +4,7 @@ import com.piashcse.constants.PaymentStatus
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Payment(
+data class PaymentResponse(
     val id: String,
     val orderId: String,
     val amount: Long,

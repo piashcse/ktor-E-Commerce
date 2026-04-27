@@ -1,7 +1,7 @@
 package com.piashcse.utils.extension
-import com.piashcse.utils.extension.*
 
-import com.piashcse.utils.validator.*
+import com.piashcse.utils.validator.ConflictException
+import com.piashcse.utils.validator.NotFoundException
 
 // ============================================================================
 //  STRING EXTENSIONS — concise throw syntax for common patterns

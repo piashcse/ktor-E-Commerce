@@ -8,12 +8,12 @@ import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.sellerAuth
-import com.piashcse.utils.validator.InvalidEnumValueException
-import com.piashcse.utils.validator.MissingParameterException
-import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
+import com.piashcse.utils.validator.InvalidEnumValueException
+import com.piashcse.utils.validator.MissingParameterException
+import com.piashcse.utils.validator.NotFoundException
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -22,7 +22,7 @@ import io.ktor.server.routing.*
 /**
  * Public and seller-specific shop routes.
  */
-fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
+fun Route.shopRoutes(shopService: ShopService, version: Int = 1) {
     sellerAuth {
         if (version == 1) {
             /**
@@ -31,7 +31,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
              */
             post {
                 val requestBody = call.receive<ShopRequest>()
-                call.respond(HttpStatusCode.OK, shopController.createShop(call.currentUserId, requestBody))
+                call.respond(HttpStatusCode.OK, shopService.createShop(call.currentUserId, requestBody))
             }
 
             /**
@@ -41,7 +41,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
             put("/{id}") {
                 val (shopId) = call.requireParameters("id")
                 val requestBody = call.receive<UpdateShopRequest>()
-                call.respond(HttpStatusCode.OK, shopController.updateShop(call.currentUserId, shopId, requestBody))
+                call.respond(HttpStatusCode.OK, shopService.updateShop(call.currentUserId, shopId, requestBody))
             }
 
             /**
@@ -50,7 +50,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
              */
             get {
                 val (limit, offset) = call.paginationParameters()
-                call.respond(HttpStatusCode.OK, shopController.getShopsByUser(call.currentUserId, limit, offset))
+                call.respond(HttpStatusCode.OK, shopService.getShopsByUser(call.currentUserId, limit, offset))
             }
 
             /**
@@ -59,7 +59,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
              */
             get("/{id}") {
                 val (shopId) = call.requireParameters("id")
-                val shop = shopController.getShopById(shopId)
+                val shop = shopService.getShopById(shopId)
                     ?: throw NotFoundException(Message.Shops.NOT_FOUND)
                 call.respond(HttpStatusCode.OK, shop)
             }
@@ -73,7 +73,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
             put("/{id}") {
                 val (shopId) = call.requireParameters("id")
                 val requestBody = call.receive<UpdateShopRequest>()
-                val response = shopController.updateShop(call.currentUserId, shopId, requestBody)
+                val response = shopService.updateShop(call.currentUserId, shopId, requestBody)
                 call.respond(HttpStatusCode.OK, mapOf("v2_migration" to true, "data" to response))
             }
         }
@@ -89,7 +89,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
                 val status = call.parameters["status"]
                 val category = call.parameters["category"]
                 val (limit, offset) = call.paginationParameters()
-                call.respond(HttpStatusCode.OK, shopController.getShops(status, category, limit, offset))
+                call.respond(HttpStatusCode.OK, shopService.getShops(status, category, limit, offset))
             }
 
             /**
@@ -99,7 +99,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
             get("/category/{categoryId}") {
                 val (categoryId) = call.requireParameters("categoryId")
                 val (limit, offset) = call.paginationParameters()
-                call.respond(HttpStatusCode.OK, shopController.getShopsByCategory(categoryId, limit, offset))
+                call.respond(HttpStatusCode.OK, shopService.getShopsByCategory(categoryId, limit, offset))
             }
 
             /**
@@ -108,7 +108,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
              */
             get("/featured") {
                 val (limit, offset) = call.paginationParameters()
-                call.respond(HttpStatusCode.OK, shopController.getFeaturedShops(limit, offset))
+                call.respond(HttpStatusCode.OK, shopService.getFeaturedShops(limit, offset))
             }
         }
     }
@@ -117,7 +117,7 @@ fun Route.shopRoutes(shopController: ShopService, version: Int = 1) {
 /**
  * Admin shop management routes.
  */
-fun Route.shopAdminRoutes(shopController: ShopService) {
+fun Route.shopAdminRoutes(shopService: ShopService) {
     adminAuth {
         /**
          * @tag Shop
@@ -137,7 +137,7 @@ fun Route.shopAdminRoutes(shopController: ShopService) {
                 )
             }
             val (limit, offset) = call.paginationParameters()
-            call.respond(HttpStatusCode.OK, shopController.getShopsByStatus(status, limit, offset))
+            call.respond(HttpStatusCode.OK, shopService.getShopsByStatus(status, limit, offset))
         }
 
         /**
@@ -146,7 +146,7 @@ fun Route.shopAdminRoutes(shopController: ShopService) {
          */
         put("/approve/{id}") {
             val (shopId) = call.requireParameters("id")
-            call.respond(HttpStatusCode.OK, shopController.approveShop(shopId))
+            call.respond(HttpStatusCode.OK, shopService.approveShop(shopId))
         }
 
         /**
@@ -155,7 +155,7 @@ fun Route.shopAdminRoutes(shopController: ShopService) {
          */
         put("/reject/{id}") {
             val (shopId) = call.requireParameters("id")
-            call.respond(HttpStatusCode.OK, shopController.rejectShop(shopId))
+            call.respond(HttpStatusCode.OK, shopService.rejectShop(shopId))
         }
 
         /**
@@ -164,7 +164,7 @@ fun Route.shopAdminRoutes(shopController: ShopService) {
          */
         put("/suspend/{id}") {
             val (shopId) = call.requireParameters("id")
-            call.respond(HttpStatusCode.OK, shopController.suspendShop(shopId))
+            call.respond(HttpStatusCode.OK, shopService.suspendShop(shopId))
         }
 
         /**
@@ -173,7 +173,7 @@ fun Route.shopAdminRoutes(shopController: ShopService) {
          */
         put("/activate/{id}") {
             val (shopId) = call.requireParameters("id")
-            call.respond(HttpStatusCode.OK, shopController.activateShop(shopId))
+            call.respond(HttpStatusCode.OK, shopService.activateShop(shopId))
         }
     }
 }

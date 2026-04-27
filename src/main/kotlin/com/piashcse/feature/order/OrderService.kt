@@ -4,11 +4,11 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.OrderRequest
-import com.piashcse.model.response.Order
+import com.piashcse.model.response.OrderResponse
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.validator.ValidationException
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -18,7 +18,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 /**
- * Controller for managing order-related operations.
+ * Service for managing order-related operations.
  */
 class OrderService : OrderRepository {
 
@@ -36,7 +36,7 @@ class OrderService : OrderRepository {
         userId: String,
         orderRequest: OrderRequest,
         idempotencyKey: String?
-    ): List<Order> = query {
+    ): List<OrderResponse> = query {
         orderRequest.validation()
         if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
         if (orderRequest.orderItems.isEmpty()) throw ValidationException(Message.Validation.INVALID_ORDER_ITEMS)
@@ -81,7 +81,7 @@ class OrderService : OrderRepository {
         val requestTotal = BigDecimal(orderRequest.total.toString())
         if (requestTotal.compareTo(calculatedSubtotal) != 0) {
             throw ValidationException(
-                "Order total mismatch. Requested: ${orderRequest.total}, Calculated: $calculatedSubtotal"
+                "OrderResponse total mismatch. Requested: ${orderRequest.total}, Calculated: $calculatedSubtotal"
             )
         }
 
@@ -96,7 +96,7 @@ class OrderService : OrderRepository {
         val today = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE) // YYYYMMDD
         val orderCountForDate = getOrderCountForDate(today)
 
-        // 3. Create Order per Shop
+        // 3. Create OrderResponse per Shop
         itemsByShop.entries.forEachIndexed { index, (shopIdValue, items) ->
             // Generate order number: ORD-YYYYMMDD-XXXX
             val sequenceNumber = orderCountForDate + index + 1
@@ -105,7 +105,7 @@ class OrderService : OrderRepository {
             // Calculate totals for this shop's order
             var shopSubTotal = BigDecimal.ZERO
 
-            // Create Order first
+            // Create OrderResponse first
             val order = OrderDAO.new {
                 this.userId = EntityID(userId, UserTable)
                 this.shopId = EntityID(shopIdValue, ShopTable)
@@ -143,7 +143,7 @@ class OrderService : OrderRepository {
                 shopSubTotal = shopSubTotal.add(itemTotal)
             }
 
-            // Update Order totals
+            // Update OrderResponse totals
             order.subTotal = shopSubTotal
             order.total = shopSubTotal // Add tax/shipping here if needed
 
@@ -216,7 +216,7 @@ class OrderService : OrderRepository {
      * @param limit The maximum number of orders to retrieve.
      * @return A list of order entities for the user.
      */
-    override suspend fun getOrders(userId: String, limit: Int, offset: Int): PaginatedResponse<Order> = query {
+    override suspend fun getOrders(userId: String, limit: Int, offset: Int): PaginatedResponse<OrderResponse> = query {
         OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
             .orderBy(OrderTable.createdAt to SortOrder.DESC)
             .toPaginatedResponse(limit, offset) {
@@ -233,9 +233,9 @@ class OrderService : OrderRepository {
      * @return The updated order entity with the new status.
      * @throws Exception if the order does not exist for the given user.
      */
-    override suspend fun updateOrderStatus(userId: String, orderId: String, status: OrderStatus): Order = query {
+    override suspend fun updateOrderStatus(userId: String, orderId: String, status: OrderStatus): OrderResponse = query {
         if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
-        if (orderId.isBlank()) throw ValidationException(Message.Validation.blankField("Order ID"))
+        if (orderId.isBlank()) throw ValidationException(Message.Validation.blankField("OrderResponse ID"))
 
         val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
 
@@ -284,8 +284,8 @@ class OrderService : OrderRepository {
         userId: String,
         reason: String,
         userType: com.piashcse.constants.UserType
-    ): Order = query {
-        if (orderId.isBlank()) throw ValidationException(Message.Validation.blankField("Order ID"))
+    ): OrderResponse = query {
+        if (orderId.isBlank()) throw ValidationException(Message.Validation.blankField("OrderResponse ID"))
         if (reason.isBlank()) throw ValidationException(Message.Orders.CANCEL_REASON_REQUIRED)
 
         val order = OrderDAO.findById(orderId)
@@ -371,7 +371,7 @@ class OrderService : OrderRepository {
         limit: Int,
         offset: Int,
         status: String?
-    ): PaginatedResponse<Order> = query {
+    ): PaginatedResponse<OrderResponse> = query {
         val seller = SellerDAO.find { SellerTable.userId eq userId }.firstOrNull()
             ?: throw ValidationException("Seller profile not found")
 
@@ -405,7 +405,7 @@ class OrderService : OrderRepository {
         status: String?,
         startDate: java.time.Instant?,
         endDate: java.time.Instant?
-    ): PaginatedResponse<Order> = query {
+    ): PaginatedResponse<OrderResponse> = query {
         val query = OrderTable.selectAll()
 
         status?.let {

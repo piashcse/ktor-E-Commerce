@@ -1,11 +1,10 @@
 package com.piashcse.feature.shipping
-import com.piashcse.utils.extension.*
 
 import com.piashcse.database.entities.ShippingDAO
 import com.piashcse.database.entities.ShippingTable
 import com.piashcse.model.request.ShippingRequest
 import com.piashcse.model.request.UpdateShippingRequest
-import com.piashcse.model.response.Shipping
+import com.piashcse.model.response.ShippingResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
@@ -13,7 +12,7 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 
 /**
- * Controller for managing shipping details. Provides methods to add, get, update, and delete shipping information.
+ * Service for managing shipping details. Provides methods to add, get, update, and delete shipping information.
  */
 class ShippingService : ShippingRepository {
 
@@ -25,12 +24,12 @@ class ShippingService : ShippingRepository {
      * @return The added shipping details.
      * @throws alreadyExistException If the shipping details for the specified order already exist.
      */
-    override suspend fun createShipping(userId: String, shippingRequest: ShippingRequest): Shipping = query {
+    override suspend fun createShipping(userId: String, shippingRequest: ShippingRequest): ShippingResponse = query {
         val isShippingExist = ShippingDAO.find {
             ShippingTable.orderId eq shippingRequest.orderId
         }.toList().singleOrNull()
         isShippingExist?.let {
-            throw shippingRequest.orderId.throwConflict("Shipping")
+            throw shippingRequest.orderId.throwConflict("ShippingResponse")
         } ?: ShippingDAO.new {
             this.orderId = EntityID(shippingRequest.orderId, ShippingTable)
             address = shippingRequest.address
@@ -51,7 +50,7 @@ class ShippingService : ShippingRepository {
      * @return The shipping details for the specified order.
      * @throws orderId.notFoundException If the shipping details for the specified order ID are not found.
      */
-    override suspend fun getShipping(userId: String, orderId: String): Shipping = query {
+    override suspend fun getShipping(userId: String, orderId: String): ShippingResponse = query {
         val isShippingExist = ShippingDAO.find {
             ShippingTable.orderId eq orderId
         }.toList().singleOrNull()
@@ -66,7 +65,7 @@ class ShippingService : ShippingRepository {
      * @return The updated shipping details.
      * @throws alreadyExistException If the shipping ID does not exist for the specified user.
      */
-    override suspend fun updateShipping(userId: String, updateShipping: UpdateShippingRequest): Shipping = query {
+    override suspend fun updateShipping(userId: String, updateShipping: UpdateShippingRequest): ShippingResponse = query {
         val isShippingExist = ShippingDAO.find {
             ShippingTable.id eq updateShipping.id
         }.toList().singleOrNull()
@@ -81,7 +80,7 @@ class ShippingService : ShippingRepository {
             it.status = updateShipping.status ?: it.status
             it.trackingNumber = updateShipping.trackingNumber ?: it.trackingNumber
             it.response()
-        } ?: throw updateShipping.id.throwConflict("Shipping")
+        } ?: throw updateShipping.id.throwConflict("ShippingResponse")
     }
 
     /**
@@ -99,6 +98,6 @@ class ShippingService : ShippingRepository {
         isShippingExist?.let {
             it.delete()
             id
-        } ?: id.throwNotFound("Shipping")
+        } ?: id.throwNotFound("ShippingResponse")
     }
 }

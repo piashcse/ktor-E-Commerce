@@ -13,7 +13,7 @@ import io.ktor.server.routing.*
 /**
  * Product review and rating routes.
  */
-fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
+fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
     /**
      * @tag Review Rating
      * @description Retrieve reviews and ratings for a specific product
@@ -23,7 +23,7 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
         val (limit, offset) = call.paginationParameters()
         call.respond(
             HttpStatusCode.OK,
-            reviewRatingController.getReviewRating(productId, limit, offset)
+            reviewRatingService.getReviewRating(productId, limit, offset)
         )
     }
 
@@ -36,7 +36,7 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
             val requestBody = call.receive<ReviewRatingRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                reviewRatingController.addReviewRating(call.currentUserId, requestBody)
+                reviewRatingService.addReviewRating(call.currentUserId, requestBody)
             )
         }
 
@@ -48,7 +48,7 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
             val params = call.requireParameters("id", "review", "rating")
             call.respond(
                 HttpStatusCode.OK,
-                reviewRatingController.updateReviewRating(
+                reviewRatingService.updateReviewRating(
                     params[0],
                     params[1],
                     params[2].toInt()
@@ -64,7 +64,7 @@ fun Route.reviewRatingRoutes(reviewRatingController: ReviewRatingService) {
             val id = call.requireParameters("id")
             call.respond(
                 HttpStatusCode.OK,
-                reviewRatingController.deleteReviewRating(id.first())
+                reviewRatingService.deleteReviewRating(id.first())
             )
         }
     }

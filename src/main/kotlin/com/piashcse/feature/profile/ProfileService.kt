@@ -1,17 +1,16 @@
 package com.piashcse.feature.profile
-import com.piashcse.utils.extension.*
 
 import com.piashcse.database.entities.UserProfileDAO
 import com.piashcse.database.entities.UserProfileTable
 import com.piashcse.model.request.UserProfileRequest
-import com.piashcse.model.response.UserProfile
+import com.piashcse.model.response.UserProfileResponse
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
 import org.jetbrains.exposed.v1.core.eq
 
 /**
- * Controller for managing user profiles. Provides methods to retrieve, update, and change user profile details and images.
+ * Service for managing user profiles. Provides methods to retrieve, update, and change user profile details and images.
  */
 class ProfileService : ProfileRepository {
 
@@ -24,7 +23,7 @@ class ProfileService : ProfileRepository {
      * @return The user profile corresponding to the given user ID.
      * @throws userId.throwNotFound("Resource") If no user profile is found for the given user ID.
      */
-    override suspend fun getProfile(userId: String): UserProfile = query {
+    override suspend fun getProfile(userId: String): UserProfileResponse = query {
         val isProfileExist =
             UserProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         isProfileExist?.response() ?: userId.throwNotFound("User")
@@ -38,7 +37,7 @@ class ProfileService : ProfileRepository {
      * @return The updated user profile.
      * @throws userId.throwNotFound("Resource") If no user profile is found for the given user ID.
      */
-    override suspend fun updateProfile(userId: String, userProfile: UserProfileRequest?): UserProfile = query {
+    override suspend fun updateProfile(userId: String, userProfile: UserProfileRequest?): UserProfileResponse = query {
         val userProfileEntity =
             UserProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
         userProfileEntity?.let {
@@ -65,7 +64,7 @@ class ProfileService : ProfileRepository {
      * @return The updated user profile with the new image.
      * @throws userId.throwNotFound("Resource") If no user profile is found for the given user ID.
      */
-    override suspend fun updateProfileImage(userId: String, imageUrl: String?): UserProfile = query {
+    override suspend fun updateProfileImage(userId: String, imageUrl: String?): UserProfileResponse = query {
         val userProfileEntity =
             UserProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
 

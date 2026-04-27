@@ -3,9 +3,7 @@ package com.piashcse.feature.inventory
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.sellerAuth
-import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
-import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -14,7 +12,7 @@ import io.ktor.server.routing.*
 /**
  * Seller inventory management routes.
  */
-fun Route.inventoryRoutes(inventoryController: InventoryService) {
+fun Route.inventoryRoutes(inventoryService: InventoryService) {
     sellerAuth {
         /**
          * @tag Inventory
@@ -24,7 +22,7 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
             val requestBody = call.receive<InventoryRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                inventoryController.createOrUpdateInventory(requestBody)
+                inventoryService.createOrUpdateInventory(requestBody)
             )
         }
 
@@ -38,7 +36,7 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
             val operation = call.parameters["operation"] ?: "set"
             call.respond(
                 HttpStatusCode.OK,
-                inventoryController.updateStock(productId, quantity, operation)
+                inventoryService.updateStock(productId, quantity, operation)
             )
         }
 
@@ -48,7 +46,7 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
          */
         get("/product/{productId}") {
             val productId = call.parameters["productId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "productId is required")
-            val inventory = inventoryController.getInventoryByProduct(productId)
+            val inventory = inventoryService.getInventoryByProduct(productId)
             if (inventory != null) {
                 call.respond(HttpStatusCode.OK, inventory)
             } else {
@@ -65,7 +63,7 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
             val (limit, offset) = call.paginationParameters()
             call.respond(
                 HttpStatusCode.OK,
-                inventoryController.getInventoryByShop(shopId, limit, offset)
+                inventoryService.getInventoryByShop(shopId, limit, offset)
             )
         }
 
@@ -77,7 +75,7 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
             val (limit, offset) = call.paginationParameters()
             call.respond(
                 HttpStatusCode.OK,
-                inventoryController.getLowStockProducts(limit, offset)
+                inventoryService.getLowStockProducts(limit, offset)
             )
         }
     }
@@ -86,7 +84,7 @@ fun Route.inventoryRoutes(inventoryController: InventoryService) {
 /**
  * Admin inventory routes.
  */
-fun Route.inventoryAdminRoutes(inventoryController: InventoryService) {
+fun Route.inventoryAdminRoutes(inventoryService: InventoryService) {
     adminAuth {
         // Admin specific inventory management could be added here
     }

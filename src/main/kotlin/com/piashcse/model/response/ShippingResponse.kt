@@ -4,7 +4,7 @@ import com.piashcse.database.entities.ShippingTable
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Shipping(
+data class ShippingResponse(
     val id: String,
     var orderId: String,
     var status: ShippingTable.ShippingStatus,

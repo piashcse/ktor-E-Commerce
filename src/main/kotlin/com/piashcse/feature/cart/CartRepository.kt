@@ -2,7 +2,7 @@ package com.piashcse.feature.cart
 
 import com.piashcse.database.entities.Cart
 import com.piashcse.model.response.CartSummaryResponse
-import com.piashcse.model.response.Product
+import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
 
 interface CartRepository {
@@ -42,7 +42,7 @@ interface CartRepository {
      * @param productId The unique identifier of the product.
      * @return The removed product.
      */
-    suspend fun removeCartItem(userId: String, productId: String): Product
+    suspend fun removeCartItem(userId: String, productId: String): ProductResponse
 
     /**
      * Clears all items from a user's cart.

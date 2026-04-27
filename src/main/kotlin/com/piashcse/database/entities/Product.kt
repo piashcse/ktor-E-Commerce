@@ -4,7 +4,7 @@ import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.Product
+import com.piashcse.model.response.ProductResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import java.math.BigDecimal
 
@@ -17,7 +17,7 @@ object ProductTable : BaseIdTable("product") {
     val subCategoryId = reference("sub_category_id", ProductSubCategoryTable.id).nullable()
     val brandId = reference("brand_id", BrandTable.id).nullable()
     val sku = varchar("sku", 100).uniqueIndex() // Stock Keeping Unit - unique identifier
-    val barcode = varchar("barcode", 100).nullable().index() // Product barcode for tracking
+    val barcode = varchar("barcode", 100).nullable().index() // ProductResponse barcode for tracking
     val weight = decimal("weight", 10, 3).nullable() // Weight in kg
     val dimensions = varchar("dimensions", 100).nullable() // Length x Width x Height in cm
     val minOrderQuantity = integer("min_order_quantity").default(1) // Minimum quantity required for purchase
@@ -31,7 +31,7 @@ object ProductTable : BaseIdTable("product") {
     val newProduct = bool("new_product").default(false) // Whether the product is newly added
     val freeShipping = bool("free_shipping").default(false) // Whether the product offers free shipping
     val images = varchar("images", 2000) // Comma-separated image URLs for the product - increased size
-    val status = enumerationByName<ProductStatus>("status", 50).default(ProductStatus.ACTIVE) // Product status
+    val status = enumerationByName<ProductStatus>("status", 50).default(ProductStatus.ACTIVE) // ProductResponse status
     val viewCount = integer("view_count").default(0) // Number of times the product has been viewed
     val rating = decimal("rating", 3, 2).default(BigDecimal("0.00")) // Average rating
     val totalReviews = integer("total_reviews").default(0) // Total number of reviews
@@ -72,7 +72,7 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
     var totalSales by ProductTable.totalSales
     var stockQuantity by ProductTable.stockQuantity
 
-    fun response() = Product(
+    fun response() = ProductResponse(
         id = id.value,
         categoryId = categoryId.value,
         subCategoryId = subCategoryId?.value,

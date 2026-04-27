@@ -1,19 +1,18 @@
 package com.piashcse.feature.shop_category
-import com.piashcse.utils.extension.*
 
 import com.piashcse.database.entities.ShopCategoryDAO
 import com.piashcse.database.entities.ShopCategoryTable
-import com.piashcse.model.response.ShopCategory
+import com.piashcse.model.response.ShopCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.toPaginatedResponse
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 /**
- * Controller for managing shop categories. Provides methods to create, retrieve, update, and delete categories.
+ * Service for managing shop categories. Provides methods to create, retrieve, update, and delete categories.
  */
 class ShopCategoryService : ShopCategoryRepository {
 
@@ -24,7 +23,7 @@ class ShopCategoryService : ShopCategoryRepository {
      * @return The created shop category.
      * @throws alreadyExistException If a category with the same name already exists.
      */
-    override suspend fun createCategory(name: String): ShopCategory = query {
+    override suspend fun createCategory(name: String): ShopCategoryResponse = query {
         val isExistShopCategory =
             ShopCategoryDAO.find { ShopCategoryTable.name eq name }.toList().singleOrNull()
         isExistShopCategory?.let {
@@ -40,7 +39,7 @@ class ShopCategoryService : ShopCategoryRepository {
      * @param limit The maximum number of categories to retrieve.
      * @return A list of shop categories.
      */
-    override suspend fun getCategories(limit: Int, offset: Int): PaginatedResponse<ShopCategory> = query {
+    override suspend fun getCategories(limit: Int, offset: Int): PaginatedResponse<ShopCategoryResponse> = query {
         ShopCategoryTable.selectAll().toPaginatedResponse(limit, offset) {
             ShopCategoryDAO.wrapRow(it).response()
         }
@@ -54,7 +53,7 @@ class ShopCategoryService : ShopCategoryRepository {
      * @return The updated shop category.
      * @throws categoryId.notFoundException If the category with the specified ID is not found.
      */
-    override suspend fun updateCategory(categoryId: String, name: String): ShopCategory = query {
+    override suspend fun updateCategory(categoryId: String, name: String): ShopCategoryResponse = query {
         val isShopCategoryExist =
             ShopCategoryDAO.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
         isShopCategoryExist?.let {

@@ -2,7 +2,6 @@ package com.piashcse.feature.shipping
 
 import com.piashcse.model.request.ShippingRequest
 import com.piashcse.model.request.UpdateShippingRequest
-import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requireParameters
@@ -14,7 +13,7 @@ import io.ktor.server.routing.*
 /**
  * User shipping address routes.
  */
-fun Route.shippingRoutes(shippingController: ShippingService) {
+fun Route.shippingRoutes(shippingService: ShippingService) {
     requireRole {
         /**
          * @tag Shipping
@@ -24,7 +23,7 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
             val requestBody = call.receive<ShippingRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                shippingController.createShipping(call.currentUserId, requestBody)
+                shippingService.createShipping(call.currentUserId, requestBody)
             )
         }
 
@@ -36,7 +35,7 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
             val orderId = call.parameters["orderId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "orderId is required")
             call.respond(
                 HttpStatusCode.OK,
-                shippingController.getShipping(call.currentUserId, orderId)
+                shippingService.getShipping(call.currentUserId, orderId)
             )
         }
 
@@ -48,7 +47,7 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
             val requestBody = call.receive<UpdateShippingRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                shippingController.updateShipping(call.currentUserId, requestBody)
+                shippingService.updateShipping(call.currentUserId, requestBody)
             )
         }
 
@@ -60,7 +59,7 @@ fun Route.shippingRoutes(shippingController: ShippingService) {
             val (id) = call.requireParameters("id")
             call.respond(
                 HttpStatusCode.OK,
-                shippingController.deleteShipping(call.currentUserId, id)
+                shippingService.deleteShipping(call.currentUserId, id)
             )
         }
     }

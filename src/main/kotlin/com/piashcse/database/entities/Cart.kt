@@ -3,7 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.Product
+import com.piashcse.model.response.ProductResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object CartItemTable : BaseIdTable("cart_item") {
@@ -18,11 +18,11 @@ class CartItemDAO(id: EntityID<String>) : BaseEntity(id, CartItemTable) {
     var userId by CartItemTable.userId
     var productId by CartItemTable.productId
     var quantity by CartItemTable.quantity
-    fun response(product: Product? = null) = Cart(productId.value, quantity, product)
+    fun response(product: ProductResponse? = null) = Cart(productId.value, quantity, product)
 }
 
 data class Cart(
     val productId: String,
     val quantity: Int,
-    val product: Product?
+    val product: ProductResponse?
 )

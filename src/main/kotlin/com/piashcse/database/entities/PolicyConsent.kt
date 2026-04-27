@@ -3,7 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.UserPolicyConsent
+import com.piashcse.model.response.UserPolicyConsentResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.time.LocalDateTime
@@ -34,7 +34,7 @@ class PolicyConsentDAO(id: EntityID<String>) : BaseEntity(id, PolicyConsentTable
     var ipAddress by PolicyConsentTable.ipAddress
     var userAgent by PolicyConsentTable.userAgent
 
-    fun response() = UserPolicyConsent(
+    fun response() = UserPolicyConsentResponse(
         id.value,
         userId.value,
         policyId.id.value,

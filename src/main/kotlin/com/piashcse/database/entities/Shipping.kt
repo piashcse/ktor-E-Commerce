@@ -3,7 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.Shipping
+import com.piashcse.model.response.ShippingResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object ShippingTable : BaseIdTable("shipping") {
@@ -39,7 +39,7 @@ class ShippingDAO(id: EntityID<String>) : BaseEntity(id, ShippingTable) {
     var trackingNumber by ShippingTable.trackingNumber
 
     fun response() =
-        Shipping(
+        ShippingResponse(
             id.value,
             orderId.value,
             status,
