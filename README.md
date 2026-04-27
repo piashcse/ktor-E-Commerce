@@ -313,14 +313,15 @@ The API uses **per-domain versioning** — each feature domain (auth, product, o
 **Base URL pattern:**
 ```
 /api/v{version}/{domain}/{endpoint}
+/api/v{version}/admin/{domain}/{endpoint}
 ```
 
 **Examples:**
 ```
 GET  /api/v1/auth/login
 GET  /api/v1/product
-GET  /api/v1/order
-POST /api/v1/cart
+POST /api/v1/admin/product        (Admin-only)
+GET  /api/v1/admin/order          (Admin-only)
 ```
 
 **API Discovery Endpoint:**
@@ -435,7 +436,7 @@ Interactive API documentation is available via Swagger UI at `http://localhost:8
 
 <details>
 
-<summary> <code>POST </code> <code>/auth/login</code></summary>
+<summary> <code>POST </code> <code>/api/v1/auth/login</code></summary>
 
 ### Description
 Authenticate a user with email, password and userType. Returns access token, refresh token, and user info.
@@ -445,7 +446,7 @@ Authenticate a user with email, password and userType. Returns access token, ref
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/auth/Login' \
+  'http://localhost:8080/api/v1/auth/Login' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -458,7 +459,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-  http://localhost:8080/auth/Login
+  http://localhost:8080/api/v1/auth/Login
 ```
 
 ### Response
@@ -480,7 +481,7 @@ curl -X 'POST' \
 
 <details>
 
-<summary> <code>POST</code> <code>/auth/register</code></summary>
+<summary> <code>POST</code> <code>/api/v1/auth/register</code></summary>
 
 ### Description
 Register a new user with the specified email, password, and userType.
@@ -493,7 +494,7 @@ Register a new user with the specified email, password, and userType.
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/auth/register' \
+  'http://localhost:8080/api/v1/auth/register' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -506,7 +507,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-    http://localhost:8080/auth/register
+    http://localhost:8080/api/v1/auth/register
 ```
 
 ### Response
@@ -524,20 +525,20 @@ curl -X 'POST' \
 
 <details>
 
-<summary> <code>GET</code> <code>/auth/otp-verification</code></summary>
+<summary> <code>GET</code> <code>/api/v1/auth/otp-verification</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d' \
+  'http://localhost:8080/api/v1/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 
 ```
-   http://localhost:8080/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d
+   http://localhost:8080/api/v1/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d
 ```
 
 ### Response
@@ -553,7 +554,7 @@ true
 </details>
 <details>
 
-<summary><code>POST </code> <code>/auth/forget-password</code></summary>
+<summary><code>POST </code> <code>/api/v1/auth/forget-password</code></summary>
 
 ### Description
 Send a password reset verification code to the specified email. If the user has multiple accounts with the same email but different roles, the userType parameter can be used to specify which account to reset the password for.
@@ -563,7 +564,7 @@ Send a password reset verification code to the specified email. If the user has 
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/auth/forget-password' \
+  'http://localhost:8080/api/v1/auth/forget-password' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -575,7 +576,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/auth/forget-password
+http://localhost:8080/api/v1/auth/forget-password
 ```
 
 ### Response
@@ -590,7 +591,7 @@ http://localhost:8080/auth/forget-password
 
 <details>
 
-<summary><code>POST </code> <code>/auth/reset-password</code></summary>
+<summary><code>POST </code> <code>/api/v1/auth/reset-password</code></summary>
 
 ### Description
 Reset the password for a user account using the verification code sent to their email. If the user has multiple accounts with the same email but different roles, the userType parameter can be used to specify which account to reset the password for.
@@ -600,7 +601,7 @@ Reset the password for a user account using the verification code sent to their 
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/auth/reset-password' \
+  'http://localhost:8080/api/v1/auth/reset-password' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -614,7 +615,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/auth/reset-password
+http://localhost:8080/api/v1/auth/reset-password
 ```
 
 ### Response
@@ -630,7 +631,7 @@ http://localhost:8080/auth/reset-password
 
 <details>
 
-<summary> <code>POST </code> <code>/auth/refresh-token</code></summary>
+<summary> <code>POST </code> <code>/api/v1/auth/refresh-token</code></summary>
 
 ### Description
 Refresh an expired access token using a valid refresh token. Returns a new access token and refresh token pair. The old refresh token is automatically revoked.
@@ -639,7 +640,7 @@ Refresh an expired access token using a valid refresh token. Returns a new acces
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/auth/refresh-token' \
+  'http://localhost:8080/api/v1/auth/refresh-token' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -650,7 +651,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/auth/refresh-token
+http://localhost:8080/api/v1/auth/refresh-token
 ```
 
 ### Response
@@ -667,7 +668,7 @@ http://localhost:8080/auth/refresh-token
 
 <details>
 
-<summary> <code>POST </code> <code>/auth/logout</code></summary>
+<summary> <code>POST </code> <code>/api/v1/auth/logout</code></summary>
 
 ### Description
 Logout the authenticated user and revoke the refresh token to prevent further token refreshes. If a specific refresh token is provided, only that token is revoked. Otherwise, all user refresh tokens are revoked.
@@ -676,7 +677,7 @@ Logout the authenticated user and revoke the refresh token to prevent further to
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/auth/logout' \
+  'http://localhost:8080/api/v1/auth/logout' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -688,7 +689,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/auth/logout
+http://localhost:8080/api/v1/auth/logout
 ```
 
 ### Response
@@ -703,13 +704,13 @@ http://localhost:8080/auth/logout
 
 <details>
 
-<summary> <code>PUT </code> <code>/auth/change-password</code></summary>
+<summary> <code>PUT </code> <code>/api/v1/auth/change-password</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234' \
+  'http://localhost:8080/api/v1/auth/change-password?oldPassword=p1234&newPassword=p1234' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g'
 ```
@@ -717,7 +718,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234
+http://localhost:8080/api/v1/auth/change-password?oldPassword=p1234&newPassword=p1234
 ```
 
 ### Response
@@ -730,13 +731,13 @@ http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=p1234
 
 <details>
 
-<summary> <code>PUT</code> <code>/auth/{userId}/change-user-type</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/auth/{userId}/change-user-type</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type?userType=ADMIN' \
+  'http://localhost:8080/api/v1/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type?userType=ADMIN' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -744,7 +745,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type?userType=ADMIN
+http://localhost:8080/api/v1/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type?userType=ADMIN
 ```
 
 ### Response
@@ -757,13 +758,13 @@ http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type
 
 <details>
 
-<summary> <code>PUT</code> <code>/auth/{userId}/deactivate</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/auth/{userId}/deactivate</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate' \
+  'http://localhost:8080/api/v1/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -771,7 +772,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate
+http://localhost:8080/api/v1/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate
 ```
 
 ### Response
@@ -784,13 +785,13 @@ http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate
 
 <details>
 
-<summary> <code>PUT</code> <code>/auth/{userId}/activate</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/auth/{userId}/activate</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate' \
+  'http://localhost:8080/api/v1/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -798,7 +799,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate
+http://localhost:8080/api/v1/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate
 ```
 
 ### Response
@@ -813,13 +814,13 @@ http://localhost:8080/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate
 
 <details>
 
-<summary> <code>GET</code> <code>/profile</code></summary>
+<summary> <code>GET</code> <code>/api/v1/profile</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/profile' \
+  'http://localhost:8080/api/v1/profile' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJwaWFzaDU5OUBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MDdhYzI2NC1iZTJlLTRlODktYjZkMy03YTQ5YjE0MjYzZDIiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzQ0NzMyNzg4fQ.xJQw7NLnXzBO5yIAbK3HJtIFge4n0-z-SNk6l9ZmajbHNqFN4NtH-u2Lwt48kbL1W_xc-jUKNmqmhaamLuj9dg'
 
@@ -828,7 +829,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/profile
+http://localhost:8080/api/v1/profile
 ```
 
 ### Response
@@ -853,13 +854,13 @@ http://localhost:8080/profile
 
 <details>
 
-<summary> <code>PUT</code> <code>/profile</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/profile</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/profile?firstName=Mehedi%20&lastName=Hassan&mobile=01812353930&faxNumber=454&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Malde' \
+  'http://localhost:8080/api/v1/profile?firstName=Mehedi%20&lastName=Hassan&mobile=01812353930&faxNumber=454&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Malde' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJwaWFzaDU5OUBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MDdhYzI2NC1iZTJlLTRlODktYjZkMy03YTQ5YjE0MjYzZDIiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzQ0NzMyNzg4fQ.xJQw7NLnXzBO5yIAbK3HJtIFge4n0-z-SNk6l9ZmajbHNqFN4NtH-u2Lwt48kbL1W_xc-jUKNmqmhaamLuj9dg'
 
@@ -868,7 +869,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/profile?firstName=Mehedi%20&lastName=Hassan&mobile=01812353930&faxNumber=454&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Malde
+http://localhost:8080/api/v1/profile?firstName=Mehedi%20&lastName=Hassan&mobile=01812353930&faxNumber=454&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Malde
 
 ```
 
@@ -894,13 +895,13 @@ http://localhost:8080/profile?firstName=Mehedi%20&lastName=Hassan&mobile=0181235
 
 <details>
 
-<summary> <code>POST</code> <code>/profile/image-upload</code></summary>
+<summary> <code>POST</code> <code>/api/v1/profile/image-upload</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/profile/image-upload' \
+  'http://localhost:8080/api/v1/profile/image-upload' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJwaWFzaDU5OUBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MDdhYzI2NC1iZTJlLTRlODktYjZkMy03YTQ5YjE0MjYzZDIiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzQ0NzMyNzg4fQ.xJQw7NLnXzBO5yIAbK3HJtIFge4n0-z-SNk6l9ZmajbHNqFN4NtH-u2Lwt48kbL1W_xc-jUKNmqmhaamLuj9dg' \
   -H 'Content-Type: multipart/form-data' \
@@ -910,7 +911,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/profile/image-upload
+http://localhost:8080/api/v1/profile/image-upload
 
 ```
 
@@ -927,13 +928,13 @@ http://localhost:8080/profile/image-upload
 
 <details>
 
-<summary> <code>POST</code> <code>/shop-category</code></summary>
+<summary> <code>POST</code> <code>/api/v1/shop-category</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/shop-category' \
+  'http://localhost:8080/api/v1/admin/shop-category' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g' \
   -H 'Content-Type: application/json' \
@@ -945,7 +946,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/shop-category
+http://localhost:8080/api/v1/admin/shop-category
 ```
 
 ### Response
@@ -962,13 +963,13 @@ http://localhost:8080/shop-category
 
 <details>
 
-<summary> <code>GET </code> <code>/shop-category</code></summary>
+<summary> <code>GET </code> <code>/api/v1/shop-category</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/shop-category?limit=10' \
+  'http://localhost:8080/api/v1/admin/shop-category?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
 ```
@@ -976,7 +977,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/shop-category?limit=10
+http://localhost:8080/api/v1/admin/shop-category?limit=10
 ```
 
 ### Response
@@ -1001,13 +1002,13 @@ http://localhost:8080/shop-category?limit=10
 
 <details>
 
-<summary> <code>DELETE</code> <code>/shop-category/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/shop-category/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741' \
+  'http://localhost:8080/api/v1/admin/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ'
 ```
@@ -1015,7 +1016,7 @@ curl -X 'DELETE' \
 ### Request URL
 
 ```
-http://localhost:8080/shop-category/2a17da31-7517-41db-b7d3-f77d0ddd52a5
+http://localhost:8080/api/v1/admin/shop-category/2a17da31-7517-41db-b7d3-f77d0ddd52a5
 ```
 
 ### Response
@@ -1029,13 +1030,13 @@ http://localhost:8080/shop-category/2a17da31-7517-41db-b7d3-f77d0ddd52a5
 
 <details>
 
-<summary> <code>PUT </code> <code>/shop-category/{id}</code></summary>
+<summary> <code>PUT </code> <code>/api/v1/shop-category/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop' \
+  'http://localhost:8080/api/v1/admin/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
 ```
@@ -1043,7 +1044,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop
+http://localhost:8080/api/v1/admin/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop
 ```
 
 ### Response
@@ -1061,13 +1062,13 @@ http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Pi
 ### SHOP
 
 <details>
-<summary> <code>POST</code> <code>/shop</code></summary>
+<summary> <code>POST</code> <code>/api/v1/shop</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
+  'http://localhost:8080/api/v1/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ' \
   -d ''
@@ -1076,7 +1077,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb
+http://localhost:8080/api/v1/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb
 ```
 
 ### Response
@@ -1092,13 +1093,13 @@ http://localhost:8080/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-
 </details>
 
 <details>
-<summary> <code>Get</code> <code>/shop</code></summary>
+<summary> <code>Get</code> <code>/api/v1/shop</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/shop?limit=10' \
+  'http://localhost:8080/api/v1/shop?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
 ```
@@ -1106,7 +1107,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/shop?limit=10
+http://localhost:8080/api/v1/shop?limit=10
 ```
 
 ### Response
@@ -1131,13 +1132,13 @@ http://localhost:8080/shop?limit=10
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/shop/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/shop/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20again%20update' \
+  'http://localhost:8080/api/v1/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20again%20update' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
 ```
@@ -1145,7 +1146,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20again%20update
+http://localhost:8080/api/v1/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20again%20update
 ```
 
 ### Response
@@ -1162,20 +1163,20 @@ http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20agai
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/shop/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/shop/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/shop/d2836959-6bc5-49d0-bd98-e73255a915c5' \
+  'http://localhost:8080/api/v1/shop/d2836959-6bc5-49d0-bd98-e73255a915c5' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 
 ```
-http://localhost:8080/shop/d2836959-6bc5-49d0-bd98-e73255a915c5
+http://localhost:8080/api/v1/shop/d2836959-6bc5-49d0-bd98-e73255a915c5
 
 ```
 
@@ -1191,13 +1192,13 @@ http://localhost:8080/shop/d2836959-6bc5-49d0-bd98-e73255a915c5
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/shop/public</code></summary>
+<summary> <code>GET</code> <code>/api/v1/shop/public</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/shop/public?status=APPROVED&category=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10' \
+  'http://localhost:8080/api/v1/shop/public?status=APPROVED&category=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -1205,7 +1206,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/shop/public?status=APPROVED&category=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10
+http://localhost:8080/api/v1/shop/public?status=APPROVED&category=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10
 ```
 
 ### Response
@@ -1231,13 +1232,13 @@ http://localhost:8080/shop/public?status=APPROVED&category=5e67ec97-9ed6-48ee-9d
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/shop/category/{categoryId}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/shop/category/{categoryId}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/shop/category/5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
+  'http://localhost:8080/api/v1/shop/category/5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -1245,7 +1246,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/shop/category/5e67ec97-9ed6-48ee-9d56-4163fe1711cb
+http://localhost:8080/api/v1/shop/category/5e67ec97-9ed6-48ee-9d56-4163fe1711cb
 ```
 
 ### Response
@@ -1271,13 +1272,13 @@ http://localhost:8080/shop/category/5e67ec97-9ed6-48ee-9d56-4163fe1711cb
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/shop/featured</code></summary>
+<summary> <code>GET</code> <code>/api/v1/shop/featured</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/shop/featured' \
+  'http://localhost:8080/api/v1/shop/featured' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -1285,7 +1286,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/shop/featured
+http://localhost:8080/api/v1/shop/featured
 ```
 
 ### Response
@@ -1311,13 +1312,13 @@ http://localhost:8080/shop/featured
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/shop/status</code></summary>
+<summary> <code>GET</code> <code>/api/v1/shop/status</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/shop/status?status=APPROVED' \
+  'http://localhost:8080/api/v1/admin/shop/status?status=APPROVED' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -1325,7 +1326,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/shop/status?status=APPROVED
+http://localhost:8080/api/v1/admin/shop/status?status=APPROVED
 ```
 
 ### Response
@@ -1351,13 +1352,13 @@ http://localhost:8080/shop/status?status=APPROVED
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/shop/approve/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/shop/approve/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
+  'http://localhost:8080/api/v1/admin/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -1365,7 +1366,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
+http://localhost:8080/api/v1/admin/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
 ```
 
 ### Response
@@ -1382,13 +1383,13 @@ http://localhost:8080/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/shop/reject/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/shop/reject/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/shop/reject/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
+  'http://localhost:8080/api/v1/admin/shop/reject/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -1396,7 +1397,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/shop/reject/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
+http://localhost:8080/api/v1/admin/shop/reject/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
 ```
 
 ### Response
@@ -1413,13 +1414,13 @@ http://localhost:8080/shop/reject/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/shop/suspend/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/shop/suspend/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/shop/suspend/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
+  'http://localhost:8080/api/v1/admin/shop/suspend/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -1427,7 +1428,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/shop/suspend/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
+http://localhost:8080/api/v1/admin/shop/suspend/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
 ```
 
 ### Response
@@ -1444,13 +1445,13 @@ http://localhost:8080/shop/suspend/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/shop/activate/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/shop/activate/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/shop/activate/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
+  'http://localhost:8080/api/v1/admin/shop/activate/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -1458,7 +1459,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/shop/activate/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
+http://localhost:8080/api/v1/admin/shop/activate/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
 ```
 
 ### Response
@@ -1478,13 +1479,13 @@ http://localhost:8080/shop/activate/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
 
 <details>
 
-<summary> <code>POST</code> <code>/product</code></summary>
+<summary> <code>POST</code> <code>/api/v1/product</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/product' \
+  'http://localhost:8080/api/v1/product' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiNjY0NDdhNTctYWY2ZS00ZjI1LWE0NmUtMWVkMGUxMTE0ZDhkIiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3NDQ0ODQ4NzB9.nYRrGaSH5rdzclhfRquQ8ZRaaGFifnu-7oLQ-IvY9_HAygbhSjDXMDtDl2VK3UuGr9vr64-pGgcY-nPCs1AaQg' \
   -H 'Content-Type: application/json' \
@@ -1511,7 +1512,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/product
+http://localhost:8080/api/v1/product
 ```
 
 ### Response
@@ -1537,13 +1538,13 @@ http://localhost:8080/product
 
 <details>
 
-<summary> <code>GET</code> <code>/product/{id}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/product/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
+  'http://localhost:8080/api/v1/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
 ```
@@ -1551,7 +1552,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
+http://localhost:8080/api/v1/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 ```
 
 ### Response
@@ -1577,13 +1578,13 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 
 <details>
 
-<summary> <code>PUT </code> <code>/product/{id}</code></summary>
+<summary> <code>PUT </code> <code>/api/v1/product/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5' \
+  'http://localhost:8080/api/v1/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA' \
   -H 'Content-Type: application/json' \
@@ -1598,7 +1599,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5
+http://localhost:8080/api/v1/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5
 ```
 
 ### Response
@@ -1625,13 +1626,13 @@ http://localhost:8080/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5
 
 <details>
 
-<summary> <code>GET </code> <code>/product/seller</code></summary>
+<summary> <code>GET </code> <code>/api/v1/product/seller</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/product/seller?limit=10&maxPrice=100&minPrice=0&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&subCategoryId=70ac842b-7a81-4976-9564-d440880d1736&brandId=28918963-f932-425b-884b-a34d8ae69b2a' \
+  'http://localhost:8080/api/v1/product/seller?limit=10&maxPrice=100&minPrice=0&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&subCategoryId=70ac842b-7a81-4976-9564-d440880d1736&brandId=28918963-f932-425b-884b-a34d8ae69b2a' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -1639,7 +1640,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/product/seller?limit=10&maxPrice=100&minPrice=0&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&subCategoryId=70ac842b-7a81-4976-9564-d440880d1736&brandId=28918963-f932-425b-884b-a34d8ae69b2a
+http://localhost:8080/api/v1/product/seller?limit=10&maxPrice=100&minPrice=0&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&subCategoryId=70ac842b-7a81-4976-9564-d440880d1736&brandId=28918963-f932-425b-884b-a34d8ae69b2a
 ```
 
 ### Response
@@ -1666,13 +1667,13 @@ http://localhost:8080/product/seller?limit=10&maxPrice=100&minPrice=0&categoryId
 
 <details>
 
-<summary> <code>GET </code> <code>/product</code></summary>
+<summary> <code>GET </code> <code>/api/v1/product</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0' \
+  'http://localhost:8080/api/v1/product?limit=10&maxPrice=100&minPrice=0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
 ```
@@ -1680,7 +1681,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
+http://localhost:8080/api/v1/product?limit=10&maxPrice=100&minPrice=0
 ```
 
 ### Response
@@ -1714,13 +1715,13 @@ http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0
 
 <details>
 
-<summary> <code>GET</code> <code>/product/search</code></summary>
+<summary> <code>GET</code> <code>/api/v1/product/search</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/product/search?limit=10&name=smartphone&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&maxPrice=1000&minPrice=10' \
+  'http://localhost:8080/api/v1/product/search?limit=10&name=smartphone&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&maxPrice=1000&minPrice=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -1728,7 +1729,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/product/search?limit=10&name=smartphone&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&maxPrice=1000&minPrice=10
+http://localhost:8080/api/v1/product/search?limit=10&name=smartphone&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&maxPrice=1000&minPrice=10
 ```
 
 ### Response
@@ -1755,13 +1756,13 @@ http://localhost:8080/product/search?limit=10&name=smartphone&categoryId=5e67ec9
 
 <details>
 
-<summary> <code>DELETE</code> <code>/product/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/product/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
+  'http://localhost:8080/api/v1/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
 ```
@@ -1769,7 +1770,7 @@ curl -X 'DELETE' \
 ### Request URL
 
 ```
-http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
+http://localhost:8080/api/v1/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 ```
 
 ### Response
@@ -1782,13 +1783,13 @@ http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
 
 <details>
 
-<summary> <code>POST</code> <code>/product/image-upload</code></summary>
+<summary> <code>POST</code> <code>/api/v1/product/image-upload</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/product/image-upload' \
+  'http://localhost:8080/api/v1/product/image-upload' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjEyYzA5OGFhLTYzMWYtNDJlZC05MjAzLTFkMjdlMDA0MmY4YSIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzc3NTMyfQ.GeBDEnWNm84mHPhCxTCXUwRSmRo7KjkJ6AfuEXZNiiqKVGtof1xNi8tsBp53L9jbyYwK49HQnDpe6tb0nVwhHA' \
   -H 'Content-Type: multipart/form-data' \
@@ -1798,7 +1799,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/product/image-upload
+http://localhost:8080/api/v1/product/image-upload
 ```
 
 ### Response
@@ -1817,13 +1818,13 @@ http://localhost:8080/product/image-upload
 
 <details>
 
-<summary> <code>POST</code> <code>/product-category</code></summary>
+<summary> <code>POST</code> <code>/api/v1/admin/product-category</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/product-category?categoryName=Kids' \
+  'http://localhost:8080/api/v1/admin/product-category?categoryName=Kids' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ' \
   -d ''
@@ -1832,7 +1833,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/product-category?name=Kids
+http://localhost:8080/api/v1/product-category?name=Kids
 ```
 
 ### Response
@@ -1851,13 +1852,13 @@ http://localhost:8080/product-category?name=Kids
 
 <details>
 
-<summary> <code>GET </code> <code>/product-category</code></summary>
+<summary> <code>GET </code> <code>/api/v1/product-category</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/product-category?limit=10' \
+  'http://localhost:8080/api/v1/product-category?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ'
 ```
@@ -1865,7 +1866,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/product-category?limit=10
+http://localhost:8080/api/v1/product-category?limit=10
 ```
 
 ### Response
@@ -1896,13 +1897,13 @@ http://localhost:8080/product-category?limit=10
 
 <details>
 
-<summary> <code>PUT </code> <code>/product-category/{id}</code></summary>
+<summary> <code>PUT </code> <code>/api/v1/product-category/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0' \
+  'http://localhost:8080/api/v1/admin/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiIzYTRhZTAzMi02ODAxLTQ3NWItOTUxYS0yNjE0ZjA0YTliYjAiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTExNTEyfQ._VBrVUeHJ2gOpCvmNHLhkjn5RMZUpf0B35uy_0k1cAQMMuDG7EDgGHzG3eq6PWpNYjMKBeNRrIByGG0lWSYpjg'
 ```
@@ -1910,7 +1911,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0
+http://localhost:8080/api/v1/admin/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0
 ```
 
 ### Response
@@ -1928,13 +1929,13 @@ http://localhost:8080/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name
 
 <details>
 
-<summary> <code>DELETE</code> <code>/product-category/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/admin/product-category/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/product-category/75b44e08-2c94-438f-b500-b204c7c90cca' \
+  'http://localhost:8080/api/v1/admin/product-category/75b44e08-2c94-438f-b500-b204c7c90cca' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ'
 ```
@@ -1942,7 +1943,7 @@ curl -X 'DELETE' \
 ### Request URL
 
 ```
-http://localhost:8080/product-category/75b44e08-2c94-438f-b500-b204c7c90cca
+http://localhost:8080/api/v1/admin/product-category/75b44e08-2c94-438f-b500-b204c7c90cca
 ```
 
 ### Response
@@ -1957,13 +1958,13 @@ http://localhost:8080/product-category/75b44e08-2c94-438f-b500-b204c7c90cca
 
 <details>
 
-<summary> <code>POST</code> <code>/product-subcategory</code></summary>
+<summary> <code>POST</code> <code>/api/v1/admin/product-subcategory</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/product-subcategory' \
+  'http://localhost:8080/api/v1/product-subcategory' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
   -H 'Content-Type: application/json' \
@@ -1976,7 +1977,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/product-subcategory
+http://localhost:8080/api/v1/product-subcategory
 ```
 
 ### Response
@@ -1994,13 +1995,13 @@ http://localhost:8080/product-subcategory
 
 <details>
 
-<summary> <code>GET</code> <code>/product-subcategory</code></summary>
+<summary> <code>GET</code> <code>/api/v1/product-subcategory</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/product-subcategory?categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10' \
+  'http://localhost:8080/api/v1/product-subcategory?categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -2008,7 +2009,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/product-subcategory?categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10
+http://localhost:8080/api/v1/product-subcategory?categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10
 ```
 
 ### Response
@@ -2034,13 +2035,13 @@ http://localhost:8080/product-subcategory?categoryId=5e67ec97-9ed6-48ee-9d56-416
 
 <details>
 
-<summary> <code>PUT</code> <code>/product-subcategory/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/product-subcategory/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736?name=Updated%20Electronics%20Subcategory' \
+  'http://localhost:8080/api/v1/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736?name=Updated%20Electronics%20Subcategory' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -2048,7 +2049,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736?name=Updated%20Electronics%20Subcategory
+http://localhost:8080/api/v1/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736?name=Updated%20Electronics%20Subcategory
 ```
 
 ### Response
@@ -2066,13 +2067,13 @@ http://localhost:8080/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736?n
 
 <details>
 
-<summary> <code>DELETE</code> <code>/product-subcategory/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/admin/product-subcategory/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736' \
+  'http://localhost:8080/api/v1/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -2080,7 +2081,7 @@ curl -X 'DELETE' \
 ### Request URL
 
 ```
-http://localhost:8080/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736
+http://localhost:8080/api/v1/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736
 ```
 
 ### Response
@@ -2098,13 +2099,13 @@ http://localhost:8080/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736
 
 <details>
 
-<summary> <code>POST </code> <code>/brand </code></summary>
+<summary> <code>POST </code> <code>/api/v1/brand </code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/brand?name=Nike' \
+  'http://localhost:8080/api/v1/admin/brand?name=Nike' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg' \
   -d ''
@@ -2113,7 +2114,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/brand?name=Nike
+http://localhost:8080/api/v1/admin/brand?name=Nike
 ```
 
 ### Response
@@ -2130,13 +2131,13 @@ http://localhost:8080/brand?name=Nike
 
 <details>
 
-<summary> <code>GET </code> <code>/brand </code></summary>
+<summary> <code>GET </code> <code>/api/v1/brand </code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/brand?limit=10' \
+  'http://localhost:8080/api/v1/brand?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
 ```
@@ -2144,7 +2145,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/brand?limit=10
+http://localhost:8080/api/v1/brand?limit=10
 ```
 
 ### Response
@@ -2173,13 +2174,13 @@ http://localhost:8080/brand?limit=10
 
 <details>
 
-<summary> <code>PUT </code> <code>/brand/{id} </code></summary>
+<summary> <code>PUT </code> <code>/api/v1/brand/{id} </code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas' \
+  'http://localhost:8080/api/v1/admin/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
 ```
@@ -2187,7 +2188,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas
+http://localhost:8080/api/v1/admin/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas
 ```
 
 ### Response
@@ -2204,13 +2205,13 @@ http://localhost:8080/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas
 
 <details>
 
-<summary> <code>DELETE</code> <code>/brand/{id} </code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/admin/brand/{id} </code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/brand/19dd1021-432c-473c-8b19-0f56d19af9ad' \
+  'http://localhost:8080/api/v1/admin/brand/19dd1021-432c-473c-8b19-0f56d19af9ad' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
 ```
@@ -2218,7 +2219,7 @@ curl -X 'DELETE' \
 ### Request URL
 
 ```
-http://localhost:8080/brand/19dd1021-432c-473c-8b19-0f56d19af9ad
+http://localhost:8080/api/v1/admin/brand/19dd1021-432c-473c-8b19-0f56d19af9ad
 ```
 
 ### Response
@@ -2233,13 +2234,13 @@ http://localhost:8080/brand/19dd1021-432c-473c-8b19-0f56d19af9ad
 
 <details>
 
-<summary> <code>POST</code> <code>/wishlist </code></summary>
+<summary> <code>POST</code> <code>/api/v1/wishlist </code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/wishlist' \
+  'http://localhost:8080/api/v1/wishlist' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -2251,7 +2252,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/wishlist
+http://localhost:8080/api/v1/wishlist
 ```
 
 ### Response
@@ -2272,13 +2273,13 @@ http://localhost:8080/wishlist
 
 <details>
 
-<summary> <code>GET </code> <code>/wishlist </code></summary>
+<summary> <code>GET </code> <code>/api/v1/wishlist </code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/wishlist?page=1&limit=10' \
+  'http://localhost:8080/api/v1/wishlist?page=1&limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -2286,7 +2287,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/wishlist?page=1&limit=10
+http://localhost:8080/api/v1/wishlist?page=1&limit=10
 ```
 
 ### Response
@@ -2312,13 +2313,13 @@ http://localhost:8080/wishlist?page=1&limit=10
 
 <details>
 
-<summary> <code>GET </code> <code>/wishlist/check </code></summary>
+<summary> <code>GET </code> <code>/api/v1/wishlist/check </code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/wishlist/check?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
+  'http://localhost:8080/api/v1/wishlist/check?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -2326,7 +2327,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/wishlist/check?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
+http://localhost:8080/api/v1/wishlist/check?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
 ```
 
 ### Response
@@ -2339,13 +2340,13 @@ true
 
 <details>
 
-<summary> <code>DELETE </code> <code>/wishlist/remove </code></summary>
+<summary> <code>DELETE </code> <code>/api/v1/wishlist/remove </code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/wishlist/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
+  'http://localhost:8080/api/v1/wishlist/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -2353,7 +2354,7 @@ curl -X 'DELETE' \
 ### Request URL
 
 ```
-http://localhost:8080/wishlist/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
+http://localhost:8080/api/v1/wishlist/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
 ```
 
 ### Response
@@ -2385,13 +2386,13 @@ http://localhost:8080/wishlist/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2
 
 <details>
 
-<summary> <code>GET </code> <code>/shipping </code></summary>
+<summary> <code>GET </code> <code>/api/v1/shipping </code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd' \
+  'http://localhost:8080/api/v1/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
 ```
@@ -2399,7 +2400,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd
+http://localhost:8080/api/v1/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd
 ```
 
 ### Response
@@ -2423,13 +2424,13 @@ http://localhost:8080/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd
 
 <details>
 
-<summary> <code>POST </code> <code>/shipping </code></summary>
+<summary> <code>POST </code> <code>/api/v1/shipping </code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/shipping' \
+  'http://localhost:8080/api/v1/shipping' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
   -H 'Content-Type: application/json' \
@@ -2447,7 +2448,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/shipping
+http://localhost:8080/api/v1/shipping
 ```
 
 ### Response
@@ -2470,13 +2471,13 @@ http://localhost:8080/shipping
 
 <details>
 
-<summary> <code>PUT </code> <code>/shipping/{id} </code></summary>
+<summary> <code>PUT </code> <code>/api/v1/shipping/{id} </code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=Updated%20shipping%20address' \
+  'http://localhost:8080/api/v1/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=Updated%20shipping%20address' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
 ```
@@ -2484,7 +2485,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=Updated%20shipping%20address
+http://localhost:8080/api/v1/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=Updated%20shipping%20address
 ```
 
 ### Response
@@ -2508,13 +2509,13 @@ http://localhost:8080/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=
 
 <details>
 
-<summary> <code>DELETE </code> <code>/shipping/{id} </code></summary>
+<summary> <code>DELETE </code> <code>/api/v1/shipping/{id} </code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8' \
+  'http://localhost:8080/api/v1/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
 ```
@@ -2522,7 +2523,7 @@ curl -X 'DELETE' \
 ### Request URL
 
 ```
-http://localhost:8080/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8
+http://localhost:8080/api/v1/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8
 ```
 
 ### Response
@@ -2543,7 +2544,7 @@ http://localhost:8080/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10' \
+  'http://localhost:8080/api/v1/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
 ```
@@ -2551,7 +2552,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10
+http://localhost:8080/api/v1/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10
 ```
 
 ### Response
@@ -2585,7 +2586,7 @@ http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/review-rating' \
+  'http://localhost:8080/api/v1/review-rating' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg' \
   -H 'Content-Type: application/json' \
@@ -2599,7 +2600,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/review-rating
+http://localhost:8080/api/v1/review-rating
 ```
 
 ### Response
@@ -2625,7 +2626,7 @@ http://localhost:8080/review-rating
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&rating=5' \
+  'http://localhost:8080/api/v1/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&rating=5' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
 ```
@@ -2633,7 +2634,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&rating=5
+http://localhost:8080/api/v1/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&rating=5
 ```
 
 ### Response
@@ -2659,7 +2660,7 @@ http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736' \
+  'http://localhost:8080/api/v1/review-rating/70ac842b-7a81-4976-9564-d440880d1736' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
 ```
@@ -2667,7 +2668,7 @@ curl -X 'DELETE' \
 ### Request URL
 
 ```
-http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736
+http://localhost:8080/api/v1/review-rating/70ac842b-7a81-4976-9564-d440880d1736
 ```
 
 ### Response
@@ -2682,13 +2683,13 @@ http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736
 
 <details>
 
-<summary> <code>POST</code> <code>/cart </code></summary>
+<summary> <code>POST</code> <code>/api/v1/cart </code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
+  'http://localhost:8080/api/v1/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ' \
   -d ''
@@ -2697,7 +2698,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1
+http://localhost:8080/api/v1/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1
 ```
 
 ### Response
@@ -2714,13 +2715,13 @@ http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quanti
 
 <details>
 
-<summary> <code>GET </code> <code>/cart </code></summary>
+<summary> <code>GET </code> <code>/api/v1/cart </code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/cart?limit=10' \
+  'http://localhost:8080/api/v1/cart?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
 ```
@@ -2728,7 +2729,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/cart?limit=10
+http://localhost:8080/api/v1/cart?limit=10
 ```
 
 ### Response
@@ -2792,13 +2793,13 @@ http://localhost:8080/cart?limit=10
 
 <details>
 
-<summary> <code>PUT </code> <code>/cart </code></summary>
+<summary> <code>PUT </code> <code>/api/v1/cart </code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
+  'http://localhost:8080/api/v1/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
 ```
@@ -2806,7 +2807,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1
+http://localhost:8080/api/v1/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1
 ```
 
 ### Response
@@ -2837,13 +2838,13 @@ http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quanti
 
 <details>
 
-<summary> <code>DELETE </code> <code>/cart </code></summary>
+<summary> <code>DELETE </code> <code>/api/v1/cart </code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/cart?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
+  'http://localhost:8080/api/v1/cart?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
 ```
@@ -2851,7 +2852,7 @@ curl -X 'DELETE' \
 ### Request URL
 
 ```
-http://localhost:8080/cart/71b26dd9-b4b5-4f87-a84d-c8daa506018a
+http://localhost:8080/api/v1/cart/71b26dd9-b4b5-4f87-a84d-c8daa506018a
 ```
 
 ### Response
@@ -2885,13 +2886,13 @@ http://localhost:8080/cart/71b26dd9-b4b5-4f87-a84d-c8daa506018a
 
 <details>
 
-<summary> <code>DELETE </code> <code>/cart/all </code></summary>
+<summary> <code>DELETE </code> <code>/api/v1/cart/all </code></summary>
 
 ### Curl
 
 ```
 curl -X 'DELETE' \
-  'http://localhost:8080/cart/all' \
+  'http://localhost:8080/api/v1/cart/all' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NzU3MX0.rRj8mHIqG-d78t_H54HjiWl7GBzgH4KOWUKAWsDveolmBcxTfyCJKzWd4K8Jwq5MKvJ3xa8J1vf0E34DSHA4sw'
 ```
@@ -2899,7 +2900,7 @@ curl -X 'DELETE' \
 ### Request URL
 
 ```
-http://localhost:8080/cart/all
+http://localhost:8080/api/v1/cart/all
 ```
 
 ### Response
@@ -2914,13 +2915,13 @@ true
 
 <details>
 
-<summary> <code>POST</code> <code>/order </code></summary>
+<summary> <code>POST</code> <code>/api/v1/order </code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/order' \
+  'http://localhost:8080/api/v1/order' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDk1NjIzNX0.Go4nLzsiOruUKTtETn1Yc35BNjlo79_3Vs8LfW9LJG1nvogqIR0mG9JQOUxP8YclsVBzGV0j0IIv7svTaDMxTg' \
   -H 'Content-Type: application/json' \
@@ -2942,7 +2943,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/order
+http://localhost:8080/api/v1/order
 ```
 
 ### Response
@@ -2958,13 +2959,13 @@ http://localhost:8080/order
 
 <details>
 
-<summary> <code>GET </code> <code>/order </code></summary>
+<summary> <code>GET </code> <code>/api/v1/order </code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/order?limit=10' \
+  'http://localhost:8080/api/v1/order?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDk1NjIzNX0.Go4nLzsiOruUKTtETn1Yc35BNjlo79_3Vs8LfW9LJG1nvogqIR0mG9JQOUxP8YclsVBzGV0j0IIv7svTaDMxTg'
 ```
@@ -2972,7 +2973,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/order?limit=10
+http://localhost:8080/api/v1/order?limit=10
 ```
 
 ### Response
@@ -3023,13 +3024,13 @@ http://localhost:8080/order?limit=10
 
 
 <details>
-<summary> <code>PATCH </code> <code>/order/status/{id} </code></summary>
+<summary> <code>PATCH </code> <code>/api/v1/order/status/{id} </code></summary>
 
 ### Curl
 
 ```
 curl -X 'PATCH' \
-  'http://localhost:8080/order/status/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered' \
+  'http://localhost:8080/api/v1/order/status/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTA5NDYxfQ.KU7eVxmkq0zg1sQy9RsAVAxuwtGcuGlB9pqMnc-eUI9If-dycduIhn7xv8np0yFVtULAF2_ns59u38gsR237eQ'
 ```
@@ -3037,7 +3038,7 @@ curl -X 'PATCH' \
 ### Request URL
 
 ```
-http://localhost:8080/order/status/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered
+http://localhost:8080/api/v1/order/status/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered
 ```
 
 ### Response
@@ -3061,13 +3062,13 @@ http://localhost:8080/order/status/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=d
 ### PAYMENT
 
 <details>
-<summary> <code>POST </code> <code>/payment </code></summary>
+<summary> <code>POST </code> <code>/api/v1/payment </code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/payment' \
+  'http://localhost:8080/api/v1/payment' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg' \
   -H 'Content-Type: application/json' \
@@ -3082,7 +3083,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/payment
+http://localhost:8080/api/v1/payment
 ```
 
 ### Response
@@ -3100,13 +3101,13 @@ http://localhost:8080/payment
 
 </details>
 <details>
-<summary> <code>GET </code> <code>/payment/{id} </code></summary>
+<summary> <code>GET </code> <code>/api/v1/payment/{id} </code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15' \
+  'http://localhost:8080/api/v1/payment/4b68917d-4452-4d18-9012-47e843f05c15' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
 ```
@@ -3114,7 +3115,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15
+http://localhost:8080/api/v1/payment/4b68917d-4452-4d18-9012-47e843f05c15
 ```
 
 ### Response
@@ -3136,13 +3137,13 @@ http://localhost:8080/payment/4b68917d-4452-4d18-9012-47e843f05c15
 
 <details>
 
-<summary> <code>POST</code> <code>/refund-requests/{orderId}</code></summary>
+<summary> <code>POST</code> <code>/api/v1/refund-requests/{orderId}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/refund-requests/ORD-20260414-0001' \
+  'http://localhost:8080/api/v1/refund-requests/ORD-20260414-0001' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -3156,7 +3157,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/refund-requests/ORD-20260414-0001
+http://localhost:8080/api/v1/refund-requests/ORD-20260414-0001
 ```
 
 ### Response
@@ -3184,13 +3185,13 @@ http://localhost:8080/refund-requests/ORD-20260414-0001
 
 <details>
 
-<summary> <code>GET</code> <code>/refund-requests/order/{orderId}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/refund-requests/order/{orderId}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/refund-requests/order/ORD-20260414-0001' \
+  'http://localhost:8080/api/v1/refund-requests/order/ORD-20260414-0001' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -3198,7 +3199,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/refund-requests/order/ORD-20260414-0001
+http://localhost:8080/api/v1/refund-requests/order/ORD-20260414-0001
 ```
 
 ### Response
@@ -3236,13 +3237,13 @@ http://localhost:8080/refund-requests/order/ORD-20260414-0001
 
 <details>
 
-<summary> <code>GET</code> <code>/refund-requests/{id}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/refund-requests/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/refund-requests/refund-uuid-123' \
+  'http://localhost:8080/api/v1/refund-requests/refund-uuid-123' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -3250,7 +3251,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/refund-requests/refund-uuid-123
+http://localhost:8080/api/v1/refund-requests/refund-uuid-123
 ```
 
 ### Response
@@ -3278,13 +3279,13 @@ http://localhost:8080/refund-requests/refund-uuid-123
 
 <details>
 
-<summary> <code>PUT</code> <code>/refund-requests/{id}/status</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/refund-requests/{id}/status</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/refund-requests/refund-uuid-123/status' \
+  'http://localhost:8080/api/v1/refund-requests/refund-uuid-123/status' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -3298,7 +3299,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/refund-requests/refund-uuid-123/status
+http://localhost:8080/api/v1/refund-requests/refund-uuid-123/status
 ```
 
 ### Response
@@ -3326,13 +3327,13 @@ http://localhost:8080/refund-requests/refund-uuid-123/status
 
 <details>
 
-<summary> <code>POST</code> <code>/refund-requests/{id}/ship</code></summary>
+<summary> <code>POST</code> <code>/api/v1/refund-requests/{id}/ship</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/refund-requests/refund-uuid-123/ship' \
+  'http://localhost:8080/api/v1/refund-requests/refund-uuid-123/ship' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -3344,7 +3345,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/refund-requests/refund-uuid-123/ship
+http://localhost:8080/api/v1/refund-requests/refund-uuid-123/ship
 ```
 
 ### Response
@@ -3374,20 +3375,20 @@ http://localhost:8080/refund-requests/refund-uuid-123/ship
 
 <details>
 
-<summary> <code>GET </code> <code>/policy</code></summary>
+<summary> <code>GET </code> <code>/api/v1/policy</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/policy' \
+  'http://localhost:8080/api/v1/admin/policy' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 
 ```
-http://localhost:8080/policy
+http://localhost:8080/api/v1/admin/policy
 ```
 
 ### Response
@@ -3430,20 +3431,20 @@ http://localhost:8080/policy
 
 <details>
 
-<summary> <code>GET </code> <code>/policy/{type}</code></summary>
+<summary> <code>GET </code> <code>/api/v1/policy/{type}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/policy/PRIVACY_POLICY' \
+  'http://localhost:8080/api/v1/policy/PRIVACY_POLICY' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 
 ```
-http://localhost:8080/policy/PRIVACY_POLICY
+http://localhost:8080/api/v1/policy/PRIVACY_POLICY
 ```
 
 ### Response
@@ -3467,20 +3468,20 @@ http://localhost:8080/policy/PRIVACY_POLICY
 
 <details>
 
-<summary> <code>GET </code> <code>/policy/detail/{id}</code></summary>
+<summary> <code>GET </code> <code>/api/v1/policy/detail/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/policy/detail/550e8400-e29b-41d4-a716-446655440000' \
+  'http://localhost:8080/api/v1/admin/policy/detail/550e8400-e29b-41d4-a716-446655440000' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 
 ```
-http://localhost:8080/policy/detail/550e8400-e29b-41d4-a716-446655440000
+http://localhost:8080/api/v1/admin/policy/detail/550e8400-e29b-41d4-a716-446655440000
 ```
 
 ### Response
@@ -3504,13 +3505,13 @@ http://localhost:8080/policy/detail/550e8400-e29b-41d4-a716-446655440000
 
 <details>
 
-<summary> <code>POST </code> <code>/policy</code></summary>
+<summary> <code>POST </code> <code>/api/v1/policy</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/policy' \
+  'http://localhost:8080/api/v1/admin/policy' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
   -H 'Content-Type: application/json' \
@@ -3526,7 +3527,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/policy
+http://localhost:8080/api/v1/admin/policy
 ```
 
 ### Response
@@ -3548,13 +3549,13 @@ http://localhost:8080/policy
 
 <details>
 
-<summary> <code>PUT </code> <code>/policy/{id}</code></summary>
+<summary> <code>PUT </code> <code>/api/v1/policy/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/policy/550e8400-e29b-41d4-a716-446655440003' \
+  'http://localhost:8080/api/v1/admin/policy/550e8400-e29b-41d4-a716-446655440003' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
   -H 'Content-Type: application/json' \
@@ -3569,7 +3570,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/policy/550e8400-e29b-41d4-a716-446655440003
+http://localhost:8080/api/v1/admin/policy/550e8400-e29b-41d4-a716-446655440003
 ```
 
 ### Response
@@ -3591,13 +3592,13 @@ http://localhost:8080/policy/550e8400-e29b-41d4-a716-446655440003
 
 <details>
 
-<summary> <code>POST </code> <code>/policy/deactivate/{id}</code></summary>
+<summary> <code>POST </code> <code>/api/v1/policy/deactivate/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/policy/deactivate/550e8400-e29b-41d4-a716-446655440003' \
+  'http://localhost:8080/api/v1/admin/policy/deactivate/550e8400-e29b-41d4-a716-446655440003' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
 ```
@@ -3605,7 +3606,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/policy/deactivate/550e8400-e29b-41d4-a716-446655440003
+http://localhost:8080/api/v1/admin/policy/deactivate/550e8400-e29b-41d4-a716-446655440003
 ```
 
 ### Response
@@ -3627,13 +3628,13 @@ http://localhost:8080/policy/deactivate/550e8400-e29b-41d4-a716-446655440003
 
 <details>
 
-<summary> <code>POST </code> <code>/policy-consents/consent</code></summary>
+<summary> <code>POST </code> <code>/api/v1/policy-consents/consent</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/policy-consents/consent' \
+  'http://localhost:8080/api/v1/admin/policy-consents/consent' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
   -H 'Content-Type: application/json' \
@@ -3645,7 +3646,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/policy-consents/consent
+http://localhost:8080/api/v1/admin/policy-consents/consent
 ```
 
 ### Response
@@ -3668,13 +3669,13 @@ http://localhost:8080/policy-consents/consent
 
 <details>
 
-<summary> <code>POST</code> <code>/inventory</code></summary>
+<summary> <code>POST</code> <code>/api/v1/admin/inventory</code></summary>
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/inventory' \
+  'http://localhost:8080/api/v1/inventory' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
   -H 'Content-Type: application/json' \
@@ -3688,7 +3689,7 @@ curl -X 'POST' \
 ### Request URL
 
 ```
-http://localhost:8080/inventory
+http://localhost:8080/api/v1/inventory
 ```
 
 ### Response
@@ -3708,13 +3709,13 @@ http://localhost:8080/inventory
 
 <details>
 
-<summary> <code>PUT</code> <code>/inventory/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/inventory/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/inventory/12345678-1234-1234-1234-123456789012' \
+  'http://localhost:8080/api/v1/inventory/12345678-1234-1234-1234-123456789012' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
   -H 'Content-Type: application/json' \
@@ -3728,7 +3729,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/inventory/12345678-1234-1234-1234-123456789012
+http://localhost:8080/api/v1/inventory/12345678-1234-1234-1234-123456789012
 ```
 
 ### Response
@@ -3748,13 +3749,13 @@ http://localhost:8080/inventory/12345678-1234-1234-1234-123456789012
 
 <details>
 
-<summary> <code>PUT</code> <code>/inventory/stock/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/inventory/stock/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add' \
+  'http://localhost:8080/api/v1/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -3762,7 +3763,7 @@ curl -X 'PUT' \
 ### Request URL
 
 ```
-http://localhost:8080/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add
+http://localhost:8080/api/v1/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add
 ```
 
 ### Response
@@ -3780,13 +3781,13 @@ http://localhost:8080/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quant
 
 <details>
 
-<summary> <code>GET</code> <code>/inventory/{id}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/inventory/{id}</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/inventory/cbd630f6-bf9f-48ad-ac51-f806807d99fd' \
+  'http://localhost:8080/api/v1/inventory/cbd630f6-bf9f-48ad-ac51-f806807d99fd' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -3794,7 +3795,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/inventory/cbd630f6-bf9f-48ad-ac51-f806807d99fd
+http://localhost:8080/api/v1/inventory/cbd630f6-bf9f-48ad-ac51-f806807d99fd
 ```
 
 ### Response
@@ -3814,13 +3815,13 @@ http://localhost:8080/inventory/cbd630f6-bf9f-48ad-ac51-f806807d99fd
 
 <details>
 
-<summary> <code>GET</code> <code>/inventory/shop</code></summary>
+<summary> <code>GET</code> <code>/api/v1/inventory/shop</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/inventory/shop?shopId=12345678-1234-1234-1234-123456789012' \
+  'http://localhost:8080/api/v1/inventory/shop?shopId=12345678-1234-1234-1234-123456789012' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -3828,7 +3829,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/inventory/shop?shopId=12345678-1234-1234-1234-123456789012
+http://localhost:8080/api/v1/inventory/shop?shopId=12345678-1234-1234-1234-123456789012
 ```
 
 ### Response
@@ -3856,13 +3857,13 @@ http://localhost:8080/inventory/shop?shopId=12345678-1234-1234-1234-123456789012
 
 <details>
 
-<summary> <code>GET</code> <code>/inventory/low-stock</code></summary>
+<summary> <code>GET</code> <code>/api/v1/inventory/low-stock</code></summary>
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/inventory/low-stock' \
+  'http://localhost:8080/api/v1/inventory/low-stock' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
 ```
@@ -3870,7 +3871,7 @@ curl -X 'GET' \
 ### Request URL
 
 ```
-http://localhost:8080/inventory/low-stock
+http://localhost:8080/api/v1/inventory/low-stock
 ```
 
 ### Response

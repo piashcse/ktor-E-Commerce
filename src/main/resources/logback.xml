@@ -1,33 +1,14 @@
 <configuration>
-    <!-- Standard Console Appender for Local Development -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- Structured JSON Appender for Production/Logging aggregators -->
-    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-            <providers>
-                <timestamp/>
-                <version/>
-                <message/>
-                <loggerName/>
-                <threadName/>
-                <logLevel/>
-                <stackTrace/>
-                <mdc/>
-            </providers>
-        </encoder>
-    </appender>
-
-    <!-- Default to STDOUT, can be overridden by system property or logback-test.xml -->
     <root level="INFO">
-        <appender-ref ref="${LOG_APPENDER:-STDOUT}"/>
+        <appender-ref ref="STDOUT"/>
     </root>
 
-    <!-- Project specific logging levels -->
     <logger name="com.piashcse" level="DEBUG"/>
     <logger name="org.eclipse.jetty" level="INFO"/>
     <logger name="io.netty" level="INFO"/>

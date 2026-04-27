@@ -16,6 +16,7 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
+| `GET` | `/admin/profile` | Retrieve admin profile information | Yes (Admin) |
 | `GET` | `/profile` | Retrieve user profile information | Yes |
 | `PUT` | `/profile` | Update user profile information | Yes |
 | `POST` | `/profile/image-upload` | Upload user profile image | Yes |
@@ -40,7 +41,7 @@ Retrieve the profile information for the authenticated user.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/profile' \
+  'http://localhost:8080/api/v1/profile' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -107,7 +108,7 @@ Update profile information for the authenticated user.
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/profile?firstName=Mehedi&lastName=Hassan&mobile=01812353930&faxNumber=454&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Male' \
+  'http://localhost:8080/api/v1/profile?firstName=Mehedi&lastName=Hassan&mobile=01812353930&faxNumber=454&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Male' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -159,7 +160,7 @@ Upload a profile image for the authenticated user. The image will be processed a
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/profile/image-upload' \
+  'http://localhost:8080/api/v1/profile/image-upload' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: multipart/form-data' \

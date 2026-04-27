@@ -17,9 +17,11 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `POST` | `/refund-requests/{orderId}` | Create a refund request | Yes (Customer) |
-| `GET` | `/refund-requests/order/{orderId}` | Get all refunds for an order | Yes (Customer/Seller/Admin) |
+| `GET` | `/admin/refund-request/order/{orderId}` | Get all refunds for an order (Admin) | Yes (Admin) |
+| `GET` | `/refund-requests/order/{orderId}` | Get all refunds for an order | Yes (Customer/Seller) |
 | `GET` | `/refund-requests/{id}` | Get refund request details | Yes |
-| `PUT` | `/refund-requests/{id}/status` | Update refund status | Yes (Seller/Admin) |
+| `PUT` | `/admin/refund-request/{id}/status` | Update refund status (Admin) | Yes (Admin) |
+| `PUT` | `/refund-requests/{id}/status` | Update refund status (Seller) | Yes (Seller) |
 | `POST` | `/refund-requests/{id}/ship` | Mark refund as shipped | Yes (Customer) |
 
 ---
@@ -277,7 +279,7 @@ Update the status of a refund request. Only sellers and admins can approve or re
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/refund-requests/refund-uuid-123/status' \
+  'http://localhost:8080/api/v1/admin/refund-request/refund-uuid-123/status' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \

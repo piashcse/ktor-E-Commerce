@@ -16,10 +16,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/product-subcategory` | Create a new product sub category | Yes |
+| `POST` | `/admin/product-subcategory` | Create a new product sub category | Yes (Admin) |
 | `GET` | `/product-subcategory` | Retrieve list of product sub categories | Yes |
-| `PUT` | `/product-subcategory/{id}` | Update an existing product sub category | Yes |
-| `DELETE` | `/product-subcategory/{id}` | Delete a product sub category | Yes |
+| `PUT` | `/admin/product-subcategory/{id}` | Update an existing product sub category | Yes (Admin) |
+| `DELETE` | `/admin/product-subcategory/{id}` | Delete a product sub category | Yes (Admin) |
 
 ---
 
@@ -27,7 +27,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Product Sub Category
 
-**`POST /product-subcategory`**
+**`POST /admin/product-subcategory`**
 
 Create a new product sub category with a specified name and associated product category.
 
@@ -49,7 +49,7 @@ Create a new product sub category with a specified name and associated product c
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/product-subcategory' \
+  'http://localhost:8080/api/v1/admin/product-subcategory' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -135,7 +135,7 @@ curl -X 'GET' \
 
 ### 3. Update Product Sub Category
 
-**`PUT /product-subcategory/{id}`**
+**`PUT /admin/product-subcategory/{id}`**
 
 Update an existing product sub category by its ID. You can modify the sub category name.
 
@@ -161,7 +161,7 @@ Update an existing product sub category by its ID. You can modify the sub catego
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d?name=Pencil' \
+  'http://localhost:8080/api/v1/admin/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d?name=Pencil' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -189,7 +189,7 @@ curl -X 'PUT' \
 
 ### 4. Delete Product Sub Category
 
-**`DELETE /product-subcategory/{id}`**
+**`DELETE /admin/product-subcategory/{id}`**
 
 Delete a product sub category by its ID. This operation permanently removes the sub category from the system.
 
@@ -209,7 +209,7 @@ Delete a product sub category by its ID. This operation permanently removes the 
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d' \
+  'http://localhost:8080/api/v1/admin/product-subcategory/751cef10-f98a-4ecc-ae03-4173830a626d' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
