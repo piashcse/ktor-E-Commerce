@@ -4,7 +4,7 @@ import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.plugin.adminAuth
-import com.piashcse.utils.InvalidEnumValueException
+import com.piashcse.utils.validator.InvalidEnumValueException
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.request.*

@@ -4,7 +4,7 @@ import com.piashcse.constants.ShopStatus
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.model.response.Shop
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.common.PaginatedResponse
 
 interface ShopRepository {
     /**

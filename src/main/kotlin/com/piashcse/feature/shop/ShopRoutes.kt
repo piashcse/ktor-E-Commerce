@@ -8,9 +8,9 @@ import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.sellerAuth
-import com.piashcse.utils.InvalidEnumValueException
-import com.piashcse.utils.MissingParameterException
-import com.piashcse.utils.NotFoundException
+import com.piashcse.utils.validator.InvalidEnumValueException
+import com.piashcse.utils.validator.MissingParameterException
+import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters

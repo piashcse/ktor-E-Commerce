@@ -1,4 +1,5 @@
 package com.piashcse.feature.product
+import com.piashcse.utils.extension.*
 
 import com.piashcse.constants.Message
 import com.piashcse.constants.ProductStatus
@@ -8,12 +9,12 @@ import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.model.response.Product
-import com.piashcse.utils.NotFoundException
-import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.PaginationMetadata
+import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.toPaginatedResponse
-import com.piashcse.utils.throwNotFound
+import com.piashcse.utils.extension.throwNotFound
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.jdbc.andWhere

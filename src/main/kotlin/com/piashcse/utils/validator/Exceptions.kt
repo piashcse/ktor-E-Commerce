@@ -1,19 +1,10 @@
-package com.piashcse.utils
+package com.piashcse.utils.validator
 
 import com.piashcse.constants.Message
 import io.ktor.http.*
 
 // ============================================================================
 //  INDUSTRY-STANDARD EXCEPTION HIERARCHY
-//
-//  Based on Stripe, GitHub, OpenAI best practices:
-//  - HTTP status code is the ONLY source of truth
-//  - No error codes in response body
-//  - Clear, user-facing messages
-//  - Minimal, focused hierarchy
-//
-//  To add new exception: create class extending AppException
-//  StatusPages auto-handles it - no configuration needed
 // ============================================================================
 
 /** Base exception for all application errors. */
@@ -33,7 +24,7 @@ class InvalidEnumValueException(
 ) : AppException(message, HttpStatusCode.BadRequest)
 
 class MissingParameterException(parameterName: String)
-    : AppException("Missing required parameter: $parameterName", HttpStatusCode.BadRequest)
+    : AppException(Message.Errors.MISSING_PARAMETER.format(parameterName), HttpStatusCode.BadRequest)
 
 // ─── 401 Unauthorized ──────────────────────────────────────────────────────
 
@@ -84,49 +75,3 @@ class InternalServerException(message: String = Message.Errors.INTERNAL)
     : AppException(message, HttpStatusCode.InternalServerError)
 
 class DatabaseException(message: String) : AppException(message, HttpStatusCode.InternalServerError)
-
-// ============================================================================
-//  VALIDATION HELPERS - Uses Message constants for consistency
-//  Usage:  requireNotBlank(userId, "User ID")
-//          requirePositive(quantity, "Quantity")
-// ============================================================================
-
-fun requireNotBlank(value: String, fieldName: String) {
-    if (value.isBlank()) throw ValidationException(Message.Validation.blankField(fieldName))
-}
-
-fun requirePositive(value: Number, fieldName: String) {
-    if (value.toDouble() <= 0) throw ValidationException(Message.Validation.notPositive(fieldName))
-}
-
-fun requireNonNegative(value: Number, fieldName: String) {
-    if (value.toDouble() < 0) throw ValidationException(Message.Validation.negativeValue(fieldName))
-}
-
-fun requireValidEmail(email: String) {
-    val regex = Regex("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$")
-    if (!regex.matches(email)) throw ValidationException(Message.Validation.INVALID_EMAIL)
-}
-
-fun requireValidPassword(password: String, minLength: Int = 8) {
-    if (password.length < minLength) throw ValidationException(Message.Validation.WEAK_PASSWORD)
-}
-
-// ============================================================================
-//  STRING EXTENSIONS — concise throw syntax for common patterns
-//  Usage:  productId.throwNotFound("Product")
-//          email.throwConflict("User")
-// ============================================================================
-
-/** Throw NotFoundException with specific entity type */
-fun String.throwNotFound(resourceName: String): Nothing =
-    throw NotFoundException("$resourceName not found")
-
-/** Throw NotFoundException with default message */
-fun String.throwNotFound(): Nothing =
-    throw NotFoundException()
-
-/** Throw ConflictException */
-fun String.throwConflict(resourceName: String): Nothing =
-    throw ConflictException("$resourceName already exists")
-

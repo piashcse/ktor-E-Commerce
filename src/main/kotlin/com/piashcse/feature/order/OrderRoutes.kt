@@ -9,8 +9,8 @@ import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.sellerAuth
-import com.piashcse.utils.InvalidEnumValueException
-import com.piashcse.utils.UnauthorizedException
+import com.piashcse.utils.validator.InvalidEnumValueException
+import com.piashcse.utils.validator.UnauthorizedException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.getCurrentUserType
 import com.piashcse.utils.extension.paginationParameters

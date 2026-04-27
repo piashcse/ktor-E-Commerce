@@ -4,8 +4,8 @@ import com.piashcse.constants.Message
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.sellerAuth
-import com.piashcse.utils.MissingParameterException
-import com.piashcse.utils.NotFoundException
+import com.piashcse.utils.validator.MissingParameterException
+import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*

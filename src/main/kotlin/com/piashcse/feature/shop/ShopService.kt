@@ -1,4 +1,5 @@
 package com.piashcse.feature.shop
+import com.piashcse.utils.extension.*
 
 import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
@@ -6,12 +7,12 @@ import com.piashcse.database.entities.*
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.model.response.Shop
-import com.piashcse.utils.ConflictException
-import com.piashcse.utils.NotFoundException
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.validator.ConflictException
+import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.toPaginatedResponse
-import com.piashcse.utils.throwNotFound
+import com.piashcse.utils.extension.throwNotFound
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID

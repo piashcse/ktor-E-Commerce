@@ -2,7 +2,7 @@ package com.piashcse.feature.payment
 
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.Payment
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.common.PaginatedResponse
 
 interface PaymentRepository {
     /**

@@ -1,4 +1,5 @@
 package com.piashcse.feature.shipping
+import com.piashcse.utils.extension.*
 
 import com.piashcse.database.entities.ShippingDAO
 import com.piashcse.database.entities.ShippingTable
@@ -6,8 +7,8 @@ import com.piashcse.model.request.ShippingRequest
 import com.piashcse.model.request.UpdateShippingRequest
 import com.piashcse.model.response.Shipping
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.throwConflict
-import com.piashcse.utils.throwNotFound
+import com.piashcse.utils.extension.throwConflict
+import com.piashcse.utils.extension.throwNotFound
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 

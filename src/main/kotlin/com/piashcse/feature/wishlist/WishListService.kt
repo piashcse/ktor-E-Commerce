@@ -1,12 +1,13 @@
 package com.piashcse.feature.wishlist
+import com.piashcse.utils.extension.*
 
 import com.piashcse.database.entities.*
 import com.piashcse.model.response.Product
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.toPaginatedResponse
-import com.piashcse.utils.throwConflict
-import com.piashcse.utils.throwNotFound
+import com.piashcse.utils.extension.throwConflict
+import com.piashcse.utils.extension.throwNotFound
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq

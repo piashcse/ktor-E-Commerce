@@ -1,7 +1,7 @@
 package com.piashcse.feature.shop_category
 
 import com.piashcse.model.response.ShopCategory
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.common.PaginatedResponse
 
 interface ShopCategoryRepository {
     /**

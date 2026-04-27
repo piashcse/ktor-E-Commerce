@@ -1,4 +1,4 @@
-package com.piashcse.utils
+package com.piashcse.config
 
 import io.github.cdimascio.dotenv.Dotenv
 import io.github.cdimascio.dotenv.dotenv
