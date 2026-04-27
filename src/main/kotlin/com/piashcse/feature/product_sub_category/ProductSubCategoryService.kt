@@ -1,4 +1,5 @@
 package com.piashcse.feature.product_sub_category
+import com.piashcse.utils.extension.*
 
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductCategoryTable
@@ -6,11 +7,11 @@ import com.piashcse.database.entities.ProductSubCategoryDAO
 import com.piashcse.database.entities.ProductSubCategoryTable
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.model.response.ProductSubCategory
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.toPaginatedResponse
-import com.piashcse.utils.throwConflict
-import com.piashcse.utils.throwNotFound
+import com.piashcse.utils.extension.throwConflict
+import com.piashcse.utils.extension.throwNotFound
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere

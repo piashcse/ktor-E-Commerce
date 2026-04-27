@@ -1,7 +1,7 @@
 package com.piashcse.feature.brand
 
 import com.piashcse.model.response.Brand
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.common.PaginatedResponse
 
 interface BrandRepository {
     /**

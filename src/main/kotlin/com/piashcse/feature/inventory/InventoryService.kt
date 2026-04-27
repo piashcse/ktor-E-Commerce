@@ -1,4 +1,5 @@
 package com.piashcse.feature.inventory
+import com.piashcse.utils.extension.*
 
 import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.Message
@@ -8,12 +9,12 @@ import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
-import com.piashcse.utils.NotFoundException
-import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.ValidationException
+import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.validator.ValidationException
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.toPaginatedResponse
-import com.piashcse.utils.throwNotFound
+import com.piashcse.utils.extension.throwNotFound
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq

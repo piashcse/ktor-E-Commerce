@@ -7,7 +7,7 @@ import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
-import com.piashcse.utils.UnauthorizedException
+import com.piashcse.utils.validator.UnauthorizedException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.getCurrentUserType
 import com.piashcse.utils.extension.paginationParameters

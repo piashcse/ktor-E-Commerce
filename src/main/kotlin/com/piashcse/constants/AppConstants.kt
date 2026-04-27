@@ -15,12 +15,7 @@ object AppConstants {
     }
 
     object SmtpServer {
-        const val HOST_NAME = "smtp.googlemail.com"
-        const val PORT = 465
-        const val DEFAULT_AUTHENTICATOR = "smtp@gmail.com" // your smtp email address
-        const val DEFAULT_AUTHENTICATOR_PASSWORD = "smtpcredential" // password for smtp
         const val EMAIL_SUBJECT = "Forget Password"
-        const val SENDING_EMAIL = "sendingemail.@gmail.com" // The email from where it will send to user
     }
 
     /**

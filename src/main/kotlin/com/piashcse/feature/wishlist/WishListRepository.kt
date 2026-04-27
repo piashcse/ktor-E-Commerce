@@ -2,7 +2,7 @@ package com.piashcse.feature.wishlist
 
 import com.piashcse.database.entities.WishList
 import com.piashcse.model.response.Product
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.common.PaginatedResponse
 
 interface WishListRepository {
     /**

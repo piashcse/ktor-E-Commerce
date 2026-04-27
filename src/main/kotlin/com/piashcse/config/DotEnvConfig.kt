@@ -1,6 +1,6 @@
 package com.piashcse.config
 
-import com.piashcse.utils.DotEnv
+import com.piashcse.config.DotEnv
 
 object DotEnvConfig {
     // Database configuration

@@ -5,7 +5,7 @@ import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.model.response.Product
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.common.PaginatedResponse
 
 interface ProductRepository {
     /**

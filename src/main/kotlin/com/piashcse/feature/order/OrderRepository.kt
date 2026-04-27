@@ -3,7 +3,7 @@ package com.piashcse.feature.order
 import com.piashcse.constants.OrderStatus
 import com.piashcse.model.request.OrderRequest
 import com.piashcse.model.response.Order
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.common.PaginatedResponse
 
 interface OrderRepository {
     /**

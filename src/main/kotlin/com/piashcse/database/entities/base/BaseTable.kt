@@ -28,7 +28,7 @@ abstract class BaseEntityClass<E : BaseEntity>(table: BaseIdTable, entityType: C
                 try {
                     action.toEntity(this)?.updatedAt = currentUtc()
                 } catch (e: Exception) {
-                    //nothing much to do here
+                    e.printStackTrace()
                 }
             }
         }

@@ -1,6 +1,6 @@
 package com.piashcse.service
 
-import com.piashcse.utils.ValidationException
+import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.content.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

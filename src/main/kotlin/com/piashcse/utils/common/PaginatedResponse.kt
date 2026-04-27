@@ -1,4 +1,4 @@
-package com.piashcse.utils
+package com.piashcse.utils.common
 
 import kotlinx.serialization.Serializable
 

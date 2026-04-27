@@ -7,7 +7,7 @@ import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.sellerAuth
 import com.piashcse.service.UploadService
-import com.piashcse.utils.ValidationException
+import com.piashcse.utils.validator.ValidationException
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters

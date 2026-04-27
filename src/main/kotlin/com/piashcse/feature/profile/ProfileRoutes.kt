@@ -3,7 +3,7 @@ package com.piashcse.feature.profile
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.plugin.requireRole
 import com.piashcse.service.UploadService
-import com.piashcse.utils.ValidationException
+import com.piashcse.utils.validator.ValidationException
 import com.piashcse.utils.extension.currentUserId
 import io.ktor.http.*
 import io.ktor.http.content.*

@@ -2803,7 +2803,7 @@ class AuthService(
 [ ] 7.8  Single migration strategy (Flyway only)
 [ ] 7.9  AuthService and ProductService split into focused services
 [ ] 7.10 All services properly inject dependencies via Koin
-[ ] 7.11 Code quality items resolved (typo, splits, dedup, logging)
+[x] 7.11 Code quality items resolved (typo, splits, dedup, logging)
 ```
 
 ---

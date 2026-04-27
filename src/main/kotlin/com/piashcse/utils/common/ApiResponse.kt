@@ -1,6 +1,7 @@
-package com.piashcse.utils
+package com.piashcse.utils.common
 
 import io.ktor.http.*
+import com.piashcse.utils.validator.AppException
 
 /**
  * Industry-standard API error response (used ONLY for errors).

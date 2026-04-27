@@ -1,6 +1,5 @@
 package com.piashcse.plugin
 
-
 import com.google.gson.JsonSerializer
 import com.piashcse.config.DotEnvConfig
 import io.ktor.http.*
@@ -60,7 +59,7 @@ fun Application.configureBasic() {
             // serializeNulls()
         }
     }
-    install(CallLogging){
+    install(CallLogging) {
         level = Level.INFO
         filter { call -> call.request.path().startsWith("/") }
         format { call ->

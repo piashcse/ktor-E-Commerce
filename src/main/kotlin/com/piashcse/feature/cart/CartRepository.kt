@@ -3,7 +3,7 @@ package com.piashcse.feature.cart
 import com.piashcse.database.entities.Cart
 import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.Product
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.common.PaginatedResponse
 
 interface CartRepository {
     /**

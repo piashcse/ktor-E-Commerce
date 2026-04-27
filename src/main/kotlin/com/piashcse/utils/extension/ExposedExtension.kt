@@ -1,7 +1,7 @@
 package com.piashcse.utils.extension
 
-import com.piashcse.utils.PaginatedResponse
-import com.piashcse.utils.PaginationMetadata
+import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.jdbc.Query
 /**

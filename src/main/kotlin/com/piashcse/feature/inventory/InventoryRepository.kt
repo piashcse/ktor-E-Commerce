@@ -2,7 +2,7 @@ package com.piashcse.feature.inventory
 
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.common.PaginatedResponse
 
 interface InventoryRepository {
     /**

@@ -1,4 +1,5 @@
 package com.piashcse.feature.payment
+import com.piashcse.utils.extension.*
 
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderTable
@@ -6,10 +7,10 @@ import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.database.entities.PaymentTable
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.Payment
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.toPaginatedResponse
-import com.piashcse.utils.throwNotFound
+import com.piashcse.utils.extension.throwNotFound
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
@@ -38,7 +39,7 @@ class PaymentService : PaymentRepository {
         // Validate amount matches order total
         val orderTotal = order.total.toLong()
         if (paymentRequest.amount != orderTotal) {
-            throw com.piashcse.utils.ValidationException(
+            throw com.piashcse.utils.validator.ValidationException(
                 "Payment amount (${paymentRequest.amount}) does not match order total ($orderTotal)"
             )
         }
@@ -51,7 +52,7 @@ class PaymentService : PaymentRepository {
 
         val paidAmount = existingPayments.sumOf { it.amount }
         if (paidAmount >= orderTotal) {
-            throw com.piashcse.utils.ValidationException("Order already fully paid")
+            throw com.piashcse.utils.validator.ValidationException("Order already fully paid")
         }
 
         // Create payment

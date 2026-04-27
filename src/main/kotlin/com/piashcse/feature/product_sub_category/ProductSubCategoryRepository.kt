@@ -2,7 +2,7 @@ package com.piashcse.feature.product_sub_category
 
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.model.response.ProductSubCategory
-import com.piashcse.utils.PaginatedResponse
+import com.piashcse.utils.common.PaginatedResponse
 
 /**
  * Repository interface for managing product subcategories.

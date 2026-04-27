@@ -19,7 +19,6 @@ object UserTable : BaseIdTable("user") {
     val otpExpiry = datetime("otp_expiry").nullable()
     val isVerified = bool("is_verified").default(false)
     val isActive = bool("is_active").default(true)
-    override val primaryKey = PrimaryKey(id)
 
     // Create a composite unique index on email and userType
     init {
@@ -61,47 +60,9 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     }
 
     /**
-     * Generate login response with JWT token
-     */
-    fun loggedInWithToken() = LoginResponse(
-        response(), JwtConfig.tokenProvider(JwtTokenRequest(id.value, email, userType.name))
-    )
-
-    /**
-     * Check if the user has a specific role
-     */
-    fun hasRole(role: UserType): Boolean = this.userType == role
-
-    /**
-     * Check if the user has access to a specific role (with hierarchy)
-     */
-    fun hasAccessTo(role: UserType): Boolean = this.userType.hasAccessTo(role)
-
-    /**
      * Check if user is active and verified
      */
     fun isActiveAndVerified(): Boolean = isVerified && isActive
-
-    /**
-     * Check if user is Super Admin
-     */
-    fun isSuperAdmin(): Boolean = userType == UserType.SUPER_ADMIN
-
-    /**
-     * Check if user is Admin
-     */
-    fun isAdmin(): Boolean = userType == UserType.ADMIN || userType == UserType.SUPER_ADMIN
-
-    /**
-     * Check if user is Seller
-     */
-    fun isSeller(): Boolean = userType == UserType.SELLER
-
-    /**
-     * Check if user is Customer
-     */
-    fun isCustomer(): Boolean = userType == UserType.CUSTOMER || userType == UserType.SELLER ||
-                                userType == UserType.ADMIN || userType == UserType.SUPER_ADMIN
 }
 
 data class UserResponse(
