@@ -10,64 +10,45 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 /**
- * Defines routes for handling payments.
- *
- * Accessible by customers to create payments and retrieve payment details.
- *
- * @param paymentController The controller handling payment-related operations.
+ * Customer payment routes.
  */
 fun Route.paymentRoutes(paymentController: PaymentService) {
     customerAuth {
-            /**
-             * @tag Payment
-             * @description Create a new payment record for an order
-             * @operationId createPayment
-             * @body PaymentRequest Payment creation request with payment details
-             * @response 200 Payment created successfully
-             * @security jwtToken
-             */
-            post {
-                val requestBody = call.receive<PaymentRequest>()
-                call.respond(
-                    HttpStatusCode.OK,
-                    paymentController.createPayment(requestBody)
-                )
-            }
+        /**
+         * @tag Payment
+         * @description Create a new payment record for an order
+         */
+        post {
+            val requestBody = call.receive<PaymentRequest>()
+            call.respond(
+                HttpStatusCode.OK,
+                paymentController.createPayment(requestBody)
+            )
+        }
 
-            /**
-             * @tag Payment
-             * @description Retrieve payment details by payment ID
-             * @operationId getPaymentById
-             * @path id (required) Unique identifier of the payment
-             * @response 200 Payment details retrieved successfully
-             * @response 400 Invalid payment ID
-             * @security jwtToken
-             */
-            get("{id}") {
-                val id = call.requireParameters("id")
-                call.respond(
-                    HttpStatusCode.OK,
-                    paymentController.getPaymentById(id.first())
-                )
-            }
+        /**
+         * @tag Payment
+         * @description Retrieve payment details by ID
+         */
+        get("{id}") {
+            val id = call.requireParameters("id")
+            call.respond(
+                HttpStatusCode.OK,
+                paymentController.getPaymentById(id.first())
+            )
+        }
 
-            /**
-             * @tag Payment
-             * @description Retrieve all payments for a specific order with pagination
-             * @operationId getPaymentsByOrderId
-             * @path orderId (required) Unique identifier of the order
-             * @query limit Maximum number of payments to return (default 20)
-             * @query offset Number of payments to skip (default 0)
-             * @response 200 Payments retrieved successfully
-             * @security jwtToken
-             */
-            get("order/{orderId}") {
-                val orderId = call.parameters["orderId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "orderId is required")
-                val (limit, offset) = call.paginationParameters()
-                call.respond(
-                    HttpStatusCode.OK,
-                    paymentController.getPaymentsByOrderId(orderId, limit, offset)
-                )
-            }
+        /**
+         * @tag Payment
+         * @description Retrieve all payments for a specific order
+         */
+        get("order/{orderId}") {
+            val orderId = call.parameters["orderId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "orderId is required")
+            val (limit, offset) = call.paginationParameters()
+            call.respond(
+                HttpStatusCode.OK,
+                paymentController.getPaymentsByOrderId(orderId, limit, offset)
+            )
         }
     }
+}
