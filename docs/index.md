@@ -8,7 +8,9 @@ Ktor-E-Commerce is a high-performance backend solution designed for e-commerce a
 with [ktor](https://ktor.io/docs/welcome.html). This backend leverages the power of Kotlin to provide a robust,
 scalable, and efficient service for handling your e-commerce needs.
 
-## Swagger View
+## Swagger View & API Discovery
+
+Access interactive API documentation at the root `/` or `/swagger` endpoint when the application is running. The root URL automatically redirects to Swagger for easy API discovery for frontend developers and testers.
 
 <p align="center">
   <img width="100%" height="40%" src="https://raw.githubusercontent.com/piashcse/ktor-E-Commerce/master/screenshots/swagger.gif" />

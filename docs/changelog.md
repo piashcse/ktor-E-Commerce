@@ -4,7 +4,23 @@ hide:
 ---
 # Changelog
 
-## [3.6.0] - Latest
+## [4.0.0] - 2026-05-03
+
+### API Standardization & V2 Migration
+
+- **(feat)** - **Root-to-Swagger Redirect**: Implemented an automatic redirect from the root URL (`/`) to the Swagger UI (`/swagger`) for better API discoverability.
+- **(feat)** - **V2 Optimized Endpoints**: Introduced `v2` namespace for optimized API contracts.
+    - Added `PUT /api/v2/seller/shop/{shopId}` with source tracking and streamlined response structure.
+- **(refactor)** - **Routing Architecture**: Standardized URL prefixes for better role isolation and organization:
+    - Seller routes now prefixed with `/api/v1/seller/` or `/api/v2/seller/`.
+    - Admin routes now prefixed with `/api/v1/admin/`.
+- **(refactor)** - **Composition-Based Routing**: Transitioned from conditional logic within routes to a composition-based pattern (e.g., separate functions for V1 and V2), improving maintainability and isolation.
+- **(docs)** - **OpenAPI Tags**: Added comprehensive `@tag` and `@description` annotations to all feature routes for high-quality Swagger documentation.
+- **(docs)** - **Documentation Overhaul**: Updated project `README.md` and `docs/*.md` files to reflect the new routing structure and V2 endpoints.
+
+---
+
+## [3.6.0]
 
 ### Per-Domain API Versioning
 

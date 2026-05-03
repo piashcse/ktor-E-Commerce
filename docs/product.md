@@ -1,12 +1,12 @@
 # Product API
 
-This documentation provides comprehensive details for the Product API endpoints. The API supports managing products within the platform, including creating, retrieving, updating, and deleting products. Products are associated with categories and can be managed by authorized sellers.
+This documentation provides comprehensive details for the Product API endpoints. The API supports managing products within the platform, including creating, retrieving, updating, and deleting products. Products are associated with categories and can be managed by authorized sellers or administrators.
 
 **Base URL:** `http://localhost:8080`
 
 ## Authentication
 
-All Product API endpoints require Bearer token authentication. Include the access token in the Authorization header:
+Most Product API endpoints require Bearer token authentication. Include the access token in the Authorization header:
 
 ```
 Authorization: Bearer <your_access_token>
@@ -16,93 +16,47 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/admin/product` | Create a new product (Admin) | Yes (Admin) |
-| `POST` | `/product` | Create a new product (Seller) | Yes (Seller) |
-| `GET` | `/product/{id}` | Retrieve a specific product | Yes |
-| `PUT` | `/admin/product/{id}` | Update an existing product (Admin) | Yes (Admin) |
-| `PUT` | `/product/{id}` | Update an existing product (Seller) | Yes (Seller) |
-| `GET` | `/product` | Retrieve list of products with filters | Yes |
-| `GET` | `/product/search` | Search products with filters | No |
-| `GET` | `/product/seller` | Retrieve products belonging to seller | Yes (Seller) |
-| `GET` | `/product/featured` | Retrieve featured products | No |
-| `GET` | `/product/best-selling` | Retrieve best selling products | No |
-| `GET` | `/product/hot-deals` | Retrieve products on hot deals | No |
-| `DELETE` | `/admin/product/{id}` | Delete a product (Admin) | Yes (Admin) |
-| `DELETE` | `/product/{id}` | Delete a product (Seller) | Yes (Seller) |
-| `POST` | `/admin/product/image-upload` | Upload product image (Admin) | Yes (Admin) |
-| `POST` | `/product/image-upload` | Upload product image (Seller) | Yes (Seller) |
+| `POST` | `/api/v1/seller/product` | Create a new product (Seller) | Yes (Seller) |
+| `PUT` | `/api/v1/seller/product/{id}` | Update an existing product (Seller) | Yes (Seller) |
+| `DELETE` | `/api/v1/seller/product/{id}` | Delete a product (Seller) | Yes (Seller) |
+| `GET` | `/api/v1/seller/product` | Retrieve products belonging to seller | Yes (Seller) |
+| `POST` | `/api/v1/seller/product/image-upload` | Upload product image (Seller) | Yes (Seller) |
+| `GET` | `/api/v1/product/{id}` | Retrieve a specific product | No |
+| `GET` | `/api/v1/product/search` | Search products with filters | No |
+| `GET` | `/api/v1/product/featured` | Retrieve featured products | No |
+| `GET` | `/api/v1/product/best-selling` | Retrieve best selling products | No |
+| `GET` | `/api/v1/product/hot-deals` | Retrieve products on hot deals | No |
+| `POST` | `/api/v1/admin/product` | Create a new product (Admin) | Yes (Admin) |
+| `PUT` | `/api/v1/admin/product/{id}` | Update an existing product (Admin) | Yes (Admin) |
+| `DELETE` | `/api/v1/admin/product/{id}` | Delete a product (Admin) | Yes (Admin) |
 
 ---
 
-## Product API Details
+## Endpoint Details
 
-### 1. Create Product
+### 1. Create Product (Seller)
 
-**`POST /admin/product`** (Admin) or **`POST /product`** (Seller)
+**`POST /api/v1/seller/product`**
 
-Create a new product with specified details including name, description, price, and category information.
-
-#### Request Body
-
-| Field | Type | Required | Validation | Description |
-|-------|------|----------|------------|-------------|
-| `categoryId` | string | Yes | Not null, not empty | UUID of the product category |
-| `subCategoryId` | string | No | - | UUID of the product subcategory |
-| `brandId` | string | No | - | UUID of the product brand |
-| `name` | string | Yes | Not null, not empty | Product name |
-| `description` | string | Yes | Not null, not empty | Product description |
-| `productCode` | string | No | - | Unique product code |
-| `stockQuantity` | integer | Yes | Not null, > 0 | Available stock quantity |
-| `price` | number | Yes | Not null, > 0.0 | Product price |
-| `discountPrice` | number | No | - | Discounted price (optional) |
-| `status` | integer | No | - | Product status code |
-| `videoLink` | string | No | - | URL to product video |
-| `hotDeal` | boolean | Yes | - | Whether product is a hot deal |
-| `featured` | boolean | Yes | - | Whether product is featured |
-| `images` | array | Yes | - | Array of image URLs |
-
-```json
-{
-  "categoryId": "string",
-  "subCategoryId": "string|null",
-  "brandId": "string|null",
-  "name": "string",
-  "description": "string",
-  "productCode": "string|null",
-  "stockQuantity": 1,
-  "price": 100.0,
-  "discountPrice": 80.0,
-  "status": 1,
-  "videoLink": "string|null",
-  "hotDeal": true,
-  "featured": true,
-  "images": ["string"]
-}
-```
+Create a new product as a seller. The product will be automatically associated with your shop.
 
 #### Example Request
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/product' \
+  'http://localhost:8080/api/v1/seller/product' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer <your_token>' \
+  -H 'Authorization: Bearer <seller_token>' \
   -H 'Content-Type: application/json' \
   -d '{
   "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
-  "subCategoryId": null,
-  "brandId": null,
   "name": "Smart watch",
-  "description": "Good watch",
-  "productCode": null,
-  "stockQuantity": 1,
-  "price": 100.0,
-  "discountPrice": null,
-  "status": null,
-  "videoLink": null,
+  "description": "Premium smart watch",
+  "stockQuantity": 50,
+  "price": 199.99,
   "hotDeal": true,
-  "featured": true,
-  "images": ["string"]
+  "featured": false,
+  "images": ["image1.png"]
 }'
 ```
 
@@ -111,542 +65,82 @@ curl -X 'POST' \
 ```json
 {
   "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
-  "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
   "name": "Smart watch",
-  "description": "Good watch",
-  "minOrderQuantity": 1,
-  "stockQuantity": 1,
-  "price": 100,
-  "hotDeal": true,
-  "featured": true,
-  "images": "[string]",
   "status": "ACTIVE"
 }
 ```
 
 ---
 
-### 2. Get Product by ID
+### 2. Search Products
 
-**`GET /product/{id}`**
+**`GET /api/v1/product/search`**
 
-Retrieve a specific product by its unique identifier.
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the product |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer <your_token>'
-```
-
----
-
-### 3. Update Product
-
-**`PUT /admin/product/{id}`** (Admin) or **`PUT /product/{id}`** (Seller)
-
-Update an existing product's information.
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the product to update |
-
-#### Request Body
-
-```json
-{
-  "name": "string",
-  "detail": "string"
-}
-```
-
-#### Example Request
-
-```bash
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer <your_token>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "name": "Smart watch",
-  "detail": "Xiaomi Smart Watch"
-}'
-```
-
----
-
-### 4. Get Products with Filters
-
-**`GET /product`**
-
-Retrieve a list of products with optional filtering and pagination.
+Search for products using various filters. This is a public endpoint.
 
 #### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of products to return (default: 20) |
-| `offset` | number | No | Number of products to skip (default: 0) |
-| `maxPrice` | number | No | Maximum price filter |
-| `minPrice` | number | No | Minimum price filter |
+| `name` | string | No | Search term |
+| `categoryId` | string | No | Filter by category |
+| `minPrice` | number | No | Minimum price |
+| `maxPrice` | number | No | Maximum price |
+| `limit` | number | No | Default: 20 |
 
 #### Example Request
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/product?limit=10&maxPrice=100&minPrice=0' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer <your_token>'
+  'http://localhost:8080/api/v1/product/search?name=watch&limit=10' \
+  -H 'accept: application/json'
 ```
 
 ---
 
-### 5. Delete Product
+### 3. Get Seller Products
 
-**`DELETE /admin/product/{id}`** (Admin) or **`DELETE /product/{id}`** (Seller)
+**`GET /api/v1/seller/product`**
 
-Delete a product by its ID.
-
-#### Query Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `productId` | string | Yes | Unique identifier of the product to delete |
+Retrieve all products belonging to the authenticated seller.
 
 #### Example Request
 
 ```bash
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/product?productId=79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer <your_token>'
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/product?limit=10' \
+  -H 'Authorization: Bearer <seller_token>'
 ```
 
 ---
 
-### 6. Upload Product Image
+### 4. Upload Product Image
 
-**`POST /admin/product/image-upload`** (Admin) or **`POST /product/image-upload`** (Seller)
+**`POST /api/v1/seller/product/image-upload`**
 
 Upload an image for a specific product.
-
-#### Query Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Product ID to associate the image with |
-
-#### Request Body
-
-Form data with file upload:
-- `file`: Image file (PNG, JPG, etc.)
 
 #### Example Request
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/product/image-upload?id=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer <your_token>' \
+  'http://localhost:8080/api/v1/seller/product/image-upload?id=718f0b9a-24ef-450f-9126-7d3d9b27cad5' \
+  -H 'Authorization: Bearer <seller_token>' \
   -H 'Content-Type: multipart/form-data' \
-  -F 'file=@image.png;type=image/png'
+  -F 'file=@product_watch.png;type=image/png'
 ```
-
-#### Example Response
-
-```json
-{
-    "id": "cc38e31e-3a7f-435c-9e86-293daf0d6877",
-    "imageUrl": "bf68a3f9-d131-4bee-bbbc-80264a3da437.png"
-  }
-}
-```
-
----
-
-## Product Search Endpoints
-
-### Product Search Endpoints Table
-
-| Method | Endpoint | Description | Authentication Required |
-|--------|----------|-------------|------------------------|
-| `GET` | `/product/search` | Search products with filters | No |
-
----
-
-### 4. Search Products
-
-**`GET /product/search`**
-
-Search for products using various filters including name, category, price range, and other attributes.
-
-#### Query Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of products to return (default: 20) |
-| `offset` | number | No | Number of products to skip (default: 0) |
-| `name` | string | No | Search term to match against product names |
-| `categoryId` | string | No | UUID of the category to filter by |
-| `maxPrice` | number | No | Maximum price filter |
-| `minPrice` | number | No | Minimum price filter |
-| `subCategoryId` | string | No | UUID of the subcategory to filter by |
-| `brandId` | string | No | UUID of the brand to filter by |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/product/search?limit=10&name=smartphone&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&maxPrice=1000&minPrice=10' \
-  -H 'accept: application/json'
-```
-
-#### Example Response
-
-```json
-{
-  "data": [
-    {
-      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-      "name": "Smartphone",
-      "price": 599.99,
-      "status": "ACTIVE"
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of product objects matching the search criteria |
-| `data[].id` | string | Unique identifier for the product |
-| `data[].name` | string | Name of the product |
-| `data[].price` | number | Price of the product |
-| `data[].status` | string | Status of the product (ACTIVE, INACTIVE, etc.) |
-
----
-
-## Product Seller Endpoints
-
-### Product Seller Endpoints Table
-
-| Method | Endpoint | Description | Authentication Required |
-|--------|----------|-------------|------------------------|
-| `GET` | `/product/seller` | Retrieve products belonging to the authenticated seller | Yes |
-
----
-
-### 5. Get Seller Products
-
-**`GET /product/seller`**
-
-Retrieve a list of products belonging to the authenticated seller with optional filters.
-
-#### Query Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of products to return (default: 20) |
-| `offset` | number | No | Number of products to skip (default: 0) |
-| `maxPrice` | number | No | Maximum price filter |
-| `minPrice` | number | No | Minimum price filter |
-| `categoryId` | string | No | UUID of the category to filter by |
-| `subCategoryId` | string | No | UUID of the subcategory to filter by |
-| `brandId` | string | No | UUID of the brand to filter by |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/product/seller?limit=10&maxPrice=100&minPrice=0&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&subCategoryId=70ac842b-7a81-4976-9564-d440880d1736&brandId=28918963-f932-425b-884b-a34d8ae69b2a' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-#### Example Response
-
-```json
-[
-    {
-      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-      "name": "Product Name",
-      "price": 99.99,
-      "status": "ACTIVE"
-    }
-  ]
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of product objects belonging to the seller |
-| `data[].id` | string | Unique identifier for the product |
-| `data[].name` | string | Name of the product |
-| `data[].price` | number | Price of the product |
-| `data[].status` | string | Status of the product (ACTIVE, INACTIVE, etc.) |
-
----
-
-## Product Special Endpoints
-
-### Product Special Endpoints Table
-
-| Method | Endpoint | Description | Authentication Required |
-|--------|----------|-------------|------------------------|
-| `GET` | `/product/featured` | Retrieve featured products | No |
-| `GET` | `/product/best-selling` | Retrieve best selling products | No |
-| `GET` | `/product/hot-deals` | Retrieve products on hot deals | No |
-
----
-
-### 6. Get Featured Products
-
-**`GET /product/featured`**
-
-Retrieve a list of featured products that are highlighted for promotional purposes.
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/product/featured' \
-  -H 'accept: application/json'
-```
-
-#### Example Response
-
-```json
-[
-    {
-      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-      "name": "Featured Product",
-      "price": 99.99,
-      "status": "ACTIVE",
-      "featured": true
-    }
-  ]
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of featured product objects |
-| `data[].id` | string | Unique identifier for the product |
-| `data[].name` | string | Name of the product |
-| `data[].price` | number | Price of the product |
-| `data[].status` | string | Status of the product (ACTIVE, INACTIVE, etc.) |
-| `data[].featured` | boolean | Whether the product is featured |
-
----
-
-### 7. Get Best Selling Products
-
-**`GET /product/best-selling`**
-
-Retrieve a list of best selling products based on sales data.
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/product/best-selling' \
-  -H 'accept: application/json'
-```
-
-#### Example Response
-
-```json
-[
-    {
-      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-      "name": "Best Selling Product",
-      "price": 79.99,
-      "status": "ACTIVE",
-      "bestSelling": true
-    }
-  ]
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of best selling product objects |
-| `data[].id` | string | Unique identifier for the product |
-| `data[].name` | string | Name of the product |
-| `data[].price` | number | Price of the product |
-| `data[].status` | string | Status of the product (ACTIVE, INACTIVE, etc.) |
-| `data[].bestSelling` | boolean | Whether the product is a best seller |
-
----
-
-### 8. Get Hot Deal Products
-
-**`GET /product/hot-deals`**
-
-Retrieve a list of products currently on hot deals with special pricing or offers.
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/product/hot-deals' \
-  -H 'accept: application/json'
-```
-
-#### Example Response
-
-```json
-[
-    {
-      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-      "name": "Hot Deal Product",
-      "price": 59.99,
-      "discountPrice": 49.99,
-      "status": "ACTIVE",
-      "hotDeal": true
-    }
-  ]
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of hot deal product objects |
-| `data[].id` | string | Unique identifier for the product |
-| `data[].name` | string | Name of the product |
-| `data[].price` | number | Regular price of the product |
-| `data[].discountPrice` | number | Discounted price of the product |
-| `data[].status` | string | Status of the product (ACTIVE, INACTIVE, etc.) |
-| `data[].hotDeal` | boolean | Whether the product is a hot deal |
 
 ---
 
 ## Error Handling
 
-This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
-
 ### Success Responses
-- **HTTP status code indicates success** (200, 201, 204)
-- **Response body contains data directly** (no wrapper object)
-- No `isSuccess` or `statusCode` fields needed
-
-### Error Responses
-
-**Standard Error (400/401/403/404/500):**
-```json
-{
-  "message": "Error description"
-}
-```
-
-**Validation Error (400):**
-```json
-{
-  "message": "Validation failed",
-  "errors": [
-    {"field": "email", "message": "Invalid email format"},
-    {"field": "password", "message": "Password must be at least 8 characters"}
-  ]
-}
-```
+- **HTTP 200/201**: Success.
 
 ### Common Error Codes
-
-| Status Code | Description | Example Message |
-|-------------|-------------|-----------------|
-| `400` | Bad Request | `"Invalid email or password"` |
-| `401` | Unauthorized | `"Authentication required"` |
-| `403` | Forbidden | `"Insufficient permissions"` |
-| `404` | Not Found | `"Product not found"` |
-| `409` | Conflict | `"User already exists with this email"` |
-| `500` | Internal Server Error | `"Internal server error"` |
-
-All error messages are centralized and consistent across all endpoints.
-
----
-
-## Product Search Guidelines
-
-### Search Performance
-- Limit the number of results using the `limit` parameter to improve performance
-- Use specific search terms for more accurate results
-- Combine multiple filters for refined search results
-
-### Searchable Fields
-- Product name is the primary search field
-- Category and subcategory filters help narrow results
-- Price range filters can be combined with other criteria
-- Brand filtering allows for branded product searches
-
-## Special Product Management Guidelines
-
-### Featured Products
-- Selected by administrators for promotional exposure
-- Typically high-quality or premium products
-- Limited number shown to maintain exclusivity
-
-### Best Selling Products
-- Calculated based on sales volume and frequency
-- Automatically updated based on market performance
-- Helps customers identify popular choices
-
-### Hot Deal Products
-- Products with special discounts or offers
-- Time-limited promotions
-- Attracts price-sensitive customers
+| Status Code | Description |
+|-------------|-------------|
+| `400` | Bad Request (Validation error) |
+| `401` | Unauthorized (Invalid token) |
+| `403` | Forbidden (User is not the owner) |
+| `404` | Not Found |

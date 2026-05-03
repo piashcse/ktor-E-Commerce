@@ -16,10 +16,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/admin/shop-category` | Create a new shop category | Yes (Admin) |
-| `GET` | `/admin/shop-category` | Retrieve list of shop categories | Yes (Admin) |
-| `PUT` | `/admin/shop-category/{id}` | Update an existing shop category | Yes (Admin) |
-| `DELETE` | `/admin/shop-category/{id}` | Delete a shop category | Yes (Admin) |
+| `POST` | `/api/v1/admin/shop-category` | Create a new shop category | Yes (Admin) |
+| `GET` | `/api/v1/admin/shop-category` | Retrieve list of shop categories | Yes (Admin) |
+| `PUT` | `/api/v1/admin/shop-category/{id}` | Update an existing shop category | Yes (Admin) |
+| `DELETE` | `/api/v1/admin/shop-category/{id}` | Delete a shop category | Yes (Admin) |
 
 ---
 
@@ -27,7 +27,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Shop Category
 
-**`POST /admin/shop-category`**
+**`POST /api/v1/admin/shop-category`**
 
 Create a new shop category. This endpoint allows administrators to add new categories for organizing shops.
 
@@ -78,7 +78,7 @@ curl -X 'POST' \
 
 ### 2. Get Shop Categories
 
-**`GET /admin/shop-category`**
+**`GET /api/v1/admin/shop-category`**
 
 Retrieve a list of shop categories with optional pagination support.
 
@@ -142,7 +142,7 @@ curl -X 'GET' \
 
 ### 3. Update Shop Category
 
-**`PUT /admin/shop-category/{id}`**
+**`PUT /api/v1/admin/shop-category/{id}`**
 
 Update an existing shop category by its ID.
 
@@ -194,7 +194,7 @@ curl -X 'PUT' \
 
 ### 4. Delete Shop Category
 
-**`DELETE /admin/shop-category/{id}`**
+**`DELETE /api/v1/admin/shop-category/{id}`**
 
 Delete a shop category by its ID. This operation permanently removes the category from the system.
 

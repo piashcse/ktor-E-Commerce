@@ -1,202 +1,41 @@
 # Inventory API
 
-This documentation provides comprehensive details for the Inventory API endpoints. The API supports creating, retrieving, updating, and managing inventory records within the platform. Inventory records are associated with specific products and track available quantities, reserved quantities, and overall stock levels.
+This documentation provides comprehensive details for the Inventory API endpoints. The API supports managing inventory records for products.
 
 **Base URL:** `http://localhost:8080`
 
 ## Authentication
 
-All Inventory endpoints require Bearer token authentication for sellers and admins. Include the access token in the Authorization header:
-
-```
-Authorization: Bearer <your_access_token>
-```
+All Inventory endpoints require Bearer token authentication for sellers and admins.
 
 ### Inventory Endpoints
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/inventory` | Create a new inventory record | Yes |
-| `PUT` | `/inventory/{id}` | Update an existing inventory record | Yes |
-| `PUT` | `/inventory/stock/{id}` | Update product stock quantity | Yes |
-| `GET` | `/inventory/{id}` | Retrieve inventory details for a product | Yes |
-| `GET` | `/inventory/shop` | Retrieve inventory records for a shop | Yes |
-| `GET` | `/inventory/low-stock` | Retrieve inventory records with low stock | Yes |
+| `POST` | `/api/v1/seller/inventory` | Create a new inventory record | Yes (Seller) |
+| `PUT` | `/api/v1/seller/inventory/{id}` | Update an existing inventory record | Yes (Seller) |
+| `PUT` | `/api/v1/seller/inventory/stock/{id}` | Update product stock quantity | Yes (Seller) |
+| `GET` | `/api/v1/seller/inventory/{id}` | Retrieve inventory details for a product | Yes (Seller) |
+| `GET` | `/api/v1/seller/inventory/shop` | Retrieve inventory records for a shop | Yes (Seller) |
+| `GET` | `/api/v1/seller/inventory/low-stock` | Retrieve low stock records | Yes (Seller) |
+| `GET` | `/api/v1/admin/inventory` | Retrieve all inventory (Admin) | Yes (Admin) |
 
 ---
 
 ## Endpoint Details
 
-### 1. Create Inventory Record
+### 1. Update Product Stock (Seller)
 
-**`POST /inventory`**
+**`PUT /api/v1/seller/inventory/stock/{id}`**
 
-Create a new inventory record for a specific product with initial quantities.
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-| `Content-Type` | `application/json` | Yes |
-
-#### Request Body
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `productId` | string | Yes | UUID of the product this inventory is for |
-| `quantity` | number | Yes | Total quantity in inventory |
-| `reserved` | number | No | Quantity that is currently reserved |
-
-#### Example Request
-
-```bash
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/inventory' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-  "quantity": 100,
-  "reserved": 10
-}'
-```
-
-#### Example Response
-
-```json
-{
-    "id": "12345678-1234-1234-1234-123456789012",
-    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "quantity": 100,
-    "reserved": 10,
-    "available": 90
-  }
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier for the created inventory record |
-| `data.productId` | string | UUID of the product this inventory is for |
-| `data.quantity` | number | Total quantity in inventory |
-| `data.reserved` | number | Quantity that is currently reserved |
-| `data.available` | number | Available quantity (quantity - reserved) |
-
----
-
-### 2. Update Inventory Record
-
-**`PUT /inventory/{id}`**
-
-Update an existing inventory record by its ID. You can modify the quantity and reserved amounts.
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the inventory record to update |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-| `Content-Type` | `application/json` | Yes |
-
-#### Request Body
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `productId` | string | No | UUID of the product this inventory is for |
-| `quantity` | number | No | Total quantity in inventory |
-| `reserved` | number | No | Quantity that is currently reserved |
+Update the stock quantity for a specific product using atomic operations (`add`, `subtract`, `set`).
 
 #### Example Request
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/inventory/12345678-1234-1234-1234-123456789012' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-  "quantity": 150,
-  "reserved": 20
-}'
-```
-
-#### Example Response
-
-```json
-{
-    "id": "12345678-1234-1234-1234-123456789012",
-    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "quantity": 150,
-    "reserved": 20,
-    "available": 130
-  }
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier of the updated inventory record |
-| `data.productId` | string | UUID of the product this inventory is for |
-| `data.quantity` | number | Updated total quantity in inventory |
-| `data.reserved` | number | Updated quantity that is currently reserved |
-| `data.available` | number | Available quantity (quantity - reserved) |
-
----
-
-### 3. Update Product Stock Quantity
-
-**`PUT /inventory/stock/{id}`**
-
-Update the stock quantity for a specific product with atomic operations. This endpoint ensures thread-safe stock updates.
-
-> **Note**: Stock operations are performed atomically within a database transaction to prevent race conditions during concurrent updates.
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Product ID to update stock for |
-
-#### Query Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `quantity` | number | Yes | Amount to add or subtract (must be positive) |
-| `operation` | string | Yes | Operation to perform: `add`, `subtract`, or `set` |
-
-#### Operations
-
-| Operation | Description | Validation |
-|-----------|-------------|------------|
-| `add` | Increases stock by the specified quantity | Quantity must be positive |
-| `subtract` | Decreases stock by the specified quantity | Stock must be sufficient |
-| `set` | Sets stock to the exact specified quantity | Quantity must be non-negative |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+  'http://localhost:8080/api/v1/seller/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add' \
+  -H 'Authorization: Bearer <seller_token>'
 ```
 
 #### Example Response
@@ -204,248 +43,34 @@ curl -X 'PUT' \
 ```json
 {
     "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "shopId": "shop-uuid-here",
     "stockQuantity": 250,
-    "reservedQuantity": 0,
-    "minimumStockLevel": 10,
-    "maximumStockLevel": 1000,
-    "status": "IN_STOCK",
-    "lastRestocked": null,
-    "createdAt": "2024-01-15T10:30:00",
-    "updatedAt": "2024-01-15T11:45:00"
-}
-```
-
-#### Error Responses
-
-**Insufficient Stock (404):**
-```json
-{
-  "message": "Insufficient stock. Available: 10, Requested: 50"
+    "status": "IN_STOCK"
 }
 ```
 
 ---
 
-### 4. Get Inventory Details
+### 2. Get Low Stock Records
 
-**`GET /inventory/{id}`**
+**`GET /api/v1/seller/inventory/low-stock`**
 
-Retrieve detailed inventory information for a specific product.
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Product ID to get inventory details for |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
+Retrieve inventory records that have fallen below the minimum stock level.
 
 #### Example Request
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/inventory/cbd630f6-bf9f-48ad-ac51-f806807d99fd' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+  'http://localhost:8080/api/v1/seller/inventory/low-stock' \
+  -H 'Authorization: Bearer <seller_token>'
 ```
-
-#### Example Response
-
-```json
-{
-    "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "quantity": 200,
-    "reserved": 20,
-    "available": 180
-  }
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier for the inventory record |
-| `data.productId` | string | UUID of the product this inventory is for |
-| `data.quantity` | number | Total quantity in inventory |
-| `data.reserved` | number | Quantity that is currently reserved |
-| `data.available` | number | Available quantity (quantity - reserved) |
-
----
-
-### 5. Get Shop Inventory
-
-**`GET /inventory/shop`**
-
-Retrieve inventory records associated with a specific shop.
-
-#### Query Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `shopId` | string | Yes | UUID of the shop to get inventory for |
-| `limit` | number | No | Maximum number of items to return (default: 20) |
-| `offset` | number | No | Number of items to skip for pagination (default: 0) |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/inventory/shop?shopId=12345678-1234-1234-1234-123456789012' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-#### Example Response
-
-```json
-{
-  "data": [
-    {
-      "id": "12345678-1234-1234-1234-123456789012",
-      "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-      "quantity": 200,
-      "reserved": 20,
-      "available": 180
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 20,
-    "skip": 0
-  }
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of inventory record objects |
-| `data[].id` | string | Unique identifier for the inventory record |
-| `data[].productId` | string | UUID of the product this inventory is for |
-| `data[].quantity` | number | Total quantity in inventory |
-| `data[].reserved` | number | Quantity that is currently reserved |
-| `data[].available` | number | Available quantity (quantity - reserved) |
-
----
-
-### 6. Get Low Stock Inventory
-
-**`GET /inventory/low-stock`**
-
-Retrieve inventory records that have low stock levels, typically used for restocking alerts.
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/inventory/low-stock' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-#### Example Response
-
-```json
-[
-    {
-      "id": "12345678-1234-1234-1234-123456789012",
-      "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-      "quantity": 5,
-      "reserved": 2,
-      "available": 3
-    }
-  ]
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of inventory record objects with low stock |
-| `data[].id` | string | Unique identifier for the inventory record |
-| `data[].productId` | string | UUID of the product this inventory is for |
-| `data[].quantity` | number | Total quantity in inventory |
-| `data[].reserved` | number | Quantity that is currently reserved |
-| `data[].available` | number | Available quantity (quantity - reserved) |
 
 ---
 
 ## Error Handling
 
-This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
-
-### Success Responses
-- **HTTP status code indicates success** (200, 201, 204)
-- **Response body contains data directly** (no wrapper object)
-- No `isSuccess` or `statusCode` fields needed
-
-### Error Responses
-
-**Standard Error (400/401/403/404/500):**
-```json
-{
-  "message": "Error description"
-}
-```
-
-**Validation Error (400):**
-```json
-{
-  "message": "Validation failed",
-  "errors": [
-    {"field": "email", "message": "Invalid email format"},
-    {"field": "password", "message": "Password must be at least 8 characters"}
-  ]
-}
-```
-
-### Common Error Codes
-
-| Status Code | Description | Example Message |
-|-------------|-------------|-----------------|
-| `400` | Bad Request | `"Invalid email or password"` |
-| `401` | Unauthorized | `"Authentication required"` |
-| `403` | Forbidden | `"Insufficient permissions"` |
-| `404` | Not Found | `"Product not found"` |
-| `409` | Conflict | `"User already exists with this email"` |
-| `500` | Internal Server Error | `"Internal server error"` |
-
-All error messages are centralized and consistent across all endpoints.
-
----
-
-## Inventory Management Guidelines
-
-### Stock Operations
-- Always verify product permissions before updating inventory
-- Use the stock update endpoint for simple quantity changes
-- Consider reserved quantities when calculating available stock
-- Regular monitoring for low stock items is recommended
-
-### Inventory Data
-- Quantity represents total stock in the system
-- Reserved quantity tracks items allocated to pending orders
-- Available quantity is calculated as (quantity - reserved)
-- Low stock threshold is typically determined by business rules
+| Status Code | Description |
+|-------------|-------------|
+| `400` | Bad Request |
+| `401` | Unauthorized |
+| `403` | Forbidden (User does not own the product) |
+| `404` | Not Found |

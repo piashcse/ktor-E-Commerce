@@ -16,7 +16,7 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/admin/profile` | Retrieve admin profile information | Yes (Admin) |
+| `GET` | `/api/v1/admin/profile` | Retrieve admin profile information | Yes (Admin) |
 | `GET` | `/profile` | Retrieve user profile information | Yes |
 | `PUT` | `/profile` | Update user profile information | Yes |
 | `POST` | `/profile/image-upload` | Upload user profile image | Yes |
