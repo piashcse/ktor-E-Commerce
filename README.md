@@ -220,7 +220,7 @@ The application includes built-in API documentation and OpenAPI specification ge
 
 ### Accessing API Documentation
 
-- **Swagger UI**: Access interactive API documentation at `/swagger` endpoint when the application is running.
+- **Swagger UI**: Access interactive API documentation at the root `/` or `/swagger` endpoint when the application is running. The root URL automatically redirects to Swagger for easy API discovery.
 - **Raw OpenAPI Specification**: Get the OpenAPI JSON specification at `/openapi` endpoint.
 
 ### Generating OpenAPI Specification
@@ -313,6 +313,7 @@ The API uses **per-domain versioning** — each feature domain (auth, product, o
 **Base URL pattern:**
 ```
 /api/v{version}/{domain}/{endpoint}
+/api/v{version}/seller/{domain}/{endpoint}
 /api/v{version}/admin/{domain}/{endpoint}
 ```
 
@@ -320,8 +321,9 @@ The API uses **per-domain versioning** — each feature domain (auth, product, o
 ```
 GET  /api/v1/auth/login
 GET  /api/v1/product
+PUT  /api/v1/seller/shop/{id}     (Seller-only)
 POST /api/v1/admin/product        (Admin-only)
-GET  /api/v1/admin/order          (Admin-only)
+PUT  /api/v2/seller/shop/{shopId} (V2 Optimized)
 ```
 
 **API Discovery Endpoint:**
@@ -1062,52 +1064,61 @@ http://localhost:8080/api/v1/admin/shop-category/9c95c44c-3767-4ca2-9486-e28e390
 ### SHOP
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/shop</code></summary>
+<summary> <code>POST</code> <code>/api/v1/seller/shop</code></summary>
+
+### Description
+Seller: Create a new shop.
 
 ### Curl
 
 ```
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
+  'http://localhost:8080/api/v1/seller/shop' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ' \
-  -d ''
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Royal Shop",
+  "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
+}'
 ```
 
 ### Request URL
 
 ```
-http://localhost:8080/api/v1/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb
+http://localhost:8080/api/v1/seller/shop
 ```
 
 ### Response
 
-```
+```json
 {
     "id": "cbfdcfa3-fb65-4fa3-9078-e0f8cc63ddbc",
     "name": "Royal Shop"
-  }
 }
 ```
 
 </details>
 
 <details>
-<summary> <code>Get</code> <code>/api/v1/shop</code></summary>
+<summary> <code>GET</code> <code>/api/v1/seller/shop</code></summary>
+
+### Description
+Seller: Retrieve shops owned by the authenticated seller.
 
 ### Curl
 
 ```
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/shop?limit=10' \
+  'http://localhost:8080/api/v1/seller/shop?limit=10' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
 
 ### Request URL
 
 ```
-http://localhost:8080/api/v1/shop?limit=10
+http://localhost:8080/api/v1/seller/shop?limit=10
 ```
 
 ### Response
@@ -1117,7 +1128,7 @@ http://localhost:8080/api/v1/shop?limit=10
   "data": [
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-      "name": "Piash Shop update",
+      "name": "Piash Shop",
       "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
     }
   ],
@@ -1132,60 +1143,77 @@ http://localhost:8080/api/v1/shop?limit=10
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/shop/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/seller/shop/{id}</code></summary>
+
+### Description
+Seller: Update an existing shop by its ID.
 
 ### Curl
 
 ```
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20again%20update' \
+  'http://localhost:8080/api/v1/seller/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Shop again update"
+}'
 ```
 
 ### Request URL
 
 ```
-http://localhost:8080/api/v1/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20again%20update
+http://localhost:8080/api/v1/seller/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
 ```
 
 ### Response
 
-```
+```json
 {
     "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
     "name": "Shop again update",
     "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
-  }
 }
 ```
 
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/api/v1/shop/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v2/seller/shop/{shopId}</code></summary>
+
+### Description
+(V2) Seller: Optimized shop update with source tracking and cleaner response structure.
 
 ### Curl
 
 ```
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/shop/d2836959-6bc5-49d0-bd98-e73255a915c5' \
-  -H 'accept: application/json'
+curl -X 'PUT' \
+  'http://localhost:8080/api/v2/seller/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?source=mobile_app' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "V2 Updated Shop"
+}'
 ```
 
 ### Request URL
 
 ```
-http://localhost:8080/api/v1/shop/d2836959-6bc5-49d0-bd98-e73255a915c5
-
+http://localhost:8080/api/v2/seller/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?source=mobile_app
 ```
 
 ### Response
 
-```
+```json
 {
-    "id": "d2836959-6bc5-49d0-bd98-e73255a915c5",
-  }
+    "v2_data": {
+        "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
+        "name": "V2 Updated Shop",
+        "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
+    },
+    "source": "mobile_app"
 }
 ```
 

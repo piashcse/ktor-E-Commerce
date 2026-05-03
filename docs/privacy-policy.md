@@ -17,8 +17,8 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `GET` | `/policy/{type}` | Retrieve latest active policy by type | No |
-| `POST` | `/admin/policy` | Create a new policy or version | Yes (Admin) |
-| `GET` | `/admin/policy/{type}/history` | Retrieve all versions of a policy type | Yes (Admin) |
+| `POST` | `/api/v1/admin/policy` | Create a new policy or version | Yes (Admin) |
+| `GET` | `/api/v1/admin/policy/{type}/history` | Retrieve all versions of a policy type | Yes (Admin) |
 
 ---
 
@@ -113,7 +113,7 @@ Retrieve a specific policy by its type (PRIVACY_POLICY or TERMS_CONDITIONS).
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/policy/PRIVACY_POLICY' \
+  'http://localhost:8080/api/v1/policy/PRIVACY_POLICY' \
   -H 'accept: application/json'
 ```
 
@@ -172,7 +172,7 @@ Retrieve a specific policy by its unique identifier.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/policy/detail/550e8400-e29b-41d4-a716-446655440000' \
+  'http://localhost:8080/api/v1/policy/detail/550e8400-e29b-41d4-a716-446655440000' \
   -H 'accept: application/json'
 ```
 
@@ -201,7 +201,7 @@ Same as "Get Policy by Type" response fields.
 
 ### 4. Create Policy
 
-**`POST /admin/policy`**
+**`POST /api/v1/admin/policy`**
 
 Create a new policy with specified type, title, content, version, and effective date.
 
@@ -302,7 +302,7 @@ Update an existing policy by its ID. You can modify the title, content, version,
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/policy/550e8400-e29b-41d4-a716-446655440003' \
+  'http://localhost:8080/api/v1/policy/550e8400-e29b-41d4-a716-446655440003' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -345,7 +345,7 @@ curl -X 'PUT' \
 
 ### 6. Deactivate Policy
 
-**`GET /admin/policy/{type}/history`**
+**`GET /api/v1/admin/policy/{type}/history`**
 
 Deactivate a policy by its ID. This sets the policy's isActive flag to false without deleting it.
 
@@ -433,7 +433,7 @@ Create a new consent record when a user agrees to a privacy policy. This endpoin
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/policy-consents/consent' \
+  'http://localhost:8080/api/v1/policy-consents/consent' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \

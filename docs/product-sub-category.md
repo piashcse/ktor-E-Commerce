@@ -16,10 +16,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/admin/product-subcategory` | Create a new product sub category | Yes (Admin) |
+| `POST` | `/api/v1/admin/product-subcategory` | Create a new product sub category | Yes (Admin) |
 | `GET` | `/product-subcategory` | Retrieve list of product sub categories | Yes |
-| `PUT` | `/admin/product-subcategory/{id}` | Update an existing product sub category | Yes (Admin) |
-| `DELETE` | `/admin/product-subcategory/{id}` | Delete a product sub category | Yes (Admin) |
+| `PUT` | `/api/v1/admin/product-subcategory/{id}` | Update an existing product sub category | Yes (Admin) |
+| `DELETE` | `/api/v1/admin/product-subcategory/{id}` | Delete a product sub category | Yes (Admin) |
 
 ---
 
@@ -27,7 +27,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Product Sub Category
 
-**`POST /admin/product-subcategory`**
+**`POST /api/v1/admin/product-subcategory`**
 
 Create a new product sub category with a specified name and associated product category.
 
@@ -104,7 +104,7 @@ Retrieve a list of product sub categories with optional filtering and pagination
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/product-subcategory?id=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10' \
+  'http://localhost:8080/api/v1/product-subcategory?id=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -135,7 +135,7 @@ curl -X 'GET' \
 
 ### 3. Update Product Sub Category
 
-**`PUT /admin/product-subcategory/{id}`**
+**`PUT /api/v1/admin/product-subcategory/{id}`**
 
 Update an existing product sub category by its ID. You can modify the sub category name.
 
@@ -189,7 +189,7 @@ curl -X 'PUT' \
 
 ### 4. Delete Product Sub Category
 
-**`DELETE /admin/product-subcategory/{id}`**
+**`DELETE /api/v1/admin/product-subcategory/{id}`**
 
 Delete a product sub category by its ID. This operation permanently removes the sub category from the system.
 

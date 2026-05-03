@@ -12,54 +12,65 @@ Most Shop endpoints require Bearer token authentication. Include the access toke
 Authorization: Bearer <your_access_token>
 ```
 
-### Shop Endpoints
+### Shop Endpoints (V1)
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/shop` | Create a new shop | Yes |
-| `GET` | `/shop` | Retrieve list of shops | Yes |
-| `PUT` | `/shop/{id}` | Update an existing shop | Yes |
-| `DELETE` | `/shop/{id}` | Delete a shop | No |
-| `GET` | `/shop/public` | Retrieve list of public shops with filters | No |
-| `GET` | `/shop/category/{categoryId}` | Retrieve shops by category | No |
-| `GET` | `/shop/featured` | Retrieve featured shops | No |
-| `GET` | `/admin/shop/status` | Retrieve shops by status | Yes (Admin/Super Admin) |
-| `PUT` | `/admin/shop/approve/{id}` | Approve a shop | Yes (Admin/Super Admin) |
-| `PUT` | `/admin/shop/reject/{id}` | Reject a shop | Yes (Admin/Super Admin) |
-| `PUT` | `/admin/shop/suspend/{id}` | Suspend a shop | Yes (Admin/Super Admin) |
-| `PUT` | `/admin/shop/activate/{id}` | Activate a shop | Yes (Admin/Super Admin) |
+| `POST` | `/api/v1/seller/shop` | Create a new shop | Yes (Seller) |
+| `GET` | `/api/v1/seller/shop` | Retrieve list of owned shops | Yes (Seller) |
+| `PUT` | `/api/v1/seller/shop/{id}` | Update an existing shop | Yes (Seller) |
+| `GET` | `/api/v1/shop/{id}` | Retrieve detailed info about a specific shop | No |
+| `GET` | `/api/v1/shop/public` | Retrieve list of public shops with filters | No |
+| `GET` | `/api/v1/shop/category/{categoryId}` | Retrieve shops by category | No |
+| `GET` | `/api/v1/shop/featured` | Retrieve featured shops | No |
+| `GET` | `/api/v1/admin/shop/status` | Retrieve shops by status | Yes (Admin) |
+| `PUT` | `/api/v1/admin/shop/approve/{id}` | Approve a shop | Yes (Admin) |
+| `PUT` | `/api/v1/admin/shop/reject/{id}` | Reject a shop | Yes (Admin) |
+| `PUT` | `/api/v1/admin/shop/suspend/{id}` | Suspend a shop | Yes (Admin) |
+| `PUT` | `/api/v1/admin/shop/activate/{id}` | Activate a shop | Yes (Admin) |
+
+### Shop Endpoints (V2)
+
+| Method | Endpoint | Description | Authentication Required |
+|--------|----------|-------------|------------------------|
+| `PUT` | `/api/v2/seller/shop/{shopId}` | Optimized shop update with source tracking | Yes (Seller) |
 
 ---
 
 ## Endpoint Details
 
-### 1. Create Shop
+### 1. Create Shop (V1)
 
-**`POST /shop`**
+**`POST /api/v1/seller/shop`**
 
-Create a new shop with a specified name and category. The shop will be associated with a valid shop category.
-
-#### Query Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | Yes | Name of the shop |
-| `categoryId` | string | Yes | UUID of the shop category to associate with |
+Create a new shop with a specified name and category. The shop will be associated with the authenticated seller.
 
 #### Headers
 
 | Header | Value | Required |
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
+| `Content-Type` | `application/json` | Yes |
+
+#### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Name of the shop |
+| `categoryId` | string | Yes | UUID of the shop category |
 
 #### Example Request
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/shop?name=Royal%20Shop&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
+  'http://localhost:8080/api/v1/seller/shop' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -d ''
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "Royal Shop",
+    "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
+  }'
 ```
 
 #### Example Response
@@ -68,46 +79,85 @@ curl -X 'POST' \
 {
     "id": "cbfdcfa3-fb65-4fa3-9078-e0f8cc63ddbc",
     "name": "Royal Shop"
-  }
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier for the created shop |
-| `name` | string | Name of the shop |
-
 ---
 
-### 2. Get Shops
+### 2. Update Shop (V2 Optimized)
 
-**`GET /shop`**
+**`PUT /api/v2/seller/shop/{shopId}`**
 
-Retrieve a list of shops with optional pagination support.
+Update an existing shop with enhanced metadata and a cleaner response structure.
+
+#### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `shopId` | string | Yes | Unique identifier of the shop to update |
 
 #### Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of shops to return (default: 20) |
-| `offset` | number | No | Number of shops to skip for pagination (default: 0) |
-| `categoryId` | string | No | Filter shops by category ID |
+| `source` | string | No | Source of the update (e.g., 'mobile', 'web') |
 
-#### Headers
+#### Request Body
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | No | New name for the shop |
+| `categoryId` | string | No | New category ID |
+
+#### Example Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/api/v2/seller/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?source=mobile_app' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "Updated Shop V2"
+  }'
+```
+
+#### Example Response
+
+```json
+{
+    "v2_data": {
+        "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
+        "name": "Updated Shop V2",
+        "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
+    },
+    "source": "mobile_app"
+}
+```
+
+---
+
+### 3. Get Public Shops (V1)
+
+**`GET /api/v1/shop/public`**
+
+Retrieve a list of public shops with optional status and category filters.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `status` | string | No | Shop status to filter by (APPROVED, etc.) |
+| `category` | string | No | UUID of the category to filter by |
+| `limit` | number | No | Maximum number of shops to return |
+| `offset` | number | No | Number of shops to skip |
 
 #### Example Request
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/shop?limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+  'http://localhost:8080/api/v1/shop/public?status=APPROVED&limit=10' \
+  -H 'accept: application/json'
 ```
 
 #### Example Response
@@ -117,8 +167,8 @@ curl -X 'GET' \
   "data": [
     {
       "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-      "name": "Piash Shop update",
-      "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
+      "name": "Shop Name",
+      "status": "APPROVED"
     }
   ],
   "metadata": {
@@ -129,365 +179,20 @@ curl -X 'GET' \
 }
 ```
 
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of shop objects |
-| `data[].id` | string | Unique identifier for the shop |
-| `data[].name` | string | Name of the shop |
-| `data[].categoryId` | string | UUID of the associated shop category |
-
 ---
 
-### 3. Update Shop
+### 4. Admin Shop Approval
 
-**`PUT /shop/{id}`**
+**`PUT /api/v1/admin/shop/approve/{id}`**
 
-Update an existing shop by its ID. You can modify the shop name and optionally change its category.
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the shop to update |
-
-#### Query Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | No | New name for the shop |
-| `categoryId` | string | No | New category ID to associate with the shop |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'PUT' \
-  'http://localhost:8080/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?name=Shop%20again%20update' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-#### Example Response
-
-```json
-{
-    "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-    "name": "Shop again update",
-    "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
-  }
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique identifier of the updated shop |
-| `name` | string | Updated name of the shop |
-| `categoryId` | string | UUID of the associated shop category |
-
----
-
-### 4. Delete Shop
-
-**`DELETE /shop/{id}`**
-
-Delete a shop by its ID. This operation permanently removes the shop from the system.
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the shop to delete |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | No |
-
-#### Example Request
-
-```bash
-curl -X 'DELETE' \
-  'http://localhost:8080/shop/d2836959-6bc5-49d0-bd98-e73255a915c5' \
-  -H 'accept: application/json'
-```
-
-#### Example Response
-
-```json
-{
-    "id": "d2836959-6bc5-49d0-bd98-e73255a915c5"
-  }
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | ID of the deleted shop |
-
----
-
-## Shop Public Endpoints
-
-### Shop Public Endpoints Table
-
-| Method | Endpoint | Description | Authentication Required |
-|--------|----------|-------------|------------------------|
-| `GET` | `/shop/public` | Retrieve public shops with filters | No |
-| `GET` | `/shop/category/{categoryId}` | Retrieve shops by category | No |
-| `GET` | `/shop/featured` | Retrieve featured shops | No |
-| `GET` | `/admin/shop/status` | Retrieve shops by status | Yes (Admin/Super Admin) |
-| `PUT` | `/admin/shop/approve/{id}` | Approve a shop (Admin/Super Admin) | Yes |
-| `PUT` | `/admin/shop/reject/{id}` | Reject a shop (Admin/Super Admin) | Yes |
-| `PUT` | `/admin/shop/suspend/{id}` | Suspend a shop (Admin/Super Admin) | Yes |
-| `PUT` | `/admin/shop/activate/{id}` | Activate a shop (Admin/Super Admin) | Yes |
-
----
-
-### 5. Get Public Shops
-
-**`GET /shop/public`**
-
-Retrieve a list of public shops with optional status and category filters.
-
-#### Query Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `status` | string | No | Shop status to filter by (APPROVED, etc.) |
-| `category` | string | No | UUID of the category to filter by |
-| `limit` | number | No | Maximum number of shops to return (default: 20) |
-| `offset` | number | No | Number of shops to skip for pagination (default: 0) |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/shop/public?status=APPROVED&category=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10' \
-  -H 'accept: application/json'
-```
-
-#### Example Response
-
-```json
-[
-    {
-      "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-      "name": "Shop Name",
-      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
-      "status": "APPROVED"
-    }
-  ]
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of shop objects matching the criteria |
-| `data[].id` | string | Unique identifier for the shop |
-| `data[].name` | string | Name of the shop |
-| `data[].categoryId` | string | UUID of the category the shop belongs to |
-| `data[].status` | string | Status of the shop (APPROVED, REJECTED, SUSPENDED, etc.) |
-
----
-
-### 6. Get Shops by Category
-
-**`GET /shop/category/{categoryId}`**
-
-Retrieve shops belonging to a specific category.
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `categoryId` | string | Yes | UUID of the category to get shops for |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/shop/category/5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
-  -H 'accept: application/json'
-```
-
-#### Example Response
-
-```json
-[
-    {
-      "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-      "name": "Shop Name",
-      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
-      "status": "APPROVED"
-    }
-  ]
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of shop objects in the category |
-| `data[].id` | string | Unique identifier for the shop |
-| `data[].name` | string | Name of the shop |
-| `data[].categoryId` | string | UUID of the category the shop belongs to |
-| `data[].status` | string | Status of the shop |
-
----
-
-### 7. Get Featured Shops
-
-**`GET /shop/featured`**
-
-Retrieve a list of featured shops.
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/shop/featured' \
-  -H 'accept: application/json'
-```
-
-#### Example Response
-
-```json
-[
-    {
-      "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-      "name": "Featured Shop",
-      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
-      "status": "APPROVED"
-    }
-  ]
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of featured shop objects |
-| `data[].id` | string | Unique identifier for the shop |
-| `data[].name` | string | Name of the shop |
-| `data[].categoryId` | string | UUID of the category the shop belongs to |
-| `data[].status` | string | Status of the shop |
-
----
-
-### 8. Get Shops by Status
-
-**`GET /admin/shop/status`**
-
-Retrieve shops filtered by status.
-
-#### Query Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `status` | string | Yes | Status to filter shops by (APPROVED, REJECTED, SUSPENDED, etc.) |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-| `Authorization` | `Bearer <access_token>` | Yes (for admin access) |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/shop/status?status=APPROVED' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-#### Example Response
-
-```json
-[
-    {
-      "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-      "name": "Approved Shop",
-      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
-      "status": "APPROVED"
-    }
-  ]
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of shop objects with the specified status |
-| `data[].id` | string | Unique identifier for the shop |
-| `data[].name` | string | Name of the shop |
-| `data[].categoryId` | string | UUID of the category the shop belongs to |
-| `data[].status` | string | Status of the shop |
-
----
-
-### 9. Approve Shop
-
-**`PUT /admin/shop/approve/{id}`**
-
-Approve a shop (Admin/Super Admin only).
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the shop to approve |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-| `Authorization` | `Bearer <access_token>` | Yes (Admin/Super Admin) |
+Approve a pending shop application (Admin only).
 
 #### Example Request
 
 ```bash
 curl -X 'PUT' \
   'http://localhost:8080/api/v1/admin/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+  -H 'Authorization: Bearer <admin_token>'
 ```
 
 #### Example Response
@@ -495,221 +200,24 @@ curl -X 'PUT' \
 ```json
 {
     "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-    "name": "Approved Shop",
     "status": "APPROVED"
-  }
 }
 ```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier of the approved shop |
-| `data.name` | string | Name of the approved shop |
-| `data.status` | string | New status of the shop (APPROVED) |
-
----
-
-### 10. Reject Shop
-
-**`PUT /admin/shop/reject/{id}`**
-
-Reject a shop (Admin/Super Admin only).
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the shop to reject |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-| `Authorization` | `Bearer <access_token>` | Yes (Admin/Super Admin) |
-
-#### Example Request
-
-```bash
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop/reject/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-#### Example Response
-
-```json
-{
-    "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-    "name": "Rejected Shop",
-    "status": "REJECTED"
-  }
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier of the rejected shop |
-| `data.name` | string | Name of the rejected shop |
-| `data.status` | string | New status of the shop (REJECTED) |
-
----
-
-### 11. Suspend Shop
-
-**`PUT /admin/shop/suspend/{id}`**
-
-Suspend a shop (Admin/Super Admin only).
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the shop to suspend |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-| `Authorization` | `Bearer <access_token>` | Yes (Admin/Super Admin) |
-
-#### Example Request
-
-```bash
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop/suspend/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-#### Example Response
-
-```json
-{
-    "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-    "name": "Suspended Shop",
-    "status": "SUSPENDED"
-  }
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier of the suspended shop |
-| `data.name` | string | Name of the suspended shop |
-| `data.status` | string | New status of the shop (SUSPENDED) |
-
----
-
-### 12. Activate Shop
-
-**`PUT /admin/shop/activate/{id}`**
-
-Activate a shop (Admin/Super Admin only).
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the shop to activate |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-| `Authorization` | `Bearer <access_token>` | Yes (Admin/Super Admin) |
-
-#### Example Request
-
-```bash
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop/activate/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-#### Example Response
-
-```json
-{
-    "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-    "name": "Activated Shop",
-    "status": "APPROVED"
-  }
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier of the activated shop |
-| `data.name` | string | Name of the activated shop |
-| `data.status` | string | New status of the shop (APPROVED) |
 
 ---
 
 ## Error Handling
 
-This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
-
 ### Success Responses
-- **HTTP status code indicates success** (200, 201, 204)
-- **Response body contains data directly** (no wrapper object)
-- No `isSuccess` or `statusCode` fields needed
-
-### Error Responses
-
-**Standard Error (400/401/403/404/500):**
-```json
-{
-  "message": "Error description"
-}
-```
-
-**Validation Error (400):**
-```json
-{
-  "message": "Validation failed",
-  "errors": [
-    {"field": "email", "message": "Invalid email format"},
-    {"field": "password", "message": "Password must be at least 8 characters"}
-  ]
-}
-```
+- **HTTP 200/201/204**: Operation successful. Data returned directly.
 
 ### Common Error Codes
 
-| Status Code | Description | Example Message |
-|-------------|-------------|-----------------|
-| `400` | Bad Request | `"Invalid email or password"` |
-| `401` | Unauthorized | `"Authentication required"` |
-| `403` | Forbidden | `"Insufficient permissions"` |
-| `404` | Not Found | `"Product not found"` |
-| `409` | Conflict | `"User already exists with this email"` |
-| `500` | Internal Server Error | `"Internal server error"` |
-
-All error messages are centralized and consistent across all endpoints.
-
----
-
-## Shop Management Guidelines
-
-### Public Access
-- Public endpoints provide access to APPROVED shops only
-- Featured shops are highlighted based on admin configuration
-- Category-based filtering helps users discover relevant shops
-
-### Administrative Actions
-- Approval/rejection affects shop visibility to customers
-- Suspended shops are temporarily unavailable
-- Activated shops return to approved state after suspension
+| Status Code | Description |
+|-------------|-------------|
+| `400` | Bad Request (Validation failed) |
+| `401` | Unauthorized (Invalid token) |
+| `403` | Forbidden (Insufficient roles) |
+| `404` | Not Found (Resource does not exist) |
+| `410` | Gone (API version deprecated) |
+| `500` | Internal Server Error |

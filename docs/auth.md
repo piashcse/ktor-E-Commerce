@@ -16,9 +16,9 @@ This documentation provides comprehensive details for the Authentication API end
 | `POST` | `/auth/refresh-token` | Refresh access token using refresh token | No |
 | `POST` | `/auth/logout` | Logout and revoke refresh token | Yes |
 | `PUT` | `/auth/change-password` | Change password for authenticated user | Yes |
-| `PUT` | `/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin/Super Admin) |
-| `PUT` | `/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin/Super Admin) |
-| `PUT` | `/admin/auth/{userId}/activate` | Activate user account | Yes (Admin/Super Admin) |
+| `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin/Super Admin) |
+| `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin/Super Admin) |
+| `PUT` | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin/Super Admin) |
 
 ---
 
@@ -44,7 +44,7 @@ Authenticate a user and receive access + refresh tokens for subsequent API calls
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/auth/login' \
+  'http://localhost:8080/api/v1/auth/login' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -115,7 +115,7 @@ Register a new user account. Users can register with the same email for differen
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/auth/register' \
+  'http://localhost:8080/api/v1/auth/register' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -155,7 +155,7 @@ Verify the OTP (One-Time Password) sent to user's email during registration.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d' \
+  'http://localhost:8080/api/v1/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d' \
   -H 'accept: application/json'
 ```
 
@@ -188,7 +188,7 @@ Request a password reset verification code. The code will be sent to the user's 
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/auth/forget-password' \
+  'http://localhost:8080/api/v1/auth/forget-password' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -230,7 +230,7 @@ Reset user password using the verification code sent via email.
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/auth/reset-password' \
+  'http://localhost:8080/api/v1/auth/reset-password' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -269,7 +269,7 @@ Refresh an expired access token using a valid refresh token. Returns a new acces
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/auth/refresh-token' \
+  'http://localhost:8080/api/v1/auth/refresh-token' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -323,7 +323,7 @@ Logout the authenticated user and revoke the refresh token to prevent further to
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/auth/logout' \
+  'http://localhost:8080/api/v1/auth/logout' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -367,7 +367,7 @@ Change password for an authenticated user. Requires valid access token.
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/auth/change-password?oldPassword=p1234&newPassword=newp1234' \
+  'http://localhost:8080/api/v1/auth/change-password?oldPassword=p1234&newPassword=newp1234' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -384,7 +384,7 @@ curl -X 'PUT' \
 
 ### 9. Change User Type
 
-**`PUT /admin/auth/{userId}/change-user-type`**
+**`PUT /api/v1/admin/auth/{userId}/change-user-type`**
 
 Change an existing user's account type. This endpoint is available to administrators.
 
@@ -428,7 +428,7 @@ curl -X 'PUT' \
 
 ### 10. Deactivate User
 
-**`PUT /admin/auth/{userId}/deactivate`**
+**`PUT /api/v1/admin/auth/{userId}/deactivate`**
 
 Deactivate a user account, preventing the user from logging in or accessing the system. This operation can be reversed with the activate endpoint.
 
@@ -464,7 +464,7 @@ curl -X 'PUT' \
 
 ### 11. Activate User
 
-**`PUT /admin/auth/{userId}/activate`**
+**`PUT /api/v1/admin/auth/{userId}/activate`**
 
 Activate a previously deactivated user account, allowing the user to log in and access the system again.
 
@@ -504,9 +504,9 @@ curl -X 'PUT' \
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `PUT` | `/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin/Super Admin) |
-| `PUT` | `/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin/Super Admin) |
-| `PUT` | `/admin/auth/{userId}/activate` | Activate user account | Yes (Admin/Super Admin) |
+| `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin/Super Admin) |
+| `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin/Super Admin) |
+| `PUT` | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin/Super Admin) |
 
 ---
 

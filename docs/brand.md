@@ -15,10 +15,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/admin/brand` | Create a new brand | Yes (Admin) |
+| `POST` | `/api/v1/admin/brand` | Create a new brand | Yes (Admin) |
 | `GET` | `/brand` | Retrieve list of brands | Yes |
-| `PUT` | `/admin/brand/{id}` | Update an existing brand | Yes (Admin) |
-| `DELETE` | `/admin/brand/{id}` | Delete a brand | Yes (Admin) |
+| `PUT` | `/api/v1/admin/brand/{id}` | Update an existing brand | Yes (Admin) |
+| `DELETE` | `/api/v1/admin/brand/{id}` | Delete a brand | Yes (Admin) |
 
 ---
 
@@ -26,7 +26,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Brand
 
-**`POST /admin/brand`**
+**`POST /api/v1/admin/brand`**
 
 Create a new brand with a specified name.
 
@@ -94,7 +94,7 @@ Retrieve a list of brands with optional pagination support.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/brand?limit=10' \
+  'http://localhost:8080/api/v1/brand?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -133,7 +133,7 @@ curl -X 'GET' \
 
 ### 3. Update Brand
 
-**`PUT /admin/brand/{id}`**
+**`PUT /api/v1/admin/brand/{id}`**
 
 Update an existing brand by its ID. You can modify the brand name.
 
@@ -185,7 +185,7 @@ curl -X 'PUT' \
 
 ### 4. Delete Brand
 
-**`DELETE /admin/brand/{id}`**
+**`DELETE /api/v1/admin/brand/{id}`**
 
 Delete a brand by its ID. This operation permanently removes the brand from the system.
 
