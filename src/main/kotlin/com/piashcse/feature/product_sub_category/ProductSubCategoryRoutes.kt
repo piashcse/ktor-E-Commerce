@@ -1,7 +1,6 @@
 package com.piashcse.feature.product_sub_category
 
 import com.piashcse.model.request.ProductSubCategoryRequest
-import com.piashcse.plugin.adminAuth
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -31,41 +30,39 @@ fun Route.productSubCategoryRoutes(subCategoryService: ProductSubCategoryService
  * Admin product subcategory management routes.
  */
 fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategoryService) {
-    adminAuth {
-        /**
-         * @tag ProductSubCategory
-         * @description Admin: Create a new product subcategory
-         */
-        post {
-            val requestBody = call.receive<ProductSubCategoryRequest>()
-            call.respond(
-                HttpStatusCode.OK,
-                subCategoryService.addProductSubCategory(requestBody)
-            )
-        }
+    /**
+     * @tag ProductSubCategory
+     * @description Admin: Create a new product subcategory
+     */
+    post {
+        val requestBody = call.receive<ProductSubCategoryRequest>()
+        call.respond(
+            HttpStatusCode.OK,
+            subCategoryService.addProductSubCategory(requestBody)
+        )
+    }
 
-        /**
-         * @tag ProductSubCategory
-         * @description Admin: Update an existing product subcategory name
-         */
-        put("{id}") {
-            val params = call.requireParameters("id", "name")
-            call.respond(
-                HttpStatusCode.OK,
-                subCategoryService.updateProductSubCategory(params[0], params[1])
-            )
-        }
+    /**
+     * @tag ProductSubCategory
+     * @description Admin: Update an existing product subcategory name
+     */
+    put("{id}") {
+        val params = call.requireParameters("id", "name")
+        call.respond(
+            HttpStatusCode.OK,
+            subCategoryService.updateProductSubCategory(params[0], params[1])
+        )
+    }
 
-        /**
-         * @tag ProductSubCategory
-         * @description Admin: Permanently delete a product subcategory
-         */
-        delete("{id}") {
-            val id = call.requireParameters("id")
-            call.respond(
-                HttpStatusCode.OK,
-                subCategoryService.deleteProductSubCategory(id.first())
-            )
-        }
+    /**
+     * @tag ProductSubCategory
+     * @description Admin: Permanently delete a product subcategory
+     */
+    delete("{id}") {
+        val id = call.requireParameters("id")
+        call.respond(
+            HttpStatusCode.OK,
+            subCategoryService.deleteProductSubCategory(id.first())
+        )
     }
 }

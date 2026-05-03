@@ -2,7 +2,6 @@ package com.piashcse.feature.brand
 
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.BrandRequest
-import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
@@ -34,41 +33,39 @@ fun Route.brandRoutes(brandService: BrandService) {
  * Admin brand management routes.
  */
 fun Route.brandAdminRoutes(brandService: BrandService) {
-    adminAuth {
-        /**
-         * @tag Brand
-         * @description Admin: Create a new brand
-         */
-        post {
-            val requestBody = call.receive<BrandRequest>()
-            call.respond(
-                HttpStatusCode.OK,
-                brandService.createBrand(requestBody.name)
-            )
-        }
+    /**
+     * @tag Brand
+     * @description Admin: Create a new brand
+     */
+    post {
+        val requestBody = call.receive<BrandRequest>()
+        call.respond(
+            HttpStatusCode.OK,
+            brandService.createBrand(requestBody.name)
+        )
+    }
 
-        /**
-         * @tag Brand
-         * @description Admin: Update an existing brand
-         */
-        put("{id}") {
-            val params = call.requireParameters("id", "name")
-            call.respond(
-                HttpStatusCode.OK,
-                brandService.updateBrand(params[0], params[1])
-            )
-        }
+    /**
+     * @tag Brand
+     * @description Admin: Update an existing brand
+     */
+    put("{id}") {
+        val params = call.requireParameters("id", "name")
+        call.respond(
+            HttpStatusCode.OK,
+            brandService.updateBrand(params[0], params[1])
+        )
+    }
 
-        /**
-         * @tag Brand
-         * @description Admin: Delete a brand
-         */
-        delete("{id}") {
-            val id = call.requireParameters("id")
-            call.respond(
-                HttpStatusCode.OK,
-                brandService.deleteBrand(id.first())
-            )
-        }
+    /**
+     * @tag Brand
+     * @description Admin: Delete a brand
+     */
+    delete("{id}") {
+        val id = call.requireParameters("id")
+        call.respond(
+            HttpStatusCode.OK,
+            brandService.deleteBrand(id.first())
+        )
     }
 }

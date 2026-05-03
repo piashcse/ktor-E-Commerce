@@ -6,7 +6,6 @@ import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.model.request.*
 import com.piashcse.plugin.RateLimitNames
-import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.email.sendEmail
 import com.piashcse.utils.extension.currentUserId
@@ -128,60 +127,58 @@ fun Route.authRoutes(authService: AuthService) {
  * Administrative authentication/user management routes.
  */
 fun Route.authAdminRoutes(authService: AuthService) {
-    adminAuth {
-        /**
-         * @tag Auth
-         * @description Admin: Change user type
-         */
-        put("/{userId}/change-user-type") {
-            val (userId) = call.requireParameters("userId")
-            val userTypeParam = call.parameters["userType"]
-                ?: throw MissingParameterException("userType")
+    /**
+     * @tag Auth
+     * @description Admin: Change user type
+     */
+    put("/{userId}/change-user-type") {
+        val (userId) = call.requireParameters("userId")
+        val userTypeParam = call.parameters["userType"]
+            ?: throw MissingParameterException("userType")
 
-            val newType = try {
-                UserType.valueOf(userTypeParam.uppercase())
-            } catch (e: IllegalArgumentException) {
-                throw InvalidEnumValueException(
-                    message = "Invalid userType: $userTypeParam",
-                    enumName = UserType.values().joinToString(", ") { it.name },
-                    invalidValue = userTypeParam
-                )
-            }
-
-            val currentUser = call.principal<JwtTokenRequest>()
-            if (authService.changeUserType(currentUser?.userId!!, userId, newType)) {
-                call.respond(HttpStatusCode.OK, mapOf("message" to "User type updated successfully"))
-            } else {
-                call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to update user type"))
-            }
+        val newType = try {
+            UserType.valueOf(userTypeParam.uppercase())
+        } catch (e: IllegalArgumentException) {
+            throw InvalidEnumValueException(
+                message = "Invalid userType: $userTypeParam",
+                enumName = UserType.values().joinToString(", ") { it.name },
+                invalidValue = userTypeParam
+            )
         }
 
-        /**
-         * @tag Auth
-         * @description Admin: Deactivate a user account
-         */
-        put("/{userId}/deactivate") {
-            val (userId) = call.requireParameters("userId")
-            val currentUser = call.principal<JwtTokenRequest>()
-            if (authService.deactivateUser(currentUser?.userId!!, userId)) {
-                call.respond(HttpStatusCode.OK, mapOf("message" to "User deactivated successfully"))
-            } else {
-                call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to deactivate user"))
-            }
+        val currentUser = call.principal<JwtTokenRequest>()
+        if (authService.changeUserType(currentUser?.userId!!, userId, newType)) {
+            call.respond(HttpStatusCode.OK, mapOf("message" to "User type updated successfully"))
+        } else {
+            call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to update user type"))
         }
+    }
 
-        /**
-         * @tag Auth
-         * @description Admin: Activate a user account
-         */
-        put("/{userId}/activate") {
-            val (userId) = call.requireParameters("userId")
-            val currentUser = call.principal<JwtTokenRequest>()
-            if (authService.activateUser(currentUser?.userId!!, userId)) {
-                call.respond(HttpStatusCode.OK, mapOf("message" to "User activated successfully"))
-            } else {
-                call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to activate user"))
-            }
+    /**
+     * @tag Auth
+     * @description Admin: Deactivate a user account
+     */
+    put("/{userId}/deactivate") {
+        val (userId) = call.requireParameters("userId")
+        val currentUser = call.principal<JwtTokenRequest>()
+        if (authService.deactivateUser(currentUser?.userId!!, userId)) {
+            call.respond(HttpStatusCode.OK, mapOf("message" to "User deactivated successfully"))
+        } else {
+            call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to deactivate user"))
+        }
+    }
+
+    /**
+     * @tag Auth
+     * @description Admin: Activate a user account
+     */
+    put("/{userId}/activate") {
+        val (userId) = call.requireParameters("userId")
+        val currentUser = call.principal<JwtTokenRequest>()
+        if (authService.activateUser(currentUser?.userId!!, userId)) {
+            call.respond(HttpStatusCode.OK, mapOf("message" to "User activated successfully"))
+        } else {
+            call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to activate user"))
         }
     }
 }
