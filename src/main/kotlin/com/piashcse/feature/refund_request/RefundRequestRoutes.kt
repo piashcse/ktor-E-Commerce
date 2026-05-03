@@ -1,12 +1,11 @@
 package com.piashcse.feature.refund_request
+import com.piashcse.plugin.customerAuth
 
 import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
-import com.piashcse.plugin.adminAuth
-import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.getCurrentUserType
@@ -76,21 +75,24 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
                 call.respond(HttpStatusCode.NotFound, "Refund request not found")
             }
         }
+    }
+}
 
-        requireRole(UserType.SELLER) {
-            /**
-             * @tag Refund
-             * @description Seller: Update refund request status
-             */
-            put("{id}/status") {
-                val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest, "Refund ID is required")
-                val userId = call.currentUserId
-                val requestBody = call.receive<UpdateRefundStatusRequest>()
-                requestBody.validation()
+/**
+ * Seller refund management routes.
+ */
+fun Route.refundSellerRoutes(refundRequestService: RefundRequestService) {
+    /**
+     * @tag Refund
+     * @description Seller: Update refund request status
+     */
+    put("{id}/status") {
+        val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest, "Refund ID is required")
+        val userId = call.currentUserId
+        val requestBody = call.receive<UpdateRefundStatusRequest>()
+        requestBody.validation()
 
-                call.respond(HttpStatusCode.OK, refundRequestService.updateRefundStatus(id, requestBody, userId))
-            }
-        }
+        call.respond(HttpStatusCode.OK, refundRequestService.updateRefundStatus(id, requestBody, userId))
     }
 }
 
@@ -98,31 +100,29 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
  * Admin refund management routes.
  */
 fun Route.refundAdminRoutes(refundRequestService: RefundRequestService) {
-    adminAuth {
-        /**
-         * @tag Refund
-         * @description Admin: Get all refund requests for an order
-         */
-        get("order/{orderId}") {
-            val orderId = call.parameters["orderId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Order ID is required")
-            val userId = call.currentUserId
-            val userType = UserType.ADMIN
-            val (limit, offset) = call.paginationParameters()
+    /**
+     * @tag Refund
+     * @description Admin: Get all refund requests for an order
+     */
+    get("order/{orderId}") {
+        val orderId = call.parameters["orderId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Order ID is required")
+        val userId = call.currentUserId
+        val userType = UserType.ADMIN
+        val (limit, offset) = call.paginationParameters()
 
-            call.respond(HttpStatusCode.OK, refundRequestService.getRefundsByOrderId(orderId, userId, userType, limit, offset))
-        }
+        call.respond(HttpStatusCode.OK, refundRequestService.getRefundsByOrderId(orderId, userId, userType, limit, offset))
+    }
 
-        /**
-         * @tag Refund
-         * @description Admin: Update refund status
-         */
-        put("{id}/status") {
-            val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest, "Refund ID is required")
-            val userId = call.currentUserId
-            val requestBody = call.receive<UpdateRefundStatusRequest>()
-            requestBody.validation()
+    /**
+     * @tag Refund
+     * @description Admin: Update refund status
+     */
+    put("{id}/status") {
+        val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest, "Refund ID is required")
+        val userId = call.currentUserId
+        val requestBody = call.receive<UpdateRefundStatusRequest>()
+        requestBody.validation()
 
-            call.respond(HttpStatusCode.OK, refundRequestService.updateRefundStatus(id, requestBody, userId))
-        }
+        call.respond(HttpStatusCode.OK, refundRequestService.updateRefundStatus(id, requestBody, userId))
     }
 }

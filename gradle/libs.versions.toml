@@ -1,6 +1,6 @@
 [versions]
-ktor-version = "3.4.2"
-kotlin-version = "2.3.20"
+ktor-version = "3.4.3"
+kotlin-version = "2.3.21"
 logback-version = "1.5.32"
 exposed-version = "1.2.0"
 flyway-version = "9.22.3"
@@ -13,11 +13,8 @@ commons-io-version = "2.17.0"
 shadow-version = "9.2.2"
 koin-version = "4.2.0"
 dotenv-version = "6.4.1"
-logstash-logback-version = "8.0"
 
 [libraries]
-ktor-server-call-id = { module = "io.ktor:ktor-server-call-id-jvm", version.ref = "ktor-version" }
-logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-logback-version" }
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor-version" }
 ktor-serialization-gson = { module = "io.ktor:ktor-serialization-gson-jvm", version.ref = "ktor-version" }

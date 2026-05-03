@@ -1,7 +1,6 @@
 package com.piashcse.feature.product_category
 
 import com.piashcse.model.request.ProductCategoryRequest
-import com.piashcse.plugin.adminAuth
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -30,41 +29,30 @@ fun Route.productCategoryRoutes(productCategoryService: ProductCategoryService) 
  * Admin product category management routes.
  */
 fun Route.productCategoryAdminRoutes(productCategoryService: ProductCategoryService) {
-    adminAuth {
-        /**
-         * @tag ProductCategory
-         * @description Admin: Create a new product category
-         */
-        post {
-            val requestBody = call.receive<ProductCategoryRequest>()
-            call.respond(
-                HttpStatusCode.OK,
-                productCategoryService.createCategory(requestBody.name)
-            )
-        }
+    /**
+     * @tag ProductCategory
+     * @description Admin: Create a new product category
+     */
+    post {
+        val (name) = call.requireParameters("name")
+        call.respond(HttpStatusCode.OK, productCategoryService.createCategory(name))
+    }
 
-        /**
-         * @tag ProductCategory
-         * @description Admin: Update an existing product category name
-         */
-        put("{id}") {
-            val params = call.requireParameters("id", "name")
-            call.respond(
-                HttpStatusCode.OK,
-                productCategoryService.updateCategory(params[0], params[1])
-            )
-        }
+    /**
+     * @tag ProductCategory
+     * @description Admin: Update an existing product category name
+     */
+    put("{id}") {
+        val (id, name) = call.requireParameters("id", "name")
+        call.respond(HttpStatusCode.OK, productCategoryService.updateCategory(id, name))
+    }
 
-        /**
-         * @tag ProductCategory
-         * @description Admin: Permanently delete a product category
-         */
-        delete("{id}") {
-            val id = call.requireParameters("id")
-            call.respond(
-                HttpStatusCode.OK,
-                productCategoryService.deleteCategory(id.first())
-            )
-        }
+    /**
+     * @tag ProductCategory
+     * @description Admin: Permanently delete a product category
+     */
+    delete("{id}") {
+        val (id) = call.requireParameters("id")
+        call.respond(HttpStatusCode.OK, productCategoryService.deleteCategory(id))
     }
 }

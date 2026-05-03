@@ -4,8 +4,6 @@ import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
-import com.piashcse.plugin.adminAuth
-import com.piashcse.plugin.sellerAuth
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
@@ -66,85 +64,88 @@ fun Route.productRoutes(productService: ProductService) {
         queryParams.validation()
         call.respond(HttpStatusCode.OK, productService.searchProduct(queryParams))
     }
+}
 
-    sellerAuth {
-        /**
-         * @tag Product
-         * @description Seller: Retrieve seller products
-         */
-        get("seller") {
-            val (limit, offset) = call.paginationParameters(defaultLimit = 10)
-            val params = ProductWithFilterRequest(
-                limit = limit,
-                offset = offset,
-                maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
-                minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
-                categoryId = call.parameters["categoryId"],
-                subCategoryId = call.parameters["subCategoryId"],
-                brandId = call.parameters["brandId"]
-            )
-            params.validation()
-            call.respond(
-                HttpStatusCode.OK,
-                productService.getProductsByUser(call.currentUserId, params)
-            )
-        }
+/**
+ * Seller product management routes.
+ */
+fun Route.productSellerRoutes(productService: ProductService) {
+    /**
+     * @tag Product
+     * @description Seller: Retrieve seller products
+     */
+    get {
+        val (limit, offset) = call.paginationParameters(defaultLimit = 10)
+        val params = ProductWithFilterRequest(
+            limit = limit,
+            offset = offset,
+            maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
+            minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
+            categoryId = call.parameters["categoryId"],
+            subCategoryId = call.parameters["subCategoryId"],
+            brandId = call.parameters["brandId"]
+        )
+        params.validation()
+        call.respond(
+            HttpStatusCode.OK,
+            productService.getProductsByUser(call.currentUserId, params)
+        )
+    }
 
-        /**
-         * @tag Product
-         * @description Seller: Add a new product listing
-         */
-        post {
-            val requestBody = call.receive<ProductRequest>()
-            requestBody.validation()
-            call.respond(
-                HttpStatusCode.OK,
-                productService.createProduct(call.currentUserId, null, requestBody)
-            )
-        }
+    /**
+     * @tag Product
+     * @description Seller: Add a new product listing
+     */
+    post {
+        val requestBody = call.receive<ProductRequest>()
+        requestBody.validation()
+        call.respond(
+            HttpStatusCode.OK,
+            productService.createProduct(call.currentUserId, null, requestBody)
+        )
+    }
 
-        /**
-         * @tag Product
-         * @description Seller: Update an existing product listing
-         */
-        put("{id}") {
-            val productId = call.requireParameters("id").first()
-            val requestBody = call.receive<UpdateProductRequest>()
-            call.respond(
-                HttpStatusCode.OK,
-                productService.updateProduct(call.currentUserId, productId, requestBody)
-            )
-        }
+    /**
+     * @tag Product
+     * @description Seller: Update an existing product listing
+     */
+    put("{id}") {
+        val productId = call.requireParameters("id").first()
+        val requestBody = call.receive<UpdateProductRequest>()
+        call.respond(
+            HttpStatusCode.OK,
+            productService.updateProduct(call.currentUserId, productId, requestBody)
+        )
+    }
 
-        /**
-         * @tag Product
-         * @description Seller: Permanently delete a product listing
-         */
-        delete("{id}") {
-            val id = call.requireParameters("id")
-            val currentUserId = call.currentUserId
-            productService.deleteProduct(currentUserId, id.first())
-            call.respond(HttpStatusCode.OK, mapOf("message" to "Product deleted successfully"))
-        }
+    /**
+     * @tag Product
+     * @description Seller: Permanently delete a product listing
+     */
+    delete("{id}") {
+        val id = call.requireParameters("id")
+        val currentUserId = call.currentUserId
+        productService.deleteProduct(currentUserId, id.first())
+        call.respond(HttpStatusCode.OK, mapOf("message" to "Product deleted successfully"))
+    }
 
-        /**
-         * @tag Product
-         * @description Seller: Upload a product image
-         */
-        post("image-upload") {
-            val multipart = call.receiveMultipart()
-            var imageUrl: String? = null
+    /**
+     * @tag Product
+     * @description Seller: Upload a product image
+     */
+    post("image-upload") {
+        val multipart = call.receiveMultipart()
+        var imageUrl: String? = null
 
-            multipart.forEachPart { part ->
-                if (part is PartData.FileItem) {
-                    val fileName = UploadService.uploadProductImage(part)
-                    imageUrl = UploadService.getProductImageUrl(fileName)
-                }
-                part.dispose()
+        multipart.forEachPart { part ->
+            if (part is PartData.FileItem) {
+                val fileName = UploadService.uploadProductImage(part)
+                imageUrl = UploadService.getProductImageUrl(fileName)
             }
-
-            call.respond(HttpStatusCode.OK, imageUrl ?: throw ValidationException("No file uploaded"))
+            part.dispose()
         }
+
+        call.respond(HttpStatusCode.OK, imageUrl ?: throw ValidationException("No file uploaded"))
     }
 }
 
@@ -152,17 +153,15 @@ fun Route.productRoutes(productService: ProductService) {
  * Admin product management routes.
  */
 fun Route.productAdminRoutes(productService: ProductService) {
-    adminAuth {
-        /**
-         * @tag Product
-         * @description Admin: Permanently delete any product
-         */
-        delete("{id}") {
-            val id = call.requireParameters("id")
-            call.respond(
-                HttpStatusCode.OK,
-                productService.deleteProductAsAdmin(id.first())
-            )
-        }
+    /**
+     * @tag Product
+     * @description Admin: Permanently delete any product
+     */
+    delete("{id}") {
+        val id = call.requireParameters("id")
+        call.respond(
+            HttpStatusCode.OK,
+            productService.deleteProductAsAdmin(id.first())
+        )
     }
 }

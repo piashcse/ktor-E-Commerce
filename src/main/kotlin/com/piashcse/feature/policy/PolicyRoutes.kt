@@ -2,7 +2,6 @@ package com.piashcse.feature.policy
 
 import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.CreatePolicyRequest
-import com.piashcse.plugin.adminAuth
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -33,28 +32,26 @@ fun Route.policyRoutes(policyService: PolicyService) {
  * Admin policy management routes.
  */
 fun Route.policyAdminRoutes(policyService: PolicyService) {
-    adminAuth {
-        /**
-         * @tag Privacy Policy
-         * @description Admin: Create a new policy document or new version
-         */
-        post {
-            val requestBody = call.receive<CreatePolicyRequest>()
-            call.respond(HttpStatusCode.Created, policyService.createPolicy(requestBody))
-        }
+    /**
+     * @tag Privacy Policy
+     * @description Admin: Create a new policy document or new version
+     */
+    post {
+        val requestBody = call.receive<CreatePolicyRequest>()
+        call.respond(HttpStatusCode.Created, policyService.createPolicy(requestBody))
+    }
 
-        /**
-         * @tag Privacy Policy
-         * @description Admin: Retrieve all versions of a specific policy type
-         */
-        get("{policyType}/history") {
-            val policyTypeParam = call.parameters["policyType"] ?: return@get call.respond(HttpStatusCode.BadRequest, "policyType is required")
-            val policyType = try {
-                PolicyDocumentTable.PolicyType.valueOf(policyTypeParam.uppercase())
-            } catch (e: IllegalArgumentException) {
-                return@get call.respond(HttpStatusCode.BadRequest, "Invalid policy type")
-            }
-            call.respond(HttpStatusCode.OK, policyService.getAllPolicies(policyType))
+    /**
+     * @tag Privacy Policy
+     * @description Admin: Retrieve all versions of a specific policy type
+     */
+    get("{policyType}/history") {
+        val policyTypeParam = call.parameters["policyType"] ?: return@get call.respond(HttpStatusCode.BadRequest, "policyType is required")
+        val policyType = try {
+            PolicyDocumentTable.PolicyType.valueOf(policyTypeParam.uppercase())
+        } catch (e: IllegalArgumentException) {
+            return@get call.respond(HttpStatusCode.BadRequest, "Invalid policy type")
         }
+        call.respond(HttpStatusCode.OK, policyService.getAllPolicies(policyType))
     }
 }

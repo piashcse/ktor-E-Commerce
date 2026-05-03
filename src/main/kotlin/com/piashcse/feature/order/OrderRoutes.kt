@@ -1,14 +1,12 @@
 package com.piashcse.feature.order
+import com.piashcse.plugin.customerAuth
 
 import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.CancelOrderRequest
 import com.piashcse.model.request.OrderRequest
-import com.piashcse.plugin.adminAuth
-import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
-import com.piashcse.plugin.sellerAuth
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.getCurrentUserType
 import com.piashcse.utils.extension.paginationParameters
@@ -79,9 +77,7 @@ fun Route.orderRoutes(orderService: OrderService) {
 
             call.respond(HttpStatusCode.OK, orderService.updateOrderStatus(userId, id, status))
         }
-    }
 
-    requireRole(UserType.CUSTOMER, UserType.SELLER) {
         /**
          * @tag Order
          * @description Cancel an order
@@ -96,17 +92,20 @@ fun Route.orderRoutes(orderService: OrderService) {
             call.respond(HttpStatusCode.OK, orderService.cancelOrder(id, userId, requestBody.reason, userType))
         }
     }
+}
 
-    sellerAuth {
-        /**
-         * @tag Order
-         * @description Seller: Retrieve orders for the seller's shop
-         */
-        get("seller") {
-            val (limit, offset) = call.paginationParameters()
-            val status = call.parameters["status"]
-            call.respond(HttpStatusCode.OK, orderService.getSellerOrders(call.currentUserId, limit, offset, status))
-        }
+/**
+ * Seller order management routes.
+ */
+fun Route.orderSellerRoutes(orderService: OrderService) {
+    /**
+     * @tag Order
+     * @description Seller: Retrieve orders for the seller's shop
+     */
+    get {
+        val (limit, offset) = call.paginationParameters()
+        val status = call.parameters["status"]
+        call.respond(HttpStatusCode.OK, orderService.getSellerOrders(call.currentUserId, limit, offset, status))
     }
 }
 
@@ -114,57 +113,55 @@ fun Route.orderRoutes(orderService: OrderService) {
  * Admin order management routes.
  */
 fun Route.orderAdminRoutes(orderService: OrderService) {
-    adminAuth {
-        /**
-         * @tag Order
-         * @description Admin: Update the status of any order
-         */
-        patch("status/{id}") {
-            val (id, statusParam) = call.requireParameters("id", "status")
-            val userId = call.currentUserId
+    /**
+     * @tag Order
+     * @description Admin: Update the status of any order
+     */
+    patch("status/{id}") {
+        val (id, statusParam) = call.requireParameters("id", "status")
+        val userId = call.currentUserId
 
-            val status = try {
-                OrderStatus.valueOf(statusParam.uppercase())
-            } catch (e: IllegalArgumentException) {
-                throw InvalidEnumValueException(
-                    message = "Invalid order status: $statusParam",
-                    enumName = OrderStatus.values().joinToString(", ") { it.name },
-                    invalidValue = statusParam
-                )
-            }
-
-            call.respond(HttpStatusCode.OK, orderService.updateOrderStatus(userId, id, status))
+        val status = try {
+            OrderStatus.valueOf(statusParam.uppercase())
+        } catch (e: IllegalArgumentException) {
+            throw InvalidEnumValueException(
+                message = "Invalid order status: $statusParam",
+                enumName = OrderStatus.values().joinToString(", ") { it.name },
+                invalidValue = statusParam
+            )
         }
 
-        /**
-         * @tag Order
-         * @description Admin: Cancel any order
-         */
-        post("{id}/cancel") {
-            val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Order ID is required")
-            val userId = call.currentUserId
-            val userType = UserType.ADMIN
-            val requestBody = call.receive<CancelOrderRequest>()
-            requestBody.validation()
+        call.respond(HttpStatusCode.OK, orderService.updateOrderStatus(userId, id, status))
+    }
 
-            call.respond(HttpStatusCode.OK, orderService.cancelOrder(id, userId, requestBody.reason, userType))
+    /**
+     * @tag Order
+     * @description Admin: Cancel any order
+     */
+    post("{id}/cancel") {
+        val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Order ID is required")
+        val userId = call.currentUserId
+        val userType = UserType.ADMIN
+        val requestBody = call.receive<CancelOrderRequest>()
+        requestBody.validation()
+
+        call.respond(HttpStatusCode.OK, orderService.cancelOrder(id, userId, requestBody.reason, userType))
+    }
+
+    /**
+     * @tag Order
+     * @description Admin: Retrieve all orders with advanced filtering
+     */
+    get {
+        val (limit, offset) = call.paginationParameters()
+        val status = call.parameters["status"]
+        val startDate = call.parameters["startDate"]?.let {
+            try { java.time.Instant.parse(it) } catch (e: Exception) { null }
+        }
+        val endDate = call.parameters["endDate"]?.let {
+            try { java.time.Instant.parse(it) } catch (e: Exception) { null }
         }
 
-        /**
-         * @tag Order
-         * @description Admin: Retrieve all orders with advanced filtering
-         */
-        get {
-            val (limit, offset) = call.paginationParameters()
-            val status = call.parameters["status"]
-            val startDate = call.parameters["startDate"]?.let {
-                try { java.time.Instant.parse(it) } catch (e: Exception) { null }
-            }
-            val endDate = call.parameters["endDate"]?.let {
-                try { java.time.Instant.parse(it) } catch (e: Exception) { null }
-            }
-
-            call.respond(HttpStatusCode.OK, orderService.getAdminOrders(limit, offset, status, startDate, endDate))
-        }
+        call.respond(HttpStatusCode.OK, orderService.getAdminOrders(limit, offset, status, startDate, endDate))
     }
 }
