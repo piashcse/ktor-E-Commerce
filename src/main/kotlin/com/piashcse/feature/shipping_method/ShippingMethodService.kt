@@ -1,0 +1,39 @@
+package com.piashcse.feature.shipping_method
+
+import com.piashcse.database.entities.ShippingMethodDAO
+import com.piashcse.database.entities.ShippingMethodTable
+import com.piashcse.model.request.ShippingMethodRequest
+import com.piashcse.model.response.ShippingMethodResponse
+import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.throwNotFound
+
+class ShippingMethodService : ShippingMethodRepository {
+    override suspend fun createShippingMethod(request: ShippingMethodRequest): ShippingMethodResponse = query {
+        ShippingMethodDAO.new {
+            name = request.name
+            type = request.type
+            price = request.price
+            deliveryTime = request.deliveryTime
+        }.response()
+    }
+
+    override suspend fun getShippingMethods(): List<ShippingMethodResponse> = query {
+        ShippingMethodDAO.all().map { it.response() }
+    }
+
+    override suspend fun updateShippingMethod(methodId: String, request: ShippingMethodRequest): ShippingMethodResponse = query {
+        val method = ShippingMethodDAO.findById(methodId) ?: methodId.throwNotFound("ShippingMethod")
+        method.apply {
+            name = request.name
+            type = request.type
+            price = request.price
+            deliveryTime = request.deliveryTime
+        }.response()
+    }
+
+    override suspend fun deleteShippingMethod(methodId: String): Boolean = query {
+        val method = ShippingMethodDAO.findById(methodId) ?: methodId.throwNotFound("ShippingMethod")
+        method.delete()
+        true
+    }
+}
