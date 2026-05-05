@@ -27,17 +27,6 @@ fun Route.orderRoutes(orderService: OrderService) {
     customerAuth {
         /**
          * @tag Order
-         * @description Create a new order
-         */
-        post {
-            val requestBody = call.receive<OrderRequest>()
-            requestBody.validation()
-            val idempotencyKey = call.request.headers["Idempotency-Key"]
-            call.respond(HttpStatusCode.OK, orderService.createOrder(call.currentUserId, requestBody, idempotencyKey))
-        }
-
-        /**
-         * @tag Order
          * @description Retrieve all orders for the authenticated customer
          */
         get {

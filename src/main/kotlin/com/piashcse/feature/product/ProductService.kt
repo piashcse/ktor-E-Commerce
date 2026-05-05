@@ -168,6 +168,15 @@ class ProductService : ProductRepository {
             query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
         }
 
+        val column = when (productQuery.sortBy?.lowercase()) {
+            "price" -> ProductTable.price
+            "name" -> ProductTable.name
+            "createdat" -> ProductTable.createdAt
+            else -> ProductTable.createdAt
+        }
+        val order = if (productQuery.sortOrder?.lowercase() == "asc") org.jetbrains.exposed.v1.core.SortOrder.ASC else org.jetbrains.exposed.v1.core.SortOrder.DESC
+        query.orderBy(column to order)
+
         query.toPaginatedResponse(productQuery.limit, productQuery.offset) {
             ProductDAO.wrapRow(it).response()
         }

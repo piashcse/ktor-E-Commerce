@@ -3,6 +3,7 @@ package com.piashcse.feature.order
 import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.database.entities.*
+import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.OrderRequest
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -17,10 +18,231 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-/**
- * Service for managing order-related operations.
- */
 class OrderService : OrderRepository {
+    /**
+     * Places a new order from the user's cart.
+     *
+     * @param userId The ID of the user placing the order.
+     * @param checkoutRequest The checkout details.
+     * @return The list of created order responses.
+     */
+    override suspend fun placeOrder(
+        userId: String,
+        checkoutRequest: CheckoutRequest
+    ): List<OrderResponse> = query {
+        checkoutRequest.validation()
+
+        // 0. Check for duplicate idempotency key
+        checkoutRequest.idempotencyKey?.let { key ->
+            val existingOrders = OrderDAO.find { OrderTable.idempotencyKey eq key }.toList()
+            if (existingOrders.isNotEmpty()) {
+                return@query existingOrders.map { it.response() }
+            }
+        }
+
+        // 1. Fetch Cart Items
+        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
+        if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
+
+        // 2. Fetch Shipping Address
+        val shippingAddress = ShippingAddressDAO.findById(checkoutRequest.shippingAddressId)
+            ?: throw ValidationException("Shipping address not found")
+        if (shippingAddress.userId.value != userId) throw ValidationException("Unauthorized shipping address")
+
+        val fullAddress = "${shippingAddress.firstName} ${shippingAddress.lastName}\n" +
+                "${shippingAddress.streetAddress}, ${shippingAddress.city}, ${shippingAddress.state ?: ""}\n" +
+                "${shippingAddress.country}, ${shippingAddress.zipCode}\n" +
+                "Phone: ${shippingAddress.phoneNumber}"
+
+        // 3. Fetch Shipping Method
+        val shippingMethod = ShippingMethodDAO.findById(checkoutRequest.shippingMethodId)
+            ?: throw ValidationException("Shipping method not found")
+
+        // 4. Validate Stock and Calculate Totals
+        val productIds = cartItems.map { it.productId.value }.distinct()
+        val productsMap = ProductDAO.find { ProductTable.id inList productIds }
+            .associateBy { it.id.value }
+
+        // Group items by Shop
+        val itemsByShop = cartItems.groupBy {
+            productsMap[it.productId.value]?.shopId?.value
+                ?: throw ValidationException("Product ${it.productId.value} does not belong to any shop")
+        }
+
+        val createdOrders = mutableListOf<OrderDAO>()
+        val today = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
+        val orderCountForDate = getOrderCountForDate(today)
+
+        itemsByShop.entries.forEachIndexed { index, (shopIdValue, items) ->
+            val sequenceNumber = orderCountForDate + index + 1
+            val orderNumber = "ORD-$today-${sequenceNumber.toString().padStart(4, '0')}"
+
+            var shopSubTotal = BigDecimal.ZERO
+
+            val order = OrderDAO.new {
+                this.userId = EntityID(userId, UserTable)
+                this.shopId = EntityID(shopIdValue, ShopTable)
+                this.orderNumber = orderNumber
+                this.idempotencyKey = checkoutRequest.idempotencyKey
+                this.status = OrderStatus.PENDING
+                this.paymentStatus = com.piashcse.constants.PaymentStatus.PENDING
+                this.subTotal = BigDecimal.ZERO
+                this.shippingCost = BigDecimal(shippingMethod.price.toString())
+                this.shippingMethod = shippingMethod.name
+                this.total = BigDecimal.ZERO
+                this.shippingAddress = fullAddress
+                this.paymentMethod = checkoutRequest.paymentMethod
+                this.notes = checkoutRequest.notes
+            }
+
+            items.forEach { cartItem ->
+                val product = productsMap[cartItem.productId.value]!!
+                val effectiveStock = getEffectiveStockQuantity(product)
+                if (effectiveStock < cartItem.quantity) {
+                    throw ValidationException(Message.Validation.insufficientStock(product.name, effectiveStock))
+                }
+
+                val unitPrice = product.discountPrice ?: product.price
+                val itemTotal = unitPrice.multiply(BigDecimal(cartItem.quantity))
+
+                OrderItemDAO.new {
+                    this.orderId = order.id
+                    this.productId = product.id
+                    this.shopId = EntityID(shopIdValue, ShopTable)
+                    this.quantity = cartItem.quantity
+                    this.price = unitPrice
+                    this.total = itemTotal
+                    this.sku = product.sku
+                    this.productName = product.name
+                    this.taxAmount = BigDecimal.ZERO
+                    this.discountAmount = BigDecimal.ZERO
+                }
+
+                updateEffectiveStock(product, cartItem.quantity)
+                shopSubTotal = shopSubTotal.add(itemTotal)
+            }
+
+            val taxAmount = shopSubTotal.multiply(BigDecimal(com.piashcse.constants.AppConstants.DEFAULT_TAX_PERCENTAGE.toString()))
+            order.subTotal = shopSubTotal
+            order.taxAmount = taxAmount.setScale(2, java.math.RoundingMode.HALF_UP)
+            order.total = shopSubTotal.add(order.shippingCost).add(order.taxAmount)
+            createdOrders.add(order)
+        }
+
+        // Apply Coupon if present
+        if (checkoutRequest.couponCode != null) {
+            val totalSubTotal = createdOrders.map { it.subTotal }.reduce { acc, bigDecimal -> acc.add(bigDecimal) }
+            val discount = validateAndApplyCoupon(checkoutRequest.couponCode, totalSubTotal.toDouble())
+            
+            // Distribute discount proportionally across orders if multi-shop
+            createdOrders.forEach { order ->
+                val proportion = order.subTotal.divide(totalSubTotal, 10, java.math.RoundingMode.HALF_UP)
+                val orderDiscount = discount.multiply(proportion).setScale(2, java.math.RoundingMode.HALF_UP)
+                order.discountAmount = orderDiscount
+                order.couponCode = checkoutRequest.couponCode
+                order.total = order.total.subtract(orderDiscount)
+            }
+        }
+
+        // 5. Clear Cart
+        cartItems.forEach { it.delete() }
+
+        createdOrders.forEach { order ->
+            logStatusChange(order.id.value, order.status, "Order placed", userId)
+        }
+
+        createdOrders.map { it.response() }
+    }
+
+    private fun logStatusChange(orderId: String, status: OrderStatus, notes: String?, userId: String?) {
+        OrderStatusHistoryDAO.new {
+            this.orderId = EntityID(orderId, OrderTable)
+            this.status = status
+            this.notes = notes
+            this.changedBy = userId?.let { EntityID(it, UserTable) }
+        }
+    }
+
+    override suspend fun getCheckoutSummary(
+        userId: String,
+        checkoutRequest: CheckoutRequest
+    ): com.piashcse.model.response.CheckoutSummaryResponse = query {
+        checkoutRequest.validation()
+
+        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
+        if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
+
+        val shippingMethod = ShippingMethodDAO.findById(checkoutRequest.shippingMethodId)
+            ?: throw ValidationException("Shipping method not found")
+
+        val productIds = cartItems.map { it.productId.value }.distinct()
+        val productsMap = ProductDAO.find { ProductTable.id inList productIds }
+            .associateBy { it.id.value }
+
+        var subTotal = BigDecimal.ZERO
+        var totalItems = 0
+
+        cartItems.forEach { cartItem ->
+            val product = productsMap[cartItem.productId.value]!!
+            val unitPrice = product.discountPrice ?: product.price
+            subTotal = subTotal.add(unitPrice.multiply(BigDecimal(cartItem.quantity)))
+            totalItems += cartItem.quantity
+        }
+
+        val taxAmount = subTotal.multiply(BigDecimal(com.piashcse.constants.AppConstants.DEFAULT_TAX_PERCENTAGE.toString()))
+        var response = com.piashcse.model.response.CheckoutSummaryResponse(
+            subTotal = subTotal.toFloat(),
+            shippingCost = shippingMethod.price.toFloat(),
+            taxAmount = taxAmount.setScale(2, java.math.RoundingMode.HALF_UP).toFloat(),
+            total = subTotal.add(BigDecimal(shippingMethod.price.toString())).add(taxAmount).toFloat(),
+            itemCount = totalItems
+        )
+
+        if (checkoutRequest.couponCode != null) {
+            val discount = validateAndApplyCoupon(checkoutRequest.couponCode, subTotal.toDouble())
+            response = response.copy(
+                discountAmount = discount.toFloat(),
+                total = response.total - discount.toFloat()
+            )
+        }
+        response
+    }
+
+    private fun validateAndApplyCoupon(code: String, orderAmount: Double): BigDecimal {
+        val coupon = CouponDAO.find { CouponTable.code eq code and (CouponTable.isActive eq true) }.firstOrNull()
+            ?: throw ValidationException("Invalid or inactive coupon code")
+
+        val now = java.time.LocalDateTime.now()
+        if (now.isBefore(coupon.startDate) || now.isAfter(coupon.endDate)) {
+            throw ValidationException("Coupon is expired or not yet active")
+        }
+
+        if (orderAmount < coupon.minOrderAmount) {
+            throw ValidationException("Order amount is below the minimum required for this coupon ($${coupon.minOrderAmount})")
+        }
+
+        if (coupon.usageLimit != null && coupon.usageCount >= coupon.usageLimit!!) {
+            throw ValidationException("Coupon usage limit reached")
+        }
+
+        val discountAmount = when (coupon.discountType.uppercase()) {
+            "PERCENTAGE" -> {
+                var amount = BigDecimal(orderAmount).multiply(BigDecimal(coupon.discountValue / 100.0))
+                coupon.maxDiscountAmount?.let { max ->
+                    amount = amount.min(BigDecimal(max))
+                }
+                amount
+            }
+            "FIXED" -> BigDecimal(coupon.discountValue)
+            else -> BigDecimal.ZERO
+        }
+
+        // Update usage count
+        coupon.usageCount += 1
+        
+        return discountAmount.setScale(2, java.math.RoundingMode.HALF_UP)
+    }
+
 
     /**
      * Creates a new order for a user and stores the associated order items.
@@ -267,6 +489,7 @@ class OrderService : OrderRepository {
         // For now, access is validated.
 
         order.status = status
+        logStatusChange(order.id.value, status, "Status updated by user", userId)
         order.response()
     }
 
@@ -319,6 +542,7 @@ class OrderService : OrderRepository {
         order.status = OrderStatus.CANCELED
         order.canceledDate = java.time.LocalDateTime.now()
         order.notes = reason
+        logStatusChange(order.id.value, OrderStatus.CANCELED, reason, userId)
 
         // Restore stock
         OrderItemDAO.find { OrderItemTable.orderId eq order.id }.forEach { orderItem ->

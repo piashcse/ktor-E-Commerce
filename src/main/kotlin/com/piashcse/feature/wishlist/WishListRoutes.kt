@@ -16,7 +16,7 @@ import io.ktor.server.routing.*
 fun Route.wishListRoutes(wishlistService: WishListService) {
     requireRole {
         /**
-         * @tag WishList
+         * @tag Wishlist
          * @description Add a product to the authenticated user's wishlist
          */
         post {
@@ -29,7 +29,7 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
         }
 
         /**
-         * @tag WishList
+         * @tag Wishlist
          * @description Retrieve all items in the user's wishlist
          */
         get {
@@ -41,7 +41,7 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
         }
 
         /**
-         * @tag WishList
+         * @tag Wishlist
          * @description Remove a specific product from the wishlist
          */
         delete("remove") {
@@ -53,7 +53,7 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
         }
 
         /**
-         * @tag WishList
+         * @tag Wishlist
          * @description Check if a specific product is in the user's wishlist
          */
         get("check") {

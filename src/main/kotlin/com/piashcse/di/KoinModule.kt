@@ -18,6 +18,7 @@ import com.piashcse.feature.shipping_address.ShippingAddressService
 import com.piashcse.feature.shipping_method.ShippingMethodService
 import com.piashcse.feature.shop.ShopService
 import com.piashcse.feature.shop_category.ShopCategoryService
+import com.piashcse.feature.coupon.CouponService
 import com.piashcse.feature.wishlist.WishListService
 import com.piashcse.service.UploadService
 import org.koin.dsl.module
@@ -33,6 +34,7 @@ val serviceModule = module {
     single { ShippingMethodService() }
     single { ShopService() }
     single { ShopCategoryService() }
+    single { CouponService() }
     single { RefreshTokenRepositoryImpl() as RefreshTokenRepository }
     single { LoginAttemptRepositoryImpl() as LoginAttemptRepository }
     single { AuthService(get<RefreshTokenRepository>(), get<LoginAttemptRepository>()) }

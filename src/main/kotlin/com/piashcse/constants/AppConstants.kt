@@ -8,6 +8,7 @@ package com.piashcse.constants
  */
 object AppConstants {
     const val APP_VERSION = "1.0.0"
+    const val DEFAULT_TAX_PERCENTAGE = 0.05 // 5% TAX
 
     object DataBaseTransaction {
         const val FOUND = 1

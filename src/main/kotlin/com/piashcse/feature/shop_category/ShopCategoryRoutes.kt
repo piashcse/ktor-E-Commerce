@@ -13,7 +13,7 @@ import io.ktor.server.routing.*
  */
 fun Route.shopCategoryAdminRoutes(shopCategoryService: ShopCategoryService) {
     /**
-     * @tag ShopCategory
+     * @tag Shop Category
      * @description Admin: Create a new shop category
      */
     post {
@@ -25,7 +25,7 @@ fun Route.shopCategoryAdminRoutes(shopCategoryService: ShopCategoryService) {
     }
 
     /**
-     * @tag ShopCategory
+     * @tag Shop Category
      * @description Admin: Update an existing shop category name
      */
     put("{id}") {
@@ -37,7 +37,7 @@ fun Route.shopCategoryAdminRoutes(shopCategoryService: ShopCategoryService) {
     }
 
     /**
-     * @tag ShopCategory
+     * @tag Shop Category
      * @description Admin: Permanently delete a shop category
      */
     delete("{id}") {

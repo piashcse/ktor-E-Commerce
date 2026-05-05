@@ -13,7 +13,7 @@ import io.ktor.server.routing.*
  */
 fun Route.productSubCategoryRoutes(subCategoryService: ProductSubCategoryService) {
     /**
-     * @tag ProductSubCategory
+     * @tag Product Sub Category
      * @description Retrieve subcategories for a specific category
      */
     get {
@@ -31,7 +31,7 @@ fun Route.productSubCategoryRoutes(subCategoryService: ProductSubCategoryService
  */
 fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategoryService) {
     /**
-     * @tag ProductSubCategory
+     * @tag Product Sub Category
      * @description Admin: Create a new product subcategory
      */
     post {
@@ -43,7 +43,7 @@ fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategorySe
     }
 
     /**
-     * @tag ProductSubCategory
+     * @tag Product Sub Category
      * @description Admin: Update an existing product subcategory name
      */
     put("{id}") {
@@ -55,7 +55,7 @@ fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategorySe
     }
 
     /**
-     * @tag ProductSubCategory
+     * @tag Product Sub Category
      * @description Admin: Permanently delete a product subcategory
      */
     delete("{id}") {

@@ -7,22 +7,9 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.shippingMethodRoutes(shippingMethodService: ShippingMethodService) {
-    /**
-     * @tag ShippingMethod
-     * @description Retrieve all available shipping methods
-     */
-    get {
-        call.respond(
-            HttpStatusCode.OK,
-            shippingMethodService.getShippingMethods()
-        )
-    }
-}
-
 fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService) {
     /**
-     * @tag ShippingMethod
+     * @tag Shipping Method
      * @description Admin: Create a new shipping method
      */
     post {
@@ -35,7 +22,7 @@ fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService
     }
 
     /**
-     * @tag ShippingMethod
+     * @tag Shipping Method
      * @description Admin: Update an existing shipping method
      */
     put("/{id}") {
@@ -49,7 +36,7 @@ fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService
     }
 
     /**
-     * @tag ShippingMethod
+     * @tag Shipping Method
      * @description Admin: Delete a shipping method
      */
     delete("/{id}") {

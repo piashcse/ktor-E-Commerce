@@ -8,6 +8,7 @@ import com.piashcse.feature.brand.brandAdminRoutes
 import com.piashcse.feature.brand.brandRoutes
 import com.piashcse.feature.cart.CartService
 import com.piashcse.feature.cart.cartRoutes
+import com.piashcse.feature.checkout.checkoutRoutes
 import com.piashcse.feature.consent.ConsentService
 import com.piashcse.feature.consent.consentRoutes
 import com.piashcse.feature.inventory.InventoryService
@@ -42,10 +43,8 @@ import com.piashcse.feature.refund_request.refundSellerRoutes
 import com.piashcse.feature.review_rating.ReviewRatingService
 import com.piashcse.feature.review_rating.reviewRatingRoutes
 import com.piashcse.feature.shipping_address.ShippingAddressService
-import com.piashcse.feature.shipping_address.shippingAddressRoutes
 import com.piashcse.feature.shipping_method.ShippingMethodService
 import com.piashcse.feature.shipping_method.shippingMethodAdminRoutes
-import com.piashcse.feature.shipping_method.shippingMethodRoutes
 import com.piashcse.feature.shop.ShopService
 import com.piashcse.feature.shop.shopAdminRoutes
 import com.piashcse.feature.shop.shopRoutes
@@ -55,6 +54,9 @@ import com.piashcse.feature.shop_category.ShopCategoryService
 import com.piashcse.feature.shop_category.shopCategoryAdminRoutes
 import com.piashcse.feature.wishlist.WishListService
 import com.piashcse.feature.wishlist.wishListRoutes
+import com.piashcse.feature.coupon.CouponService
+import com.piashcse.feature.coupon.couponRoutes
+import com.piashcse.feature.coupon.couponAdminRoutes
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -83,6 +85,7 @@ fun Application.configureRoute() {
     val consentService: ConsentService by inject()
     val inventoryService: InventoryService by inject()
     val returnRequestService: RefundRequestService by inject()
+    val couponService: CouponService by inject()
 
     routing {
         get("/") {
@@ -100,13 +103,13 @@ fun Application.configureRoute() {
                 route("review-rating") { reviewRatingRoutes(reviewRatingService) }
                 route("cart") { cartRoutes(cartService) }
                 route("wishlist") { wishListRoutes(wishListService) }
-                route("shipping-address") { shippingAddressRoutes(shippingAddressService) }
-                route("shipping-method") { shippingMethodRoutes(shippingMethodService) }
+                route("checkout") { checkoutRoutes(shippingAddressService, shippingMethodService, orderService) }
                 route("order") { orderRoutes(orderService) }
                 route("payment") { paymentRoutes(paymentService) }
                 route("policy") { policyRoutes(policyService) }
                 route("policy-consents") { consentRoutes(consentService) }
                 route("refund-requests") { refundRequestRoutes(returnRequestService) }
+                route("coupon") { couponRoutes(couponService) }
                 route("seller") {
                     sellerAuth {
                         route("shop") { shopSellerRoutesV1(shopService) }
@@ -130,6 +133,7 @@ fun Application.configureRoute() {
                         route("refund-requests") { refundAdminRoutes(returnRequestService) }
                         route("policy") { policyAdminRoutes(policyService) }
                         route("shipping-method") { shippingMethodAdminRoutes(shippingMethodService) }
+                        route("coupon") { couponAdminRoutes(couponService) }
                     }
                 }
             }

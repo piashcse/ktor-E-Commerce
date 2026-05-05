@@ -13,6 +13,8 @@ data class ProductWithFilterRequest(
     val categoryId: String?,
     val subCategoryId: String?,
     val brandId: String?,
+    val sortBy: String? = null, // price, createdAt, name
+    val sortOrder: String? = "desc" // asc, desc
 ) {
     fun validation() {
         validate(this) {
