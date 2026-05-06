@@ -113,7 +113,7 @@ Update an existing shop with enhanced metadata and a cleaner response structure.
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/api/v2/seller/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?source=mobile_app' \
+  'http://localhost:8080/api/v2/seller/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?source=mobile_app' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \

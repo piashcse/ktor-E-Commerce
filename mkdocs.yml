@@ -42,9 +42,12 @@ nav:
       - Review Rating: review-rating.md
       - WishList: wishlist.md
       - Cart: cart.md
+      - Checkout: checkout.md
       - Order: order.md
       - Payment: payment.md
-      - Shipping: shipping.md
+      - Coupon: coupon.md
+      - Shipping Address: shipping-address.md
+      - Shipping Method: shipping-method.md
       - Inventory: inventory.md
       - Refund Request: refund-request.md
       - Privacy Policy: privacy-policy.md

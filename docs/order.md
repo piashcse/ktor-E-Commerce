@@ -1,6 +1,6 @@
 # Order API
 
-This documentation provides comprehensive details for the Order API endpoints. The API supports creating, retrieving, and updating orders.
+This documentation provides comprehensive details for the Order API endpoints. The API supports creating, retrieving, and updating orders, with a full audit trail for status changes.
 
 **Base URL:** `http://localhost:8080`
 
@@ -12,76 +12,91 @@ All Order endpoints require Bearer token authentication.
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/order` | Create a new order | Yes (Customer) |
 | `GET` | `/api/v1/order` | Retrieve customer orders | Yes (Customer) |
+| `PATCH` | `/api/v1/order/status/{id}` | Update order status (Customer: RECEIVED/CANCELED) | Yes (Customer) |
+| `POST` | `/api/v1/order/{id}/cancel` | Cancel an order with reason | Yes (Customer) |
 | `GET` | `/api/v1/seller/order` | Retrieve seller's shop orders | Yes (Seller) |
-| `GET` | `/api/v1/admin/order` | Retrieve all orders with filters | Yes (Admin) |
-| `PATCH` | `/api/v1/order/status/{id}` | Update order status | Yes |
-| `POST` | `/api/v1/order/{id}/cancel` | Cancel an order | Yes |
+| `PATCH` | `/api/v1/admin/order/status/{id}` | Update any order status | Yes (Admin) |
+| `POST` | `/api/v1/admin/order/{id}/cancel` | Cancel any order | Yes (Admin) |
+| `GET` | `/api/v1/admin/order` | Retrieve all orders with advanced filters | Yes (Admin) |
 
 ---
 
 ## Endpoint Details
 
-### 1. Create Order
+### 1. Get Customer Orders
 
-**`POST /api/v1/order`**
+**`GET /api/v1/order`**
 
-Create a new order.
+Retrieve all orders placed by the authenticated customer.
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/order?limit=10&offset=0' \
+  -H 'Authorization: Bearer <customer_token>'
+```
+
+---
+
+### 2. Update Order Status (Customer/Seller)
+
+**`PATCH /api/v1/order/status/{id}`**
+
+Update the status of an order. The allowed statuses depend on the user role.
+- **Customer**: `CANCELED`, `RECEIVED`
+- **Seller**: `CONFIRMED`, `DELIVERED`
+
+#### Example Request
+
+```bash
+curl -X 'PATCH' \
+  'http://localhost:8080/api/v1/order/status/cbd630f6-bf9f-48ad-ac51-f806807d99fd?status=RECEIVED' \
+  -H 'Authorization: Bearer <customer_token>'
+```
+
+---
+
+### 3. Cancel Order
+
+**`POST /api/v1/order/{id}/cancel`**
+
+Cancel an order and provide a reason. This will restore stock for all items in the order.
+
+#### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `reason` | string | Yes | Reason for cancellation |
 
 #### Example Request
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/order' \
+  'http://localhost:8080/api/v1/order/cbd630f6-bf9f-48ad-ac51-f806807d99fd/cancel' \
   -H 'Authorization: Bearer <customer_token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "quantity": 1,
-  "subTotal": 100,
-  "total": 105,
-  "shippingCharge": 5,
-  "orderStatus": "pending",
-  "orderItems": [
-    {
-      "productId": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
-      "quantity": 1
-    }
-  ]
-}'
+    "reason": "Changed my mind"
+  }'
 ```
 
 ---
 
-### 2. Get Seller Orders
-
-**`GET /api/v1/seller/order`**
-
-Retrieve all orders for the authenticated seller's shop.
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/seller/order?limit=20&status=PENDING' \
-  -H 'Authorization: Bearer <seller_token>'
-```
-
----
-
-### 3. Get Admin Orders
+### 4. Get Admin Orders
 
 **`GET /api/v1/admin/order`**
 
-Retrieve all orders with advanced filters (Admin only).
+Retrieve all orders with advanced filters.
 
-#### Example Request
+#### Query Parameters
 
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/order?limit=20&status=PENDING' \
-  -H 'Authorization: Bearer <admin_token>'
-```
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `status` | string | No | Filter by order status |
+| `startDate` | string | No | Filter by start date (ISO-8601) |
+| `endDate` | string | No | Filter by end date (ISO-8601) |
 
 ---
 
@@ -89,6 +104,7 @@ curl -X 'GET' \
 
 | Status Code | Description |
 |-------------|-------------|
-| `400` | Bad Request |
+| `400` | Bad Request (Invalid status transition) |
 | `401` | Unauthorized |
+| `403` | Forbidden (User does not own the order) |
 | `404` | Not Found |

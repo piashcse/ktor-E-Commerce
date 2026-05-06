@@ -13,12 +13,10 @@ All Inventory endpoints require Bearer token authentication for sellers and admi
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `POST` | `/api/v1/seller/inventory` | Create a new inventory record | Yes (Seller) |
-| `PUT` | `/api/v1/seller/inventory/{id}` | Update an existing inventory record | Yes (Seller) |
-| `PUT` | `/api/v1/seller/inventory/stock/{id}` | Update product stock quantity | Yes (Seller) |
-| `GET` | `/api/v1/seller/inventory/{id}` | Retrieve inventory details for a product | Yes (Seller) |
-| `GET` | `/api/v1/seller/inventory/shop` | Retrieve inventory records for a shop | Yes (Seller) |
-| `GET` | `/api/v1/seller/inventory/low-stock` | Retrieve low stock records | Yes (Seller) |
-| `GET` | `/api/v1/admin/inventory` | Retrieve all inventory (Admin) | Yes (Admin) |
+| `PUT` | `/api/v1/seller/inventory/stock/{productId}` | Update product stock quantity | Yes (Seller) |
+| `GET` | `/api/v1/seller/inventory/product/{productId}` | Retrieve inventory item details by product ID | Yes (Seller) |
+| `GET` | `/api/v1/seller/inventory/shop/{shopId}` | Retrieve all inventory items for a shop | Yes (Seller) |
+| `GET` | `/api/v1/seller/inventory/low-stock` | Retrieve items with stock below a threshold | Yes (Seller) |
 
 ---
 
@@ -26,7 +24,7 @@ All Inventory endpoints require Bearer token authentication for sellers and admi
 
 ### 1. Update Product Stock (Seller)
 
-**`PUT /api/v1/seller/inventory/stock/{id}`**
+**`PUT /api/v1/seller/inventory/stock/{productId}`**
 
 Update the stock quantity for a specific product using atomic operations (`add`, `subtract`, `set`).
 
