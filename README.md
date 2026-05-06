@@ -39,8 +39,8 @@ scalable, and efficient service for handling your e-commerce needs. For detailed
 ### 4. Shopping Cart and Checkout
 
 - **Shopping Cart**: Add and remove products, update quantities, and calculate totals.
-- **Cart Summary**: Retrieve detailed cart summary with subtotal, tax, and item count.
-- **Checkout**: Streamline the checkout process for quick and secure payments.
+- **Checkout Summary**: Retrieve detailed checkout summary with subtotal, shipping, tax, and discount breakdown.
+- **Checkout**: Streamline the checkout process with consolidated shipping address and method selection.
 - **Stock Validation**: Automatic stock validation during checkout using effective inventory levels.
 - **Price Validation**: Order totals validated against database prices to prevent tampering.
 - **Cart Clearing**: Automatic cart clearing after successful order placement.
@@ -48,6 +48,8 @@ scalable, and efficient service for handling your e-commerce needs. For detailed
 ### 5. Order Management
 
 - **Order Processing**: Handle order creation, status updates, and order history.
+- **Order Status History**: Comprehensive audit trail for every status transition (Placed, Confirmed, Shipped, etc.).
+- **Automatic Taxation**: Configurable tax calculation (default 5%) applied automatically during checkout.
 - **Order Cancellation**: Customers can cancel PENDING/CONFIRMED orders with automatic stock restoration.
 - **Seller Orders**: Sellers can view and manage orders from their shop.
 - **Admin Orders**: Admins can view all orders with advanced filters (status, date range).
@@ -57,7 +59,13 @@ scalable, and efficient service for handling your e-commerce needs. For detailed
 - **Payment Validation**: Payment amounts validated against order totals.
 - **Payment History**: Track all payments for each order.
 
-### 6. Refund Management
+### 6. Discount & Coupon System
+
+- **Promo Codes**: Create and manage fixed or percentage-based discount coupons.
+- **Usage Limits**: Enforce expiration dates, usage limits per coupon, and minimum order amounts.
+- **Admin Controls**: Dedicated administrative interface for managing the coupon lifecycle.
+
+### 7. Refund Management
 
 - **Refund Requests**: Customers can request refunds for order items with reasons and evidence images.
 - **Refund Approval**: Sellers and admins can approve, reject, or process refunds.
@@ -306,65 +314,6 @@ All collection-based endpoints support standardized pagination using `limit` and
 }
 ```
 
-### API Versioning
-
-The API uses **per-domain versioning** — each feature domain (auth, product, order, etc.) has its own independent version lifecycle. This follows the approach used by Stripe, Shopify, and Square.
-
-**Base URL pattern:**
-```
-/api/v{version}/{domain}/{endpoint}
-/api/v{version}/seller/{domain}/{endpoint}
-/api/v{version}/admin/{domain}/{endpoint}
-```
-
-**Examples:**
-```
-GET  /api/v1/auth/login
-GET  /api/v1/product
-PUT  /api/v1/seller/shop/{id}     (Seller-only)
-POST /api/v1/admin/product        (Admin-only)
-PUT  /api/v2/seller/shop/{shopId} (V2 Optimized)
-```
-
-**API Discovery Endpoint:**
-```
-GET /api
-```
-
-Returns a list of all API domains with their current, supported, and deprecated versions:
-```json
-{
-  "service": "ktor-ecommerce",
-  "versions": [
-    {
-      "domain": "auth",
-      "current": "v1",
-      "supported": ["v1"],
-      "deprecated": []
-    },
-    {
-      "domain": "product",
-      "current": "v1",
-      "supported": ["v1"],
-      "deprecated": []
-    }
-  ]
-}
-```
-
-**Version Response Headers:**
-
-Every API response includes version metadata headers:
-
-| Header | Description |
-|--------|-------------|
-| `X-Api-Version` | The version number used for this request |
-| `X-Api-Domain` | The API domain that handled this request |
-| `Sunset` | (deprecated versions only) ISO-8601 date when this version will be removed |
-| `Deprecation` | (deprecated versions only) Set to `true` for deprecated versions |
-| `Link` | (deprecated versions only) Points to the successor version URL |
-
-
 ### Common Error Codes
 
 | Status Code | Description | Example Message |
@@ -428,3501 +377,825 @@ Interactive API documentation is available via Swagger UI at `http://localhost:8
 <details>
 <summary>Admin, Seller, Customer </summary>
 
-- <b> Customer Role:</b> Customers can browse products, make purchases, and manage their accounts.
-- <b> Seller Role:</b>  Sellers can list products, manage their inventory, and view order details.
-- <b> Admin Role:</b>  Admins have full access to manage users, roles, and system settings.
+- <b>Customer Role:</b> Basic shoppers who can browse products, manage their cart, wishlist, shipping addresses, and place orders.
+- <b>Seller Role:</b> Vendors who can manage their own shops, list products, handle inventory, and manage orders and refund requests for their products.
+- <b>Admin Role:</b> Platform administrators with full access to manage all users, shops, categories, brands, coupons, shipping methods, and system-wide settings.
 
 </details>
 
 ### AUTH
 
 <details>
-
-<summary> <code>POST </code> <code>/api/v1/auth/login</code></summary>
+<summary> <code>POST</code> <code>/api/v1/auth/login</code></summary>
 
 ### Description
-Authenticate a user with email, password and userType. Returns access token, refresh token, and user info.
-> **Security**: Rate limited to 5 requests per 10 minutes. Account locked after 5 failed attempts for 30 minutes.
+Authenticate user with email, password and user type.
+> **Security**: Rate-limited to 5 requests per 10 minutes.
 
 ### Curl
-
-```
+```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/auth/Login' \
+  'http://localhost:8080/api/v1/auth/login' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
   "email": "customer@gmail.com",
-  "password": "p1234",
+  "password": "p123",
   "userType": "customer"
 }'
 ```
-
-### Request URL
-
-```
-  http://localhost:8080/api/v1/auth/Login
-```
-
-### Response
-
-```json
-{
-  "user": {
-    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-    "email": "customer@gmail.com",
-    "userType": "customer"
-  },
-  "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "expiresIn": 86400
-}
-```
-
 </details>
 
 <details>
-
 <summary> <code>POST</code> <code>/api/v1/auth/register</code></summary>
 
 ### Description
-Register a new user with the specified email, password, and userType.
-- Users can register with the same email for different roles (customer and seller).
-- If a user is already registered as a customer and wants to become a seller, they can register with the same email but different userType.
-- If a user is already verified and tries to register with the same email and userType, they will receive a message indicating that the user already exists.
-> **Security**: Password must be at least 8 characters with uppercase, lowercase, digit, and special character. Rate limited to 5 requests per 10 minutes.
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/auth/register' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "email": "piash@gmail.com",
-  "password": "Str0ng!Pass",
-  "userType": "admin"
-}'
-```
-
-### Request URL
-
-```
-    http://localhost:8080/api/v1/auth/register
-```
-
-### Response
-
-```
-{
-    "id": "f48ec4f9-5482-4a23-9e49-e69f97bd20a6",
-    "email": "piash@gmail.com"
-  }
-}
-
-```
-
+Register a new user account.
 </details>
 
 <details>
-
 <summary> <code>GET</code> <code>/api/v1/auth/otp-verification</code></summary>
 
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d' \
-  -H 'accept: application/json'
-```
-
-### Request URL
-
-```
-   http://localhost:8080/api/v1/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d
-```
-
-### Response
-
-```
-
-Response body
-Download
-true
-
-```
-
+### Description
+Verify user account or password reset with OTP.
 </details>
-<details>
 
-<summary><code>POST </code> <code>/api/v1/auth/forget-password</code></summary>
+<details>
+<summary> <code>POST</code> <code>/api/v1/auth/forget-password</code></summary>
 
 ### Description
-Send a password reset verification code to the specified email. If the user has multiple accounts with the same email but different roles, the userType parameter can be used to specify which account to reset the password for.
-> **Security**: Rate limited to 5 requests per 10 minutes.
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/auth/forget-password' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "email": "piash@gmail.com",
-  "userType": "customer"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/auth/forget-password
-```
-
-### Response
-
-```json
-{
-  "message": "Verification code sent to your email"
-}
-```
-
+Request password reset OTP.
 </details>
 
 <details>
-
-<summary><code>POST </code> <code>/api/v1/auth/reset-password</code></summary>
+<summary> <code>POST</code> <code>/api/v1/auth/reset-password</code></summary>
 
 ### Description
-Reset the password for a user account using the verification code sent to their email. If the user has multiple accounts with the same email but different roles, the userType parameter can be used to specify which account to reset the password for.
-> **Security**: Password must be at least 8 characters with uppercase, lowercase, digit, and special character. Rate limited to 5 requests per 10 minutes.
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/auth/reset-password' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "email": "piash599@gmail.com",
-  "otp": "9889",
-  "newPassword": "Str0ng!NewPass",
-  "userType": "customer"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/auth/reset-password
-```
-
-### Response
-
-```json
-{
-  "message": "Password reset successful"
-}
-
-```
-
+Reset password using OTP verification.
 </details>
 
 <details>
-
-<summary> <code>POST </code> <code>/api/v1/auth/refresh-token</code></summary>
+<summary> <code>POST</code> <code>/api/v1/auth/refresh-token</code></summary>
 
 ### Description
-Refresh an expired access token using a valid refresh token. Returns a new access token and refresh token pair. The old refresh token is automatically revoked.
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/auth/refresh-token' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "refreshToken": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/auth/refresh-token
-```
-
-### Response
-
-```json
-{
-  "accessToken": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "b2c3d4e5-f6g7-8901-bcde-fg2345678901",
-  "expiresIn": 86400
-}
-```
-
+Refresh access token using refresh token.
 </details>
 
 <details>
-
-<summary> <code>POST </code> <code>/api/v1/auth/logout</code></summary>
+<summary> <code>POST</code> <code>/api/v1/auth/logout</code></summary>
 
 ### Description
-Logout the authenticated user and revoke the refresh token to prevent further token refreshes. If a specific refresh token is provided, only that token is revoked. Otherwise, all user refresh tokens are revoked.
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/auth/logout' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "refreshToken": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/auth/logout
-```
-
-### Response
-
-```json
-{
-  "message": "Logged out successfully"
-}
-```
-
+Logout authenticated user and revoke refresh token.
 </details>
 
 <details>
+<summary> <code>PUT</code> <code>/api/v1/auth/change-password</code></summary>
 
-<summary> <code>PUT </code> <code>/api/v1/auth/change-password</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/auth/change-password?oldPassword=p1234&newPassword=p1234' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImE5YTY2MmE3LTUwZmUtNGYxMy04ZWFiLTBlMDgxMGZiOTkwOSIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5MzEzMzI3NH0.Jy136YnG5Py4zotIZBr4KvaPblONOu1MVy58iECgyGb4spQjW8Vu_tBwc0frl85Vqup8g3NJlqHIDqLs8f-J0g'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/auth/change-password?oldPassword=p1234&newPassword=p1234
-```
-
-### Response
-
-```
-"Password has been changed"
-```
-
+### Description
+Change password for authenticated user.
 </details>
 
 <details>
+<summary> <code>PUT</code> <code>/api/v1/admin/auth/{userId}/change-user-type</code></summary>
 
-<summary> <code>PUT</code> <code>/api/v1/auth/{userId}/change-user-type</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type?userType=ADMIN' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type?userType=ADMIN
-```
-
-### Response
-
-```
-"User type changed successfully to ADMIN"
-```
-
+### Description
+Admin: Change user role (CUSTOMER, SELLER, ADMIN).
 </details>
 
 <details>
+<summary> <code>PUT</code> <code>/api/v1/admin/auth/{userId}/deactivate</code></summary>
 
-<summary> <code>PUT</code> <code>/api/v1/auth/{userId}/deactivate</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate
-```
-
-### Response
-
-```
-"User deactivated successfully"
-```
-
+### Description
+Admin: Deactivate a user account.
 </details>
 
 <details>
+<summary> <code>PUT</code> <code>/api/v1/admin/auth/{userId}/activate</code></summary>
 
-<summary> <code>PUT</code> <code>/api/v1/auth/{userId}/activate</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate
-```
-
-### Response
-
-```
-"User activated successfully"
-```
-
+### Description
+Admin: Activate a user account.
 </details>
 
 ### PROFILE
 
 <details>
-
 <summary> <code>GET</code> <code>/api/v1/profile</code></summary>
 
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/profile' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJwaWFzaDU5OUBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MDdhYzI2NC1iZTJlLTRlODktYjZkMy03YTQ5YjE0MjYzZDIiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzQ0NzMyNzg4fQ.xJQw7NLnXzBO5yIAbK3HJtIFge4n0-z-SNk6l9ZmajbHNqFN4NtH-u2Lwt48kbL1W_xc-jUKNmqmhaamLuj9dg'
-
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/profile
-```
-
-### Response
-
-```
-{
-    "userId": "707ac264-be2e-4e89-b6d3-7a49b14263d2",
-    "firstName": "Mehedi ",
-    "lastName": "Hassan",
-    "mobile": "01812353930",
-    "faxNumber": "454",
-    "streetAddress": "Dhaka",
-    "city": "Dhaka",
-    "postCode": "1205",
-    "gender": "Malde"
-  }
-}
-```
-
+### Description
+Retrieve the authenticated user's profile information.
 </details>
 
-
 <details>
-
 <summary> <code>PUT</code> <code>/api/v1/profile</code></summary>
 
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/profile?firstName=Mehedi%20&lastName=Hassan&mobile=01812353930&faxNumber=454&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Malde' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJwaWFzaDU5OUBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MDdhYzI2NC1iZTJlLTRlODktYjZkMy03YTQ5YjE0MjYzZDIiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzQ0NzMyNzg4fQ.xJQw7NLnXzBO5yIAbK3HJtIFge4n0-z-SNk6l9ZmajbHNqFN4NtH-u2Lwt48kbL1W_xc-jUKNmqmhaamLuj9dg'
-
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/profile?firstName=Mehedi%20&lastName=Hassan&mobile=01812353930&faxNumber=454&streetAddress=Dhaka&city=Dhaka&postCode=1205&gender=Malde
-
-```
-
-### Response
-
-```
-{
-    "userId": "707ac264-be2e-4e89-b6d3-7a49b14263d2",
-    "firstName": "Mehedi ",
-    "lastName": "Hassan",
-    "mobile": "01812353930",
-    "faxNumber": "454",
-    "streetAddress": "Dhaka",
-    "city": "Dhaka",
-    "postCode": "1205",
-    "gender": "Malde"
-  }
-}
-
-```
-
+### Description
+Update the authenticated user's profile information.
 </details>
 
 <details>
-
 <summary> <code>POST</code> <code>/api/v1/profile/image-upload</code></summary>
 
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/profile/image-upload' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJwaWFzaDU5OUBnbWFpbC5jb20iLCJ1c2VySWQiOiI3MDdhYzI2NC1iZTJlLTRlODktYjZkMy03YTQ5YjE0MjYzZDIiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzQ0NzMyNzg4fQ.xJQw7NLnXzBO5yIAbK3HJtIFge4n0-z-SNk6l9ZmajbHNqFN4NtH-u2Lwt48kbL1W_xc-jUKNmqmhaamLuj9dg' \
-  -H 'Content-Type: multipart/form-data' \
-  -F 'image=@piashdp.jpg;type=image/jpeg'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/profile/image-upload
-
-```
-
-### Response
-
-```
-"73b21d27-466e-45c6-bc2b-0480eb4db2d2.jpg"
-
-```
-
+### Description
+Upload a profile image.
 </details>
 
 ### SHOP CATEGORY
 
 <details>
+<summary> <code>POST</code> <code>/api/v1/admin/shop-category</code></summary>
 
-<summary> <code>POST</code> <code>/api/v1/shop-category</code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/shop-category' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "name": "New digital Shop"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/shop-category
-```
-
-### Response
-
-```
-{
-    "id": "28918963-f932-425b-884b-a34d8ae69b2a",
-    "name": "New digital Shop"
-  }
-}
-```
-
+### Description
+Admin: Create a new shop category.
 </details>
 
 <details>
+<summary> <code>PUT</code> <code>/api/v1/admin/shop-category/{id}</code></summary>
 
-<summary> <code>GET </code> <code>/api/v1/shop-category</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/shop-category?limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/shop-category?limit=10
-```
-
-### Response
-
-```json
-{
-  "data": [
-    {
-      "id": "9c95c44c-3767-4ca2-9486-e28e390b3741",
-      "name": "New Electronics"
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
+### Description
+Admin: Update an existing shop category name.
 </details>
 
 <details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/shop-category/{id}</code></summary>
 
-<summary> <code>DELETE</code> <code>/api/v1/shop-category/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjdhMGQ5YTU0LTIzZDctNGY5Yy05YWI2LTgwYzQ3Mzg4MDVlNCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTMzNjg0OTl9.0KnZ9PyQ9XMbxjCaOKsDKyk7lWvwxv4weQDi9wmhHJpaXhqRvZYxU43RzdmuGmxJwnLpT32fe-rwwvkl1IOPpQ'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/shop-category/2a17da31-7517-41db-b7d3-f77d0ddd52a5
-```
-
-### Response
-
-```
-"2a17da31-7517-41db-b7d3-f77d0ddd52a5"
-```
-
-</details>
-
-
-<details>
-
-<summary> <code>PUT </code> <code>/api/v1/shop-category/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6ImFkbWluQGdtYWlsLmNvbSIsInVzZXJJZCI6IjNhNGFlMDMyLTY4MDEtNDc1Yi05NTFhLTI2MTRmMDRhOWJiMCIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE3MjU4MDQwODB9.lE39-L8N1KeSeWIOJkUwoWO5WdMO9fHzhtU4kyOGG0-2eGBtMLNx9T9mfgKagam_qbI8C6E8oteL5r3KHsQP-g'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop
-```
-
-### Response
-
-```
-{
-    "id": "9c95c44c-3767-4ca2-9486-e28e390b3741",
-    "name": "Piash Digital shop"
-  }
-}
-```
-
+### Description
+Admin: Permanently delete a shop category.
 </details>
 
 ### SHOP
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/shop/{id}</code></summary>
+
+### Description
+Retrieve detailed information about a specific shop.
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/shop/public</code></summary>
+
+### Description
+Retrieve public shops with filters (status, category).
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/shop/category/{categoryId}</code></summary>
+
+### Description
+Retrieve shops by category.
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/shop/featured</code></summary>
+
+### Description
+Retrieve featured shops.
+</details>
 
 <details>
 <summary> <code>POST</code> <code>/api/v1/seller/shop</code></summary>
 
 ### Description
 Seller: Create a new shop.
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/seller/shop' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "name": "Royal Shop",
-  "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/seller/shop
-```
-
-### Response
-
-```json
-{
-    "id": "cbfdcfa3-fb65-4fa3-9078-e0f8cc63ddbc",
-    "name": "Royal Shop"
-}
-```
-
 </details>
 
 <details>
 <summary> <code>GET</code> <code>/api/v1/seller/shop</code></summary>
 
 ### Description
-Seller: Retrieve shops owned by the authenticated seller.
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/seller/shop?limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/seller/shop?limit=10
-```
-
-### Response
-
-```json
-{
-  "data": [
-    {
-      "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-      "name": "Piash Shop",
-      "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
+Seller: Retrieve owned shops.
 </details>
 
 <details>
 <summary> <code>PUT</code> <code>/api/v1/seller/shop/{id}</code></summary>
 
 ### Description
-Seller: Update an existing shop by its ID.
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/seller/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "name": "Shop again update"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/seller/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
-```
-
-### Response
-
-```json
-{
-    "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-    "name": "Shop again update",
-    "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
-}
-```
-
+Seller: Update shop details.
 </details>
 
 <details>
 <summary> <code>PUT</code> <code>/api/v2/seller/shop/{shopId}</code></summary>
 
 ### Description
-(V2) Seller: Optimized shop update with source tracking and cleaner response structure.
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v2/seller/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?source=mobile_app' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "name": "V2 Updated Shop"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v2/seller/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?source=mobile_app
-```
-
-### Response
-
-```json
-{
-    "v2_data": {
-        "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-        "name": "V2 Updated Shop",
-        "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
-    },
-    "source": "mobile_app"
-}
-```
-
+Seller: Update shop details with optimized response.
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/shop/public</code></summary>
+<summary> <code>GET</code> <code>/api/v1/admin/shop/status</code></summary>
 
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/shop/public?status=APPROVED&category=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/shop/public?status=APPROVED&category=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10
-```
-
-### Response
-
-```
-{
-  "data": [
-    {
-      "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-      "name": "Shop Name",
-      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
-      "status": "APPROVED"
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
+### Description
+Admin: Retrieve shops filtered by status.
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/shop/category/{categoryId}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/shop/approve/{id}</code></summary>
 
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/shop/category/5e67ec97-9ed6-48ee-9d56-4163fe1711cb' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/shop/category/5e67ec97-9ed6-48ee-9d56-4163fe1711cb
-```
-
-### Response
-
-```
-{
-  "data": [
-    {
-      "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-      "name": "Shop Name",
-      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
-      "status": "APPROVED"
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
+### Description
+Admin: Approve a pending shop application.
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/shop/featured</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/shop/reject/{id}</code></summary>
 
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/shop/featured' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/shop/featured
-```
-
-### Response
-
-```json
-{
-  "data": [
-    {
-      "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-      "name": "Featured Shop",
-      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
-      "status": "APPROVED"
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
+### Description
+Admin: Reject a shop application.
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/shop/status</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/shop/suspend/{id}</code></summary>
 
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/shop/status?status=APPROVED' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/shop/status?status=APPROVED
-```
-
-### Response
-
-```
-{
-  "data": [
-    {
-      "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-      "name": "Approved Shop",
-      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb",
-      "status": "APPROVED"
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
+### Description
+Admin: Suspend an active shop.
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/shop/approve/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/shop/activate/{id}</code></summary>
 
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
-```
-
-### Response
-
-```
-{
-    "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-    "name": "Approved Shop",
-    "status": "APPROVED"
-  }
-}
-```
-
-</details>
-
-<details>
-<summary> <code>PUT</code> <code>/api/v1/shop/reject/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop/reject/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/shop/reject/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
-```
-
-### Response
-
-```
-{
-    "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-    "name": "Rejected Shop",
-    "status": "REJECTED"
-  }
-}
-```
-
-</details>
-
-<details>
-<summary> <code>PUT</code> <code>/api/v1/shop/suspend/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop/suspend/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/shop/suspend/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
-```
-
-### Response
-
-```
-{
-    "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-    "name": "Suspended Shop",
-    "status": "SUSPENDED"
-  }
-}
-```
-
-</details>
-
-<details>
-<summary> <code>PUT</code> <code>/api/v1/shop/activate/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop/activate/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/shop/activate/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7
-```
-
-### Response
-
-```
-{
-    "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-    "name": "Activated Shop",
-    "status": "APPROVED"
-  }
-}
-```
-
-</details>
-
-### PRODUCT
-
-<details>
-
-<summary> <code>POST</code> <code>/api/v1/product</code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/product' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiNjY0NDdhNTctYWY2ZS00ZjI1LWE0NmUtMWVkMGUxMTE0ZDhkIiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3NDQ0ODQ4NzB9.nYRrGaSH5rdzclhfRquQ8ZRaaGFifnu-7oLQ-IvY9_HAygbhSjDXMDtDl2VK3UuGr9vr64-pGgcY-nPCs1AaQg' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "brandId": null,
-  "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
-  "description": "Good watch",
-  "discountPrice": null,
-  "featured": true,
-  "hotDeal": true,
-  "images": [
-    "string"
-  ],
-  "name": "Smart watch",
-  "price": 100,
-  "productCode": null,
-  "status": null,
-  "stockQuantity":1,
-  "subCategoryId": null,
-  "videoLink": null
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product
-```
-
-### Response
-
-```
-{
-    "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
-    "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
-    "name": "Smart watch",
-    "description": "Good watch",
-    "minOrderQuantity": 1,
-    "stockQuantity": 1,
-    "price": 100,
-    "hotDeal": true,
-    "featured": true,
-    "images": "[string]",
-    "status": "ACTIVE"
-  }
-}
-```
-
-</details>
-
-<details>
-
-<summary> <code>GET</code> <code>/api/v1/product/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
-```
-
-### Response
-
-```
-{
-    "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
-    "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
-    "name": "Smart watch",
-    "description": "Good watch",
-    "minOrderQuantity": 1,
-    "stockQuantity": 1,
-    "price": 100,
-    "hotDeal": true,
-    "featured": true,
-    "images": "[string]",
-    "status": "ACTIVE"
-  }
-}
-```
-
-</details>
-
-<details>
-
-<summary> <code>PUT </code> <code>/api/v1/product/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA' \
-  -H 'Content-Type: application/json' \
-  -d '{
-
-  "name": "Smartch watch",
-  "detail":"Xiaomi Smart Watch"
-
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product/718f0b9a-24ef-450f-9126-7d3d9b27cad5
-```
-
-### Response
-
-```
-{
-    "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
-    "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
-    "name": "Smart watch",
-    "description": "Good watch",
-    "minOrderQuantity": 1,
-    "stockQuantity": 1,
-    "price": 100,
-    "hotDeal": true,
-    "featured": true,
-    "images": "[string]",
-    "status": "ACTIVE"
-  }
-}
-```
-
-</details>
-
-
-<details>
-
-<summary> <code>GET </code> <code>/api/v1/product/seller</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/product/seller?limit=10&maxPrice=100&minPrice=0&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&subCategoryId=70ac842b-7a81-4976-9564-d440880d1736&brandId=28918963-f932-425b-884b-a34d8ae69b2a' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product/seller?limit=10&maxPrice=100&minPrice=0&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&subCategoryId=70ac842b-7a81-4976-9564-d440880d1736&brandId=28918963-f932-425b-884b-a34d8ae69b2a
-```
-
-### Response
-
-```
-{
-  "data": [
-    {
-      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-      "name": "Product Name",
-      "price": 99.99,
-      "status": "ACTIVE"
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
-</details>
-
-<details>
-
-<summary> <code>GET </code> <code>/api/v1/product</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/product?limit=10&maxPrice=100&minPrice=0' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product?limit=10&maxPrice=100&minPrice=0
-```
-
-### Response
-
-```
-{
-  "data": [
-    {
-     "id": "718f0b9a-24ef-450f-9126-7d3d9b27cad5",
-    "categoryId": "b4f08aae-b1af-4617-963a-b0b9d1187646",
-    "name": "Smart watch",
-    "description": "Good watch",
-    "minOrderQuantity": 1,
-    "stockQuantity": 1,
-    "price": 100,
-    "hotDeal": true,
-    "featured": true,
-    "images": "[string]",
-    "status": "ACTIVE"
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
-</details>
-
-<details>
-
-<summary> <code>GET</code> <code>/api/v1/product/search</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/product/search?limit=10&name=smartphone&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&maxPrice=1000&minPrice=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product/search?limit=10&name=smartphone&categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&maxPrice=1000&minPrice=10
-```
-
-### Response
-
-```
-{
-  "data": [
-    {
-      "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-      "name": "Smartphone",
-      "price": 599.99,
-      "status": "ACTIVE"
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
-</details>
-
-<details>
-
-<summary> <code>DELETE</code> <code>/api/v1/product/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjA1ZjA4MWIxLWRhY2UtNDllMy1iMmIyLTIxNmE3N2U5NjUxYyIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzcwMjUxfQ.aUj7fEXcNtKP_XdKVI6ICk5GlnTVivxhOkZ8S7_l3NExzIAT93QjuoFiNCDs873OEVO66cEUiSSWjkJVDmzMuA'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product/79a97389-78d5-4dff-a1f7-13bc7ae10a8d
-```
-
-### Response
-
-```
-"79a97389-78d5-4dff-a1f7-13bc7ae10a8d"
-```
-
-</details>
-
-<details>
-
-<summary> <code>POST</code> <code>/api/v1/product/image-upload</code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/product/image-upload' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6IjEyYzA5OGFhLTYzMWYtNDJlZC05MjAzLTFkMjdlMDA0MmY4YSIsInVzZXJUeXBlIjoic2VsbGVyIiwiZXhwIjoxNjkzMzc3NTMyfQ.GeBDEnWNm84mHPhCxTCXUwRSmRo7KjkJ6AfuEXZNiiqKVGtof1xNi8tsBp53L9jbyYwK49HQnDpe6tb0nVwhHA' \
-  -H 'Content-Type: multipart/form-data' \
-  -F 'file=@307116353_3302565903398527_525569142260037778_n.png;type=image/png'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product/image-upload
-```
-
-### Response
-
-```
-{
-    "id": "cc38e31e-3a7f-435c-9e86-293daf0d6877",
-    "imageUrl": "bf68a3f9-d131-4bee-bbbc-80264a3da437.png"
-  }
-}
-```
-
-</details>
-
-### PRODUCT CATEGORY
-
-<details>
-
-<summary> <code>POST</code> <code>/api/v1/admin/product-category</code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/product-category?categoryName=Kids' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ' \
-  -d ''
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product-category?name=Kids
-```
-
-### Response
-
-```
-{
-    "id": "75b44e08-2c94-438f-b500-b204c7c90cca",
-    "name": "Kids",
-    "subCategories": []
-  }
-}
-```
-
-</details>
-
-
-<details>
-
-<summary> <code>GET </code> <code>/api/v1/product-category</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/product-category?limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product-category?limit=10
-```
-
-### Response
-
-```json
-{
-  "data": [
-    {
-      "id": "58f5c085-d04a-47de-beab-1d476b6ce432",
-      "name": "Mens Cloth",
-      "subCategories": []
-    },
-    {
-      "id": "75b44e08-2c94-438f-b500-b204c7c90cca",
-      "name": "Kids",
-      "subCategories": []
-    }
-  ],
-  "metadata": {
-    "totalCount": 2,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
-</details>
-
-<details>
-
-<summary> <code>PUT </code> <code>/api/v1/product-category/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiIzYTRhZTAzMi02ODAxLTQ3NWItOTUxYS0yNjE0ZjA0YTliYjAiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTExNTEyfQ._VBrVUeHJ2gOpCvmNHLhkjn5RMZUpf0B35uy_0k1cAQMMuDG7EDgGHzG3eq6PWpNYjMKBeNRrIByGG0lWSYpjg'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0
-```
-
-### Response
-
-```
-{
-    "id": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
-    "name": "Education 3.0",
-    "subCategories": []
-  }
-}
-```
-
-</details>
-
-<details>
-
-<summary> <code>DELETE</code> <code>/api/v1/admin/product-category/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/product-category/75b44e08-2c94-438f-b500-b204c7c90cca' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM2Mjg0MTJ9.S6EML9bKGau9HB0CE9v_Sm0rCTOi0eQzRhjd-KI6ChF8n95RC9cTwphWyUisK3tKYuS5ZwXIHfmNvup2zRK5BQ'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/product-category/75b44e08-2c94-438f-b500-b204c7c90cca
-```
-
-### Response
-
-```
-"75b44e08-2c94-438f-b500-b204c7c90cca"
-```
-
-</details>
-
-### PRODUCT SUBCATEGORY
-
-<details>
-
-<summary> <code>POST</code> <code>/api/v1/admin/product-subcategory</code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/product-subcategory' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "name": "Electronics Subcategory",
-  "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product-subcategory
-```
-
-### Response
-
-```
-{
-    "id": "70ac842b-7a81-4976-9564-d440880d1736",
-    "name": "Electronics Subcategory",
-    "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
-  }
-}
-```
-
-</details>
-
-<details>
-
-<summary> <code>GET</code> <code>/api/v1/product-subcategory</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/product-subcategory?categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product-subcategory?categoryId=5e67ec97-9ed6-48ee-9d56-4163fe1711cb&limit=10
-```
-
-### Response
-
-```json
-{
-  "data": [
-    {
-      "id": "70ac842b-7a81-4976-9564-d440880d1736",
-      "name": "Electronics Subcategory",
-      "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
-</details>
-
-<details>
-
-<summary> <code>PUT</code> <code>/api/v1/admin/product-subcategory/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736?name=Updated%20Electronics%20Subcategory' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736?name=Updated%20Electronics%20Subcategory
-```
-
-### Response
-
-```
-{
-    "id": "70ac842b-7a81-4976-9564-d440880d1736",
-    "name": "Updated Electronics Subcategory",
-    "categoryId": "5e67ec97-9ed6-48ee-9d56-4163fe1711cb"
-  }
-}
-```
-
-</details>
-
-<details>
-
-<summary> <code>DELETE</code> <code>/api/v1/admin/product-subcategory/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/product-subcategory/70ac842b-7a81-4976-9564-d440880d1736
-```
-
-### Response
-
-```
-{
-    "id": "70ac842b-7a81-4976-9564-d440880d1736"
-  }
-}
-```
-
+### Description
+Admin: Activate a suspended shop.
 </details>
 
 ### BRAND
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/brand</code></summary>
 
-<summary> <code>POST </code> <code>/api/v1/brand </code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/brand?name=Nike' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg' \
-  -d ''
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/brand?name=Nike
-```
-
-### Response
-
-```
-{
-    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
-    "name": "Nike"
-  }
-}
-```
-
+### Description
+Retrieve a paginated list of all brands.
 </details>
 
 <details>
+<summary> <code>POST</code> <code>/api/v1/admin/brand</code></summary>
 
-<summary> <code>GET </code> <code>/api/v1/brand </code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/brand?limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/brand?limit=10
-```
-
-### Response
-
-```json
-{
-  "data": [
-    {
-      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
-      "name": "Nike"
-    },
-    {
-      "id": "19dd1021-432c-473c-8b19-0f56d19af9ad",
-      "name": "PUMA"
-    }
-  ],
-  "metadata": {
-    "totalCount": 2,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
+### Description
+Admin: Create a new brand.
 </details>
 
 <details>
+<summary> <code>PUT</code> <code>/api/v1/admin/brand/{id}</code></summary>
 
-<summary> <code>PUT </code> <code>/api/v1/brand/{id} </code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas
-```
-
-### Response
-
-```
-{
-    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
-    "name": "Addidas"
-  }
-}
-```
-
+### Description
+Admin: Update an existing brand.
 </details>
 
 <details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/brand/{id}</code></summary>
 
-<summary> <code>DELETE</code> <code>/api/v1/admin/brand/{id} </code></summary>
-
-### Curl
-
-```
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/brand/19dd1021-432c-473c-8b19-0f56d19af9ad' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6ImU0Yjk2YWU0LTNjYTItNDQ1OC1hNTczLWUwOTI5YTUyMTcxOSIsInVzZXJUeXBlIjoiYWRtaW4iLCJleHAiOjE2OTM5MDU0Mzl9.Jrn49AipUud_MkH4NbOtBNy9AsAwGE3W2wnW-dnUMifhEaijeaSbwn-jlUsCMPf1ayos2K0pQZma4LmWwuivPg'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/brand/19dd1021-432c-473c-8b19-0f56d19af9ad
-```
-
-### Response
-
-```
-"19dd1021-432c-473c-8b19-0f56d19af9ad"
-```
-
+### Description
+Admin: Delete a brand.
 </details>
 
-### WISHLIST
+### PRODUCT CATEGORY
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/product-category</code></summary>
 
-<summary> <code>POST</code> <code>/api/v1/wishlist </code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/wishlist' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/wishlist
-```
-
-### Response
-
-```
-{
-    "product": {
-      "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-      "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-      "name": "Polo T Shirt",
-      // ...
-    }
-  }
-}
-```
-
+### Description
+Retrieve a paginated list of all product categories.
 </details>
 
 <details>
+<summary> <code>POST</code> <code>/api/v1/admin/product-category</code></summary>
 
-<summary> <code>GET </code> <code>/api/v1/wishlist </code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/wishlist?page=1&limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/wishlist?page=1&limit=10
-```
-
-### Response
-
-```json
-{
-  "data": [
-    {
-      "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-      "name": "Polo T Shirt"
-      // ...
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
+### Description
+Admin: Create a new product category.
 </details>
 
 <details>
+<summary> <code>PUT</code> <code>/api/v1/admin/product-category/{id}</code></summary>
 
-<summary> <code>GET </code> <code>/api/v1/wishlist/check </code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/wishlist/check?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/wishlist/check?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
-```
-
-### Response
-
-```
-true
-```
-
+### Description
+Admin: Update an existing product category.
 </details>
 
 <details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/product-category/{id}</code></summary>
 
-<summary> <code>DELETE </code> <code>/api/v1/wishlist/remove </code></summary>
-
-### Curl
-
-```
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/wishlist/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/wishlist/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4
-```
-
-### Response
-
-```
-{
-    "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-    // ...
-  }
-}
-    "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-    "name": "Polo T Shirt",
-    "productCode": "string",
-    "productQuantity": 1,
-    "description": "Chinese polo T-shirt",
-    "price": 100,
-    "discountPrice": 0,
-    "status": 0,
-    "hotDeal": "string",
-    "bestRated": "string",
-    "buyOneGetOne": "string"
-  }
-}
-```
-
+### Description
+Admin: Permanently delete a product category.
 </details>
 
-### SHIPPING
+### PRODUCT SUB CATEGORY
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/product-subcategory</code></summary>
 
-<summary> <code>GET </code> <code>/api/v1/shipping </code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/shipping?orderId=c7f38846-4f63-460f-b956-f2b6758dbffd
-```
-
-### Response
-
-```
-{
-    "id": "5489a8b4-7a16-4854-b157-396a8a731032",
-    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
-    "orderId": "c7f38846-4f63-460f-b956-f2b6758dbffd",
-    "shipAddress": "update address",
-    "shipCity": "Dhaka",
-    "shipPhone": 1073741824,
-    "shipName": "paperfly",
-    "shipEmail": "customer@gmail.com",
-    "shipCountry": "Bangladesh"
-  }
-}
-```
-
+### Description
+Retrieve subcategories for a specific category (require categoryId).
 </details>
 
 <details>
+<summary> <code>POST</code> <code>/api/v1/admin/product-subcategory</code></summary>
 
-<summary> <code>POST </code> <code>/api/v1/shipping </code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/shipping' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
-  "shipAddress": "Dhaka Bangladesh",
-  "shipCity": "Dhaka",
-  "shipCountry": "Bangladesh",
-  "shipEmail": "customer@gmail.com",
-  "shipName": "string",
-  "shipPhone": 1073741824
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/shipping
-```
-
-### Response
-
-```
-{
-    "id": "471ebc82-80e7-4da0-a472-d1c8835f57b8",
-    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
-    "shipAddress": "Dhaka Bangladesh",
-    "shipCity": "Dhaka",
-    "shipPhone": 1073741824,
-    "shipName": "string",
-    "shipEmail": "customer@gmail.com",
-    "shipCountry": "Bangladesh"
-  }
-}
-```
-
+### Description
+Admin: Create a new product subcategory.
 </details>
 
 <details>
+<summary> <code>PUT</code> <code>/api/v1/admin/product-subcategory/{id}</code></summary>
 
-<summary> <code>PUT </code> <code>/api/v1/shipping/{id} </code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=Updated%20shipping%20address' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/shipping/5489a8b4-7a16-4854-b157-396a8a731032?shipAddress=Updated%20shipping%20address
-```
-
-### Response
-
-```
-{
-    "id": "5489a8b4-7a16-4854-b157-396a8a731032",
-    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
-    "orderId": "c7f38846-4f63-460f-b956-f2b6758dbffd",
-    "shipAddress": "Updated shipping address",
-    "shipCity": "Dhaka",
-    "shipPhone": 1073741824,
-    "shipName": "paperfly",
-    "shipEmail": "customer@gmail.com",
-    "shipCountry": "Bangladesh"
-  }
-}
-```
-
+### Description
+Admin: Update an existing product subcategory name.
 </details>
 
 <details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/product-subcategory/{id}</code></summary>
 
-<summary> <code>DELETE </code> <code>/api/v1/shipping/{id} </code></summary>
-
-### Curl
-
-```
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/shipping/471ebc82-80e7-4da0-a472-d1c8835f57b8
-```
-
-### Response
-
-```
-"471ebc82-80e7-4da0-a472-d1c8835f57b8"
-```
-
+### Description
+Admin: Permanently delete a product subcategory.
 </details>
 
-### REVIEW-RATING
+### PRODUCT
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/product/{id}</code></summary>
 
-<summary> <code>GET</code> <code>/review-rating </code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&limit=10
-```
-
-### Response
-
-```json
-{
-  "data": [
-    {
-      "id": "70ac842b-7a81-4976-9564-d440880d1736",
-      "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
-      "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-      "reviewText": "Good product",
-      "rating": 2
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
+### Description
+Retrieve detailed information about a specific product.
 </details>
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/product</code></summary>
 
-<summary> <code>POST</code> <code>/review-rating </code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/review-rating' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-  "rating": 2,
-  "reviewText": "Good product"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/review-rating
-```
-
-### Response
-
-```
-{
-    "id": "70ac842b-7a81-4976-9564-d440880d1736",
-    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
-    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "reviewText": "Good product",
-    "rating": 2
-  }
-}
-```
-
+### Description
+Retrieve a paginated list of products with optional filters (maxPrice, minPrice, categoryId, subCategoryId, brandId, sortBy, sortOrder).
 </details>
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/product/search</code></summary>
 
-<summary> <code>PUT</code> <code>/review-rating/{id} </code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&rating=5' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&rating=5
-```
-
-### Response
-
-```
-{
-    "id": "70ac842b-7a81-4976-9564-d440880d1736",
-    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
-    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "reviewText": "Product review edited",
-    "rating": 5
-  }
-}
-```
-
+### Description
+Search for products by name.
 </details>
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/seller/product</code></summary>
 
-<summary> <code>DELETE</code> <code>/review-rating/{id} </code></summary>
+### Description
+Seller: Retrieve seller products with filters.
+</details>
 
-### Curl
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/product</code></summary>
 
-```
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/review-rating/70ac842b-7a81-4976-9564-d440880d1736' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
-```
+### Description
+Seller: Add a new product listing.
+</details>
 
-### Request URL
+<details>
+<summary> <code>PUT</code> <code>/api/v1/seller/product/{id}</code></summary>
 
-```
-http://localhost:8080/api/v1/review-rating/70ac842b-7a81-4976-9564-d440880d1736
-```
+### Description
+Seller: Update an existing product listing.
+</details>
 
-### Response
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/seller/product/{id}</code></summary>
 
-```
-"70ac842b-7a81-4976-9564-d440880d1736"
-```
+### Description
+Seller: Permanently delete a product listing.
+</details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/product/image-upload</code></summary>
+
+### Description
+Seller: Upload a product image.
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/product/{id}</code></summary>
+
+### Description
+Admin: Permanently delete any product.
+</details>
+
+### REVIEW RATING
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/review-rating</code></summary>
+
+### Description
+Retrieve reviews and ratings for a specific product.
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/review-rating</code></summary>
+
+### Description
+Submit a new review and rating for a product.
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/review-rating/{id}</code></summary>
+
+### Description
+Update an existing review and rating.
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/review-rating/{id}</code></summary>
+
+### Description
+Delete a review and rating.
 </details>
 
 ### CART
 
 <details>
+<summary> <code>POST</code> <code>/api/v1/cart</code></summary>
 
-<summary> <code>POST</code> <code>/api/v1/cart </code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ' \
-  -d ''
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1
-```
-
-### Response
-
-```
-{
-    "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-    "quantity": 1
-  }
-}
-```
-
+### Description
+Add an item to the authenticated user's cart.
 </details>
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/cart</code></summary>
 
-<summary> <code>GET </code> <code>/api/v1/cart </code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/cart?limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/cart?limit=10
-```
-
-### Response
-
-```json
-{
-  "data": [
-    {
-      "productId": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
-      "quantity": 3,
-      "product": {
-        "id": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
-        "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-        "productName": "Smartch watch",
-        "productCode": "string",
-        "productQuantity": 5,
-        "productDetail": "Xiaomi Smart Watch",
-        "price": 10,
-        "discountPrice": 0,
-        "status": 0,
-        "videoLink": "string",
-        "mainSlider": "string",
-        "hotDeal": "string",
-        "bestRated": "string",
-        "midSlider": "string",
-        "hotNew": "string",
-        "trend": "string",
-        "buyOneGetOne": "string",
-        "imageOne": "string",
-        "imageTwo": "string"
-      }
-    },
-    {
-      "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-      "quantity": 1,
-      "product": {
-        "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-        "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-        "productName": "Polo T Shirt",
-        "productCode": "string",
-        "productQuantity": 1,
-        "productDetail": "Chinese polo T-shirt",
-        "price": 100,
-        "discountPrice": 0,
-        "status": 0,
-        "hotDeal": "string",
-        "bestRated": "string",
-        "buyOneGetOne": "string"
-      }
-    }
-  ],
-  "metadata": {
-    "totalCount": 2,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
+### Description
+Retrieve all items in the authenticated user's cart.
 </details>
 
 <details>
+<summary> <code>PUT</code> <code>/api/v1/cart/update</code></summary>
 
-<summary> <code>PUT </code> <code>/api/v1/cart </code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1
-```
-
-### Response
-
-```
-{
-    "productId": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-    "quantity": 2,
-    "product": {
-      "id": "5b24d429-c981-47c8-9318-f4d61dd2c1a4",
-      "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-      "productName": "Polo T Shirt",
-      "productCode": "string",
-      "productQuantity": 1,
-      "productDetail": "Chinese polo T-shirt",
-      "price": 100,
-      "discountPrice": 0,
-      "status": 0,
-      "hotDeal": "string",
-      "bestRated": "string",
-      "buyOneGetOne": "string"
-    }
-  }
-}
-```
-
+### Description
+Update the quantity of an item in the cart.
 </details>
 
 <details>
+<summary> <code>DELETE</code> <code>/api/v1/cart/remove</code></summary>
 
-<summary> <code>DELETE </code> <code>/api/v1/cart </code></summary>
-
-### Curl
-
-```
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/cart?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NTk4N30.rq2rnhBUoAEEoImdqhD7dEo0UnkEFHb5q9cOC-AQ_Gjaf2pE0R7eu15MGn12kp5KJkJQIYx5jB5Tpn3OaphuGQ'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/cart/71b26dd9-b4b5-4f87-a84d-c8daa506018a
-```
-
-### Response
-
-```
-{
-    "id": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
-    "categoryId": "58f5c085-d04a-47de-beab-1d476b6ce432",
-    "productName": "Smartch watch",
-    "productCode": "string",
-    "productQuantity": 5,
-    "productDetail": "Xiaomi Smart Watch",
-    "price": 10,
-    "discountPrice": 0,
-    "status": 0,
-    "videoLink": "string",
-    "mainSlider": "string",
-    "hotDeal": "string",
-    "bestRated": "string",
-    "midSlider": "string",
-    "hotNew": "string",
-    "trend": "string",
-    "buyOneGetOne": "string",
-    "imageOne": "string",
-    "imageTwo": "string"
-  }
-}
-```
-
+### Description
+Remove a specific item from the cart (require productId).
 </details>
 
 <details>
+<summary> <code>DELETE</code> <code>/api/v1/cart/all</code></summary>
 
-<summary> <code>DELETE </code> <code>/api/v1/cart/all </code></summary>
+### Description
+Remove all items from the authenticated user's cart.
+</details>
 
-### Curl
+<details>
+<summary> <code>GET</code> <code>/api/v1/cart/summary</code></summary>
 
-```
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/cart/all' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDM1NzU3MX0.rRj8mHIqG-d78t_H54HjiWl7GBzgH4KOWUKAWsDveolmBcxTfyCJKzWd4K8Jwq5MKvJ3xa8J1vf0E34DSHA4sw'
-```
+### Description
+Retrieve a summary of the cart (totals, counts).
+</details>
 
-### Request URL
+### WISHLIST
 
-```
-http://localhost:8080/api/v1/cart/all
-```
+<details>
+<summary> <code>POST</code> <code>/api/v1/wishlist</code></summary>
 
-### Response
+### Description
+Add a product to the authenticated user's wishlist.
+</details>
 
-```
-true
-```
+<details>
+<summary> <code>GET</code> <code>/api/v1/wishlist</code></summary>
 
+### Description
+Retrieve all items in the user's wishlist.
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/wishlist/remove</code></summary>
+
+### Description
+Remove a specific product from the wishlist.
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/wishlist/check</code></summary>
+
+### Description
+Check if a specific product is in the user's wishlist.
+</details>
+
+### CHECKOUT
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/checkout/shipping-address</code></summary>
+
+### Description
+Add a new shipping address for the authenticated user.
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/checkout/shipping-address</code></summary>
+
+### Description
+Retrieve all shipping addresses for the authenticated user.
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/checkout/shipping-address/{id}</code></summary>
+
+### Description
+Update an existing shipping address.
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/checkout/shipping-address/{id}</code></summary>
+
+### Description
+Delete a shipping address.
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/checkout/shipping-method</code></summary>
+
+### Description
+Retrieve all available shipping methods.
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/checkout/summary</code></summary>
+
+### Description
+Get a summary of the checkout (totals) without placing an order.
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/checkout/place-order</code></summary>
+
+### Description
+Place a new order from the cart.
 </details>
 
 ### ORDER
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/order</code></summary>
 
-<summary> <code>POST</code> <code>/api/v1/order </code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/order' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDk1NjIzNX0.Go4nLzsiOruUKTtETn1Yc35BNjlo79_3Vs8LfW9LJG1nvogqIR0mG9JQOUxP8YclsVBzGV0j0IIv7svTaDMxTg' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "quantity": 1,
-  "subTotal": 10,
-  "total": 10,
-  "shippingCharge": 5,
-  "orderStatus": "pending",
-  "orderItems": [
-    {
-      "productId": "71b26dd9-b4b5-4f87-a84d-c8daa506018a",
-      "quantity": 1
-    }
-  ]
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/order
-```
-
-### Response
-
-```
-{
-    "orderId": "b177431f-22f2-4c01-8ad6-da5319e2c7b9"
-  }
-}
-```
-
+### Description
+Retrieve all orders for the authenticated customer.
 </details>
 
 <details>
+<summary> <code>PATCH</code> <code>/api/v1/order/status/{id}</code></summary>
 
-<summary> <code>GET </code> <code>/api/v1/order </code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/order?limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Imt0b3IuaW8iLCJlbWFpbCI6InBpYXNoNTk5QGdtYWlsLmNvbSIsInVzZXJJZCI6Ijg5YThhMGQ1LWQyNWMtNDBiYi05ZmRmLTc1MWM1YTAxNWUzNyIsInVzZXJUeXBlIjoidXNlciIsImV4cCI6MTY5NDk1NjIzNX0.Go4nLzsiOruUKTtETn1Yc35BNjlo79_3Vs8LfW9LJG1nvogqIR0mG9JQOUxP8YclsVBzGV0j0IIv7svTaDMxTg'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/order?limit=10
-```
-
-### Response
-
-```json
-{
-  "data": [
-    {
-      "orderId": "04675b54-a9df-4200-a526-0b15f6a85930",
-      "quantity": 1,
-      "subTotal": 10,
-      "total": 10,
-      "shippingCharge": 100,
-      "cancelOrder": false,
-      "status": "pending",
-      "statusCode": 0
-    },
-    {
-      "orderId": "f88ab61d-5e52-431b-82e8-48e5b607085c",
-      "quantity": 1,
-      "subTotal": 10,
-      "total": 10,
-      "shippingCharge": 100,
-      "cancelOrder": false,
-      "status": "pending",
-      "statusCode": 0
-    },
-    {
-      "orderId": "b177431f-22f2-4c01-8ad6-da5319e2c7b9",
-      "quantity": 1,
-      "subTotal": 10,
-      "total": 10,
-      "shippingCharge": 5,
-      "cancelOrder": false,
-      "status": "pending",
-      "statusCode": 0
-    }
-  ],
-  "metadata": {
-    "totalCount": 3,
-    "limit": 10,
-    "skip": 0
-  }
-}
-```
-
+### Description
+Update order status (Customer: CANCELED/RECEIVED, Seller: CONFIRMED/DELIVERED).
 </details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/order/{id}/cancel</code></summary>
+
+### Description
+Cancel an order.
+</details>
 
 <details>
-<summary> <code>PATCH </code> <code>/api/v1/order/status/{id} </code></summary>
+<summary> <code>GET</code> <code>/api/v1/seller/order</code></summary>
 
-### Curl
+### Description
+Seller: Retrieve orders for the seller's shop.
+</details>
 
-```
-curl -X 'PATCH' \
-  'http://localhost:8080/api/v1/order/status/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTA5NDYxfQ.KU7eVxmkq0zg1sQy9RsAVAxuwtGcuGlB9pqMnc-eUI9If-dycduIhn7xv8np0yFVtULAF2_ns59u38gsR237eQ'
-```
+<details>
+<summary> <code>PATCH</code> <code>/api/v1/admin/order/status/{id}</code></summary>
 
-### Request URL
+### Description
+Admin: Update the status of any order.
+</details>
 
-```
-http://localhost:8080/api/v1/order/status/7e49b2a1-fa0c-4aac-b996-91f2411f14b7?status=delivered
-```
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/order/{id}/cancel</code></summary>
 
-### Response
+### Description
+Admin: Cancel any order.
+</details>
 
-```
-{
-    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
-    "quantity": 1073741824,
-    "subTotal": 0.1,
-    "total": 0.1,
-    "shippingCharge": 0.1,
-    "cancelOrder": false,
-    "status": "delivered",
-    "statusCode": 4
-  }
-}
-```
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/order</code></summary>
 
+### Description
+Admin: Retrieve all orders with advanced filtering (status, startDate, endDate).
 </details>
 
 ### PAYMENT
 
 <details>
-<summary> <code>POST </code> <code>/api/v1/payment </code></summary>
+<summary> <code>POST</code> <code>/api/v1/payment</code></summary>
 
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/payment' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "amount": 500,
-  "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
-  "paymentMethod": "Bkash",
-  "status": "COMPLETED"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/payment
-```
-
-### Response
-
-```
-{
-    "id": "4b68917d-4452-4d18-9012-47e843f05c15",
-    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
-    "amount": 500,
-    "status": "COMPLETED",
-    "paymentMethod": "Bkash"
-  }
-}
-```
-
+### Description
+Create a new payment record for an order.
 </details>
+
 <details>
-<summary> <code>GET </code> <code>/api/v1/payment/{id} </code></summary>
+<summary> <code>GET</code> <code>/api/v1/payment/{id}</code></summary>
 
-### Curl
+### Description
+Retrieve payment details by ID.
+</details>
 
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/payment/4b68917d-4452-4d18-9012-47e843f05c15' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTE5NzcxfQ.V5ZQKEnMVuSYXpJ8AjTljrJsmKYVSsY1dzGo8wlA8FzPXQM_Dcr9KBcNT7VFWedMz4Ctb0c8ivfvmcxD4CDleg'
-```
+<details>
+<summary> <code>GET</code> <code>/api/v1/payment/order/{orderId}</code></summary>
 
-### Request URL
+### Description
+Retrieve all payments for a specific order.
+</details>
 
-```
-http://localhost:8080/api/v1/payment/4b68917d-4452-4d18-9012-47e843f05c15
-```
+### PRIVACY POLICY
 
-### Response
+<details>
+<summary> <code>GET</code> <code>/api/v1/policy/{policyType}</code></summary>
 
-```
-{
-    "id": "4b68917d-4452-4d18-9012-47e843f05c15",
-    "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
-    "amount": 500,
-    "status": "COMPLETED",
-    "paymentMethod": "Bkash"
-  }
-}
-```
+### Description
+Retrieve the latest active version of a policy by type.
+</details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/policy</code></summary>
+
+### Description
+Admin: Create a new policy document or new version.
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/policy/{policyType}/history</code></summary>
+
+### Description
+Admin: Retrieve all versions of a specific policy type.
+</details>
+
+### PRIVACY POLICY CONSENT
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/policy-consents/consent</code></summary>
+
+### Description
+Record user consent for a specific policy document.
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/policy-consents</code></summary>
+
+### Description
+Retrieve all consent records for the authenticated user.
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/policy-consents/{policyType}</code></summary>
+
+### Description
+Check if the user has consented to a specific policy type.
 </details>
 
 ### REFUND REQUEST
 
 <details>
-
 <summary> <code>POST</code> <code>/api/v1/refund-requests/{orderId}</code></summary>
 
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/refund-requests/ORD-20260414-0001' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "orderItemId": "item-uuid-123",
-  "reason": "Product received damaged",
-  "images": "https://example.com/img1.jpg,https://example.com/img2.jpg"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/refund-requests/ORD-20260414-0001
-```
-
-### Response
-
-```json
-{
-  "id": "refund-uuid-123",
-  "orderItemId": "item-uuid-123",
-  "orderId": "ORD-20260414-0001",
-  "userId": "user-uuid-123",
-  "reason": "Product received damaged",
-  "images": "https://example.com/img1.jpg,https://example.com/img2.jpg",
-  "status": "PENDING",
-  "refundAmount": null,
-  "refundMethod": null,
-  "trackingNumber": null,
-  "requestedAt": "2026-04-14T10:30:00",
-  "resolvedAt": null,
-  "createdAt": "2026-04-14T10:30:00",
-  "updatedAt": "2026-04-14T10:30:00"
-}
-```
-
+### Description
+Create a refund request for an order item.
 </details>
 
 <details>
-
-<summary> <code>GET</code> <code>/api/v1/refund-requests/order/{orderId}</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/refund-requests/order/ORD-20260414-0001' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/refund-requests/order/ORD-20260414-0001
-```
-
-### Response
-
-```json
-```json
-{
-  "data": [
-    {
-      "id": "refund-uuid-123",
-      "orderItemId": "item-uuid-123",
-      "orderId": "ORD-20260414-0001",
-      "userId": "user-uuid-123",
-      "reason": "Product received damaged",
-      "images": "https://example.com/img1.jpg",
-      "status": "APPROVED",
-      "refundAmount": 50.0,
-      "refundMethod": "original_payment",
-      "trackingNumber": null,
-      "requestedAt": "2026-04-14T10:30:00",
-      "resolvedAt": "2026-04-14T12:00:00",
-      "createdAt": "2026-04-14T10:30:00",
-      "updatedAt": "2026-04-14T12:00:00"
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 20,
-    "skip": 0
-  }
-}
-```
-
-</details>
-
-<details>
-
-<summary> <code>GET</code> <code>/api/v1/refund-requests/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/refund-requests/refund-uuid-123' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/refund-requests/refund-uuid-123
-```
-
-### Response
-
-```json
-{
-  "id": "refund-uuid-123",
-  "orderItemId": "item-uuid-123",
-  "orderId": "ORD-20260414-0001",
-  "userId": "user-uuid-123",
-  "reason": "Product received damaged",
-  "images": "https://example.com/img1.jpg",
-  "status": "APPROVED",
-  "refundAmount": 50.0,
-  "refundMethod": "original_payment",
-  "trackingNumber": null,
-  "requestedAt": "2026-04-14T10:30:00",
-  "resolvedAt": "2026-04-14T12:00:00",
-  "createdAt": "2026-04-14T10:30:00",
-  "updatedAt": "2026-04-14T12:00:00"
-}
-```
-
-</details>
-
-<details>
-
-<summary> <code>PUT</code> <code>/api/v1/refund-requests/{id}/status</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/refund-requests/refund-uuid-123/status' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "status": "APPROVED",
-  "refundAmount": 50.0,
-  "refundMethod": "original_payment"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/refund-requests/refund-uuid-123/status
-```
-
-### Response
-
-```json
-{
-  "id": "refund-uuid-123",
-  "orderItemId": "item-uuid-123",
-  "orderId": "ORD-20260414-0001",
-  "userId": "user-uuid-123",
-  "reason": "Product received damaged",
-  "images": "https://example.com/img1.jpg",
-  "status": "APPROVED",
-  "refundAmount": 50.0,
-  "refundMethod": "original_payment",
-  "trackingNumber": null,
-  "requestedAt": "2026-04-14T10:30:00",
-  "resolvedAt": "2026-04-14T12:00:00",
-  "createdAt": "2026-04-14T10:30:00",
-  "updatedAt": "2026-04-14T12:00:00"
-}
-```
-
-</details>
-
-<details>
-
 <summary> <code>POST</code> <code>/api/v1/refund-requests/{id}/ship</code></summary>
 
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/refund-requests/refund-uuid-123/ship' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "trackingNumber": "TRK123456789"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/refund-requests/refund-uuid-123/ship
-```
-
-### Response
-
-```json
-{
-  "id": "refund-uuid-123",
-  "orderItemId": "item-uuid-123",
-  "orderId": "ORD-20260414-0001",
-  "userId": "user-uuid-123",
-  "reason": "Product received damaged",
-  "images": "https://example.com/img1.jpg",
-  "status": "SHIPPED",
-  "refundAmount": 50.0,
-  "refundMethod": "original_payment",
-  "trackingNumber": "TRK123456789",
-  "requestedAt": "2026-04-14T10:30:00",
-  "resolvedAt": "2026-04-14T12:00:00",
-  "createdAt": "2026-04-14T10:30:00",
-  "updatedAt": "2026-04-14T14:00:00"
-}
-```
-
-</details>
-
-### PRIVACY POLICY & CONSENTS
-
-<details>
-
-<summary> <code>GET </code> <code>/api/v1/policy</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/policy' \
-  -H 'accept: application/json'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/policy
-```
-
-### Response
-
-```json
-{
-  "data": [
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "type": "PRIVACY_POLICY",
-      "title": "Privacy Policy",
-      "content": "This is our privacy policy...",
-      "version": "1.0",
-      "effectiveDate": "2023-01-01T00:00:00Z",
-      "isActive": true,
-      "createdAt": "2023-01-01T00:00:00Z",
-      "updatedAt": "2023-01-01T00:00:00Z"
-    },
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440001",
-      "type": "TERMS_CONDITIONS",
-      "title": "Terms and Conditions",
-      "content": "These are our terms and conditions...",
-      "version": "1.0",
-      "effectiveDate": "2023-01-01T00:00:00Z",
-      "isActive": true,
-      "createdAt": "2023-01-01T00:00:00Z",
-      "updatedAt": "2023-01-01T00:00:00Z"
-    }
-  ],
-  "metadata": {
-    "totalCount": 2,
-    "limit": 20,
-    "skip": 0
-  }
-}
-```
-
+### Description
+Mark an approved refund as shipped.
 </details>
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/refund-requests/order/{orderId}</code></summary>
 
-<summary> <code>GET </code> <code>/api/v1/policy/{type}</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/policy/PRIVACY_POLICY' \
-  -H 'accept: application/json'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/policy/PRIVACY_POLICY
-```
-
-### Response
-
-```
-{
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "type": "PRIVACY_POLICY",
-    "title": "Privacy Policy",
-    "content": "This is our privacy policy...",
-    "version": "1.0",
-    "effectiveDate": "2023-01-01T00:00:00Z",
-    "isActive": true,
-    "createdAt": "2023-01-01T00:00:00Z",
-    "updatedAt": "2023-01-01T00:00:00Z"
-  }
-}
-```
-
+### Description
+Get refund requests for an order.
 </details>
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/refund-requests/{id}</code></summary>
 
-<summary> <code>GET </code> <code>/api/v1/policy/detail/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/policy/detail/550e8400-e29b-41d4-a716-446655440000' \
-  -H 'accept: application/json'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/policy/detail/550e8400-e29b-41d4-a716-446655440000
-```
-
-### Response
-
-```
-{
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "type": "PRIVACY_POLICY",
-    "title": "Privacy Policy",
-    "content": "This is our privacy policy...",
-    "version": "1.0",
-    "effectiveDate": "2023-01-01T00:00:00Z",
-    "isActive": true,
-    "createdAt": "2023-01-01T00:00:00Z",
-    "updatedAt": "2023-01-01T00:00:00Z"
-  }
-}
-```
-
+### Description
+Get refund request details.
 </details>
 
 <details>
+<summary> <code>PUT</code> <code>/api/v1/seller/refund-requests/{id}/status</code></summary>
 
-<summary> <code>POST </code> <code>/api/v1/policy</code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/policy' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "type": "PRIVACY_POLICY",
-  "title": "Updated Privacy Policy",
-  "content": "This is our updated privacy policy...",
-  "version": "1.1",
-  "effectiveDate": "2023-06-15T00:00:00Z"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/policy
-```
-
-### Response
-
-```
-{
-    "id": "550e8400-e29b-41d4-a716-446655440003",
-    "type": "PRIVACY_POLICY",
-    "title": "Updated Privacy Policy",
-    "content": "This is our updated privacy policy...",
-    "version": "1.1",
-    "effectiveDate": "2023-06-15T00:00:00Z",
-    "isActive": true
-  }
-}
-```
-
+### Description
+Seller: Update refund request status.
 </details>
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/admin/refund-requests/order/{orderId}</code></summary>
 
-<summary> <code>PUT </code> <code>/api/v1/policy/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/policy/550e8400-e29b-41d4-a716-446655440003' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "title": "Updated Privacy Policy v2",
-  "content": "This is our further updated privacy policy...",
-  "version": "1.2",
-  "effectiveDate": "2023-07-01T00:00:00Z"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/policy/550e8400-e29b-41d4-a716-446655440003
-```
-
-### Response
-
-```
-{
-    "id": "550e8400-e29b-41d4-a716-446655440003",
-    "type": "PRIVACY_POLICY",
-    "title": "Updated Privacy Policy v2",
-    "content": "This is our further updated privacy policy...",
-    "version": "1.2",
-    "effectiveDate": "2023-07-01T00:00:00Z",
-    "isActive": true
-  }
-}
-```
-
+### Description
+Admin: Get all refund requests for an order.
 </details>
 
 <details>
+<summary> <code>PUT</code> <code>/api/v1/admin/refund-requests/{id}/status</code></summary>
 
-<summary> <code>POST </code> <code>/api/v1/policy/deactivate/{id}</code></summary>
+### Description
+Admin: Update refund status.
+</details>
 
-### Curl
+### COUPON
 
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/policy/deactivate/550e8400-e29b-41d4-a716-446655440003' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw'
-```
+<details>
+<summary> <code>GET</code> <code>/api/v1/coupon/{code}</code></summary>
 
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/policy/deactivate/550e8400-e29b-41d4-a716-446655440003
-```
-
-### Response
-
-```
-{
-    "id": "550e8400-e29b-41d4-a716-446655440003",
-    "type": "PRIVACY_POLICY",
-    "title": "Updated Privacy Policy v2",
-    "content": "This is our further updated privacy policy...",
-    "version": "1.2",
-    "effectiveDate": "2023-07-01T00:00:00Z",
-    "isActive": false
-  }
-}
-```
-
+### Description
+Retrieve detailed information about a coupon by its code.
 </details>
 
 <details>
+<summary> <code>POST</code> <code>/api/v1/admin/coupon</code></summary>
 
-<summary> <code>POST </code> <code>/api/v1/policy-consents/consent</code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/policy-consents/consent' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJjdXN0b21lckBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImN1c3RvbWVyIiwiZXhwIjoxNzI4OTI2OTE2fQ.nejmXA_iKe8MzI9jhe6HPUBASuWZ8Zdhx4zYRRW-H-vAMq5m2p88_-z0DRrdFyVrH1nDIUVO03BKb1kwuX1xZw' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "policyId": "550e8400-e29b-41d4-a716-446655440000"
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/admin/policy-consents/consent
-```
-
-### Response
-
-```
-{
-    "id": "550e8400-e29b-41d4-a716-446655440002",
-    "userId": "a67fd0cc-3d92-4259-bbd4-1e0ba49dece4",
-    "policyId": "550e8400-e29b-41d4-a716-446655440000",
-    "ipAddress": "127.0.0.1",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "consentedAt": "2023-06-15T10:30:00Z"
-  }
-}
-```
-
-</details>
-
-### INVENTORY MANAGEMENT
-
-<details>
-
-<summary> <code>POST</code> <code>/api/v1/admin/inventory</code></summary>
-
-### Curl
-
-```
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/inventory' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-  "quantity": 100,
-  "reserved": 10
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/inventory
-```
-
-### Response
-
-```
-{
-    "id": "12345678-1234-1234-1234-123456789012",
-    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "quantity": 100,
-    "reserved": 10,
-    "available": 90
-  }
-}
-```
-
+### Description
+Admin: Create a new discount coupon.
 </details>
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/admin/coupon</code></summary>
 
-<summary> <code>PUT</code> <code>/api/v1/admin/inventory/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/inventory/12345678-1234-1234-1234-123456789012' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-  "quantity": 150,
-  "reserved": 20
-}'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/inventory/12345678-1234-1234-1234-123456789012
-```
-
-### Response
-
-```
-{
-    "id": "12345678-1234-1234-1234-123456789012",
-    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "quantity": 150,
-    "reserved": 20,
-    "available": 130
-  }
-}
-```
-
+### Description
+Admin: Retrieve a list of all coupons.
 </details>
 
 <details>
+<summary> <code>PUT</code> <code>/api/v1/admin/coupon/{id}</code></summary>
 
-<summary> <code>PUT</code> <code>/api/v1/admin/inventory/stock/{id}</code></summary>
-
-### Curl
-
-```
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/inventory/stock/cbd630f6-bf9f-48ad-ac51-f806807d99fd?quantity=50&operation=add
-```
-
-### Response
-
-```
-{
-    "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "newQuantity": 200,
-    "operation": "add"
-  }
-}
-```
-
+### Description
+Admin: Update an existing coupon.
 </details>
 
 <details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/coupon/{id}</code></summary>
 
-<summary> <code>GET</code> <code>/api/v1/inventory/{id}</code></summary>
+### Description
+Admin: Delete a coupon.
+</details>
 
-### Curl
+### INVENTORY
 
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/inventory/cbd630f6-bf9f-48ad-ac51-f806807d99fd' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJzZWxsZXJAZ21haWwuY29tIiwidXNlcklkIjoiYTY3ZmQwY2MtM2Q5Mi00MjU5LWJiZDQtMWUwYmE0OWRlY2U0IiwidXNlclR5cGUiOiJzZWxsZXIiLCJleHAiOjE3Mjg5MjY5MTZ9.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/inventory</code></summary>
 
-### Request URL
-
-```
-http://localhost:8080/api/v1/inventory/cbd630f6-bf9f-48ad-ac51-f806807d99fd
-```
-
-### Response
-
-```
-{
-    "id": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-    "quantity": 200,
-    "reserved": 20,
-    "available": 180
-  }
-}
-```
-
+### Description
+Seller: Initialize or update inventory for a product.
 </details>
 
 <details>
+<summary> <code>PUT</code> <code>/api/v1/seller/inventory/stock/{productId}</code></summary>
 
-<summary> <code>GET</code> <code>/api/v1/inventory/shop</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/inventory/shop?shopId=12345678-1234-1234-1234-123456789012' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/inventory/shop?shopId=12345678-1234-1234-1234-123456789012
-```
-
-### Response
-
-```json
-{
-  "data": [
-    {
-      "id": "12345678-1234-1234-1234-123456789012",
-      "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-      "quantity": 200,
-      "reserved": 20,
-      "available": 180
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 20,
-    "skip": 0
-  }
-}
-```
-
+### Description
+Seller: Update stock quantity.
 </details>
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/seller/inventory/product/{productId}</code></summary>
 
-<summary> <code>GET</code> <code>/api/v1/inventory/low-stock</code></summary>
-
-### Curl
-
-```
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/inventory/low-stock' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6InBpYXNoY3NlIiwiZW1haWwiOiJhZG1pbkBnbWFpbC5jb20iLCJ1c2VySWQiOiJhNjdmZDBjYy0zZDkyLTQyNTktYmJkNC0xZTBiYTQ5ZGVjZTQiLCJ1c2VyVHlwZSI6ImFkbWluIiwiZXhwIjoxNzI4OTI2OTE2fQ.3v6s3X8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8f2fX2pX8'
-```
-
-### Request URL
-
-```
-http://localhost:8080/api/v1/inventory/low-stock
-```
-
-### Response
-
-```json
-{
-  "data": [
-    {
-      "id": "12345678-1234-1234-1234-123456789012",
-      "productId": "cbd630f6-bf9f-48ad-ac51-f806807d99fd",
-      "quantity": 5,
-      "reserved": 2,
-      "available": 3
-    }
-  ],
-  "metadata": {
-    "totalCount": 1,
-    "limit": 20,
-    "skip": 0
-  }
-}
-```
+### Description
+Seller: Retrieve inventory item details by product ID.
 </details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/inventory/shop/{shopId}</code></summary>
+
+### Description
+Seller: Retrieve all inventory items for a shop.
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/inventory/low-stock</code></summary>
+
+### Description
+Seller: Retrieve items with stock below a threshold.
+</details>
+
+
+### SHIPPING METHOD
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/shipping-method</code></summary>
+
+### Description
+Admin: Create a new shipping method.
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/shipping-method/{id}</code></summary>
+
+### Description
+Admin: Update an existing shipping method.
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/shipping-method/{id}</code></summary>
+
+### Description
+Admin: Delete a shipping method.
+</details>
+
+
+
 
 ## 👨 Developed By
 

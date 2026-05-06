@@ -82,17 +82,21 @@ Search for products using various filters. This is a public endpoint.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `name` | string | No | Search term |
 | `categoryId` | string | No | Filter by category |
+| `subCategoryId` | string | No | Filter by sub-category |
+| `brandId` | string | No | Filter by brand |
 | `minPrice` | number | No | Minimum price |
 | `maxPrice` | number | No | Maximum price |
+| `sortBy` | string | No | price, name, createdAt |
+| `sortOrder` | string | No | asc, desc (Default: desc) |
 | `limit` | number | No | Default: 20 |
+| `offset` | number | No | Default: 0 |
 
 #### Example Request
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/product/search?name=watch&limit=10' \
+  'http://localhost:8080/api/v1/product?limit=10&sortBy=price&sortOrder=asc' \
   -H 'accept: application/json'
 ```
 

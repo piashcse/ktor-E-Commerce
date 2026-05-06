@@ -39,13 +39,15 @@ Access interactive API documentation at the root `/` or `/swagger` endpoint when
 ### 4. Shopping Cart and Checkout
 
 - **Shopping Cart**: Add and remove products, update quantities, and calculate totals.
-- **Cart Summary**: Retrieve detailed cart summary with subtotal, tax, and item count.
-- **Checkout**: Streamline the checkout process with automatic stock and price validation.
+- **Checkout Summary**: Retrieve detailed checkout summary with subtotal, shipping, tax, and discount breakdown.
+- **Checkout**: Consolidated checkout process with integrated shipping address and method selection.
 - **Cart Clearing**: Automatic cart clearing after successful order placement.
 
 ### 5. Order Management
 
 - **Order Processing**: Handle order creation with human-readable order numbers (ORD-YYYYMMDD-XXXX).
+- **Order Status History**: Comprehensive audit trail for every status transition.
+- **Automatic Taxation**: Configurable tax calculation applied during checkout.
 - **Order Cancellation**: Cancel PENDING/CONFIRMED orders with automatic stock restoration.
 - **Seller Orders**: Sellers can view and manage orders from their shop.
 - **Admin Orders**: Admins can view all orders with advanced filters (status, date range).
@@ -53,7 +55,13 @@ Access interactive API documentation at the root `/` or `/swagger` endpoint when
 - **Payment Integration**: Secure payment processing with amount validation.
 - **Payment History**: Track all payments for each order.
 
-### 6. Refund Management
+### 6. Discount & Coupon System
+
+- **Promo Codes**: Create and manage fixed or percentage-based discount coupons.
+- **Usage Limits**: Enforce expiration dates, usage limits, and minimum order amounts.
+- **Admin Controls**: Dedicated administrative interface for managing the coupon lifecycle.
+
+### 7. Refund Management
 
 - **Refund Requests**: Customers can request refunds with reasons and evidence images.
 - **Refund Approval**: Sellers and admins can approve, reject, or process refunds.
@@ -200,18 +208,20 @@ For comprehensive API documentation, please refer to the following resources:
 - [Product Category API](product-category.md) - Product category management
 - [Product Sub-Category API](product-sub-category.md) - Product sub-category management
 - [Brand API](brand.md) - Brand management
-- [Cart API](cart.md) - Shopping cart functionality and summary
+- [Cart API](cart.md) - Shopping cart functionality
 - [Wishlist API](wishlist.md) - Wishlist functionality
-- [Order API](order.md) - Order management, cancellation, and admin views
+- [Checkout API](checkout.md) - Consolidated checkout process and summary
+- [Coupon API](coupon.md) - Discount and promo code management
+- [Order API](order.md) - Order management and history
 - [Refund Request API](refund-request.md) - Refund lifecycle management
 - [Shipping Address API](shipping-address.md) - User shipping address management
-- [Shipping Method API](shipping-method.md) - Shipping method configuration and lookup
-- [Payment API](payment.md) - Payment processing and order lookup
+- [Shipping Method API](shipping-method.md) - Shipping method management
+- [Payment API](payment.md) - Payment processing
 - [Review Rating API](review-rating.md) - Product reviews and ratings
 - [Inventory API](inventory.md) - Inventory management
 - [Privacy Policy API](privacy-policy.md) - Privacy policy management
 - [Privacy Policy Consent API](privacy-policy-consent.md) - User consent tracking
-- [Monitoring & Health](monitoring.md) - System health and monitoring endpoints
+
 
 
 ## 👨 Developed By
