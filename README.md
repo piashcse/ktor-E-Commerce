@@ -404,6 +404,33 @@ curl -X 'POST' \
   "userType": "customer"
 }'
 ```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/login
+```
+
+### Response
+```json
+{
+  "data": {
+    "user": {
+      "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+      "email": "customer@gmail.com",
+      "isVerified": true,
+      "userType": "CUSTOMER",
+      "isActive": true,
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00"
+    },
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "764b8a1c-9d6e-4c7b-8e1f-4a3b2c1d0e9f",
+    "expiresIn": 86400,
+    "tokenType": "Bearer"
+  },
+  "message": "Login successful"
+}
+```
 </details>
 
 <details>
@@ -411,6 +438,36 @@ curl -X 'POST' \
 
 ### Description
 Register a new user account.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/register' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "customer@gmail.com",
+  "password": "p123",
+  "userType": "customer"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/register
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "email": "customer@gmail.com",
+    "message": "OTP sent to your email"
+  },
+  "message": "User registered successfully"
+}
+```
 </details>
 
 <details>
@@ -418,6 +475,26 @@ Register a new user account.
 
 ### Description
 Verify user account or password reset with OTP.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/auth/otp-verification?userId=ce563774-d3d5-442e-ad1a-b884bb0a53f0&otp=123456' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/otp-verification?userId={userId}&otp={otp}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "OTP verified successfully"
+}
+```
 </details>
 
 <details>
@@ -425,6 +502,31 @@ Verify user account or password reset with OTP.
 
 ### Description
 Request password reset OTP.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/forget-password' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "customer@gmail.com",
+  "userType": "customer"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/forget-password
+```
+
+### Response
+```json
+{
+  "data": null,
+  "message": "OTP sent to your email"
+}
+```
 </details>
 
 <details>
@@ -432,6 +534,33 @@ Request password reset OTP.
 
 ### Description
 Reset password using OTP verification.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/reset-password' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "customer@gmail.com",
+  "userType": "customer",
+  "verificationCode": "123456",
+  "newPassword": "newPassword123!"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/reset-password
+```
+
+### Response
+```json
+{
+  "data": null,
+  "message": "Password changed successfully"
+}
+```
 </details>
 
 <details>
@@ -439,6 +568,34 @@ Reset password using OTP verification.
 
 ### Description
 Refresh access token using refresh token.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/refresh-token' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "refreshToken": "764b8a1c-9d6e-4c7b-8e1f-4a3b2c1d0e9f"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/refresh-token
+```
+
+### Response
+```json
+{
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "8f2a3b4c-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
+    "expiresIn": 86400
+  },
+  "message": "Token refreshed successfully"
+}
+```
 </details>
 
 <details>
@@ -446,6 +603,31 @@ Refresh access token using refresh token.
 
 ### Description
 Logout authenticated user and revoke refresh token.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/logout' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "refreshToken": "764b8a1c-9d6e-4c7b-8e1f-4a3b2c1d0e9f"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/logout
+```
+
+### Response
+```json
+{
+  "data": null,
+  "message": "Logged out successfully"
+}
+```
 </details>
 
 <details>
@@ -453,6 +635,27 @@ Logout authenticated user and revoke refresh token.
 
 ### Description
 Change password for authenticated user.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/auth/change-password?oldPassword=p123&newPassword=newPassword123!' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/change-password?oldPassword={oldPassword}&newPassword={newPassword}
+```
+
+### Response
+```json
+{
+  "data": null,
+  "message": "Password changed successfully"
+}
+```
 </details>
 
 <details>
@@ -460,6 +663,27 @@ Change password for authenticated user.
 
 ### Description
 Admin: Change user role (CUSTOMER, SELLER, ADMIN).
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/auth/ce563774-d3d5-442e-ad1a-b884bb0a53f0/change-user-type?userType=seller' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/auth/{userId}/change-user-type?userType={userType}
+```
+
+### Response
+```json
+{
+  "data": null,
+  "message": "User type updated successfully"
+}
+```
 </details>
 
 <details>
@@ -467,6 +691,27 @@ Admin: Change user role (CUSTOMER, SELLER, ADMIN).
 
 ### Description
 Admin: Deactivate a user account.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/auth/ce563774-d3d5-442e-ad1a-b884bb0a53f0/deactivate' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/auth/{userId}/deactivate
+```
+
+### Response
+```json
+{
+  "data": null,
+  "message": "User deactivated successfully"
+}
+```
 </details>
 
 <details>
@@ -474,6 +719,27 @@ Admin: Deactivate a user account.
 
 ### Description
 Admin: Activate a user account.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/auth/ce563774-d3d5-442e-ad1a-b884bb0a53f0/activate' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/auth/{userId}/activate
+```
+
+### Response
+```json
+{
+  "data": null,
+  "message": "User activated successfully"
+}
+```
 </details>
 
 ### PROFILE
@@ -483,6 +749,41 @@ Admin: Activate a user account.
 
 ### Description
 Retrieve the authenticated user's profile information.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/profile' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/profile
+```
+
+### Response
+```json
+{
+  "data": {
+    "userId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "image": "http://localhost:8080/uploads/profile/profile.jpg",
+    "firstName": "John",
+    "lastName": "Doe",
+    "mobile": "+1234567890",
+    "faxNumber": null,
+    "streetAddress": "123 Main St",
+    "city": "New York",
+    "identificationType": "Passport",
+    "identificationNo": "AB123456",
+    "occupation": "Developer",
+    "postCode": "10001",
+    "gender": "Male"
+  },
+  "message": "Profile retrieved successfully"
+}
+```
 </details>
 
 <details>
@@ -490,6 +791,41 @@ Retrieve the authenticated user's profile information.
 
 ### Description
 Update the authenticated user's profile information.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/profile?firstName=John&lastName=Doe&mobile=%2B1234567890' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/profile?firstName={firstName}&lastName={lastName}&mobile={mobile}...
+```
+
+### Response
+```json
+{
+  "data": {
+    "userId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "image": "http://localhost:8080/uploads/profile/profile.jpg",
+    "firstName": "John",
+    "lastName": "Doe",
+    "mobile": "+1234567890",
+    "faxNumber": null,
+    "streetAddress": "123 Main St",
+    "city": "New York",
+    "identificationType": "Passport",
+    "identificationNo": "AB123456",
+    "occupation": "Developer",
+    "postCode": "10001",
+    "gender": "Male"
+  },
+  "message": "Profile updated successfully"
+}
+```
 </details>
 
 <details>
@@ -497,6 +833,29 @@ Update the authenticated user's profile information.
 
 ### Description
 Upload a profile image.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/profile/image-upload' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'image=@/path/to/image.jpg'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/profile/image-upload
+```
+
+### Response
+```json
+{
+  "data": "http://localhost:8080/uploads/profile/profile_uuid.jpg",
+  "message": "Image uploaded successfully"
+}
+```
 </details>
 
 ### SHOP CATEGORY
@@ -506,6 +865,34 @@ Upload a profile image.
 
 ### Description
 Admin: Create a new shop category.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/shop-category' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Electronics"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shop-category
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "name": "Electronics"
+  },
+  "message": "Shop category created successfully"
+}
+```
 </details>
 
 <details>
@@ -513,6 +900,30 @@ Admin: Create a new shop category.
 
 ### Description
 Admin: Update an existing shop category name.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/shop-category/ce563774-d3d5-442e-ad1a-b884bb0a53f0?name=Mobile%20Phones' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shop-category/{id}?name={name}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "name": "Mobile Phones"
+  },
+  "message": "Shop category updated successfully"
+}
+```
 </details>
 
 <details>
@@ -520,6 +931,27 @@ Admin: Update an existing shop category name.
 
 ### Description
 Admin: Permanently delete a shop category.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/shop-category/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shop-category/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Shop category deleted successfully"
+}
+```
 </details>
 
 ### SHOP
@@ -529,6 +961,37 @@ Admin: Permanently delete a shop category.
 
 ### Description
 Retrieve detailed information about a specific shop.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shop/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/shop/{id}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "userId": "user-uuid",
+    "shopName": "Tech Hub",
+    "shopDescription": "Best electronics shop",
+    "shopImage": "http://localhost:8080/uploads/shop/shop.jpg",
+    "shopCategory": {
+      "id": "cat-uuid",
+      "name": "Electronics"
+    },
+    "status": "ACTIVE"
+  },
+  "message": "Shop details retrieved"
+}
+```
 </details>
 
 <details>
@@ -536,6 +999,39 @@ Retrieve detailed information about a specific shop.
 
 ### Description
 Retrieve public shops with filters (status, category).
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shop/public?status=ACTIVE&limit=10' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/shop/public?status={status}&category={category}&limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "shopName": "Tech Hub",
+        "status": "ACTIVE"
+      }
+    ],
+    "metadata": {
+      "totalCount": 1,
+      "limit": 10,
+      "skip": 0
+    }
+  },
+  "message": "Shops retrieved successfully"
+}
+```
 </details>
 
 <details>
@@ -543,6 +1039,38 @@ Retrieve public shops with filters (status, category).
 
 ### Description
 Retrieve shops by category.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shop/category/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/shop/category/{categoryId}?limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "shopName": "Tech Hub"
+      }
+    ],
+    "metadata": {
+      "totalCount": 1,
+      "limit": 20,
+      "skip": 0
+    }
+  },
+  "message": "Shops retrieved successfully"
+}
+```
 </details>
 
 <details>
@@ -550,6 +1078,38 @@ Retrieve shops by category.
 
 ### Description
 Retrieve featured shops.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shop/featured' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/shop/featured?limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "shopName": "Featured Shop"
+      }
+    ],
+    "metadata": {
+      "totalCount": 5,
+      "limit": 20,
+      "skip": 0
+    }
+  },
+  "message": "Featured shops retrieved"
+}
+```
 </details>
 
 <details>
@@ -557,6 +1117,37 @@ Retrieve featured shops.
 
 ### Description
 Seller: Create a new shop.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/shop' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "shopName": "My New Shop",
+  "shopDescription": "Selling amazing gadgets",
+  "categoryId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/shop
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "shopName": "My New Shop",
+    "status": "PENDING"
+  },
+  "message": "Shop created successfully and pending approval"
+}
+```
 </details>
 
 <details>
@@ -564,6 +1155,39 @@ Seller: Create a new shop.
 
 ### Description
 Seller: Retrieve owned shops.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/shop' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/shop?limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "shopName": "My New Shop"
+      }
+    ],
+    "metadata": {
+      "totalCount": 1,
+      "limit": 20,
+      "skip": 0
+    }
+  },
+  "message": "Shops retrieved"
+}
+```
 </details>
 
 <details>
@@ -571,6 +1195,35 @@ Seller: Retrieve owned shops.
 
 ### Description
 Seller: Update shop details.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/shop/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "shopName": "Updated Shop Name",
+  "shopDescription": "New description"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/shop/{id}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "shopName": "Updated Shop Name"
+  },
+  "message": "Shop updated successfully"
+}
+```
 </details>
 
 <details>
@@ -578,6 +1231,37 @@ Seller: Update shop details.
 
 ### Description
 Seller: Update shop details with optimized response.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v2/seller/shop/ce563774-d3d5-442e-ad1a-b884bb0a53f0?source=mobile' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "shopName": "V2 Updated Name"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v2/seller/shop/{shopId}?source={source}
+```
+
+### Response
+```json
+{
+  "data": {
+    "v2_data": {
+      "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+      "shopName": "V2 Updated Name"
+    },
+    "source": "mobile"
+  },
+  "message": "Shop updated (V2)"
+}
+```
 </details>
 
 <details>
@@ -585,6 +1269,39 @@ Seller: Update shop details with optimized response.
 
 ### Description
 Admin: Retrieve shops filtered by status.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/shop/status?status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shop/status?status={status}&limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "shopName": "Pending Shop"
+      }
+    ],
+    "metadata": {
+      "totalCount": 3,
+      "limit": 20,
+      "skip": 0
+    }
+  },
+  "message": "Shops retrieved"
+}
+```
 </details>
 
 <details>
@@ -592,6 +1309,27 @@ Admin: Retrieve shops filtered by status.
 
 ### Description
 Admin: Approve a pending shop application.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/shop/approve/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shop/approve/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Shop approved successfully"
+}
+```
 </details>
 
 <details>
@@ -599,6 +1337,27 @@ Admin: Approve a pending shop application.
 
 ### Description
 Admin: Reject a shop application.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/shop/reject/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shop/reject/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Shop application rejected"
+}
+```
 </details>
 
 <details>
@@ -606,6 +1365,27 @@ Admin: Reject a shop application.
 
 ### Description
 Admin: Suspend an active shop.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/shop/suspend/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shop/suspend/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Shop suspended"
+}
+```
 </details>
 
 <details>
@@ -613,6 +1393,27 @@ Admin: Suspend an active shop.
 
 ### Description
 Admin: Activate a suspended shop.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/shop/activate/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shop/activate/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Shop activated"
+}
+```
 </details>
 
 ### BRAND
@@ -622,6 +1423,38 @@ Admin: Activate a suspended shop.
 
 ### Description
 Retrieve a paginated list of all brands.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/brand?limit=20&offset=0' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/brand?limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "name": "Samsung"
+      }
+    ],
+    "metadata": {
+      "totalCount": 50,
+      "limit": 20,
+      "skip": 0
+    }
+  },
+  "message": "Brands retrieved"
+}
+```
 </details>
 
 <details>
@@ -629,6 +1462,34 @@ Retrieve a paginated list of all brands.
 
 ### Description
 Admin: Create a new brand.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/brand' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Apple"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/brand
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "name": "Apple"
+  },
+  "message": "Brand created successfully"
+}
+```
 </details>
 
 <details>
@@ -636,6 +1497,30 @@ Admin: Create a new brand.
 
 ### Description
 Admin: Update an existing brand.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/brand/ce563774-d3d5-442e-ad1a-b884bb0a53f0?name=Apple%20Inc' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/brand/{id}?name={name}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "name": "Apple Inc"
+  },
+  "message": "Brand updated successfully"
+}
+```
 </details>
 
 <details>
@@ -643,6 +1528,27 @@ Admin: Update an existing brand.
 
 ### Description
 Admin: Delete a brand.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/brand/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/brand/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Brand deleted successfully"
+}
+```
 </details>
 
 ### PRODUCT CATEGORY
@@ -652,6 +1558,38 @@ Admin: Delete a brand.
 
 ### Description
 Retrieve a paginated list of all product categories.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/product-category?limit=20&offset=0' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/product-category?limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "name": "Smartphones"
+      }
+    ],
+    "metadata": {
+      "totalCount": 15,
+      "limit": 20,
+      "skip": 0
+    }
+  },
+  "message": "Categories retrieved"
+}
+```
 </details>
 
 <details>
@@ -659,6 +1597,30 @@ Retrieve a paginated list of all product categories.
 
 ### Description
 Admin: Create a new product category.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/product-category?name=Laptops' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/product-category?name={name}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "name": "Laptops"
+  },
+  "message": "Category created successfully"
+}
+```
 </details>
 
 <details>
@@ -666,6 +1628,30 @@ Admin: Create a new product category.
 
 ### Description
 Admin: Update an existing product category.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/product-category/ce563774-d3d5-442e-ad1a-b884bb0a53f0?name=Gaming%20Laptops' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/product-category/{id}?name={name}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "name": "Gaming Laptops"
+  },
+  "message": "Category updated successfully"
+}
+```
 </details>
 
 <details>
@@ -673,6 +1659,27 @@ Admin: Update an existing product category.
 
 ### Description
 Admin: Permanently delete a product category.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/product-category/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/product-category/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Category deleted successfully"
+}
+```
 </details>
 
 ### PRODUCT SUB CATEGORY
@@ -682,6 +1689,39 @@ Admin: Permanently delete a product category.
 
 ### Description
 Retrieve subcategories for a specific category (require categoryId).
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/product-subcategory?categoryId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/product-subcategory?categoryId={categoryId}&limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "sub-uuid",
+        "categoryId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "name": "Android Phones"
+      }
+    ],
+    "metadata": {
+      "totalCount": 5,
+      "limit": 20,
+      "skip": 0
+    }
+  },
+  "message": "Subcategories retrieved"
+}
+```
 </details>
 
 <details>
@@ -689,6 +1729,36 @@ Retrieve subcategories for a specific category (require categoryId).
 
 ### Description
 Admin: Create a new product subcategory.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/product-subcategory' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "categoryId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+  "name": "iPhones"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/product-subcategory
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "sub-uuid",
+    "categoryId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "name": "iPhones"
+  },
+  "message": "Subcategory created successfully"
+}
+```
 </details>
 
 <details>
@@ -696,6 +1766,30 @@ Admin: Create a new product subcategory.
 
 ### Description
 Admin: Update an existing product subcategory name.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/product-subcategory/sub-uuid?name=Apple%20iPhones' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/product-subcategory/{id}?name={name}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "sub-uuid",
+    "name": "Apple iPhones"
+  },
+  "message": "Subcategory updated successfully"
+}
+```
 </details>
 
 <details>
@@ -703,6 +1797,27 @@ Admin: Update an existing product subcategory name.
 
 ### Description
 Admin: Permanently delete a product subcategory.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/product-subcategory/sub-uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/product-subcategory/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Subcategory deleted successfully"
+}
+```
 </details>
 
 ### PRODUCT
@@ -712,13 +1827,76 @@ Admin: Permanently delete a product subcategory.
 
 ### Description
 Retrieve detailed information about a specific product.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/product/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/product/{id}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "name": "Galaxy S24",
+    "productDescription": "Latest flagship phone",
+    "productPrice": 999.99,
+    "productStock": 50,
+    "productImage": "http://localhost:8080/uploads/product/s24.jpg",
+    "categoryId": "cat-uuid",
+    "subCategoryId": "sub-uuid",
+    "brandId": "brand-uuid"
+  },
+  "message": "Product details retrieved"
+}
+```
 </details>
 
 <details>
 <summary> <code>GET</code> <code>/api/v1/product</code></summary>
 
 ### Description
-Retrieve a paginated list of products with optional filters (maxPrice, minPrice, categoryId, subCategoryId, brandId, sortBy, sortOrder).
+Retrieve a paginated list of products with optional filters.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/product?maxPrice=1000&sortBy=price&sortOrder=asc' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/product?maxPrice={maxPrice}&minPrice={minPrice}&categoryId={categoryId}&subCategoryId={subCategoryId}&brandId={brandId}&sortBy={sortBy}&sortOrder={sortOrder}&limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "name": "Galaxy S24",
+        "productPrice": 999.99
+      }
+    ],
+    "metadata": {
+      "totalCount": 100,
+      "limit": 10,
+      "skip": 0
+    }
+  },
+  "message": "Products retrieved"
+}
+```
 </details>
 
 <details>
@@ -726,6 +1904,38 @@ Retrieve a paginated list of products with optional filters (maxPrice, minPrice,
 
 ### Description
 Search for products by name.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/product/search?name=Galaxy' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/product/search?name={name}&limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "name": "Galaxy S24"
+      }
+    ],
+    "metadata": {
+      "totalCount": 10,
+      "limit": 10,
+      "skip": 0
+    }
+  },
+  "message": "Search results retrieved"
+}
+```
 </details>
 
 <details>
@@ -733,6 +1943,39 @@ Search for products by name.
 
 ### Description
 Seller: Retrieve seller products with filters.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/product' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/product?limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "name": "Galaxy S24"
+      }
+    ],
+    "metadata": {
+      "totalCount": 5,
+      "limit": 10,
+      "skip": 0
+    }
+  },
+  "message": "Seller products retrieved"
+}
+```
 </details>
 
 <details>
@@ -740,6 +1983,40 @@ Seller: Retrieve seller products with filters.
 
 ### Description
 Seller: Add a new product listing.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/product' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "New Product",
+  "productDescription": "Description",
+  "productPrice": 199.99,
+  "productStock": 100,
+  "categoryId": "cat-uuid",
+  "subCategoryId": "sub-uuid",
+  "brandId": "brand-uuid"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/product
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "name": "New Product"
+  },
+  "message": "Product created successfully"
+}
+```
 </details>
 
 <details>
@@ -747,6 +2024,34 @@ Seller: Add a new product listing.
 
 ### Description
 Seller: Update an existing product listing.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/product/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productPrice": 189.99
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/product/{id}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "productPrice": 189.99
+  },
+  "message": "Product updated successfully"
+}
+```
 </details>
 
 <details>
@@ -754,6 +2059,27 @@ Seller: Update an existing product listing.
 
 ### Description
 Seller: Permanently delete a product listing.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/product/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/product/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Product deleted successfully"
+}
+```
 </details>
 
 <details>
@@ -761,6 +2087,29 @@ Seller: Permanently delete a product listing.
 
 ### Description
 Seller: Upload a product image.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/product/image-upload' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'image=@/path/to/product.jpg'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/product/image-upload
+```
+
+### Response
+```json
+{
+  "data": "http://localhost:8080/uploads/product/prod_uuid.jpg",
+  "message": "Product image uploaded"
+}
+```
 </details>
 
 <details>
@@ -768,6 +2117,27 @@ Seller: Upload a product image.
 
 ### Description
 Admin: Permanently delete any product.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/product/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/product/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Product deleted by admin"
+}
+```
 </details>
 
 ### REVIEW RATING
@@ -777,6 +2147,42 @@ Admin: Permanently delete any product.
 
 ### Description
 Retrieve reviews and ratings for a specific product.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/review-rating?productId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/review-rating?productId={productId}&limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "review-uuid",
+        "userId": "user-uuid",
+        "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "review": "Excellent product!",
+        "rating": 5,
+        "createdAt": "2024-05-06T12:00:00"
+      }
+    ],
+    "metadata": {
+      "totalCount": 1,
+      "limit": 20,
+      "skip": 0
+    }
+  },
+  "message": "Reviews retrieved successfully"
+}
+```
 </details>
 
 <details>
@@ -784,6 +2190,37 @@ Retrieve reviews and ratings for a specific product.
 
 ### Description
 Submit a new review and rating for a product.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/review-rating' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+  "review": "Very good product",
+  "rating": 4
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/review-rating
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "review-uuid",
+    "review": "Very good product",
+    "rating": 4
+  },
+  "message": "Review submitted successfully"
+}
+```
 </details>
 
 <details>
@@ -791,6 +2228,31 @@ Submit a new review and rating for a product.
 
 ### Description
 Update an existing review and rating.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/review-rating/review-uuid?review=Updated%20review&rating=5' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/review-rating/{id}?review={review}&rating={rating}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "review-uuid",
+    "review": "Updated review",
+    "rating": 5
+  },
+  "message": "Review updated successfully"
+}
+```
 </details>
 
 <details>
@@ -798,6 +2260,27 @@ Update an existing review and rating.
 
 ### Description
 Delete a review and rating.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/review-rating/review-uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/review-rating/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Review deleted successfully"
+}
+```
 </details>
 
 ### CART
@@ -807,6 +2290,35 @@ Delete a review and rating.
 
 ### Description
 Add an item to the authenticated user's cart.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/cart' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+  "quantity": 2
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/cart
+```
+
+### Response
+```json
+{
+  "data": {
+    "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "quantity": 2
+  },
+  "message": "Item added to cart"
+}
+```
 </details>
 
 <details>
@@ -814,6 +2326,41 @@ Add an item to the authenticated user's cart.
 
 ### Description
 Retrieve all items in the authenticated user's cart.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/cart' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/cart?limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "quantity": 2,
+        "productName": "Galaxy S24",
+        "price": 999.99
+      }
+    ],
+    "metadata": {
+      "totalCount": 1,
+      "limit": 20,
+      "skip": 0
+    }
+  },
+  "message": "Cart items retrieved"
+}
+```
 </details>
 
 <details>
@@ -821,6 +2368,35 @@ Retrieve all items in the authenticated user's cart.
 
 ### Description
 Update the quantity of an item in the cart.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/cart/update' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+  "quantity": 5
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/cart/update
+```
+
+### Response
+```json
+{
+  "data": {
+    "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "quantity": 5
+  },
+  "message": "Cart quantity updated"
+}
+```
 </details>
 
 <details>
@@ -828,6 +2404,27 @@ Update the quantity of an item in the cart.
 
 ### Description
 Remove a specific item from the cart (require productId).
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/cart/remove?productId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/cart/remove?productId={productId}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Item removed from cart"
+}
+```
 </details>
 
 <details>
@@ -835,6 +2432,27 @@ Remove a specific item from the cart (require productId).
 
 ### Description
 Remove all items from the authenticated user's cart.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/cart/all' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/cart/all
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Cart cleared successfully"
+}
+```
 </details>
 
 <details>
@@ -842,6 +2460,33 @@ Remove all items from the authenticated user's cart.
 
 ### Description
 Retrieve a summary of the cart (totals, counts).
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/cart/summary' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/cart/summary
+```
+
+### Response
+```json
+{
+  "data": {
+    "totalItems": 2,
+    "subTotal": 1999.98,
+    "shipping": 10.00,
+    "tax": 99.99,
+    "total": 2109.97
+  },
+  "message": "Cart summary retrieved"
+}
+```
 </details>
 
 ### WISHLIST
@@ -851,6 +2496,33 @@ Retrieve a summary of the cart (totals, counts).
 
 ### Description
 Add a product to the authenticated user's wishlist.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/wishlist' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/wishlist
+```
+
+### Response
+```json
+{
+  "data": {
+    "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0"
+  },
+  "message": "Added to wishlist"
+}
+```
 </details>
 
 <details>
@@ -858,6 +2530,40 @@ Add a product to the authenticated user's wishlist.
 
 ### Description
 Retrieve all items in the user's wishlist.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/wishlist' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/wishlist?limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "productName": "Galaxy S24",
+        "price": 999.99
+      }
+    ],
+    "metadata": {
+      "totalCount": 1,
+      "limit": 20,
+      "skip": 0
+    }
+  },
+  "message": "Wishlist retrieved"
+}
+```
 </details>
 
 <details>
@@ -865,6 +2571,27 @@ Retrieve all items in the user's wishlist.
 
 ### Description
 Remove a specific product from the wishlist.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/wishlist/remove?productId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/wishlist/remove?productId={productId}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Removed from wishlist"
+}
+```
 </details>
 
 <details>
@@ -872,6 +2599,27 @@ Remove a specific product from the wishlist.
 
 ### Description
 Check if a specific product is in the user's wishlist.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/wishlist/check?productId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/wishlist/check?productId={productId}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Product is in wishlist"
+}
+```
 </details>
 
 ### CHECKOUT
@@ -881,6 +2629,42 @@ Check if a specific product is in the user's wishlist.
 
 ### Description
 Add a new shipping address for the authenticated user.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/checkout/shipping-address' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "addressName": "Home",
+  "firstName": "John",
+  "lastName": "Doe",
+  "mobile": "+1234567890",
+  "streetAddress": "123 Main St",
+  "city": "New York",
+  "postCode": "10001",
+  "country": "USA"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/checkout/shipping-address
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "addressName": "Home",
+    "city": "New York"
+  },
+  "message": "Shipping address added"
+}
+```
 </details>
 
 <details>
@@ -888,6 +2672,33 @@ Add a new shipping address for the authenticated user.
 
 ### Description
 Retrieve all shipping addresses for the authenticated user.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/checkout/shipping-address' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/checkout/shipping-address
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+      "addressName": "Home",
+      "streetAddress": "123 Main St"
+    }
+  ],
+  "message": "Shipping addresses retrieved"
+}
+```
 </details>
 
 <details>
@@ -895,6 +2706,34 @@ Retrieve all shipping addresses for the authenticated user.
 
 ### Description
 Update an existing shipping address.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/checkout/shipping-address/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "addressName": "Office"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/checkout/shipping-address/{id}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "addressName": "Office"
+  },
+  "message": "Shipping address updated"
+}
+```
 </details>
 
 <details>
@@ -902,6 +2741,27 @@ Update an existing shipping address.
 
 ### Description
 Delete a shipping address.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/checkout/shipping-address/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/checkout/shipping-address/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Shipping address deleted"
+}
+```
 </details>
 
 <details>
@@ -909,6 +2769,33 @@ Delete a shipping address.
 
 ### Description
 Retrieve all available shipping methods.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/checkout/shipping-method' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/checkout/shipping-method
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+      "name": "Express Shipping",
+      "price": 15.00
+    }
+  ],
+  "message": "Shipping methods retrieved"
+}
+```
 </details>
 
 <details>
@@ -916,6 +2803,39 @@ Retrieve all available shipping methods.
 
 ### Description
 Get a summary of the checkout (totals) without placing an order.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/checkout/summary' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "shippingAddressId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+  "shippingMethodId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+  "couponCode": "SUMMER20"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/checkout/summary
+```
+
+### Response
+```json
+{
+  "data": {
+    "subTotal": 1999.98,
+    "shipping": 15.00,
+    "tax": 99.99,
+    "discount": 200.00,
+    "total": 1914.97
+  },
+  "message": "Checkout summary generated"
+}
+```
 </details>
 
 <details>
@@ -923,6 +2843,37 @@ Get a summary of the checkout (totals) without placing an order.
 
 ### Description
 Place a new order from the cart.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/checkout/place-order' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "shippingAddressId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+  "shippingMethodId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+  "paymentMethod": "STRIPE"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/checkout/place-order
+```
+
+### Response
+```json
+{
+  "data": {
+    "orderId": "ORD-20240506-ABCD",
+    "total": 1914.97,
+    "status": "PLACED"
+  },
+  "message": "Order placed successfully"
+}
+```
 </details>
 
 ### ORDER
@@ -932,6 +2883,41 @@ Place a new order from the cart.
 
 ### Description
 Retrieve all orders for the authenticated customer.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/order?limit=10&offset=0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/order?limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ORD-20240506-ABCD",
+        "total": 1914.97,
+        "status": "PLACED",
+        "createdAt": "2024-05-06T12:00:00"
+      }
+    ],
+    "metadata": {
+      "totalCount": 1,
+      "limit": 10,
+      "skip": 0
+    }
+  },
+  "message": "Orders retrieved"
+}
+```
 </details>
 
 <details>
@@ -939,6 +2925,30 @@ Retrieve all orders for the authenticated customer.
 
 ### Description
 Update order status (Customer: CANCELED/RECEIVED, Seller: CONFIRMED/DELIVERED).
+
+### Curl
+```bash
+curl -X 'PATCH' \
+  'http://localhost:8080/api/v1/order/status/ORD-20240506-ABCD?status=canceled' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/order/status/{id}?status={status}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ORD-20240506-ABCD",
+    "status": "CANCELED"
+  },
+  "message": "Order status updated"
+}
+```
 </details>
 
 <details>
@@ -946,6 +2956,31 @@ Update order status (Customer: CANCELED/RECEIVED, Seller: CONFIRMED/DELIVERED).
 
 ### Description
 Cancel an order.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/order/ORD-20240506-ABCD/cancel' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "reason": "Changed my mind"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/order/{id}/cancel
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Order cancelled successfully"
+}
+```
 </details>
 
 <details>
@@ -953,6 +2988,40 @@ Cancel an order.
 
 ### Description
 Seller: Retrieve orders for the seller's shop.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/order?status=PLACED' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/order?status={status}&limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ORD-20240506-ABCD",
+        "total": 1914.97,
+        "status": "PLACED"
+      }
+    ],
+    "metadata": {
+      "totalCount": 1,
+      "limit": 10,
+      "skip": 0
+    }
+  },
+  "message": "Seller orders retrieved"
+}
+```
 </details>
 
 <details>
@@ -960,6 +3029,30 @@ Seller: Retrieve orders for the seller's shop.
 
 ### Description
 Admin: Update the status of any order.
+
+### Curl
+```bash
+curl -X 'PATCH' \
+  'http://localhost:8080/api/v1/admin/order/status/ORD-20240506-ABCD?status=shipped' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/order/status/{id}?status={status}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ORD-20240506-ABCD",
+    "status": "SHIPPED"
+  },
+  "message": "Order status updated by admin"
+}
+```
 </details>
 
 <details>
@@ -967,6 +3060,31 @@ Admin: Update the status of any order.
 
 ### Description
 Admin: Cancel any order.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/order/ORD-20240506-ABCD/cancel' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "reason": "Fraudulent activity"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/order/{id}/cancel
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Order cancelled by admin"
+}
+```
 </details>
 
 <details>
@@ -974,6 +3092,39 @@ Admin: Cancel any order.
 
 ### Description
 Admin: Retrieve all orders with advanced filtering (status, startDate, endDate).
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/order?status=PLACED&startDate=2024-05-01T00:00:00Z' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/order?status={status}&startDate={startDate}&endDate={endDate}&limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ORD-20240506-ABCD",
+        "status": "PLACED"
+      }
+    ],
+    "metadata": {
+      "totalCount": 10,
+      "limit": 10,
+      "skip": 0
+    }
+  },
+  "message": "All orders retrieved"
+}
+```
 </details>
 
 ### PAYMENT
@@ -983,6 +3134,39 @@ Admin: Retrieve all orders with advanced filtering (status, startDate, endDate).
 
 ### Description
 Create a new payment record for an order.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/payment' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "orderId": "ORD-20240506-ABCD",
+  "transactionId": "TXN-123456",
+  "paymentMethod": "STRIPE",
+  "amount": 1914.97,
+  "status": "SUCCESS"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/payment
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "pay-uuid",
+    "orderId": "ORD-20240506-ABCD",
+    "status": "SUCCESS"
+  },
+  "message": "Payment recorded"
+}
+```
 </details>
 
 <details>
@@ -990,6 +3174,32 @@ Create a new payment record for an order.
 
 ### Description
 Retrieve payment details by ID.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/payment/pay-uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/payment/{id}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "pay-uuid",
+    "orderId": "ORD-20240506-ABCD",
+    "amount": 1914.97,
+    "status": "SUCCESS"
+  },
+  "message": "Payment details retrieved"
+}
+```
 </details>
 
 <details>
@@ -997,6 +3207,40 @@ Retrieve payment details by ID.
 
 ### Description
 Retrieve all payments for a specific order.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/payment/order/ORD-20240506-ABCD' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/payment/order/{orderId}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "pay-uuid",
+        "amount": 1914.97,
+        "status": "SUCCESS"
+      }
+    ],
+    "metadata": {
+      "totalCount": 1,
+      "limit": 20,
+      "skip": 0
+    }
+  },
+  "message": "Payments retrieved"
+}
+```
 </details>
 
 ### PRIVACY POLICY
@@ -1006,6 +3250,32 @@ Retrieve all payments for a specific order.
 
 ### Description
 Retrieve the latest active version of a policy by type.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/policy/privacy_policy' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/policy/{policyType}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "policyType": "PRIVACY_POLICY",
+    "content": "Our privacy policy content...",
+    "version": "1.0",
+    "isActive": true
+  },
+  "message": "Policy retrieved successfully"
+}
+```
 </details>
 
 <details>
@@ -1013,6 +3283,36 @@ Retrieve the latest active version of a policy by type.
 
 ### Description
 Admin: Create a new policy document or new version.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/policy' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "policyType": "PRIVACY_POLICY",
+  "content": "Updated privacy policy content...",
+  "version": "1.1"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/policy
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "new-policy-uuid",
+    "version": "1.1"
+  },
+  "message": "Policy version created"
+}
+```
 </details>
 
 <details>
@@ -1020,6 +3320,38 @@ Admin: Create a new policy document or new version.
 
 ### Description
 Admin: Retrieve all versions of a specific policy type.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/policy/privacy_policy/history' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/policy/{policyType}/history
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+      "version": "1.0",
+      "isActive": false
+    },
+    {
+      "id": "new-policy-uuid",
+      "version": "1.1",
+      "isActive": true
+    }
+  ],
+  "message": "Policy history retrieved"
+}
+```
 </details>
 
 ### PRIVACY POLICY CONSENT
@@ -1029,6 +3361,35 @@ Admin: Retrieve all versions of a specific policy type.
 
 ### Description
 Record user consent for a specific policy document.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/policy-consents/consent' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "policyId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/policy-consents/consent
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "consent-uuid",
+    "policyId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "consentedAt": "2024-05-06T12:00:00"
+  },
+  "message": "Consent recorded successfully"
+}
+```
 </details>
 
 <details>
@@ -1036,6 +3397,33 @@ Record user consent for a specific policy document.
 
 ### Description
 Retrieve all consent records for the authenticated user.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/policy-consents' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/policy-consents
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "consent-uuid",
+      "policyType": "PRIVACY_POLICY",
+      "consentedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "message": "User consents retrieved"
+}
+```
 </details>
 
 <details>
@@ -1043,6 +3431,29 @@ Retrieve all consent records for the authenticated user.
 
 ### Description
 Check if the user has consented to a specific policy type.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/policy-consents/privacy_policy' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/policy-consents/{policyType}
+```
+
+### Response
+```json
+{
+  "data": {
+    "hasConsented": true
+  },
+  "message": "Consent status retrieved"
+}
+```
 </details>
 
 ### REFUND REQUEST
@@ -1052,6 +3463,36 @@ Check if the user has consented to a specific policy type.
 
 ### Description
 Create a refund request for an order item.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/refund-requests/ORD-20240506-ABCD' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+  "reason": "Damaged product",
+  "quantity": 1
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/refund-requests/{orderId}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "refund-uuid",
+    "status": "PENDING"
+  },
+  "message": "Refund request submitted"
+}
+```
 </details>
 
 <details>
@@ -1059,6 +3500,32 @@ Create a refund request for an order item.
 
 ### Description
 Mark an approved refund as shipped.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/refund-requests/refund-uuid/ship' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "trackingNumber": "TRK123456",
+  "courierName": "FedEx"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/refund-requests/{id}/ship
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Refund shipment recorded"
+}
+```
 </details>
 
 <details>
@@ -1066,6 +3533,39 @@ Mark an approved refund as shipped.
 
 ### Description
 Get refund requests for an order.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/refund-requests/order/ORD-20240506-ABCD' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/refund-requests/order/{orderId}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "refund-uuid",
+        "status": "PENDING"
+      }
+    ],
+    "metadata": {
+      "totalCount": 1,
+      "limit": 10,
+      "skip": 0
+    }
+  },
+  "message": "Refund requests retrieved"
+}
+```
 </details>
 
 <details>
@@ -1073,6 +3573,32 @@ Get refund requests for an order.
 
 ### Description
 Get refund request details.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/refund-requests/refund-uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/refund-requests/{id}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "refund-uuid",
+    "orderId": "ORD-20240506-ABCD",
+    "reason": "Damaged product",
+    "status": "PENDING"
+  },
+  "message": "Refund details retrieved"
+}
+```
 </details>
 
 <details>
@@ -1080,6 +3606,35 @@ Get refund request details.
 
 ### Description
 Seller: Update refund request status.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/refund-requests/refund-uuid/status' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "status": "APPROVED",
+  "comment": "Returning approved"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/refund-requests/{id}/status
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "refund-uuid",
+    "status": "APPROVED"
+  },
+  "message": "Refund status updated by seller"
+}
+```
 </details>
 
 <details>
@@ -1087,6 +3642,39 @@ Seller: Update refund request status.
 
 ### Description
 Admin: Get all refund requests for an order.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/refund-requests/order/ORD-20240506-ABCD' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/refund-requests/order/{orderId}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "refund-uuid",
+        "status": "APPROVED"
+      }
+    ],
+    "metadata": {
+      "totalCount": 1,
+      "limit": 10,
+      "skip": 0
+    }
+  },
+  "message": "Refund requests retrieved by admin"
+}
+```
 </details>
 
 <details>
@@ -1094,6 +3682,34 @@ Admin: Get all refund requests for an order.
 
 ### Description
 Admin: Update refund status.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/refund-requests/refund-uuid/status' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "status": "REFUNDED"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/refund-requests/{id}/status
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "refund-uuid",
+    "status": "REFUNDED"
+  },
+  "message": "Refund status updated by admin"
+}
+```
 </details>
 
 ### COUPON
@@ -1103,6 +3719,33 @@ Admin: Update refund status.
 
 ### Description
 Retrieve detailed information about a coupon by its code.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/coupon/SUMMER20' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/coupon/{code}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "code": "SUMMER20",
+    "discountType": "PERCENTAGE",
+    "discountValue": 20.0,
+    "minOrderAmount": 50.0,
+    "expiryDate": "2024-09-01T00:00:00Z"
+  },
+  "message": "Coupon details retrieved"
+}
+```
 </details>
 
 <details>
@@ -1110,6 +3753,38 @@ Retrieve detailed information about a coupon by its code.
 
 ### Description
 Admin: Create a new discount coupon.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/coupon' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "code": "NEWYEAR25",
+  "discountType": "FIXED",
+  "discountValue": 10.0,
+  "minOrderAmount": 30.0,
+  "expiryDate": "2025-01-31T23:59:59Z"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/coupon
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "new-coupon-uuid",
+    "code": "NEWYEAR25"
+  },
+  "message": "Coupon created successfully"
+}
+```
 </details>
 
 <details>
@@ -1117,6 +3792,39 @@ Admin: Create a new discount coupon.
 
 ### Description
 Admin: Retrieve a list of all coupons.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/coupon?limit=10&offset=0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/coupon?limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "code": "SUMMER20"
+      }
+    ],
+    "metadata": {
+      "totalCount": 5,
+      "limit": 10,
+      "skip": 0
+    }
+  },
+  "message": "Coupons retrieved"
+}
+```
 </details>
 
 <details>
@@ -1124,6 +3832,34 @@ Admin: Retrieve a list of all coupons.
 
 ### Description
 Admin: Update an existing coupon.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/coupon/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "discountValue": 25.0
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/coupon/{id}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "discountValue": 25.0
+  },
+  "message": "Coupon updated successfully"
+}
+```
 </details>
 
 <details>
@@ -1131,6 +3867,27 @@ Admin: Update an existing coupon.
 
 ### Description
 Admin: Delete a coupon.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/coupon/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/coupon/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Coupon deleted successfully"
+}
+```
 </details>
 
 ### INVENTORY
@@ -1140,6 +3897,36 @@ Admin: Delete a coupon.
 
 ### Description
 Seller: Initialize or update inventory for a product.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/inventory' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+  "quantity": 100,
+  "lowStockThreshold": 10
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/inventory
+```
+
+### Response
+```json
+{
+  "data": {
+    "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "quantity": 100
+  },
+  "message": "Inventory updated"
+}
+```
 </details>
 
 <details>
@@ -1147,6 +3934,30 @@ Seller: Initialize or update inventory for a product.
 
 ### Description
 Seller: Update stock quantity.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/inventory/stock/ce563774-d3d5-442e-ad1a-b884bb0a53f0?quantity=10&operation=add' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/inventory/stock/{productId}?quantity={quantity}&operation={operation}
+```
+
+### Response
+```json
+{
+  "data": {
+    "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "newQuantity": 110
+  },
+  "message": "Stock quantity updated"
+}
+```
 </details>
 
 <details>
@@ -1154,6 +3965,31 @@ Seller: Update stock quantity.
 
 ### Description
 Seller: Retrieve inventory item details by product ID.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/inventory/product/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/inventory/product/{productId}
+```
+
+### Response
+```json
+{
+  "data": {
+    "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "quantity": 110,
+    "lowStockThreshold": 10
+  },
+  "message": "Inventory details retrieved"
+}
+```
 </details>
 
 <details>
@@ -1161,6 +3997,39 @@ Seller: Retrieve inventory item details by product ID.
 
 ### Description
 Seller: Retrieve all inventory items for a shop.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/inventory/shop/shop-uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/inventory/shop/{shopId}?limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+        "quantity": 110
+      }
+    ],
+    "metadata": {
+      "totalCount": 15,
+      "limit": 10,
+      "skip": 0
+    }
+  },
+  "message": "Shop inventory retrieved"
+}
+```
 </details>
 
 <details>
@@ -1168,6 +4037,39 @@ Seller: Retrieve all inventory items for a shop.
 
 ### Description
 Seller: Retrieve items with stock below a threshold.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/inventory/low-stock' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/inventory/low-stock?limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "productId": "low-stock-prod-uuid",
+        "quantity": 2
+      }
+    ],
+    "metadata": {
+      "totalCount": 1,
+      "limit": 10,
+      "skip": 0
+    }
+  },
+  "message": "Low stock items retrieved"
+}
+```
 </details>
 
 
@@ -1178,6 +4080,36 @@ Seller: Retrieve items with stock below a threshold.
 
 ### Description
 Admin: Create a new shipping method.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/shipping-method' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Standard Shipping",
+  "price": 5.00,
+  "estimatedDays": "3-5 days"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shipping-method
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "new-shipping-uuid",
+    "name": "Standard Shipping"
+  },
+  "message": "Shipping method created"
+}
+```
 </details>
 
 <details>
@@ -1185,6 +4117,34 @@ Admin: Create a new shipping method.
 
 ### Description
 Admin: Update an existing shipping method.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/shipping-method/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "price": 7.50
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shipping-method/{id}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "price": 7.50
+  },
+  "message": "Shipping method updated"
+}
+```
 </details>
 
 <details>
@@ -1192,6 +4152,27 @@ Admin: Update an existing shipping method.
 
 ### Description
 Admin: Delete a shipping method.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/shipping-method/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shipping-method/{id}
+```
+
+### Response
+```json
+{
+  "data": true,
+  "message": "Shipping method deleted"
+}
+```
 </details>
 
 
