@@ -13,7 +13,7 @@ import io.ktor.server.routing.*
  */
 fun Route.productCategoryRoutes(productCategoryService: ProductCategoryService) {
     /**
-     * @tag ProductCategory
+     * @tag Product Category
      * @description Retrieve a paginated list of all product categories
      */
     get {
@@ -30,7 +30,7 @@ fun Route.productCategoryRoutes(productCategoryService: ProductCategoryService) 
  */
 fun Route.productCategoryAdminRoutes(productCategoryService: ProductCategoryService) {
     /**
-     * @tag ProductCategory
+     * @tag Product Category
      * @description Admin: Create a new product category
      */
     post {
@@ -39,7 +39,7 @@ fun Route.productCategoryAdminRoutes(productCategoryService: ProductCategoryServ
     }
 
     /**
-     * @tag ProductCategory
+     * @tag Product Category
      * @description Admin: Update an existing product category name
      */
     put("{id}") {
@@ -48,7 +48,7 @@ fun Route.productCategoryAdminRoutes(productCategoryService: ProductCategoryServ
     }
 
     /**
-     * @tag ProductCategory
+     * @tag Product Category
      * @description Admin: Permanently delete a product category
      */
     delete("{id}") {

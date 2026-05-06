@@ -42,8 +42,12 @@ fun Application.configureRequestValidation() {
             product.validation()
             ValidationResult.Valid
         }
-        validate<ShippingRequest> { shipping ->
-            shipping.validation()
+        validate<ShippingAddressRequest> { address ->
+            address.validation()
+            ValidationResult.Valid
+        }
+        validate<ShippingMethodRequest> { method ->
+            method.validation()
             ValidationResult.Valid
         }
         validate<OrderRequest> { order ->

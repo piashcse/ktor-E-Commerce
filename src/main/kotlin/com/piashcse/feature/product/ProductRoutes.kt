@@ -41,7 +41,9 @@ fun Route.productRoutes(productService: ProductService) {
             minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
             categoryId = call.parameters["categoryId"],
             subCategoryId = call.parameters["subCategoryId"],
-            brandId = call.parameters["brandId"]
+            brandId = call.parameters["brandId"],
+            sortBy = call.parameters["sortBy"],
+            sortOrder = call.parameters["sortOrder"]
         )
         params.validation()
         call.respond(HttpStatusCode.OK, productService.getProducts(params))
@@ -83,7 +85,9 @@ fun Route.productSellerRoutes(productService: ProductService) {
             minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
             categoryId = call.parameters["categoryId"],
             subCategoryId = call.parameters["subCategoryId"],
-            brandId = call.parameters["brandId"]
+            brandId = call.parameters["brandId"],
+            sortBy = call.parameters["sortBy"],
+            sortOrder = call.parameters["sortOrder"]
         )
         params.validation()
         call.respond(

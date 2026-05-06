@@ -1,11 +1,29 @@
 package com.piashcse.feature.order
 
 import com.piashcse.constants.OrderStatus
+import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.OrderRequest
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.utils.common.PaginatedResponse
 
 interface OrderRepository {
+    /**
+     * Places a new order from the user's cart.
+     *
+     * @param userId The unique identifier of the user placing the order.
+     * @param checkoutRequest The checkout details including address and shipping method.
+     * @return The list of created orders (split by shop).
+     */
+    suspend fun placeOrder(userId: String, checkoutRequest: CheckoutRequest): List<OrderResponse>
+
+    /**
+     * Calculates the checkout summary without placing an order.
+     *
+     * @param userId The unique identifier of the user.
+     * @param checkoutRequest The checkout details.
+     * @return The checkout summary including totals and item count.
+     */
+    suspend fun getCheckoutSummary(userId: String, checkoutRequest: CheckoutRequest): com.piashcse.model.response.CheckoutSummaryResponse
     /**
      * Creates a new order for a user.
      *

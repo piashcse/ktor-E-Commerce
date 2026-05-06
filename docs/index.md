@@ -204,7 +204,8 @@ For comprehensive API documentation, please refer to the following resources:
 - [Wishlist API](wishlist.md) - Wishlist functionality
 - [Order API](order.md) - Order management, cancellation, and admin views
 - [Refund Request API](refund-request.md) - Refund lifecycle management
-- [Shipping API](shipping.md) - Shipping address management
+- [Shipping Address API](shipping-address.md) - User shipping address management
+- [Shipping Method API](shipping-method.md) - Shipping method configuration and lookup
 - [Payment API](payment.md) - Payment processing and order lookup
 - [Review Rating API](review-rating.md) - Product reviews and ratings
 - [Inventory API](inventory.md) - Inventory management
