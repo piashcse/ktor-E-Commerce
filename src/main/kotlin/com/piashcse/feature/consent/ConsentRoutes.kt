@@ -20,7 +20,7 @@ import io.ktor.server.routing.*
 fun Route.consentRoutes(consentService: ConsentService) {
     customerAuth {
         /**
-         * @tag Privacy Policy Consent
+         * @tag Privacy-Policy-Consent
          * @description Record user consent for a specific policy document
          */
         post("consent") {
@@ -40,7 +40,7 @@ fun Route.consentRoutes(consentService: ConsentService) {
 
     requireRole(UserType.CUSTOMER, UserType.ADMIN) {
         /**
-         * @tag Privacy Policy Consent
+         * @tag Privacy-Policy-Consent
          * @description Retrieve all consent records for the authenticated user
          */
         get {
@@ -49,7 +49,7 @@ fun Route.consentRoutes(consentService: ConsentService) {
         }
 
         /**
-         * @tag Privacy Policy Consent
+         * @tag Privacy-Policy-Consent
          * @description Check if the user has consented to a specific policy type
          */
         get("{policyType}") {

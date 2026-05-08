@@ -22,7 +22,7 @@ import io.ktor.server.routing.*
 fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
     customerAuth {
         /**
-         * @tag Refund Request
+         * @tag Refund-Request
          * @description Create a refund request for an order item
          */
         post("{orderId}") {
@@ -35,7 +35,7 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
         }
 
         /**
-         * @tag Refund Request
+         * @tag Refund-Request
          * @description Mark an approved refund as shipped
          */
         post("{id}/ship") {
@@ -50,7 +50,7 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
 
     requireRole(UserType.CUSTOMER, UserType.SELLER) {
         /**
-         * @tag Refund Request
+         * @tag Refund-Request
          * @description Get refund requests for an order
          */
         get("order/{orderId}") {
@@ -63,7 +63,7 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
         }
 
         /**
-         * @tag Refund Request
+         * @tag Refund-Request
          * @description Get refund request details
          */
         get("{id}") {

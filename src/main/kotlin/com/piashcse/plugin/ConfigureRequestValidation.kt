@@ -6,64 +6,64 @@ import io.ktor.server.plugins.requestvalidation.*
 
 fun Application.configureRequestValidation() {
     install(RequestValidation) {
-        validate<LoginRequest> { login ->
-            login.validation()
+        validate<LoginRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<RegisterRequest> { register ->
-            register.validation()
+        validate<RegisterRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<ProductSearchRequest> { search ->
-            search.validation()
+        validate<ProductSearchRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<ProductCategoryRequest> { productCategory ->
-            productCategory.validation()
+        validate<ProductCategoryRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<ProductSubCategoryRequest> { productSubCategory ->
-            productSubCategory.validation()
+        validate<ProductSubCategoryRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<ShopRequest> { shop ->
-            shop.validation()
+        validate<ShopRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<ShopCategoryRequest> { shopCategory ->
-            shopCategory.validation()
+        validate<ShopCategoryRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<BrandRequest> { brand ->
-            brand.validation()
+        validate<BrandRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<ProductRequest> { product ->
-            product.validation()
+        validate<ProductRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<ShippingAddressRequest> { address ->
-            address.validation()
+        validate<ShippingAddressRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<ShippingMethodRequest> { method ->
-            method.validation()
+        validate<ShippingMethodRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<OrderRequest> { order ->
-            order.validation()
+        validate<OrderRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<CartRequest> { cart ->
-            cart.validation()
+        validate<CartRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<WishListRequest> { wishlist ->
-            wishlist.validation()
+        validate<WishListRequest> {
+            it.validation()
             ValidationResult.Valid
         }
-        validate<PaymentRequest> { payment ->
-            payment.validation()
+        validate<PaymentRequest> {
+            it.validation()
             ValidationResult.Valid
         }
     }
