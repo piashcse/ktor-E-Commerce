@@ -9,7 +9,7 @@ import io.ktor.server.routing.*
 
 fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService) {
     /**
-     * @tag Shipping Method
+     * @tag Shipping-Method
      * @description Admin: Create a new shipping method
      */
     post {
@@ -22,7 +22,7 @@ fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService
     }
 
     /**
-     * @tag Shipping Method
+     * @tag Shipping-Method
      * @description Admin: Update an existing shipping method
      */
     put("/{id}") {
@@ -36,7 +36,7 @@ fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService
     }
 
     /**
-     * @tag Shipping Method
+     * @tag Shipping-Method
      * @description Admin: Delete a shipping method
      */
     delete("/{id}") {

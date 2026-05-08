@@ -12,7 +12,7 @@ import io.ktor.server.routing.*
  */
 fun Route.policyRoutes(policyService: PolicyService) {
     /**
-     * @tag Privacy Policy
+     * @tag Privacy-Policy
      * @description Retrieve the latest active version of a policy by type
      */
     get("{policyType}") {
@@ -33,7 +33,7 @@ fun Route.policyRoutes(policyService: PolicyService) {
  */
 fun Route.policyAdminRoutes(policyService: PolicyService) {
     /**
-     * @tag Privacy Policy
+     * @tag Privacy-Policy
      * @description Admin: Create a new policy document or new version
      */
     post {
@@ -42,7 +42,7 @@ fun Route.policyAdminRoutes(policyService: PolicyService) {
     }
 
     /**
-     * @tag Privacy Policy
+     * @tag Privacy-Policy
      * @description Admin: Retrieve all versions of a specific policy type
      */
     get("{policyType}/history") {

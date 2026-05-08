@@ -15,7 +15,7 @@ import io.ktor.server.routing.*
  */
 fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
     /**
-     * @tag Review Rating
+     * @tag Review-Rating
      * @description Retrieve reviews and ratings for a specific product
      */
     get {
@@ -29,7 +29,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
 
     customerAuth {
         /**
-         * @tag Review Rating
+         * @tag Review-Rating
          * @description Submit a new review and rating for a product
          */
         post {
@@ -41,7 +41,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
         }
 
         /**
-         * @tag Review Rating
+         * @tag Review-Rating
          * @description Update an existing review and rating
          */
         put("{id}") {
@@ -57,7 +57,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
         }
 
         /**
-         * @tag Review Rating
+         * @tag Review-Rating
          * @description Delete a review and rating
          */
         delete("{id}") {
