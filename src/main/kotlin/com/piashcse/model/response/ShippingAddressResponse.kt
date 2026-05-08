@@ -15,5 +15,5 @@ data class ShippingAddressResponse(
     val state: String?,
     val country: String,
     val zipCode: String,
-    val isDefault: Boolean
+    val isDefault: Boolean,
 )

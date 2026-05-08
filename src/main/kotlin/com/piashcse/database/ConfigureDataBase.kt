@@ -12,7 +12,6 @@ import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import javax.sql.DataSource
 
-
 fun configureDataBase() {
     initDB()
     transaction {
@@ -39,7 +38,7 @@ fun configureDataBase() {
             InventoryTable,
             SellerTable,
             RefreshTokenTable,
-            LoginAttemptTable
+            LoginAttemptTable,
         )
     }
 }
@@ -47,13 +46,14 @@ fun configureDataBase() {
 private fun initDB() {
     // Create HikariConfig with values from DotEnv
     // we can also define from hikari.properties like HikariDataSource(HikariConfig("/hikari.properties"))
-    val config = HikariConfig().apply {
-        driverClassName = "org.postgresql.Driver"
-        jdbcUrl = "jdbc:postgresql://${DotEnvConfig.dbHost}:${DotEnvConfig.dbPort}/${DotEnvConfig.dbName}"
-        username = DotEnvConfig.dbUser
-        password = DotEnvConfig.dbPassword
-    }
-    
+    val config =
+        HikariConfig().apply {
+            driverClassName = "org.postgresql.Driver"
+            jdbcUrl = "jdbc:postgresql://${DotEnvConfig.dbHost}:${DotEnvConfig.dbPort}/${DotEnvConfig.dbName}"
+            username = DotEnvConfig.dbUser
+            password = DotEnvConfig.dbPassword
+        }
+
     HikariDataSource(config).also { dataSource ->
         runFlyway(dataSource)
         Database.connect(dataSource)

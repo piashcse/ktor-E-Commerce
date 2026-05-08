@@ -4,6 +4,7 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.jdbc.Query
+
 /**
  * Standardized extension for Exposed queries to return paginated results.
  * This encapsulates the limit, offset, and total count logic to ensure consistency
@@ -16,17 +17,18 @@ import org.jetbrains.exposed.v1.jdbc.Query
 fun <T> Query.toPaginatedResponse(
     limit: Int,
     offset: Int,
-    mapper: (ResultRow) -> T
+    mapper: (ResultRow) -> T,
 ): PaginatedResponse<T> {
     val totalCount = this.count()
     val data = this.limit(limit).offset(offset.toLong()).map(mapper)
 
     return PaginatedResponse(
         data = data,
-        metadata = PaginationMetadata(
-            totalCount = totalCount,
-            limit = limit,
-            skip = offset
-        )
+        metadata =
+            PaginationMetadata(
+                totalCount = totalCount,
+                limit = limit,
+                skip = offset,
+            ),
     )
 }

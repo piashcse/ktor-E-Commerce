@@ -14,5 +14,5 @@ data class CouponResponse(
     val endDate: String,
     val usageLimit: Int?,
     val usageCount: Int,
-    val isActive: Boolean
+    val isActive: Boolean,
 )

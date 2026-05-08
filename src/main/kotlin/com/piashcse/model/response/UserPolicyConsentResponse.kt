@@ -12,5 +12,5 @@ data class UserPolicyConsentResponse(
     val policyId: String,
     val consentDate: String,
     val ipAddress: String?,
-    val userAgent: String?
+    val userAgent: String?,
 )

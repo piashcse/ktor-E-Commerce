@@ -20,5 +20,5 @@ data class ShopResponse(
     val rating: @Contextual java.math.BigDecimal = java.math.BigDecimal.ZERO,
     val totalReviews: Int = 0,
     val createdAt: @Contextual LocalDateTime?,
-    val updatedAt: @Contextual LocalDateTime?
+    val updatedAt: @Contextual LocalDateTime?,
 )

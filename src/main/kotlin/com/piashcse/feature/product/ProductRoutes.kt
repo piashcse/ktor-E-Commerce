@@ -34,17 +34,18 @@ fun Route.productRoutes(productService: ProductService) {
      */
     get {
         val (limit, offset) = call.paginationParameters(defaultLimit = 10)
-        val params = ProductWithFilterRequest(
-            limit = limit,
-            offset = offset,
-            maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
-            minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
-            categoryId = call.parameters["categoryId"],
-            subCategoryId = call.parameters["subCategoryId"],
-            brandId = call.parameters["brandId"],
-            sortBy = call.parameters["sortBy"],
-            sortOrder = call.parameters["sortOrder"]
-        )
+        val params =
+            ProductWithFilterRequest(
+                limit = limit,
+                offset = offset,
+                maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
+                minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
+                categoryId = call.parameters["categoryId"],
+                subCategoryId = call.parameters["subCategoryId"],
+                brandId = call.parameters["brandId"],
+                sortBy = call.parameters["sortBy"],
+                sortOrder = call.parameters["sortOrder"],
+            )
         params.validation()
         call.respond(HttpStatusCode.OK, productService.getProducts(params))
     }
@@ -55,14 +56,15 @@ fun Route.productRoutes(productService: ProductService) {
      */
     get("search") {
         val (limit, offset) = call.paginationParameters(defaultLimit = 10)
-        val queryParams = ProductSearchRequest(
-            limit = limit,
-            offset = offset,
-            name = call.requireParameters("name").first(),
-            maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
-            minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
-            categoryId = call.parameters["categoryId"]
-        )
+        val queryParams =
+            ProductSearchRequest(
+                limit = limit,
+                offset = offset,
+                name = call.requireParameters("name").first(),
+                maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
+                minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
+                categoryId = call.parameters["categoryId"],
+            )
         queryParams.validation()
         call.respond(HttpStatusCode.OK, productService.searchProduct(queryParams))
     }
@@ -78,21 +80,22 @@ fun Route.productSellerRoutes(productService: ProductService) {
      */
     get {
         val (limit, offset) = call.paginationParameters(defaultLimit = 10)
-        val params = ProductWithFilterRequest(
-            limit = limit,
-            offset = offset,
-            maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
-            minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
-            categoryId = call.parameters["categoryId"],
-            subCategoryId = call.parameters["subCategoryId"],
-            brandId = call.parameters["brandId"],
-            sortBy = call.parameters["sortBy"],
-            sortOrder = call.parameters["sortOrder"]
-        )
+        val params =
+            ProductWithFilterRequest(
+                limit = limit,
+                offset = offset,
+                maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
+                minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
+                categoryId = call.parameters["categoryId"],
+                subCategoryId = call.parameters["subCategoryId"],
+                brandId = call.parameters["brandId"],
+                sortBy = call.parameters["sortBy"],
+                sortOrder = call.parameters["sortOrder"],
+            )
         params.validation()
         call.respond(
             HttpStatusCode.OK,
-            productService.getProductsByUser(call.currentUserId, params)
+            productService.getProductsByUser(call.currentUserId, params),
         )
     }
 
@@ -105,7 +108,7 @@ fun Route.productSellerRoutes(productService: ProductService) {
         requestBody.validation()
         call.respond(
             HttpStatusCode.OK,
-            productService.createProduct(call.currentUserId, null, requestBody)
+            productService.createProduct(call.currentUserId, null, requestBody),
         )
     }
 
@@ -118,7 +121,7 @@ fun Route.productSellerRoutes(productService: ProductService) {
         val requestBody = call.receive<UpdateProductRequest>()
         call.respond(
             HttpStatusCode.OK,
-            productService.updateProduct(call.currentUserId, productId, requestBody)
+            productService.updateProduct(call.currentUserId, productId, requestBody),
         )
     }
 
@@ -165,7 +168,7 @@ fun Route.productAdminRoutes(productService: ProductService) {
         val id = call.requireParameters("id")
         call.respond(
             HttpStatusCode.OK,
-            productService.deleteProductAsAdmin(id.first())
+            productService.deleteProductAsAdmin(id.first()),
         )
     }
 }

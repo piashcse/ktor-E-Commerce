@@ -4,16 +4,16 @@ import com.piashcse.constants.UserType
 import io.ktor.server.auth.*
 
 data class JwtTokenRequest(val userId: String, val email: String, val userType: String) : Principal {
-
     /**
      * Check if current user has access to a specific role (with hierarchy)
      */
     fun hasAccessTo(role: UserType): Boolean {
-        val currentUserType = try {
-            UserType.valueOf(this.userType.uppercase())
-        } catch (e: IllegalArgumentException) {
-            return false
-        }
+        val currentUserType =
+            try {
+                UserType.valueOf(this.userType.uppercase())
+            } catch (e: IllegalArgumentException) {
+                return false
+            }
         return currentUserType.hasAccessTo(role)
     }
 
@@ -62,5 +62,4 @@ data class JwtTokenRequest(val userId: String, val email: String, val userType: 
     /**
      * Check if user has a specific permission
      */
-    
 }

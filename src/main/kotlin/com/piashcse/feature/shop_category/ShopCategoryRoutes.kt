@@ -1,7 +1,6 @@
 package com.piashcse.feature.shop_category
 
 import com.piashcse.model.request.ShopCategoryRequest
-import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.request.*
@@ -20,7 +19,7 @@ fun Route.shopCategoryAdminRoutes(shopCategoryService: ShopCategoryService) {
         val requestBody = call.receive<ShopCategoryRequest>()
         call.respond(
             HttpStatusCode.OK,
-            shopCategoryService.createCategory(requestBody.name)
+            shopCategoryService.createCategory(requestBody.name),
         )
     }
 
@@ -32,7 +31,7 @@ fun Route.shopCategoryAdminRoutes(shopCategoryService: ShopCategoryService) {
         val params = call.requireParameters("id", "name")
         call.respond(
             HttpStatusCode.OK,
-            shopCategoryService.updateCategory(params[0], params[1])
+            shopCategoryService.updateCategory(params[0], params[1]),
         )
     }
 
@@ -44,7 +43,7 @@ fun Route.shopCategoryAdminRoutes(shopCategoryService: ShopCategoryService) {
         val id = call.requireParameters("id")
         call.respond(
             HttpStatusCode.OK,
-            shopCategoryService.deleteCategory(id.first())
+            shopCategoryService.deleteCategory(id.first()),
         )
     }
 }

@@ -13,7 +13,7 @@ import java.io.File
  *
  * This plugin serves uploaded files (profile images, product images, etc.)
  * from the upload directory at the `/uploads` path.
- * 
+ *
  * Uploaded files are accessible at:
  * - /uploads/profile-images/{filename}
  * - /uploads/product-images/{filename}
@@ -38,11 +38,13 @@ fun Application.configureStaticContent() {
         staticFiles("/uploads", uploadDir) {
             // Enable caching for better performance
             cacheControl { _ ->
-                listOf(CacheControl.MaxAge(
-                    maxAgeSeconds = 3600, // 1 hour
-                    visibility = CacheControl.Visibility.Public,
-                    mustRevalidate = true
-                ))
+                listOf(
+                    CacheControl.MaxAge(
+                        maxAgeSeconds = 3600, // 1 hour
+                        visibility = CacheControl.Visibility.Public,
+                        mustRevalidate = true,
+                    ),
+                )
             }
         }.hide()
     }

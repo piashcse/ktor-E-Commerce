@@ -38,20 +38,21 @@ class RefundRequestDAO(id: EntityID<String>) : BaseEntity(id, RefundRequestTable
     var requestedAt by RefundRequestTable.requestedAt
     var resolvedAt by RefundRequestTable.resolvedAt
 
-    fun response() = com.piashcse.model.response.RefundRequestResponse(
-        id = id.value,
-        orderItemId = orderItemId.value,
-        orderId = orderId.value,
-        userId = userId.value,
-        reason = reason,
-        images = images,
-        status = status,
-        refundAmount = refundAmount?.toDouble(),
-        refundMethod = refundMethod,
-        trackingNumber = trackingNumber,
-        requestedAt = requestedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-        resolvedAt = resolvedAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-        createdAt = createdAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) ?: "",
-        updatedAt = updatedAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) ?: ""
-    )
+    fun response() =
+        com.piashcse.model.response.RefundRequestResponse(
+            id = id.value,
+            orderItemId = orderItemId.value,
+            orderId = orderId.value,
+            userId = userId.value,
+            reason = reason,
+            images = images,
+            status = status,
+            refundAmount = refundAmount?.toDouble(),
+            refundMethod = refundMethod,
+            trackingNumber = trackingNumber,
+            requestedAt = requestedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+            resolvedAt = resolvedAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+            createdAt = createdAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) ?: "",
+            updatedAt = updatedAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) ?: "",
+        )
 }

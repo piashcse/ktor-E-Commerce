@@ -20,7 +20,7 @@ object DotEnvConfig {
 
     // CORS configuration
     val allowedOrigins: String get() = DotEnv.get("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080")
-    
+
     // Email configuration
     val emailHost: String get() = DotEnv.get("EMAIL_HOST", "smtp.gmail.com")
     val emailPort: Int get() = DotEnv.getInt("EMAIL_PORT", 587)

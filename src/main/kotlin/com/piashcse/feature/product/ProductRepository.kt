@@ -16,7 +16,11 @@ interface ProductRepository {
      * @param productRequest The details of the product to create.
      * @return The created product.
      */
-    suspend fun createProduct(userId: String, shopId: String?, productRequest: ProductRequest): ProductResponse
+    suspend fun createProduct(
+        userId: String,
+        shopId: String?,
+        productRequest: ProductRequest,
+    ): ProductResponse
 
     /**
      * Updates an existing product.
@@ -26,7 +30,11 @@ interface ProductRepository {
      * @param update The product details to update.
      * @return The updated product.
      */
-    suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProductRequest): ProductResponse
+    suspend fun updateProduct(
+        userId: String,
+        productId: String,
+        updateProduct: UpdateProductRequest,
+    ): ProductResponse
 
     /**
      * Retrieves a list of products based on filters.
@@ -43,7 +51,10 @@ interface ProductRepository {
      * @param query The filters to apply when retrieving the product.
      * @return A list of products for the specific shop.
      */
-    suspend fun getProductsByShop(shopId: String, productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse>
+    suspend fun getProductsByShop(
+        shopId: String,
+        productQuery: ProductWithFilterRequest,
+    ): PaginatedResponse<ProductResponse>
 
     /**
      * Retrieves products by seller/user ID.
@@ -52,7 +63,10 @@ interface ProductRepository {
      * @param query The filters to apply when retrieving the product.
      * @return A list of products (even if only one product matches).
      */
-    suspend fun getProductsByUser(userId: String, productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse>
+    suspend fun getProductsByUser(
+        userId: String,
+        productQuery: ProductWithFilterRequest,
+    ): PaginatedResponse<ProductResponse>
 
     /**
      * Retrieves detailed information about a specific product.
@@ -76,7 +90,10 @@ interface ProductRepository {
      * @param productId The unique identifier of the product to delete.
      * @return A confirmation message.
      */
-    suspend fun deleteProduct(userId: String, productId: String): String
+    suspend fun deleteProduct(
+        userId: String,
+        productId: String,
+    ): String
 
     /**
      * Searches for products based on query parameters.

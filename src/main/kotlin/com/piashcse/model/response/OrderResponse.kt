@@ -13,5 +13,5 @@ data class OrderResponse(
     val status: OrderStatus,
     val shippingAddress: String?,
     val shippingMethod: String?,
-    val items: List<OrderItemResponse>? = null
+    val items: List<OrderItemResponse>? = null,
 )

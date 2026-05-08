@@ -11,13 +11,18 @@ interface BrandRepository {
      * @return The created brand.
      */
     suspend fun createBrand(name: String): BrandResponse
+
     /**
      * Retrieves all available brands with a limit.
      *
      * @param limit The maximum number of brands to return.
      * @return A list of brands.
      */
-    suspend fun getBrands(limit: Int, offset: Int = 0): PaginatedResponse<BrandResponse>
+    suspend fun getBrands(
+        limit: Int,
+        offset: Int = 0,
+    ): PaginatedResponse<BrandResponse>
+
     /**
      * Updates an existing brand.
      *
@@ -25,7 +30,11 @@ interface BrandRepository {
      * @param name The updated name of the brand.
      * @return The updated brand.
      */
-    suspend fun updateBrand(brandId: String, name: String): BrandResponse
+    suspend fun updateBrand(
+        brandId: String,
+        name: String,
+    ): BrandResponse
+
     /**
      * Deletes a brand by its ID.
      *

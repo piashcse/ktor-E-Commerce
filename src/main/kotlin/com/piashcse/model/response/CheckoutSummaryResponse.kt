@@ -9,5 +9,5 @@ data class CheckoutSummaryResponse(
     val taxAmount: Float = 0f,
     val discountAmount: Float = 0f,
     val total: Float,
-    val itemCount: Int
+    val itemCount: Int,
 )

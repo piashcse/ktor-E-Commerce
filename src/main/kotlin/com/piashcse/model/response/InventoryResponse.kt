@@ -17,5 +17,5 @@ data class InventoryResponse(
     val status: InventoryStatus,
     val lastRestocked: @Contextual LocalDateTime?,
     val createdAt: @Contextual LocalDateTime?,
-    val updatedAt: @Contextual LocalDateTime?
+    val updatedAt: @Contextual LocalDateTime?,
 )

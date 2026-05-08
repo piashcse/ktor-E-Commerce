@@ -14,7 +14,10 @@ interface OrderRepository {
      * @param checkoutRequest The checkout details including address and shipping method.
      * @return The list of created orders (split by shop).
      */
-    suspend fun placeOrder(userId: String, checkoutRequest: CheckoutRequest): List<OrderResponse>
+    suspend fun placeOrder(
+        userId: String,
+        checkoutRequest: CheckoutRequest,
+    ): List<OrderResponse>
 
     /**
      * Calculates the checkout summary without placing an order.
@@ -23,7 +26,11 @@ interface OrderRepository {
      * @param checkoutRequest The checkout details.
      * @return The checkout summary including totals and item count.
      */
-    suspend fun getCheckoutSummary(userId: String, checkoutRequest: CheckoutRequest): com.piashcse.model.response.CheckoutSummaryResponse
+    suspend fun getCheckoutSummary(
+        userId: String,
+        checkoutRequest: CheckoutRequest,
+    ): com.piashcse.model.response.CheckoutSummaryResponse
+
     /**
      * Creates a new order for a user.
      *
@@ -32,7 +39,11 @@ interface OrderRepository {
      * @param idempotencyKey Optional key to prevent duplicate order creation.
      * @return The created order.
      */
-    suspend fun createOrder(userId: String, orderRequest: OrderRequest, idempotencyKey: String? = null): List<OrderResponse>
+    suspend fun createOrder(
+        userId: String,
+        orderRequest: OrderRequest,
+        idempotencyKey: String? = null,
+    ): List<OrderResponse>
 
     /**
      * Retrieves a list of orders for a user.
@@ -41,7 +52,11 @@ interface OrderRepository {
      * @param limit The maximum number of orders to return.
      * @return A list of orders.
      */
-    suspend fun getOrders(userId: String, limit: Int, offset: Int): PaginatedResponse<OrderResponse>
+    suspend fun getOrders(
+        userId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<OrderResponse>
 
     /**
      * Updates the status of an order.
@@ -51,7 +66,11 @@ interface OrderRepository {
      * @param status The updated order status.
      * @return The updated order.
      */
-    suspend fun updateOrderStatus(userId: String, orderId: String, status: OrderStatus): OrderResponse
+    suspend fun updateOrderStatus(
+        userId: String,
+        orderId: String,
+        status: OrderStatus,
+    ): OrderResponse
 
     /**
      * Cancels an order and restores stock quantities.
@@ -62,7 +81,12 @@ interface OrderRepository {
      * @param userType The type of user (CUSTOMER, SELLER, ADMIN, SUPER_ADMIN).
      * @return The updated order with CANCELED status.
      */
-    suspend fun cancelOrder(orderId: String, userId: String, reason: String, userType: com.piashcse.constants.UserType): OrderResponse
+    suspend fun cancelOrder(
+        orderId: String,
+        userId: String,
+        reason: String,
+        userType: com.piashcse.constants.UserType,
+    ): OrderResponse
 
     /**
      * Retrieves orders for a seller's shop.
@@ -73,7 +97,12 @@ interface OrderRepository {
      * @param status Optional status filter.
      * @return A list of orders for the seller's shop.
      */
-    suspend fun getSellerOrders(userId: String, limit: Int, offset: Int, status: String?): PaginatedResponse<OrderResponse>
+    suspend fun getSellerOrders(
+        userId: String,
+        limit: Int,
+        offset: Int,
+        status: String?,
+    ): PaginatedResponse<OrderResponse>
 
     /**
      * Retrieves all orders with optional filters for admin.
@@ -90,6 +119,6 @@ interface OrderRepository {
         offset: Int,
         status: String?,
         startDate: java.time.Instant?,
-        endDate: java.time.Instant?
+        endDate: java.time.Instant?,
     ): PaginatedResponse<OrderResponse>
 }

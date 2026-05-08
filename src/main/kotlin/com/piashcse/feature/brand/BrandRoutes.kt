@@ -23,7 +23,7 @@ fun Route.brandRoutes(brandService: BrandService) {
             val (limit, offset) = call.paginationParameters()
             call.respond(
                 HttpStatusCode.OK,
-                brandService.getBrands(limit, offset)
+                brandService.getBrands(limit, offset),
             )
         }
     }
@@ -41,7 +41,7 @@ fun Route.brandAdminRoutes(brandService: BrandService) {
         val requestBody = call.receive<BrandRequest>()
         call.respond(
             HttpStatusCode.OK,
-            brandService.createBrand(requestBody.name)
+            brandService.createBrand(requestBody.name),
         )
     }
 
@@ -53,7 +53,7 @@ fun Route.brandAdminRoutes(brandService: BrandService) {
         val params = call.requireParameters("id", "name")
         call.respond(
             HttpStatusCode.OK,
-            brandService.updateBrand(params[0], params[1])
+            brandService.updateBrand(params[0], params[1]),
         )
     }
 
@@ -65,7 +65,7 @@ fun Route.brandAdminRoutes(brandService: BrandService) {
         val id = call.requireParameters("id")
         call.respond(
             HttpStatusCode.OK,
-            brandService.deleteBrand(id.first())
+            brandService.deleteBrand(id.first()),
         )
     }
 }

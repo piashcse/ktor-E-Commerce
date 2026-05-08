@@ -10,5 +10,5 @@ data class UpdateShopRequest(
     val phone: String? = null,
     val email: String? = null,
     val logo: String? = null,
-    val coverImage: String? = null
+    val coverImage: String? = null,
 )

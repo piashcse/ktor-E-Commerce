@@ -23,7 +23,7 @@ fun sendEmail(
     smtpHost: String = DotEnvConfig.emailHost,
     smtpPort: Int = DotEnvConfig.emailPort,
     smtpUser: String = DotEnvConfig.emailUsername,
-    smtpPassword: String = DotEnvConfig.emailPassword
+    smtpPassword: String = DotEnvConfig.emailPassword,
 ) {
     emailScope.launch {
         try {

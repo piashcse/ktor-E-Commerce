@@ -13,6 +13,8 @@ commons-io-version = "2.17.0"
 shadow-version = "9.2.2"
 koin-version = "4.2.0"
 dotenv-version = "6.4.1"
+ktlint-version = "12.1.2"
+detekt-version = "1.23.8"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
@@ -55,3 +57,5 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor-version" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow-version" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-version" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt-version" }

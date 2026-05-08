@@ -2,7 +2,6 @@ package com.piashcse.model.response
 
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class UserProfileResponse(
     var userId: String,
@@ -17,5 +16,5 @@ data class UserProfileResponse(
     val identificationNo: String?,
     val occupation: String?,
     val postCode: String?,
-    val gender: String?
+    val gender: String?,
 )

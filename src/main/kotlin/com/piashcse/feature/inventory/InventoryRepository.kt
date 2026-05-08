@@ -29,7 +29,11 @@ interface InventoryRepository {
      * @param operation The operation to perform: "add", "subtract", or "set".
      * @return The updated inventory record.
      */
-    suspend fun updateStock(productId: String, quantity: Int, operation: String = "add"): InventoryResponse
+    suspend fun updateStock(
+        productId: String,
+        quantity: Int,
+        operation: String = "add",
+    ): InventoryResponse
 
     /**
      * Gets low stock products.
@@ -37,7 +41,10 @@ interface InventoryRepository {
      * @param limit The maximum number of products to return.
      * @return A list of products with low stock.
      */
-    suspend fun getLowStockProducts(limit: Int = 10, offset: Int = 0): PaginatedResponse<InventoryResponse>
+    suspend fun getLowStockProducts(
+        limit: Int = 10,
+        offset: Int = 0,
+    ): PaginatedResponse<InventoryResponse>
 
     /**
      * Gets inventory by shop ID.
@@ -45,5 +52,9 @@ interface InventoryRepository {
      * @param shopId The shop ID to get inventory for.
      * @return A list of inventory records for the shop.
      */
-    suspend fun getInventoryByShop(shopId: String, limit: Int = 20, offset: Int = 0): PaginatedResponse<InventoryResponse>
+    suspend fun getInventoryByShop(
+        shopId: String,
+        limit: Int = 20,
+        offset: Int = 0,
+    ): PaginatedResponse<InventoryResponse>
 }

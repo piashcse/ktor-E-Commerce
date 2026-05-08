@@ -16,7 +16,7 @@ import io.ktor.server.routing.*
 fun Route.checkoutRoutes(
     shippingAddressService: ShippingAddressService,
     shippingMethodService: ShippingMethodService,
-    orderService: OrderService
+    orderService: OrderService,
 ) {
     customerAuth {
         /**
@@ -28,7 +28,7 @@ fun Route.checkoutRoutes(
             requestBody.validation()
             call.respond(
                 HttpStatusCode.Created,
-                shippingAddressService.createShippingAddress(call.currentUserId, requestBody)
+                shippingAddressService.createShippingAddress(call.currentUserId, requestBody),
             )
         }
 
@@ -39,7 +39,7 @@ fun Route.checkoutRoutes(
         get("shipping-address") {
             call.respond(
                 HttpStatusCode.OK,
-                shippingAddressService.getShippingAddresses(call.currentUserId)
+                shippingAddressService.getShippingAddresses(call.currentUserId),
             )
         }
 
@@ -53,7 +53,7 @@ fun Route.checkoutRoutes(
             requestBody.validation()
             call.respond(
                 HttpStatusCode.OK,
-                shippingAddressService.updateShippingAddress(call.currentUserId, id, requestBody)
+                shippingAddressService.updateShippingAddress(call.currentUserId, id, requestBody),
             )
         }
 
@@ -65,7 +65,7 @@ fun Route.checkoutRoutes(
             val (id) = call.requireParameters("id")
             call.respond(
                 HttpStatusCode.OK,
-                shippingAddressService.deleteShippingAddress(call.currentUserId, id)
+                shippingAddressService.deleteShippingAddress(call.currentUserId, id),
             )
         }
 
@@ -76,7 +76,7 @@ fun Route.checkoutRoutes(
         get("shipping-method") {
             call.respond(
                 HttpStatusCode.OK,
-                shippingMethodService.getShippingMethods()
+                shippingMethodService.getShippingMethods(),
             )
         }
 
@@ -89,7 +89,7 @@ fun Route.checkoutRoutes(
             requestBody.validation()
             call.respond(
                 HttpStatusCode.OK,
-                orderService.getCheckoutSummary(call.currentUserId, requestBody)
+                orderService.getCheckoutSummary(call.currentUserId, requestBody),
             )
         }
 
@@ -102,7 +102,7 @@ fun Route.checkoutRoutes(
             requestBody.validation()
             call.respond(
                 HttpStatusCode.Created,
-                orderService.placeOrder(call.currentUserId, requestBody)
+                orderService.placeOrder(call.currentUserId, requestBody),
             )
         }
     }

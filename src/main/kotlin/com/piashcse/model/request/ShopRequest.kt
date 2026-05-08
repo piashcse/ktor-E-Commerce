@@ -14,7 +14,7 @@ data class ShopRequest(
     val phone: String?,
     val email: String?,
     val logo: String?,
-    val coverImage: String?
+    val coverImage: String?,
 ) {
     fun validation() {
         validate(this) {

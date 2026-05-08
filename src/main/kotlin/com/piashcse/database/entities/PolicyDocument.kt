@@ -30,9 +30,11 @@ object PolicyDocumentTable : BaseIdTable("policy_documents") {
         COOKIE_POLICY,
         DISCLAIMER,
         EULA,
-        SHIPPING_POLICY;
+        SHIPPING_POLICY,
+        ;
+
         val isLegalPolicy get() = this in listOf(PRIVACY_POLICY, TERMS_CONDITIONS, DISCLAIMER, EULA)
-        val requiresConsent get() = this != SHIPPING_POLICY  // Shipping policy might not require consent
+        val requiresConsent get() = this != SHIPPING_POLICY // Shipping policy might not require consent
     }
 }
 
@@ -49,13 +51,14 @@ class PolicyDocumentDAO(id: EntityID<String>) : BaseEntity(id, PolicyDocumentTab
     var effectiveDate by PolicyDocumentTable.effectiveDate
     var isActive by PolicyDocumentTable.isActive
 
-    fun response() = PolicyDocumentResponse(
-        id.value,
-        title,
-        type.name,
-        content,
-        version,
-        effectiveDate.toString(),  // Convert LocalDateTime to string for response
-        isActive,
-    )
+    fun response() =
+        PolicyDocumentResponse(
+            id.value,
+            title,
+            type.name,
+            content,
+            version,
+            effectiveDate.toString(), // Convert LocalDateTime to string for response
+            isActive,
+        )
 }

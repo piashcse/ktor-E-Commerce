@@ -18,11 +18,12 @@ class CartItemDAO(id: EntityID<String>) : BaseEntity(id, CartItemTable) {
     var userId by CartItemTable.userId
     var productId by CartItemTable.productId
     var quantity by CartItemTable.quantity
+
     fun response(product: ProductResponse? = null) = Cart(productId.value, quantity, product)
 }
 
 data class Cart(
     val productId: String,
     val quantity: Int,
-    val product: ProductResponse?
+    val product: ProductResponse?,
 )

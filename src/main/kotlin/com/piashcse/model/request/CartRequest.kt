@@ -9,7 +9,7 @@ import org.valiktor.validate
 @Serializable
 data class CartRequest(
     val productId: String,
-    val quantity: Int
+    val quantity: Int,
 ) {
     fun validation() {
         validate(this) {

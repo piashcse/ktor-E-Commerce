@@ -19,7 +19,7 @@ fun Route.inventorySellerRoutes(inventoryService: InventoryService) {
         val requestBody = call.receive<InventoryRequest>()
         call.respond(
             HttpStatusCode.OK,
-            inventoryService.createOrUpdateInventory(requestBody)
+            inventoryService.createOrUpdateInventory(requestBody),
         )
     }
 
@@ -33,7 +33,7 @@ fun Route.inventorySellerRoutes(inventoryService: InventoryService) {
         val operation = call.parameters["operation"] ?: "set"
         call.respond(
             HttpStatusCode.OK,
-            inventoryService.updateStock(productId, quantity, operation)
+            inventoryService.updateStock(productId, quantity, operation),
         )
     }
 
@@ -60,7 +60,7 @@ fun Route.inventorySellerRoutes(inventoryService: InventoryService) {
         val (limit, offset) = call.paginationParameters()
         call.respond(
             HttpStatusCode.OK,
-            inventoryService.getInventoryByShop(shopId, limit, offset)
+            inventoryService.getInventoryByShop(shopId, limit, offset),
         )
     }
 
@@ -72,7 +72,7 @@ fun Route.inventorySellerRoutes(inventoryService: InventoryService) {
         val (limit, offset) = call.paginationParameters()
         call.respond(
             HttpStatusCode.OK,
-            inventoryService.getLowStockProducts(limit, offset)
+            inventoryService.getLowStockProducts(limit, offset),
         )
     }
 }

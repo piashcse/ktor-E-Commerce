@@ -8,5 +8,5 @@ data class ReviewRatingResponse(
     val userId: String,
     val productId: String,
     val reviewText: String,
-    val rating: Int
+    val rating: Int,
 )

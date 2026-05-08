@@ -22,7 +22,6 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
  * Service for managing cart-related operations.
  */
 class CartService : CartRepository {
-
     /**
      * Creates a new cart item for a user with the specified product and quantity.
      *
@@ -32,22 +31,32 @@ class CartService : CartRepository {
      * @return The created cart item entity.
      * @throws Exception if the product already exists in the user's cart.
      */
-    override suspend fun createCart(userId: String, productId: String, quantity: Int): Cart = query {
-        validateCartInput(userId, productId, quantity)
+    override suspend fun createCart(
+        userId: String,
+        productId: String,
+        quantity: Int,
+    ): Cart =
+        query {
+            validateCartInput(userId, productId, quantity)
 
-        val existingCartItem = CartItemDAO.find {
-            CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
-        }.singleOrNull()
-        existingCartItem?.let {
-            throw productId.throwConflict("ProductResponse")
-        } ?: CartItemDAO.new {
-            this.userId = EntityID(userId, CartItemTable)
-            this.productId = EntityID(productId, CartItemTable)
-            this.quantity = quantity
-        }.response()
-    }
+            val existingCartItem =
+                CartItemDAO.find {
+                    CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
+                }.singleOrNull()
+            existingCartItem?.let {
+                throw productId.throwConflict("ProductResponse")
+            } ?: CartItemDAO.new {
+                this.userId = EntityID(userId, CartItemTable)
+                this.productId = EntityID(productId, CartItemTable)
+                this.quantity = quantity
+            }.response()
+        }
 
-    private fun validateCartInput(userId: String, productId: String, quantity: Int) {
+    private fun validateCartInput(
+        userId: String,
+        productId: String,
+        quantity: Int,
+    ) {
         if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
         if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("ProductResponse ID"))
         if (quantity <= 0) throw ValidationException(Message.Validation.notPositive("Quantity"))
@@ -60,14 +69,19 @@ class CartService : CartRepository {
      * @param limit The maximum number of cart items to retrieve.
      * @return A list of cart item entities with associated product details.
      */
-    override suspend fun getCartItems(userId: String, limit: Int, offset: Int): PaginatedResponse<Cart> = query {
-        CartItemTable.selectAll().andWhere { CartItemTable.userId eq userId }
-            .toPaginatedResponse(limit, offset) {
-                CartItemDAO.wrapRow(it).response(
-                    ProductDAO.find { ProductTable.id eq it[CartItemTable.productId] }.first().response()
-                )
-            }
-    }
+    override suspend fun getCartItems(
+        userId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<Cart> =
+        query {
+            CartItemTable.selectAll().andWhere { CartItemTable.userId eq userId }
+                .toPaginatedResponse(limit, offset) {
+                    CartItemDAO.wrapRow(it).response(
+                        ProductDAO.find { ProductTable.id eq it[CartItemTable.productId] }.first().response(),
+                    )
+                }
+        }
 
     /**
      * Updates the quantity of an existing cart item.
@@ -78,29 +92,36 @@ class CartService : CartRepository {
      * @return The updated cart item entity with the new quantity.
      * @throws Exception if the product does not exist in the user's cart.
      */
-    override suspend fun updateCartQuantity(userId: String, productId: String, quantity: Int): Cart = query {
-        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
-        if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("ProductResponse ID"))
+    override suspend fun updateCartQuantity(
+        userId: String,
+        productId: String,
+        quantity: Int,
+    ): Cart =
+        query {
+            if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
+            if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("ProductResponse ID"))
 
-        val cartItem = CartItemDAO.find {
-            CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
-        }.singleOrNull() ?: productId.throwNotFound("ProductResponse")
+            val cartItem =
+                CartItemDAO.find {
+                    CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
+                }.singleOrNull() ?: productId.throwNotFound("ProductResponse")
 
-        // Calculate new quantity, ensuring it doesn't go below 0
-        val newQuantity = (cartItem.quantity + quantity).coerceAtLeast(0)
-        cartItem.quantity = newQuantity
+            // Calculate new quantity, ensuring it doesn't go below 0
+            val newQuantity = (cartItem.quantity + quantity).coerceAtLeast(0)
+            cartItem.quantity = newQuantity
 
-        // If quantity becomes 0, remove the item from cart
-        if (newQuantity == 0) {
-            cartItem.delete()
-            throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
+            // If quantity becomes 0, remove the item from cart
+            if (newQuantity == 0) {
+                cartItem.delete()
+                throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
+            }
+
+            val product =
+                ProductDAO.findById(cartItem.productId)
+                    ?: throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
+
+            cartItem.response(product.response())
         }
-
-        val product = ProductDAO.findById(cartItem.productId) ?:
-            throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
-
-        cartItem.response(product.response())
-    }
 
     /**
      * Removes a product from a user's cart.
@@ -110,20 +131,26 @@ class CartService : CartRepository {
      * @return The product entity that was removed from the cart.
      * @throws Exception if the product does not exist in the user's cart.
      */
-    override suspend fun removeCartItem(userId: String, productId: String): ProductResponse = query {
-        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
-        if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("ProductResponse ID"))
+    override suspend fun removeCartItem(
+        userId: String,
+        productId: String,
+    ): ProductResponse =
+        query {
+            if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
+            if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("ProductResponse ID"))
 
-        val cartItem = CartItemDAO.find {
-            CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
-        }.singleOrNull() ?: productId.throwNotFound("ProductResponse")
+            val cartItem =
+                CartItemDAO.find {
+                    CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
+                }.singleOrNull() ?: productId.throwNotFound("ProductResponse")
 
-        val product = ProductDAO.findById(cartItem.productId) ?:
-            throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
+            val product =
+                ProductDAO.findById(cartItem.productId)
+                    ?: throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
 
-        cartItem.delete()
-        product.response()
-    }
+            cartItem.delete()
+            product.response()
+        }
 
     /**
      * Clears all items from a user's cart.
@@ -131,13 +158,14 @@ class CartService : CartRepository {
      * @param userId The ID of the user whose cart is to be cleared.
      * @return True if the cart was cleared successfully.
      */
-    override suspend fun clearCart(userId: String): Boolean = query {
-        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
+    override suspend fun clearCart(userId: String): Boolean =
+        query {
+            if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
 
-        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
-        cartItems.forEach { it.delete() }
-        true
-    }
+            val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
+            cartItems.forEach { it.delete() }
+            true
+        }
 
     /**
      * Returns a summary of the user's cart including items, subtotal, tax, and item count.
@@ -145,50 +173,54 @@ class CartService : CartRepository {
      * @param userId The ID of the user for whom to retrieve the cart summary.
      * @return CartSummaryResponse containing cart items, subtotal, estimated tax, and item count.
      */
-    override suspend fun getCartSummary(userId: String): CartSummaryResponse = query {
-        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
+    override suspend fun getCartSummary(userId: String): CartSummaryResponse =
+        query {
+            if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
 
-        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
+            val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
 
-        val items = cartItems.mapNotNull { cartItem ->
-            val product = ProductDAO.findById(cartItem.productId.value) ?: return@mapNotNull null
-            val shopName = product.shopId?.value?.let { shopId ->
-                ShopDAO.findById(shopId)?.name
-            }
+            val items =
+                cartItems.mapNotNull { cartItem ->
+                    val product = ProductDAO.findById(cartItem.productId.value) ?: return@mapNotNull null
+                    val shopName =
+                        product.shopId?.value?.let { shopId ->
+                            ShopDAO.findById(shopId)?.name
+                        }
 
-            val price = product.discountPrice?.toDouble() ?: product.price.toDouble()
+                    val price = product.discountPrice?.toDouble() ?: product.price.toDouble()
 
-            CartItemSummary(
-                productId = product.id.value,
-                productName = product.name,
-                price = price,
-                quantity = cartItem.quantity,
-                image = product.images.split(",").firstOrNull()?.takeIf { it.isNotBlank() },
-                stockQuantity = getEffectiveStockQuantity(product),
-                shopId = product.shopId?.value,
-                shopName = shopName
+                    CartItemSummary(
+                        productId = product.id.value,
+                        productName = product.name,
+                        price = price,
+                        quantity = cartItem.quantity,
+                        image = product.images.split(",").firstOrNull()?.takeIf { it.isNotBlank() },
+                        stockQuantity = getEffectiveStockQuantity(product),
+                        shopId = product.shopId?.value,
+                        shopName = shopName,
+                    )
+                }
+
+            val subtotal = items.sumOf { it.price * it.quantity }
+            val estimatedTax = subtotal * 0.1 // 10% tax rate - configurable
+
+            CartSummaryResponse(
+                items = items,
+                subtotal = subtotal,
+                estimatedTax = estimatedTax,
+                itemCount = items.size,
             )
         }
-
-        val subtotal = items.sumOf { it.price * it.quantity }
-        val estimatedTax = subtotal * 0.1 // 10% tax rate - configurable
-
-        CartSummaryResponse(
-            items = items,
-            subtotal = subtotal,
-            estimatedTax = estimatedTax,
-            itemCount = items.size
-        )
-    }
 
     /**
      * Returns the effective stock quantity for a product.
      * If an inventory record exists, uses inventory.stockQuantity; otherwise uses product.stockQuantity.
      */
     private fun getEffectiveStockQuantity(product: ProductDAO): Int {
-        val inventory = InventoryDAO.find {
-            InventoryTable.productId eq product.id
-        }.firstOrNull()
+        val inventory =
+            InventoryDAO.find {
+                InventoryTable.productId eq product.id
+            }.firstOrNull()
 
         return inventory?.stockQuantity ?: product.stockQuantity
     }

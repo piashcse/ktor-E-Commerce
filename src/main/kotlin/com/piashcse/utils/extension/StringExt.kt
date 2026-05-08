@@ -8,13 +8,10 @@ import com.piashcse.utils.validator.NotFoundException
 // ============================================================================
 
 /** Throw NotFoundException with specific entity type */
-fun String.throwNotFound(resourceName: String): Nothing =
-    throw NotFoundException("$resourceName not found")
+fun String.throwNotFound(resourceName: String): Nothing = throw NotFoundException("$resourceName not found")
 
 /** Throw NotFoundException with default message */
-fun String.throwNotFound(): Nothing =
-    throw NotFoundException()
+fun String.throwNotFound(): Nothing = throw NotFoundException()
 
 /** Throw ConflictException */
-fun String.throwConflict(resourceName: String): Nothing =
-    throw ConflictException("$resourceName already exists")
+fun String.throwConflict(resourceName: String): Nothing = throw ConflictException("$resourceName already exists")

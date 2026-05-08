@@ -7,10 +7,10 @@ import org.valiktor.validate
 
 @Serializable
 data class ForgetPasswordRequest(val email: String, val userType: String) {
-   init {
-       validate(this) {
-           validate(ForgetPasswordRequest::email).isNotNull().isEmail()
-           validate(ForgetPasswordRequest::userType).isNotNull()
-       }
-   }
+    init {
+        validate(this) {
+            validate(ForgetPasswordRequest::email).isNotNull().isEmail()
+            validate(ForgetPasswordRequest::userType).isNotNull()
+        }
+    }
 }

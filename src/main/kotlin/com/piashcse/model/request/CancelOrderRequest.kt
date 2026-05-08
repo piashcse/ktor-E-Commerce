@@ -7,7 +7,7 @@ import org.valiktor.validate
 
 @Serializable
 data class CancelOrderRequest(
-    val reason: String
+    val reason: String,
 ) {
     fun validation() {
         validate(this) {

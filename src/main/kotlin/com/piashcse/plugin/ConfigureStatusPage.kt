@@ -39,13 +39,14 @@ fun Application.configureStatusPage() {
                 }
 
                 is ConstraintViolationException -> {
-                    val fieldErrors = error.constraintViolations
-                        .mapToMessage(baseName = "messages", locale = Locale.ENGLISH)
-                        .map { FieldError(field = it.property, message = it.message) }
+                    val fieldErrors =
+                        error.constraintViolations
+                            .mapToMessage(baseName = "messages", locale = Locale.ENGLISH)
+                            .map { FieldError(field = it.property, message = it.message) }
 
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        ApiError(message = "Validation failed", errors = fieldErrors)
+                        ApiError(message = "Validation failed", errors = fieldErrors),
                     )
                 }
 

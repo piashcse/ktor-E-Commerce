@@ -12,7 +12,10 @@ interface WishListRepository {
      * @param productId The unique identifier of the product to add.
      * @return The updated wish list entry.
      */
-    suspend fun addToWishList(userId: String, productId: String): WishList
+    suspend fun addToWishList(
+        userId: String,
+        productId: String,
+    ): WishList
 
     /**
      * Retrieves a list of products from the user's wish list.
@@ -22,7 +25,11 @@ interface WishListRepository {
      * @param offset The number of products to skip.
      * @return A list of products in the user's wish list.
      */
-    suspend fun getWishList(userId: String, limit: Int, offset: Int): PaginatedResponse<ProductResponse>
+    suspend fun getWishList(
+        userId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<ProductResponse>
 
     /**
      * Removes a product from the user's wish list.
@@ -31,7 +38,10 @@ interface WishListRepository {
      * @param productId The unique identifier of the product to remove.
      * @return The removed product.
      */
-    suspend fun removeFromWishList(userId: String, productId: String): ProductResponse
+    suspend fun removeFromWishList(
+        userId: String,
+        productId: String,
+    ): ProductResponse
 
     /**
      * Checks if a product is in the user's wish list.
@@ -40,5 +50,8 @@ interface WishListRepository {
      * @param productId The unique identifier of the product.
      * @return True if the product is in the wish list, false otherwise.
      */
-    suspend fun isProductInWishList(userId: String, productId: String): Boolean
+    suspend fun isProductInWishList(
+        userId: String,
+        productId: String,
+    ): Boolean
 }

@@ -40,7 +40,7 @@ fun Route.shopRoutes(shopService: ShopService) {
             val (limit, offset) = call.paginationParameters()
             call.respond(
                 HttpStatusCode.OK,
-                shopService.getShops(call.parameters["status"], call.parameters["category"], limit, offset)
+                shopService.getShops(call.parameters["status"], call.parameters["category"], limit, offset),
             )
         }
 
@@ -114,10 +114,11 @@ fun Route.shopSellerRoutesV2(shopService: ShopService) {
         val response = shopService.updateShop(call.currentUserId, shopId, requestBody)
 
         call.respond(
-            HttpStatusCode.OK, mapOf(
+            HttpStatusCode.OK,
+            mapOf(
                 "v2_data" to response,
-                "source" to source
-            )
+                "source" to source,
+            ),
         )
     }
 }
@@ -132,15 +133,16 @@ fun Route.shopAdminRoutes(shopService: ShopService) {
      */
     get("/status") {
         val statusParam = call.parameters["status"] ?: throw MissingParameterException("status")
-        val status = try {
-            ShopStatus.valueOf(statusParam.uppercase())
-        } catch (e: IllegalArgumentException) {
-            throw InvalidEnumValueException(
-                message = "Invalid shop status: $statusParam",
-                enumName = ShopStatus.values().joinToString(", ") { it.name },
-                invalidValue = statusParam
-            )
-        }
+        val status =
+            try {
+                ShopStatus.valueOf(statusParam.uppercase())
+            } catch (e: IllegalArgumentException) {
+                throw InvalidEnumValueException(
+                    message = "Invalid shop status: $statusParam",
+                    enumName = ShopStatus.values().joinToString(", ") { it.name },
+                    invalidValue = statusParam,
+                )
+            }
         val (limit, offset) = call.paginationParameters()
         call.respond(HttpStatusCode.OK, shopService.getShopsByStatus(status, limit, offset))
     }

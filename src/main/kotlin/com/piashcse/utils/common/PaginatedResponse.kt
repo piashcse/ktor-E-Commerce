@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PaginatedResponse<T>(
     val data: List<T>,
-    val metadata: PaginationMetadata
+    val metadata: PaginationMetadata,
 )
 
 @Serializable
@@ -16,5 +16,5 @@ data class PaginationMetadata(
     val totalCount: Long,
     val limit: Int,
     val skip: Int,
-    val nextCursor: String? = null
+    val nextCursor: String? = null,
 )

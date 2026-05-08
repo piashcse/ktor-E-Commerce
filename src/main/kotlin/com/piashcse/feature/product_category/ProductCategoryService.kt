@@ -15,7 +15,6 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
  * Service for managing product categories.
  */
 class ProductCategoryService : ProductCategoryRepository {
-
     /**
      * Creates a new product category with the given category name.
      *
@@ -23,15 +22,16 @@ class ProductCategoryService : ProductCategoryRepository {
      * @return The created product category entity.
      * @throws Exception if a category with the provided name already exists.
      */
-    override suspend fun createCategory(name: String): ProductCategoryResponse = query {
-        val isCategoryExist =
-            ProductCategoryDAO.find { ProductCategoryTable.name eq name }.toList().singleOrNull()
-        isCategoryExist?.let {
-            throw name.throwConflict("Category")
-        } ?: ProductCategoryDAO.new {
-            this.name = name
-        }.response()
-    }
+    override suspend fun createCategory(name: String): ProductCategoryResponse =
+        query {
+            val isCategoryExist =
+                ProductCategoryDAO.find { ProductCategoryTable.name eq name }.toList().singleOrNull()
+            isCategoryExist?.let {
+                throw name.throwConflict("Category")
+            } ?: ProductCategoryDAO.new {
+                this.name = name
+            }.response()
+        }
 
     /**
      * Retrieves the list of product categories with a limit on the number of categories returned.
@@ -39,11 +39,15 @@ class ProductCategoryService : ProductCategoryRepository {
      * @param limit The maximum number of categories to retrieve.
      * @return A list of product category entities.
      */
-    override suspend fun getCategories(limit: Int, offset: Int): PaginatedResponse<ProductCategoryResponse> = query {
-        ProductCategoryTable.selectAll().toPaginatedResponse(limit, offset) {
-            ProductCategoryDAO.wrapRow(it).response()
+    override suspend fun getCategories(
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<ProductCategoryResponse> =
+        query {
+            ProductCategoryTable.selectAll().toPaginatedResponse(limit, offset) {
+                ProductCategoryDAO.wrapRow(it).response()
+            }
         }
-    }
 
     /**
      * Updates the name of an existing product category.
@@ -53,14 +57,18 @@ class ProductCategoryService : ProductCategoryRepository {
      * @return The updated product category entity.
      * @throws Exception if no category is found with the provided category ID.
      */
-    override suspend fun updateCategory(categoryId: String, name: String): ProductCategoryResponse = query {
-        val isCategoryExist =
-            ProductCategoryDAO.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
-        isCategoryExist?.let {
-            it.name = name
-            it.response()
-        } ?: categoryId.throwNotFound("Category")
-    }
+    override suspend fun updateCategory(
+        categoryId: String,
+        name: String,
+    ): ProductCategoryResponse =
+        query {
+            val isCategoryExist =
+                ProductCategoryDAO.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
+            isCategoryExist?.let {
+                it.name = name
+                it.response()
+            } ?: categoryId.throwNotFound("Category")
+        }
 
     /**
      * Deletes an existing product category by its ID.
@@ -69,12 +77,13 @@ class ProductCategoryService : ProductCategoryRepository {
      * @return The ID of the deleted category.
      * @throws Exception if no category is found with the provided category ID.
      */
-    override suspend fun deleteCategory(categoryId: String): String = query {
-        val isCategoryExist =
-            ProductCategoryDAO.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
-        isCategoryExist?.let {
-            isCategoryExist.delete()
-            categoryId
-        } ?: categoryId.throwNotFound("Category")
-    }
+    override suspend fun deleteCategory(categoryId: String): String =
+        query {
+            val isCategoryExist =
+                ProductCategoryDAO.find { ProductCategoryTable.id eq categoryId }.toList().singleOrNull()
+            isCategoryExist?.let {
+                isCategoryExist.delete()
+                categoryId
+            } ?: categoryId.throwNotFound("Category")
+        }
 }

@@ -11,7 +11,7 @@ data class ShippingMethodRequest(
     val name: String,
     val type: String?,
     val price: Double,
-    val deliveryTime: String?
+    val deliveryTime: String?,
 ) {
     fun validation() {
         validate(this) {

@@ -26,7 +26,11 @@ fun Application.configureRateLimiting() {
     }
 }
 
-private fun RateLimitConfig.registerRateLimitZone(name: String, limit: Int, refillEvery: kotlin.time.Duration) {
+private fun RateLimitConfig.registerRateLimitZone(
+    name: String,
+    limit: Int,
+    refillEvery: kotlin.time.Duration,
+) {
     register(RateLimitName(name)) {
         rateLimiter(limit = limit, refillPeriod = refillEvery)
         requestKey { call -> call.request.local.remoteHost }

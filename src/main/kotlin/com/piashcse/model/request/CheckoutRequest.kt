@@ -12,7 +12,7 @@ data class CheckoutRequest(
     val paymentMethod: String? = null,
     val notes: String? = null,
     val idempotencyKey: String? = null,
-    val couponCode: String? = null
+    val couponCode: String? = null,
 ) {
     fun validation() {
         validate(this) {

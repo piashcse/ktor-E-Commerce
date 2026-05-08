@@ -22,7 +22,7 @@ fun Route.paymentRoutes(paymentService: PaymentService) {
             val requestBody = call.receive<PaymentRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                paymentService.createPayment(requestBody)
+                paymentService.createPayment(requestBody),
             )
         }
 
@@ -34,7 +34,7 @@ fun Route.paymentRoutes(paymentService: PaymentService) {
             val id = call.requireParameters("id")
             call.respond(
                 HttpStatusCode.OK,
-                paymentService.getPaymentById(id.first())
+                paymentService.getPaymentById(id.first()),
             )
         }
 
@@ -47,7 +47,7 @@ fun Route.paymentRoutes(paymentService: PaymentService) {
             val (limit, offset) = call.paginationParameters()
             call.respond(
                 HttpStatusCode.OK,
-                paymentService.getPaymentsByOrderId(orderId, limit, offset)
+                paymentService.getPaymentsByOrderId(orderId, limit, offset),
             )
         }
     }

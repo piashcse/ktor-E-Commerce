@@ -17,7 +17,7 @@ object PaymentTable : BaseIdTable("payment") {
 }
 
 class PaymentDAO(id: EntityID<String>) : BaseEntity(id, PaymentTable) {
-    companion object : BaseEntityClass<PaymentDAO>(PaymentTable,PaymentDAO::class.java ) // Reference the Payments table
+    companion object : BaseEntityClass<PaymentDAO>(PaymentTable, PaymentDAO::class.java) // Reference the Payments table
 
     var paymentId by PaymentTable.id
     var orderId by PaymentTable.orderId
@@ -26,13 +26,14 @@ class PaymentDAO(id: EntityID<String>) : BaseEntity(id, PaymentTable) {
     var status by PaymentTable.status
     var paymentMethod by PaymentTable.paymentMethod
     var transactionId by PaymentTable.transactionId
-    fun response() = PaymentResponse(
-        id = paymentId.value,
-        orderId = orderId.value,
-        amount = amount,
-        status = status,
-        paymentMethod = paymentMethod,
-        transactionId = transactionId
-    )
-}
 
+    fun response() =
+        PaymentResponse(
+            id = paymentId.value,
+            orderId = orderId.value,
+            amount = amount,
+            status = status,
+            paymentMethod = paymentMethod,
+            transactionId = transactionId,
+        )
+}

@@ -15,7 +15,6 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
  * Service for managing shop categories. Provides methods to create, retrieve, update, and delete categories.
  */
 class ShopCategoryService : ShopCategoryRepository {
-
     /**
      * Creates a new shop category. If a category with the same name already exists, an exception is thrown.
      *
@@ -23,15 +22,16 @@ class ShopCategoryService : ShopCategoryRepository {
      * @return The created shop category.
      * @throws alreadyExistException If a category with the same name already exists.
      */
-    override suspend fun createCategory(name: String): ShopCategoryResponse = query {
-        val isExistShopCategory =
-            ShopCategoryDAO.find { ShopCategoryTable.name eq name }.toList().singleOrNull()
-        isExistShopCategory?.let {
-            throw name.throwConflict("Category")
-        } ?: ShopCategoryDAO.new {
-            this.name = name
-        }.response()
-    }
+    override suspend fun createCategory(name: String): ShopCategoryResponse =
+        query {
+            val isExistShopCategory =
+                ShopCategoryDAO.find { ShopCategoryTable.name eq name }.toList().singleOrNull()
+            isExistShopCategory?.let {
+                throw name.throwConflict("Category")
+            } ?: ShopCategoryDAO.new {
+                this.name = name
+            }.response()
+        }
 
     /**
      * Retrieves a list of shop categories with a specified limit on the number of categories.
@@ -39,11 +39,15 @@ class ShopCategoryService : ShopCategoryRepository {
      * @param limit The maximum number of categories to retrieve.
      * @return A list of shop categories.
      */
-    override suspend fun getCategories(limit: Int, offset: Int): PaginatedResponse<ShopCategoryResponse> = query {
-        ShopCategoryTable.selectAll().toPaginatedResponse(limit, offset) {
-            ShopCategoryDAO.wrapRow(it).response()
+    override suspend fun getCategories(
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<ShopCategoryResponse> =
+        query {
+            ShopCategoryTable.selectAll().toPaginatedResponse(limit, offset) {
+                ShopCategoryDAO.wrapRow(it).response()
+            }
         }
-    }
 
     /**
      * Updates an existing shop category's name. If the category does not exist, an exception is thrown.
@@ -53,14 +57,18 @@ class ShopCategoryService : ShopCategoryRepository {
      * @return The updated shop category.
      * @throws categoryId.notFoundException If the category with the specified ID is not found.
      */
-    override suspend fun updateCategory(categoryId: String, name: String): ShopCategoryResponse = query {
-        val isShopCategoryExist =
-            ShopCategoryDAO.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
-        isShopCategoryExist?.let {
-            it.name = name
-            it.response()
-        } ?: categoryId.throwNotFound("Category")
-    }
+    override suspend fun updateCategory(
+        categoryId: String,
+        name: String,
+    ): ShopCategoryResponse =
+        query {
+            val isShopCategoryExist =
+                ShopCategoryDAO.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
+            isShopCategoryExist?.let {
+                it.name = name
+                it.response()
+            } ?: categoryId.throwNotFound("Category")
+        }
 
     /**
      * Deletes a shop category. If the category does not exist, an exception is thrown.
@@ -69,12 +77,13 @@ class ShopCategoryService : ShopCategoryRepository {
      * @return The ID of the deleted category.
      * @throws categoryId.notFoundException If the category with the specified ID is not found.
      */
-    override suspend fun deleteCategory(categoryId: String): String = query {
-        val shopCategoryExist =
-            ShopCategoryDAO.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
-        shopCategoryExist?.let {
-            it.delete()
-            categoryId
-        } ?: categoryId.throwNotFound("Category")
-    }
+    override suspend fun deleteCategory(categoryId: String): String =
+        query {
+            val shopCategoryExist =
+                ShopCategoryDAO.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
+            shopCategoryExist?.let {
+                it.delete()
+                categoryId
+            } ?: categoryId.throwNotFound("Category")
+        }
 }

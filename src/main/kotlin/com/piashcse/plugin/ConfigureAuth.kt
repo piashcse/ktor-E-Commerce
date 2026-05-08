@@ -9,7 +9,7 @@ import io.ktor.server.auth.jwt.*
 
 /**
  * Global Authentication Configuration.
- * 
+ *
  * Configures the single optimal JWT provider ("jwt-auth") for the entire application.
  * Roles and permissions are handled downstream via [RouteAuthDsl].
  */
@@ -22,9 +22,7 @@ fun Application.configureAuth() {
                 val email = call.payload.getClaim("email").asString()
                 val userTypeStr = call.payload.getClaim("userType").asString()
 
-                val userType = try {
-                    UserType.valueOf(userTypeStr.uppercase())
-                } catch (e: IllegalArgumentException) {
+                if (runCatching { UserType.valueOf(userTypeStr.uppercase()) }.isFailure) {
                     return@validate null
                 }
 

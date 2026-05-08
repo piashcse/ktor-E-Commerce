@@ -23,7 +23,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
         val (limit, offset) = call.paginationParameters()
         call.respond(
             HttpStatusCode.OK,
-            reviewRatingService.getReviewRating(productId, limit, offset)
+            reviewRatingService.getReviewRating(productId, limit, offset),
         )
     }
 
@@ -36,7 +36,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
             val requestBody = call.receive<ReviewRatingRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                reviewRatingService.addReviewRating(call.currentUserId, requestBody)
+                reviewRatingService.addReviewRating(call.currentUserId, requestBody),
             )
         }
 
@@ -51,8 +51,8 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
                 reviewRatingService.updateReviewRating(
                     params[0],
                     params[1],
-                    params[2].toInt()
-                )
+                    params[2].toInt(),
+                ),
             )
         }
 
@@ -64,7 +64,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
             val id = call.requireParameters("id")
             call.respond(
                 HttpStatusCode.OK,
-                reviewRatingService.deleteReviewRating(id.first())
+                reviewRatingService.deleteReviewRating(id.first()),
             )
         }
     }
