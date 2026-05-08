@@ -1,20 +1,37 @@
-# Ktor-E-Commerce
+<div align="center">
+  # 🛒 Ktor E-Commerce Backend
+  
+  **A high-performance, enterprise-grade e-commerce backend built with Kotlin & Ktor.**
 
-[![Ktor](https://img.shields.io/badge/ktor-3.4.3-blue.svg)](https://github.com/ktorio/ktor)
-[![Exposed](https://img.shields.io/badge/Exposed-1.2.0-blue.svg)](https://github.com/JetBrains/Exposed)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
-![Koin](https://img.shields.io/badge/Koin-4.2.0-29BEB0?logo=koin&logoColor=white)
-[![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-42.7.8-336791?logo=postgresql)](https://www.postgresql.org/)
-[![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
-<a href="https://github.com/piashcse"><img alt="License" src="https://img.shields.io/static/v1?label=GitHub&message=piashcse&color=C51162"/></a>
+  [![Ktor](https://img.shields.io/badge/ktor-3.4.3-blue.svg)](https://github.com/ktorio/ktor)
+  [![Exposed](https://img.shields.io/badge/Exposed-1.2.0-blue.svg)](https://github.com/JetBrains/Exposed)
+  [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+  ![Koin](https://img.shields.io/badge/Koin-4.2.0-29BEB0?logo=koin&logoColor=white)
+  [![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-42.7.8-336791?logo=postgresql)](https://www.postgresql.org/)
+  [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
+  <a href="https://github.com/piashcse"><img alt="Author" src="https://img.shields.io/static/v1?label=GitHub&message=piashcse&color=C51162"/></a>
 
-Ktor-E-Commerce is a high-performance backend solution designed for modern e-commerce applications built
-with [ktor](https://ktor.io/docs/welcome.html). This backend leverages the power of Kotlin to provide a robust,
-scalable, and efficient service for handling your e-commerce needs. For detailed documentation and guides, visit the project [documentation](https://piashcse.github.io/ktor-E-Commerce).
+  <h4>
+    <a href="https://piashcse.github.io/ktor-E-Commerce">Documentation</a>
+    <span> · </span>
+    <a href="https://github.com/piashcse/ktor-E-Commerce/issues">Report Bug</a>
+    <span> · </span>
+    <a href="https://github.com/piashcse/ktor-E-Commerce/pulls">Request Feature</a>
+  </h4>
 
-<p align="center">
-  <img width="100%" height="40%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/swagger.gif" />
-</p>
+  <img src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/swagger.gif" width="100%" alt="Ktor-E-Commerce Banner" style="border-radius: 10px; margin-top: 20px;" />
+</div>
+
+---
+
+## 🚀 Overview
+
+**Ktor-E-Commerce** is a robust, scalable, and high-performance backend solution designed for modern e-commerce applications. Leveraging the power of [Kotlin](https://kotlinlang.org) and [Ktor](https://ktor.io), it provides an efficient service for handling complex e-commerce workflows, from multi-role authentication to advanced order processing and real-time inventory management.
+
+### Key Pillars
+- **Performance**: Built with Ktor's asynchronous engine for non-blocking I/O.
+- **Security**: JWT-based auth, rate limiting, and password complexity enforcement.
+- **Quality**: Strict static analysis with Ktlint and Detekt integrated.
 
 # Features
 
@@ -72,12 +89,12 @@ scalable, and efficient service for handling your e-commerce needs. For detailed
 - **Return Shipping**: Customers can mark approved refunds as shipped with tracking numbers.
 - **Refund Tracking**: Complete refund lifecycle tracking from request to resolution.
 
-### 6. Scalability and Performance
+### 8. Scalability and Performance
 
 - **Asynchronous Processing**: Leverage Ktor's async capabilities for high performance.
 - **Load Balancing**: Easily scale your application to accommodate increased traffic.
 
-### 7. Security
+### 9. Security
 
 - **JWT Tokens**: Implement JSON Web Tokens for secure authentication.
 - **Refresh Tokens**: Secure token refresh with hashed storage and automatic revocation.
@@ -86,6 +103,12 @@ scalable, and efficient service for handling your e-commerce needs. For detailed
 - **Password Strength**: Enforced password complexity requirements (min 8 chars, mixed case, digit, special char).
 - **Input Validation**: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).
 - **Atomic Stock Operations**: Thread-safe inventory updates within database transactions.
+
+### 10. Code Quality & Static Analysis
+
+- **Ktlint**: Automated Kotlin linting to ensure consistent code style.
+- **Detekt**: Static code analysis for finding potential bugs and code smells.
+- **Pre-commit Hooks**: Enforce quality standards before code is even committed.
 
 ## Architecture
 
@@ -97,35 +120,23 @@ scalable, and efficient service for handling your e-commerce needs. For detailed
 <b>Fig. Clean Architecture </b>
 </p>
 
-## Built With 🛠
+## 🛠 Tech Stack
 
-- [Ktor](https://ktor.io/docs/welcome.html) - Ktor is a framework to easily build connected applications – web
-  applications, HTTP services, mobile and browser applications. Modern connected applications need to be asynchronous to
-  provide the best experience to users, and Kotlin Coroutines provides awesome facilities to do it in an easy and
-  straightforward way.
-- [Exposed](https://github.com/JetBrains/Exposed) - Exposed is a lightweight SQL library on top of JDBC driver for
-  Kotlin language. Exposed has two flavors of database access: typesafe SQL wrapping DSL and lightweight Data Access
-  Objects (DAO).
-- [PostgreSQL](https://www.postgresql.org/) - PostgreSQL is a powerful, open-source object-relational database system
-  that uses and extends the SQL language combined with many features that safely store and scale the most complicated
-  data workloads.
-- [Koin](https://github.com/InsertKoinIO/koin) - A pragmatic lightweight dependency injection framework for Kotlin &
-  Kotlin Multiplatform.
-- [Kotlinx-datetime](https://github.com/Kotlin/kotlinx-datetime) - A multiplatform Kotlin library for working with date
-  and time.
-- [Bcrypt](https://github.com/patrickfav/bcrypt) - A Java standalone implementation of the bcrypt password hash
-  function. Based on the Blowfish cipher it is the default password hash algorithm for OpenBSD and other systems
-  including some Linux distributions.
-- [Apache Commons Email](https://github.com/apache/commons-email) - Apache Commons Email aims to provide an API for
-  sending email. It is built on top of the JavaMail API, which it aims to simplify.
-- [Ktor OpenAPI/Swagger](https://ktor.io/docs/server-openapi.html) - Ktor's built-in OpenAPI generation and Swagger UI.
-- [Valiktor](https://github.com/valiktor/valiktor) - Valiktor is a type-safe, powerful and extensible fluent DSL to
-  validate objects in Kotlin.
+| Category | Technology |
+| :--- | :--- |
+| **Language** | [Kotlin](https://kotlinlang.org/) (JVM 17) |
+| **Framework** | [Ktor](https://ktor.io/) |
+| **Database** | [PostgreSQL](https://www.postgresql.org/) |
+| **ORM** | [Exposed](https://github.com/JetBrains/Exposed) |
+| **DI** | [Koin](https://github.com/InsertKoinIO/koin) |
+| **Validation** | [Valiktor](https://github.com/valiktor/valiktor) |
+| **Static Analysis** | [Ktlint](https://github.com/jlleitschuh/ktlint-gradle), [Detekt](https://detekt.dev/) |
+| **API Docs** | [OpenAPI / Swagger](https://ktor.io/docs/server-openapi.html) |
 
 ## Requirements
 
-- [JAVA 11](https://jdk.java.net/11/) (or latest)
-- [PostgreSQL](https://www.postgresql.org/) (latest)
+- **Java**: JDK 17 or latest
+- **PostgreSQL**: Version 12 or latest
 
 ## Clone the repository
 
