@@ -121,18 +121,16 @@
 <b>Fig. Clean Architecture </b>
 </p>
 
-## 🛠 Tech Stack
+## Built With 🛠
 
-| Category | Technology |
-| :--- | :--- |
-| **Language** | [Kotlin](https://kotlinlang.org/) (JVM 17) |
-| **Framework** | [Ktor](https://ktor.io/) |
-| **Database** | [PostgreSQL](https://www.postgresql.org/) |
-| **ORM** | [Exposed](https://github.com/JetBrains/Exposed) |
-| **DI** | [Koin](https://github.com/InsertKoinIO/koin) |
-| **Validation** | [Valiktor](https://github.com/valiktor/valiktor) |
-| **Static Analysis** | [Ktlint](https://github.com/jlleitschuh/ktlint-gradle), [Detekt](https://detekt.dev/) |
-| **API Docs** | [OpenAPI / Swagger](https://ktor.io/docs/server-openapi.html) |
+- [Ktor](https://ktor.io/docs/welcome.html) - An asynchronous framework for creating microservices, web applications, and more.
+- [Exposed](https://github.com/JetBrains/Exposed) - A lightweight SQL library on top of JDBC driver for the Kotlin language.
+- [PostgreSQL](https://www.postgresql.org/) - A powerful, open-source object-relational database system.
+- [Koin](https://github.com/InsertKoinIO/koin) - A pragmatic lightweight dependency injection framework for Kotlin.
+- [Ktlint](https://github.com/jlleitschuh/ktlint-gradle) - An anti-bikeshedding Kotlin linter with built-in formatter.
+- [Detekt](https://detekt.dev/) - A static code analysis tool for the Kotlin programming language.
+- [Valiktor](https://github.com/valiktor/valiktor) - A type-safe, powerful and extensible fluent DSL to validate objects in Kotlin.
+- [Ktor OpenAPI/Swagger](https://ktor.io/docs/server-openapi.html) - Ktor's built-in OpenAPI generation and Swagger UI.
 
 ## Requirements
 
