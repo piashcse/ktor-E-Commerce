@@ -21,11 +21,12 @@ class ShippingMethodDAO(id: EntityID<String>) : BaseEntity(id, ShippingMethodTab
     var price by ShippingMethodTable.price
     var deliveryTime by ShippingMethodTable.deliveryTime
 
-    fun response() = ShippingMethodResponse(
-        id = id.value,
-        name = name,
-        type = type,
-        price = price,
-        deliveryTime = deliveryTime
-    )
+    fun response() =
+        ShippingMethodResponse(
+            id = id.value,
+            name = name,
+            type = type,
+            price = price,
+            deliveryTime = deliveryTime,
+        )
 }

@@ -24,7 +24,7 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
             requestBody.validation()
             call.respond(
                 HttpStatusCode.OK,
-                wishlistService.addToWishList(call.currentUserId, requestBody.productId)
+                wishlistService.addToWishList(call.currentUserId, requestBody.productId),
             )
         }
 
@@ -36,7 +36,7 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
             val (limit, offset) = call.paginationParameters()
             call.respond(
                 HttpStatusCode.OK,
-                wishlistService.getWishList(call.currentUserId, limit, offset)
+                wishlistService.getWishList(call.currentUserId, limit, offset),
             )
         }
 
@@ -48,7 +48,7 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
             val productId = call.requireParameters("productId")
             call.respond(
                 HttpStatusCode.OK,
-                wishlistService.removeFromWishList(call.currentUserId, productId.first())
+                wishlistService.removeFromWishList(call.currentUserId, productId.first()),
             )
         }
 
@@ -60,7 +60,7 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
             val productId = call.requireParameters("productId")
             call.respond(
                 HttpStatusCode.OK,
-                wishlistService.isProductInWishList(call.currentUserId, productId.first())
+                wishlistService.isProductInWishList(call.currentUserId, productId.first()),
             )
         }
     }

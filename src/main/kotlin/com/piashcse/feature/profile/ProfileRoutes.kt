@@ -23,7 +23,7 @@ fun Route.profileRoutes(userProfileService: ProfileService) {
         get {
             call.respond(
                 HttpStatusCode.OK,
-                userProfileService.getProfile(call.currentUserId)
+                userProfileService.getProfile(call.currentUserId),
             )
         }
 
@@ -32,22 +32,23 @@ fun Route.profileRoutes(userProfileService: ProfileService) {
          * @description Update the authenticated user's profile information
          */
         put {
-            val params = UserProfileRequest(
-                firstName = call.parameters["firstName"],
-                lastName = call.parameters["lastName"],
-                mobile = call.parameters["mobile"],
-                faxNumber = call.parameters["faxNumber"],
-                streetAddress = call.parameters["streetAddress"],
-                city = call.parameters["city"],
-                identificationType = call.parameters["identificationType"],
-                identificationNo = call.parameters["identificationNo"],
-                occupation = call.parameters["occupation"],
-                postCode = call.parameters["postCode"],
-                gender = call.parameters["gender"],
-            )
+            val params =
+                UserProfileRequest(
+                    firstName = call.parameters["firstName"],
+                    lastName = call.parameters["lastName"],
+                    mobile = call.parameters["mobile"],
+                    faxNumber = call.parameters["faxNumber"],
+                    streetAddress = call.parameters["streetAddress"],
+                    city = call.parameters["city"],
+                    identificationType = call.parameters["identificationType"],
+                    identificationNo = call.parameters["identificationNo"],
+                    occupation = call.parameters["occupation"],
+                    postCode = call.parameters["postCode"],
+                    gender = call.parameters["gender"],
+                )
             call.respond(
                 HttpStatusCode.OK,
-                userProfileService.updateProfile(call.currentUserId, params)
+                userProfileService.updateProfile(call.currentUserId, params),
             )
         }
 

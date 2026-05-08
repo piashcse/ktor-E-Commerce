@@ -10,5 +10,5 @@ data class PaymentResponse(
     val amount: Long,
     val status: PaymentStatus,
     val paymentMethod: String,
-    val transactionId: String?
+    val transactionId: String?,
 )

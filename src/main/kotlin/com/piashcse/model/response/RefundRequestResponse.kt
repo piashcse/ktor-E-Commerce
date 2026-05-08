@@ -17,5 +17,5 @@ data class RefundRequestResponse(
     val requestedAt: String,
     val resolvedAt: String?,
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
 )

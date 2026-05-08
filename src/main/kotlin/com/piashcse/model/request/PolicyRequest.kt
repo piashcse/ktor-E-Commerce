@@ -12,7 +12,7 @@ data class CreatePolicyRequest(
     val type: PolicyDocumentTable.PolicyType,
     val content: String,
     val version: String,
-    val effectiveDate: String
+    val effectiveDate: String,
 )
 
 /**
@@ -24,7 +24,7 @@ data class UpdatePolicyRequest(
     val content: String? = null,
     val version: String? = null,
     val effectiveDate: String? = null,
-    val isActive: Boolean? = null
+    val isActive: Boolean? = null,
 )
 
 /**
@@ -34,5 +34,5 @@ data class UpdatePolicyRequest(
 data class PolicyConsentRequest(
     val policyId: String,
     val ipAddress: String? = null,
-    val userAgent: String? = null
+    val userAgent: String? = null,
 )

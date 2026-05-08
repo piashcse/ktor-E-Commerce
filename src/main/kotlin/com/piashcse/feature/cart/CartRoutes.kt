@@ -23,7 +23,7 @@ fun Route.cartRoutes(cartService: CartService) {
             val requestBody = call.receive<CartRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                cartService.createCart(call.currentUserId, requestBody.productId, requestBody.quantity)
+                cartService.createCart(call.currentUserId, requestBody.productId, requestBody.quantity),
             )
         }
 
@@ -35,7 +35,7 @@ fun Route.cartRoutes(cartService: CartService) {
             val (limit, offset) = call.paginationParameters()
             call.respond(
                 HttpStatusCode.OK,
-                cartService.getCartItems(call.currentUserId, limit, offset)
+                cartService.getCartItems(call.currentUserId, limit, offset),
             )
         }
 
@@ -47,7 +47,7 @@ fun Route.cartRoutes(cartService: CartService) {
             val requestBody = call.receive<CartRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                cartService.updateCartQuantity(call.currentUserId, requestBody.productId, requestBody.quantity)
+                cartService.updateCartQuantity(call.currentUserId, requestBody.productId, requestBody.quantity),
             )
         }
 
@@ -59,7 +59,7 @@ fun Route.cartRoutes(cartService: CartService) {
             val (productId) = call.requireParameters("productId")
             call.respond(
                 HttpStatusCode.OK,
-                cartService.removeCartItem(call.currentUserId, productId)
+                cartService.removeCartItem(call.currentUserId, productId),
             )
         }
 
@@ -70,7 +70,7 @@ fun Route.cartRoutes(cartService: CartService) {
         delete("all") {
             call.respond(
                 HttpStatusCode.OK,
-                cartService.clearCart(call.currentUserId)
+                cartService.clearCart(call.currentUserId),
             )
         }
 
@@ -81,7 +81,7 @@ fun Route.cartRoutes(cartService: CartService) {
         get("summary") {
             call.respond(
                 HttpStatusCode.OK,
-                cartService.getCartSummary(call.currentUserId)
+                cartService.getCartSummary(call.currentUserId),
             )
         }
     }

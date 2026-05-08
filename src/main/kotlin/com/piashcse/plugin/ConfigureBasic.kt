@@ -15,9 +15,15 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 fun Application.configureBasic() {
+    configureCORS()
+    configureContentNegotiation()
+    configureCallLogging()
+}
+
+private fun Application.configureCORS() {
     install(CORS) {
         val allowedOrigins = DotEnvConfig.allowedOrigins.split(",")
-        
+
         // Allow all origins if "*" is in the list
         if (allowedOrigins.any { it.trim() == "*" }) {
             anyHost()
@@ -28,11 +34,11 @@ fun Application.configureBasic() {
                 val url = Url(trimmed)
                 allowHost(
                     host = url.host,
-                    schemes = listOf(url.protocol.name)
+                    schemes = listOf(url.protocol.name),
                 )
             }
         }
-        
+
         allowCredentials = true
         allowNonSimpleContentTypes = true
         listOf(
@@ -40,12 +46,15 @@ fun Application.configureBasic() {
             HttpMethod.Post,
             HttpMethod.Delete,
             HttpMethod.Patch,
-            HttpMethod.Options
+            HttpMethod.Options,
         ).forEach { allowMethod(it) }
         allowHeader(HttpHeaders.ContentType)
         allowHeader(HttpHeaders.Authorization)
         allowHeader("X-Requested-With")
     }
+}
+
+private fun Application.configureContentNegotiation() {
     install(ContentNegotiation) {
         gson {
             setPrettyPrinting()
@@ -53,11 +62,17 @@ fun Application.configureBasic() {
                 LocalDateTime::class.java,
                 JsonSerializer<LocalDateTime> { localDateTime, _, _ ->
                     com.google.gson.JsonPrimitive(localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-                }
+                },
             )
             // serializeNulls()
         }
     }
+}
+
+private fun Application.configureCallLogging() {
+    val httpStatusSuccess = 300
+    val httpStatusRedirect = 400
+
     install(CallLogging) {
         level = Level.INFO
         filter { call -> call.request.path().startsWith("/") }
@@ -75,8 +90,8 @@ fun Application.configureBasic() {
             val coloredStatus =
                 when {
                     status == null -> "\u001B[33mUNKNOWN\u001B[0m"
-                    status.value < 300 -> "\u001B[32m$status\u001B[0m"
-                    status.value < 400 -> "\u001B[33m$status\u001B[0m"
+                    status.value < httpStatusSuccess -> "\u001B[32m$status\u001B[0m"
+                    status.value < httpStatusRedirect -> "\u001B[33m$status\u001B[0m"
                     else -> "\u001B[31m$status\u001B[0m"
                 }
             val coloredMethod = "\u001B[36m$httpMethod\u001B[0m"
@@ -92,7 +107,7 @@ fun Application.configureBasic() {
             |Duration: ${duration}ms
             |------------------------------------------------------------------
             |
-      """.trimMargin()
+            """.trimMargin()
         }
     }
 }

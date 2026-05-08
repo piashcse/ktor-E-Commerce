@@ -19,5 +19,5 @@ data class ProductResponse(
     val hotDeal: Boolean?,
     val featured: Boolean,
     val images: String,
-    val status: ProductStatus
+    val status: ProductStatus,
 )

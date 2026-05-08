@@ -37,4 +37,3 @@ abstract class BaseEntityClass<E : BaseEntity>(table: BaseIdTable, entityType: C
 
 // generating utc time
 fun currentUtc(): LocalDateTime = LocalDateTime.now(ZoneOffset.UTC)
-

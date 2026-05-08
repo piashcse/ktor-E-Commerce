@@ -17,7 +17,7 @@ fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService
         requestBody.validation()
         call.respond(
             HttpStatusCode.Created,
-            shippingMethodService.createShippingMethod(requestBody)
+            shippingMethodService.createShippingMethod(requestBody),
         )
     }
 
@@ -31,7 +31,7 @@ fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService
         requestBody.validation()
         call.respond(
             HttpStatusCode.OK,
-            shippingMethodService.updateShippingMethod(id, requestBody)
+            shippingMethodService.updateShippingMethod(id, requestBody),
         )
     }
 
@@ -43,7 +43,7 @@ fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService
         val (id) = call.requireParameters("id")
         call.respond(
             HttpStatusCode.OK,
-            shippingMethodService.deleteShippingMethod(id)
+            shippingMethodService.deleteShippingMethod(id),
         )
     }
 }

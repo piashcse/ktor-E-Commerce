@@ -4,6 +4,7 @@ import com.piashcse.feature.auth.*
 import com.piashcse.feature.brand.BrandService
 import com.piashcse.feature.cart.CartService
 import com.piashcse.feature.consent.ConsentService
+import com.piashcse.feature.coupon.CouponService
 import com.piashcse.feature.inventory.InventoryService
 import com.piashcse.feature.order.OrderService
 import com.piashcse.feature.payment.PaymentService
@@ -18,33 +19,33 @@ import com.piashcse.feature.shipping_address.ShippingAddressService
 import com.piashcse.feature.shipping_method.ShippingMethodService
 import com.piashcse.feature.shop.ShopService
 import com.piashcse.feature.shop_category.ShopCategoryService
-import com.piashcse.feature.coupon.CouponService
 import com.piashcse.feature.wishlist.WishListService
 import com.piashcse.service.UploadService
 import org.koin.dsl.module
 
-val serviceModule = module {
-    single { BrandService() }
-    single { CartService() }
-    single { OrderService() }
-    single { ProductService() }
-    single { ProductCategoryService() }
-    single { ProductSubCategoryService() }
-    single { ShippingAddressService() }
-    single { ShippingMethodService() }
-    single { ShopService() }
-    single { ShopCategoryService() }
-    single { CouponService() }
-    single { RefreshTokenRepositoryImpl() as RefreshTokenRepository }
-    single { LoginAttemptRepositoryImpl() as LoginAttemptRepository }
-    single { AuthService(get<RefreshTokenRepository>(), get<LoginAttemptRepository>()) }
-    single { ProfileService() }
-    single { WishListService() }
-    single { PaymentService() }
-    single { ReviewRatingService() }
-    single { PolicyService() }
-    single { ConsentService() }
-    single { InventoryService() }
-    single { RefundRequestService() }
-    single { UploadService }
-}
+val serviceModule =
+    module {
+        single { BrandService() }
+        single { CartService() }
+        single { OrderService() }
+        single { ProductService() }
+        single { ProductCategoryService() }
+        single { ProductSubCategoryService() }
+        single { ShippingAddressService() }
+        single { ShippingMethodService() }
+        single { ShopService() }
+        single { ShopCategoryService() }
+        single { CouponService() }
+        single { RefreshTokenRepositoryImpl() as RefreshTokenRepository }
+        single { LoginAttemptRepositoryImpl() as LoginAttemptRepository }
+        single { AuthService(get<RefreshTokenRepository>(), get<LoginAttemptRepository>()) }
+        single { ProfileService() }
+        single { WishListService() }
+        single { PaymentService() }
+        single { ReviewRatingService() }
+        single { PolicyService() }
+        single { ConsentService() }
+        single { InventoryService() }
+        single { RefundRequestService() }
+        single { UploadService }
+    }

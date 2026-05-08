@@ -10,7 +10,7 @@ data class CouponRequest(
     val minOrderAmount: Double = 0.0,
     val maxDiscountAmount: Double? = null,
     val startDate: String, // ISO date string
-    val endDate: String,   // ISO date string
+    val endDate: String, // ISO date string
     val usageLimit: Int? = null,
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
 )

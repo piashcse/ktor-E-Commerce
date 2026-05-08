@@ -27,5 +27,9 @@ interface PaymentRepository {
      * @param orderId The unique identifier of the order.
      * @return A list of payments for the order.
      */
-    suspend fun getPaymentsByOrderId(orderId: String, limit: Int = 20, offset: Int = 0): PaginatedResponse<PaymentResponse>
+    suspend fun getPaymentsByOrderId(
+        orderId: String,
+        limit: Int = 20,
+        offset: Int = 0,
+    ): PaginatedResponse<PaymentResponse>
 }

@@ -14,5 +14,5 @@ data class UserProfileRequest(
     val identificationNo: String?,
     val occupation: String?,
     val postCode: String?,
-    val gender: String?
+    val gender: String?,
 )

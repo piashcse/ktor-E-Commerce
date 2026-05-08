@@ -17,7 +17,7 @@ data class ShippingAddressRequest(
     val state: String?,
     val country: String,
     val zipCode: String,
-    val isDefault: Boolean = false
+    val isDefault: Boolean = false,
 ) {
     fun validation() {
         validate(this) {

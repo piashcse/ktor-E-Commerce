@@ -20,7 +20,6 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
  * Service for managing product subcategories. Provides methods to add, update, retrieve, and delete product subcategories.
  */
 class ProductSubCategoryService : ProductSubCategoryRepository {
-
     /**
      * Adds a new product subcategory to the system.
      *
@@ -58,15 +57,16 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
      * @return A list of product sub-category entities.
      */
     override suspend fun getProductSubCategory(
-            categoryId: String,
-            limit: Int,
-            offset: Int
-    ): PaginatedResponse<ProductSubCategoryResponse> = query {
-        ProductSubCategoryTable.selectAll().andWhere { ProductSubCategoryTable.categoryId eq categoryId }
-            .toPaginatedResponse(limit, offset) {
-                ProductSubCategoryDAO.wrapRow(it).response()
-            }
-    }
+        categoryId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<ProductSubCategoryResponse> =
+        query {
+            ProductSubCategoryTable.selectAll().andWhere { ProductSubCategoryTable.categoryId eq categoryId }
+                .toPaginatedResponse(limit, offset) {
+                    ProductSubCategoryDAO.wrapRow(it).response()
+                }
+        }
 
     /**
      * Updates the name of a product subcategory.
@@ -76,15 +76,19 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
      * @return The updated product subcategory.
      * @throws id.throwNotFound("Resource") If the subcategory ID does not exist.
      */
-    override suspend fun updateProductSubCategory(id: String, name: String): ProductSubCategoryResponse = query {
-        val suCategoryExist =
-            ProductSubCategoryDAO.find { ProductSubCategoryTable.id eq id }
-                .toList().singleOrNull()
-        suCategoryExist?.let {
-            it.name = name
-            it.response()
-        } ?: id.throwNotFound("Subcategory")
-    }
+    override suspend fun updateProductSubCategory(
+        id: String,
+        name: String,
+    ): ProductSubCategoryResponse =
+        query {
+            val suCategoryExist =
+                ProductSubCategoryDAO.find { ProductSubCategoryTable.id eq id }
+                    .toList().singleOrNull()
+            suCategoryExist?.let {
+                it.name = name
+                it.response()
+            } ?: id.throwNotFound("Subcategory")
+        }
 
     /**
      * Deletes a product subcategory.
@@ -93,12 +97,13 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
      * @return The ID of the deleted subcategory.
      * @throws subCategoryId.throwNotFound("Resource") If the subcategory ID does not exist.
      */
-    override suspend fun deleteProductSubCategory(subCategoryId: String): String = query {
-        val isSubCategoryExist =
-            ProductSubCategoryDAO.find { ProductSubCategoryTable.id eq subCategoryId }.toList().singleOrNull()
-        isSubCategoryExist?.let {
-            isSubCategoryExist.delete()
-            subCategoryId
-        } ?: subCategoryId.throwNotFound("Subcategory")
-    }
+    override suspend fun deleteProductSubCategory(subCategoryId: String): String =
+        query {
+            val isSubCategoryExist =
+                ProductSubCategoryDAO.find { ProductSubCategoryTable.id eq subCategoryId }.toList().singleOrNull()
+            isSubCategoryExist?.let {
+                isSubCategoryExist.delete()
+                subCategoryId
+            } ?: subCategoryId.throwNotFound("Subcategory")
+        }
 }

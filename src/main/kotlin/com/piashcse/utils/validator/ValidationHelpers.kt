@@ -6,15 +6,24 @@ import com.piashcse.constants.Message
 //  VALIDATION HELPERS - Uses Message constants for consistency
 // ============================================================================
 
-fun requireNotBlank(value: String, fieldName: String) {
+fun requireNotBlank(
+    value: String,
+    fieldName: String,
+) {
     if (value.isBlank()) throw ValidationException(Message.Validation.blankField(fieldName))
 }
 
-fun requirePositive(value: Number, fieldName: String) {
+fun requirePositive(
+    value: Number,
+    fieldName: String,
+) {
     if (value.toDouble() <= 0) throw ValidationException(Message.Validation.notPositive(fieldName))
 }
 
-fun requireNonNegative(value: Number, fieldName: String) {
+fun requireNonNegative(
+    value: Number,
+    fieldName: String,
+) {
     if (value.toDouble() < 0) throw ValidationException(Message.Validation.negativeValue(fieldName))
 }
 
@@ -23,6 +32,9 @@ fun requireValidEmail(email: String) {
     if (!regex.matches(email)) throw ValidationException(Message.Validation.INVALID_EMAIL)
 }
 
-fun requireValidPassword(password: String, minLength: Int = 8) {
+fun requireValidPassword(
+    password: String,
+    minLength: Int = 8,
+) {
     if (password.length < minLength) throw ValidationException(Message.Validation.WEAK_PASSWORD)
 }

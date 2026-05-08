@@ -33,11 +33,12 @@ class ReviewRatingDAO(id: EntityID<String>) : BaseEntity(id, ReviewRatingTable) 
     var notHelpfulCount by ReviewRatingTable.notHelpfulCount
     var status by ReviewRatingTable.status
 
-    fun response() = ReviewRatingResponse(
-        id = id.value,
-        userId = userId.value,
-        productId = productId.value,
-        reviewText = reviewText,
-        rating = rating,
-    )
+    fun response() =
+        ReviewRatingResponse(
+            id = id.value,
+            userId = userId.value,
+            productId = productId.value,
+            reviewText = reviewText,
+            rating = rating,
+        )
 }

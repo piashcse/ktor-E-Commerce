@@ -1,6 +1,5 @@
 package com.piashcse.feature.product_category
 
-import com.piashcse.model.request.ProductCategoryRequest
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
@@ -20,7 +19,7 @@ fun Route.productCategoryRoutes(productCategoryService: ProductCategoryService) 
         val (limit, offset) = call.paginationParameters()
         call.respond(
             HttpStatusCode.OK,
-            productCategoryService.getCategories(limit, offset)
+            productCategoryService.getCategories(limit, offset),
         )
     }
 }

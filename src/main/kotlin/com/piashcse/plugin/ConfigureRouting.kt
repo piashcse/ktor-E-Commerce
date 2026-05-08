@@ -11,9 +11,11 @@ import com.piashcse.feature.cart.cartRoutes
 import com.piashcse.feature.checkout.checkoutRoutes
 import com.piashcse.feature.consent.ConsentService
 import com.piashcse.feature.consent.consentRoutes
+import com.piashcse.feature.coupon.CouponService
+import com.piashcse.feature.coupon.couponAdminRoutes
+import com.piashcse.feature.coupon.couponRoutes
 import com.piashcse.feature.inventory.InventoryService
 import com.piashcse.feature.inventory.inventoryAdminRoutes
-
 import com.piashcse.feature.inventory.inventorySellerRoutes
 import com.piashcse.feature.order.OrderService
 import com.piashcse.feature.order.orderAdminRoutes
@@ -54,9 +56,6 @@ import com.piashcse.feature.shop_category.ShopCategoryService
 import com.piashcse.feature.shop_category.shopCategoryAdminRoutes
 import com.piashcse.feature.wishlist.WishListService
 import com.piashcse.feature.wishlist.wishListRoutes
-import com.piashcse.feature.coupon.CouponService
-import com.piashcse.feature.coupon.couponRoutes
-import com.piashcse.feature.coupon.couponAdminRoutes
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -93,49 +92,18 @@ fun Application.configureRoute() {
         }.hide()
         route("/api") {
             route("v1") {
-                route("auth") { authRoutes(authService) }
-                route("profile") { profileRoutes(userProfileService) }
-                route("shop") { shopRoutes(shopService) }
-                route("brand") { brandRoutes(brandService) }
-                route("product-category") { productCategoryRoutes(productCategoryService) }
-                route("product-subcategory") { productSubCategoryRoutes(productSubCategoryService) }
-                route("product") { productRoutes(productService) }
-                route("review-rating") { reviewRatingRoutes(reviewRatingService) }
-                route("cart") { cartRoutes(cartService) }
-                route("wishlist") { wishListRoutes(wishListService) }
-                route("checkout") { checkoutRoutes(shippingAddressService, shippingMethodService, orderService) }
-                route("order") { orderRoutes(orderService) }
-                route("payment") { paymentRoutes(paymentService) }
-                route("policy") { policyRoutes(policyService) }
-                route("policy-consents") { consentRoutes(consentService) }
-                route("refund-requests") { refundRequestRoutes(returnRequestService) }
-                route("coupon") { couponRoutes(couponService) }
-                route("seller") {
-                    sellerAuth {
-                        route("shop") { shopSellerRoutesV1(shopService) }
-                        route("product") { productSellerRoutes(productService) }
-                        route("inventory") { inventorySellerRoutes(inventoryService) }
-                        route("order") { orderSellerRoutes(orderService) }
-                        route("refund-requests") { refundSellerRoutes(returnRequestService) }
-                    }
-                }
-                route("admin") {
-                    adminAuth {
-                        route("auth") { authAdminRoutes(authService) }
-                        route("brand") { brandAdminRoutes(brandService) }
-                        route("product-category") { productCategoryAdminRoutes(productCategoryService) }
-                        route("product-subcategory") { productSubCategoryAdminRoutes(productSubCategoryService) }
-                        route("shop-category") { shopCategoryAdminRoutes(shopCategoryService) }
-                        route("shop") { shopAdminRoutes(shopService) }
-                        route("product") { productAdminRoutes(productService) }
-                        route("inventory") { inventoryAdminRoutes(inventoryService) }
-                        route("order") { orderAdminRoutes(orderService) }
-                        route("refund-requests") { refundAdminRoutes(returnRequestService) }
-                        route("policy") { policyAdminRoutes(policyService) }
-                        route("shipping-method") { shippingMethodAdminRoutes(shippingMethodService) }
-                        route("coupon") { couponAdminRoutes(couponService) }
-                    }
-                }
+                configureCustomerRoutes(
+                    authService, userProfileService, shopService, brandService, productCategoryService,
+                    productSubCategoryService, productService, reviewRatingService, cartService, wishListService,
+                    shippingAddressService, shippingMethodService, orderService, paymentService, policyService,
+                    consentService, returnRequestService, couponService,
+                )
+                configureSellerRoutes(shopService, productService, inventoryService, orderService, returnRequestService)
+                configureAdminRoutes(
+                    authService, brandService, productCategoryService, productSubCategoryService,
+                    shopCategoryService, shopService, productService, inventoryService, orderService,
+                    returnRequestService, policyService, shippingMethodService, couponService,
+                )
             }
 
             route("v2") {
@@ -145,6 +113,97 @@ fun Application.configureRoute() {
                     }
                 }
             }
+        }
+    }
+}
+
+private fun Route.configureCustomerRoutes(
+    authService: AuthService,
+    profileService: ProfileService,
+    shopService: ShopService,
+    brandService: BrandService,
+    productCategoryService: ProductCategoryService,
+    productSubCategoryService: ProductSubCategoryService,
+    productService: ProductService,
+    reviewRatingService: ReviewRatingService,
+    cartService: CartService,
+    wishListService: WishListService,
+    shippingAddressService: ShippingAddressService,
+    shippingMethodService: ShippingMethodService,
+    orderService: OrderService,
+    paymentService: PaymentService,
+    policyService: PolicyService,
+    consentService: ConsentService,
+    returnRequestService: RefundRequestService,
+    couponService: CouponService,
+) {
+    route("auth") { authRoutes(authService) }
+    route("profile") { profileRoutes(profileService) }
+    route("shop") { shopRoutes(shopService) }
+    route("brand") { brandRoutes(brandService) }
+    route("product-category") { productCategoryRoutes(productCategoryService) }
+    route("product-subcategory") { productSubCategoryRoutes(productSubCategoryService) }
+    route("product") { productRoutes(productService) }
+    route("review-rating") { reviewRatingRoutes(reviewRatingService) }
+    route("cart") { cartRoutes(cartService) }
+    route("wishlist") { wishListRoutes(wishListService) }
+    route("checkout") { checkoutRoutes(shippingAddressService, shippingMethodService, orderService) }
+    route("order") { orderRoutes(orderService) }
+    route("payment") { paymentRoutes(paymentService) }
+    route("policy") { policyRoutes(policyService) }
+    route("policy-consents") { consentRoutes(consentService) }
+    route("refund-requests") { refundRequestRoutes(returnRequestService) }
+    route("coupon") { couponRoutes(couponService) }
+}
+
+private fun Route.configureSellerRoutes(
+    shopService: ShopService,
+    productService: ProductService,
+    inventoryService: InventoryService,
+    orderService: OrderService,
+    returnRequestService: RefundRequestService,
+) {
+    route("seller") {
+        sellerAuth {
+            route("shop") { shopSellerRoutesV1(shopService) }
+            route("product") { productSellerRoutes(productService) }
+            route("inventory") { inventorySellerRoutes(inventoryService) }
+            route("order") { orderSellerRoutes(orderService) }
+            route("refund-requests") { refundSellerRoutes(returnRequestService) }
+        }
+    }
+}
+
+private fun Route.configureAdminRoutes(
+    authService: AuthService,
+    brandService: BrandService,
+    productCategoryService: ProductCategoryService,
+    productSubCategoryService: ProductSubCategoryService,
+    shopCategoryService: ShopCategoryService,
+    shopService: ShopService,
+    productService: ProductService,
+    inventoryService: InventoryService,
+    orderService: OrderService,
+    returnRequestService: RefundRequestService,
+    policyService: PolicyService,
+    shippingMethodService: ShippingMethodService,
+    couponService: CouponService,
+) {
+    route("admin") {
+        adminAuth {
+            route("auth") { authAdminRoutes(authService) }
+            route("brand") { brandAdminRoutes(brandService) }
+            route("product-category") { productCategoryAdminRoutes(productCategoryService) }
+            route("product-subcategory") { productSubCategoryAdminRoutes(productSubCategoryService) }
+            route("shop-category") { shopCategoryAdminRoutes(shopCategoryService) }
+            route("shop") { shopAdminRoutes(shopService) }
+            route("product") { productAdminRoutes(productService) }
+            route("inventory") { inventoryAdminRoutes(inventoryService) }
+            route("order") { orderAdminRoutes(orderService) }
+            route("refund-requests") { refundAdminRoutes(returnRequestService) }
+            route("policy") { policyAdminRoutes(policyService) }
+            route("shipping-method") { shippingMethodAdminRoutes(shippingMethodService) }
+            route("coupon") { couponAdminRoutes(couponService) }
         }
     }
 }

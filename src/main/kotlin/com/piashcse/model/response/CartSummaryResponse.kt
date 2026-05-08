@@ -7,7 +7,7 @@ data class CartSummaryResponse(
     val items: List<CartItemSummary>,
     val subtotal: Double,
     val estimatedTax: Double,
-    val itemCount: Int
+    val itemCount: Int,
 )
 
 @Serializable
@@ -19,5 +19,5 @@ data class CartItemSummary(
     val image: String?,
     val stockQuantity: Int,
     val shopId: String?,
-    val shopName: String?
+    val shopName: String?,
 )

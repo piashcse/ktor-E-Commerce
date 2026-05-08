@@ -28,26 +28,34 @@ fun ApplicationCall.currentUserOrNull(): JwtTokenRequest? {
 }
 
 val ApplicationCall.currentUserId: String
-    get() = attributes.getOrNull(UserIdKey)
-        ?: currentUser().userId.also { attributes.put(UserIdKey, it) }
+    get() =
+        attributes.getOrNull(UserIdKey)
+            ?: currentUser().userId.also { attributes.put(UserIdKey, it) }
 
 // ============================================================================
 //  ROLE / PERMISSION HELPERS
 // ============================================================================
 
-fun ApplicationCall.hasRole(role: UserType): Boolean =
-    currentUserOrNull()?.hasRole(role) ?: false
+fun ApplicationCall.hasRole(role: UserType): Boolean = currentUserOrNull()?.hasRole(role) ?: false
 
-fun ApplicationCall.hasAccessTo(role: UserType): Boolean =
-    currentUserOrNull()?.hasAccessTo(role) ?: false
+fun ApplicationCall.hasAccessTo(role: UserType): Boolean = currentUserOrNull()?.hasAccessTo(role) ?: false
 
-fun ApplicationCall.getCurrentUserType(): UserType? =
-    currentUserOrNull()?.getUserType()
+fun ApplicationCall.getCurrentUserType(): UserType? = currentUserOrNull()?.getUserType()
 
-suspend fun ApplicationCall.requireRole(role: UserType, useHierarchy: Boolean = true): Boolean {
-    val user = currentUserOrNull()
-        ?: run { respond(HttpStatusCode.Unauthorized, "Unauthorized"); return false }
+suspend fun ApplicationCall.requireRole(
+    role: UserType,
+    useHierarchy: Boolean = true,
+): Boolean {
+    val user =
+        currentUserOrNull()
+            ?: run {
+                respond(HttpStatusCode.Unauthorized, "Unauthorized")
+                return false
+            }
     val hasAccess = if (useHierarchy) user.hasAccessTo(role) else user.hasRole(role)
-    if (!hasAccess) { respond(HttpStatusCode.Forbidden, "Forbidden"); return false }
+    if (!hasAccess) {
+        respond(HttpStatusCode.Forbidden, "Forbidden")
+        return false
+    }
     return true
 }

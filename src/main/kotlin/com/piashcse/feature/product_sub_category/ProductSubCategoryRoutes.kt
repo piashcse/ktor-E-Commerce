@@ -21,7 +21,7 @@ fun Route.productSubCategoryRoutes(subCategoryService: ProductSubCategoryService
         val (limit, offset) = call.paginationParameters()
         call.respond(
             HttpStatusCode.OK,
-            subCategoryService.getProductSubCategory(categoryId, limit, offset)
+            subCategoryService.getProductSubCategory(categoryId, limit, offset),
         )
     }
 }
@@ -38,7 +38,7 @@ fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategorySe
         val requestBody = call.receive<ProductSubCategoryRequest>()
         call.respond(
             HttpStatusCode.OK,
-            subCategoryService.addProductSubCategory(requestBody)
+            subCategoryService.addProductSubCategory(requestBody),
         )
     }
 
@@ -50,7 +50,7 @@ fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategorySe
         val params = call.requireParameters("id", "name")
         call.respond(
             HttpStatusCode.OK,
-            subCategoryService.updateProductSubCategory(params[0], params[1])
+            subCategoryService.updateProductSubCategory(params[0], params[1]),
         )
     }
 
@@ -62,7 +62,7 @@ fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategorySe
         val id = call.requireParameters("id")
         call.respond(
             HttpStatusCode.OK,
-            subCategoryService.deleteProductSubCategory(id.first())
+            subCategoryService.deleteProductSubCategory(id.first()),
         )
     }
 }

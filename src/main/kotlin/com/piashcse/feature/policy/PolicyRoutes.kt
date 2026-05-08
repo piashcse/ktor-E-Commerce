@@ -17,12 +17,13 @@ fun Route.policyRoutes(policyService: PolicyService) {
      */
     get("{policyType}") {
         val policyTypeParam = call.parameters["policyType"] ?: return@get call.respond(HttpStatusCode.BadRequest, "policyType is required")
-        val policyType = try {
-            PolicyDocumentTable.PolicyType.valueOf(policyTypeParam.uppercase())
-        } catch (e: IllegalArgumentException) {
-            return@get call.respond(HttpStatusCode.BadRequest, "Invalid policy type")
-        }
-        
+        val policyType =
+            try {
+                PolicyDocumentTable.PolicyType.valueOf(policyTypeParam.uppercase())
+            } catch (e: IllegalArgumentException) {
+                return@get call.respond(HttpStatusCode.BadRequest, "Invalid policy type")
+            }
+
         val policy = policyService.getPolicyByType(policyType)
         call.respond(HttpStatusCode.OK, policy)
     }
@@ -47,11 +48,12 @@ fun Route.policyAdminRoutes(policyService: PolicyService) {
      */
     get("{policyType}/history") {
         val policyTypeParam = call.parameters["policyType"] ?: return@get call.respond(HttpStatusCode.BadRequest, "policyType is required")
-        val policyType = try {
-            PolicyDocumentTable.PolicyType.valueOf(policyTypeParam.uppercase())
-        } catch (e: IllegalArgumentException) {
-            return@get call.respond(HttpStatusCode.BadRequest, "Invalid policy type")
-        }
+        val policyType =
+            try {
+                PolicyDocumentTable.PolicyType.valueOf(policyTypeParam.uppercase())
+            } catch (e: IllegalArgumentException) {
+                return@get call.respond(HttpStatusCode.BadRequest, "Invalid policy type")
+            }
         call.respond(HttpStatusCode.OK, policyService.getAllPolicies(policyType))
     }
 }

@@ -23,7 +23,6 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
  * Service for managing products.
  */
 class ProductService : ProductRepository {
-
     // UploadService init block handles directory creation
 
     /**
@@ -34,69 +33,84 @@ class ProductService : ProductRepository {
      * @param productRequest The request object containing product details.
      * @return The created product entity.
      */
-    override suspend fun createProduct(userId: String, shopId: String?, productRequest: ProductRequest): ProductResponse = query {
-        validateProductForSeller(userId, shopId)
+    override suspend fun createProduct(
+        userId: String,
+        shopId: String?,
+        productRequest: ProductRequest,
+    ): ProductResponse =
+        query {
+            validateProductForSeller(userId, shopId)
 
-        val product = ProductDAO.new {
-            this.userId = EntityID(userId, UserTable)
-            this.shopId = shopId?.let { EntityID(shopId, ShopTable) }
-            categoryId = EntityID(productRequest.categoryId, ProductCategoryTable)
-            subCategoryId = productRequest.subCategoryId?.let { EntityID(it, ProductSubCategoryTable) }
-            brandId = productRequest.brandId?.let { EntityID(it, BrandTable) }
-            sku = generateSKU(productRequest.name)
-            name = productRequest.name
-            description = productRequest.description
-            price = java.math.BigDecimal.valueOf(productRequest.price)
-            discountPrice = productRequest.discountPrice?.let { java.math.BigDecimal.valueOf(it) }
-            discountPercentage = calculateDiscountPercentage(productRequest.price, productRequest.discountPrice)
-            stockQuantity = productRequest.stockQuantity
-            videoLink = productRequest.videoLink
-            hotDeal = productRequest.hotDeal
-            featured = productRequest.featured
-            bestSeller = false
-            newProduct = true
-            freeShipping = productRequest.freeShipping ?: false
-            images = productRequest.images.joinToString(",")
-            status = ProductStatus.ACTIVE
-        }.response()
+            val product =
+                ProductDAO.new {
+                    this.userId = EntityID(userId, UserTable)
+                    this.shopId = shopId?.let { EntityID(shopId, ShopTable) }
+                    categoryId = EntityID(productRequest.categoryId, ProductCategoryTable)
+                    subCategoryId = productRequest.subCategoryId?.let { EntityID(it, ProductSubCategoryTable) }
+                    brandId = productRequest.brandId?.let { EntityID(it, BrandTable) }
+                    sku = generateSKU(productRequest.name)
+                    name = productRequest.name
+                    description = productRequest.description
+                    price = java.math.BigDecimal.valueOf(productRequest.price)
+                    discountPrice = productRequest.discountPrice?.let { java.math.BigDecimal.valueOf(it) }
+                    discountPercentage = calculateDiscountPercentage(productRequest.price, productRequest.discountPrice)
+                    stockQuantity = productRequest.stockQuantity
+                    videoLink = productRequest.videoLink
+                    hotDeal = productRequest.hotDeal
+                    featured = productRequest.featured
+                    bestSeller = false
+                    newProduct = true
+                    freeShipping = productRequest.freeShipping ?: false
+                    images = productRequest.images.joinToString(",")
+                    status = ProductStatus.ACTIVE
+                }.response()
 
-        product
-    }
+            product
+        }
 
-    private fun validateProductForSeller(userId: String, shopId: String?) {
+    private fun validateProductForSeller(
+        userId: String,
+        shopId: String?,
+    ) {
         // Verify that the user is a seller
-        val seller = SellerDAO.find {
-            SellerTable.userId eq userId
-        }.singleOrNull()
+        val seller =
+            SellerDAO.find {
+                SellerTable.userId eq userId
+            }.singleOrNull()
         if (seller == null) {
             throw NotFoundException(Message.Errors.SELLER_REQUIRED)
         }
 
         // If shopId is provided, verify that the user is authorized to add products to that shop
         if (shopId != null) {
-            val shop = ShopDAO.find {
-                ShopTable.id eq shopId and
-                (ShopTable.userId eq userId)
-            }.singleOrNull()
+            val shop =
+                ShopDAO.find {
+                    ShopTable.id eq shopId and
+                        (ShopTable.userId eq userId)
+                }.singleOrNull()
             if (shop == null) {
                 throw NotFoundException(Message.Products.UNAUTHORIZED_ADD)
             }
         }
     }
 
-
     private fun generateSKU(productName: String): String {
         val cleanName = productName.replace(Regex("[^a-zA-Z0-9]"), "").take(6).uppercase()
         val timestamp = System.currentTimeMillis().toString().takeLast(6)
-        return "${cleanName}${timestamp}"
+        return "${cleanName}$timestamp"
     }
 
-    private fun calculateDiscountPercentage(price: Double, discountPrice: Double?): java.math.BigDecimal? {
+    private fun calculateDiscountPercentage(
+        price: Double,
+        discountPrice: Double?,
+    ): java.math.BigDecimal? {
         return if (discountPrice != null && discountPrice < price) {
             val discount = price - discountPrice
             val percentage = (discount / price) * 100
             java.math.BigDecimal.valueOf(percentage).setScale(2, java.math.RoundingMode.HALF_UP)
-        } else null
+        } else {
+            null
+        }
     }
 
     /**
@@ -108,19 +122,25 @@ class ProductService : ProductRepository {
      * @return The updated product entity.
      * @throws Exception if the product with the provided ID is not found.
      */
-    override suspend fun updateProduct(userId: String, productId: String, updateProduct: UpdateProductRequest): ProductResponse =
+    override suspend fun updateProduct(
+        userId: String,
+        productId: String,
+        updateProduct: UpdateProductRequest,
+    ): ProductResponse =
         query {
             // Verify that the user is a seller
-            val seller = SellerDAO.find {
-                SellerTable.userId eq userId
-            }.singleOrNull()
+            val seller =
+                SellerDAO.find {
+                    SellerTable.userId eq userId
+                }.singleOrNull()
             if (seller == null) {
                 throw NotFoundException(Message.Errors.SELLER_REQUIRED)
             }
 
             // Verify user has access to this product
-            val product = ProductDAO.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.singleOrNull()
-                ?: productId.throwNotFound("ProductResponse")
+            val product =
+                ProductDAO.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.singleOrNull()
+                    ?: productId.throwNotFound("ProductResponse")
 
             product.apply {
                 this.userId = EntityID(userId, UserTable)
@@ -149,38 +169,40 @@ class ProductService : ProductRepository {
      * @param productQuery The filter request containing the parameters to filter products.
      * @return A list of products matching the provided filters.
      */
-    override suspend fun getProducts(productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
-        val query = ProductTable.selectAll().andWhere { ProductTable.status eq ProductStatus.ACTIVE }
+    override suspend fun getProducts(productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse> =
+        query {
+            val query = ProductTable.selectAll().andWhere { ProductTable.status eq ProductStatus.ACTIVE }
 
-        productQuery.categoryId?.let {
-            query.andWhere { ProductTable.categoryId eq EntityID(it, ProductCategoryTable) }
-        }
-        productQuery.subCategoryId?.let {
-            query.andWhere { ProductTable.subCategoryId eq EntityID(it, ProductSubCategoryTable) }
-        }
-        productQuery.brandId?.let {
-            query.andWhere { ProductTable.brandId eq EntityID(it, BrandTable) }
-        }
-        productQuery.minPrice?.let {
-            query.andWhere { ProductTable.price greaterEq java.math.BigDecimal.valueOf(it) }
-        }
-        productQuery.maxPrice?.let {
-            query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
-        }
+            productQuery.categoryId?.let {
+                query.andWhere { ProductTable.categoryId eq EntityID(it, ProductCategoryTable) }
+            }
+            productQuery.subCategoryId?.let {
+                query.andWhere { ProductTable.subCategoryId eq EntityID(it, ProductSubCategoryTable) }
+            }
+            productQuery.brandId?.let {
+                query.andWhere { ProductTable.brandId eq EntityID(it, BrandTable) }
+            }
+            productQuery.minPrice?.let {
+                query.andWhere { ProductTable.price greaterEq java.math.BigDecimal.valueOf(it) }
+            }
+            productQuery.maxPrice?.let {
+                query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
+            }
 
-        val column = when (productQuery.sortBy?.lowercase()) {
-            "price" -> ProductTable.price
-            "name" -> ProductTable.name
-            "createdat" -> ProductTable.createdAt
-            else -> ProductTable.createdAt
-        }
-        val order = if (productQuery.sortOrder?.lowercase() == "asc") org.jetbrains.exposed.v1.core.SortOrder.ASC else org.jetbrains.exposed.v1.core.SortOrder.DESC
-        query.orderBy(column to order)
+            val column =
+                when (productQuery.sortBy?.lowercase()) {
+                    "price" -> ProductTable.price
+                    "name" -> ProductTable.name
+                    "createdat" -> ProductTable.createdAt
+                    else -> ProductTable.createdAt
+                }
+            val order = if (productQuery.sortOrder?.lowercase() == "asc") org.jetbrains.exposed.v1.core.SortOrder.ASC else org.jetbrains.exposed.v1.core.SortOrder.DESC
+            query.orderBy(column to order)
 
-        query.toPaginatedResponse(productQuery.limit, productQuery.offset) {
-            ProductDAO.wrapRow(it).response()
+            query.toPaginatedResponse(productQuery.limit, productQuery.offset) {
+                ProductDAO.wrapRow(it).response()
+            }
         }
-    }
 
     /**
      * Retrieves products by shop ID (for seller dashboard).
@@ -189,31 +211,36 @@ class ProductService : ProductRepository {
      * @param productQuery The filter request containing the parameters to filter products.
      * @return A list of products for the specific shop.
      */
-    override suspend fun getProductsByShop(shopId: String, productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
-        val query = ProductTable.selectAll().andWhere { 
-            (ProductTable.shopId eq shopId) and (ProductTable.status eq ProductStatus.ACTIVE)
-        }
+    override suspend fun getProductsByShop(
+        shopId: String,
+        productQuery: ProductWithFilterRequest,
+    ): PaginatedResponse<ProductResponse> =
+        query {
+            val query =
+                ProductTable.selectAll().andWhere {
+                    (ProductTable.shopId eq shopId) and (ProductTable.status eq ProductStatus.ACTIVE)
+                }
 
-        productQuery.categoryId?.let {
-            query.andWhere { ProductTable.categoryId eq EntityID(it, ProductCategoryTable) }
-        }
-        productQuery.subCategoryId?.let {
-            query.andWhere { ProductTable.subCategoryId eq EntityID(it, ProductSubCategoryTable) }
-        }
-        productQuery.brandId?.let {
-            query.andWhere { ProductTable.brandId eq EntityID(it, BrandTable) }
-        }
-        productQuery.minPrice?.let {
-            query.andWhere { ProductTable.price greaterEq java.math.BigDecimal.valueOf(it) }
-        }
-        productQuery.maxPrice?.let {
-            query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
-        }
+            productQuery.categoryId?.let {
+                query.andWhere { ProductTable.categoryId eq EntityID(it, ProductCategoryTable) }
+            }
+            productQuery.subCategoryId?.let {
+                query.andWhere { ProductTable.subCategoryId eq EntityID(it, ProductSubCategoryTable) }
+            }
+            productQuery.brandId?.let {
+                query.andWhere { ProductTable.brandId eq EntityID(it, BrandTable) }
+            }
+            productQuery.minPrice?.let {
+                query.andWhere { ProductTable.price greaterEq java.math.BigDecimal.valueOf(it) }
+            }
+            productQuery.maxPrice?.let {
+                query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
+            }
 
-        query.toPaginatedResponse(productQuery.limit, productQuery.offset) {
-            ProductDAO.wrapRow(it).response()
+            query.toPaginatedResponse(productQuery.limit, productQuery.offset) {
+                ProductDAO.wrapRow(it).response()
+            }
         }
-    }
 
     /**
      * Retrieves products by seller/user ID.
@@ -222,31 +249,36 @@ class ProductService : ProductRepository {
      * @param productQuery The filter request containing product details.
      * @return A list of products (even if only one product matches).
      */
-    override suspend fun getProductsByUser(userId: String, productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
-        val query = ProductTable.selectAll().andWhere { 
-            (ProductTable.userId eq userId) and (ProductTable.status eq ProductStatus.ACTIVE)
-        }
+    override suspend fun getProductsByUser(
+        userId: String,
+        productQuery: ProductWithFilterRequest,
+    ): PaginatedResponse<ProductResponse> =
+        query {
+            val query =
+                ProductTable.selectAll().andWhere {
+                    (ProductTable.userId eq userId) and (ProductTable.status eq ProductStatus.ACTIVE)
+                }
 
-        productQuery.categoryId?.let {
-            query.andWhere { ProductTable.categoryId eq EntityID(it, ProductCategoryTable) }
-        }
-        productQuery.subCategoryId?.let {
-            query.andWhere { ProductTable.subCategoryId eq EntityID(it, ProductSubCategoryTable) }
-        }
-        productQuery.brandId?.let {
-            query.andWhere { ProductTable.brandId eq EntityID(it, BrandTable) }
-        }
-        productQuery.minPrice?.let {
-            query.andWhere { ProductTable.price greaterEq java.math.BigDecimal.valueOf(it) }
-        }
-        productQuery.maxPrice?.let {
-            query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
-        }
+            productQuery.categoryId?.let {
+                query.andWhere { ProductTable.categoryId eq EntityID(it, ProductCategoryTable) }
+            }
+            productQuery.subCategoryId?.let {
+                query.andWhere { ProductTable.subCategoryId eq EntityID(it, ProductSubCategoryTable) }
+            }
+            productQuery.brandId?.let {
+                query.andWhere { ProductTable.brandId eq EntityID(it, BrandTable) }
+            }
+            productQuery.minPrice?.let {
+                query.andWhere { ProductTable.price greaterEq java.math.BigDecimal.valueOf(it) }
+            }
+            productQuery.maxPrice?.let {
+                query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
+            }
 
-        query.toPaginatedResponse(productQuery.limit, productQuery.offset) {
-            ProductDAO.wrapRow(it).response()
+            query.toPaginatedResponse(productQuery.limit, productQuery.offset) {
+                ProductDAO.wrapRow(it).response()
+            }
         }
-    }
 
     /**
      * Retrieves detailed information for a specific product.
@@ -255,10 +287,11 @@ class ProductService : ProductRepository {
      * @return The product entity with full details.
      * @throws Exception if the product with the provided ID is not found.
      */
-    override suspend fun getProductDetail(productId: String): ProductResponse = query {
-        val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
-        product?.response() ?: productId.throwNotFound("ProductResponse")
-    }
+    override suspend fun getProductDetail(productId: String): ProductResponse =
+        query {
+            val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
+            product?.response() ?: productId.throwNotFound("ProductResponse")
+        }
 
     /**
      * Deletes a product by its ID and user ID.
@@ -268,17 +301,22 @@ class ProductService : ProductRepository {
      * @return The ID of the deleted product.
      * @throws Exception if the product with the provided ID is not found.
      */
-    override suspend fun deleteProduct(userId: String, productId: String): String = query {
-        validateProductForSeller(userId, null) // Only check if user is a seller
+    override suspend fun deleteProduct(
+        userId: String,
+        productId: String,
+    ): String =
+        query {
+            validateProductForSeller(userId, null) // Only check if user is a seller
 
-        // Find the product and verify user ownership
-        val product = ProductDAO.find {
-            ProductTable.userId eq userId and (ProductTable.id eq productId)
-        }.singleOrNull() ?: productId.throwNotFound("ProductResponse")
+            // Find the product and verify user ownership
+            val product =
+                ProductDAO.find {
+                    ProductTable.userId eq userId and (ProductTable.id eq productId)
+                }.singleOrNull() ?: productId.throwNotFound("ProductResponse")
 
-        product.delete()
-        productId
-    }
+            product.delete()
+            productId
+        }
 
     /**
      * Deletes a product by its ID (admin - no ownership check).
@@ -287,24 +325,27 @@ class ProductService : ProductRepository {
      * @return The ID of the deleted product.
      * @throws Exception if the product with the provided ID is not found.
      */
-    suspend fun deleteProductAsAdmin(productId: String): String = query {
-        val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
-            ?: productId.throwNotFound("ProductResponse")
-        product.delete()
-        productId
-    }
+    suspend fun deleteProductAsAdmin(productId: String): String =
+        query {
+            val product =
+                ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
+                    ?: productId.throwNotFound("ProductResponse")
+            product.delete()
+            productId
+        }
 
     /**
      * Increments the view count for a product.
      *
      * @param productId The unique identifier of the product.
      */
-    override suspend fun incrementViewCount(productId: String): Unit = query {
-        val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
-        product?.apply {
-            viewCount = viewCount + 1
+    override suspend fun incrementViewCount(productId: String): Unit =
+        query {
+            val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
+            product?.apply {
+                viewCount = viewCount + 1
+            }
         }
-    }
 
     /**
      * Searches for products based on the given search criteria.
@@ -312,26 +353,27 @@ class ProductService : ProductRepository {
      * @param productQuery The search request containing the parameters for searching products.
      * @return A list of products matching the search criteria.
      */
-    override suspend fun searchProduct(productQuery: ProductSearchRequest): PaginatedResponse<ProductResponse> = query {
-        val query = ProductTable.selectAll().andWhere { ProductTable.status eq ProductStatus.ACTIVE }
+    override suspend fun searchProduct(productQuery: ProductSearchRequest): PaginatedResponse<ProductResponse> =
+        query {
+            val query = ProductTable.selectAll().andWhere { ProductTable.status eq ProductStatus.ACTIVE }
 
-        if (productQuery.name.isNotEmpty()) {
-            query.andWhere { ProductTable.name.like("%${productQuery.name}%") }
-        }
-        if (!productQuery.categoryId.isNullOrEmpty()) {
-            query.andWhere { ProductTable.categoryId eq EntityID(productQuery.categoryId!!, ProductCategoryTable) }
-        }
-        productQuery.minPrice?.let {
-            query.andWhere { ProductTable.price greaterEq java.math.BigDecimal.valueOf(it) }
-        }
-        productQuery.maxPrice?.let {
-            query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
-        }
+            if (productQuery.name.isNotEmpty()) {
+                query.andWhere { ProductTable.name.like("%${productQuery.name}%") }
+            }
+            if (!productQuery.categoryId.isNullOrEmpty()) {
+                query.andWhere { ProductTable.categoryId eq EntityID(productQuery.categoryId!!, ProductCategoryTable) }
+            }
+            productQuery.minPrice?.let {
+                query.andWhere { ProductTable.price greaterEq java.math.BigDecimal.valueOf(it) }
+            }
+            productQuery.maxPrice?.let {
+                query.andWhere { ProductTable.price lessEq java.math.BigDecimal.valueOf(it) }
+            }
 
-        query.toPaginatedResponse(productQuery.limit, productQuery.offset) {
-            ProductDAO.wrapRow(it).response()
+            query.toPaginatedResponse(productQuery.limit, productQuery.offset) {
+                ProductDAO.wrapRow(it).response()
+            }
         }
-    }
 
     /**
      * Gets products by category.
@@ -339,74 +381,91 @@ class ProductService : ProductRepository {
      * @param categoryId The category ID to filter by.
      * @return A list of products in the category.
      */
-    override suspend fun getProductsByCategory(categoryId: String): PaginatedResponse<ProductResponse> = query {
-        val condition: Op<Boolean> = ProductTable.categoryId eq categoryId and (ProductTable.status eq ProductStatus.ACTIVE)
-        val data = ProductDAO.find { condition }.map { it.response() }
+    override suspend fun getProductsByCategory(categoryId: String): PaginatedResponse<ProductResponse> =
+        query {
+            val condition: Op<Boolean> = ProductTable.categoryId eq categoryId and (ProductTable.status eq ProductStatus.ACTIVE)
+            val data = ProductDAO.find { condition }.map { it.response() }
 
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = ProductDAO.count(condition),
-                limit = data.size,
-                skip = 0
+            PaginatedResponse(
+                data = data,
+                metadata =
+                    PaginationMetadata(
+                        totalCount = ProductDAO.count(condition),
+                        limit = data.size,
+                        skip = 0,
+                    ),
             )
-        )
-    }
+        }
 
     /**
      * Gets featured products.
      *
      * @return A list of featured products.
      */
-    override suspend fun getFeaturedProducts(): PaginatedResponse<ProductResponse> = query {
-        val condition: Op<Boolean> = ProductTable.featured eq true and (ProductTable.status eq ProductStatus.ACTIVE)
-        val data = ProductDAO.find { condition }.orderBy(ProductTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.DESC).map { it.response() }
+    override suspend fun getFeaturedProducts(): PaginatedResponse<ProductResponse> =
+        query {
+            val condition: Op<Boolean> = ProductTable.featured eq true and (ProductTable.status eq ProductStatus.ACTIVE)
+            val data =
+                ProductDAO.find {
+                    condition
+                }.orderBy(ProductTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.DESC).map { it.response() }
 
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = ProductDAO.count(condition),
-                limit = data.size,
-                skip = 0
+            PaginatedResponse(
+                data = data,
+                metadata =
+                    PaginationMetadata(
+                        totalCount = ProductDAO.count(condition),
+                        limit = data.size,
+                        skip = 0,
+                    ),
             )
-        )
-    }
+        }
 
     /**
      * Gets best selling products.
      *
      * @return A list of best selling products.
      */
-    override suspend fun getBestSellingProducts(): PaginatedResponse<ProductResponse> = query {
-        val condition: Op<Boolean> = ProductTable.bestSeller eq true and (ProductTable.status eq ProductStatus.ACTIVE)
-        val data = ProductDAO.find { condition }.orderBy(ProductTable.totalSales to org.jetbrains.exposed.v1.core.SortOrder.DESC).limit(10).map { it.response() }
+    override suspend fun getBestSellingProducts(): PaginatedResponse<ProductResponse> =
+        query {
+            val condition: Op<Boolean> = ProductTable.bestSeller eq true and (ProductTable.status eq ProductStatus.ACTIVE)
+            val data =
+                ProductDAO.find {
+                    condition
+                }.orderBy(ProductTable.totalSales to org.jetbrains.exposed.v1.core.SortOrder.DESC).limit(10).map { it.response() }
 
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = ProductDAO.count(condition),
-                limit = data.size,
-                skip = 0
+            PaginatedResponse(
+                data = data,
+                metadata =
+                    PaginationMetadata(
+                        totalCount = ProductDAO.count(condition),
+                        limit = data.size,
+                        skip = 0,
+                    ),
             )
-        )
-    }
+        }
 
     /**
      * Gets hot deals.
      *
      * @return A list of hot deal products.
      */
-    override suspend fun getHotDealProducts(): PaginatedResponse<ProductResponse> = query {
-        val condition: Op<Boolean> = ProductTable.hotDeal eq true and (ProductTable.status eq ProductStatus.ACTIVE)
-        val data = ProductDAO.find { condition }.orderBy(ProductTable.discountPercentage to org.jetbrains.exposed.v1.core.SortOrder.DESC).limit(10).map { it.response() }
+    override suspend fun getHotDealProducts(): PaginatedResponse<ProductResponse> =
+        query {
+            val condition: Op<Boolean> = ProductTable.hotDeal eq true and (ProductTable.status eq ProductStatus.ACTIVE)
+            val data =
+                ProductDAO.find {
+                    condition
+                }.orderBy(ProductTable.discountPercentage to org.jetbrains.exposed.v1.core.SortOrder.DESC).limit(10).map { it.response() }
 
-        PaginatedResponse(
-            data = data,
-            metadata = PaginationMetadata(
-                totalCount = ProductDAO.count(condition),
-                limit = data.size,
-                skip = 0
+            PaginatedResponse(
+                data = data,
+                metadata =
+                    PaginationMetadata(
+                        totalCount = ProductDAO.count(condition),
+                        limit = data.size,
+                        skip = 0,
+                    ),
             )
-        )
-    }
+        }
 }

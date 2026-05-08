@@ -64,24 +64,26 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
     var canceledDate by OrderTable.canceledDate
     var completedDate by OrderTable.completedDate
 
-    fun response() = OrderResponse(
-        orderId = id.value,
-        orderNumber = orderNumber,
-        subTotal = subTotal.toFloat(),
-        shippingCost = shippingCost.toFloat(),
-        total = total.toFloat(),
-        status = status,
-        shippingAddress = shippingAddress,
-        shippingMethod = shippingMethod,
-        items = OrderItemDAO.find { OrderItemTable.orderId eq id }.map {
-            OrderItemResponse(
-                productId = it.productId.value,
-                productName = it.productName,
-                quantity = it.quantity,
-                price = it.price.toFloat(),
-                total = it.total.toFloat(),
-                sku = it.sku
-            )
-        }
-    )
+    fun response() =
+        OrderResponse(
+            orderId = id.value,
+            orderNumber = orderNumber,
+            subTotal = subTotal.toFloat(),
+            shippingCost = shippingCost.toFloat(),
+            total = total.toFloat(),
+            status = status,
+            shippingAddress = shippingAddress,
+            shippingMethod = shippingMethod,
+            items =
+                OrderItemDAO.find { OrderItemTable.orderId eq id }.map {
+                    OrderItemResponse(
+                        productId = it.productId.value,
+                        productName = it.productName,
+                        quantity = it.quantity,
+                        price = it.price.toFloat(),
+                        total = it.total.toFloat(),
+                        sku = it.sku,
+                    )
+                },
+        )
 }

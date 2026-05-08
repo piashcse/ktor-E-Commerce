@@ -14,7 +14,11 @@ interface CartRepository {
      * @param quantity The quantity of the product to add.
      * @return The updated cart.
      */
-    suspend fun createCart(userId: String, productId: String, quantity: Int): Cart
+    suspend fun createCart(
+        userId: String,
+        productId: String,
+        quantity: Int,
+    ): Cart
 
     /**
      * Retrieves all cart items for a user.
@@ -23,7 +27,11 @@ interface CartRepository {
      * @param limit The maximum number of cart items to return.
      * @return A list of cart items.
      */
-    suspend fun getCartItems(userId: String, limit: Int, offset: Int = 0): PaginatedResponse<Cart>
+    suspend fun getCartItems(
+        userId: String,
+        limit: Int,
+        offset: Int = 0,
+    ): PaginatedResponse<Cart>
 
     /**
      * Updates the quantity of a specific product in the cart.
@@ -33,7 +41,11 @@ interface CartRepository {
      * @param quantity The new quantity of the product.
      * @return The updated cart.
      */
-    suspend fun updateCartQuantity(userId: String, productId: String, quantity: Int): Cart
+    suspend fun updateCartQuantity(
+        userId: String,
+        productId: String,
+        quantity: Int,
+    ): Cart
 
     /**
      * Removes a specific product from the cart.
@@ -42,7 +54,10 @@ interface CartRepository {
      * @param productId The unique identifier of the product.
      * @return The removed product.
      */
-    suspend fun removeCartItem(userId: String, productId: String): ProductResponse
+    suspend fun removeCartItem(
+        userId: String,
+        productId: String,
+    ): ProductResponse
 
     /**
      * Clears all items from a user's cart.

@@ -6,9 +6,9 @@ import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
 @Serializable
-data class WishListRequest(val productId:String){
-    fun validation(){
-        validate(this){
+data class WishListRequest(val productId: String) {
+    fun validation() {
+        validate(this) {
             validate(WishListRequest::productId).isNotNull().isNotEmpty()
         }
     }

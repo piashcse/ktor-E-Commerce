@@ -116,8 +116,11 @@ fun Route.authRoutes(authService: AuthService) {
             val (oldPassword, newPassword) = call.requireParameters("oldPassword", "newPassword")
             val loginUser = call.principal<JwtTokenRequest>()
             authService.changePassword(loginUser?.userId!!, ChangePassword(oldPassword, newPassword)).let {
-                if (it) call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
-                else call.respond(HttpStatusCode.Unauthorized, mapOf("message" to Message.Auth.INVALID_CREDENTIALS))
+                if (it) {
+                    call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
+                } else {
+                    call.respond(HttpStatusCode.Unauthorized, mapOf("message" to Message.Auth.INVALID_CREDENTIALS))
+                }
             }
         }
     }
@@ -133,18 +136,20 @@ fun Route.authAdminRoutes(authService: AuthService) {
      */
     put("/{userId}/change-user-type") {
         val (userId) = call.requireParameters("userId")
-        val userTypeParam = call.parameters["userType"]
-            ?: throw MissingParameterException("userType")
+        val userTypeParam =
+            call.parameters["userType"]
+                ?: throw MissingParameterException("userType")
 
-        val newType = try {
-            UserType.valueOf(userTypeParam.uppercase())
-        } catch (e: IllegalArgumentException) {
-            throw InvalidEnumValueException(
-                message = "Invalid userType: $userTypeParam",
-                enumName = UserType.values().joinToString(", ") { it.name },
-                invalidValue = userTypeParam
-            )
-        }
+        val newType =
+            try {
+                UserType.valueOf(userTypeParam.uppercase())
+            } catch (e: IllegalArgumentException) {
+                throw InvalidEnumValueException(
+                    message = "Invalid userType: $userTypeParam",
+                    enumName = UserType.values().joinToString(", ") { it.name },
+                    invalidValue = userTypeParam,
+                )
+            }
 
         val currentUser = call.principal<JwtTokenRequest>()
         if (authService.changeUserType(currentUser?.userId!!, userId, newType)) {

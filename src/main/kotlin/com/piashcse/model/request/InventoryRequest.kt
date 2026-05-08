@@ -9,5 +9,5 @@ data class InventoryRequest(
     val stockQuantity: Int,
     val reservedQuantity: Int = 0,
     val minimumStockLevel: Int? = null,
-    val maximumStockLevel: Int? = null
+    val maximumStockLevel: Int? = null,
 )

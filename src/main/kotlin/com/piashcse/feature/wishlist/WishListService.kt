@@ -17,7 +17,6 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
  * Service for managing the user's wishlist. Provides methods to add, retrieve, and remove items from the wishlist.
  */
 class WishListService : WishListRepository {
-
     /**
      * Adds a product to the user's wishlist. If the product is already in the wishlist, an exception is thrown.
      * Checks if the product exists before adding.
@@ -28,22 +27,27 @@ class WishListService : WishListRepository {
      * @throws alreadyExistException If the product is already in the user's wishlist.
      * @throws notFoundException If the product does not exist.
      */
-    override suspend fun addToWishList(userId: String, productId: String): WishList = query {
-        val product = ProductDAO.findById(productId) ?: productId.throwNotFound("ProductResponse")
+    override suspend fun addToWishList(
+        userId: String,
+        productId: String,
+    ): WishList =
+        query {
+            val product = ProductDAO.findById(productId) ?: productId.throwNotFound("ProductResponse")
 
-        val isExits = WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
-                .toList()
-                .singleOrNull()
+            val isExits =
+                WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
+                    .toList()
+                    .singleOrNull()
 
-        if (isExits == null) {
-            WishListDAO.new {
-                this.userId = EntityID(userId, WishListTable)
-                this.productId = EntityID(productId, WishListTable)
-            }.response(product.response())
-        } else {
-            throw productId.throwConflict("ProductResponse")
+            if (isExits == null) {
+                WishListDAO.new {
+                    this.userId = EntityID(userId, WishListTable)
+                    this.productId = EntityID(productId, WishListTable)
+                }.response(product.response())
+            } else {
+                throw productId.throwConflict("ProductResponse")
+            }
         }
-    }
 
     /**
      * Retrieves the list of products in the user's wishlist using pagination.
@@ -54,14 +58,19 @@ class WishListService : WishListRepository {
      * @param offset The number of items to skip.
      * @return A list of products in the user's wishlist.
      */
-    override suspend fun getWishList(userId: String, limit: Int, offset: Int): PaginatedResponse<ProductResponse> = query {
-        WishListTable.innerJoin(ProductTable)
-            .selectAll()
-            .andWhere { WishListTable.userId eq userId }
-            .toPaginatedResponse(limit, offset) {
-                ProductDAO.wrapRow(it).response()
-            }
-    }
+    override suspend fun getWishList(
+        userId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<ProductResponse> =
+        query {
+            WishListTable.innerJoin(ProductTable)
+                .selectAll()
+                .andWhere { WishListTable.userId eq userId }
+                .toPaginatedResponse(limit, offset) {
+                    ProductDAO.wrapRow(it).response()
+                }
+        }
 
     /**
      * Removes a product from the user's wishlist. If the product is not found in the wishlist, an exception is thrown.
@@ -71,18 +80,27 @@ class WishListService : WishListRepository {
      * @return The product that was removed from the wishlist.
      * @throws notFoundException If the product is not found in the user's wishlist.
      */
-    override suspend fun removeFromWishList(userId: String, productId: String): ProductResponse = query {
-        val wishListItem = WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
-            .singleOrNull() ?: productId.throwNotFound("ProductResponse")
+    override suspend fun removeFromWishList(
+        userId: String,
+        productId: String,
+    ): ProductResponse =
+        query {
+            val wishListItem =
+                WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
+                    .singleOrNull() ?: productId.throwNotFound("ProductResponse")
 
-        val productResponse = ProductDAO.findById(productId)?.response()?: productId.throwNotFound("ProductResponse")
-        wishListItem.delete()
-        productResponse
-    }
+            val productResponse = ProductDAO.findById(productId)?.response() ?: productId.throwNotFound("ProductResponse")
+            wishListItem.delete()
+            productResponse
+        }
 
-    override suspend fun isProductInWishList(userId: String, productId: String): Boolean = query {
-         WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
-            .limit(1)
-            .count() > 0
-    }
+    override suspend fun isProductInWishList(
+        userId: String,
+        productId: String,
+    ): Boolean =
+        query {
+            WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
+                .limit(1)
+                .count() > 0
+        }
 }

@@ -33,7 +33,7 @@ fun Route.consentRoutes(consentService: ConsentService) {
             val updatedRequest = consentRequest.copy(policyId, ipAddress, userAgent)
             call.respond(
                 HttpStatusCode.OK,
-                consentService.recordConsent(userId, updatedRequest)
+                consentService.recordConsent(userId, updatedRequest),
             )
         }
     }
@@ -56,15 +56,16 @@ fun Route.consentRoutes(consentService: ConsentService) {
             val policyType = call.requireParameters("policyType")
             val userId = call.currentUserId
 
-            val policyTypeValue = runCatching {
-                PolicyDocumentTable.PolicyType.valueOf(policyType.first())
-            }.getOrElse {
-                throw InvalidEnumValueException(
-                    "Invalid policy type: ${policyType.first()}",
-                    enumName = "PolicyType",
-                    invalidValue = policyType.first()
-                )
-            }
+            val policyTypeValue =
+                runCatching {
+                    PolicyDocumentTable.PolicyType.valueOf(policyType.first())
+                }.getOrElse {
+                    throw InvalidEnumValueException(
+                        "Invalid policy type: ${policyType.first()}",
+                        enumName = "PolicyType",
+                        invalidValue = policyType.first(),
+                    )
+                }
 
             val hasConsented = consentService.hasUserConsented(userId, policyTypeValue)
             call.respond(HttpStatusCode.OK, mapOf("hasConsented" to hasConsented))

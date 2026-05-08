@@ -18,7 +18,10 @@ interface ShopCategoryRepository {
      * @param limit The maximum number of categories to return.
      * @return A list of shop categories.
      */
-    suspend fun getCategories(limit: Int, offset: Int = 0): PaginatedResponse<ShopCategoryResponse>
+    suspend fun getCategories(
+        limit: Int,
+        offset: Int = 0,
+    ): PaginatedResponse<ShopCategoryResponse>
 
     /**
      * Updates an existing shop category.
@@ -27,7 +30,10 @@ interface ShopCategoryRepository {
      * @param categoryName The updated name of the shop category.
      * @return The updated shop category.
      */
-    suspend fun updateCategory(categoryId: String, name: String): ShopCategoryResponse
+    suspend fun updateCategory(
+        categoryId: String,
+        name: String,
+    ): ShopCategoryResponse
 
     /**
      * Deletes a specific shop category.

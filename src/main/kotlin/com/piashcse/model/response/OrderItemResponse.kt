@@ -9,5 +9,5 @@ data class OrderItemResponse(
     val quantity: Int,
     val price: Float,
     val total: Float,
-    val sku: String?
+    val sku: String?,
 )

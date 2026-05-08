@@ -21,7 +21,6 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
  * Service for managing payment-related operations.
  */
 class PaymentService : PaymentRepository {
-
     /**
      * Creates a new payment for an order based on the provided payment details.
      *
@@ -29,48 +28,52 @@ class PaymentService : PaymentRepository {
      * @return The created payment entity.
      * @throws Exception if the order with the provided order ID is not found.
      */
-    override suspend fun createPayment(paymentRequest: PaymentRequest): PaymentResponse = query {
-        paymentRequest.validation()
+    override suspend fun createPayment(paymentRequest: PaymentRequest): PaymentResponse =
+        query {
+            paymentRequest.validation()
 
-        val order = OrderDAO.findById(paymentRequest.orderId)
-            ?: return@query paymentRequest.orderId.throwNotFound("Order")
+            val order =
+                OrderDAO.findById(paymentRequest.orderId)
+                    ?: return@query paymentRequest.orderId.throwNotFound("Order")
 
-        // Validate amount matches order total
-        val orderTotal = order.total.toLong()
-        if (paymentRequest.amount != orderTotal) {
-            throw com.piashcse.utils.validator.ValidationException(
-                "PaymentResponse amount (${paymentRequest.amount}) does not match order total ($orderTotal)"
-            )
+            // Validate amount matches order total
+            val orderTotal = order.total.toLong()
+            if (paymentRequest.amount != orderTotal) {
+                throw com.piashcse.utils.validator.ValidationException(
+                    "PaymentResponse amount (${paymentRequest.amount}) does not match order total ($orderTotal)",
+                )
+            }
+
+            // Check if already fully paid
+            val existingPayments =
+                PaymentDAO.find {
+                    (PaymentTable.orderId eq EntityID(paymentRequest.orderId, OrderTable)) and
+                        (PaymentTable.status eq com.piashcse.constants.PaymentStatus.COMPLETED)
+                }.toList()
+
+            val paidAmount = existingPayments.sumOf { it.amount }
+            if (paidAmount >= orderTotal) {
+                throw com.piashcse.utils.validator.ValidationException("Order already fully paid")
+            }
+
+            // Create payment
+            val payment =
+                PaymentDAO.new {
+                    this.orderId = EntityID(paymentRequest.orderId, OrderTable)
+                    this.userId = order.userId
+                    this.amount = paymentRequest.amount
+                    this.status = paymentRequest.status
+                    this.paymentMethod = paymentRequest.paymentMethod
+                    this.transactionId = paymentRequest.transactionId
+                }
+
+            // Update order payment status if fully paid
+            if (paidAmount + paymentRequest.amount >= orderTotal) {
+                order.paymentStatus = com.piashcse.constants.PaymentStatus.COMPLETED
+            }
+
+            payment.response()
         }
-
-        // Check if already fully paid
-        val existingPayments = PaymentDAO.find {
-            (PaymentTable.orderId eq EntityID(paymentRequest.orderId, OrderTable)) and
-            (PaymentTable.status eq com.piashcse.constants.PaymentStatus.COMPLETED)
-        }.toList()
-
-        val paidAmount = existingPayments.sumOf { it.amount }
-        if (paidAmount >= orderTotal) {
-            throw com.piashcse.utils.validator.ValidationException("Order already fully paid")
-        }
-
-        // Create payment
-        val payment = PaymentDAO.new {
-            this.orderId = EntityID(paymentRequest.orderId, OrderTable)
-            this.userId = order.userId
-            this.amount = paymentRequest.amount
-            this.status = paymentRequest.status
-            this.paymentMethod = paymentRequest.paymentMethod
-            this.transactionId = paymentRequest.transactionId
-        }
-
-        // Update order payment status if fully paid
-        if (paidAmount + paymentRequest.amount >= orderTotal) {
-            order.paymentStatus = com.piashcse.constants.PaymentStatus.COMPLETED
-        }
-
-        payment.response()
-    }
 
     /**
      * Retrieves a payment by its ID.
@@ -79,10 +82,11 @@ class PaymentService : PaymentRepository {
      * @return The payment entity associated with the provided payment ID.
      * @throws Exception if no payment is found for the given payment ID.
      */
-    override suspend fun getPaymentById(paymentId: String): PaymentResponse = query {
-        val isOrderExist = PaymentDAO.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
-        isOrderExist?.response() ?: paymentId.throwNotFound("PaymentResponse")
-    }
+    override suspend fun getPaymentById(paymentId: String): PaymentResponse =
+        query {
+            val isOrderExist = PaymentDAO.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
+            isOrderExist?.response() ?: paymentId.throwNotFound("PaymentResponse")
+        }
 
     /**
      * Retrieves all payments for a specific order.
@@ -90,11 +94,16 @@ class PaymentService : PaymentRepository {
      * @param orderId The ID of the order.
      * @return A list of payments for the order.
      */
-    override suspend fun getPaymentsByOrderId(orderId: String, limit: Int, offset: Int): PaginatedResponse<PaymentResponse> = query {
-        PaymentTable.selectAll().andWhere { PaymentTable.orderId eq EntityID(orderId, PaymentTable) }
-            .orderBy(PaymentTable.createdAt to SortOrder.DESC)
-            .toPaginatedResponse(limit, offset) {
-                PaymentDAO.wrapRow(it).response()
-            }
-    }
+    override suspend fun getPaymentsByOrderId(
+        orderId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<PaymentResponse> =
+        query {
+            PaymentTable.selectAll().andWhere { PaymentTable.orderId eq EntityID(orderId, PaymentTable) }
+                .orderBy(PaymentTable.createdAt to SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) {
+                    PaymentDAO.wrapRow(it).response()
+                }
+        }
 }

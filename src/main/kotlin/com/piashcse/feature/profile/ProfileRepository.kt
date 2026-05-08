@@ -19,7 +19,10 @@ interface ProfileRepository {
      * @param profileRequest The updated profile data. Can be null if no update is provided.
      * @return The updated user profile.
      */
-    suspend fun updateProfile(userId: String, profileRequest: UserProfileRequest?): UserProfileResponse
+    suspend fun updateProfile(
+        userId: String,
+        profileRequest: UserProfileRequest?,
+    ): UserProfileResponse
 
     /**
      * Updates the user's profile image.
@@ -28,5 +31,8 @@ interface ProfileRepository {
      * @param imageUrl The new profile image URL. Can be null if no image is provided.
      * @return The updated user profile.
      */
-    suspend fun updateProfileImage(userId: String, imageUrl: String?): UserProfileResponse
+    suspend fun updateProfileImage(
+        userId: String,
+        imageUrl: String?,
+    ): UserProfileResponse
 }

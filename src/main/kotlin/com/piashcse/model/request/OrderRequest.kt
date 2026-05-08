@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import org.valiktor.functions.isGreaterThan
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
+
 @Serializable
 data class OrderRequest(
     val quantity: Int,
@@ -12,7 +13,7 @@ data class OrderRequest(
     val shippingCharge: Float,
     val orderStatus: String,
     val shippingAddress: String,
-    val orderItems: MutableList<OrderItemRequest>
+    val orderItems: MutableList<OrderItemRequest>,
 ) {
     fun validation() {
         validate(this) {

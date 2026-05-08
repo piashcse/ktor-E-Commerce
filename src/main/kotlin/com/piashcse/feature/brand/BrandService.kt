@@ -24,21 +24,22 @@ class BrandService : BrandRepository {
      * @return The created brand entity.
      * @throws Exception if the brand name already exists.
      */
-    override suspend fun createBrand(name: String): BrandResponse = query {
-        if (name.isBlank()) {
-            throw ValidationException(Message.Brands.BLANK_NAME)
-        }
-        if (name.length > 255) {
-            throw ValidationException(Message.Brands.nameTooLong(255))
-        }
+    override suspend fun createBrand(name: String): BrandResponse =
+        query {
+            if (name.isBlank()) {
+                throw ValidationException(Message.Brands.BLANK_NAME)
+            }
+            if (name.length > 255) {
+                throw ValidationException(Message.Brands.nameTooLong(255))
+            }
 
-        val isBrandExist = BrandDAO.find { BrandTable.name eq name }.singleOrNull()
-        isBrandExist?.let {
-            throw name.throwConflict("BrandResponse")
-        } ?: BrandDAO.new {
-            this.name = name
-        }.response()
-    }
+            val isBrandExist = BrandDAO.find { BrandTable.name eq name }.singleOrNull()
+            isBrandExist?.let {
+                throw name.throwConflict("BrandResponse")
+            } ?: BrandDAO.new {
+                this.name = name
+            }.response()
+        }
 
     /**
      * Retrieves a list of brands with a specified limit.
@@ -46,11 +47,15 @@ class BrandService : BrandRepository {
      * @param limit The maximum number of brands to retrieve.
      * @return A list of brand entities.
      */
-    override suspend fun getBrands(limit: Int, offset: Int): PaginatedResponse<BrandResponse> = query {
-        BrandTable.selectAll().toPaginatedResponse(limit, offset) {
-            BrandDAO.wrapRow(it).response()
+    override suspend fun getBrands(
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<BrandResponse> =
+        query {
+            BrandTable.selectAll().toPaginatedResponse(limit, offset) {
+                BrandDAO.wrapRow(it).response()
+            }
         }
-    }
 
     /**
      * Updates the name of an existing brand.
@@ -60,20 +65,25 @@ class BrandService : BrandRepository {
      * @return The updated brand entity.
      * @throws Exception if the brand ID is not found.
      */
-    override suspend fun updateBrand(brandId: String, name: String): BrandResponse = query {
-        if (name.isBlank()) {
-            throw ValidationException(Message.Brands.BLANK_NAME)
-        }
-        if (name.length > 255) {
-            throw ValidationException(Message.Brands.nameTooLong(255))
-        }
+    override suspend fun updateBrand(
+        brandId: String,
+        name: String,
+    ): BrandResponse =
+        query {
+            if (name.isBlank()) {
+                throw ValidationException(Message.Brands.BLANK_NAME)
+            }
+            if (name.length > 255) {
+                throw ValidationException(Message.Brands.nameTooLong(255))
+            }
 
-        val brand = BrandDAO.find { BrandTable.id eq brandId }.singleOrNull()
-            ?: brandId.throwNotFound("BrandResponse")
+            val brand =
+                BrandDAO.find { BrandTable.id eq brandId }.singleOrNull()
+                    ?: brandId.throwNotFound("BrandResponse")
 
-        brand.name = name
-        brand.response()
-    }
+            brand.name = name
+            brand.response()
+        }
 
     /**
      * Deletes a brand by its ID.
@@ -82,11 +92,12 @@ class BrandService : BrandRepository {
      * @return The ID of the deleted brand.
      * @throws Exception if the brand ID is not found.
      */
-    override suspend fun deleteBrand(brandId: String): String = query {
-        val isBrandExist = BrandDAO.find { BrandTable.id eq brandId }.toList().singleOrNull()
-        isBrandExist?.let {
-            it.delete()
-            brandId
-        } ?: brandId.throwNotFound("BrandResponse")
-    }
+    override suspend fun deleteBrand(brandId: String): String =
+        query {
+            val isBrandExist = BrandDAO.find { BrandTable.id eq brandId }.toList().singleOrNull()
+            isBrandExist?.let {
+                it.delete()
+                brandId
+            } ?: brandId.throwNotFound("BrandResponse")
+        }
 }

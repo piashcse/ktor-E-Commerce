@@ -46,26 +46,27 @@ class SellerDAO(id: EntityID<String>) : BaseEntity(id, SellerTable) {
     var suspendedAt by SellerTable.suspendedAt
     var terminatedAt by SellerTable.terminatedAt
 
-    fun response() = SellerResponse(
-        id = id.value,
-        userId = userId.value,
-        shopId = shopId?.value,
-        businessName = businessName,
-        businessRegistrationNumber = businessRegistrationNumber,
-        taxId = taxId,
-        bankAccountNumber = bankAccountNumber,
-        bankName = bankName,
-        bankRoutingNumber = bankRoutingNumber,
-        commissionRate = commissionRate,
-        status = status,
-        totalSales = totalSales,
-        totalCommission = totalCommission,
-        approvedAt = approvedAt,
-        suspendedAt = suspendedAt,
-        terminatedAt = terminatedAt,
-        createdAt = createdAt,
-        updatedAt = updatedAt
-    )
+    fun response() =
+        SellerResponse(
+            id = id.value,
+            userId = userId.value,
+            shopId = shopId?.value,
+            businessName = businessName,
+            businessRegistrationNumber = businessRegistrationNumber,
+            taxId = taxId,
+            bankAccountNumber = bankAccountNumber,
+            bankName = bankName,
+            bankRoutingNumber = bankRoutingNumber,
+            commissionRate = commissionRate,
+            status = status,
+            totalSales = totalSales,
+            totalCommission = totalCommission,
+            approvedAt = approvedAt,
+            suspendedAt = suspendedAt,
+            terminatedAt = terminatedAt,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
 
     /**
      * Get the associated user information
@@ -111,5 +112,5 @@ data class SellerResponse(
     val suspendedAt: java.time.LocalDateTime?,
     val terminatedAt: java.time.LocalDateTime?,
     val createdAt: java.time.LocalDateTime?,
-    val updatedAt: java.time.LocalDateTime?
+    val updatedAt: java.time.LocalDateTime?,
 )

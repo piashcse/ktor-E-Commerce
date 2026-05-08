@@ -72,21 +72,22 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
     var totalSales by ProductTable.totalSales
     var stockQuantity by ProductTable.stockQuantity
 
-    fun response() = ProductResponse(
-        id = id.value,
-        categoryId = categoryId.value,
-        subCategoryId = subCategoryId?.value,
-        brandId = brandId?.value,
-        name = name,
-        description = description,
-        minOrderQuantity = minOrderQuantity,
-        stockQuantity = stockQuantity,
-        price = price.toDouble(),
-        discountPrice = discountPrice?.toDouble(),
-        videoLink = videoLink,
-        hotDeal = hotDeal,
-        featured = featured,
-        images = images,
-        status = status
-    )
+    fun response() =
+        ProductResponse(
+            id = id.value,
+            categoryId = categoryId.value,
+            subCategoryId = subCategoryId?.value,
+            brandId = brandId?.value,
+            name = name,
+            description = description,
+            minOrderQuantity = minOrderQuantity,
+            stockQuantity = stockQuantity,
+            price = price.toDouble(),
+            discountPrice = discountPrice?.toDouble(),
+            videoLink = videoLink,
+            hotDeal = hotDeal,
+            featured = featured,
+            images = images,
+            status = status,
+        )
 }

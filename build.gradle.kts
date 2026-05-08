@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.ktor)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.shadow)
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.detekt)
 }
 
 group = "com.piashcse"
@@ -70,7 +72,6 @@ dependencies {
     testImplementation(libs.kotlin.test.junit)
 }
 
-
 kotlin {
     jvmToolchain(17)
 }
@@ -85,4 +86,35 @@ ktor {
 
 tasks.register("stage") {
     dependsOn("installDist")
+}
+detekt {
+    toolVersion = libs.versions.detekt.version.get()
+    config.setFrom(files("config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+    allRules = false
+    ignoreFailures = true
+}
+
+ktlint {
+    ignoreFailures.set(true)
+    verbose.set(true)
+    outputToConsole.set(true)
+    coloredOutput.set(true)
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+    }
+    filter {
+        exclude { it.file.path.contains("build/") }
+    }
+}
+
+tasks.register("installGitHooks", Copy::class) {
+    from(file("$projectDir/scripts/pre-commit"))
+    into(file("$projectDir/.git/hooks"))
+    fileMode = 493
+}
+
+tasks.named("build") {
+    dependsOn("installGitHooks")
 }

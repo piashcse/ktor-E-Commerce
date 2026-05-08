@@ -32,7 +32,10 @@ interface AuthRepository {
      * @param otp The OTP code.
      * @return The success response.
      */
-    suspend fun otpVerification(userId: String, otp: String): Boolean
+    suspend fun otpVerification(
+        userId: String,
+        otp: String,
+    ): Boolean
 
     /**
      * Changes the password for a user.
@@ -41,7 +44,10 @@ interface AuthRepository {
      * @param request The password change details.
      * @return `true` if the password change was successful, `false` otherwise.
      */
-    suspend fun changePassword(userId: String, changePassword: ChangePassword): Boolean
+    suspend fun changePassword(
+        userId: String,
+        changePassword: ChangePassword,
+    ): Boolean
 
     /**
      * Sends a verification code for password reset.
@@ -67,7 +73,11 @@ interface AuthRepository {
      * @param newUserType The new user type to assign.
      * @return `true` if the user type was changed successfully, `false` otherwise.
      */
-    suspend fun changeUserType(currentUserId: String, targetUserId: String, newUserType: UserType): Boolean
+    suspend fun changeUserType(
+        currentUserId: String,
+        targetUserId: String,
+        newUserType: UserType,
+    ): Boolean
 
     /**
      * Deactivates a user account.
@@ -76,7 +86,10 @@ interface AuthRepository {
      * @param targetUserId The ID of the user to deactivate.
      * @return `true` if the user was deactivated successfully, `false` otherwise.
      */
-    suspend fun deactivateUser(currentUserId: String, targetUserId: String): Boolean
+    suspend fun deactivateUser(
+        currentUserId: String,
+        targetUserId: String,
+    ): Boolean
 
     /**
      * Activates a user account.
@@ -85,5 +98,8 @@ interface AuthRepository {
      * @param targetUserId The ID of the user to activate.
      * @return `true` if the user was activated successfully, `false` otherwise.
      */
-    suspend fun activateUser(currentUserId: String, targetUserId: String): Boolean
+    suspend fun activateUser(
+        currentUserId: String,
+        targetUserId: String,
+    ): Boolean
 }

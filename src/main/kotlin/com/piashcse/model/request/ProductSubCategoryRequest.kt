@@ -8,7 +8,7 @@ import org.valiktor.validate
 @Serializable
 data class ProductSubCategoryRequest(
     val categoryId: String,
-    val name: String
+    val name: String,
 ) {
     fun validation() {
         validate(this) {

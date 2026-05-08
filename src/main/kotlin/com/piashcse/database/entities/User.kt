@@ -38,15 +38,16 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     /**
      * Get the user response with role-based information
      */
-    fun response() = UserResponse(
-        id.value,
-        email,
-        isVerified,
-        userType,
-        isActive,
-        createdAt,
-        updatedAt
-    )
+    fun response() =
+        UserResponse(
+            id.value,
+            email,
+            isVerified,
+            userType,
+            isActive,
+            createdAt,
+            updatedAt,
+        )
 
     /**
      * Get the seller information if the user is a seller
@@ -70,7 +71,7 @@ data class UserResponse(
     var userType: UserType,
     val isActive: Boolean,
     val createdAt: LocalDateTime?,
-    val updatedAt: LocalDateTime?
+    val updatedAt: LocalDateTime?,
 )
 
 data class LoginResponse(
@@ -78,6 +79,7 @@ data class LoginResponse(
     val accessToken: String,
     val refreshToken: String = "",
     val expiresIn: Long = 86400,
-    val tokenType: String = "Bearer"
+    val tokenType: String = "Bearer",
 )
+
 data class ChangePassword(val oldPassword: String, val newPassword: String)

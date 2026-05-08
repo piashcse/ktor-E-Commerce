@@ -8,7 +8,10 @@ interface ConsentRepository {
     /**
      * Records user consent to a policy
      */
-    suspend fun recordConsent(userId: String, consentRequest: PolicyConsentRequest): UserPolicyConsentResponse
+    suspend fun recordConsent(
+        userId: String,
+        consentRequest: PolicyConsentRequest,
+    ): UserPolicyConsentResponse
 
     /**
      * Gets all consents for a user
@@ -18,5 +21,8 @@ interface ConsentRepository {
     /**
      * Checks if a user has consented to a specific policy
      */
-    suspend fun hasUserConsented(userId: String, policyType: PolicyDocumentTable.PolicyType): Boolean
+    suspend fun hasUserConsented(
+        userId: String,
+        policyType: PolicyDocumentTable.PolicyType,
+    ): Boolean
 }

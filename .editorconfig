@@ -1,0 +1,16 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+
+[*.{kt,kts}]
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+# Rules are currently in ignoreFailures mode in build.gradle.kts
+# but keeping these disabled to reduce noise in logs
+ktlint_standard_no-wildcard-imports = disabled
+ktlint_standard_package-name = disabled

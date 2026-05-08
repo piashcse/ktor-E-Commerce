@@ -5,14 +5,14 @@ import io.ktor.http.*
 
 /**
  * Industry-standard API error response (used ONLY for errors).
- * 
+ *
  * Based on Stripe, GitHub, OpenAI standards:
  * - Success: Return data directly (NO wrapper)
  * - Error: Return ApiError with message (and errors array for validation)
  */
 data class ApiError(
     val message: String,
-    val errors: List<FieldError>? = null
+    val errors: List<FieldError>? = null,
 )
 
 /**
@@ -20,10 +20,8 @@ data class ApiError(
  */
 data class FieldError(
     val field: String,
-    val message: String
+    val message: String,
 )
 
 /** Convert any AppException → (HttpStatusCode, ApiError) pair. */
-fun AppException.toErrorResponse(): Pair<HttpStatusCode, ApiError> =
-    code to ApiError(message ?: "Unknown error")
-
+fun AppException.toErrorResponse(): Pair<HttpStatusCode, ApiError> = code to ApiError(message ?: "Unknown error")

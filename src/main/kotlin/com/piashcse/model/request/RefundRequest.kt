@@ -9,7 +9,7 @@ import org.valiktor.validate
 data class RefundRequestRequest(
     val orderItemId: String,
     val reason: String,
-    val images: String? = null
+    val images: String? = null,
 ) {
     fun validation() {
         validate(this) {
@@ -23,7 +23,7 @@ data class RefundRequestRequest(
 data class UpdateRefundStatusRequest(
     val status: String,
     val refundAmount: Double? = null,
-    val refundMethod: String? = null
+    val refundMethod: String? = null,
 ) {
     fun validation() {
         validate(this) {
@@ -34,7 +34,7 @@ data class UpdateRefundStatusRequest(
 
 @Serializable
 data class ShipRefundRequest(
-    val trackingNumber: String
+    val trackingNumber: String,
 ) {
     fun validation() {
         validate(this) {

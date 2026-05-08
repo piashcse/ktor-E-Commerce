@@ -9,7 +9,6 @@ import com.piashcse.utils.common.PaginatedResponse
  * Provides methods to add, retrieve, update, and delete product subcategories.
  */
 interface ProductSubCategoryRepository {
-
     /**
      * Adds a new product subcategory.
      *
@@ -25,7 +24,11 @@ interface ProductSubCategoryRepository {
      * @param limit The maximum number of subcategories to retrieve.
      * @return A list of product subcategories.
      */
-    suspend fun getProductSubCategory(categoryId: String, limit: Int, offset: Int = 0): PaginatedResponse<ProductSubCategoryResponse>
+    suspend fun getProductSubCategory(
+        categoryId: String,
+        limit: Int,
+        offset: Int = 0,
+    ): PaginatedResponse<ProductSubCategoryResponse>
 
     /**
      * Updates an existing product subcategory.
@@ -34,7 +37,10 @@ interface ProductSubCategoryRepository {
      * @param name The new name for the subcategory.
      * @return The updated product subcategory.
      */
-    suspend fun updateProductSubCategory(id: String, name: String): ProductSubCategoryResponse
+    suspend fun updateProductSubCategory(
+        id: String,
+        name: String,
+    ): ProductSubCategoryResponse
 
     /**
      * Deletes a product subcategory.

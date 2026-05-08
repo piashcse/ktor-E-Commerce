@@ -26,14 +26,15 @@ object JwtConfig {
     /**
      * Produce a token for the given JwtTokenBody
      */
-    fun tokenProvider(jwtTokenBody: JwtTokenRequest): String = JWT.create()
-        .withSubject("Authentication")
-        .withIssuer(issuer)
-        .withClaim("email", jwtTokenBody.email)
-        .withClaim("userId", jwtTokenBody.userId)
-        .withClaim("userType", jwtTokenBody.userType)
-        .withExpiresAt(getExpiration())
-        .sign(algorithm)
+    fun tokenProvider(jwtTokenBody: JwtTokenRequest): String =
+        JWT.create()
+            .withSubject("Authentication")
+            .withIssuer(issuer)
+            .withClaim("email", jwtTokenBody.email)
+            .withClaim("userId", jwtTokenBody.userId)
+            .withClaim("userType", jwtTokenBody.userType)
+            .withExpiresAt(getExpiration())
+            .sign(algorithm)
 
     private fun getExpiration() = Date(System.currentTimeMillis() + VALIDITY_MS)
 }

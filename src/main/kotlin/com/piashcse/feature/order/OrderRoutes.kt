@@ -1,11 +1,9 @@
 package com.piashcse.feature.order
-import com.piashcse.plugin.customerAuth
-
 import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.CancelOrderRequest
-import com.piashcse.model.request.OrderRequest
+import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.getCurrentUserType
@@ -44,15 +42,16 @@ fun Route.orderRoutes(orderService: OrderService) {
             val (id, statusParam) = call.requireParameters("id", "status")
             val userId = call.currentUserId
 
-            val status = try {
-                OrderStatus.valueOf(statusParam.uppercase())
-            } catch (e: IllegalArgumentException) {
-                throw InvalidEnumValueException(
-                    message = "Invalid order status: $statusParam",
-                    enumName = OrderStatus.values().joinToString(", ") { it.name },
-                    invalidValue = statusParam
-                )
-            }
+            val status =
+                try {
+                    OrderStatus.valueOf(statusParam.uppercase())
+                } catch (e: IllegalArgumentException) {
+                    throw InvalidEnumValueException(
+                        message = "Invalid order status: $statusParam",
+                        enumName = OrderStatus.values().joinToString(", ") { it.name },
+                        invalidValue = statusParam,
+                    )
+                }
 
             val isSeller = call.principal<JWTPrincipal>()?.payload?.getClaim("role")?.asString() == UserType.SELLER.name.lowercase()
             val isCustomer = call.principal<JWTPrincipal>()?.payload?.getClaim("role")?.asString() == UserType.CUSTOMER.name.lowercase()
@@ -60,7 +59,10 @@ fun Route.orderRoutes(orderService: OrderService) {
             val sellerOnlyStatuses = listOf(OrderStatus.CONFIRMED, OrderStatus.DELIVERED)
             val customerOnlyStatuses = listOf(OrderStatus.CANCELED, OrderStatus.RECEIVED)
 
-            if ((status in sellerOnlyStatuses && !isSeller) || (status in customerOnlyStatuses && !isCustomer)) {
+            val isSellerStatusButNotSeller = status in sellerOnlyStatuses && !isSeller
+            val isCustomerStatusButNotCustomer = status in customerOnlyStatuses && !isCustomer
+
+            if (isSellerStatusButNotSeller || isCustomerStatusButNotCustomer) {
                 throw UnauthorizedException(Message.Orders.STATUS_NOT_ALLOWED)
             }
 
@@ -110,15 +112,16 @@ fun Route.orderAdminRoutes(orderService: OrderService) {
         val (id, statusParam) = call.requireParameters("id", "status")
         val userId = call.currentUserId
 
-        val status = try {
-            OrderStatus.valueOf(statusParam.uppercase())
-        } catch (e: IllegalArgumentException) {
-            throw InvalidEnumValueException(
-                message = "Invalid order status: $statusParam",
-                enumName = OrderStatus.values().joinToString(", ") { it.name },
-                invalidValue = statusParam
-            )
-        }
+        val status =
+            try {
+                OrderStatus.valueOf(statusParam.uppercase())
+            } catch (e: IllegalArgumentException) {
+                throw InvalidEnumValueException(
+                    message = "Invalid order status: $statusParam",
+                    enumName = OrderStatus.values().joinToString(", ") { it.name },
+                    invalidValue = statusParam,
+                )
+            }
 
         call.respond(HttpStatusCode.OK, orderService.updateOrderStatus(userId, id, status))
     }
@@ -144,12 +147,14 @@ fun Route.orderAdminRoutes(orderService: OrderService) {
     get {
         val (limit, offset) = call.paginationParameters()
         val status = call.parameters["status"]
-        val startDate = call.parameters["startDate"]?.let {
-            try { java.time.Instant.parse(it) } catch (e: Exception) { null }
-        }
-        val endDate = call.parameters["endDate"]?.let {
-            try { java.time.Instant.parse(it) } catch (e: Exception) { null }
-        }
+        val startDate =
+            call.parameters["startDate"]?.let {
+                runCatching { java.time.Instant.parse(it) }.getOrNull()
+            }
+        val endDate =
+            call.parameters["endDate"]?.let {
+                runCatching { java.time.Instant.parse(it) }.getOrNull()
+            }
 
         call.respond(HttpStatusCode.OK, orderService.getAdminOrders(limit, offset, status, startDate, endDate))
     }

@@ -7,5 +7,5 @@ data class ProductCategoryResponse(
     val id: String,
     val name: String,
     val subCategories: List<ProductSubCategoryResponse>,
-    val image: String?
+    val image: String?,
 )

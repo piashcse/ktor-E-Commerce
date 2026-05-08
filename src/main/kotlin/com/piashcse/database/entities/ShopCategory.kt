@@ -1,6 +1,5 @@
 package com.piashcse.database.entities
 
-
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
@@ -15,5 +14,6 @@ class ShopCategoryDAO(id: EntityID<String>) : BaseEntity(id, ShopCategoryTable) 
     companion object : BaseEntityClass<ShopCategoryDAO>(ShopCategoryTable, ShopCategoryDAO::class.java)
 
     var name by ShopCategoryTable.name
+
     fun response() = ShopCategoryResponse(id.value, name)
 }

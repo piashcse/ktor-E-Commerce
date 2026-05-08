@@ -26,7 +26,10 @@ fun ApplicationCall.requireParameters(vararg requiredParams: String): List<Strin
  * Extracts limit and offset parameters from the request.
  * Defaults to 20 and 0 respectively.
  */
-fun ApplicationCall.paginationParameters(defaultLimit: Int = 20, defaultOffset: Int = 0): Pair<Int, Int> {
+fun ApplicationCall.paginationParameters(
+    defaultLimit: Int = 20,
+    defaultOffset: Int = 0,
+): Pair<Int, Int> {
     val limit = parameters["limit"]?.toIntOrNull() ?: defaultLimit
     val offset = parameters["offset"]?.toIntOrNull() ?: defaultOffset
     return limit to offset
@@ -37,14 +40,14 @@ fun ApplicationCall.paginationParameters(defaultLimit: Int = 20, defaultOffset: 
  */
 @Deprecated(
     "Use requireParameters() instead. This function bypasses StatusPages.",
-    ReplaceWith("requireParameters(*requiredParams)")
+    ReplaceWith("requireParameters(*requiredParams)"),
 )
 suspend fun ApplicationCall.requiredParameters(vararg requiredParams: String): List<String>? {
     val missingParams = requiredParams.filterNot { parameters.contains(it) }
     if (missingParams.isNotEmpty()) {
         respond(
             HttpStatusCode.BadRequest,
-            ApiError("Missing parameters: ${missingParams.joinToString()}")
+            ApiError("Missing parameters: ${missingParams.joinToString()}"),
         )
         return null
     }

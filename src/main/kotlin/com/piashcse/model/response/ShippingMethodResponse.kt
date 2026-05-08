@@ -8,5 +8,5 @@ data class ShippingMethodResponse(
     val name: String,
     val type: String?,
     val price: Double,
-    val deliveryTime: String?
+    val deliveryTime: String?,
 )

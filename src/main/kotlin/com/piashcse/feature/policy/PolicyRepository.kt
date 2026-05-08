@@ -14,7 +14,10 @@ interface PolicyRepository {
     /**
      * Updates an existing policy document
      */
-    suspend fun updatePolicy(id: String, updatePolicyRequest: UpdatePolicyRequest): PolicyDocumentResponse
+    suspend fun updatePolicy(
+        id: String,
+        updatePolicyRequest: UpdatePolicyRequest,
+    ): PolicyDocumentResponse
 
     /**
      * Gets a policy document by type, returning the latest active version
