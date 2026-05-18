@@ -4,8 +4,8 @@
   
   **A high-performance, enterprise-grade e-commerce backend built with Kotlin & Ktor.**
 
-  [![Ktor](https://img.shields.io/badge/ktor-3.4.3-blue.svg)](https://github.com/ktorio/ktor)
-  [![Exposed](https://img.shields.io/badge/Exposed-1.2.0-blue.svg)](https://github.com/JetBrains/Exposed)
+  [![Ktor](https://img.shields.io/badge/ktor-3.5.0-blue.svg)](https://github.com/ktorio/ktor)
+  [![Exposed](https://img.shields.io/badge/Exposed-1.3.0-blue.svg)](https://github.com/JetBrains/Exposed)
   [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
   ![Koin](https://img.shields.io/badge/Koin-4.2.0-29BEB0?logo=koin&logoColor=white)
   [![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-42.7.8-336791?logo=postgresql)](https://www.postgresql.org/)
