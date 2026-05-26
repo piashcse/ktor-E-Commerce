@@ -6,7 +6,6 @@ import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.requireParameters
 import com.piashcse.utils.validator.InvalidEnumValueException
 import io.ktor.http.*
 import io.ktor.server.plugins.*
@@ -53,17 +52,17 @@ fun Route.consentRoutes(consentService: ConsentService) {
          * @description Check if the user has consented to a specific policy type
          */
         get("{policyType}") {
-            val policyType = call.requireParameters("policyType")
+            val policyType = call.requirePathParameter("policyType")
             val userId = call.currentUserId
 
             val policyTypeValue =
                 runCatching {
-                    PolicyDocumentTable.PolicyType.valueOf(policyType.first())
+                    PolicyDocumentTable.PolicyType.valueOf(policyType)
                 }.getOrElse {
                     throw InvalidEnumValueException(
-                        "Invalid policy type: ${policyType.first()}",
+                        "Invalid policy type: $policyType",
                         enumName = "PolicyType",
-                        invalidValue = policyType.first(),
+                        invalidValue = policyType,
                     )
                 }
 

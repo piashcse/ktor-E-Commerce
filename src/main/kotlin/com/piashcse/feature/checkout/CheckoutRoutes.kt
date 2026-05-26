@@ -7,7 +7,6 @@ import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -48,7 +47,7 @@ fun Route.checkoutRoutes(
          * @description Update an existing shipping address
          */
         put("shipping-address/{id}") {
-            val (id) = call.requireParameters("id")
+            val id = call.requirePathParameter("id")
             val requestBody = call.receive<ShippingAddressRequest>()
             requestBody.validation()
             call.respond(
@@ -62,7 +61,7 @@ fun Route.checkoutRoutes(
          * @description Delete a shipping address
          */
         delete("shipping-address/{id}") {
-            val (id) = call.requireParameters("id")
+            val id = call.requirePathParameter("id")
             call.respond(
                 HttpStatusCode.OK,
                 shippingAddressService.deleteShippingAddress(call.currentUserId, id),

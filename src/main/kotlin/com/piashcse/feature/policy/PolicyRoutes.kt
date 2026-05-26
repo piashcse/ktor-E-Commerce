@@ -3,6 +3,7 @@ package com.piashcse.feature.policy
 import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.CreatePolicyRequest
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -16,7 +17,7 @@ fun Route.policyRoutes(policyService: PolicyService) {
      * @description Retrieve the latest active version of a policy by type
      */
     get("{policyType}") {
-        val policyTypeParam = call.parameters["policyType"] ?: return@get call.respond(HttpStatusCode.BadRequest, "policyType is required")
+        val policyTypeParam = call.requirePathParameter("policyType")
         val policyType =
             try {
                 PolicyDocumentTable.PolicyType.valueOf(policyTypeParam.uppercase())
@@ -47,7 +48,7 @@ fun Route.policyAdminRoutes(policyService: PolicyService) {
      * @description Admin: Retrieve all versions of a specific policy type
      */
     get("{policyType}/history") {
-        val policyTypeParam = call.parameters["policyType"] ?: return@get call.respond(HttpStatusCode.BadRequest, "policyType is required")
+        val policyTypeParam = call.requirePathParameter("policyType")
         val policyType =
             try {
                 PolicyDocumentTable.PolicyType.valueOf(policyTypeParam.uppercase())

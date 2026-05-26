@@ -4,7 +4,6 @@ import com.piashcse.model.request.CartRequest
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
-import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -56,7 +55,7 @@ fun Route.cartRoutes(cartService: CartService) {
          * @description Remove a specific item from the cart
          */
         delete("remove") {
-            val (productId) = call.requireParameters("productId")
+            val productId = call.requireQueryParameter("productId")
             call.respond(
                 HttpStatusCode.OK,
                 cartService.removeCartItem(call.currentUserId, productId),

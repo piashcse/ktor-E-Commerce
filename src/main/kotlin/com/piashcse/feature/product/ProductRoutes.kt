@@ -7,7 +7,6 @@ import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
-import com.piashcse.utils.extension.requireParameters
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -24,8 +23,8 @@ fun Route.productRoutes(productService: ProductService) {
      * @description Retrieve detailed information about a specific product
      */
     get("{id}") {
-        val productId = call.requireParameters("id")
-        call.respond(HttpStatusCode.OK, productService.getProductDetail(productId.first()))
+        val productId = call.requirePathParameter("id")
+        call.respond(HttpStatusCode.OK, productService.getProductDetail(productId))
     }
 
     /**
@@ -60,7 +59,7 @@ fun Route.productRoutes(productService: ProductService) {
             ProductSearchRequest(
                 limit = limit,
                 offset = offset,
-                name = call.requireParameters("name").first(),
+                name = call.requireQueryParameter("name"),
                 maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
                 minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
                 categoryId = call.parameters["categoryId"],
@@ -117,7 +116,7 @@ fun Route.productSellerRoutes(productService: ProductService) {
      * @description Seller: Update an existing product listing
      */
     put("{id}") {
-        val productId = call.requireParameters("id").first()
+        val productId = call.requirePathParameter("id")
         val requestBody = call.receive<UpdateProductRequest>()
         call.respond(
             HttpStatusCode.OK,
@@ -130,9 +129,9 @@ fun Route.productSellerRoutes(productService: ProductService) {
      * @description Seller: Permanently delete a product listing
      */
     delete("{id}") {
-        val id = call.requireParameters("id")
+        val id = call.requirePathParameter("id")
         val currentUserId = call.currentUserId
-        productService.deleteProduct(currentUserId, id.first())
+        productService.deleteProduct(currentUserId, id)
         call.respond(HttpStatusCode.OK, mapOf("message" to "Product deleted successfully"))
     }
 
@@ -165,10 +164,10 @@ fun Route.productAdminRoutes(productService: ProductService) {
      * @description Admin: Permanently delete any product
      */
     delete("{id}") {
-        val id = call.requireParameters("id")
+        val id = call.requirePathParameter("id")
         call.respond(
             HttpStatusCode.OK,
-            productService.deleteProductAsAdmin(id.first()),
+            productService.deleteProductAsAdmin(id),
         )
     }
 }

@@ -14,6 +14,10 @@ import io.ktor.server.response.*
  * Validates that all required parameters are present.
  * Throws MissingParameterException if any are missing (handled by StatusPages).
  */
+@Deprecated(
+    "Use Ktor 3.5.0 built-in parameter functions like requireQueryParameter or requirePathParameter instead.",
+    level = DeprecationLevel.WARNING,
+)
 fun ApplicationCall.requireParameters(vararg requiredParams: String): List<String> {
     val missingParams = requiredParams.filterNot { parameters.contains(it) }
     if (missingParams.isNotEmpty()) {

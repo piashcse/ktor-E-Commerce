@@ -4,7 +4,6 @@ import com.piashcse.model.request.WishListRequest
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
-import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -45,10 +44,10 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
          * @description Remove a specific product from the wishlist
          */
         delete("remove") {
-            val productId = call.requireParameters("productId")
+            val productId = call.requireQueryParameter("productId")
             call.respond(
                 HttpStatusCode.OK,
-                wishlistService.removeFromWishList(call.currentUserId, productId.first()),
+                wishlistService.removeFromWishList(call.currentUserId, productId),
             )
         }
 
@@ -57,10 +56,10 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
          * @description Check if a specific product is in the user's wishlist
          */
         get("check") {
-            val productId = call.requireParameters("productId")
+            val productId = call.requireQueryParameter("productId")
             call.respond(
                 HttpStatusCode.OK,
-                wishlistService.isProductInWishList(call.currentUserId, productId.first()),
+                wishlistService.isProductInWishList(call.currentUserId, productId),
             )
         }
     }

@@ -4,7 +4,6 @@ import com.piashcse.constants.UserType
 import com.piashcse.model.request.BrandRequest
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.paginationParameters
-import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -50,10 +49,11 @@ fun Route.brandAdminRoutes(brandService: BrandService) {
      * @description Admin: Update an existing brand
      */
     put("{id}") {
-        val params = call.requireParameters("id", "name")
+        val id = call.requirePathParameter("id")
+        val name = call.requireQueryParameter("name")
         call.respond(
             HttpStatusCode.OK,
-            brandService.updateBrand(params[0], params[1]),
+            brandService.updateBrand(id, name),
         )
     }
 
@@ -62,10 +62,10 @@ fun Route.brandAdminRoutes(brandService: BrandService) {
      * @description Admin: Delete a brand
      */
     delete("{id}") {
-        val id = call.requireParameters("id")
+        val id = call.requirePathParameter("id")
         call.respond(
             HttpStatusCode.OK,
-            brandService.deleteBrand(id.first()),
+            brandService.deleteBrand(id),
         )
     }
 }

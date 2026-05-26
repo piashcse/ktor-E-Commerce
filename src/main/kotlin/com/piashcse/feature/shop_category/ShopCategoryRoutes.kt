@@ -1,7 +1,6 @@
 package com.piashcse.feature.shop_category
 
 import com.piashcse.model.request.ShopCategoryRequest
-import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -28,10 +27,11 @@ fun Route.shopCategoryAdminRoutes(shopCategoryService: ShopCategoryService) {
      * @description Admin: Update an existing shop category name
      */
     put("{id}") {
-        val params = call.requireParameters("id", "name")
+        val id = call.requirePathParameter("id")
+        val name = call.requireQueryParameter("name")
         call.respond(
             HttpStatusCode.OK,
-            shopCategoryService.updateCategory(params[0], params[1]),
+            shopCategoryService.updateCategory(id, name),
         )
     }
 
@@ -40,10 +40,10 @@ fun Route.shopCategoryAdminRoutes(shopCategoryService: ShopCategoryService) {
      * @description Admin: Permanently delete a shop category
      */
     delete("{id}") {
-        val id = call.requireParameters("id")
+        val id = call.requirePathParameter("id")
         call.respond(
             HttpStatusCode.OK,
-            shopCategoryService.deleteCategory(id.first()),
+            shopCategoryService.deleteCategory(id),
         )
     }
 }

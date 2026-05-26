@@ -1,7 +1,7 @@
 package com.piashcse.feature.coupon
 
 import com.piashcse.model.request.CouponRequest
-import com.piashcse.utils.extension.requireParameters
+import com.piashcse.utils.extension.paginationParameters
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -13,7 +13,7 @@ fun Route.couponRoutes(couponService: CouponService) {
      * @description Retrieve detailed information about a coupon by its code
      */
     get("{code}") {
-        val (code) = call.requireParameters("code")
+        val code = call.requirePathParameter("code")
         val coupon = couponService.getCouponByCode(code)
         if (coupon != null) {
             call.respond(HttpStatusCode.OK, coupon)
@@ -38,8 +38,7 @@ fun Route.couponAdminRoutes(couponService: CouponService) {
      * @description Admin: Retrieve a list of all coupons
      */
     get {
-        val limit = call.request.queryParameters["limit"]?.toInt() ?: 10
-        val offset = call.request.queryParameters["offset"]?.toInt() ?: 0
+        val (limit, offset) = call.paginationParameters(defaultLimit = 10)
         call.respond(HttpStatusCode.OK, couponService.getCoupons(limit, offset))
     }
 
@@ -48,7 +47,7 @@ fun Route.couponAdminRoutes(couponService: CouponService) {
      * @description Admin: Update an existing coupon
      */
     put("{id}") {
-        val (id) = call.requireParameters("id")
+        val id = call.requirePathParameter("id")
         val request = call.receive<CouponRequest>()
         call.respond(HttpStatusCode.OK, couponService.updateCoupon(id, request))
     }
@@ -58,7 +57,7 @@ fun Route.couponAdminRoutes(couponService: CouponService) {
      * @description Admin: Delete a coupon
      */
     delete("{id}") {
-        val (id) = call.requireParameters("id")
+        val id = call.requirePathParameter("id")
         call.respond(HttpStatusCode.OK, couponService.deleteCoupon(id))
     }
 }
