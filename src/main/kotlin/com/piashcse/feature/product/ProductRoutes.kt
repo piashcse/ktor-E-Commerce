@@ -6,7 +6,7 @@ import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginationParameters
+import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -32,18 +32,18 @@ fun Route.productRoutes(productService: ProductService) {
      * @description Retrieve a paginated list of products with optional filters
      */
     get {
-        val (limit, offset) = call.paginationParameters(defaultLimit = 10)
+        val (limit, offset) = call.paginateQueryParams(defaultLimit = 10)
         val params =
             ProductWithFilterRequest(
                 limit = limit,
                 offset = offset,
-                maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
-                minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
-                categoryId = call.parameters["categoryId"],
-                subCategoryId = call.parameters["subCategoryId"],
-                brandId = call.parameters["brandId"],
-                sortBy = call.parameters["sortBy"],
-                sortOrder = call.parameters["sortOrder"],
+                maxPrice = call.request.queryParameters["maxPrice"]?.toDoubleOrNull(),
+                minPrice = call.request.queryParameters["minPrice"]?.toDoubleOrNull(),
+                categoryId = call.request.queryParameters["categoryId"],
+                subCategoryId = call.request.queryParameters["subCategoryId"],
+                brandId = call.request.queryParameters["brandId"],
+                sortBy = call.request.queryParameters["sortBy"],
+                sortOrder = call.request.queryParameters["sortOrder"],
             )
         params.validation()
         call.respond(HttpStatusCode.OK, productService.getProducts(params))
@@ -54,15 +54,15 @@ fun Route.productRoutes(productService: ProductService) {
      * @description Search for products by name
      */
     get("search") {
-        val (limit, offset) = call.paginationParameters(defaultLimit = 10)
+        val (limit, offset) = call.paginateQueryParams(defaultLimit = 10)
         val queryParams =
             ProductSearchRequest(
                 limit = limit,
                 offset = offset,
                 name = call.requireQueryParameter("name"),
-                maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
-                minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
-                categoryId = call.parameters["categoryId"],
+                maxPrice = call.request.queryParameters["maxPrice"]?.toDoubleOrNull(),
+                minPrice = call.request.queryParameters["minPrice"]?.toDoubleOrNull(),
+                categoryId = call.request.queryParameters["categoryId"],
             )
         queryParams.validation()
         call.respond(HttpStatusCode.OK, productService.searchProduct(queryParams))
@@ -78,18 +78,18 @@ fun Route.productSellerRoutes(productService: ProductService) {
      * @description Seller: Retrieve seller products
      */
     get {
-        val (limit, offset) = call.paginationParameters(defaultLimit = 10)
+        val (limit, offset) = call.paginateQueryParams(defaultLimit = 10)
         val params =
             ProductWithFilterRequest(
                 limit = limit,
                 offset = offset,
-                maxPrice = call.parameters["maxPrice"]?.toDoubleOrNull(),
-                minPrice = call.parameters["minPrice"]?.toDoubleOrNull(),
-                categoryId = call.parameters["categoryId"],
-                subCategoryId = call.parameters["subCategoryId"],
-                brandId = call.parameters["brandId"],
-                sortBy = call.parameters["sortBy"],
-                sortOrder = call.parameters["sortOrder"],
+                maxPrice = call.request.queryParameters["maxPrice"]?.toDoubleOrNull(),
+                minPrice = call.request.queryParameters["minPrice"]?.toDoubleOrNull(),
+                categoryId = call.request.queryParameters["categoryId"],
+                subCategoryId = call.request.queryParameters["subCategoryId"],
+                brandId = call.request.queryParameters["brandId"],
+                sortBy = call.request.queryParameters["sortBy"],
+                sortOrder = call.request.queryParameters["sortOrder"],
             )
         params.validation()
         call.respond(

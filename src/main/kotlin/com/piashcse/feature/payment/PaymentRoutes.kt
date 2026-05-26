@@ -2,7 +2,7 @@ package com.piashcse.feature.payment
 
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.plugin.customerAuth
-import com.piashcse.utils.extension.paginationParameters
+import com.piashcse.utils.extension.paginateQueryParams
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -43,7 +43,7 @@ fun Route.paymentRoutes(paymentService: PaymentService) {
          */
         get("order/{orderId}") {
             val orderId = call.requirePathParameter("orderId")
-            val (limit, offset) = call.paginationParameters()
+            val (limit, offset) = call.paginateQueryParams()
             call.respond(
                 HttpStatusCode.OK,
                 paymentService.getPaymentsByOrderId(orderId, limit, offset),

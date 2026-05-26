@@ -3,7 +3,7 @@ package com.piashcse.feature.review_rating
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginationParameters
+import com.piashcse.utils.extension.paginateQueryParams
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -19,7 +19,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
      */
     get {
         val productId = call.requireQueryParameter("productId")
-        val (limit, offset) = call.paginationParameters()
+        val (limit, offset) = call.paginateQueryParams()
         call.respond(
             HttpStatusCode.OK,
             reviewRatingService.getReviewRating(productId, limit, offset),

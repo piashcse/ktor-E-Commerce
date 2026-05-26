@@ -1,7 +1,7 @@
 package com.piashcse.feature.coupon
 
 import com.piashcse.model.request.CouponRequest
-import com.piashcse.utils.extension.paginationParameters
+import com.piashcse.utils.extension.paginateQueryParams
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -38,7 +38,7 @@ fun Route.couponAdminRoutes(couponService: CouponService) {
      * @description Admin: Retrieve a list of all coupons
      */
     get {
-        val (limit, offset) = call.paginationParameters(defaultLimit = 10)
+        val (limit, offset) = call.paginateQueryParams(defaultLimit = 10)
         call.respond(HttpStatusCode.OK, couponService.getCoupons(limit, offset))
     }
 

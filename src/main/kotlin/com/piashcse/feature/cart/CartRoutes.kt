@@ -3,7 +3,7 @@ package com.piashcse.feature.cart
 import com.piashcse.model.request.CartRequest
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginationParameters
+import com.piashcse.utils.extension.paginateQueryParams
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -31,7 +31,7 @@ fun Route.cartRoutes(cartService: CartService) {
          * @description Retrieve all items in the authenticated user's cart
          */
         get {
-            val (limit, offset) = call.paginationParameters()
+            val (limit, offset) = call.paginateQueryParams()
             call.respond(
                 HttpStatusCode.OK,
                 cartService.getCartItems(call.currentUserId, limit, offset),

@@ -8,10 +8,9 @@ import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.getCurrentUserType
-import com.piashcse.utils.extension.paginationParameters
+import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -57,7 +56,7 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
             val orderId = call.requirePathParameter("orderId")
             val userId = call.currentUserId
             val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
-            val (limit, offset) = call.paginationParameters()
+            val (limit, offset) = call.paginateQueryParams()
 
             call.respond(HttpStatusCode.OK, refundRequestService.getRefundsByOrderId(orderId, userId, userType, limit, offset))
         }
@@ -108,7 +107,7 @@ fun Route.refundAdminRoutes(refundRequestService: RefundRequestService) {
         val orderId = call.requirePathParameter("orderId")
         val userId = call.currentUserId
         val userType = UserType.ADMIN
-        val (limit, offset) = call.paginationParameters()
+        val (limit, offset) = call.paginateQueryParams()
 
         call.respond(HttpStatusCode.OK, refundRequestService.getRefundsByOrderId(orderId, userId, userType, limit, offset))
     }
