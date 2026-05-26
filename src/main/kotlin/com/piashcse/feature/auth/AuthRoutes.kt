@@ -102,6 +102,13 @@ fun Route.authRoutes(authService: AuthService) {
         post("logout") {
             val userId = call.currentUserId
             val requestBody = call.receive<LogoutRequest>()
+            
+            val authHeader = call.request.headers[HttpHeaders.Authorization]
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                val token = authHeader.substring(7)
+                authService.blacklistToken(token)
+            }
+
             authService.logout(userId, requestBody.refreshToken)
             call.respond(HttpStatusCode.OK, mapOf("message" to "Logged out successfully"))
         }

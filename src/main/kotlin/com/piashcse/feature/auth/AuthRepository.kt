@@ -102,4 +102,9 @@ interface AuthRepository {
         currentUserId: String,
         targetUserId: String,
     ): Boolean
+
+    /**
+     * Blacklists an access token.
+     */
+    suspend fun blacklistToken(token: String): Boolean
 }

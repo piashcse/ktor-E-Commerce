@@ -32,9 +32,9 @@ object UploadService {
 
     // File size limits
     private const val MAX_PROFILE_SIZE = 5L * 1024 * 1024 // 5 MB
-    private const val MAX_PRODUCT_SIZE = 10L * 1024 * 1024 // 10 MB
-    private const val MAX_SHOP_SIZE = 10L * 1024 * 1024 // 10 MB
-    private const val MAX_REFUND_SIZE = 10L * 1024 * 1024 // 10 MB
+    private const val MAX_PRODUCT_SIZE = 5L * 1024 * 1024 // 5 MB
+    private const val MAX_SHOP_SIZE = 5L * 1024 * 1024 // 5 MB
+    private const val MAX_REFUND_SIZE = 5L * 1024 * 1024 // 5 MB
     private const val MAX_CATEGORY_SIZE = 5L * 1024 * 1024 // 5 MB
 
     // Allowed types
@@ -53,17 +53,17 @@ object UploadService {
     suspend fun uploadProfileImage(file: PartData.FileItem): String = upload(file, PROFILE_DIR, MAX_PROFILE_SIZE, "profile image")
 
     /**
-     * Uploads a product image (10MB limit).
+     * Uploads a product image (5MB limit).
      */
     suspend fun uploadProductImage(file: PartData.FileItem): String = upload(file, PRODUCT_DIR, MAX_PRODUCT_SIZE, "product image")
 
     /**
-     * Uploads a shop image (10MB limit).
+     * Uploads a shop image (5MB limit).
      */
     suspend fun uploadShopImage(file: PartData.FileItem): String = upload(file, SHOP_DIR, MAX_SHOP_SIZE, "shop image")
 
     /**
-     * Uploads a refund evidence image (10MB limit).
+     * Uploads a refund evidence image (5MB limit).
      */
     suspend fun uploadRefundImage(file: PartData.FileItem): String = upload(file, REFUND_DIR, MAX_REFUND_SIZE, "refund image")
 
@@ -71,6 +71,28 @@ object UploadService {
      * Uploads a category image (5MB limit).
      */
     suspend fun uploadCategoryImage(file: PartData.FileItem): String = upload(file, CATEGORY_DIR, MAX_CATEGORY_SIZE, "category image")
+
+    /**
+     * Checks if the magic bytes of the file match the given extension.
+     */
+    private fun isValidMagicBytes(bytes: ByteArray, extension: String): Boolean {
+        if (bytes.size < 4) return false
+        return when (extension) {
+            "jpg", "jpeg" -> {
+                bytes[0] == 0xFF.toByte() && bytes[1] == 0xD8.toByte() && bytes[2] == 0xFF.toByte()
+            }
+            "png" -> {
+                bytes[0] == 0x89.toByte() && bytes[1] == 0x50.toByte() && bytes[2] == 0x4E.toByte() && bytes[3] == 0x47.toByte()
+            }
+            "webp" -> {
+                bytes[0] == 'R'.code.toByte() && bytes[1] == 'I'.code.toByte() && bytes[2] == 'F'.code.toByte() && bytes[3] == 'F'.code.toByte()
+            }
+            "gif" -> {
+                bytes[0] == 'G'.code.toByte() && bytes[1] == 'I'.code.toByte() && bytes[2] == 'F'.code.toByte()
+            }
+            else -> false
+        }
+    }
 
     /**
      * Core upload logic with validation and security.
@@ -108,6 +130,11 @@ object UploadService {
             if (bytes.size > maxSize) {
                 val maxSizeMB = maxSize / (1024 * 1024)
                 throw ValidationException("File size exceeds ${maxSizeMB}MB limit for $purpose upload")
+            }
+
+            // Validate Magic Bytes signature
+            if (!isValidMagicBytes(bytes, extension)) {
+                throw ValidationException("Malicious file content detected or file format does not match $extension extension")
             }
 
             // Generate secure filename

@@ -25,7 +25,7 @@ class ShopCategoryService : ShopCategoryRepository {
     override suspend fun createCategory(name: String): ShopCategoryResponse =
         query {
             val isExistShopCategory =
-                ShopCategoryDAO.find { ShopCategoryTable.name eq name }.toList().singleOrNull()
+                ShopCategoryDAO.find { ShopCategoryTable.name eq name }.firstOrNull()
             isExistShopCategory?.let {
                 throw name.throwConflict("Category")
             } ?: ShopCategoryDAO.new {
@@ -63,7 +63,7 @@ class ShopCategoryService : ShopCategoryRepository {
     ): ShopCategoryResponse =
         query {
             val isShopCategoryExist =
-                ShopCategoryDAO.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
+                ShopCategoryDAO.findById(categoryId)
             isShopCategoryExist?.let {
                 it.name = name
                 it.response()
@@ -80,7 +80,7 @@ class ShopCategoryService : ShopCategoryRepository {
     override suspend fun deleteCategory(categoryId: String): String =
         query {
             val shopCategoryExist =
-                ShopCategoryDAO.find { ShopCategoryTable.id eq categoryId }.toList().singleOrNull()
+                ShopCategoryDAO.findById(categoryId)
             shopCategoryExist?.let {
                 it.delete()
                 categoryId

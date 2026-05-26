@@ -39,6 +39,7 @@ fun configureDataBase() {
             SellerTable,
             RefreshTokenTable,
             LoginAttemptTable,
+            BlacklistedTokenTable,
         )
     }
 }

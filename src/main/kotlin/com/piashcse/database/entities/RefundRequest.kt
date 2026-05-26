@@ -52,7 +52,7 @@ class RefundRequestDAO(id: EntityID<String>) : BaseEntity(id, RefundRequestTable
             trackingNumber = trackingNumber,
             requestedAt = requestedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             resolvedAt = resolvedAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-            createdAt = createdAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) ?: "",
+            createdAt = createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             updatedAt = updatedAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) ?: "",
         )
 }

@@ -31,15 +31,12 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
     override suspend fun addProductSubCategory(productSubCategory: ProductSubCategoryRequest): ProductSubCategoryResponse =
         query {
             val isCategoryIdExist =
-                ProductCategoryDAO.find { ProductCategoryTable.id eq productSubCategory.categoryId }.toList()
-                    .singleOrNull()
+                ProductCategoryDAO.findById(productSubCategory.categoryId)
             isCategoryIdExist?.let {
                 val isSubCategoryExist =
                     ProductSubCategoryDAO.find {
                         ProductSubCategoryTable.name eq productSubCategory.name
-                    }
-                        .toList()
-                        .singleOrNull()
+                    }.firstOrNull()
                 isSubCategoryExist?.let {
                     throw productSubCategory.name.throwConflict("Subcategory")
                 } ?: ProductSubCategoryDAO.new {
@@ -82,8 +79,7 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
     ): ProductSubCategoryResponse =
         query {
             val suCategoryExist =
-                ProductSubCategoryDAO.find { ProductSubCategoryTable.id eq id }
-                    .toList().singleOrNull()
+                ProductSubCategoryDAO.findById(id)
             suCategoryExist?.let {
                 it.name = name
                 it.response()
@@ -100,7 +96,7 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
     override suspend fun deleteProductSubCategory(subCategoryId: String): String =
         query {
             val isSubCategoryExist =
-                ProductSubCategoryDAO.find { ProductSubCategoryTable.id eq subCategoryId }.toList().singleOrNull()
+                ProductSubCategoryDAO.findById(subCategoryId)
             isSubCategoryExist?.let {
                 isSubCategoryExist.delete()
                 subCategoryId

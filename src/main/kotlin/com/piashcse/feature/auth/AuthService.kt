@@ -104,12 +104,12 @@ class AuthService(
             // Check if user exists with the same email and userType
             val existingUserSameType =
                 UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType eq userTypeEnum) }
-                    .singleOrNull()
+                    .firstOrNull()
 
             // Check if user exists with the same email but different userType
             val existingUserDifferentType =
                 UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType neq userTypeEnum) }
-                    .singleOrNull()
+                    .firstOrNull()
 
             val otp = generateOTP()
             val now = LocalDateTime.now().plusHours(24) // 24 hours otp expire time
@@ -223,7 +223,7 @@ class AuthService(
         userTypeEnum: UserType,
     ): UserDAO? =
         query {
-            UserDAO.find { UserTable.email eq email and (UserTable.userType eq userTypeEnum) }.singleOrNull()
+            UserDAO.find { UserTable.email eq email and (UserTable.userType eq userTypeEnum) }.firstOrNull()
         }
 
     private fun isPasswordValid(
@@ -278,7 +278,7 @@ class AuthService(
         otp: String,
     ): Boolean =
         query {
-            val userEntity = UserDAO.find { UserTable.id eq userId }.toList().singleOrNull()
+            val userEntity = UserDAO.findById(userId)
             userEntity?.let {
                 if (it.otpCode == otp) {
                     it.isVerified = true
@@ -302,7 +302,7 @@ class AuthService(
         changePassword: ChangePassword,
     ): Boolean =
         query {
-            val userEntity = UserDAO.find { UserTable.id eq userId }.toList().singleOrNull()
+            val userEntity = UserDAO.findById(userId)
             userEntity?.let {
                 if (BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), it.password).verified) {
                     // Check if new password is same as old password
@@ -441,7 +441,7 @@ class AuthService(
         newUserType: UserType,
     ) {
         if (newUserType == UserType.SELLER) {
-            val existingSeller = SellerDAO.find { SellerTable.userId eq user.id }.singleOrNull()
+            val existingSeller = SellerDAO.find { SellerTable.userId eq user.id }.firstOrNull()
             if (existingSeller == null) {
                 SellerDAO.new {
                     userId = user.id
@@ -461,12 +461,12 @@ class AuthService(
         query {
             // Get the current user making the change
             val currentUser =
-                UserDAO.find { UserTable.id eq currentUserId }.singleOrNull()
+                UserDAO.findById(currentUserId)
                     ?: throw NotFoundException(Message.Errors.NOT_FOUND)
 
             // Get the target user
             val targetUser =
-                UserDAO.find { UserTable.id eq targetUserId }.singleOrNull()
+                UserDAO.findById(targetUserId)
                     ?: throw NotFoundException(Message.Errors.NOT_FOUND)
 
             // Check if the current user has permission to deactivate this user
@@ -489,12 +489,12 @@ class AuthService(
         query {
             // Get the current user making the change
             val currentUser =
-                UserDAO.find { UserTable.id eq currentUserId }.singleOrNull()
+                UserDAO.findById(currentUserId)
                     ?: throw NotFoundException(Message.Errors.NOT_FOUND)
 
             // Get the target user
             val targetUser =
-                UserDAO.find { UserTable.id eq targetUserId }.singleOrNull()
+                UserDAO.findById(targetUserId)
                     ?: throw NotFoundException(Message.Errors.NOT_FOUND)
 
             // Check if the current user has permission to activate this user
@@ -546,5 +546,16 @@ class AuthService(
             refreshTokenRepository.revokeAllUserTokens(userId)
         }
         return true
+    }
+
+    override suspend fun blacklistToken(token: String): Boolean = query {
+        val existing = BlacklistedTokenDAO.find { BlacklistedTokenTable.token eq token }.firstOrNull()
+        if (existing == null) {
+            BlacklistedTokenDAO.new {
+                this.token = token
+                this.blacklistedAt = Instant.now()
+            }
+        }
+        true
     }
 }

@@ -455,11 +455,11 @@ Ensure API endpoints respond instantly by processing heavy operations on backgro
 - [ ] 4.5 Export system performance indicators via prometheus/metrics route
 
 ### Phase 5: Security Hardening & Resource Isolation
-- [ ] 5.1 Eliminate fallback variables and require explicit environment secrets
-- [ ] 5.2 Reduce token validity window to 15 minutes and add dynamic audience checks
-- [ ] 5.3 Implement standard JWT blacklisting on user logouts
-- [ ] 5.4 Install size checks and magic bytes verification filters for media uploads
-- [ ] 5.5 Enforce strict resource ownership validation checks inside the service layer
+- [x] 5.1 Eliminate fallback variables and require explicit environment secrets
+- [x] 5.2 Reduce token validity window to 15 minutes and add dynamic audience checks
+- [x] 5.3 Implement standard JWT blacklisting on user logouts
+- [x] 5.4 Install size checks and magic bytes verification filters for media uploads
+- [x] 5.5 Enforce strict resource ownership validation checks inside the service layer
 
 ### Phase 6: Automated Testing Suite
 - [ ] 6.1 Integration test framework setup with Testcontainers running real Postgres

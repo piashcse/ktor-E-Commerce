@@ -77,9 +77,9 @@ class CartService : CartRepository {
         query {
             CartItemTable.selectAll().andWhere { CartItemTable.userId eq userId }
                 .toPaginatedResponse(limit, offset) {
-                    CartItemDAO.wrapRow(it).response(
-                        ProductDAO.find { ProductTable.id eq it[CartItemTable.productId] }.first().response(),
-                    )
+                    val productId = it[CartItemTable.productId].value
+                    val product = ProductDAO.findById(productId) ?: productId.throwNotFound("Product")
+                    CartItemDAO.wrapRow(it).response(product.response())
                 }
         }
 
