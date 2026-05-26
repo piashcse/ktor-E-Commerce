@@ -1,9 +1,8 @@
 package com.piashcse.feature.inventory
 
 import com.piashcse.model.request.InventoryRequest
-import com.piashcse.utils.extension.paginationParameters
+import com.piashcse.utils.extension.paginateQueryParams
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -59,7 +58,7 @@ fun Route.inventorySellerRoutes(inventoryService: InventoryService) {
      */
     get("/shop/{shopId}") {
         val shopId = call.requirePathParameter("shopId")
-        val (limit, offset) = call.paginationParameters()
+        val (limit, offset) = call.paginateQueryParams()
         call.respond(
             HttpStatusCode.OK,
             inventoryService.getInventoryByShop(shopId, limit, offset),
@@ -71,7 +70,7 @@ fun Route.inventorySellerRoutes(inventoryService: InventoryService) {
      * @description Seller: Retrieve items with stock below a threshold
      */
     get("/low-stock") {
-        val (limit, offset) = call.paginationParameters()
+        val (limit, offset) = call.paginateQueryParams()
         call.respond(
             HttpStatusCode.OK,
             inventoryService.getLowStockProducts(limit, offset),

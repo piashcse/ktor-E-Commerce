@@ -7,7 +7,7 @@ import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginationParameters
+import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.validator.InvalidEnumValueException
 import com.piashcse.utils.validator.NotFoundException
 import io.ktor.http.*
@@ -35,10 +35,10 @@ fun Route.shopRoutes(shopService: ShopService) {
          * @description Retrieve public shops with filters
          */
         get("/public") {
-            val (limit, offset) = call.paginationParameters()
+            val (limit, offset) = call.paginateQueryParams()
             call.respond(
                 HttpStatusCode.OK,
-                shopService.getShops(call.parameters["status"], call.parameters["category"], limit, offset),
+                shopService.getShops(call.request.queryParameters["status"], call.request.queryParameters["category"], limit, offset),
             )
         }
 
@@ -48,7 +48,7 @@ fun Route.shopRoutes(shopService: ShopService) {
          */
         get("/category/{categoryId}") {
             val categoryId = call.requirePathParameter("categoryId")
-            val (limit, offset) = call.paginationParameters()
+            val (limit, offset) = call.paginateQueryParams()
             call.respond(HttpStatusCode.OK, shopService.getShopsByCategory(categoryId, limit, offset))
         }
 
@@ -57,7 +57,7 @@ fun Route.shopRoutes(shopService: ShopService) {
          * @description Retrieve featured shops
          */
         get("/featured") {
-            val (limit, offset) = call.paginationParameters()
+            val (limit, offset) = call.paginateQueryParams()
             call.respond(HttpStatusCode.OK, shopService.getFeaturedShops(limit, offset))
         }
     }
@@ -81,7 +81,7 @@ fun Route.shopSellerRoutesV1(shopService: ShopService) {
      * @description Seller: Retrieve owned shops
      */
     get {
-        val (limit, offset) = call.paginationParameters()
+        val (limit, offset) = call.paginateQueryParams()
         call.respond(HttpStatusCode.OK, shopService.getShopsByUser(call.currentUserId, limit, offset))
     }
 
@@ -141,7 +141,7 @@ fun Route.shopAdminRoutes(shopService: ShopService) {
                     invalidValue = statusParam,
                 )
             }
-        val (limit, offset) = call.paginationParameters()
+        val (limit, offset) = call.paginateQueryParams()
         call.respond(HttpStatusCode.OK, shopService.getShopsByStatus(status, limit, offset))
     }
 

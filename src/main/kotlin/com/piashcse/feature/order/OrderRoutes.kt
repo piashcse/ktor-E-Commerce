@@ -7,7 +7,7 @@ import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.getCurrentUserType
-import com.piashcse.utils.extension.paginationParameters
+import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.validator.InvalidEnumValueException
 import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.http.*
@@ -27,7 +27,7 @@ fun Route.orderRoutes(orderService: OrderService) {
          * @description Retrieve all orders for the authenticated customer
          */
         get {
-            val (limit, offset) = call.paginationParameters()
+            val (limit, offset) = call.paginateQueryParams()
             call.respond(HttpStatusCode.OK, orderService.getOrders(call.currentUserId, limit, offset))
         }
     }
@@ -94,8 +94,8 @@ fun Route.orderSellerRoutes(orderService: OrderService) {
      * @description Seller: Retrieve orders for the seller's shop
      */
     get {
-        val (limit, offset) = call.paginationParameters()
-        val status = call.parameters["status"]
+        val (limit, offset) = call.paginateQueryParams()
+        val status = call.request.queryParameters["status"]
         call.respond(HttpStatusCode.OK, orderService.getSellerOrders(call.currentUserId, limit, offset, status))
     }
 }
@@ -146,14 +146,14 @@ fun Route.orderAdminRoutes(orderService: OrderService) {
      * @description Admin: Retrieve all orders with advanced filtering
      */
     get {
-        val (limit, offset) = call.paginationParameters()
-        val status = call.parameters["status"]
+        val (limit, offset) = call.paginateQueryParams()
+        val status = call.request.queryParameters["status"]
         val startDate =
-            call.parameters["startDate"]?.let {
+            call.request.queryParameters["startDate"]?.let {
                 runCatching { java.time.Instant.parse(it) }.getOrNull()
             }
         val endDate =
-            call.parameters["endDate"]?.let {
+            call.request.queryParameters["endDate"]?.let {
                 runCatching { java.time.Instant.parse(it) }.getOrNull()
             }
 

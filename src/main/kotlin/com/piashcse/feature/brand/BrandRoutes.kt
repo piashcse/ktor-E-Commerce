@@ -3,7 +3,7 @@ package com.piashcse.feature.brand
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.BrandRequest
 import com.piashcse.plugin.requireRole
-import com.piashcse.utils.extension.paginationParameters
+import com.piashcse.utils.extension.paginateQueryParams
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -19,7 +19,7 @@ fun Route.brandRoutes(brandService: BrandService) {
          * @description Retrieve a paginated list of all brands
          */
         get {
-            val (limit, offset) = call.paginationParameters()
+            val (limit, offset) = call.paginateQueryParams()
             call.respond(
                 HttpStatusCode.OK,
                 brandService.getBrands(limit, offset),

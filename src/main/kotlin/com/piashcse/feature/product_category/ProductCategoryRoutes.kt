@@ -1,6 +1,6 @@
 package com.piashcse.feature.product_category
 
-import com.piashcse.utils.extension.paginationParameters
+import com.piashcse.utils.extension.paginateQueryParams
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -15,7 +15,7 @@ fun Route.productCategoryRoutes(productCategoryService: ProductCategoryService) 
      * @description Retrieve a paginated list of all product categories
      */
     get {
-        val (limit, offset) = call.paginationParameters()
+        val (limit, offset) = call.paginateQueryParams()
         call.respond(
             HttpStatusCode.OK,
             productCategoryService.getCategories(limit, offset),

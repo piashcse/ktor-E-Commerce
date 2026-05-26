@@ -3,7 +3,7 @@ package com.piashcse.feature.wishlist
 import com.piashcse.model.request.WishListRequest
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginationParameters
+import com.piashcse.utils.extension.paginateQueryParams
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -32,7 +32,7 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
          * @description Retrieve all items in the user's wishlist
          */
         get {
-            val (limit, offset) = call.paginationParameters()
+            val (limit, offset) = call.paginateQueryParams()
             call.respond(
                 HttpStatusCode.OK,
                 wishlistService.getWishList(call.currentUserId, limit, offset),

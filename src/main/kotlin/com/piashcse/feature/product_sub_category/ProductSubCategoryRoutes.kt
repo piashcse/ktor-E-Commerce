@@ -1,7 +1,7 @@
 package com.piashcse.feature.product_sub_category
 
 import com.piashcse.model.request.ProductSubCategoryRequest
-import com.piashcse.utils.extension.paginationParameters
+import com.piashcse.utils.extension.paginateQueryParams
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -17,7 +17,7 @@ fun Route.productSubCategoryRoutes(subCategoryService: ProductSubCategoryService
      */
     get {
         val categoryId = call.requireQueryParameter("categoryId")
-        val (limit, offset) = call.paginationParameters()
+        val (limit, offset) = call.paginateQueryParams()
         call.respond(
             HttpStatusCode.OK,
             subCategoryService.getProductSubCategory(categoryId, limit, offset),
