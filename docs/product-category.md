@@ -16,10 +16,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/admin/product-category` | Create a new product category | Yes (Admin) |
+| `POST` | `/api/v1/admin/product-categories` | Create a new product category | Yes (Admin) |
 | `GET` | `/product-category` | Retrieve list of product categories | Yes |
-| `PUT` | `/api/v1/admin/product-category/{id}` | Update an existing product category | Yes (Admin) |
-| `DELETE` | `/api/v1/admin/product-category/{id}` | Delete a product category | Yes (Admin) |
+| `PUT` | `/api/v1/admin/product-categories/{id}` | Update an existing product category | Yes (Admin) |
+| `DELETE` | `/api/v1/admin/product-categories/{id}` | Delete a product category | Yes (Admin) |
 
 ---
 
@@ -27,7 +27,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Product Category
 
-**`POST /api/v1/admin/product-category`**
+**`POST /api/v1/admin/product-categories`**
 
 Create a new product category with a specified name. The category will be created with an empty sub-categories array.
 
@@ -47,7 +47,7 @@ Create a new product category with a specified name. The category will be create
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/product-category?categoryName=Kids' \
+  'http://localhost:8080/api/v1/admin/product-categories?categoryName=Kids' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -d ''
@@ -97,7 +97,7 @@ Retrieve a list of product categories with optional pagination support.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/product-category?limit=10' \
+  'http://localhost:8080/api/v1/product-categories?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -139,7 +139,7 @@ curl -X 'GET' \
 
 ### 3. Update Product Category
 
-**`PUT /api/v1/admin/product-category/{id}`**
+**`PUT /api/v1/admin/product-categories/{id}`**
 
 Update an existing product category by its ID. You can modify the category name.
 
@@ -165,7 +165,7 @@ Update an existing product category by its ID. You can modify the category name.
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/product-category/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0' \
+  'http://localhost:8080/api/v1/admin/product-categories/b8ccc13f-e118-4540-8e9e-5eaa8028cb4f?name=Education%203.0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -193,7 +193,7 @@ curl -X 'PUT' \
 
 ### 4. Delete Product Category
 
-**`DELETE /api/v1/admin/product-category/{id}`**
+**`DELETE /api/v1/admin/product-categories/{id}`**
 
 Delete a product category by its ID. This operation permanently removes the category from the system.
 
@@ -213,7 +213,7 @@ Delete a product category by its ID. This operation permanently removes the cate
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/product-category/75b44e08-2c94-438f-b500-b204c7c90cca' \
+  'http://localhost:8080/api/v1/admin/product-categories/75b44e08-2c94-438f-b500-b204c7c90cca' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```

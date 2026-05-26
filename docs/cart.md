@@ -50,7 +50,7 @@ Add a product to the user's shopping cart with specified quantity. If the produc
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
+  'http://localhost:8080/api/v1/carts?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -d ''
@@ -96,7 +96,7 @@ Retrieve all items in the user's shopping cart with detailed product information
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/cart?limit=10' \
+  'http://localhost:8080/api/v1/carts?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -173,7 +173,7 @@ Update the quantity of a specific product in the user's cart. This operation set
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
+  'http://localhost:8080/api/v1/carts?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -234,7 +234,7 @@ Remove a specific product from the user's cart completely, regardless of quantit
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/cart?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
+  'http://localhost:8080/api/v1/carts?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -290,7 +290,7 @@ Remove all items from the user's cart, effectively clearing the entire shopping 
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/cart/all' \
+  'http://localhost:8080/api/v1/carts/all' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -327,7 +327,7 @@ Retrieve a summary of the user's cart including all items with product details, 
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/cart/summary' \
+  'http://localhost:8080/api/v1/carts/summary' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```

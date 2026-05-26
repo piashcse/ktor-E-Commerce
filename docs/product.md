@@ -16,19 +16,19 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/seller/product` | Create a new product (Seller) | Yes (Seller) |
-| `PUT` | `/api/v1/seller/product/{id}` | Update an existing product (Seller) | Yes (Seller) |
-| `DELETE` | `/api/v1/seller/product/{id}` | Delete a product (Seller) | Yes (Seller) |
-| `GET` | `/api/v1/seller/product` | Retrieve products belonging to seller | Yes (Seller) |
-| `POST` | `/api/v1/seller/product/image-upload` | Upload product image (Seller) | Yes (Seller) |
-| `GET` | `/api/v1/product/{id}` | Retrieve a specific product | No |
-| `GET` | `/api/v1/product/search` | Search products with filters | No |
-| `GET` | `/api/v1/product/featured` | Retrieve featured products | No |
-| `GET` | `/api/v1/product/best-selling` | Retrieve best selling products | No |
-| `GET` | `/api/v1/product/hot-deals` | Retrieve products on hot deals | No |
-| `POST` | `/api/v1/admin/product` | Create a new product (Admin) | Yes (Admin) |
-| `PUT` | `/api/v1/admin/product/{id}` | Update an existing product (Admin) | Yes (Admin) |
-| `DELETE` | `/api/v1/admin/product/{id}` | Delete a product (Admin) | Yes (Admin) |
+| `POST` | `/api/v1/seller/products` | Create a new product (Seller) | Yes (Seller) |
+| `PUT` | `/api/v1/seller/products/{id}` | Update an existing product (Seller) | Yes (Seller) |
+| `DELETE` | `/api/v1/seller/products/{id}` | Delete a product (Seller) | Yes (Seller) |
+| `GET` | `/api/v1/seller/products` | Retrieve products belonging to seller | Yes (Seller) |
+| `POST` | `/api/v1/seller/products/image-upload` | Upload product image (Seller) | Yes (Seller) |
+| `GET` | `/api/v1/products/{id}` | Retrieve a specific product | No |
+| `GET` | `/api/v1/products/search` | Search products with filters | No |
+| `GET` | `/api/v1/products/featured` | Retrieve featured products | No |
+| `GET` | `/api/v1/products/best-selling` | Retrieve best selling products | No |
+| `GET` | `/api/v1/products/hot-deals` | Retrieve products on hot deals | No |
+| `POST` | `/api/v1/admin/products` | Create a new product (Admin) | Yes (Admin) |
+| `PUT` | `/api/v1/admin/products/{id}` | Update an existing product (Admin) | Yes (Admin) |
+| `DELETE` | `/api/v1/admin/products/{id}` | Delete a product (Admin) | Yes (Admin) |
 
 ---
 
@@ -36,7 +36,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Product (Seller)
 
-**`POST /api/v1/seller/product`**
+**`POST /api/v1/seller/products`**
 
 Create a new product as a seller. The product will be automatically associated with your shop.
 
@@ -44,7 +44,7 @@ Create a new product as a seller. The product will be automatically associated w
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/seller/product' \
+  'http://localhost:8080/api/v1/seller/products' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller_token>' \
   -H 'Content-Type: application/json' \
@@ -74,7 +74,7 @@ curl -X 'POST' \
 
 ### 2. Search Products
 
-**`GET /api/v1/product/search`**
+**`GET /api/v1/products/search`**
 
 Search for products using various filters. This is a public endpoint.
 
@@ -96,7 +96,7 @@ Search for products using various filters. This is a public endpoint.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/product?limit=10&sortBy=price&sortOrder=asc' \
+  'http://localhost:8080/api/v1/products?limit=10&sortBy=price&sortOrder=asc' \
   -H 'accept: application/json'
 ```
 
@@ -104,7 +104,7 @@ curl -X 'GET' \
 
 ### 3. Get Seller Products
 
-**`GET /api/v1/seller/product`**
+**`GET /api/v1/seller/products`**
 
 Retrieve all products belonging to the authenticated seller.
 
@@ -112,7 +112,7 @@ Retrieve all products belonging to the authenticated seller.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/seller/product?limit=10' \
+  'http://localhost:8080/api/v1/seller/products?limit=10' \
   -H 'Authorization: Bearer <seller_token>'
 ```
 
@@ -120,7 +120,7 @@ curl -X 'GET' \
 
 ### 4. Upload Product Image
 
-**`POST /api/v1/seller/product/image-upload`**
+**`POST /api/v1/seller/products/image-upload`**
 
 Upload an image for a specific product.
 
@@ -128,7 +128,7 @@ Upload an image for a specific product.
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/seller/product/image-upload?id=718f0b9a-24ef-450f-9126-7d3d9b27cad5' \
+  'http://localhost:8080/api/v1/seller/products/image-upload?id=718f0b9a-24ef-450f-9126-7d3d9b27cad5' \
   -H 'Authorization: Bearer <seller_token>' \
   -H 'Content-Type: multipart/form-data' \
   -F 'file=@product_watch.png;type=image/png'

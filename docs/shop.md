@@ -16,24 +16,24 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/seller/shop` | Create a new shop | Yes (Seller) |
-| `GET` | `/api/v1/seller/shop` | Retrieve list of owned shops | Yes (Seller) |
-| `PUT` | `/api/v1/seller/shop/{id}` | Update an existing shop | Yes (Seller) |
-| `GET` | `/api/v1/shop/{id}` | Retrieve detailed info about a specific shop | No |
-| `GET` | `/api/v1/shop/public` | Retrieve list of public shops with filters | No |
-| `GET` | `/api/v1/shop/category/{categoryId}` | Retrieve shops by category | No |
-| `GET` | `/api/v1/shop/featured` | Retrieve featured shops | No |
-| `GET` | `/api/v1/admin/shop/status` | Retrieve shops by status | Yes (Admin) |
-| `PUT` | `/api/v1/admin/shop/approve/{id}` | Approve a shop | Yes (Admin) |
-| `PUT` | `/api/v1/admin/shop/reject/{id}` | Reject a shop | Yes (Admin) |
-| `PUT` | `/api/v1/admin/shop/suspend/{id}` | Suspend a shop | Yes (Admin) |
-| `PUT` | `/api/v1/admin/shop/activate/{id}` | Activate a shop | Yes (Admin) |
+| `POST` | `/api/v1/seller/shops` | Create a new shop | Yes (Seller) |
+| `GET` | `/api/v1/seller/shops` | Retrieve list of owned shops | Yes (Seller) |
+| `PUT` | `/api/v1/seller/shops/{id}` | Update an existing shop | Yes (Seller) |
+| `GET` | `/api/v1/shops/{id}` | Retrieve detailed info about a specific shop | No |
+| `GET` | `/api/v1/shops/public` | Retrieve list of public shops with filters | No |
+| `GET` | `/api/v1/shops/category/{categoryId}` | Retrieve shops by category | No |
+| `GET` | `/api/v1/shops/featured` | Retrieve featured shops | No |
+| `GET` | `/api/v1/admin/shops/status` | Retrieve shops by status | Yes (Admin) |
+| `PUT` | `/api/v1/admin/shops/approve/{id}` | Approve a shop | Yes (Admin) |
+| `PUT` | `/api/v1/admin/shops/reject/{id}` | Reject a shop | Yes (Admin) |
+| `PUT` | `/api/v1/admin/shops/suspend/{id}` | Suspend a shop | Yes (Admin) |
+| `PUT` | `/api/v1/admin/shops/activate/{id}` | Activate a shop | Yes (Admin) |
 
 ### Shop Endpoints (V2)
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `PUT` | `/api/v2/seller/shop/{shopId}` | Optimized shop update with source tracking | Yes (Seller) |
+| `PUT` | `/api/v2/seller/shops/{shopId}` | Optimized shop update with source tracking | Yes (Seller) |
 
 ---
 
@@ -41,7 +41,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Shop (V1)
 
-**`POST /api/v1/seller/shop`**
+**`POST /api/v1/seller/shops`**
 
 Create a new shop with a specified name and category. The shop will be associated with the authenticated seller.
 
@@ -63,7 +63,7 @@ Create a new shop with a specified name and category. The shop will be associate
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/seller/shop' \
+  'http://localhost:8080/api/v1/seller/shops' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -86,7 +86,7 @@ curl -X 'POST' \
 
 ### 2. Update Shop (V2 Optimized)
 
-**`PUT /api/v2/seller/shop/{shopId}`**
+**`PUT /api/v2/seller/shops/{shopId}`**
 
 Update an existing shop with enhanced metadata and a cleaner response structure.
 
@@ -113,7 +113,7 @@ Update an existing shop with enhanced metadata and a cleaner response structure.
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v2/seller/shop/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?source=mobile_app' \
+  'http://localhost:8080/api/v2/seller/shops/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?source=mobile_app' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -139,7 +139,7 @@ curl -X 'PUT' \
 
 ### 3. Get Public Shops (V1)
 
-**`GET /api/v1/shop/public`**
+**`GET /api/v1/shops/public`**
 
 Retrieve a list of public shops with optional status and category filters.
 
@@ -156,7 +156,7 @@ Retrieve a list of public shops with optional status and category filters.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/shop/public?status=APPROVED&limit=10' \
+  'http://localhost:8080/api/v1/shops/public?status=APPROVED&limit=10' \
   -H 'accept: application/json'
 ```
 
@@ -183,7 +183,7 @@ curl -X 'GET' \
 
 ### 4. Admin Shop Approval
 
-**`PUT /api/v1/admin/shop/approve/{id}`**
+**`PUT /api/v1/admin/shops/approve/{id}`**
 
 Approve a pending shop application (Admin only).
 
@@ -191,7 +191,7 @@ Approve a pending shop application (Admin only).
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
+  'http://localhost:8080/api/v1/admin/shops/approve/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7' \
   -H 'Authorization: Bearer <admin_token>'
 ```
 

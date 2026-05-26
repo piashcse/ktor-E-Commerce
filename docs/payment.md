@@ -50,7 +50,7 @@ Create a new payment for an existing order. The payment will be associated with 
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/payment' \
+  'http://localhost:8080/api/v1/payments' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -110,7 +110,7 @@ Retrieve a list of payments associated with the authenticated user.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/payment?limit=10' \
+  'http://localhost:8080/api/v1/payments?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -165,7 +165,7 @@ Retrieve details of a specific payment by its ID.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/payment/4b68917d-4452-4d18-9012-47e843f05c15' \
+  'http://localhost:8080/api/v1/payments/4b68917d-4452-4d18-9012-47e843f05c15' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -217,7 +217,7 @@ Retrieve all payments associated with a specific order. This is useful for track
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/payment/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7' \
+  'http://localhost:8080/api/v1/payments/order/7e49b2a1-fa0c-4aac-b996-91f2411f14b7' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```

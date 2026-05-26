@@ -16,10 +16,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/admin/shop-category` | Create a new shop category | Yes (Admin) |
-| `GET` | `/api/v1/admin/shop-category` | Retrieve list of shop categories | Yes (Admin) |
-| `PUT` | `/api/v1/admin/shop-category/{id}` | Update an existing shop category | Yes (Admin) |
-| `DELETE` | `/api/v1/admin/shop-category/{id}` | Delete a shop category | Yes (Admin) |
+| `POST` | `/api/v1/admin/shop-categories` | Create a new shop category | Yes (Admin) |
+| `GET` | `/api/v1/admin/shop-categories` | Retrieve list of shop categories | Yes (Admin) |
+| `PUT` | `/api/v1/admin/shop-categories/{id}` | Update an existing shop category | Yes (Admin) |
+| `DELETE` | `/api/v1/admin/shop-categories/{id}` | Delete a shop category | Yes (Admin) |
 
 ---
 
@@ -27,7 +27,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Shop Category
 
-**`POST /api/v1/admin/shop-category`**
+**`POST /api/v1/admin/shop-categories`**
 
 Create a new shop category. This endpoint allows administrators to add new categories for organizing shops.
 
@@ -48,7 +48,7 @@ Create a new shop category. This endpoint allows administrators to add new categ
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/shop-category' \
+  'http://localhost:8080/api/v1/admin/shop-categories' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -78,7 +78,7 @@ curl -X 'POST' \
 
 ### 2. Get Shop Categories
 
-**`GET /api/v1/admin/shop-category`**
+**`GET /api/v1/admin/shop-categories`**
 
 Retrieve a list of shop categories with optional pagination support.
 
@@ -99,7 +99,7 @@ Retrieve a list of shop categories with optional pagination support.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/shop-category?limit=10' \
+  'http://localhost:8080/api/v1/admin/shop-categories?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -142,7 +142,7 @@ curl -X 'GET' \
 
 ### 3. Update Shop Category
 
-**`PUT /api/v1/admin/shop-category/{id}`**
+**`PUT /api/v1/admin/shop-categories/{id}`**
 
 Update an existing shop category by its ID.
 
@@ -168,7 +168,7 @@ Update an existing shop category by its ID.
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop' \
+  'http://localhost:8080/api/v1/admin/shop-categories/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -194,7 +194,7 @@ curl -X 'PUT' \
 
 ### 4. Delete Shop Category
 
-**`DELETE /api/v1/admin/shop-category/{id}`**
+**`DELETE /api/v1/admin/shop-categories/{id}`**
 
 Delete a shop category by its ID. This operation permanently removes the category from the system.
 
@@ -214,7 +214,7 @@ Delete a shop category by its ID. This operation permanently removes the categor
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741' \
+  'http://localhost:8080/api/v1/admin/shop-categories/9c95c44c-3767-4ca2-9486-e28e390b3741' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
