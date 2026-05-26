@@ -13,7 +13,6 @@ fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService
      */
     post {
         val requestBody = call.receive<ShippingMethodRequest>()
-        requestBody.validation()
         call.respond(
             HttpStatusCode.Created,
             shippingMethodService.createShippingMethod(requestBody),
@@ -27,7 +26,6 @@ fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService
     put("/{id}") {
         val id = call.requirePathParameter("id")
         val requestBody = call.receive<ShippingMethodRequest>()
-        requestBody.validation()
         call.respond(
             HttpStatusCode.OK,
             shippingMethodService.updateShippingMethod(id, requestBody),

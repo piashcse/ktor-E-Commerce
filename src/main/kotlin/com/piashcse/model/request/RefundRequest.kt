@@ -11,7 +11,7 @@ data class RefundRequestRequest(
     val reason: String,
     val images: String? = null,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(RefundRequestRequest::orderItemId).isNotNull().isNotEmpty()
             validate(RefundRequestRequest::reason).isNotNull().isNotEmpty()
@@ -25,7 +25,7 @@ data class UpdateRefundStatusRequest(
     val refundAmount: Double? = null,
     val refundMethod: String? = null,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(UpdateRefundStatusRequest::status).isNotNull().isNotEmpty()
         }
@@ -36,7 +36,7 @@ data class UpdateRefundStatusRequest(
 data class ShipRefundRequest(
     val trackingNumber: String,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(ShipRefundRequest::trackingNumber).isNotNull().isNotEmpty()
         }

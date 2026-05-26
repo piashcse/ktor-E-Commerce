@@ -10,7 +10,7 @@ data class ProductSubCategoryRequest(
     val categoryId: String,
     val name: String,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(ProductSubCategoryRequest::categoryId).isNotNull().isNotEmpty()
             validate(ProductSubCategoryRequest::name).isNotNull().isNotEmpty()

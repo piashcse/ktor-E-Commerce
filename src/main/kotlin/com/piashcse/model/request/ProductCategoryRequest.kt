@@ -7,7 +7,7 @@ import org.valiktor.validate
 
 @Serializable
 data class ProductCategoryRequest(val name: String) {
-    fun validation() {
+    init {
         validate(this) {
             validate(ProductCategoryRequest::name).isNotNull().isNotEmpty()
         }

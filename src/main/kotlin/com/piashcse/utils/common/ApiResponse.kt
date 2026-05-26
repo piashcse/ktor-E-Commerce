@@ -3,6 +3,8 @@ package com.piashcse.utils.common
 import com.piashcse.utils.validator.AppException
 import io.ktor.http.*
 
+import kotlinx.serialization.Serializable
+
 /**
  * Industry-standard API error response (used ONLY for errors).
  *
@@ -10,6 +12,7 @@ import io.ktor.http.*
  * - Success: Return data directly (NO wrapper)
  * - Error: Return ApiError with message (and errors array for validation)
  */
+@Serializable
 data class ApiError(
     val message: String,
     val errors: List<FieldError>? = null,
@@ -18,6 +21,7 @@ data class ApiError(
 /**
  * Structured field-level validation error (only for validation failures).
  */
+@Serializable
 data class FieldError(
     val field: String,
     val message: String,

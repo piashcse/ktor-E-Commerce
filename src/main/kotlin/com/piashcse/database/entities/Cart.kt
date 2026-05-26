@@ -5,6 +5,7 @@ import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.ProductResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import kotlinx.serialization.Serializable
 
 object CartItemTable : BaseIdTable("cart_item") {
     val userId = reference("user_id", UserTable.id)
@@ -22,6 +23,7 @@ class CartItemDAO(id: EntityID<String>) : BaseEntity(id, CartItemTable) {
     fun response(product: ProductResponse? = null) = Cart(productId.value, quantity, product)
 }
 
+@Serializable
 data class Cart(
     val productId: String,
     val quantity: Int,

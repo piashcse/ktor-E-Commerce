@@ -5,6 +5,7 @@ import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.ProductResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import kotlinx.serialization.Serializable
 
 object WishListTable : BaseIdTable("wishlist") {
     val userId = reference("user_id", UserTable.id)
@@ -20,4 +21,5 @@ class WishListDAO(id: EntityID<String>) : BaseEntity(id, WishListTable) {
     fun response(product: ProductResponse? = null) = WishList(product)
 }
 
+@Serializable
 data class WishList(val product: ProductResponse? = null)

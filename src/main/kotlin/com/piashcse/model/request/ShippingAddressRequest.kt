@@ -19,7 +19,7 @@ data class ShippingAddressRequest(
     val zipCode: String,
     val isDefault: Boolean = false,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(ShippingAddressRequest::firstName).isNotNull().isNotEmpty()
             validate(ShippingAddressRequest::lastName).isNotNull().isNotEmpty()

@@ -30,8 +30,6 @@ class PaymentService : PaymentRepository {
      */
     override suspend fun createPayment(paymentRequest: PaymentRequest): PaymentResponse =
         query {
-            paymentRequest.validation()
-
             val order =
                 OrderDAO.findById(paymentRequest.orderId)
                     ?: return@query paymentRequest.orderId.throwNotFound("Order")

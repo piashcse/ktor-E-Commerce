@@ -1,18 +1,55 @@
 package com.piashcse.plugin
 
-import com.google.gson.JsonSerializer
 import com.piashcse.config.DotEnvConfig
 import io.ktor.http.*
-import io.ktor.serialization.gson.*
+import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.request.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.contextual
 import org.slf4j.event.Level
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+
+object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
+    private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+        encoder.encodeString(value.format(formatter))
+    }
+
+    override fun deserialize(decoder: Decoder): LocalDateTime {
+        return LocalDateTime.parse(decoder.decodeString(), formatter)
+    }
+}
+
+object BigDecimalSerializer : KSerializer<BigDecimal> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("BigDecimal", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: BigDecimal) {
+        encoder.encodeString(value.toPlainString())
+    }
+
+    override fun deserialize(decoder: Decoder): BigDecimal {
+        return BigDecimal(decoder.decodeString())
+    }
+}
 
 fun Application.configureBasic() {
     configureCORS()
@@ -56,22 +93,22 @@ private fun Application.configureCORS() {
 
 private fun Application.configureContentNegotiation() {
     install(ContentNegotiation) {
-        gson {
-            setPrettyPrinting()
-            registerTypeAdapter(
-                LocalDateTime::class.java,
-                JsonSerializer<LocalDateTime> { localDateTime, _, _ ->
-                    com.google.gson.JsonPrimitive(localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-                },
-            )
-            // serializeNulls()
-        }
+        json(Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+            prettyPrint = true
+            serializersModule = SerializersModule {
+                contextual(LocalDateTimeSerializer)
+                contextual(BigDecimalSerializer)
+            }
+        })
     }
 }
 
 private fun Application.configureCallLogging() {
     val httpStatusSuccess = 300
     val httpStatusRedirect = 400
+    val sensitiveKeys = setOf("password", "token", "otp", "secret", "authorization")
 
     install(CallLogging) {
         level = Level.INFO
@@ -81,10 +118,10 @@ private fun Application.configureCallLogging() {
             val httpMethod = call.request.httpMethod.value
             val userAgent = call.request.headers["User-Agent"]
             val path = call.request.path()
-            val queryParams =
-                call.request.queryParameters
-                    .entries()
-                    .joinToString(", ") { "${it.key}=${it.value}" }
+            val queryParams = call.request.queryParameters.entries()
+                .joinToString(", ") { (key, values) ->
+                    if (key.lowercase() in sensitiveKeys) "$key=[REDACTED]" else "$key=${values.joinToString()}"
+                }
             val duration = call.processingTimeMillis()
             val remoteHost = call.request.origin.remoteHost
             val coloredStatus =

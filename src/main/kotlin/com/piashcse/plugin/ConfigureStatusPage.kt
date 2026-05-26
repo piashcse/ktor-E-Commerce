@@ -3,8 +3,6 @@ package com.piashcse.plugin
 import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.common.FieldError
 import com.piashcse.utils.validator.AppException
-import com.piashcse.utils.validator.InvalidEnumValueException
-import com.piashcse.utils.validator.MissingParameterException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
@@ -12,68 +10,75 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import org.valiktor.ConstraintViolationException
 import org.valiktor.i18n.mapToMessage
-import java.util.*
+import java.util.Locale
 
 /**
- * Global exception handler — Industry-standard (Stripe/GitHub/OpenAI).
+ * Helper to find the first [ConstraintViolationException] in the cause chain.
+ */
+private fun Throwable.firstConstraintViolation(): ConstraintViolationException? =
+    generateSequence(this) { it.cause }.filterIsInstance<ConstraintViolationException>().firstOrNull()
+
+/**
+ * Centralised response builder for validation errors.
+ */
+private suspend fun ApplicationCall.respondValidationError(exception: ConstraintViolationException) {
+    val fieldErrors = exception.constraintViolations
+        .mapToMessage(baseName = "messages", locale = Locale.ENGLISH)
+        .map { FieldError(field = it.property, message = it.message) }
+    respond(HttpStatusCode.BadRequest, ApiError(message = "Validation failed", errors = fieldErrors))
+}
+
+/**
+ * Global exception handler — Industry‑standard (Stripe/GitHub/OpenAI).
  *
  * Success: Return data directly (HTTP status = source of truth)
- * Error: Return ApiError { message, errors? }
+ * Error: Return [ApiError] { message, errors? }
+ *
+ * All custom exceptions in the project extend [AppException] and are handled uniformly.
  */
 fun Application.configureStatusPage() {
     install(StatusPages) {
         exception<Throwable> { call, error ->
+            // 1️⃣ Validation errors (including wrapped ones)
+            error.firstConstraintViolation()?.let {
+                call.respondValidationError(it)
+                return@exception
+            }
+
+            // 2️⃣ Application specific errors – all extend [AppException]
             when (error) {
-                is InvalidEnumValueException -> {
-                    call.application.environment.log.warn("Invalid enum: ${error.invalidValue} for ${error.enumName}")
-                    call.respond(error.code, ApiError(error.message ?: "Invalid value"))
-                }
-
-                is MissingParameterException -> {
-                    call.respond(error.code, ApiError(error.message ?: "Missing parameter"))
-                }
-
                 is AppException -> {
+                    // Log warning for known app exceptions (including InvalidEnumValueException, MissingParameterException, etc.)
                     call.application.environment.log.warn("${error::class.simpleName}: ${error.message}")
                     call.respond(error.code, ApiError(error.message ?: "Unknown error"))
                 }
-
-                is ConstraintViolationException -> {
-                    val fieldErrors =
-                        error.constraintViolations
-                            .mapToMessage(baseName = "messages", locale = Locale.ENGLISH)
-                            .map { FieldError(field = it.property, message = it.message) }
-
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        ApiError(message = "Validation failed", errors = fieldErrors),
-                    )
+                is BadRequestException -> {
+                    call.respond(HttpStatusCode.BadRequest, ApiError(error.message ?: "Bad request"))
                 }
-
-                is MissingRequestParameterException ->
+                is MissingRequestParameterException -> {
                     call.respond(HttpStatusCode.BadRequest, ApiError("Missing parameter: ${error.parameterName}"))
-
-                is NumberFormatException ->
+                }
+                is NumberFormatException -> {
                     call.respond(HttpStatusCode.BadRequest, ApiError("Invalid numeric value"))
-
-                is IllegalArgumentException ->
+                }
+                is IllegalArgumentException -> {
                     call.respond(HttpStatusCode.BadRequest, ApiError(error.message ?: "Invalid argument"))
-
+                }
                 else -> {
-                    call.application.environment.log.error("Unhandled: ${error::class.simpleName}", error)
+                    // 3️⃣ Unexpected errors – log stack trace and return generic 500
+                    call.application.environment.log.error("Unhandled exception: ${error::class.simpleName}", error)
                     call.respond(HttpStatusCode.InternalServerError, ApiError("Internal server error"))
                 }
             }
         }
 
+        // 4️⃣ Standard HTTP status shortcuts
         status(HttpStatusCode.Unauthorized) { call, _ ->
             call.respond(HttpStatusCode.Unauthorized, ApiError("Authentication required"))
         }
-
         status(HttpStatusCode.NotFound) { call, _ ->
             call.respond(HttpStatusCode.NotFound, ApiError("Resource not found"))
         }
-
         status(HttpStatusCode.MethodNotAllowed) { call, _ ->
             call.respond(HttpStatusCode.MethodNotAllowed, ApiError("Method not allowed"))
         }

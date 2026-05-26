@@ -11,7 +11,7 @@ data class OrderItemRequest(
     val productId: String,
     val quantity: Int,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(OrderItemRequest::productId).isNotNull().isNotEmpty()
             validate(OrderItemRequest::quantity).isNotNull().isGreaterThan(0)

@@ -1,3254 +1,493 @@
-# Ktor E-Commerce — Development Roadmap
+# Ktor E-Commerce — Enterprise Development Roadmap
 
-> A phased, implementation-focused roadmap for building out the Ktor e-commerce platform. Use this document to guide AI-assisted development. Each phase is self-contained and builds on the previous one.
+> A phased, implementation-focused, production-readiness roadmap for building out the Ktor e-commerce platform. Use this document to guide AI-assisted development. Each phase is self-contained, sequential, and builds on top of the current compiled codebase.
 
 ---
 
 ## Table of Contents
 
-- [Project Overview](#project-overview)
-- [Current Architecture](#current-architecture)
-- [~~Phase 1: Critical Bugs & Security Fixes~~ — ✅ COMPLETE](#phase-1-critical-bugs--security-fixes)
-- [~~Phase 2: Missing Core E-Commerce Logic~~ — ✅ COMPLETE](#phase-2-missing-core-e-commerce-logic)
-- [~~Phase 3: API Standardization (Validation, Pagination, Versioning)~~ — ✅ COMPLETE](#phase-3-api-standardization)
-- [Phase 4: Database Excellence](#phase-4-database-excellence)
-- [Phase 5: Production Infrastructure (Docker, Health, Logging)](#phase-5-production-infrastructure)
-- [Phase 6: Security Hardening](#phase-6-security-hardening)
-- [Phase 7: Architectural Refactoring (Repositories, Koin, N+1)](#phase-7-architectural-refactoring)
-- [Phase 8: Search & Intelligent Catalog](#phase-8-search--intelligent-catalog)
-- [Phase 9: Event-Driven Scaling (Workers, Events)](#phase-9-event-driven-scaling)
-- [Phase 10: Operational Excellence (Metrics, Tracing, Audit)](#phase-10-operational-excellence)
-- [Implementation Checklist](#implementation-checklist)
+- [Architectural Principles & Standards](#architectural-principles--standards)
+- [Phase 1: REST Pluralization, Centralized Validation & Content Negotiation](#phase-1-rest-pluralization-centralized-validation--content-negotiation)
+- [Phase 2: Database Schema & Migration Excellence](#phase-2-database-schema--migration-excellence)
+- [Phase 3: Repository Layer Separation & Dependency Injection](#phase-3-repository-layer-separation--dependency-injection)
+- [Phase 4: Production Infrastructure & Monitoring](#phase-4-production-infrastructure--monitoring)
+- [Phase 5: Security Hardening & Resource Isolation](#phase-5-security-hardening--resource-isolation)
+- [Phase 6: Automated Testing Suite](#phase-6-automated-testing-suite)
+- [Phase 7: Real Payment Gateway Adapter Integration](#phase-7-real-payment-gateway-adapter-integration)
+- [Phase 8: Advanced Catalog Search & Discovery](#phase-8-advanced-catalog-search--discovery)
+- [Phase 9: Advanced Coupon & Promotion Engine](#phase-9-advanced-coupon--promotion-engine)
+- [Phase 10: Concurrency-Safe Stock Reservation & Asynchronous Workers](#phase-10-concurrency-safe-stock-reservation--asynchronous-workers)
+- [Master Implementation Checklist](#master-implementation-checklist)
 
 ---
 
-## Project Overview
+## Architectural Principles & Standards
 
-**Stack:** Ktor 3.4.1 · Kotlin 2.3.10 · Exposed 1.1.1 · PostgreSQL · Koin 4.2.0 · JWT (auth0) · BCrypt · Flyway · Valiktor · Gson
+To ensure maximum **reusability**, **conciseness**, and **performance**, all upcoming development must adhere strictly to these industry-standard principles:
 
-**Architecture:** Clean/Onion — feature modules with Routes → Service → Repository layers
+### 1. Centralized Validation (Transforming Pipeline Interceptor)
+* **Goal**: Eliminate boilerplate `.validation()` calls inside every individual route block and do away with manual class registrations inside `ConfigureRequestValidation.kt`.
+* **Standard**: Implement a unified `Validatable` interface inside `com.piashcse.utils.validator`.
+* **Mechanism**: Register an interceptor on Ktor's `ApplicationReceivePipeline.Transform`. Any class received via `call.receive<T>()` that implements `Validatable` is automatically verified prior to route execution, throwing a standardized exception handled by `StatusPages`.
 
-**Entry Point:** `src/main/kotlin/com/piashcse/Application.kt`
+### 2. Centralized Exception Handling
+* **Goal**: Centralize domain-level and data-level exception translation.
+* **Standard**: Intercept Exposed-specific database exceptions (e.g., `ExposedSQLException`, foreign key lockouts, unique constraint violations, key collisions) within `ConfigureStatusPage.kt` and format them to safe, standardized JSON responses, keeping low-level SQL stack traces out of production client views.
 
----
+### 3. Industry-Standard JSON Serialization
+* **Goal**: Modernize content negotiation for type safety, performance, and cross-platform compatibility.
+* **Standard**: Migrate from legacy reflection-heavy `Gson` to compile-time generated **Kotlinx Serialization**.
+* **Configuration**: Register `json()` with:
+  ```kotlin
+  ignoreUnknownKeys = true
+  coerceInputValues = true
+  prettyPrint = true
+  ```
 
-## Current Architecture
+### 4. RESTful Plural Routing Best Practices
+* **Goal**: Follow REST conventions used by top-tier platforms (Stripe, Shopify, GitHub).
+* **Standard**: Pluralize all API resource collections. Change all singular route directories to plurals (e.g. `/product` → `/products`, `/order` → `/orders`, `/cart` → `/carts`, `/wishlist` → `/wishlists`, `/coupon` → `/coupons`).
 
-```
-com/piashcse/
-├── Application.kt
-├── config/
-│   └── DotEnvConfig.kt
-├── constants/
-│   ├── AppConstants.kt
-│   ├── Enums.kt              # OrderStatus, PaymentStatus, ProductStatus, ShopStatus, InventoryStatus, UserType
-│   └── Message.kt
-├── database/
-│   ├── ConfigureDataBase.kt
-│   └── entities/             # Exposed DAO tables (18 tables)
-├── di/
-│   └── KoinModule.kt         # Koin DI registration
-├── feature/                  # Feature modules (Routes + Service + Repository)
-│   ├── auth/
-│   ├── brand/
-│   ├── cart/
-│   ├── consent/
-│   ├── inventory/
-│   ├── order/
-│   ├── payment/
-│   ├── policy/
-│   ├── product/
-│   ├── product_category/
-│   ├── product_sub_category/
-│   ├── profile/
-│   ├── review_rating/
-│   ├── shipping/
-│   ├── shop/
-│   ├── shop_category/
-│   └── wishlist/
-├── model/
-│   ├── request/              # 26 request DTOs
-│   └── response/             # Response DTOs
-├── plugin/
-│   ├── ConfigureBasic.kt     # CORS, ContentNegotiation (Gson), CallLogging
-│   ├── ConfigureRouting.kt   # Route registration
-│   ├── ConfigureSwagger.kt
-│   ├── ConfigureStatusPage.kt
-│   └── CongfigureAuth.kt     # JWT auth install
-└── utils/
-    ├── Utils.kt              # Email, OTP
-    ├── RoleBasedAuth.kt      # Role hierarchy
-    └── extension/CommonExtension.kt
-```
+### 5. Naming Conventions & Database Standards
+* **API Level**: JSON keys must strictly use `camelCase`. DTO inputs must clearly suffix requests as `Request` and responses as `Response`.
+* **Database Level**: Exposed tables and columns must use database-native `snake_case` (e.g., `product_id`, `created_at`). 
+* **Statuses & Enums**: Eliminate loose `String` inputs for database state fields. Bind fields directly to typed enums (`OrderStatus`, `PaymentStatus`, `InventoryStatus`).
 
-### Current Endpoints Summary
-
-| Feature | Endpoints | Auth |
-|---------|-----------|------|
-| Auth | 9 endpoints (login, register, OTP, forget/reset password, change-password, change-user-type, activate/deactivate) | Mix |
-| Profile | 3 endpoints (get, update, image-upload) | Any authenticated |
-| Shop | 11 endpoints (CRUD, approve/reject/suspend/activate, public listing) | Seller/Admin/Customer |
-| Product | 10 endpoints (CRUD, search, filter, image-upload) | Seller/Admin/Public |
-| Cart | 5 endpoints (add, get, update, remove, clear) | Customer |
-| Wishlist | 4 endpoints (add, get, remove, check) | Customer |
-| Order | 3 endpoints (create, get, status update) | Customer/Seller/Admin |
-| Payment | 2 endpoints (create, get by id) | Customer |
-| Shipping | 4 endpoints (CRUD) | Customer |
-| Inventory | 5 endpoints (CRUD, stock operation, low-stock) | Seller/Admin |
-| Review/Rating | 4 endpoints (CRUD) | Customer/Public |
-| Policy | 5 endpoints | Admin/Public |
-| Policy Consent | 2 endpoints | Customer/Admin |
-| Brand | 4 endpoints | Admin/Customer |
-| Product Category | 4 endpoints | Admin/Public |
-| Product SubCategory | 4 endpoints | Admin/Public |
-| Shop Category | 4 endpoints | Admin |
+### 6. Logs & Query Redaction
+* **Standard**: Redact sensitive parameters (e.g. `password`, `token`, `otp`, `auth`) dynamically inside CallLogging configurations to guarantee credentials are never outputted to plain log files.
 
 ---
 
-## ~~Phase 1: Critical Bugs & Security Fixes~~
+## Phase 1: REST Pluralization, Centralized Validation & Content Negotiation
 
-> **Status:** ✅ COMPLETE — All 14 items implemented, tested, and deployed.
+> **Goal:** Standardize the routing namespace, implement zero-boilerplate centralized request validation, move to compile-time Kotlinx Serialization, and secure call logging blocks.
 
-### Completed Items
-- [x] 1.1 EntityID table references fixed in ProductService
-- [x] 1.2 Duplicate DELETE route fixed in ProductRoutes (merged handler)
-- [x] 1.3 searchProduct uses SQL-level filtering
-- [x] 1.4 adjustWhere replaced with proper andWhere chain
-- [x] 1.5 getShops uses SQL-level filtering
-- [x] 1.6 stockQuantity no longer defaults to 0
-- [x] 1.7 Image upload null-safe with file type validation
-- [x] 1.8 Inventory concurrency fixed with atomic SQL + extracted helpers
-- [x] 1.9 Refresh token system (table + entity + repository + endpoints)
-- [x] 1.10 Rate limiting on auth endpoints (5 req/10min)
-- [x] 1.11 Password reset converted to POST with body
-- [x] 1.12 Password strength validation (registration + reset)
-- [x] 1.13 Login attempt tracking + account lockout (5 attempts, 30min)
-- [x] 1.14 CORS restricted to configured origins
+### 1.1 REST Route Pluralization
+Update route naming paths to follow REST standards.
+* **Files to modify**: Update all routes inside `src/main/kotlin/com/piashcse/feature/` and [ConfigureRouting.kt](file:///Users/mehedihassanpiash/Documents/OpenSource/ktor-ecom/src/main/kotlin/com/piashcse/plugin/ConfigureRouting.kt).
+  - Pluralize API paths: `/api/v1/product` becomes `/api/v1/products`, `/api/v1/order` becomes `/api/v1/orders`, `/api/v1/cart` becomes `/api/v1/carts`, `/api/v1/wishlist` becomes `/api/v1/wishlists`, `/api/v1/coupon` becomes `/api/v1/coupons`, `/api/v1/refund-requests` becomes `/api/v1/refunds`.
 
-### New Files Added
-- `src/main/kotlin/com/piashcse/plugin/ConfigureRateLimit.kt`
-- `src/main/kotlin/com/piashcse/database/entities/LoginAttempt.kt`
-- `src/main/kotlin/com/piashcse/feature/auth/LoginAttemptRepository.kt`
+### 1.2 Reusable Validatable Transforming Pipeline Interceptor
+Create a zero-boilerplate validation pipeline.
+* **New file**: `src/main/kotlin/com/piashcse/utils/validator/Validatable.kt`
+  ```kotlin
+  package com.piashcse.utils.validator
+  
+  interface Validatable {
+      fun validation()
+  }
+  ```
+* **Enforce Interfaces**: Update all 26 request DTOs inside `src/main/kotlin/com/piashcse/model/request/` to implement the `Validatable` interface (e.g. `data class LoginRequest(...) : Validatable`).
+* **Interception Plugin**: Replace Ktor `RequestValidation` with a transforming receive interceptor:
+  ```kotlin
+  // Inside ConfigureRequestValidation.kt:
+  fun Application.configureRequestValidation() {
+      intercept(ApplicationReceivePipeline.Transform) { query ->
+          val subject = subject.value
+          if (subject is Validatable) {
+              subject.validation()
+          }
+          proceedWith(subject)
+      }
+  }
+  ```
+  This automatically runs model checks on any validatable type loaded with `call.receive()`, eliminating manual `.validation()` calls inside routes.
 
-### Key Refactoring
-- `InventoryService.kt` — Extracted `computeNewStock()`, `updateStockQuantity()`, `refreshInventoryStatus()` helpers
-- `AuthService.kt` — Flattened 4-level nested login into 6 single-responsibility methods
-- `LoginAttemptRepository.kt` — Extracted `attemptPredicate` lambda for reuse
-- `InvalidCredentialsException` — Companion object builder for clean message construction
+### 1.3 Migrate Content Negotiation to Kotlinx Serialization
+Adopt type-safe, reflection-free JSON handling.
+* **Files to modify**: `build.gradle.kts`, `ConfigureBasic.kt`
+  - Remove Ktor Gson dependencies.
+  - Implement Kotlinx Serialization content negotiation:
+    ```kotlin
+    install(ContentNegotiation) {
+        json(Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+            prettyPrint = true
+        })
+    }
+    ```
+* **Request/Response Models**: Annotate all model classes in the `model` folder with `@Serializable`.
 
----
-
-<!-- Original Phase 1 content preserved below for reference -->
-
-## Phase 1: Critical Bugs & Security Fixes (ARCHIVED — Complete)
-
-> ~~**Goal:** Fix confirmed runtime bugs and security vulnerabilities. These cause data corruption, security risks, or crashes.~~
-
-> **Goal:** Fix confirmed runtime bugs and security vulnerabilities. These cause data corruption, security risks, or crashes.
-
----
-
-### 1.1 Fix `EntityID` Table References in ProductService
-
-**File:** `src/main/kotlin/com/piashcse/feature/product/ProductService.kt`
-
-**Problem:** All `EntityID` constructors use `ProductTable` as the reference table, even for fields that reference other tables (userId, categoryId, subCategoryId, brandId, shopId). This causes FK lookups to fail or return wrong data.
-
-**Current code (lines ~55-59 in `createProduct`):**
-```kotlin
-userId = EntityID(userId, ProductTable),
-categoryId = EntityID(productRequest.categoryId, ProductTable),
-subCategoryId = productRequest.subCategoryId?.let { EntityID(it, ProductTable) },
-brandId = productRequest.brandId?.let { EntityID(it, ProductTable) },
-shopId = shopId?.let { EntityID(it, ProductTable) },
-```
-
-**Fix:**
-```kotlin
-import com.piashcse.database.entities.User.UserTable
-import com.piashcse.database.entities.ProductCategory.ProductCategoryTable
-import com.piashcse.database.entities.ProductSubCategory.ProductSubCategoryTable
-import com.piashcse.database.entities.Brand.BrandTable
-import com.piashcse.database.entities.Shop.ShopTable
-
-// In createProduct:
-userId = EntityID(userId, UserTable),
-categoryId = EntityID(productRequest.categoryId, ProductCategoryTable),
-subCategoryId = productRequest.subCategoryId?.let { EntityID(it, ProductSubCategoryTable) },
-brandId = productRequest.brandId?.let { EntityID(it, BrandTable) },
-shopId = shopId?.let { EntityID(it, ShopTable) },
-
-// In updateProduct (lines ~140-145):
-productRequest.categoryId?.let { EntityID(it, ProductCategoryTable) },
-productRequest.subCategoryId?.let { EntityID(it, ProductSubCategoryTable) },
-productRequest.brandId?.let { EntityID(it, BrandTable) },
-productRequest.shopId?.let { EntityID(it, ShopTable) },
-```
-
-**Verify:** Check imports at the top of ProductService.kt and update all EntityID usages.
-
----
-
-### 1.2 Fix Duplicate DELETE Route in ProductRoutes
-
-**File:** `src/main/kotlin/com/piashcse/feature/product/ProductRoutes.kt`
-
-**Problem:** `DELETE /product/{id}` is registered twice — once in the SELLER block (line ~177) and once in the ADMIN block (line ~193). Ktor resolves the first matching route, so the admin handler is unreachable.
-
-**Current structure:**
-```kotlin
-authenticate(RoleManagement.SELLER.role) {
-    delete("{id}") { /* seller delete handler */ }
-}
-authenticate(RoleManagement.ADMIN.role) {
-    delete("{id}") { /* admin delete handler — NEVER REACHED */ }
-}
-```
-
-**Fix:** Merge into a single handler that checks ownership, OR move admin routes to a separate `/admin` namespace.
-
-**Option A — Single handler with ownership check:**
-```kotlin
-authenticate(RoleManagement.SELLER.role, RoleManagement.ADMIN.role, RoleManagement.SUPER_ADMIN.role) {
-    delete("{id}") {
-        val id = call.parameters["id"] ?: return@delete call.requiredParameters("Product ID is required")
-        val userId = call.currentUserId() ?: return@delete call.respond(
-            HttpStatusCode.Unauthorized, ApiResponse.failure("Unauthorized")
-        )
-        val userType = call.getUserType() // helper to get current user type
-
-        val result = if (userType == UserType.ADMIN || userType == UserType.SUPER_ADMIN) {
-            productService.deleteProductByAdmin(id)
-        } else {
-            productService.deleteProduct(id, userId)
+### 1.4 CallLogging Secret Redaction
+Prevent sensitive passwords and keys from leaking into log aggregators.
+* **File to modify**: `ConfigureBasic.kt`
+  - Edit the query parameters formatting in `CallLogging` to redact values of sensitive keys (`password`, `token`, `otp`, `secret`):
+    ```kotlin
+    val sensitiveKeys = setOf("password", "token", "otp", "secret", "authorization")
+    val queryParams = call.request.queryParameters.entries()
+        .joinToString(", ") { (key, value) -> 
+            if (key.lowercase() in sensitiveKeys) "$key=[REDACTED]" else "$key=$value" 
         }
+    ```
 
-        result.fold(
-            onSuccess = { call.respond(HttpStatusCode.OK, ApiResponse.success("Product deleted successfully")) },
-            onFailure = { call.respond(HttpStatusCode.BadRequest, ApiResponse.failure(it.message ?: "Failed to delete product")) }
-        )
+---
+
+## Phase 2: Database Schema & Migration Excellence
+
+> **Goal:** Transition the database from startup-level generation to stable, version-controlled migrations with Flyway, performance-tuned indexes, cascading rules, and check constraints.
+
+### 2.1 Transition from SchemaUtils to Flyway Migrations
+Remove imperative database generation on startup. Let Flyway govern the database schema in a version-controlled manner.
+* **File to modify**: [ConfigureDataBase.kt](file:///Users/mehedihassanpiash/Documents/OpenSource/ktor-ecom/src/main/kotlin/com/piashcse/database/ConfigureDataBase.kt)
+  - Remove `SchemaUtils.create(...)` from `configureDataBase()`.
+  - Ensure `flyway.migrate()` is the single authoritative source of schema generation.
+* **New file**: `src/main/resources/db/migration/V1__baseline_schema.sql`
+  - Convert all existing 21 tables currently defined in the Exposed mappings into standard SQL definitions. This forms the baseline script for production database deployments.
+
+### 2.2 High-Performance Indexes Migration
+Create database-level indexes on all foreign keys, composite filters, and sorting paths to optimize query execution and prevent sequential table scans.
+* **New file**: `src/main/resources/db/migration/V2__add_performance_indexes.sql`
+  - **Foreign Key Indexes**: Index all columns ending in `_id` on related tables (e.g. `product_id` on `cart_item`, `user_id` on `shop`, `category_id` on `product`).
+  - **Composite Query Indexes**: Build multi-column indexes for standard filtering paths:
+    ```sql
+    CREATE INDEX IF NOT EXISTS idx_product_category_status ON product(category_id, status);
+    CREATE INDEX IF NOT EXISTS idx_product_shop_status ON product(shop_id, status);
+    CREATE INDEX IF NOT EXISTS idx_product_status_created ON product(status, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_review_product_status ON review_rating(product_id, status);
+    ```
+  - **Performance Flags**: Index boolean tags used in catalogs like `featured` and `best_seller` on `product` table.
+
+### 2.3 Database-Level Constraints & Cascades
+Enforce referential integrity, strict cascades, uniqueness, and column checks directly at the engine level to protect the data from garbage inputs.
+* **New file**: `src/main/resources/db/migration/V3__add_database_constraints.sql`
+  - **Unique Constraints**: Add composite uniqueness checks to prevent duplicate records:
+    ```sql
+    ALTER TABLE cart_item ADD CONSTRAINT uq_cart_user_product UNIQUE (user_id, product_id);
+    ALTER TABLE wishlist ADD CONSTRAINT uq_wishlist_user_product UNIQUE (user_id, product_id);
+    ALTER TABLE review_rating ADD CONSTRAINT uq_review_user_product UNIQUE (user_id, product_id);
+    ALTER TABLE policy_consent ADD CONSTRAINT uq_consent_user_policy UNIQUE (user_id, policy_id);
+    ```
+  - **On Delete Cascade/Restrict Rules**: Drop generic foreign keys and recreate them with explicit behavior. Deleting a user must cascade delete profiles and refresh tokens. Deleting an order must cascade to order items, payments, and shipping. Product deletion must be restricted if active orders reference the SKU.
+  - **CHECK Constraints**: Prevent negative and invalid values:
+    ```sql
+    ALTER TABLE cart_item ADD CONSTRAINT chk_cart_quantity CHECK (quantity > 0);
+    ALTER TABLE order_item ADD CONSTRAINT chk_order_item_quantity CHECK (quantity > 0);
+    ALTER TABLE inventory ADD CONSTRAINT chk_inventory_stock CHECK (stock_quantity >= 0);
+    ALTER TABLE product ADD CONSTRAINT chk_product_price CHECK (price > 0);
+    ```
+
+### 2.4 Schema Extensions & Typed Column Integrations
+Extend existing tables to support administrative logs, rich search optimization, audit history, and type safety.
+* **New file**: `src/main/resources/db/migration/V4__add_missing_columns_and_history.sql`
+  - Add `slug`, `seo_title`, and `seo_description` columns to `product` to support search engine friendly metadata.
+  - Add tracking detail fields (`tracking_number`, `tracking_company`, `estimated_delivery`, `notes`) to `order` and `shipping` tables.
+  - Add `currency`, `refunded_amount`, `gateway`, and `gateway_response` columns to the `payment` table.
+* **Exposed Entity Updates**: 
+  - Update Exposed table objects (e.g. `ProductTable`, `PaymentTable`) and corresponding DAO classes (e.g. `ProductDAO`, `PaymentDAO`) in `src/main/kotlin/com/piashcse/database/entities/` to register these new columns.
+  - Convert `VARCHAR` status columns to proper Kotlin-typed Enums in mappings (e.g., mapping `ReviewRatingTable.status` to `ReviewStatus` enum).
+
+---
+
+## Phase 3: Repository Layer Separation & Dependency Injection
+
+> **Goal:** Decouple services from database implementations by introducing concrete Repository patterns, cleaning up Koin injection blocks, resolving N+1 queries, and breaking monolithic classes apart.
+
+### 3.1 Concrete Repository Implementation
+Separate database access logic from business services. Services must depend on interfaces, while actual SQL logic resides in repositories.
+* **Refactoring Steps**:
+  1. Define a separate interface file if not already present (e.g. `ProductRepository`).
+  2. Implement concrete repository classes using JetBrains Exposed (e.g. `ProductRepositoryImpl` inside the feature folder).
+  3. Move all database query expressions (`ProductDAO.find`, `ProductTable.selectAll()`) and `query { ... }` transaction wrappers from `ProductService` into `ProductRepositoryImpl`.
+  4. Repositories must return immutable DTOs or entity snapshots, leaving the service layer completely unaware of active DAO row wrappers.
+* **Koin Injection Update**: Register repositories and services in [KoinModule.kt](file:///Users/mehedihassanpiash/Documents/OpenSource/ktor-ecom/src/main/kotlin/com/piashcse/di/KoinModule.kt):
+  ```kotlin
+  single<ProductRepository> { ProductRepositoryImpl() }
+  single { ProductService(get()) }
+  ```
+  Remove default values (e.g. `repository = ProductRepositoryImpl()`) in Service constructor arguments to prevent bypass of the dependency injection container.
+
+### 3.2 Eliminate N+1 Query Patterns
+Audit and rewrite query mapping functions to load related datasets in batch collections rather than executing sequential subqueries inside loops.
+* **File to modify**: `CartService.kt`
+  - Instead of fetching cart items and calling `ProductDAO.find` inside a loop for each item (N+1 database reads), fetch all distinct product IDs first.
+  - Perform a single database query `ProductDAO.find { ProductTable.id inList productIds }` and map them inside a Kotlin dictionary for memory-mapped association.
+* **File to modify**: `ProductCategory.kt`
+  - Remove lazy-loaded subcategory queries inside response mappings. Pre-fetch subcategories in a single batch query or split them into a dedicated paginated endpoint.
+
+### 3.3 Split Monolithic God Services
+Decompose heavy service files that bear excessive domain responsibilities into highly focused, single-responsibility services.
+* **Decompose AuthService.kt** (handles login, lockout, reset keys, registration, token hashing) into:
+  - `UserAuthenticationService` (managing login pipeline and brute-force lockouts)
+  - `PasswordManagementService` (governing resets, strength rules, and updates)
+  - `TokenManagementService` (managing JWT tokens, refresh hashes, and logouts)
+* **Decompose ProductService.kt** into:
+  - `ProductCrudService` (basic creating, updating, and physical deletion)
+  - `ProductQueryService` (handling search, filtering, and catalog listings)
+  - `ProductCatalogService` (governing bestsellers, hot deals, and popular items)
+
+---
+
+## Phase 4: Production Infrastructure & Monitoring
+
+> **Goal:** Deploy containerized configurations, health status handlers, structured logs, and metrics tracking to ensure continuous monitoring and resilience in production.
+
+### 4.1 Docker & Multi-Stage Deployment
+Containerize the application following production best practices (security, small image size, dependency caching).
+* **New file**: `Dockerfile`
+  - Build the fat jar in a multi-stage process using Gradle and a JDK image.
+  - Use `eclipse-temurin:17-jre-alpine` for the runtime phase to minimize storage footprint.
+  - Define an unprivileged system group and user (`appuser`), change file ownership, and execute the service without root access.
+* **New file**: `docker-compose.yml`
+  - Declare an `app` service dependent on a `postgres` database container.
+  - Integrate a Postgres health check using `pg_isready` to guarantee database availability before the Ktor server starts up.
+
+### 4.2 Health & Readiness Routes
+Configure endpoint probes so external orchestrators (like Kubernetes or docker-compose) can audit application health.
+* **New file**: `src/main/kotlin/com/piashcse/plugin/ConfigureHealth.kt`
+  - Register `/health/live` to output a generic `{"status":"ALIVE"}` immediately.
+  - Register `/health/ready` to execute a lightweight database transaction (`transaction { !connection.isClosed }`). If database connectivity is interrupted, return `503 Service Unavailable` with a `"NOT_READY"` payload.
+
+### 4.3 Structured Logging & Request IDs
+Migrate standard text logs to machine-readable JSON formats and trace requests through the entire system.
+* **Dependency modification**: Add `net.logstash.logback:logstash-logback-encoder:7.4` to Gradle build.
+* **File to modify**: `logback.xml`
+  - Configure a Logstash JSON encoder for console appenders in production, exporting structured records.
+* **Request ID Interceptor**: Integrate an application plugin to extract or generate a unique `X-Request-ID` header. Track this ID inside the SLF4J MDC (Mapped Diagnostic Context) so every database query or error log is stamped with the request origin.
+
+### 4.4 Metrics & Observability Export
+Establish real-time instrumentation to audit runtime health under high traffic loads.
+* **Metrics Route**: Install Ktor's `MicrometerMetrics` plugin using the Prometheus registry.
+* **Route**: Expose `/metrics` protected by admin role authorization to securely export memory, thread counts, JVM garbage collection cycles, and active database connection pool stats to Prometheus/Grafana dashboards.
+
+---
+
+## Phase 5: Security Hardening & Resource Isolation
+
+> **Goal:** Secure the API layer by moving credentials to safe environments, reducing token lifespan, checking size/mimetype uploads, and validating strict resource ownership.
+
+### 5.1 Hardening Configurations & Environment Security
+Ensure no secrets are exposed in source control.
+* **File to modify**: `DotEnvConfig.kt`
+  - Remove all default fallback strings for `JWT_SECRET`, database passwords, or third-party keys.
+  - Throw a strict `IllegalStateException` on startup if these variables are empty.
+* **File to modify**: `AppConstants.kt`
+  - Delete all hardcoded SMTP server credentials. Read `EMAIL_USERNAME` and `EMAIL_PASSWORD` dynamically from configuration files or system environment variables.
+
+### 5.2 Short Token Lifespan & Token Blacklisting
+Reduce the exploitation window of intercepted JWT access tokens and secure the logout process.
+* **File to modify**: `JwtConfig.kt`
+  - Reduce access token validity duration from 24 hours to 15 minutes.
+  - Implement dynamic JWT claim checks including `Audience` validation matching standard domain hosts.
+* **Revocation Engine**:
+  - In `AuthRoutes.kt`, when `/auth/logout` is hit, add the token signature or ID to a revocation database block.
+  - Ensure the JWT authentication plugin queries this database to invalidate active logout sessions immediately.
+
+### 5.3 Multi-Stage Upload Security Filtering
+Prevent file system exploitation and denial of service attacks through unrestricted image uploads.
+* **Files to modify**: `ProductRoutes.kt`, `ProfileRoutes.kt`
+  - Install a strict file size validation check, rejecting payloads larger than 5MB.
+  - Read first few bytes (magic bytes signature) of uploaded streams to verify they are valid images (JPEG, PNG, WEBP), preventing malicious script uploads disguised with image extensions.
+  - Store files outside project resource folders under an external directory specified by the `UPLOAD_DIR` environment variable.
+
+### 5.4 Fine-Grained Ownership Verification
+Add validation guards to guarantee users can only mutate resources they physically own.
+* **Ownership Matrix Checks**:
+  - **Orders**: A user can only view or cancel orders belonging to their `userId`. A seller can only update order statuses for orders placed with their `shopId`.
+  - **Reviews**: A user can only edit or delete a review if `review.userId == currentUserId`.
+  - **Shop Management**: A seller can only update details for a shop if they are registered as the owner of that shop.
+  - **Product Management**: A seller can only edit/delete products if `product.userId == currentUserId`.
+
+---
+
+## Phase 6: Automated Testing Suite
+
+> **Goal:** Secure the platform from regressions by setting up PostgreSQL integration tests with Testcontainers, routing contract assertions, and mocking services.
+
+### 6.1 Integration Tests with Testcontainers
+Boot dynamic, real database environments during Gradle build test tasks to ensure query code is fully verified.
+* **New file**: `src/test/kotlin/com/piashcse/testutils/PostgresTestContainer.kt`
+  - Configure a shared `PostgreSQLContainer` instance to pull a lightweight `postgres:15-alpine` image.
+  - Initialize connection details, overriding Koin properties and database configurations with the test container's dynamic JDBC URL.
+
+### 6.2 Endpoint Route Contract Tests
+Simulate API client calls using Ktor's native, high-performance `testApplication` test server engine.
+* **New file**: `src/test/kotlin/com/piashcse/feature/auth/AuthRoutesTest.kt`
+  - Write route tests checking registration strength checks, login failure lockout counters, and valid login token responses.
+* **New file**: `src/test/kotlin/com/piashcse/feature/product/ProductRoutesTest.kt`
+  - Test pagination parameters, validation rules, search parameters, and missing fields.
+* **Validation Standard**: Assert that all API error returns strictly adhere to the standard error JSON schema:
+  ```json
+  {
+    "message": "Error details...",
+    "details": ["Field validation failed"]
+  }
+  ```
+
+### 6.3 Service Layer Mocking (Unit Tests)
+Use MockK to write lightweight, fast-running unit tests for business layers without needing database connections.
+* **Service Coverage**:
+  - Write test cases for order discount distributions, tax calculations, and cart clear validations in `OrderService`.
+  - Verify that exception behaviors (such as `throwConflict`, `throwNotFound`) are triggered correctly under validation failures.
+
+---
+
+## Phase 7: Real Payment Gateway Adapter Integration
+
+> **Goal:** Transition the platform from a simulated payment workflow to an actual Stripe credit card transaction execution engine using an abstract adapter pattern.
+
+### 7.1 Gateway Adapter Abstraction
+Define a clean, decoupled boundary for payment processing so alternate systems (Stripe, PayPal, Adyen) can be integrated without breaking order management code.
+* **New file**: `src/main/kotlin/com/piashcse/feature/payment/PaymentGateway.kt`
+  - Define an abstract interface representing core gateway capabilities:
+    ```kotlin
+    interface PaymentGateway {
+        suspend fun createPaymentIntent(orderId: String, amount: BigDecimal, currency: String): PaymentIntentResponse
+        suspend fun verifyWebhookSignature(payload: String, signature: String): Boolean
+        suspend fun processRefund(transactionId: String, amount: BigDecimal): RefundResponse
     }
-}
-```
+    ```
 
-**Option B — Separate admin namespace (preferred for Phase 5):**
-Keep seller routes as-is, add admin routes under `/admin/products/{id}`.
-
----
-
-### 1.3 Fix `searchProduct` Memory Explosion
-
-**File:** `src/main/kotlin/com/piashcse/feature/product/ProductService.kt`
-
-**Problem:** `searchProduct` (lines ~291-304) calls `ProductDAO.all().toList()` which loads every product into memory, then filters in Kotlin.
-
-**Current code:**
-```kotlin
-fun searchProduct(productQuery: ProductSearchRequest): List<ProductDAO> {
-    var products = ProductDAO.all().toList()
-    if (!productQuery.name.isNullOrEmpty()) {
-        products = products.filter { it.name.contains(productQuery.name, ignoreCase = true) }
-    }
-    // ... more filtering
-    return products
-}
-```
-
-**Fix — Use SQL-level filtering:**
-```kotlin
-fun searchProduct(productQuery: ProductSearchRequest): List<ProductDAO> {
-    val query = Op.build {
-        ProductTable.status eq ProductStatus.ACTIVATED.name
-    }.let { baseWhere ->
-        var where = baseWhere
-        if (!productQuery.name.isNullOrEmpty()) {
-            where = where and ProductTable.name.lowerCase() like "%${productQuery.name.lowercase()}%"
-        }
-        if (!productQuery.categoryId.isNullOrEmpty()) {
-            where = where and (ProductTable.categoryId eq EntityID(productQuery.categoryId, ProductCategoryTable))
-        }
-        if (productQuery.minPrice != null) {
-            where = where and (ProductTable.price greaterEq productQuery.minPrice)
-        }
-        if (productQuery.maxPrice != null) {
-            where = where and (ProductTable.price lessEq productQuery.maxPrice)
-        }
-        where
-    }
-
-    return ProductDAO.find { query }
-        .limit(productQuery.limit ?: 20)
-        .toList()
-}
-```
-
----
-
-### 1.4 Fix `adjustWhere` Filter Logic Bug
-
-**File:** `src/main/kotlin/com/piashcse/feature/product/ProductService.kt`
-
-**Problem:** `adjustWhere` **replaces** the existing WHERE clause. When multiple filters are provided (e.g., categoryId AND brandId), only the last one applies.
-
-**Current code (in `getProducts`):**
-```kotlin
-var query = ProductTable.selectAll()
-if (categoryId != null) {
-    query = query.adjustWhere { ProductTable.categoryId eq EntityID(categoryId, ProductTable) } // REPLACED next
-}
-if (subCategoryId != null) {
-    query = query.adjustWhere { ProductTable.subCategoryId eq EntityID(subCategoryId, ProductTable) } // REPLACED next
-}
-if (brandId != null) {
-    query = query.adjustWhere { ProductTable.brandId eq EntityID(brandId, ProductTable) } // Only this survives
-}
-```
-
-**Fix — Build WHERE clause incrementally with `andWhere`:**
-```kotlin
-fun getProducts(
-    limit: Int,
-    maxPrice: Long?,
-    minPrice: Long?,
-    categoryId: String?,
-    subCategoryId: String?,
-    brandId: String?,
-    offset: Int = 0
-): List<ProductWithShopName> {
-    var condition: Op<Boolean> = ProductTable.status eq ProductStatus.ACTIVATED.name
-
-    if (categoryId != null) {
-        condition = condition and (ProductTable.categoryId eq EntityID(categoryId, ProductCategoryTable))
-    }
-    if (subCategoryId != null) {
-        condition = condition and (ProductTable.subCategoryId eq EntityID(subCategoryId, ProductSubCategoryTable))
-    }
-    if (brandId != null) {
-        condition = condition and (ProductTable.brandId eq EntityID(brandId, BrandTable))
-    }
-    if (minPrice != null) {
-        condition = condition and (ProductTable.price greaterEq minPrice)
-    }
-    if (maxPrice != null) {
-        condition = condition and (ProductTable.price lessEq maxPrice)
-    }
-
-    return transaction {
-        ProductDAO.find { condition }
-            .limit(limit, offset.toLong())
-            .map { /* mapping logic */ }
-    }
-}
-```
-
----
-
-### 1.5 Fix `getShops` Memory Explosion
-
-**File:** `src/main/kotlin/com/piashcse/feature/shop/ShopService.kt`
-
-**Problem:** `getShops` (lines ~120-135) calls `ShopDAO.all()` then filters in memory.
-
-**Fix:**
-```kotlin
-fun getShops(status: ShopStatus?, limit: Int, offset: Int = 0): List<ShopDAO> {
-    val condition = if (status != null) {
-        ShopTable.status eq status.name
-    } else {
-        Op.TRUE
-    }
-    return ShopDAO.find { condition }
-        .limit(limit, offset.toLong())
-        .toList()
-}
-```
-
----
-
-### 1.6 Fix `stockQuantity` Defaulting to 0 in Update
-
-**File:** `src/main/kotlin/com/piashcse/feature/product/ProductRoutes.kt`
-
-**Problem:** Line ~151: `stockQuantity = call.parameters["stockQuantity"]?.toInt() ?: 0` — omitting stockQuantity sets it to 0, wiping stock data.
-
-**Fix:**
-```kotlin
-stockQuantity = call.parameters["stockQuantity"]?.toInt(), // nullable, let service handle default
-```
-
-Then in `ProductService.updateProduct`:
-```kotlin
-stockQuantity?.let { product.stockQuantity = it } // only update if provided
-```
-
----
-
-### 1.7 Fix Image Upload Null Cast & Missing Response
-
-**File:** `src/main/kotlin/com/piashcse/feature/product/ProductRoutes.kt`
-
-**Problem:**
-1. `part.originalFileName as String` crashes when filename is null
-2. No response sent when no file part is received
-3. No file type validation
-
-**Fix:**
-```kotlin
-post("image-upload") {
-    val multipart = call.receiveMultipart()
-    val uploadedFiles = mutableListOf<String>()
-
-    multipart.forEachPart { part ->
-        if (part is PartData.FileItem) {
-            val fileName = part.originalFileName
-                ?.takeIf { it.isNotBlank() }
-                ?: run {
-                    call.respond(HttpStatusCode.BadRequest, ApiResponse.failure("File name is required"))
-                    return@forEachPart
-                }
-
-            val extension = fileName.substringAfterLast('.', "").lowercase()
-            if (extension !in listOf("jpg", "jpeg", "png", "webp", "gif")) {
-                call.respond(HttpStatusCode.BadRequest, ApiResponse.failure("Invalid file type. Allowed: jpg, jpeg, png, webp, gif"))
-                return@forEachPart
-            }
-
-            val uniqueFileName = "${UUID.randomUUID()}.$extension"
-            val file = File("$PRODUCT_IMAGE_FOLDER/$uniqueFileName")
-            file.writeBytes(part.streamProvider().readBytes())
-            uploadedFiles.add(uniqueFileName)
-        }
-        part.dispose()
-    }
-
-    if (uploadedFiles.isEmpty()) {
-        call.respond(HttpStatusCode.BadRequest, ApiResponse.failure("No file uploaded"))
-    } else {
-        call.respond(HttpStatusCode.OK, ApiResponse.success(uploadedFiles, "Image(s) uploaded successfully"))
-    }
-}
-```
-
-Also add `maxContentLength` to application.conf:
-```hocon
-ktor {
-    deployment {
-        maxContentLength = 10485760  // 10MB
-    }
-}
-```
-
----
-
-### 1.8 Fix Inventory Concurrency Race Condition
-
-**File:** `src/main/kotlin/com/piashcse/feature/inventory/InventoryService.kt`
-
-**Problem:** READ → CALC → WRITE pattern causes lost updates under concurrent requests.
-
-**Current code:**
-```kotlin
-val newStock = when(operation) {
-    "add" -> inventory.stockQuantity + quantity
-    "subtract" -> inventory.stockQuantity - quantity
-    "set" -> quantity
-}
-inventory.stockQuantity = newStock
-```
-
-**Fix — Use atomic SQL:**
-```kotlin
-fun updateStock(entityId: EntityID<String>, quantity: Int, operation: String, userId: String): Result<Int> = query {
-    try {
-        val inventory = InventoryDAO.findById(entityId)
-            ?: return@query Result.failure("Inventory not found".inventoryNotFoundException())
-
-        // Verify ownership — seller must own the product
-        val product = ProductDAO.findById(inventory.productId.value)
-            ?: return@query Result.failure("Product not found".notFoundException())
-
-        if (product.userId.value != userId) {
-            return@query Result.failure("Unauthorized: You don't own this product".unauthorizedAccessException())
-        }
-
-        when (operation) {
-            "add" -> {
-                require(quantity > 0) { "Quantity must be positive for add operation" }
-                InventoryTable.update({ InventoryTable.id eq entityId }) {
-                    it[stockQuantity] = InventoryTable.stockQuantity.plus(quantity)
-                }
-            }
-            "subtract" -> {
-                require(quantity > 0) { "Quantity must be positive for subtract operation" }
-                val rowsUpdated = InventoryTable.update({
-                    (InventoryTable.id eq entityId) and (InventoryTable.stockQuantity greaterEq quantity)
-                }) {
-                    it[stockQuantity] = InventoryTable.stockQuantity.minus(quantity)
-                }
-                if (rowsUpdated == 0) {
-                    return@query Result.failure("Insufficient stock quantity")
-                }
-            }
-            "set" -> {
-                require(quantity >= 0) { "Quantity cannot be negative for set operation" }
-                InventoryTable.update({ InventoryTable.id eq entityId }) {
-                    it[stockQuantity] = quantity
-                }
-            }
-            else -> return@query Result.failure("Invalid operation: $operation. Use add, subtract, or set")
-        }
-
-        // Update status based on new stock level
-        val updated = InventoryDAO.findById(entityId) ?: return@query Result.failure("Failed to fetch updated inventory")
-        updated.status = when {
-            updated.stockQuantity == 0 -> InventoryStatus.OUT_OF_STOCK.name
-            updated.stockQuantity <= (updated.minimumStockLevel ?: 10) -> InventoryStatus.LOW_STOCK.name
-            else -> InventoryStatus.IN_STOCK.name
-        }
-
-        Result.success(updated.stockQuantity)
-    } catch (e: Exception) {
-        Result.failure(e.message ?: "Failed to update stock")
-    }
-}
-```
-
----
-
-### 1.9 Add Refresh Token System
-
-**New table:** `refresh_token`
-```sql
-CREATE TABLE IF NOT EXISTS refresh_token (
-    id VARCHAR(50) PRIMARY KEY,
-    user_id VARCHAR(50) NOT NULL REFERENCES "user"(id),
-    token_hash VARCHAR(255) NOT NULL UNIQUE,
-    expires_at TIMESTAMP NOT NULL,
-    revoked_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX idx_refresh_token_user ON refresh_token(user_id);
-CREATE INDEX idx_refresh_token_hash ON refresh_token(token_hash);
-```
-
-**New entity:** `src/main/kotlin/com/piashcse/database/entities/RefreshToken.kt`
-```kotlin
-package com.piashcse.database.entities
-
-import com.piashcse.database.entities.base.BaseEntity
-import com.piashcse.database.entities.base.BaseEntityClass
-import com.piashcse.database.entities.base.BaseIdTable
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
-import java.time.Instant
-import java.util.UUID
-
-object RefreshTokenTable : BaseIdTable("refresh_token") {
-    val userId = varchar("user_id", 50).references(User.UserTable.id)
-    val tokenHash = varchar("token_hash", 255).uniqueIndex()
-    val expiresAt = timestamp("expires_at")
-    val revokedAt = timestamp("revoked_at").nullable()
-}
-
-class RefreshToken(id: EntityID<String>) : BaseEntity(id) {
-    companion object : BaseEntityClass<RefreshToken>(RefreshTokenTable)
-
-    var userId by RefreshTokenTable.userId
-    var tokenHash by RefreshTokenTable.tokenHash
-    var expiresAt by RefreshTokenTable.expiresAt
-    var revokedAt by RefreshTokenTable.revokedAt
-
-    val isExpired: Boolean get() = expiresAt.isBefore(Instant.now())
-    val isRevoked: Boolean get() = revokedAt != null
-    val isValid: Boolean get() = !isExpired && !isRevoked
-}
-```
-
-**New repository interface:** `src/main/kotlin/com/piashcse/feature/auth/RefreshTokenRepository.kt`
-```kotlin
-package com.piashcse.feature.auth
-
-import org.jetbrains.exposed.dao.id.EntityID
-import java.time.Instant
-
-interface RefreshTokenRepository {
-    suspend fun createRefreshToken(userId: String, tokenHash: String, expiresAt: Instant): Boolean
-    suspend fun validateRefreshToken(tokenHash: String): Boolean
-    suspend fun revokeRefreshToken(tokenHash: String): Boolean
-    suspend fun revokeAllUserTokens(userId: String): Boolean
-    suspend fun getRefreshToken(tokenHash: String): com.piashcse.database.entities.RefreshToken?
-    suspend fun cleanupExpiredTokens(): Int
-}
-```
-
-**New service methods in AuthService:**
-```kotlin
-// Generate refresh token
-fun generateTokens(userId: String, email: String, userType: String): Pair<String, String> {
-    val accessToken = JwtConfig.tokenProvider(JwtTokenRequest(userId, email, userType))
-    val refreshToken = UUID.randomUUID().toString()
-    val tokenHash = hashRefreshToken(refreshToken)
-    val expiresAt = Instant.now().plusSeconds(7L * 24 * 60 * 60) // 7 days
-
-    refreshTokenRepository.createRefreshToken(userId, tokenHash, expiresAt)
-
-    return accessToken to refreshToken
-}
-
-fun hashRefreshToken(token: String): String {
-    val md = MessageDigest.getInstance("SHA-256")
-    return md.digest(token.toByteArray()).joinToString("") { "%02x".format(it) }
-}
-
-// Refresh token endpoint
-fun refreshAccessToken(refreshToken: String): Result<TokenPair> {
-    val tokenHash = hashRefreshToken(refreshToken)
-    val storedToken = refreshTokenRepository.getRefreshToken(tokenHash)
-        ?: return Result.failure("Invalid refresh token".notFoundException())
-
-    if (!storedToken.isValid) {
-        refreshTokenRepository.revokeRefreshToken(tokenHash)
-        return Result.failure("Refresh token expired or revoked".unauthorizedAccessException())
-    }
-
-    val user = userRepository.getUserById(storedToken.userId.value)
-        ?: return Result.failure("User not found".notFoundException())
-
-    // Revoke old token, issue new pair
-    refreshTokenRepository.revokeRefreshToken(tokenHash)
-    val (newAccessToken, newRefreshToken) = generateTokens(user.id.value, user.email, user.userType)
-
-    return Result.success(TokenPair(newAccessToken, newRefreshToken))
-}
-```
-
-**New endpoints in AuthRoutes:**
-```kotlin
-// POST /auth/refresh-token
-post("refresh-token") {
-    val request = call.receive<RefreshTokenRequest>()
-    request.refreshToken.validation()
-
-    authService.refreshAccessToken(request.refreshToken).fold(
-        onSuccess = { tokenPair ->
-            call.respond(HttpStatusCode.OK, ApiResponse.success(tokenPair, "Token refreshed successfully"))
-        },
-        onFailure = {
-            call.respond(HttpStatusCode.Unauthorized, ApiResponse.failure(it.message ?: "Invalid refresh token"))
-        }
-    )
-}
-
-// POST /auth/logout
-post("logout") {
-    val userId = call.currentUserId() ?: return@post call.respond(
-        HttpStatusCode.Unauthorized, ApiResponse.failure("Unauthorized")
-    )
-    val request = call.receive<LogoutRequest>()
-
-    if (request.refreshToken.isNotBlank()) {
-        authService.logout(userId, request.refreshToken)
-    }
-
-    call.respond(HttpStatusCode.OK, ApiResponse.success("Logged out successfully"))
-}
-```
-
-**New request models:**
-```kotlin
-// src/main/kotlin/com/piashcse/model/request/RefreshTokenRequest.kt
-data class RefreshTokenRequest(val refreshToken: String) {
-    fun RefreshTokenRequest.validation() {
-        validate(this) {
-            validate(RefreshTokenRequest::refreshToken).isRequired()
-        }
-    }
-}
-
-// src/main/kotlin/com/piashcse/model/request/LogoutRequest.kt
-data class LogoutRequest(val refreshToken: String = "")
-```
-
-**Update login/register to return refresh token:**
-```kotlin
-// In AuthService.login and AuthService.register:
-// Change from: Result.success(JwtTokenRequest(...))
-// Change to:
-val (accessToken, refreshToken) = generateTokens(user.id.value, user.email, user.userType)
-Result.success(TokenPair(accessToken, refreshToken))
-
-data class TokenPair(
-    val accessToken: String,
-    val refreshToken: String,
-    val tokenType: String = "Bearer",
-    val expiresIn: Long = 86400 // 24 hours in seconds
-)
-```
-
----
-
-### 1.10 Add Rate Limiting on Auth Endpoints
-
-**Add dependency to `build.gradle.kts`:**
-```kotlin
-implementation(libs.ktor.server.rate.limit)
-```
-
-**Create plugin:** `src/main/kotlin/com/piashcse/plugin/ConfigureRateLimit.kt`
-```kotlin
-package com.piashcse.plugin
-
-import io.ktor.server.application.*
-import io.ktor.server.rate.limit.*
-import io.ktor.http.*
-
-fun Application.configureRateLimiting() {
-    install(RateLimit) {
-        register(RateLimitName("auth")) {
-            rateLimiter(limit = 5, refillPeriod = java.time.Duration.ofMinutes(10))
-        }
-        register(RateLimitName("general")) {
-            rateLimiter(limit = 100, refillPeriod = java.time.Duration.ofMinutes(1))
-        }
-        requestKey { call ->
-            call.request.origin.remoteAddress
-        }
-        modifyResponse { call, rateLimiter ->
-            call.response.header("X-RateLimit-Remaining", rateLimiter.remaining.toString())
-        }
-    }
-}
-```
-
-**Apply to auth routes:**
-```kotlin
-rateLimit(RateLimitName("auth")) {
-    post("login") { ... }
-    post("register") { ... }
-    post("forget-password") { ... }
-    post("reset-password") { ... }
-}
-```
-
----
-
-### 1.11 Convert Password Reset to POST Body
-
-**Current:** `GET /auth/forget-password?email=&userType=`
-
-**Fix:** Change to POST with JSON body.
-
-**New endpoint:**
-```kotlin
-// POST /auth/forget-password
-post("forget-password") {
-    val request = call.receive<ForgetPasswordRequest>()
-    request.validation()
-
-    authService.requestPasswordReset(request.email, request.userType).fold(
-        onSuccess = { call.respond(HttpStatusCode.OK, ApiResponse.success("OTP sent to your email")) },
-        onFailure = { call.respond(HttpStatusCode.BadRequest, ApiResponse.failure(it.message ?: "Failed to request password reset")) }
-    )
-}
-
-// POST /auth/reset-password
-post("reset-password") {
-    val request = call.receive<ResetPasswordRequest>()
-    request.validation()
-
-    authService.resetPassword(request.email, request.otp, request.newPassword, request.userType).fold(
-        onSuccess = { call.respond(HttpStatusCode.OK, ApiResponse.success("Password reset successfully")) },
-        onFailure = { call.respond(HttpStatusCode.BadRequest, ApiResponse.failure(it.message ?: "Failed to reset password")) }
-    )
-}
-```
-
-**New request models:**
-```kotlin
-data class ForgetPasswordRequest(
-    val email: String,
-    val userType: String
-) {
-    fun ForgetPasswordRequest.validation() {
-        validate(this) {
-            validate(ForgetPasswordRequest::email).isRequired().hasValidEmailFormat()
-            validate(ForgetPasswordRequest::userType).isRequired()
-        }
-    }
-}
-
-data class ResetPasswordRequest(
-    val email: String,
-    val otp: String,
-    val newPassword: String,
-    val userType: String
-) {
-    fun ResetPasswordRequest.validation() {
-        validate(this) {
-            validate(ResetPasswordRequest::email).isRequired()
-            validate(ResetPasswordRequest::otp).isRequired()
-            validate(ResetPasswordRequest::newPassword).isRequired().hasMinSize(8)
-            validate(ResetPasswordRequest::userType).isRequired()
-        }
-    }
-}
-```
-
----
-
-### 1.12 Add Password Strength Validation
-
-**File:** `src/main/kotlin/com/piashcse/feature/auth/AuthService.kt`
-
-Add validation in `register` and `resetPassword`:
-```kotlin
-private fun validatePasswordStrength(password: String) {
-    if (password.length < 8) {
-        throw "Password must be at least 8 characters long".validationException()
-    }
-    if (!password.any { it.isUpperCase() }) {
-        throw "Password must contain at least one uppercase letter".validationException()
-    }
-    if (!password.any { it.isLowerCase() }) {
-        throw "Password must contain at least one lowercase letter".validationException()
-    }
-    if (!password.any { it.isDigit() }) {
-        throw "Password must contain at least one digit".validationException()
-    }
-    if (!password.any { !it.isLetterOrDigit() }) {
-        throw "Password must contain at least one special character".validationException()
-    }
-}
-```
-
-Call it in `register()` and `resetPassword()` before hashing.
-
----
-
-### 1.13 Add Login Attempt Tracking
-
-**New table:**
-```sql
-CREATE TABLE IF NOT EXISTS login_attempt (
-    id VARCHAR(50) PRIMARY KEY,
-    email VARCHAR(255) NOT NULL,
-    user_type VARCHAR(20) NOT NULL,
-    ip_address VARCHAR(45),
-    attempt_count INT DEFAULT 0,
-    locked_until TIMESTAMP,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
-    UNIQUE(email, user_type)
-);
-```
-
-**Logic in AuthService.login:**
-```kotlin
-fun login(loginRequest: LoginRequest, ipAddress: String): Result<TokenPair> {
-    // Check if account is locked
-    val attempt = loginAttemptRepository.getAttempt(loginRequest.email, loginRequest.userType)
-    if (attempt?.lockedUntil?.isAfter(Instant.now()) == true) {
-        return Result.failure("Account locked. Try again later".unauthorizedAccessException())
-    }
-
-    val user = userRepository.getUserByEmailAndType(loginRequest.email, loginRequest.userType)
-        ?: return Result.failure("Invalid email or password".notFoundException()).also {
-            loginAttemptRepository.recordFailedAttempt(loginRequest.email, loginRequest.userType, ipAddress)
-        }
-
-    if (!BCrypt.verify(loginRequest.password, user.password)) {
-        loginAttemptRepository.recordFailedAttempt(loginRequest.email, loginRequest.userType, ipAddress)
-        val attempts = loginAttemptRepository.getAttemptCount(loginRequest.email, loginRequest.userType)
-        val remaining = 5 - attempts
-        if (attempts >= 5) {
-            loginAttemptRepository.lockAccount(loginRequest.email, loginRequest.userType, Duration.ofMinutes(30))
-            return Result.failure("Account locked due to too many failed attempts. Try again in 30 minutes".unauthorizedAccessException())
-        }
-        return Result.failure("Invalid email or password. $remaining attempts remaining".notFoundException())
-    }
-
-    // Success — reset attempts
-    loginAttemptRepository.resetAttempts(loginRequest.email, loginRequest.userType)
-    user.lastLoginAt = Instant.now()
-
-    val (accessToken, refreshToken) = generateTokens(user.id.value, user.email, user.userType)
-    return Result.success(TokenPair(accessToken, refreshToken))
-}
-```
-
----
-
-### 1.14 Fix CORS Configuration
-
-**File:** `src/main/kotlin/com/piashcse/plugin/ConfigureBasic.kt`
-
-**Current:** Likely `anyHost = true` (wildcard `*`)
-
-**Fix:**
-```kotlin
-install(CORS) {
-    val allowedOrigins = DotEnvConfig.allowedOrigins.split(",")
-    allowedOrigins.forEach { origin ->
-        host(origin.trim().removePrefix("https://").removePrefix("http://"))
-    }
-    allowCredentials = true
-    allowNonSimpleContentTypes = true
-    listOf(
-        HttpMethod.Put,
-        HttpMethod.Post,
-        HttpMethod.Delete,
-        HttpMethod.Patch,
-        HttpMethod.Options
-    ).forEach { allowMethod(it) }
-    allowHeader(HttpMethod.Headers.ContentType)
-    allowHeader(HttpMethod.Headers.Authorization)
-    allowHeader("X-Requested-With")
-    exposeHeader("X-Request-ID")
-    maxAge = Duration.ofDays(1)
-}
-```
-
-**Add to `.env`:**
-```
-ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com
-```
-
----
-
-### Phase 1 Completion Checklist
-
-```
-[ ] 1.1  EntityID table references fixed in ProductService
-[ ] 1.2  Duplicate DELETE route fixed in ProductRoutes
-[ ] 1.3  searchProduct uses SQL-level filtering
-[ ] 1.4  adjustWhere replaced with proper andWhere chain
-[ ] 1.5  getShops uses SQL-level filtering
-[ ] 1.6  stockQuantity no longer defaults to 0
-[ ] 1.7  Image upload null-safe with file type validation
-[ ] 1.8  Inventory concurrency fixed with atomic SQL
-[ ] 1.9  Refresh token system implemented (table + entity + endpoints)
-[ ] 1.10 Rate limiting on auth endpoints
-[ ] 1.11 Password reset uses POST with body
-[ ] 1.12 Password strength validation
-[ ] 1.13 Login attempt tracking + lockout
-[ ] 1.14 CORS restricted to configured origins
-```
-
----
-
-## Phase 2: Missing Core E-Commerce Logic
-
-> **Status:** ✅ COMPLETE
-
-### Completed Items
-- [x] 2.1 Cart summary endpoint (GET /cart/summary)
-- [x] 2.2 Stock validation at checkout (using effective stock from inventory)
-- [x] 2.3 Price validation from DB at checkout (using discountPrice or price)
-- [x] 2.4 Cart cleared after successful order
-- [x] 2.5 Idempotency key support for orders
-- [x] 2.6 Human-readable order numbers (ORD-YYYYMMDD-XXXX)
-- [x] 2.7 Order cancellation endpoint + logic (with stock restoration)
-- [x] 2.8 Return/refund request flow (new tables + endpoints)
-- [x] 2.9 Seller order listing endpoint (GET /order/seller)
-- [x] 2.10 Admin order listing with filters (GET /order/admin)
-- [x] 2.11 Payment order lookup endpoint (GET /payment/order/{orderId})
-- [x] 2.12 Payment amount validation against order total
-- [x] 2.13 Dual stock quantity resolved (effective stock helper)
-
-### New Files Added
-- `src/main/kotlin/com/piashcse/model/response/CartSummaryResponse.kt`
-- `src/main/kotlin/com/piashcse/model/request/CancelOrderRequest.kt`
-- `src/main/kotlin/com/piashcse/model/request/RefundRequest.kt`
-- `src/main/kotlin/com/piashcse/model/response/RefundRequestResponse.kt`
-- `src/main/kotlin/com/piashcse/database/entities/RefundRequest.kt`
-- `src/main/kotlin/com/piashcse/feature/refund_request/RefundRequestService.kt`
-- `src/main/kotlin/com/piashcse/feature/refund_request/RefundRequestRoutes.kt`
-- `database/migrations/phase2_changes.sql`
-
-### Key Refactoring
-- `OrderService.kt` — Enhanced createOrder with stock validation, price validation, idempotency, human-readable order numbers, and cart clearing
-- `OrderService.kt` — Added getSellerOrders, getAdminOrders, cancelOrder with stock restoration
-- `PaymentService.kt` — Added payment validation against order total and getPaymentsByOrderId
-- `CartService.kt` — Added getCartSummary with effective stock calculation
-- `Order.kt` entity — Added idempotencyKey column
-- `Payment.kt` entity — Added userId property
-- `ConfigureRouting.kt` — Registered refundRequestRoutes
-- `KoinModule.kt` — Registered RefundRequestService
-
----
-
-### 2.1 Add Cart Summary Endpoint
-
-**New endpoint:** `GET /cart/summary`
-
-**New response model:**
-```kotlin
-data class CartSummaryResponse(
-    val items: List<CartItemResponse>,
-    val subtotal: Long,
-    val estimatedTax: Long,
-    val itemCount: Int
-)
-
-data class CartItemResponse(
-    val productId: String,
-    val productName: String,
-    val price: Long,
-    val quantity: Int,
-    val image: String?,
-    val stockQuantity: Int,
-    val shopId: String?,
-    val shopName: String?
-)
-```
-
-**Service method:**
-```kotlin
-fun getCartSummary(userId: String): Result<CartSummaryResponse> = query {
-    val cartItems = CartItemDAO.find { CartItemTable.userId eq EntityID(userId, UserTable) }.toList()
-
-    val items = cartItems.mapNotNull { cartItem ->
-        val product = ProductDAO.findById(cartItem.productId.value) ?: return@mapNotNull null
-        val shop = product.shopId?.value?.let { ShopDAO.findById(it) }
-
-        CartItemResponse(
-            productId = product.id.value,
-            productName = product.name,
-            price = product.discountPrice ?: product.price,
-            quantity = cartItem.quantity,
-            image = product.images?.firstOrNull(),
-            stockQuantity = product.stockQuantity,
-            shopId = shop?.id?.value,
-            shopName = shop?.name
-        )
-    }
-
-    val subtotal = items.sumOf { it.price * it.quantity }
-    val estimatedTax = (subtotal * 0.1).toLong() // Configurable tax rate
-
-    Result.success(CartSummaryResponse(items, subtotal, estimatedTax, items.size))
-}
-```
-
----
-
-### 2.2 Add Stock & Price Validation at Checkout
-
-**File:** `src/main/kotlin/com/piashcse/feature/order/OrderService.kt`
-
-**Problem:** `createOrder` currently uses client-provided prices and does not check stock.
-
-**Fix in `createOrder`:**
-```kotlin
-fun createOrder(orderRequest: OrderRequest, userId: String): Result<OrderResponse> = query {
-    // Validate each product in the order
-    val validatedItems = mutableListOf<OrderItemData>()
-    var calculatedSubtotal = 0L
-
-    for (item in orderRequest.items) {
-        val product = ProductDAO.findById(EntityID(item.productId, ProductTable))
-            ?: return@query Result.failure("Product ${item.productId} not found".notFoundException())
-
-        // Validate stock
-        if (product.stockQuantity < item.quantity) {
-            return@query Result.failure("Product ${product.name} has only ${product.stockQuantity} in stock".validationException())
-        }
-
-        // Use DB price, not client price
-        val unitPrice = product.discountPrice ?: product.price
-        val itemTotal = unitPrice * item.quantity
-        calculatedSubtotal += itemTotal
-
-        validatedItems.add(OrderItemData(product, item.quantity, unitPrice, itemTotal))
-    }
-
-    // Validate total matches
-    if (orderRequest.total != calculatedSubtotal + orderRequest.shippingCost + orderRequest.taxAmount - orderRequest.discountAmount) {
-        return@query Result.failure("Order total mismatch. Expected: $calculatedSubtotal".validationException())
-    }
-
-    // ... proceed with order creation using validatedItems
-}
-```
-
----
-
-### 2.3 Clear Cart After Successful Order
-
-**In OrderService.createOrder, after order is persisted:**
-```kotlin
-// Clear cart items for this user
-CartItemDAO.find { CartItemTable.userId eq EntityID(userId, UserTable) }.forEach { it.delete() }
-```
-
----
-
-### 2.4 Add Idempotency Key to Orders
-
-**Add column to `order` table:**
-```sql
-ALTER TABLE "order" ADD COLUMN idempotency_key VARCHAR(100) UNIQUE;
-CREATE INDEX idx_order_idempotency ON "order"(idempotency_key);
-```
-
-**In OrderRoutes:**
-```kotlin
-post {
-    val idempotencyKey = call.request.header("Idempotency-Key")
-    val orderRequest = call.receive<OrderRequest>()
-
-    // Check for duplicate
-    if (idempotencyKey != null) {
-        val existing = orderRepository.getOrderIdempotencyKey(idempotencyKey)
-        if (existing != null) {
-            return@post call.respond(HttpStatusCode.OK, ApiResponse.success(existing, "Order already processed"))
-        }
-    }
-
-    val result = orderService.createOrder(orderRequest, userId, idempotencyKey)
-    // ...
-}
-```
-
----
-
-### 2.5 Generate Human-Readable Order Numbers
-
-**Current:** UUID-based order numbers
-
-**Fix:** Use a sequence-based format: `ORD-YYYYMMDD-XXXX`
-
-**In OrderService.createOrder:**
-```kotlin
-val today = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE) // 20260411
-val count = orderRepository.getOrderCountForDate(today) + 1
-val orderNumber = "ORD-$today-${count.toString().padStart(4, '0')}"
-```
-
-**Add repository method:**
-```kotlin
-suspend fun getOrderCountForDate(datePrefix: String): Int = query {
-    OrderDAO.find {
-        OrderTable.orderNumber like "ORD-$datePrefix%"
-    }.count().toInt()
-}
-```
-
----
-
-### 2.6 Add Order Cancellation
-
-**New endpoint:** `POST /order/{id}/cancel`
-
-**New request model:**
-```kotlin
-data class CancelOrderRequest(val reason: String) {
-    fun CancelOrderRequest.validation() {
-        validate(this) {
-            validate(CancelOrderRequest::reason).isRequired().hasMaxLength(500)
-        }
-    }
-}
-```
-
-**Service method:**
-```kotlin
-fun cancelOrder(orderId: String, userId: String, reason: String, userType: UserType): Result<OrderResponse> = query {
-    val order = OrderDAO.findById(EntityID(orderId, OrderTable))
-        ?: return@query Result.failure("Order not found".notFoundException())
-
-    // Permission check
-    if (userType == UserType.CUSTOMER && order.userId.value != userId) {
-        return@query Result.failure("Unauthorized".unauthorizedAccessException())
-    }
-
-    // Status check — only PENDING or CONFIRMED can be cancelled
-    if (order.status !in listOf(OrderStatus.PENDING.name, OrderStatus.CONFIRMED.name)) {
-        return@query Result.failure("Order cannot be cancelled in ${order.status} status".validationException())
-    }
-
-    val oldStatus = order.status
-    order.status = OrderStatus.CANCELED.name
-    order.canceledDate = Instant.now()
-    order.notes = reason
-
-    // Record status history
-    OrderStatusHistory.new {
-        this.orderId = order.id
-        this.oldStatus = oldStatus
-        this.newStatus = OrderStatus.CANCELED.name
-        this.changedBy = EntityID(userId, UserTable)
-        this.notes = reason
-    }
-
-    // Restore stock
-    OrderItemDAO.find { OrderItemTable.orderId eq order.id }.forEach { orderItem ->
-        ProductDAO.findById(orderItem.productId.value)?.let { product ->
-            product.stockQuantity += orderItem.quantity
-        }
-    }
-
-    Result.success(order.toResponse())
-}
-```
-
----
-
-### 2.7 Add Return/Refund Request Flow
-
-**New tables:**
-```sql
-CREATE TABLE IF NOT EXISTS return_request (
-    id VARCHAR(50) PRIMARY KEY,
-    order_item_id VARCHAR(50) NOT NULL REFERENCES order_item(id),
-    user_id VARCHAR(50) NOT NULL REFERENCES "user"(id),
-    reason TEXT NOT NULL,
-    images JSONB,
-    status VARCHAR(20) DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED, REFUNDED, SHIPPED
-    refund_amount BIGINT,
-    refund_method VARCHAR(50),
-    tracking_number VARCHAR(100),
-    requested_at TIMESTAMP DEFAULT NOW(),
-    resolved_at TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX idx_return_request_order_item ON return_request(order_item_id);
-CREATE INDEX idx_return_request_user ON return_request(user_id);
-CREATE INDEX idx_return_request_status ON return_request(status);
-```
-
-**New enum in `Enums.kt`:**
-```kotlin
-enum class ReturnStatus {
-    PENDING, APPROVED, REJECTED, REFUNDED, SHIPPED
-}
-```
-
-**Endpoints:**
-```
-POST   /order/{orderId}/return          # Customer: request return for order
-GET    /order/{orderId}/returns          # Customer/Seller: list returns for order
-GET    /returns/{returnId}               # Get return detail
-PUT    /returns/{returnId}/status        # Seller/Admin: approve/reject return
-POST   /returns/{returnId}/ship          # Customer: mark as shipped (with tracking)
-```
-
----
-
-### 2.8 Add Seller Order Listing
-
-**New endpoint:** `GET /order/seller`
-
-**Service method:**
-```kotlin
-fun getSellerOrders(userId: String, limit: Int, offset: Int, status: String?): Result<List<OrderResponse>> = query {
-    val seller = SellerDAO.find { SellerTable.userId eq EntityID(userId, UserTable) }.firstOrNull()
-        ?: return@query Result.failure("Seller profile not found".notFoundException())
-
-    val shopId = seller.shopId ?: return@query Result.failure("No shop associated with seller".notFoundException())
-
-    val condition = OrderTable.shopId eq shopId
-    val finalCondition = if (status != null) {
-        condition and (OrderTable.status eq status)
-    } else condition
-
-    val orders = OrderDAO.find { finalCondition }
-        .orderBy(OrderTable.createdAt to SortOrder.DESC)
-        .limit(limit, offset.toLong())
-        .toList()
-
-    Result.success(orders.map { it.toResponse() })
-}
-```
-
----
-
-### 2.9 Add Admin Order Listing
-
-**New endpoint:** `GET /order/admin?status=&startDate=&endDate=&page=&limit=`
-
-**Service method:**
-```kotlin
-fun getAdminOrders(
-    limit: Int,
-    offset: Int,
-    status: String?,
-    startDate: Instant?,
-    endDate: Instant?
-): Result<Pair<List<OrderResponse>, Long>> = query {
-    var condition: Op<Boolean> = Op.TRUE
-
-    status?.let { condition = condition and (OrderTable.status eq it) }
-    startDate?.let { condition = condition and (OrderTable.createdAt greaterEq it) }
-    endDate?.let { condition = condition and (OrderTable.createdAt lessEq it) }
-
-    val totalCount = OrderDAO.find { condition }.count()
-    val orders = OrderDAO.find { condition }
-        .orderBy(OrderTable.createdAt to SortOrder.DESC)
-        .limit(limit, offset.toLong())
-        .toList()
-
-    Result.success(orders.map { it.toResponse() } to totalCount)
-}
-```
-
----
-
-### 2.10 Add Payment Order Lookup
-
-**New endpoint:** `GET /payment/order/{orderId}`
-
-**Service method:**
-```kotlin
-fun getPaymentsByOrderId(orderId: String): Result<List<PaymentResponse>> = query {
-    val payments = PaymentDAO.find { PaymentTable.orderId eq EntityID(orderId, OrderTable) }
-        .orderBy(PaymentTable.createdAt to SortOrder.DESC)
-        .toList()
-
-    Result.success(payments.map { it.toResponse() })
-}
-```
-
----
-
-### 2.11 Add Payment Validation
-
-**In PaymentService.createPayment:**
-```kotlin
-fun createPayment(paymentRequest: PaymentRequest, userId: String): Result<PaymentResponse> = query {
-    val order = OrderDAO.findById(EntityID(paymentRequest.orderId, OrderTable))
-        ?: return@query Result.failure("Order not found".notFoundException())
-
-    if (order.userId.value != userId) {
-        return@query Result.failure("Unauthorized".unauthorizedAccessException())
-    }
-
-    // Validate amount matches order total
-    if (paymentRequest.amount != order.total) {
-        return@query Result.failure("Payment amount (${paymentRequest.amount}) does not match order total (${order.total})".validationException())
-    }
-
-    // Check if already fully paid
-    val existingPayments = PaymentDAO.find {
-        (PaymentTable.orderId eq order.id) and (PaymentTable.status eq PaymentStatus.COMPLETED.name)
-    }.toList()
-
-    val paidAmount = existingPayments.sumOf { it.amount }
-    if (paidAmount >= order.total) {
-        return@query Result.failure("Order already fully paid".validationException())
-    }
-
-    // Create payment
-    val payment = PaymentDAO.new {
-        this.orderId = EntityID(paymentRequest.orderId, OrderTable)
-        this.userId = EntityID(userId, UserTable)
-        this.amount = paymentRequest.amount
-        this.status = paymentRequest.status
-        this.paymentMethod = paymentRequest.paymentMethod
-        this.transactionId = paymentRequest.transactionId
-    }
-
-    // Update order payment status if fully paid
-    if (paidAmount + paymentRequest.amount >= order.total) {
-        order.paymentStatus = PaymentStatus.PAID.name
-    }
-
-    Result.success(payment.toResponse())
-}
-```
-
----
-
-### 2.12 Resolve Dual Stock Quantity Problem
-
-**Problem:** Both `product.stock_quantity` and `inventory.stock_quantity` exist and can diverge.
-
-**Solution:** Make `product.stock_quantity` a computed field derived from inventory, OR keep it as the source of truth for products without inventory records.
-
-**Approach — Inventory is source of truth when it exists:**
-
-Add a helper in ProductService:
-```kotlin
-fun getEffectiveStockQuantity(product: ProductDAO): Int = query {
-    val inventory = InventoryDAO.find {
-        InventoryTable.productId eq product.id
-    }.firstOrNull()
-
-    inventory?.stockQuantity ?: product.stockQuantity
-}
-```
-
-Update all stock checks to use `getEffectiveStockQuantity()` instead of `product.stockQuantity`.
-
-**Long-term:** Remove `product.stock_quantity` column once all products have inventory records. Add a migration:
-```sql
--- One-time sync
-UPDATE product p
-SET stock_quantity = i.stock_quantity
-FROM inventory i
-WHERE p.id = i.product_id AND p.stock_quantity != i.stock_quantity;
-```
-
----
-
-### Phase 2 Completion Checklist
-
-```
-[ ] 2.1  Cart summary endpoint (GET /cart/summary)
-[ ] 2.2  Stock validation at checkout
-[ ] 2.3  Price validation from DB at checkout
-[ ] 2.4  Cart cleared after successful order
-[ ] 2.5  Idempotency key support for orders
-[ ] 2.6  Human-readable order numbers (ORD-YYYYMMDD-XXXX)
-[ ] 2.7  Order cancellation endpoint + logic
-[ ] 2.8  Return/refund request flow (new tables + endpoints)
-[ ] 2.9  Order status history tracking
-[ ] 2.10 Seller order listing endpoint
-[ ] 2.11 Admin order listing with filters
-[ ] 2.12 Payment order lookup endpoint
-[ ] 2.13 Payment amount validation against order total
-[ ] 2.14 Dual stock quantity resolved
-```
-
----
-
-## ~~Phase 3: API Standardization (Validation, Pagination, Versioning)~~
-<a name="phase-3-api-standardization"></a>
-
-> **Status:** ✅ COMPLETE — Implemented robust validation, standardized pagination, and per-domain versioning architecture.
-
-### Completed Items
-- [x] 3.1 Per-domain API versioning (V1, V2) with registry-based discovery.
-- [x] 3.2 Standardized URL prefixes for role isolation: `/api/v{n}/seller/` and `/api/v{n}/admin/`.
-- [x] 3.3 Root-level redirect to Swagger UI (`/` → `/swagger`).
-- [x] 3.4 Composition-based routing to eliminate conditional versioning logic.
-- [x] 3.5 V2 optimized shop management API.
-- [x] 3.6 Automated API discovery listing supported domain versions.
-- [x] 3.7 Standardized pagination metadata in all collection responses.
-- [x] 3.8 Consistent error response format and message centralization.
-
----
-
-### 3.1 API Versioning (/api/v1/)
-
-**Change base route prefix:**
-```kotlin
-// In ConfigureRouting.kt
-route("/api/v1") {
-    // ... all existing routes
-}
-```
-
-**Rule:** All new endpoints go under `/api/v1/`. When breaking changes are needed in the future, add `/api/v2/` alongside.
-
----
-
-### 3.2 Enforce Valiktor Validation on All Request Models
-
-**Rule:** Every route that receives a request body MUST call `.validation()` before passing to service.
-
-**Pattern to apply in every route:**
-```kotlin
-post {
-    val request = call.receive<ProductRequest>()
-    request.validation()  // ← THIS LINE IS MISSING IN MOST ROUTES
-
-    val result = service.create(request, ...)
-    // ...
-}
-```
-
-**Files to update:**
-
-| File | Request Model | Status |
-|------|--------------|--------|
-| `ProductRoutes.kt` | `ProductRequest` | ❌ Not called |
-| `ProductRoutes.kt` | `ProductWithFilterRequest` | ❌ Not called |
-| `ProductRoutes.kt` | `ProductSearchRequest` | ❌ Not called |
-| `ShopRoutes.kt` | `ShopRequest` | ❌ Not called |
-| `InventoryRoutes.kt` | `InventoryRequest` | ❌ Not called |
-
-**Add `validation()` method to UpdateProductRequest:**
-```kotlin
-data class UpdateProductRequest(
-    val name: String? = null,
-    val description: String? = null,
-    val categoryId: String? = null,
-    val subCategoryId: String? = null,
-    val brandId: String? = null,
-    val price: Long? = null,
-    val discountPrice: Long? = null,
-    val stockQuantity: Int? = null,
-    val status: String? = null,
-    val featured: Boolean? = null,
-    val bestSeller: Boolean? = null,
-    val hotDeal: Boolean? = null,
-    val freeShipping: Boolean? = null
-) {
-    fun UpdateProductRequest.validation() {
-        validate(this) {
-            name?.let {
-                validate(UpdateProductRequest::name).hasMaxLength(255)
-            }
-            price?.let {
-                validate(UpdateProductRequest::price).isGreaterThan(0)
-            }
-            discountPrice?.let {
-                validate(UpdateProductRequest::discountPrice).isGreaterThan(0)
-            }
-            stockQuantity?.let {
-                validate(UpdateProductRequest::stockQuantity).isGreaterThan(-1)
-            }
-        }
-    }
-}
-```
-
----
-
-### 3.3 Add Pagination Metadata
-
-**New response wrapper:**
-```kotlin
-// src/main/kotlin/com/piashcse/model/response/PaginatedResponse.kt
-package com.piashcse.model.response
-
-data class PaginatedResponse<T>(
-    val data: List<T>,
-    val pagination: PaginationInfo
-)
-
-data class PaginationInfo(
-    val page: Int,
-    val limit: Int,
-    val total: Long,
-    val totalPages: Int,
-    val hasNext: Boolean,
-    val hasPrev: Boolean
-) {
-    companion object {
-        fun from(page: Int, limit: Int, total: Long): PaginationInfo {
-            val totalPages = ((total + limit - 1) / limit).toInt()
-            return PaginationInfo(
-                page = page,
-                limit = limit,
-                total = total,
-                totalPages = totalPages,
-                hasNext = page < totalPages,
-                hasPrev = page > 1
-            )
-        }
-    }
-}
-```
-
-**Update list endpoints to return paginated responses:**
-
-```kotlin
-// ProductRoutes.kt — GET /product
-get {
-    val page = call.parameters["page"]?.toIntOrNull() ?: 1
-    val limit = call.parameters["limit"]?.toIntOrNull()?.coerceIn(1, 100) ?: 20
-    val offset = (page - 1) * limit
-
-    // ... existing filter logic
-    val (products, total) = productService.getProductsPaginated(limit, offset, filters)
-
-    call.respond(HttpStatusCode.OK, ApiResponse.success(
-        PaginatedResponse(products, PaginationInfo.from(page, limit, total))
-    ))
-}
-```
-
-**Add paginated service methods:**
-```kotlin
-// ProductService.kt
-fun getProductsPaginated(
-    limit: Int, offset: Int, filters: ProductFilters
-): Pair<List<ProductResponse>, Long> = query {
-    var condition: Op<Boolean> = ProductTable.status eq ProductStatus.ACTIVATED.name
-    // ... build condition from filters
-
-    val total = ProductDAO.find { condition }.count()
-    val products = ProductDAO.find { condition }
-        .limit(limit, offset.toLong())
-        .toList()
-
-    products.map { it.toResponse() } to total
-}
-```
-
-**Endpoints requiring pagination:**
-```
-GET /product                  → add page, return PaginatedResponse
-GET /product/search           → add page, return PaginatedResponse
-GET /product/seller           → add page, return PaginatedResponse
-GET /shop                     → add page, return PaginatedResponse
-GET /shop/public              → add page, return PaginatedResponse
-GET /order                    → add page, return PaginatedResponse
-GET /review-rating            → add page, return PaginatedResponse
-GET /wishlist                 → already has offset, add total count
-GET /inventory/low-stock      → add page, return PaginatedResponse
-```
-
----
-
-### 3.4 Standardize Error Response Format
-
-**Current ApiResponse:**
-```kotlin
-sealed class ApiResponse {
-    data class Success<T>(val data: T, val message: String) : ApiResponse()
-    data class Failure(val message: String, val errorCode: String? = null) : ApiResponse()
-}
-```
-
-**Update Failure to include field-level details:**
-```kotlin
-data class Failure(
-    val message: String,
-    val errorCode: String? = null,
-    val details: List<FieldError>? = null
-) : ApiResponse()
-
-data class FieldError(
-    val field: String,
-    val message: String,
-    val rejectedValue: Any? = null
-)
-```
-
-**Standard usage across all routes:**
-```kotlin
-// Success
-call.respond(HttpStatusCode.OK, ApiResponse.success(data, "Operation successful"))
-
-// Not found
-call.respond(HttpStatusCode.NotFound, ApiResponse.failure("Resource not found", errorCode = "NOT_FOUND"))
-
-// Validation error
-call.respond(HttpStatusCode.BadRequest, ApiResponse.failure(
-    "Invalid input",
-    errorCode = "VALIDATION_ERROR",
-    details = listOf(FieldError("email", "Must be valid email", request.email))
-))
-
-// Unauthorized
-call.respond(HttpStatusCode.Unauthorized, ApiResponse.failure("Unauthorized", errorCode = "UNAUTHORIZED"))
-
-// Server error
-call.respond(HttpStatusCode.InternalServerError, ApiResponse.failure(
-    "Internal server error",
-    errorCode = "INTERNAL_ERROR"
-))
-```
-
-**Update StatusPages to match:**
-```kotlin
-install(StatusPages) {
-    exception<ValidationException> { call, cause ->
-        call.respond(HttpStatusCode.BadRequest, ApiResponse.failure(
-            cause.message ?: "Validation failed",
-            errorCode = "VALIDATION_ERROR"
-        ))
-    }
-    exception<NotFoundException> { call, cause ->
-        call.respond(HttpStatusCode.NotFound, ApiResponse.failure(
-            cause.message ?: "Resource not found",
-            errorCode = "NOT_FOUND"
-        ))
-    }
-    exception<Throwable> { call, cause ->
-        call.application.environment.log.error("Unhandled exception", cause)
-        call.respond(HttpStatusCode.InternalServerError, ApiResponse.failure(
-            "Internal server error",
-            errorCode = "INTERNAL_ERROR"
-        ))
-    }
-}
-```
-
----
-
-### 3.5 Convert All Mutation Query Params to POST Body
-
-**Endpoints to convert:**
-
-| Current | Target |
-|---------|--------|
-| `PUT /cart/update?productId=&quantity=` | `PUT /cart/update` with `{ "productId": "...", "quantity": 1 }` |
-| `DELETE /cart/remove?productId=` | `DELETE /cart/remove` with `{ "productId": "..." }` |
-| `PUT /inventory/stock/{id}?quantity=&operation=` | `PUT /inventory/stock/{id}` with `{ "quantity": 10, "operation": "add" }` |
-
-**Example conversion for cart update:**
-```kotlin
-data class UpdateCartItemRequest(
-    val productId: String,
-    val quantity: Int
-) {
-    fun UpdateCartItemRequest.validation() {
-        validate(this) {
-            validate(UpdateCartItemRequest::productId).isRequired()
-            validate(UpdateCartItemRequest::quantity).isGreaterThan(0)
-        }
-    }
-}
-
-// Route
-put("update") {
-    val request = call.receive<UpdateCartItemRequest>()
-    request.validation()
-
-    val result = cartService.updateCartItem(request, userId)
-    // ...
-}
-```
-
----
-
-### Phase 3 Completion Checklist
-
-```
-[ ] 3.1  API versioning (/api/v1/) added to routing
-[ ] 3.2  .validation() called on all request models in routes
-[ ] 3.3  PaginatedResponse wrapper implemented
-[ ] 3.4  All list endpoints return paginated responses with total count
-[ ] 3.5  Error response format includes errorCode and optional details list
-[ ] 3.6  StatusPages updated to use standardized error format
-[ ] 3.7  Mutation endpoints use request body instead of query params
-```
-
----
-
-## Phase 4: Database Schema Fixes
-
-> **Goal:** Add missing tables, columns, and indexes needed for a production-ready database.
-
----
-
-### 4.1 All Missing Indexes
-
-Create a new Flyway migration: `V5__add_performance_indexes.sql`
-
-```sql
--- Product indexes
-CREATE INDEX IF NOT EXISTS idx_product_category ON product(category_id);
-CREATE INDEX IF NOT EXISTS idx_product_subcategory ON product(sub_category_id);
-CREATE INDEX IF NOT EXISTS idx_product_brand ON product(brand_id);
-CREATE INDEX IF NOT EXISTS idx_product_shop ON product(shop_id);
-CREATE INDEX IF NOT EXISTS idx_product_status_created ON product(status, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_product_sku ON product(sku);
-CREATE INDEX IF NOT EXISTS idx_product_featured ON product(featured, status);
-CREATE INDEX IF NOT EXISTS idx_product_best_seller ON product(best_seller, status);
-
--- Order indexes
-CREATE INDEX IF NOT EXISTS idx_order_user_created ON "order"(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_order_shop ON "order"(shop_id);
-CREATE INDEX IF NOT EXISTS idx_order_status ON "order"(status);
-CREATE INDEX IF NOT EXISTS idx_order_payment_status ON "order"(payment_status);
-CREATE INDEX IF NOT EXISTS idx_order_number ON "order"(order_number);
-
--- Order item indexes
-CREATE INDEX IF NOT EXISTS idx_order_item_order ON order_item(order_id);
-CREATE INDEX IF NOT EXISTS idx_order_item_product ON order_item(product_id);
-CREATE INDEX IF NOT EXISTS idx_order_item_shop ON order_item(shop_id);
-
--- Cart indexes
-CREATE INDEX IF NOT EXISTS idx_cart_user ON cart_item(user_id);
-CREATE INDEX IF NOT EXISTS idx_cart_product ON cart_item(product_id);
-
--- Wishlist indexes
-CREATE INDEX IF NOT EXISTS idx_wishlist_user ON wishlist(user_id);
-CREATE INDEX IF NOT EXISTS idx_wishlist_user_product ON wishlist(user_id, product_id);
-
--- Payment indexes
-CREATE INDEX IF NOT EXISTS idx_payment_order ON payment(order_id);
-CREATE INDEX IF NOT EXISTS idx_payment_user ON payment(user_id);
-CREATE INDEX IF NOT EXISTS idx_payment_transaction ON payment(transaction_id);
-
--- Review indexes
-CREATE INDEX IF NOT EXISTS idx_review_product_status ON review_rating(product_id, status);
-CREATE INDEX IF NOT EXISTS idx_review_user ON review_rating(user_id);
-
--- Shipping indexes
-CREATE INDEX IF NOT EXISTS idx_shipping_order ON shipping(order_id);
-
--- Inventory indexes
-CREATE INDEX IF NOT EXISTS idx_inventory_product ON inventory(product_id);
-CREATE INDEX IF NOT EXISTS idx_inventory_shop ON inventory(shop_id);
-CREATE INDEX IF NOT EXISTS idx_inventory_low_stock ON inventory(status) WHERE status = 'LOW_STOCK';
-
--- Shop indexes
-CREATE INDEX IF NOT EXISTS idx_shop_status ON shop(status);
-CREATE INDEX IF NOT EXISTS idx_shop_user ON shop(user_id);
-CREATE INDEX IF NOT EXISTS idx_shop_category ON shop(category_id);
-
--- Seller indexes
-CREATE INDEX IF NOT EXISTS idx_seller_user ON seller(user_id);
-CREATE INDEX IF NOT EXISTS idx_seller_shop ON seller(shop_id);
-```
-
----
-
-### 4.2 Missing Columns on Existing Tables
-
-**Flyway migration:** `V6__add_missing_columns.sql`
-
-```sql
--- User table additions
-ALTER TABLE "user" ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP;
-ALTER TABLE "user" ADD COLUMN IF NOT EXISTS failed_login_attempts INT DEFAULT 0;
-ALTER TABLE "user" ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP;
-ALTER TABLE "user" ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMP;
-ALTER TABLE "user" ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;
-
--- Order table additions
-ALTER TABLE "order" ADD COLUMN IF NOT EXISTS canceled_by VARCHAR(50) REFERENCES "user"(id);
-ALTER TABLE "order" ADD COLUMN IF NOT EXISTS cancel_reason TEXT;
-ALTER TABLE "order" ADD COLUMN IF NOT EXISTS refund_amount BIGINT DEFAULT 0;
-ALTER TABLE "order" ADD COLUMN IF NOT EXISTS idempotency_key VARCHAR(100) UNIQUE;
-ALTER TABLE "order" ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(100);
-ALTER TABLE "order" ADD COLUMN IF NOT EXISTS estimated_delivery TIMESTAMP;
-
--- Payment table additions
-ALTER TABLE payment ADD COLUMN IF NOT EXISTS currency VARCHAR(3) DEFAULT 'USD';
-ALTER TABLE payment ADD COLUMN IF NOT EXISTS refunded_amount BIGINT DEFAULT 0;
-ALTER TABLE payment ADD COLUMN IF NOT EXISTS refunded_at TIMESTAMP;
-ALTER TABLE payment ADD COLUMN IF NOT EXISTS gateway VARCHAR(50);
-ALTER TABLE payment ADD COLUMN IF NOT EXISTS gateway_response JSONB;
-
--- Product table additions
-ALTER TABLE product ADD COLUMN IF NOT EXISTS slug VARCHAR(255);
-ALTER TABLE product ADD COLUMN IF NOT EXISTS seo_title VARCHAR(255);
-ALTER TABLE product ADD COLUMN IF NOT EXISTS seo_description TEXT;
-CREATE UNIQUE INDEX IF NOT EXISTS idx_product_slug ON product(slug);
-
--- Shipping table additions
-ALTER TABLE shipping ADD COLUMN IF NOT EXISTS tracking_company VARCHAR(100);
-ALTER TABLE shipping ADD COLUMN IF NOT EXISTS tracking_url VARCHAR(500);
-ALTER TABLE shipping ADD COLUMN IF NOT EXISTS estimated_delivery TIMESTAMP;
-ALTER TABLE shipping ADD COLUMN IF NOT EXISTS shipping_cost BIGINT;
-ALTER TABLE shipping ADD COLUMN IF NOT EXISTS notes TEXT;
-
--- Review table additions
-ALTER TABLE review_rating ADD COLUMN IF NOT EXISTS images JSONB;
-ALTER TABLE review_rating ADD COLUMN IF NOT EXISTS admin_response TEXT;
-ALTER TABLE review_rating ADD COLUMN IF NOT EXISTS reported_count INT DEFAULT 0;
-```
-
----
-
-### 4.3 New Tables — Auth & Security
-
-**Flyway migration:** `V7__auth_security_tables.sql`
-
-```sql
--- Refresh tokens (complements Phase 1.9)
-CREATE TABLE IF NOT EXISTS refresh_token (
-    id VARCHAR(50) PRIMARY KEY,
-    user_id VARCHAR(50) NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    token_hash VARCHAR(255) NOT NULL UNIQUE,
-    expires_at TIMESTAMP NOT NULL,
-    revoked_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_refresh_token_user ON refresh_token(user_id);
-
--- Login attempts (complements Phase 1.13)
-CREATE TABLE IF NOT EXISTS login_attempt (
-    id VARCHAR(50) PRIMARY KEY,
-    email VARCHAR(255) NOT NULL,
-    user_type VARCHAR(20) NOT NULL,
-    ip_address VARCHAR(45),
-    attempt_count INT DEFAULT 0,
-    locked_until TIMESTAMP,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW(),
-    UNIQUE(email, user_type)
-);
-CREATE INDEX IF NOT EXISTS idx_login_attempt_locked ON login_attempt(locked_until) WHERE locked_until IS NOT NULL;
-```
-
----
-
-### 4.4 New Tables — Business Logic
-
-**Flyway migration:** `V8__business_logic_tables.sql`
-
-```sql
--- Coupon system
-CREATE TABLE IF NOT EXISTS coupon (
-    id VARCHAR(50) PRIMARY KEY,
-    code VARCHAR(50) NOT NULL UNIQUE,
-    description TEXT,
-    discount_type VARCHAR(20) NOT NULL, -- PERCENTAGE, FIXED
-    discount_value BIGINT NOT NULL,
-    min_order_amount BIGINT,
-    max_uses INT,
-    max_discount_amount BIGINT, -- cap for percentage discounts
-    used_count INT DEFAULT 0,
-    valid_from TIMESTAMP,
-    valid_until TIMESTAMP,
-    applicable_shop_ids JSONB, -- limit to specific shops
-    applicable_category_ids JSONB, -- limit to specific categories
-    applicable_product_ids JSONB, -- limit to specific products
-    user_type_restriction VARCHAR(20), -- null = all, or CUSTOMER/SELLER
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_coupon_code ON coupon(code);
-CREATE INDEX IF NOT EXISTS idx_coupon_active_dates ON coupon(is_active, valid_from, valid_until);
-
-CREATE TABLE IF NOT EXISTS coupon_usage (
-    id VARCHAR(50) PRIMARY KEY,
-    coupon_id VARCHAR(50) NOT NULL REFERENCES coupon(id) ON DELETE CASCADE,
-    user_id VARCHAR(50) NOT NULL REFERENCES "user"(id),
-    order_id VARCHAR(50) NOT NULL REFERENCES "order"(id),
-    discount_amount BIGINT NOT NULL,
-    used_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_coupon_usage_coupon ON coupon_usage(coupon_id);
-CREATE INDEX IF NOT EXISTS idx_coupon_usage_user ON coupon_usage(user_id);
-CREATE INDEX IF NOT EXISTS idx_coupon_usage_order ON coupon_usage(order_id);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_coupon_usage_user_order ON coupon_usage(user_id, order_id);
-
--- Order status history (audit trail)
-CREATE TABLE IF NOT EXISTS order_status_history (
-    id VARCHAR(50) PRIMARY KEY,
-    order_id VARCHAR(50) NOT NULL REFERENCES "order"(id) ON DELETE CASCADE,
-    old_status VARCHAR(20),
-    new_status VARCHAR(20) NOT NULL,
-    changed_by VARCHAR(50) REFERENCES "user"(id),
-    notes TEXT,
-    changed_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_order_status_history_order ON order_status_history(order_id, changed_at DESC);
-
--- Return/Refund requests
-CREATE TABLE IF NOT EXISTS return_request (
-    id VARCHAR(50) PRIMARY KEY,
-    order_item_id VARCHAR(50) NOT NULL REFERENCES order_item(id),
-    user_id VARCHAR(50) NOT NULL REFERENCES "user"(id),
-    reason TEXT NOT NULL,
-    images JSONB,
-    status VARCHAR(20) DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED, REFUNDED, SHIPPED
-    refund_amount BIGINT,
-    refund_method VARCHAR(50), -- ORIGINAL, STORE_CREDIT, BANK_TRANSFER
-    tracking_number VARCHAR(100),
-    tracking_company VARCHAR(100),
-    requested_at TIMESTAMP DEFAULT NOW(),
-    resolved_at TIMESTAMP,
-    notes TEXT,
-    updated_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_return_request_order_item ON return_request(order_item_id);
-CREATE INDEX IF NOT EXISTS idx_return_request_user ON return_request(user_id);
-CREATE INDEX IF NOT EXISTS idx_return_request_status ON return_request(status);
-
--- Audit log (general purpose)
-CREATE TABLE IF NOT EXISTS audit_log (
-    id VARCHAR(50) PRIMARY KEY,
-    user_id VARCHAR(50) REFERENCES "user"(id),
-    action VARCHAR(50) NOT NULL, -- CREATE, UPDATE, DELETE, LOGIN, STATUS_CHANGE, PASSWORD_CHANGE
-    entity_type VARCHAR(50) NOT NULL, -- PRODUCT, ORDER, USER, SHOP, PAYMENT, INVENTORY
-    entity_id VARCHAR(50),
-    old_values JSONB,
-    new_values JSONB,
-    ip_address VARCHAR(45),
-    user_agent TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_audit_log_entity ON audit_log(entity_type, entity_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_audit_log_user ON audit_log(user_id, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_audit_log_action ON audit_log(action, created_at DESC);
-```
-
----
-
-### 4.4 Update Exposed Entity Classes
-
-For each new table, create corresponding Exposed entity. Pattern:
-
-```kotlin
-// src/main/kotlin/com/piashcse/database/entities/Coupon.kt
-package com.piashcse.database.entities
-
-import com.piashcse.database.entities.base.BaseEntity
-import com.piashcse.database.entities.base.BaseEntityClass
-import com.piashcse.database.entities.base.BaseIdTable
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
-import java.time.Instant
-
-object CouponTable : BaseIdTable("coupon") {
-    val code = varchar("code", 50).uniqueIndex()
-    val description = text("description").nullable()
-    val discountType = varchar("discount_type", 20) // PERCENTAGE, FIXED
-    val discountValue = long("discount_value")
-    val minOrderAmount = long("min_order_amount").nullable()
-    val maxUses = integer("max_uses").nullable()
-    val maxDiscountAmount = long("max_discount_amount").nullable()
-    val usedCount = integer("used_count").default(0)
-    val validFrom = timestamp("valid_from").nullable()
-    val validUntil = timestamp("valid_until").nullable()
-    val applicableShopIds = text("applicable_shop_ids").nullable() // JSONB stored as text
-    val applicableCategoryIds = text("applicable_category_ids").nullable()
-    val applicableProductIds = text("applicable_product_ids").nullable()
-    val userTypeRestriction = varchar("user_type_restriction", 20).nullable()
-    val isActive = bool("is_active").default(true)
-}
-
-class Coupon(id: EntityID<String>) : BaseEntity(id) {
-    companion object : BaseEntityClass<Coupon>(CouponTable)
-
-    var code by CouponTable.code
-    var description by CouponTable.description
-    var discountType by CouponTable.discountType
-    var discountValue by CouponTable.discountValue
-    var minOrderAmount by CouponTable.minOrderAmount
-    var maxUses by CouponTable.maxUses
-    var maxDiscountAmount by CouponTable.maxDiscountAmount
-    var usedCount by CouponTable.usedCount
-    var validFrom by CouponTable.validFrom
-    var validUntil by CouponTable.validUntil
-    var applicableShopIds by CouponTable.applicableShopIds
-    var applicableCategoryIds by CouponTable.applicableCategoryIds
-    var applicableProductIds by CouponTable.applicableProductIds
-    var userTypeRestriction by CouponTable.userTypeRestriction
-    var isActive by CouponTable.isActive
-
-    val isValid: Boolean
-        get() {
-            if (!isActive) return false
-            val now = Instant.now()
-            if (validFrom != null && now < validFrom) return false
-            if (validUntil != null && now > validUntil) return false
-            if (maxUses != null && usedCount >= maxUses) return false
-            return true
-        }
-}
-```
-
-**Register all new entities in `ConfigureDataBase.kt`:**
-```kotlin
-SchemaUtils.createMissingTablesAndColumns(
-    UserTable, UserProfileTable, SellerTable,
-    ShopTable, ShopCategoryTable,
-    ProductTable, ProductCategoryTable, ProductSubCategoryTable, BrandTable,
-    CartItemTable, WishListTable,
-    OrderTable, OrderItemTable,
-    PaymentTable, ShippingTable,
-    InventoryTable,
-    ReviewRatingTable,
-    PolicyDocumentsTable, PolicyConsentsTable,
-    // New tables
-    RefreshTokenTable,
-    LoginAttemptTable,
-    CouponTable, CouponUsageTable,
-    OrderStatusHistoryTable,
-    ReturnRequestTable,
-    AuditLogTable
-)
-```
-
----
-
-### Phase 4 Completion Checklist
-
-```
-[ ] 4.1  All performance indexes added via Flyway migration
-[ ] 4.2  Missing columns added to user, order, payment, product, shipping tables
-[ ] 4.3  refresh_token table created with entity + repository
-[ ] 4.4  login_attempt table created with entity + repository
-[ ] 4.5  coupon + coupon_usage tables created with entities
-[ ] 4.6  order_status_history table created with entity
-[ ] 4.7  return_request table created with entity
-[ ] 4.8  audit_log table created with entity
-[ ] 4.9  All new entities registered in ConfigureDataBase.kt
-[ ] 4.10  Flyway migrations ordered and tested
-```
-
----
-
-## Phase 5: Production Infrastructure (Docker, Health, Logging)
-<a name="phase-5-production-infrastructure"></a>
-
-> **Goal:** Prepare the application for production deployment with containers, health monitoring, and structured logging.
-
----
-
-### 5.1 Docker & Docker Compose setup
-
-**`Dockerfile`:**
-```dockerfile
-FROM eclipse-temurin:17-jre-alpine AS runtime
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-WORKDIR /app
-COPY build/install/ktor-ecom/ .
-RUN chown -R appuser:appgroup /app
-USER appuser
-EXPOSE 8080
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar ktor-ecom.jar"]
-```
-
-**`docker-compose.yml`:**
-```yaml
-version: '3.8'
-services:
-  app:
-    build: .
-    ports: ["8080:8080"]
-    environment:
-      - DATABASE_URL=jdbc:postgresql://postgres:5432/ecommerce
-      - JWT_SECRET=${JWT_SECRET}
-    depends_on:
-      postgres: { condition: service_healthy }
-  postgres:
-    image: postgres:15-alpine
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ecommerce"]
-```
-
----
-
-### 5.2 Health check endpoints (/health, /health/ready, /health/live)
-
-**New plugin:** `src/main/kotlin/com/piashcse/plugin/ConfigureHealth.kt`
-```kotlin
-fun Application.configureHealth() {
-    routing {
-        get("/health") { call.respond(HttpStatusCode.OK, mapOf("status" to "UP")) }
-        get("/health/ready") { /* check DB connection */ }
-    }
-}
-```
-
----
-
-### 5.3 Structured logging with JSON output + request ID
-
-**Add dependency:** `net.logstash.logback:logstash-logback-encoder`
-
-**Request ID tracking:**
-```kotlin
-intercept(ApplicationCallPipeline.Monitoring) { call ->
-    val requestId = call.request.header("X-Request-ID") ?: UUID.randomUUID().toString()
-    MDC.put("requestId", requestId)
-}
-```
-
----
-
-### 5.4 Test Infrastructure with TestContainers
-
-Setup `src/test` with `PostgreSQLContainer` for integration testing of repositories and routes.
-
----
-
-### Phase 5 Completion Checklist
-
-```
-[ ] 5.1  Dockerfile and docker-compose.yml configured
-[ ] 5.2  Health check endpoints implemented (/health/ready, /health/live)
-[ ] 5.3  Structured JSON logging configured for production
-[ ] 5.4  Request ID propagation (X-Request-ID) implemented
-[ ] 5.5  Test infrastructure with TestContainers ready
-```
-
----
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      - DATABASE_URL=jdbc:postgresql://postgres:5432/ecommerce
-      - DATABASE_USER=ecommerce
-      - DATABASE_PASSWORD=ecommerce_secret
-      - JWT_SECRET=your-jwt-secret-here
-      - JWT_ISSUER=ktor-ecom
-      - ALLOWED_ORIGINS=http://localhost:3000
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: ecommerce
-      POSTGRES_USER: ecommerce
-      POSTGRES_PASSWORD: ecommerce_secret
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ecommerce"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-volumes:
-  postgres_data:
-```
-
----
-
-### Phase 5 Completion Checklist
-
-```
-[ ] 5.1  API versioning (/api/v1/) added to routing
-[ ] 5.2  Admin routes separated to /admin/* namespace
-[ ] 5.3  Health check endpoints (/health, /health/ready, /health/live)
-[ ] 5.4  Structured logging with JSON output + request ID
-[ ] 5.5  Test infrastructure with TestContainers
-[ ] 5.6  (Optional) Migrate Gson → kotlinx.serialization
-[ ] 5.7  Request ID header propagation
-[ ] 5.8  Docker + Docker Compose setup
-```
-
----
-
-## Phase 6: Security Hardening
-
-> **Goal:** Fix critical security vulnerabilities identified in the comprehensive project audit. Address items that could lead to data breaches, unauthorized access, or system compromise.
-
----
-
-### 6.1 Remove Hardcoded JWT Secret Fallback
-
-**File:** `src/main/kotlin/com/piashcse/config/DotEnvConfig.kt`
-
-**Problem:** If `JWT_SECRET` env var is missing, falls back to embedded `zAP5MBA4B4Ijz0MZaS48` — anyone who reads the code can forge tokens.
-
-**Fix:**
-```kotlin
-// DotEnvConfig.kt
-val jwtSecret: String get() = DotEnv.get("JWT_SECRET")
-    ?: throw IllegalStateException("JWT_SECRET environment variable is required. Generate one with: openssl rand -base64 64")
-```
-
-**Severity:** CRITICAL
-
----
-
-### 6.2 Fix Profile Image Upload — No File Type Validation
-
-**File:** `src/main/kotlin/com/piashcse/feature/profile/ProfileRoutes.kt`
-
-**Problem:** Profile `image-upload` has ZERO validation on uploaded file type. Any file (`.jsp`, `.sh`, `.php`) can be written to disk.
-
-**Fix:** Apply the same validation as product image-upload:
-```kotlin
-post("image-upload") {
-    val multipart = call.receiveMultipart()
-    multipart.forEachPart { part ->
-        if (part is PartData.FileItem) {
-            val fileName = part.originalFileName ?: throw ValidationException("File name required")
-            val extension = fileName.substringAfterLast('.', "").lowercase()
-            if (extension !in listOf("jpg", "jpeg", "png", "webp", "gif")) {
-                throw ValidationException("Invalid file type. Allowed: jpg, jpeg, png, webp, gif")
-            }
-            // ... save with UUID name
-        }
-        part.dispose()
-    }
-}
-```
-
-**Also add:** `maxContentLength = 5242880` (5MB) in application.conf.
-
-**Severity:** CRITICAL
-
----
-
-### 6.3 Fix JWT Claim Name Mismatch in Order Authorization
-
-**File:** `src/main/kotlin/com/piashcse/feature/order/OrderRoutes.kt`
-
-**Problem:** Line ~83 checks `call.principal<JWTPrincipal>()?.payload?.getClaim("role")` but JWT tokens use `"userType"` claim. Authorization check always fails → bypassed.
-
-**Fix:**
-```kotlin
-// Change:
-val userType = call.principal<JwtTokenRequest>()?.userType
-// Instead of:
-val role = jwtPrincipal.payload.getClaim("role").asString()
-```
-
-**Verify:** Check all routes that read JWT claims — ensure they use `JwtTokenRequest.userType`, not `"role"`.
-
-**Severity:** CRITICAL
-
----
-
-### 6.4 Sanitize Logged Query Parameters
-
-**File:** `src/main/kotlin/com/piashcse/plugin/ConfigureBasic.kt`
-
-**Problem:** CallLogging logs ALL query parameters including `oldPassword`, `newPassword`, `token`, `otp`.
-
-**Fix:**
-```kotlin
-val sensitiveKeys = setOf("password", "token", "otp", "secret", "authorization")
-val queryParams = call.request.queryParameters.entries()
-    .filterNot { (key, _) -> key.lowercase() in sensitiveKeys }
-    .joinToString(", ") { "${it.key}=${it.value}" }
-```
-
-**Severity:** HIGH
-
----
-
-### 6.5 Reduce Access Token Expiry + Add Audience Validation
-
-**File:** `src/main/kotlin/com/piashcse/feature/auth/JwtConfig.kt`
-
-**Changes:**
-1. Reduce `VALIDITY_MS` from `24 * 60 * 60 * 1000L` (24h) to `15 * 60 * 1000L` (15min)
-2. Add audience to token and verifier:
-```kotlin
-// Token builder:
-.withAudience(DotEnvConfig.jwtAudience)
-
-// Verifier:
-.withAudience(DotEnvConfig.jwtAudience)
-```
-
-**Severity:** MEDIUM
-
----
-
-### 6.6 Add Security Response Headers
-
-**New plugin:** `src/main/kotlin/com/piashcse/plugin/ConfigureSecurityHeaders.kt`
-```kotlin
-fun Application.configureSecurityHeaders() {
-    install(DefaultHeaders) {
-        header("X-Content-Type-Options", "nosniff")
-        header("X-Frame-Options", "DENY")
-        header("X-XSS-Protection", "1; mode=block")
-        header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-        header("Content-Security-Policy", "default-src 'none'")
-        header("Referrer-Policy", "strict-origin-when-cross-origin")
-        header("Cache-Control", "no-store")
-        header("Pragma", "no-cache")
-    }
-}
-```
-
-**Register in Application.kt:** `configureSecurityHeaders()`
-
-**Severity:** HIGH
-
----
-
-### 6.7 Add File Size Limits to All Upload Endpoints
-
-**Files:** `ProductRoutes.kt`, `ProfileRoutes.kt`
-
-**Add in application.conf:**
-```hocon
-ktor {
-    deployment {
-        maxContentLength = 10485760  // 10MB global limit
-    }
-}
-```
-
-**Add per-file check in route handlers:**
-```kotlin
-if (part.contentDisposition.getParameter("size")?.toLongOrNull()?.let { it > 5 * 1024 * 1024 } == true) {
-    throw ValidationException("File size exceeds 5MB limit")
-}
-```
-
-**Severity:** HIGH
-
----
-
-### 6.8 Add Ownership Verification to All Resource Endpoints
-
-**Audit checklist — verify each endpoint checks resource ownership:**
-
-| Endpoint | File | Issue | Fix |
-|----------|------|-------|-----|
-| `PUT /product/{id}` | ProductRoutes.kt | No ownership check | Service must verify `product.userId == currentUserId` |
-| `DELETE /review/{id}` | ReviewRatingRoutes.kt | Any user can delete any review | Verify `review.userId == currentUserId` |
-| `PUT /review/{id}` | ReviewRatingRoutes.kt | Any user can edit any review | Verify ownership |
-| `PUT /shipping/{id}` | ShippingRoutes.kt | No order ownership check | Verify shipping belongs to user's order |
-| `GET /payment/{id}` | PaymentRoutes.kt | No payment ownership check | Verify payment belongs to current user |
-| `GET /shop/{id}` (seller) | ShopRoutes.kt | Returns any shop, not just seller's | Filter by seller's shopId |
-
-**Severity:** HIGH
-
----
-
-### 6.9 Replace commons-email 1.5 with commons-email2
-
-**File:** `gradle/libs.versions.toml`
-```toml
-# Replace:
-commons-email-version = "1.5"
-commons-email = { module = "org.apache.commons:commons-email", version.ref = "commons-email-version" }
-# With:
-commons-email-version = "2.0.0"
-commons-email = { module = "org.apache.commons:commons-email2-jakarta", version.ref = "commons-email-version" }
-```
-
-**Note:** If using jakarta namespace, update imports from `org.apache.commons.email.*` to `org.apache.commons.mail2.jakarta.*`.
-
-**Severity:** HIGH
-
----
-
-### 6.10 Remove Hardcoded SMTP Credentials
-
-**File:** `src/main/kotlin/com/piashcse/constants/AppConstants.kt`
-
-**Remove:**
-```kotlin
-object SmtpServer {
-    const val DEFAULT_AUTHENTICATOR = "smtp@gmail.com"
-    const val DEFAULT_AUTHENTICATOR_PASSWORD = "smtpcredential"
-    // ...
-}
-```
-
-**Update `sendEmail()` in Utils.kt** to require env vars and fail fast if missing:
-```kotlin
-val username = DotEnvConfig.emailUsername
-    ?: throw IllegalStateException("EMAIL_USERNAME environment variable is required")
-val password = DotEnvConfig.emailPassword
-    ?: throw IllegalStateException("EMAIL_PASSWORD environment variable is required")
-```
-
-**Severity:** HIGH
-
----
-
-### Phase 6 Completion Checklist
-
-```
-[ ] 6.1  Hardcoded JWT secret removed — env var required
-[ ] 6.2  Profile image upload has file type validation
-[ ] 6.3  JWT claim name mismatch fixed in OrderRoutes
-[ ] 6.4  Sensitive query parameters filtered from logs
-[ ] 6.5  Access token expiry reduced to 15 minutes + audience validation
-[ ] 6.6  Security response headers installed
-[ ] 6.7  File size limits on all upload endpoints
-[ ] 6.8  Ownership verification on all resource endpoints
-[ ] 6.9  commons-email upgraded to 2.0 (CVE fix)
-[ ] 6.10 Hardcoded SMTP credentials removed
-```
-
----
-
-## Phase 7: Architecture & Database Quality
-
-> **Goal:** Resolve architectural violations, database performance issues, and code quality problems identified in the comprehensive audit. This phase focuses on maintainability, performance, and data integrity.
-
----
-
-### 7.1 Create Real Repository Layer
-
-**Problem:** All services directly access Exposed DAOs. Repository interfaces are hollow contracts — services implement them directly.
-
-**Pattern to implement for each feature:**
-```
-feature/product/
-├── ProductRoutes.kt       # HTTP concerns only
-├── ProductService.kt      # Business logic, depends on repository interface
-├── ProductRepository.kt   # Interface (already exists)
-└── ProductRepositoryImpl.kt  # NEW — actual DB access with Exposed
-```
-
-**Start with highest-impact features first:**
-1. `ProductRepositoryImpl` — most complex queries
-2. `OrderRepositoryImpl` — multi-step transactions
-3. `CartRepositoryImpl` — N+1 queries
-4. `ShopRepositoryImpl` — filtering logic
-
-**Example:**
-```kotlin
-// ProductRepositoryImpl.kt
-class ProductRepositoryImpl : ProductRepository {
-    override suspend fun findById(productId: String): ProductDAO? = query {
-        ProductDAO.findById(productId)
-    }
-
-    override suspend fun create(product: ProductDAO): ProductDAO = query {
-        // ... DAO creation logic isolated here
-    }
-}
-```
-
-**Register in KoinModule.kt:**
-```kotlin
-single { ProductRepositoryImpl() as ProductRepository }
-single { ProductService(get<ProductRepository>()) }  // Inject, don't instantiate
-```
-
----
-
-### 7.2 Eliminate N+1 Query Patterns
-
-**Critical N+1 hotspots:**
-
-**CartService.getCartItems** — 1+N queries:
-```kotlin
-// BEFORE (N+1):
-CartItemDAO.find { userId eq ... }.map {
-    it.response(ProductDAO.find { id eq it.productId }.first().response())
-}
-
-// AFTER (single query with eager load):
-val cartItems = CartItemDAO.find { userId eq ... }.toList()
-val productIds = cartItems.map { it.productId.value }
-val products = ProductDAO.find { ProductTable.id inList productIds }.associateBy { it.id.value }
-cartItems.map { cartItem ->
-    cartItem.response(products[cartItem.productId.value]?.response())
-}
-```
-
-**ProductCategoryDAO.response()** — lazy `referrersOn`:
-```kotlin
-// BEFORE: Triggers N queries for subcategories
-private val subCategories by ProductSubCategoryDAO referrersOn ProductSubCategoryTable.categoryId
-
-// AFTER: Eager load or remove from response
-fun response() = ProductCategoryResponse(
-    id = id.value,
-    name = name,
-    // Remove subCategories or load separately
-)
-```
-
-**ShopService.getFeaturedShops** — sorts ALL shops in memory:
-```kotlin
-// BEFORE: Fetches ALL approved shops, sorts in Kotlin
-ShopDAO.find { ShopTable.status eq ShopStatus.APPROVED }
-    .sortedByDescending { it.rating }.take(10)
-
-// AFTER: Database-level sort + limit
-ShopDAO.find { ShopTable.status eq ShopStatus.APPROVED }
-    .orderBy(ShopTable.rating to SortOrder.DESC)
-    .limit(10)
-    .toList()
-```
-
----
-
-### 7.3 Add Database Indexes
-
-**New Flyway migration:** `V5__add_performance_indexes.sql`
-```sql
--- Foreign key indexes (all FK columns lack indexes)
-CREATE INDEX IF NOT EXISTS idx_user_profile_user ON user_profile(user_id);
-CREATE INDEX IF NOT EXISTS idx_shop_user ON shop(user_id);
-CREATE INDEX IF NOT EXISTS idx_shop_category ON shop(category_id);
-CREATE INDEX IF NOT EXISTS idx_product_user ON product(user_id);
-CREATE INDEX IF NOT EXISTS idx_product_shop ON product(shop_id);
-CREATE INDEX IF NOT EXISTS idx_product_category ON product(category_id);
-CREATE INDEX IF NOT EXISTS idx_product_subcategory ON product(sub_category_id);
-CREATE INDEX IF NOT EXISTS idx_product_brand ON product(brand_id);
-CREATE INDEX IF NOT EXISTS idx_cart_item_user ON cart_item(user_id);
-CREATE INDEX IF NOT EXISTS idx_cart_item_product ON cart_item(product_id);
-CREATE INDEX IF NOT EXISTS idx_wishlist_user ON wishlist(user_id);
-CREATE INDEX IF NOT EXISTS idx_wishlist_product ON wishlist(product_id);
-CREATE INDEX IF NOT EXISTS idx_review_user ON review_rating(user_id);
-CREATE INDEX IF NOT EXISTS idx_review_product ON review_rating(product_id);
-CREATE INDEX IF NOT EXISTS idx_order_user ON "order"(user_id);
-CREATE INDEX IF NOT EXISTS idx_order_shop ON "order"(shop_id);
-CREATE INDEX IF NOT EXISTS idx_order_item_order ON order_item(order_id);
-CREATE INDEX IF NOT EXISTS idx_order_item_product ON order_item(product_id);
-CREATE INDEX IF NOT EXISTS idx_payment_order ON payment(order_id);
-CREATE INDEX IF NOT EXISTS idx_payment_user ON payment(user_id);
-CREATE INDEX IF NOT EXISTS idx_shipping_order ON shipping(order_id);
-CREATE INDEX IF NOT EXISTS idx_inventory_product ON inventory(product_id);
-CREATE INDEX IF NOT EXISTS idx_inventory_shop ON inventory(shop_id);
-CREATE INDEX IF NOT EXISTS idx_seller_user ON seller(user_id);
-CREATE INDEX IF NOT EXISTS idx_refresh_token_user ON refresh_token(user_id);
-
--- Composite indexes for common query patterns
-CREATE UNIQUE INDEX IF NOT EXISTS idx_cart_user_product ON cart_item(user_id, product_id);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_wishlist_user_product ON wishlist(user_id, product_id);
-CREATE INDEX IF NOT EXISTS idx_review_product_status ON review_rating(product_id, status);
-CREATE INDEX IF NOT EXISTS idx_product_category_status ON product(category_id, status);
-CREATE INDEX IF NOT EXISTS idx_product_shop_status ON product(shop_id, status);
-CREATE INDEX IF NOT EXISTS idx_product_status_created ON product(status, created_at DESC);
-
--- Performance indexes
-CREATE INDEX IF NOT EXISTS idx_product_featured ON product(featured, status);
-CREATE INDEX IF NOT EXISTS idx_product_best_seller ON product(best_seller, status);
-CREATE INDEX IF NOT EXISTS idx_order_status ON "order"(status);
-CREATE INDEX IF NOT EXISTS idx_shop_status ON shop(status);
-```
-
----
-
-### 7.4 Add ON DELETE Cascade/Restrict Rules
-
-**New Flyway migration:** `V6__add_fk_cascade_rules.sql`
-```sql
--- Drop existing FK constraints and recreate with proper ON DELETE behavior
-
--- User deletion should cascade to all user-owned data
-ALTER TABLE user_profile DROP CONSTRAINT IF EXISTS user_profile_user_id_fkey;
-ALTER TABLE user_profile ADD CONSTRAINT user_profile_user_id_fkey
-    FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE;
-
-ALTER TABLE refresh_token DROP CONSTRAINT IF EXISTS refresh_token_user_id_fkey;
-ALTER TABLE refresh_token ADD CONSTRAINT refresh_token_user_id_fkey
-    FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE;
-
-ALTER TABLE login_attempt DROP CONSTRAINT IF EXISTS login_attempt_user_id_fkey;
-ALTER TABLE login_attempt ADD CONSTRAINT login_attempt_user_id_fkey
-    FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE;
-
--- Order deletion cascades to items, payments, shipping
-ALTER TABLE order_item DROP CONSTRAINT IF EXISTS order_item_order_id_fkey;
-ALTER TABLE order_item ADD CONSTRAINT order_item_order_id_fkey
-    FOREIGN KEY (order_id) REFERENCES "order"(id) ON DELETE CASCADE;
-
-ALTER TABLE payment DROP CONSTRAINT IF EXISTS payment_order_id_fkey;
-ALTER TABLE payment ADD CONSTRAINT payment_order_id_fkey
-    FOREIGN KEY (order_id) REFERENCES "order"(id) ON DELETE CASCADE;
-
-ALTER TABLE shipping DROP CONSTRAINT IF EXISTS shipping_order_id_fkey;
-ALTER TABLE shipping ADD CONSTRAINT shipping_order_id_fkey
-    FOREIGN KEY (order_id) REFERENCES "order"(id) ON DELETE CASCADE;
-
--- Product deletion — RESTRICT (cannot delete products with orders)
--- (Default FK behavior — NO ACTION — is correct here)
-
--- Policy consent cascades
-ALTER TABLE policy_consent DROP CONSTRAINT IF EXISTS policy_consent_policy_id_fkey;
-ALTER TABLE policy_consent ADD CONSTRAINT policy_consent_policy_id_fkey
-    FOREIGN KEY (policy_id) REFERENCES policy_documents(id) ON DELETE CASCADE;
-
-ALTER TABLE policy_consent DROP CONSTRAINT IF EXISTS policy_consent_user_id_fkey;
-ALTER TABLE policy_consent ADD CONSTRAINT policy_consent_user_id_fkey
-    FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE;
-```
-
----
-
-### 7.5 Add Unique Constraints
-
-**New Flyway migration:** `V7__add_unique_constraints.sql`
-```sql
--- Prevent duplicate records at database level
-ALTER TABLE cart_item ADD CONSTRAINT uq_cart_user_product UNIQUE (user_id, product_id);
-ALTER TABLE wishlist ADD CONSTRAINT uq_wishlist_user_product UNIQUE (user_id, product_id);
-ALTER TABLE review_rating ADD CONSTRAINT uq_review_user_product UNIQUE (user_id, product_id);
-ALTER TABLE inventory ADD CONSTRAINT uq_inventory_product_shop UNIQUE (product_id, shop_id);
-ALTER TABLE policy_consent ADD CONSTRAINT uq_consent_user_policy UNIQUE (user_id, policy_id);
-ALTER TABLE seller ADD CONSTRAINT uq_seller_user UNIQUE (user_id);
-ALTER TABLE user_profile ADD CONSTRAINT uq_profile_user UNIQUE (user_id);
-ALTER TABLE product_category ADD CONSTRAINT uq_category_name UNIQUE (name);
-ALTER TABLE brand ADD CONSTRAINT uq_brand_name UNIQUE (name);
-ALTER TABLE shop_category ADD CONSTRAINT uq_shop_category_name UNIQUE (name);
-ALTER TABLE payment ADD CONSTRAINT uq_payment_transaction UNIQUE (transaction_id);
-ALTER TABLE shipping ADD CONSTRAINT uq_shipping_order UNIQUE (order_id);
-```
-
----
-
-### 7.6 Add CHECK Constraints
-
-**New Flyway migration:** `V8__add_check_constraints.sql`
-```sql
-ALTER TABLE cart_item ADD CONSTRAINT chk_cart_quantity CHECK (quantity > 0);
-ALTER TABLE order_item ADD CONSTRAINT chk_order_item_quantity CHECK (quantity > 0);
-ALTER TABLE inventory ADD CONSTRAINT chk_inventory_stock CHECK (stock_quantity >= 0);
-ALTER TABLE inventory ADD CONSTRAINT chk_inventory_reserved CHECK (reserved_quantity >= 0);
-ALTER TABLE inventory ADD CONSTRAINT chk_inventory_min_stock CHECK (minimum_stock_level >= 0);
-ALTER TABLE payment ADD CONSTRAINT chk_payment_amount CHECK (amount > 0);
-ALTER TABLE product ADD CONSTRAINT chk_product_price CHECK (price > 0);
-ALTER TABLE product ADD CONSTRAINT chk_product_discount CHECK (discount_price IS NULL OR discount_price > 0);
-ALTER TABLE login_attempt ADD CONSTRAINT chk_login_attempts CHECK (attempt_count >= 0);
-ALTER TABLE "user" ADD CONSTRAINT chk_user_password CHECK (char_length(password) > 0);
-```
-
----
-
-### 7.7 Convert VARCHAR Enums to Typed Enums
-
-**Files:** `ReviewRating.kt`, `LoginAttempt.kt`
-
-**ReviewRatingTable.status** — currently `varchar("status", 20).default("active")`:
-```kotlin
-// Add to Enums.kt:
-enum class ReviewStatus { ACTIVE, HIDDEN, FLAGGED }
-
-// In ReviewRating.kt:
-val status = enumerationByName<ReviewStatus>("status", 20).default(ReviewStatus.ACTIVE)
-```
-
-**LoginAttemptTable.userType** — currently `varchar("user_type", 20)`:
-```kotlin
-val userType = enumerationByName<UserType>("user_type", 20)
-```
-
-**Flyway migration:** `V9__convert_varchar_to_enum.sql`
-```sql
--- Review status
-ALTER TABLE review_rating ALTER COLUMN status TYPE VARCHAR(20);
--- No data change needed if existing values match enum names
-```
-
----
-
-### 7.8 Fix Dual Migration Strategy
-
-**File:** `src/main/kotlin/com/piashcse/database/ConfigureDataBase.kt`
-
-**Problem:** Both Flyway (`flyway.migrate()`) AND `SchemaUtils.create(30 tables)` run on startup. Redundant and potentially conflicting.
-
-**Fix:** Choose Flyway as the authoritative migration strategy. Remove `SchemaUtils.create()` and manage all schema changes through Flyway migrations.
-
-```kotlin
-fun configureDataBase() {
-    initDB()
-    transaction {
-        TransactionManager.current().addLogger(Slf4jSqlDebugLogger)
-        // SchemaUtils.create(...) — REMOVED, use Flyway instead
-    }
-}
-```
-
-Create a baseline migration `V1__baseline.sql` that creates all existing tables, then use Flyway exclusively for future changes.
-
----
-
-### 7.9 Split God Classes
-
-**AuthService.kt** (500+ lines, 15 responsibilities) → Split into:
-```
-feature/auth/
-├── AuthRoutes.kt              # HTTP routing (unchanged)
-├── UserRegistrationService.kt # Registration, OTP, seller creation
-├── UserAuthenticationService.kt # Login, lockout, attempt tracking
-├── PasswordManagementService.kt # Change, reset, strength validation
-└── TokenManagementService.kt  # Refresh tokens, logout
-```
-
-**ProductService.kt** (350+ lines) → Extract:
-```
-feature/product/
-├── ProductCrudService.kt      # Create, read, update, delete
-├── ProductQueryService.kt     # Search, filter, listing
-└── ProductValidationService.kt # Seller validation, stock checks
-```
-
----
-
-### 7.10 Make Koin DI Effective
-
-**File:** `src/main/kotlin/com/piashcse/di/KoinModule.kt`
-
-**Current:** 16 of 18 services created with `Service()` — no injection.
-
-**Fix:** Inject all dependencies:
-```kotlin
-val serviceModule = module {
-    // Repositories
-    single { ProductRepositoryImpl() as ProductRepository }
-    single { OrderRepositoryImpl() as OrderRepository }
-    single { CartRepositoryImpl() as CartRepository }
-    // ... all repositories
-
-    // Services with injected dependencies
-    single { ProductService(get<ProductRepository>()) }
-    single { OrderService(get<OrderRepository>(), get<CartRepository>()) }
-    // ... all services with proper injection
-}
-```
-
-**Remove default parameter values** from service constructors:
-```kotlin
-// BEFORE:
-class AuthService(
-    private val refreshTokenRepository: RefreshTokenRepository = RefreshTokenRepositoryImpl()
-)
-
-// AFTER:
-class AuthService(
-    private val refreshTokenRepository: RefreshTokenRepository
-)
-```
-
----
-
-### 7.11 Code Quality Cleanup
-
-| File | Issue | Fix |
-|------|-------|-----|
-| `CongfigureAuth.kt` | Typo in filename | Rename to `ConfigureAuth.kt` |
-| `ErrorHandling.kt` | 3 concerns in 1 file | Split into `Exceptions.kt`, `ValidationHelpers.kt`, `StringExtensions.kt` |
-| `CommonExtension.kt` | 4 concerns in 1 file | Split into `TransactionExtension.kt`, `AuthExtension.kt`, `RequestExtension.kt` |
-| `DataExtension.kt` | 4-line file | Merge into appropriate extension file |
-| `ErrorMessages.kt` | Duplicates `Message.kt` | Delete entirely; use `Message` constants |
-| `BaseTable.kt` | Silent exception swallow | Log exception: `e.printStackTrace()` or use logger |
-| `User.kt` | Redundant `primaryKey` override | Remove — inherited from `BaseIdTable` |
-| `UserDAO` | Auth/routing knowledge | Move `loggedInWithToken()`, `hasAccessTo()` to service layer |
-| `AppConstants.SmtpServer` | Hardcoded credentials | Remove; use env vars only |
-| `Utils.kt` | Unstructured coroutine | Use structured concurrency with `CoroutineScope(SupervisorJob() + Dispatchers.IO)` + error handling |
-
----
-
-### Phase 7 Completion Checklist
-
-```
-[ ] 7.1  Real repository layer for Product, Order, Cart, Shop
-[ ] 7.2  All N+1 queries eliminated (cart, categories, featured shops)
-[ ] 7.3  All FK columns indexed + composite indexes added
-[ ] 7.4  ON DELETE CASCADE/RESTRICT rules configured
-[ ] 7.5  Unique constraints on Cart, Wishlist, Review, Inventory
-[ ] 7.6  CHECK constraints on quantity, price, stock columns
-[ ] 7.7  VARCHAR enums converted to typed enums
-[ ] 7.8  Single migration strategy (Flyway only)
-[ ] 7.9  AuthService and ProductService split into focused services
-[ ] 7.10 All services properly inject dependencies via Koin
-[x] 7.11 Code quality items resolved (typo, splits, dedup, logging)
-```
-
----
-
-## Phase 8: Production Readiness
-
-> **Goal:** Prepare the application for production deployment with testing, monitoring, containerization, and operational tooling.
-
----
-
-### 8.1 Add Test Infrastructure
-
-**Add dependencies to `build.gradle.kts`:**
-```kotlin
-testImplementation(libs.ktor.server.test.host)
-testImplementation(libs.kotlin.test.junit)
-testImplementation("org.testcontainers:postgresql:1.19.3")
-testImplementation("org.testcontainers:junit-jupiter:1.19.3")
-```
-
-**Test directory structure:**
-```
-src/test/kotlin/com/piashcse/
-├── TestApplication.kt          # Shared test server builder
-├── feature/
-│   ├── auth/AuthServiceTest.kt
-│   ├── product/ProductServiceTest.kt
-│   └── order/OrderServiceTest.kt
-└── repository/
-    └── ...
-```
-
-**TestApplication helper:**
-```kotlin
-object TestDatabase {
-    private val postgres = PostgreSQLContainer("postgres:15-alpine")
-        .withDatabaseName("test_ecom")
-        .withUsername("test")
-        .withPassword("test")
-
-    fun start() { if (!postgres.isRunning) postgres.start() }
-    fun jdbcUrl(): String = postgres.jdbcUrl
-    fun stop() { if (postgres.isRunning) postgres.stop() }
-}
-```
-
-**Example test:**
-```kotlin
-class AuthServiceTest {
-    @BeforeAll fun setup() = TestDatabase.start()
-    @AfterAll fun teardown() = TestDatabase.stop()
-
-    @Test
-    fun `login with invalid credentials returns 401`() = testApplication {
-        application { configureAll() }
-
-        val response = client.post("/auth/login") {
-            contentType(ContentType.Application.Json)
-            setBody("""{"email":"invalid@test.com","password":"wrong","userType":"CUSTOMER"}""")
-        }
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
-    }
-}
-```
-
----
-
-### 8.2 Add Health Check Endpoints
-
-**New plugin:** `src/main/kotlin/com/piashcse/plugin/ConfigureHealth.kt`
-```kotlin
-fun Application.configureHealth() {
-    routing {
-        get("/health") {
-            call.respond(HttpStatusCode.OK, mapOf(
-                "status" to "UP",
-                "timestamp" to Instant.now().toString(),
-                "service" to "ktor-ecom",
-                "version" to "1.0.0"
-            ))
-        }
-        get("/health/ready") {
-            val dbHealthy = try {
-                transaction { !ConfigureDataBase.database.isClosed() }
-            } catch (e: Exception) { false }
-
-            if (dbHealthy) call.respond(HttpStatusCode.OK, mapOf("status" to "READY"))
-            else call.respond(HttpStatusCode.ServiceUnavailable, mapOf("status" to "NOT_READY"))
-        }
-        get("/health/live") {
-            call.respond(HttpStatusCode.OK, mapOf("status" to "ALIVE"))
-        }
-    }
-}
-```
-
----
-
-### 8.3 Add Structured Logging
-
-**Add dependency:** `implementation("net.logstash.logback:logstash-logback-encoder:7.4")`
-
-**Update `logback.xml`:**
-```xml
-<encoder class="net.logstash.logback.encoder.LogstashEncoder">
-    <providers>
-        <timestamp/><loggerName/><threadName/><logLevel/><message/><stackTrace/><mdc/>
-    </providers>
-</encoder>
-```
-
-**Add request ID tracking:**
-```kotlin
-intercept(ApplicationCallPipeline.Monitoring) { call ->
-    val requestId = call.request.header("X-Request-ID") ?: UUID.randomUUID().toString()
-    call.response.header("X-Request-ID", requestId)
-    MDC.put("requestId", requestId)
-}
-```
-
----
-
-### 8.4 Add API Versioning
-
-**Change base route prefix in ConfigureRouting.kt:**
-```kotlin
-route("/api/v1") {
-    // ... all existing routes
-}
-```
-
-All new endpoints go under `/api/v1/`. Breaking changes in the future get `/api/v2/`.
-
----
-
-### 8.5 Add Docker Support
-
-**`Dockerfile`:**
-```dockerfile
-FROM eclipse-temurin:17-jre-alpine AS runtime
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-WORKDIR /app
-COPY build/install/ktor-ecom/ .
-RUN chown -R appuser:appgroup /app
-USER appuser
-EXPOSE 8080
-ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC"
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar ktor-ecom.jar"]
-```
-
-**`docker-compose.yml`:**
-```yaml
-version: '3.8'
-services:
-  app:
-    build: .
-    ports: ["8080:8080"]
-    environment:
-      - DATABASE_URL=jdbc:postgresql://postgres:5432/ecommerce
-      - DATABASE_USER=ecommerce
-      - DATABASE_PASSWORD=ecommerce_secret
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_ISSUER=ktor-ecommerce-app
-      - ALLOWED_ORIGINS=http://localhost:3000
-    depends_on:
-      postgres: { condition: service_healthy }
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: ecommerce
-      POSTGRES_USER: ecommerce
-      POSTGRES_PASSWORD: ecommerce_secret
-    volumes: [postgres_data:/var/lib/postgresql/data]
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ecommerce"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-volumes:
-  postgres_data:
-```
-
----
-
-### 8.6 Add CI/CD Pipeline
-
-**`.github/workflows/ci.yml`:**
-```yaml
-name: CI
-on: [push, pull_request]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15
-        env: { POSTGRES_PASSWORD: test }
-        ports: ['5432:5432']
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with: { distribution: 'temurin', java-version: '17' }
-      - run: ./gradlew compileKotlin
-      - run: ./gradlew test
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_NAME: postgres
-          DB_USER: postgres
-          DB_PASSWORD: test
-          JWT_SECRET: test-secret-for-ci
-```
-
----
-
-### 8.7 Move Uploaded Files to External Storage
-
-**Current:** Files stored in `src/main/resources/product-image/` and `src/main/resources/profile-image/`.
-
-**Problem:** Paths don't exist in production, may be overwritten on redeploy, not scalable.
-
-**Options:**
-1. **Local volume mount:** Configure upload path via env var: `UPLOAD_DIR=/var/uploads/ktor-ecom`
-2. **Cloud storage (S3/GCS):** Add dependency `software.amazon.awssdk:s3` and upload to cloud bucket
-
----
-
-## Phase 8: Search & Intelligent Catalog
-<a name="phase-8-search--intelligent-catalog"></a>
-
-> **Goal:** Move beyond SQL `LIKE` queries to a high-performance search and discovery experience.
-
----
-
-### 8.1 Fuzzy Search Support
-
-Implement Levenshtein distance or trigram search in PostgreSQL/Exposed for product names to handle typos (e.g., "Iphone" → "iPhone").
-
----
-
-### 8.2 Dynamic Faceted Search
-
-Return category and brand distributions (counts) for any search query to allow frontend filtering by product attributes.
-
----
-
-### 8.3 Catalog Ranking & Sorting
-
-Implement multi-factor sorting based on `viewCount`, `rating`, `discountPercentage`, and `stockStatus`.
-
----
-
-### Phase 8 Completion Checklist
-
-```
-[ ] 8.1  Fuzzy matching implemented for product search
-[ ] 8.2  Faceted results (brand/category counts) returned in search API
-[ ] 8.3  Intelligent sorting (popularity, relevance) implemented
-```
-
----
-
-## Phase 9: Event-Driven Scaling (Workers, Events)
-<a name="phase-9-event-driven-scaling"></a>
-
-> **Goal:** Decouple modules to allow independent scaling and robust background processing.
-
----
-
-### 9.1 Background Task Queue
-
-Move blocking operations to an asynchronous worker queue:
-- Email sending (OTP, Order Confirmation)
-- Image resizing/optimization
-- Push notifications
-
----
-
-### 9.2 Domain Events System
-
-Implement an internal event bus to decouple services:
-- `OrderPlacedEvent` → Triggers inventory reservation & email notify
-- `UserRegisteredEvent` → Triggers welcome sequence
-- `ProductLowStockEvent` → Triggers admin alert
-
----
-
-### Phase 9 Completion Checklist
-
-```
-[ ] 9.1  Background worker system implemented for emails/images
-[ ] 9.2  Domain event bus implemented and integrated in OrderService
-[ ] 9.3  Critical notifications (Order, OTP) moved to async workers
-```
-
----
-
-## Phase 10: Operational Excellence (Metrics, Tracing, Audit)
-<a name="phase-10-operational-excellence"></a>
-
-> **Goal:** Ensure the system is monitorable, traceable, and compliant in production.
-
----
-
-### 10.1 Application Metrics (Prometheus/Grafana)
-
-Integrate Micrometer to track request latency, orders/sec, and DB health.
-
----
-
-### 10.2 Distributed Tracing
-
-Add OpenTelemetry support to trace requests through the stack.
-
----
-
-### 10.3 Comprehensive Audit Ledger
-
-Implement a secure, immutable audit log for administrative actions.
-
----
-
-### Phase 10 Completion Checklist
-
-```
-[ ] 10.1 Micrometer/Prometheus metrics exported
-[ ] 10.2 Request tracing (OpenTelemetry) integrated
-[ ] 10.3 Audit ledger implemented for sensitive operations
-```
-
----
-
-## Implementation Checklist (Master)
-
-### Phase 1: Critical Bugs & Security — ✅ COMPLETE
-- [x] 1.1 EntityID table references
-- [x] 1.2 Duplicate DELETE route
-- [x] 1.3 searchProduct memory explosion
-- [x] 1.4 adjustWhere filter logic
-- [x] 1.5 getShops memory explosion
-- [x] 1.6 stockQuantity default to 0
-- [x] 1.7 Image upload null safety
-- [x] 1.8 Inventory concurrency
-- [x] 1.9 Refresh token system
-- [x] 1.10 Rate limiting
-- [x] 1.11 Password reset → POST body
-- [x] 1.12 Password strength validation
-- [x] 1.13 Login attempt tracking
-- [x] 1.14 CORS configuration
-
-### Phase 2: Core E-Commerce Logic — ✅ COMPLETE
-- [x] 2.1 Cart summary endpoint
-- [x] 2.2 Stock validation at checkout
-- [x] 2.3 Price validation at checkout
-- [x] 2.4 Cart clear after order
-- [x] 2.5 Idempotency key for orders
-- [x] 2.6 Human-readable order numbers
-- [x] 2.7 Order cancellation
-- [x] 2.8 Return/refund flow
-- [x] 2.9 Order status history
-- [x] 2.10 Seller order listing
-- [x] 2.11 Admin order listing
-- [x] 2.12 Payment order lookup
-- [x] 2.13 Payment validation
-- [x] 2.14 Dual stock quantity resolved
-
-### Phase 3: API Standardization — ✅ COMPLETE
-- [x] 3.1 API versioning (/api/v1/)
-- [x] 3.2 Validation on all request models
-- [x] 3.3 Pagination metadata wrapper
-- [x] 3.4 Paginated list endpoints
-- [x] 3.5 Standardized error format
-- [x] 3.6 Mutation query params → body
-
-### Phase 4: Database Excellence
-- [ ] 4.1 Performance indexes
-- [ ] 4.2 Missing columns
-- [ ] 4.3 Auth/security tables
-- [ ] 4.4 Business logic tables
-- [ ] 4.5 Entity class updates
-
-### Phase 5: Production Infrastructure
-- [ ] 5.1 Docker support
-- [ ] 5.2 Health check endpoints
-- [ ] 5.3 Structured JSON logging
-- [ ] 5.4 Request ID propagation
-- [ ] 5.5 Test infrastructure
-
-### Phase 6: Security Hardening
-- [ ] 6.1 Remove hardcoded JWT secret
-- [ ] 6.2 Profile image upload validation
-- [ ] 6.3 Audience validation in JWT
-- [ ] 6.4 Security response headers
-- [ ] 6.5 Ownership verification logic
-
-### Phase 7: Architectural Refactoring
-- [ ] 7.1 Real repository layer
-- [ ] 7.2 Eliminate N+1 queries
-- [ ] 7.3 FK cascades & constraints
-- [ ] 7.4 Split god classes
-- [ ] 7.5 Effective Koin DI
-
-### Phase 8: Search & Intelligent Catalog
-- [ ] 8.1 Fuzzy search matching
-- [ ] 8.2 Faceted search results
-- [ ] 8.3 Multi-factor catalog ranking
-
-### Phase 9: Event-Driven Scaling
-- [ ] 9.1 Background worker system
-- [ ] 9.2 Domain event bus
-- [ ] 9.3 Async notification triggers
-
-### Phase 10: Operational Excellence
-- [ ] 10.1 Prometheus metrics
-- [ ] 10.2 Distributed tracing
-- [ ] 10.3 Immutable audit ledger
-
----
-
-*Document version: 1.1 | Updated: 2026-04-16 | Project: ktor-ecom*
- `database/entities/`"
-3. **Copy the code blocks** — The code provided is ready to paste
-4. **Verify with the checklist** — Check off items after implementation
-5. **Ask for tests** — "Write tests for this implementation following the pattern in Section 5.5"
-
-Example prompts:
-- "Implement Phase 1.1: Fix EntityID table references in ProductService.kt"
-- "Implement Phase 1.9: Refresh Token System — create the table, entity, repository, service methods, and routes"
-- "Implement Phase 3.2: Add pagination metadata wrapper and convert GET /product to use it"
-
----
-
-*Document version: 1.0 | Generated: 2026-04-11 | Project: ktor-ecom*
+### 7.2 Stripe Gateway Implementation
+Write the concrete payment runner utilizing Stripe's official Java SDK.
+* **Dependency modification**: Add `com.stripe:stripe-java:24.x` to the dependencies catalog.
+* **New file**: `src/main/kotlin/com/piashcse/feature/payment/StripePaymentGateway.kt`
+  - Create the Stripe provider implementing the `PaymentGateway` interface.
+  - Implement Stripe PaymentIntent creation, converting order totals to integer cents. Load keys dynamically from environment variables.
+* **Service Wiring**: Inject the newly created `PaymentGateway` into the `PaymentService` via Koin.
+
+### 7.3 Secure Webhook Routing
+Set up asynchronous webhook endpoints to receive payment completion notification payloads safely.
+* **File to modify**: `PaymentRoutes.kt`
+  - Register `POST /api/v1/payment/webhook` (no role auth required).
+  - Extract raw body text and the `Stripe-Signature` header.
+  - Invoke `paymentGateway.verifyWebhookSignature(...)` to prevent webhook spoofing attacks. On successful verification, trigger asynchronous payment captures, update order payment states to `PAID`, and release invoices.
+
+---
+
+## Phase 8: Advanced Catalog Search & Discovery
+
+> **Goal:** Upgrade searching logic to support full fuzzy matches, spelling typo-tolerance, and dynamic faceted count sidebars.
+
+### 8.1 PostgreSQL Trigram Fuzzy Search
+Adopt database-backed trigram similarity filtering to prevent missing product listings due to typos.
+* **Migration Script**: Enable the pg_trgm extension in the database using a Flyway script:
+  ```sql
+  CREATE EXTENSION IF NOT EXISTS pg_trgm;
+  CREATE INDEX IF NOT EXISTS idx_product_name_trgm ON product USING gin (name gin_trgm_ops);
+  ```
+* **Repository Implementation**:
+  - Implement Exposed queries checking trigram similarity thresholds on target search parameters, returning matched items despite variations.
+
+### 8.2 Faceted Aggregation sidebars
+Return brand and category count lists alongside standard search results to empower user discovery.
+* **Route & Model updates**: Update the product search response model to include categories and brand counts.
+* **Query Implementation**: Use a single database aggregation using SQL `GROUP BY` to extract category and brand match counts from the search results slice, returning this metadata dynamically.
+
+### 8.3 Multi-Factor Product Catalog Ranking
+Deliver high-performance sorting systems based on catalog popularity and sale rates.
+* **Matrix logic**: Implement search sort query metrics computing ranks dynamically based on sale volumes (`totalSales`), catalog views (`viewCount`), and price discount levels.
+
+---
+
+## Phase 9: Advanced Coupon & Promotion Engine
+
+> **Goal:** Extend current Coupon services to cover percentage caps, minimum transaction thresholds, and target exclusions.
+
+### 9.1 Complex Cart coupon rules
+Implement highly configurable discount logic.
+* **Coupon Entities**: Complete the custom `Coupon` tables and entities, enabling:
+  - Percentage-based deductions with a maximum currency cap (e.g. "10% off up to $50").
+  - Fixed value reductions (e.g. "$20 off orders").
+  - Minimum purchase thresholds and usage expiration checks.
+  - Target restrictions (limiting code validity to specific categories, shops, or individual products).
+* **Checkout Integration**: Implement coupon calculations inside `placeOrder` and `getCheckoutSummary` within `OrderService`, dividing the discount across multi-vendor orders proportionally based on cart sub-totals.
+
+---
+
+## Phase 10: Concurrency-Safe Stock Reservation & Asynchronous Workers
+
+> **Goal:** Secure parallel inventory deductions during checkouts to prevent double allocation and cart abandonment stock leakage, and maximize API pipeline throughput using async workers.
+
+### 10.1 Temporary stock Locks
+Introduce temporary stock locks during high-traffic checkout flows to keep database inventory completely accurate.
+* **Lock Table**: Create a `stock_reservation` table tracking product reservations during active checkout.
+* **Checkout Pipeline**:
+  - When checkout is initiated, subtract items from available stock and insert records into `stock_reservation`.
+  - If the payment succeeds, delete the reservation rows and finalize the physical inventory deduction.
+  - If checkout is abandoned or unpaid after 15 minutes, a cron job or scheduled task executes a query returning the reserved items back to the product's inventory stock.
+
+### 10.2 Decoupled Domain Event Bus
+Enable clean modular boundaries by decoupling services through events.
+* **Domain Event Bus**: Create an internal pub/sub event bus built on Kotlin's `SharedFlow`.
+* **Flow**:
+  - When an order completes, `OrderService` simply publishes an `OrderPlacedEvent` to the bus and immediately responds to the client.
+  - Decoupled event subscribers handle the notifications, update internal bestseller analytics, and trigger low-stock alerts asynchronously.
+
+### 10.3 Asynchronous Background Task Queue
+Ensure API endpoints respond instantly by processing heavy operations on background worker threads.
+* **Background Worker Queue**: Implement an asynchronous queue built on Kotlin Coroutines `Channel` and persistent workers.
+* **Offloaded Jobs**:
+  - Move SMTP email dispatching (welcome notes, checkout invoices, OTP tokens) to the worker queue.
+  - Offload profile and product image compression/resizing tasks to background threads.
+
+---
+
+## Master Implementation Checklist
+
+### Phase 1: REST Pluralization, Centralized Validation & Content Negotiation
+- [ ] 1.1 Pluralize all 19 feature routes and path directories
+- [ ] 1.2 Create Validatable interface and update 26 request DTOs
+- [ ] 1.3 Implement ApplicationReceivePipeline validation transforming interceptor
+- [ ] 1.4 Migrate Content Negotiation from Gson to Kotlinx Serialization
+- [ ] 1.5 Sanitize logs by redacting sensitive parameters inside call logging
+
+### Phase 2: Database Schema & Migration Excellence
+- [ ] 2.1 Remove SchemaUtils.create and set Flyway as authoritative migration engine
+- [ ] 2.2 Create V1__baseline_schema.sql mapping current tables
+- [ ] 2.3 Create V2__add_performance_indexes.sql covering foreign keys and composite queries
+- [ ] 2.4 Create V3__add_database_constraints.sql enforcing check, unique, and cascade delete rules
+- [ ] 2.5 Create V4__add_missing_columns_and_history.sql extending table fields
+- [ ] 2.6 Update Exposed entities to map new columns and enums
+
+### Phase 3: Repository Layer Separation & Dependency Injection
+- [ ] 3.1 Implement concrete Repository classes for all 19 feature areas
+- [ ] 3.2 Decouple services from Exposed tables and transactions
+- [ ] 3.3 Set up explicit constructor-based dependency injection in KoinModule
+- [ ] 3.4 Resolve N+1 query hotspots in Cart and Category queries
+- [ ] 3.5 Decompose monolithic AuthService and ProductService god classes
+
+### Phase 4: Production Infrastructure & Monitoring
+- [ ] 4.1 Multi-stage Dockerfile setup using Alpine JRE image
+- [ ] 4.2 Health status route probes (/health, /health/ready, /health/live)
+- [ ] 4.3 Logstash structured JSON logging layout inside logback.xml
+- [ ] 4.4 Generate and propagate X-Request-ID across Thread MDC and headers
+- [ ] 4.5 Export system performance indicators via prometheus/metrics route
+
+### Phase 5: Security Hardening & Resource Isolation
+- [ ] 5.1 Eliminate fallback variables and require explicit environment secrets
+- [ ] 5.2 Reduce token validity window to 15 minutes and add dynamic audience checks
+- [ ] 5.3 Implement standard JWT blacklisting on user logouts
+- [ ] 5.4 Install size checks and magic bytes verification filters for media uploads
+- [ ] 5.5 Enforce strict resource ownership validation checks inside the service layer
+
+### Phase 6: Automated Testing Suite
+- [ ] 6.1 Integration test framework setup with Testcontainers running real Postgres
+- [ ] 6.2 Route test suite running with testApplication asserting endpoints contracts
+- [ ] 6.3 Service unit test suite utilizing MockK to assert business constraints
+
+### Phase 7: Real Payment Gateway Adapter Integration
+- [ ] 7.1 Define abstract PaymentGateway interface
+- [ ] 7.2 Write StripePaymentGateway using the official Stripe Java SDK
+- [ ] 7.3 Secure /payment/webhook endpoint with signature verification
+
+### Phase 8: Advanced Catalog Search & Discovery
+- [ ] 8.1 Trigram-based fuzzy search implementation supporting spelling typos
+- [ ] 8.2 Brand and category match counts in search metadata payloads
+- [ ] 8.3 Unified ranking formula for catalog lists (views, discounts, sales)
+
+### Phase 9: Advanced Coupon & Promotion Engine
+- [ ] 9.1 Percentage cap and minimum transaction rules in Coupon Service
+- [ ] 9.2 Coupon target exclusions (limit to categories/shops/products)
+- [ ] 9.3 OrderService checkout coupon discount distribution engine
+
+### Phase 10: Concurrency-Safe Stock Reservation & Asynchronous Workers
+- [ ] 10.1 Create stock_reservation locks table
+- [ ] 10.2 Checkout stock locking pipeline integration
+- [ ] 10.3 Automatic expired reservation release scheduled worker
+- [ ] 10.4 Kotlin SharedFlow Domain Event Bus routing order/user events asynchronously
+- [ ] 10.5 Asynchronous worker channel executing SMTP email and image compression
+
+---
+
+*Document version: 3.0 | Updated: 2026-05-26 | Project: ktor-ecom*

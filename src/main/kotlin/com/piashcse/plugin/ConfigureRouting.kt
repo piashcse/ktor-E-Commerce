@@ -109,7 +109,7 @@ fun Application.configureRoute() {
             route("v2") {
                 route("seller") {
                     sellerAuth {
-                        route("shop") { shopSellerRoutesV2(shopService) }
+                        route("shops") { shopSellerRoutesV2(shopService) }
                     }
                 }
             }
@@ -139,21 +139,21 @@ private fun Route.configureCustomerRoutes(
 ) {
     route("auth") { authRoutes(authService) }
     route("profile") { profileRoutes(profileService) }
-    route("shop") { shopRoutes(shopService) }
-    route("brand") { brandRoutes(brandService) }
-    route("product-category") { productCategoryRoutes(productCategoryService) }
-    route("product-subcategory") { productSubCategoryRoutes(productSubCategoryService) }
-    route("product") { productRoutes(productService) }
-    route("review-rating") { reviewRatingRoutes(reviewRatingService) }
-    route("cart") { cartRoutes(cartService) }
-    route("wishlist") { wishListRoutes(wishListService) }
+    route("shops") { shopRoutes(shopService) }
+    route("brands") { brandRoutes(brandService) }
+    route("product-categories") { productCategoryRoutes(productCategoryService) }
+    route("product-subcategories") { productSubCategoryRoutes(productSubCategoryService) }
+    route("products") { productRoutes(productService) }
+    route("reviews") { reviewRatingRoutes(reviewRatingService) }
+    route("carts") { cartRoutes(cartService) }
+    route("wishlists") { wishListRoutes(wishListService) }
     route("checkout") { checkoutRoutes(shippingAddressService, shippingMethodService, orderService) }
-    route("order") { orderRoutes(orderService) }
-    route("payment") { paymentRoutes(paymentService) }
-    route("policy") { policyRoutes(policyService) }
+    route("orders") { orderRoutes(orderService) }
+    route("payments") { paymentRoutes(paymentService) }
+    route("policies") { policyRoutes(policyService) }
     route("policy-consents") { consentRoutes(consentService) }
     route("refund-requests") { refundRequestRoutes(returnRequestService) }
-    route("coupon") { couponRoutes(couponService) }
+    route("coupons") { couponRoutes(couponService) }
 }
 
 private fun Route.configureSellerRoutes(
@@ -165,10 +165,10 @@ private fun Route.configureSellerRoutes(
 ) {
     route("seller") {
         sellerAuth {
-            route("shop") { shopSellerRoutesV1(shopService) }
-            route("product") { productSellerRoutes(productService) }
-            route("inventory") { inventorySellerRoutes(inventoryService) }
-            route("order") { orderSellerRoutes(orderService) }
+            route("shops") { shopSellerRoutesV1(shopService) }
+            route("products") { productSellerRoutes(productService) }
+            route("inventories") { inventorySellerRoutes(inventoryService) }
+            route("orders") { orderSellerRoutes(orderService) }
             route("refund-requests") { refundSellerRoutes(returnRequestService) }
         }
     }
@@ -192,18 +192,18 @@ private fun Route.configureAdminRoutes(
     route("admin") {
         adminAuth {
             route("auth") { authAdminRoutes(authService) }
-            route("brand") { brandAdminRoutes(brandService) }
-            route("product-category") { productCategoryAdminRoutes(productCategoryService) }
-            route("product-subcategory") { productSubCategoryAdminRoutes(productSubCategoryService) }
-            route("shop-category") { shopCategoryAdminRoutes(shopCategoryService) }
-            route("shop") { shopAdminRoutes(shopService) }
-            route("product") { productAdminRoutes(productService) }
-            route("inventory") { inventoryAdminRoutes(inventoryService) }
-            route("order") { orderAdminRoutes(orderService) }
+            route("brands") { brandAdminRoutes(brandService) }
+            route("product-categories") { productCategoryAdminRoutes(productCategoryService) }
+            route("product-subcategories") { productSubCategoryAdminRoutes(productSubCategoryService) }
+            route("shop-categories") { shopCategoryAdminRoutes(shopCategoryService) }
+            route("shops") { shopAdminRoutes(shopService) }
+            route("products") { productAdminRoutes(productService) }
+            route("inventories") { inventoryAdminRoutes(inventoryService) }
+            route("orders") { orderAdminRoutes(orderService) }
             route("refund-requests") { refundAdminRoutes(returnRequestService) }
-            route("policy") { policyAdminRoutes(policyService) }
-            route("shipping-method") { shippingMethodAdminRoutes(shippingMethodService) }
-            route("coupon") { couponAdminRoutes(couponService) }
+            route("policies") { policyAdminRoutes(policyService) }
+            route("shipping-methods") { shippingMethodAdminRoutes(shippingMethodService) }
+            route("coupons") { couponAdminRoutes(couponService) }
         }
     }
 }

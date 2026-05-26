@@ -9,7 +9,7 @@ import org.valiktor.validate
 data class CancelOrderRequest(
     val reason: String,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(CancelOrderRequest::reason).isNotNull().isNotEmpty()
         }

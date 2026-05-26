@@ -28,7 +28,6 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
             val orderId = call.requirePathParameter("orderId")
             val userId = call.currentUserId
             val requestBody = call.receive<RefundRequestRequest>()
-            requestBody.validation()
 
             call.respond(HttpStatusCode.Created, refundRequestService.createRefundRequest(userId, orderId, requestBody))
         }
@@ -41,7 +40,6 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
             val id = call.requirePathParameter("id")
             val userId = call.currentUserId
             val requestBody = call.receive<ShipRefundRequest>()
-            requestBody.validation()
 
             call.respond(HttpStatusCode.OK, refundRequestService.shipRefund(id, requestBody, userId))
         }
@@ -89,7 +87,6 @@ fun Route.refundSellerRoutes(refundRequestService: RefundRequestService) {
         val id = call.requirePathParameter("id")
         val userId = call.currentUserId
         val requestBody = call.receive<UpdateRefundStatusRequest>()
-        requestBody.validation()
 
         call.respond(HttpStatusCode.OK, refundRequestService.updateRefundStatus(id, requestBody, userId))
     }
@@ -120,7 +117,6 @@ fun Route.refundAdminRoutes(refundRequestService: RefundRequestService) {
         val id = call.requirePathParameter("id")
         val userId = call.currentUserId
         val requestBody = call.receive<UpdateRefundStatusRequest>()
-        requestBody.validation()
 
         call.respond(HttpStatusCode.OK, refundRequestService.updateRefundStatus(id, requestBody, userId))
     }

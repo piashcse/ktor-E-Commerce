@@ -55,8 +55,6 @@ class RefundRequestService : RefundRequestRepository {
         request: RefundRequestRequest,
     ): RefundRequestResponse =
         query {
-            request.validation()
-
             // Verify the order belongs to the user
             val order =
                 OrderDAO.findById(orderId)
@@ -140,8 +138,6 @@ class RefundRequestService : RefundRequestRepository {
         userId: String,
     ): RefundRequestResponse =
         query {
-            request.validation()
-
             val refundReq =
                 RefundRequestDAO.findById(refundId)
                     ?: throw ValidationException("Refund request not found")
@@ -182,8 +178,6 @@ class RefundRequestService : RefundRequestRepository {
         userId: String,
     ): RefundRequestResponse =
         query {
-            request.validation()
-
             val refundReq =
                 RefundRequestDAO.findById(refundId)
                     ?: throw ValidationException("Refund request not found")
