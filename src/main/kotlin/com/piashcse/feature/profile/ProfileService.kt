@@ -25,7 +25,7 @@ class ProfileService : ProfileRepository {
     override suspend fun getProfile(userId: String): UserProfileResponse =
         query {
             val isProfileExist =
-                UserProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+                UserProfileDAO.find { UserProfileTable.userId eq userId }.firstOrNull()
             isProfileExist?.response() ?: userId.throwNotFound("User")
         }
 
@@ -43,7 +43,7 @@ class ProfileService : ProfileRepository {
     ): UserProfileResponse =
         query {
             val userProfileEntity =
-                UserProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+                UserProfileDAO.find { UserProfileTable.userId eq userId }.firstOrNull()
             userProfileEntity?.let {
                 it.firstName = userProfile?.firstName ?: it.firstName
                 it.lastName = userProfile?.lastName ?: it.lastName
@@ -74,7 +74,7 @@ class ProfileService : ProfileRepository {
     ): UserProfileResponse =
         query {
             val userProfileEntity =
-                UserProfileDAO.find { UserProfileTable.userId eq userId }.toList().singleOrNull()
+                UserProfileDAO.find { UserProfileTable.userId eq userId }.firstOrNull()
 
             // Delete previous profile image if it exists
             userProfileEntity?.image?.let { oldImageUrl ->

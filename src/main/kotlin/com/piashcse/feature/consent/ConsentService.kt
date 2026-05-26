@@ -16,11 +16,11 @@ class ConsentService : ConsentRepository {
      * Records user consent to a policy
      */
     override suspend fun recordConsent(
-        currentUserId: String,
+        userId: String,
         consentRequest: PolicyConsentRequest,
     ): UserPolicyConsentResponse =
         query {
-            if (currentUserId.isBlank()) {
+            if (userId.isBlank()) {
                 throw ValidationException(Message.Validation.blankField("User ID"))
             }
             if (consentRequest.policyId.isBlank()) {
@@ -28,7 +28,7 @@ class ConsentService : ConsentRepository {
             }
 
             // Verify user and policy exist
-            val user = UserDAO.findById(currentUserId) ?: currentUserId.throwNotFound("User")
+            val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
             val policy =
                 PolicyDocumentDAO.findById(consentRequest.policyId)
                     ?: consentRequest.policyId.throwNotFound("Policy")
@@ -47,7 +47,7 @@ class ConsentService : ConsentRepository {
                     userAgent = consentRequest.userAgent
                 } ?: PolicyConsentDAO.new {
                     // Create new consent
-                    userId = user.id
+                    this.userId = user.id
                     policyId = policy
                     consentDate = LocalDateTime.now()
                     ipAddress = consentRequest.ipAddress

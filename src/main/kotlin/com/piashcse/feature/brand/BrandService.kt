@@ -33,7 +33,7 @@ class BrandService : BrandRepository {
                 throw ValidationException(Message.Brands.nameTooLong(255))
             }
 
-            val isBrandExist = BrandDAO.find { BrandTable.name eq name }.singleOrNull()
+            val isBrandExist = BrandDAO.find { BrandTable.name eq name }.firstOrNull()
             isBrandExist?.let {
                 throw name.throwConflict("BrandResponse")
             } ?: BrandDAO.new {
@@ -78,7 +78,7 @@ class BrandService : BrandRepository {
             }
 
             val brand =
-                BrandDAO.find { BrandTable.id eq brandId }.singleOrNull()
+                BrandDAO.findById(brandId)
                     ?: brandId.throwNotFound("BrandResponse")
 
             brand.name = name
@@ -94,7 +94,7 @@ class BrandService : BrandRepository {
      */
     override suspend fun deleteBrand(brandId: String): String =
         query {
-            val isBrandExist = BrandDAO.find { BrandTable.id eq brandId }.toList().singleOrNull()
+            val isBrandExist = BrandDAO.findById(brandId)
             isBrandExist?.let {
                 it.delete()
                 brandId

@@ -10,7 +10,9 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.extension.verifyOwnership
 import com.piashcse.utils.validator.ConflictException
+import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.NotFoundException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
@@ -34,18 +36,18 @@ class ShopService : ShopRepository {
     ): ShopResponse =
         query {
             val user =
-                UserDAO.find { UserTable.id eq userId }.singleOrNull()
+                UserDAO.findById(userId)
                     ?: userId.throwNotFound("User")
 
             // Verify that the user is a seller by checking for a corresponding seller record
             val seller =
-                SellerDAO.find { SellerTable.userId eq userId }.singleOrNull()
+                SellerDAO.find { SellerTable.userId eq userId }.firstOrNull()
                     ?: throw NotFoundException(Message.Errors.SELLER_REQUIRED)
 
             val existingShop =
                 ShopDAO.find {
                     ShopTable.userId eq userId
-                }.singleOrNull()
+                }.firstOrNull()
 
             if (existingShop != null) {
                 // If user already has a shop, throw an error or update the existing one
@@ -88,8 +90,10 @@ class ShopService : ShopRepository {
     ): ShopResponse =
         query {
             val shop =
-                ShopDAO.find { ShopTable.userId eq userId and (ShopTable.id eq shopId) }.singleOrNull()
-                    ?: shopId.throwNotFound("ShopResponse")
+                ShopDAO.findById(shopId)
+                    ?: shopId.throwNotFound("Shop")
+
+            shop.verifyOwnership(userId, "shop") { it.userId.value }
 
             shop.apply {
                 name = shopRequest.name ?: name
@@ -112,7 +116,7 @@ class ShopService : ShopRepository {
      */
     override suspend fun getShopById(shopId: String): ShopResponse? =
         query {
-            val shop = ShopDAO.find { ShopTable.id eq shopId }.singleOrNull()
+            val shop = ShopDAO.findById(shopId)
             shop?.shopResponse()
         }
 
@@ -243,7 +247,7 @@ class ShopService : ShopRepository {
     override suspend fun approveShop(shopId: String): ShopResponse =
         query {
             val shop =
-                ShopDAO.find { ShopTable.id eq shopId }.singleOrNull()
+                ShopDAO.findById(shopId)
                     ?: shopId.throwNotFound("ShopResponse")
 
             shop.apply {
@@ -263,7 +267,7 @@ class ShopService : ShopRepository {
     override suspend fun rejectShop(shopId: String): ShopResponse =
         query {
             val shop =
-                ShopDAO.find { ShopTable.id eq shopId }.singleOrNull()
+                ShopDAO.findById(shopId)
                     ?: shopId.throwNotFound("ShopResponse")
 
             shop.apply {
@@ -282,7 +286,7 @@ class ShopService : ShopRepository {
     override suspend fun suspendShop(shopId: String): ShopResponse =
         query {
             val shop =
-                ShopDAO.find { ShopTable.id eq shopId }.singleOrNull()
+                ShopDAO.findById(shopId)
                     ?: shopId.throwNotFound("ShopResponse")
 
             shop.apply {
@@ -301,7 +305,7 @@ class ShopService : ShopRepository {
     override suspend fun activateShop(shopId: String): ShopResponse =
         query {
             val shop =
-                ShopDAO.find { ShopTable.id eq shopId }.singleOrNull()
+                ShopDAO.findById(shopId)
                     ?: shopId.throwNotFound("ShopResponse")
 
             shop.apply {

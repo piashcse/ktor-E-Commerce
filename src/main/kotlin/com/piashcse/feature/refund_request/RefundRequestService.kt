@@ -112,7 +112,7 @@ class RefundRequestService : RefundRequestRepository {
             val isCustomer = order.userId.value == userId
             val isSeller =
                 order.shopId?.value?.let { shopId ->
-                    SellerDAO.find { SellerTable.userId eq userId }.singleOrNull()?.shopId?.value == shopId
+                    SellerDAO.find { SellerTable.userId eq userId }.firstOrNull()?.shopId?.value == shopId
                 } == true
             val isAdmin = userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
 

@@ -17,10 +17,11 @@ interface ReviewRatingRepository {
     ): ReviewRatingResponse
 
     suspend fun updateReviewRating(
+        userId: String,
         reviewId: String,
         review: String,
         rating: Int,
     ): ReviewRatingResponse
 
-    suspend fun deleteReviewRating(reviewId: String): String
+    suspend fun deleteReviewRating(userId: String, reviewId: String): String
 }

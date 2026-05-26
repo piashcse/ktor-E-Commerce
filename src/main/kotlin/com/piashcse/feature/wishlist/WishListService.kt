@@ -36,8 +36,7 @@ class WishListService : WishListRepository {
 
             val isExits =
                 WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
-                    .toList()
-                    .singleOrNull()
+                    .firstOrNull()
 
             if (isExits == null) {
                 WishListDAO.new {
@@ -87,7 +86,7 @@ class WishListService : WishListRepository {
         query {
             val wishListItem =
                 WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
-                    .singleOrNull() ?: productId.throwNotFound("ProductResponse")
+                    .firstOrNull() ?: productId.throwNotFound("ProductResponse")
 
             val productResponse = ProductDAO.findById(productId)?.response() ?: productId.throwNotFound("ProductResponse")
             wishListItem.delete()
@@ -99,8 +98,7 @@ class WishListService : WishListRepository {
         productId: String,
     ): Boolean =
         query {
-            WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
-                .limit(1)
-                .count() > 0
+            !WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
+                .empty()
         }
 }

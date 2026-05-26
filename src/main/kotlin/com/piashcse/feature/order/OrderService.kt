@@ -9,6 +9,7 @@ import com.piashcse.model.response.OrderResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
@@ -398,7 +399,7 @@ class OrderService : OrderRepository {
                 val cartItem =
                     CartItemDAO.find {
                         CartItemTable.userId eq userId and (CartItemTable.productId eq orderItem.productId)
-                    }.singleOrNull()
+                    }.firstOrNull()
                 cartItem?.delete()
             }
 
@@ -509,7 +510,7 @@ class OrderService : OrderRepository {
             // Seller links User and Shop.
             var isSeller = false
             if (order.shopId != null) {
-                val seller = SellerDAO.find { SellerTable.userId eq userId }.singleOrNull()
+                val seller = SellerDAO.find { SellerTable.userId eq userId }.firstOrNull()
                 if (seller != null && seller.shopId?.value == order.shopId?.value) {
                     isSeller = true
                 }
@@ -521,7 +522,7 @@ class OrderService : OrderRepository {
                     user.userType == com.piashcse.constants.UserType.SUPER_ADMIN
 
             if (!isCustomer && !isSeller && !isAdmin) {
-                throw ValidationException(Message.Orders.UNAUTHORIZED)
+                throw ForbiddenException(Message.Orders.UNAUTHORIZED)
             }
 
             // Note: Specific status transitions (e.g. only Seller can mark DELIVERED) are handled in Routes or can be added here.
@@ -559,7 +560,7 @@ class OrderService : OrderRepository {
             val isCustomer = order.userId.value == userId
             val isSeller =
                 order.shopId?.value?.let { shopId ->
-                    SellerDAO.find { SellerTable.userId eq userId }.singleOrNull()?.shopId?.value == shopId
+                    SellerDAO.find { SellerTable.userId eq userId }.firstOrNull()?.shopId?.value == shopId
                 } == true
             val isAdmin =
                 userType in
@@ -569,12 +570,12 @@ class OrderService : OrderRepository {
                     )
 
             if (!isCustomer && !isSeller && !isAdmin) {
-                throw ValidationException(Message.Orders.UNAUTHORIZED)
+                throw ForbiddenException(Message.Orders.UNAUTHORIZED)
             }
 
             // Customers can only cancel their own orders
             if (isCustomer && !isSeller && !isAdmin && order.userId.value != userId) {
-                throw ValidationException(Message.Orders.UNAUTHORIZED)
+                throw ForbiddenException(Message.Orders.UNAUTHORIZED)
             }
 
             // Status check — only PENDING or CONFIRMED can be cancelled

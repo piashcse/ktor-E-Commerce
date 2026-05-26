@@ -50,6 +50,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
             call.respond(
                 HttpStatusCode.OK,
                 reviewRatingService.updateReviewRating(
+                    call.currentUserId,
                     id,
                     review,
                     rating.toInt(),
@@ -65,7 +66,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
             val id = call.requirePathParameter("id")
             call.respond(
                 HttpStatusCode.OK,
-                reviewRatingService.deleteReviewRating(id),
+                reviewRatingService.deleteReviewRating(call.currentUserId, id),
             )
         }
     }

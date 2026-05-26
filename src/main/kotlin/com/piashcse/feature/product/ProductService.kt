@@ -13,6 +13,8 @@ import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.extension.verifyOwnership
+import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.NotFoundException
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
@@ -76,7 +78,7 @@ class ProductService : ProductRepository {
         val seller =
             SellerDAO.find {
                 SellerTable.userId eq userId
-            }.singleOrNull()
+            }.firstOrNull()
         if (seller == null) {
             throw NotFoundException(Message.Errors.SELLER_REQUIRED)
         }
@@ -84,12 +86,10 @@ class ProductService : ProductRepository {
         // If shopId is provided, verify that the user is authorized to add products to that shop
         if (shopId != null) {
             val shop =
-                ShopDAO.find {
-                    ShopTable.id eq shopId and
-                        (ShopTable.userId eq userId)
-                }.singleOrNull()
-            if (shop == null) {
-                throw NotFoundException(Message.Products.UNAUTHORIZED_ADD)
+                ShopDAO.findById(shopId)
+                    ?: shopId.throwNotFound("Shop")
+            if (shop.userId.value != userId) {
+                throw ForbiddenException("You are not the owner of this shop")
             }
         }
     }
@@ -132,15 +132,17 @@ class ProductService : ProductRepository {
             val seller =
                 SellerDAO.find {
                     SellerTable.userId eq userId
-                }.singleOrNull()
+                }.firstOrNull()
             if (seller == null) {
                 throw NotFoundException(Message.Errors.SELLER_REQUIRED)
             }
 
             // Verify user has access to this product
             val product =
-                ProductDAO.find { ProductTable.userId eq userId and (ProductTable.id eq productId) }.singleOrNull()
-                    ?: productId.throwNotFound("ProductResponse")
+                ProductDAO.findById(productId)
+                    ?: productId.throwNotFound("Product")
+
+            product.verifyOwnership(userId, "product") { it.userId.value }
 
             product.apply {
                 this.userId = EntityID(userId, UserTable)
@@ -289,7 +291,7 @@ class ProductService : ProductRepository {
      */
     override suspend fun getProductDetail(productId: String): ProductResponse =
         query {
-            val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
+            val product = ProductDAO.findById(productId)
             product?.response() ?: productId.throwNotFound("ProductResponse")
         }
 
@@ -310,9 +312,10 @@ class ProductService : ProductRepository {
 
             // Find the product and verify user ownership
             val product =
-                ProductDAO.find {
-                    ProductTable.userId eq userId and (ProductTable.id eq productId)
-                }.singleOrNull() ?: productId.throwNotFound("ProductResponse")
+                ProductDAO.findById(productId)
+                    ?: productId.throwNotFound("Product")
+
+            product.verifyOwnership(userId, "product") { it.userId.value }
 
             product.delete()
             productId
@@ -328,7 +331,7 @@ class ProductService : ProductRepository {
     suspend fun deleteProductAsAdmin(productId: String): String =
         query {
             val product =
-                ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
+                ProductDAO.findById(productId)
                     ?: productId.throwNotFound("ProductResponse")
             product.delete()
             productId
@@ -341,7 +344,7 @@ class ProductService : ProductRepository {
      */
     override suspend fun incrementViewCount(productId: String): Unit =
         query {
-            val product = ProductDAO.find { ProductTable.id eq productId }.singleOrNull()
+            val product = ProductDAO.findById(productId)
             product?.apply {
                 viewCount = viewCount + 1
             }
@@ -361,7 +364,7 @@ class ProductService : ProductRepository {
                 query.andWhere { ProductTable.name.like("%${productQuery.name}%") }
             }
             if (!productQuery.categoryId.isNullOrEmpty()) {
-                query.andWhere { ProductTable.categoryId eq EntityID(productQuery.categoryId!!, ProductCategoryTable) }
+                query.andWhere { ProductTable.categoryId eq EntityID(productQuery.categoryId, ProductCategoryTable) }
             }
             productQuery.minPrice?.let {
                 query.andWhere { ProductTable.price greaterEq java.math.BigDecimal.valueOf(it) }

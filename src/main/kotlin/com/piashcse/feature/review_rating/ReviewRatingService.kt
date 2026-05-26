@@ -9,6 +9,8 @@ import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.extension.verifyOwnership
+import com.piashcse.utils.validator.ForbiddenException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -52,7 +54,7 @@ class ReviewRatingService : ReviewRatingRepository {
     ): ReviewRatingResponse =
         query {
             val isReviewRatingExist =
-                ReviewRatingDAO.find { ReviewRatingTable.id eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
+                ReviewRatingDAO.find { ReviewRatingTable.userId eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
                     .singleOrNull()
             isReviewRatingExist?.let {
                 throw it.productId.value.throwConflict("Product")
@@ -67,6 +69,7 @@ class ReviewRatingService : ReviewRatingRepository {
     /**
      * Updates an existing review and rating.
      *
+     * @param userId The ID of the user updating the review.
      * @param reviewId The ID of the review to be updated.
      * @param review The updated review text.
      * @param rating The updated rating value.
@@ -74,6 +77,7 @@ class ReviewRatingService : ReviewRatingRepository {
      * @throws review.throwNotFound("Resource") If the review ID does not exist.
      */
     override suspend fun updateReviewRating(
+        userId: String,
         reviewId: String,
         review: String,
         rating: Int,
@@ -84,6 +88,7 @@ class ReviewRatingService : ReviewRatingRepository {
                     .singleOrNull()
 
             isReviewRatingExist?.let {
+                it.verifyOwnership(userId, "review") { r -> r.userId.value }
                 it.reviewText = review
                 it.rating = rating
                 it.response()
@@ -93,16 +98,18 @@ class ReviewRatingService : ReviewRatingRepository {
     /**
      * Deletes a review and rating by its ID.
      *
+     * @param userId The ID of the user deleting the review.
      * @param reviewId The ID of the review to be deleted.
      * @return The ID of the deleted review.
      * @throws reviewId.throwNotFound("Resource") If the review ID does not exist.
      */
-    override suspend fun deleteReviewRating(reviewId: String): String =
+    override suspend fun deleteReviewRating(userId: String, reviewId: String): String =
         query {
             val isReviewRatingExist =
                 ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
                     .singleOrNull()
             isReviewRatingExist?.let {
+                it.verifyOwnership(userId, "review") { r -> r.userId.value }
                 it.delete()
                 reviewId
             } ?: reviewId.throwNotFound("Review")

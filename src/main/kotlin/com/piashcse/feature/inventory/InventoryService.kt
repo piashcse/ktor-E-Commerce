@@ -41,7 +41,7 @@ class InventoryService : InventoryRepository {
             val existingInventory =
                 InventoryDAO.find {
                     InventoryTable.productId eq inventoryRequest.productId
-                }.singleOrNull()
+                }.firstOrNull()
 
             val inventory =
                 if (existingInventory != null) {
@@ -60,7 +60,7 @@ class InventoryService : InventoryRepository {
                         stockQuantity = inventoryRequest.stockQuantity
                         minimumStockLevel = inventoryRequest.minimumStockLevel ?: 10
                         maximumStockLevel = inventoryRequest.maximumStockLevel ?: 1000
-                        status = determineInventoryStatus(inventoryRequest.stockQuantity, minimumStockLevel ?: 10)
+                        status = determineInventoryStatus(inventoryRequest.stockQuantity, minimumStockLevel)
                     }
                 }
 
@@ -71,12 +71,12 @@ class InventoryService : InventoryRepository {
         if (request.productId.isBlank()) throw ValidationException(Message.Validation.blankField("Product ID"))
         if (request.shopId.isBlank()) throw ValidationException(Message.Validation.blankField("Shop ID"))
         if (request.stockQuantity < 0) throw ValidationException(Message.Inventory.NEGATIVE_STOCK)
-        if (request.minimumStockLevel != null && request.minimumStockLevel!! < 0) {
+        if (request.minimumStockLevel != null && request.minimumStockLevel < 0) {
             throw ValidationException(
                 Message.Validation.negativeValue("Minimum stock level"),
             )
         }
-        if (request.maximumStockLevel != null && request.maximumStockLevel!! < 0) {
+        if (request.maximumStockLevel != null && request.maximumStockLevel < 0) {
             throw ValidationException(
                 Message.Validation.negativeValue("Maximum stock level"),
             )
@@ -91,7 +91,7 @@ class InventoryService : InventoryRepository {
      */
     override suspend fun getInventoryByProduct(productId: String): InventoryResponse? =
         query {
-            val inventory = InventoryDAO.find { InventoryTable.productId eq productId }.singleOrNull()
+            val inventory = InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()
             inventory?.response()
         }
 
@@ -110,7 +110,7 @@ class InventoryService : InventoryRepository {
     ): InventoryResponse =
         query {
             val inventory =
-                InventoryDAO.find { InventoryTable.productId eq productId }.singleOrNull()
+                InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()
                     ?: productId.throwNotFound("Product")
 
             require(quantity > 0) { "Quantity must be positive for $operation operation" }
@@ -149,7 +149,7 @@ class InventoryService : InventoryRepository {
 
     private fun refreshInventoryStatus(productId: String): InventoryResponse {
         val updated =
-            InventoryDAO.find { InventoryTable.productId eq productId }.singleOrNull()
+            InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()
                 ?: throw NotFoundException(Message.Inventory.NOT_FOUND)
         updated.status = determineInventoryStatus(updated.stockQuantity, updated.minimumStockLevel)
         return updated.response()

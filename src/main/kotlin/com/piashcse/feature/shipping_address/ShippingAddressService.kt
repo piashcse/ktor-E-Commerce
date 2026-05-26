@@ -10,6 +10,8 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 
+import com.piashcse.utils.extension.verifyOwnership
+
 class ShippingAddressService : ShippingAddressRepository {
     override suspend fun createShippingAddress(
         userId: String,
@@ -50,9 +52,9 @@ class ShippingAddressService : ShippingAddressRepository {
     ): ShippingAddressResponse =
         query {
             val address =
-                ShippingAddressDAO.find {
-                    ShippingAddressTable.userId eq userId and (ShippingAddressTable.id eq addressId)
-                }.singleOrNull() ?: addressId.throwNotFound("ShippingAddress")
+                ShippingAddressDAO.findById(addressId) ?: addressId.throwNotFound("ShippingAddress")
+
+            address.verifyOwnership(userId, "shipping address") { it.userId.value }
 
             if (request.isDefault && !address.isDefault) {
                 // Unset other default addresses for this user
@@ -81,9 +83,9 @@ class ShippingAddressService : ShippingAddressRepository {
     ): Boolean =
         query {
             val address =
-                ShippingAddressDAO.find {
-                    ShippingAddressTable.userId eq userId and (ShippingAddressTable.id eq addressId)
-                }.singleOrNull() ?: addressId.throwNotFound("ShippingAddress")
+                ShippingAddressDAO.findById(addressId) ?: addressId.throwNotFound("ShippingAddress")
+
+            address.verifyOwnership(userId, "shipping address") { it.userId.value }
 
             address.delete()
             true
