@@ -10,7 +10,7 @@ hide:
 
 - **(feat)** - **Root-to-Swagger Redirect**: Implemented an automatic redirect from the root URL (`/`) to the Swagger UI (`/swagger`) for better API discoverability.
 - **(feat)** - **V2 Optimized Endpoints**: Introduced `v2` namespace for optimized API contracts.
-    - Added `PUT /api/v2/seller/shop/{shopId}` with source tracking and streamlined response structure.
+    - Added `PUT /api/v2/seller/shops/{shopId}` with source tracking and streamlined response structure.
 - **(refactor)** - **Routing Architecture**: Standardized URL prefixes for better role isolation and organization:
     - Seller routes now prefixed with `/api/v1/seller/` or `/api/v2/seller/`.
     - Admin routes now prefixed with `/api/v1/admin/`.

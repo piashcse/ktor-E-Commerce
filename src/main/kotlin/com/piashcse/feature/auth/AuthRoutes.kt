@@ -59,7 +59,6 @@ fun Route.authRoutes(authService: AuthService) {
          */
         post("reset-password") {
             val requestBody = call.receive<ResetRequest>()
-            requestBody.validation()
 
             authService.resetPassword(requestBody).let {
                 when (it) {

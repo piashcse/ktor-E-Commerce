@@ -15,7 +15,7 @@ The Coupon module provides a flexible way to manage discounts and promotional of
 ## Customer API
 
 ### Check Coupon Validity
-`GET /api/v1/coupon/{code}`
+`GET /api/v1/coupons/{code}`
 
 Returns the coupon details if found and active.
 
@@ -41,13 +41,13 @@ Returns the coupon details if found and active.
 All admin endpoints require `ADMIN` role.
 
 ### Create Coupon
-`POST /api/v1/admin/coupon`
+`POST /api/v1/admin/coupons`
 
 ### List Coupons
-`GET /api/v1/admin/coupon?limit=10&offset=0`
+`GET /api/v1/admin/coupons?limit=10&offset=0`
 
 ### Update Coupon
-`PUT /api/v1/admin/coupon/{id}`
+`PUT /api/v1/admin/coupons/{id}`
 
 ### Delete Coupon
-`DELETE /api/v1/admin/coupon/{id}`
+`DELETE /api/v1/admin/coupons/{id}`

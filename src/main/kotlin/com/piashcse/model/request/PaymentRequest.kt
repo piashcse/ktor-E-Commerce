@@ -15,7 +15,7 @@ data class PaymentRequest(
     val paymentMethod: String,
     val transactionId: String?,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(PaymentRequest::orderId).isNotNull().isNotEmpty()
             validate(PaymentRequest::amount).isNotNull().isGreaterThan(0)

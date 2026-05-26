@@ -11,7 +11,7 @@ data class CartRequest(
     val productId: String,
     val quantity: Int,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(CartRequest::productId).isNotNull().isNotEmpty()
             validate(CartRequest::quantity).isNotNull().isGreaterThan(0)

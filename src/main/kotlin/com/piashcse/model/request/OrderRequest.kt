@@ -15,7 +15,7 @@ data class OrderRequest(
     val shippingAddress: String,
     val orderItems: MutableList<OrderItemRequest>,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(OrderRequest::quantity).isNotNull().isGreaterThan(0)
             validate(OrderRequest::subTotal).isNotNull().isGreaterThan(0f)

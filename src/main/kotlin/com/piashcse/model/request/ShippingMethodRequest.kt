@@ -13,7 +13,7 @@ data class ShippingMethodRequest(
     val price: Double,
     val deliveryTime: String?,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(ShippingMethodRequest::name).isNotNull().isNotEmpty()
             validate(ShippingMethodRequest::price).isNotNull().isGreaterThan(0.0)

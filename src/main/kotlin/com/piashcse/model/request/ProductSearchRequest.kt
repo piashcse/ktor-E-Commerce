@@ -14,7 +14,7 @@ data class ProductSearchRequest(
     val minPrice: Double?,
     val categoryId: String?,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(ProductSearchRequest::limit).isNotNull()
             validate(ProductSearchRequest::offset).isNotNull()

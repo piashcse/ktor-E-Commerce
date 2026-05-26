@@ -871,7 +871,7 @@ http://localhost:8080/api/v1/profile/image-upload
 ### SHOP CATEGORY
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/admin/shop-category</code></summary>
+<summary> <code>POST</code> <code>/api/v1/admin/shop-categories</code></summary>
 
 ### Description
 Admin: Create a new shop category.
@@ -879,7 +879,7 @@ Admin: Create a new shop category.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/shop-category' \
+  'http://localhost:8080/api/v1/admin/shop-categories' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>' \
   -H 'Content-Type: application/json' \
@@ -890,7 +890,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/shop-category
+http://localhost:8080/api/v1/admin/shop-categories
 ```
 
 ### Response
@@ -906,7 +906,7 @@ http://localhost:8080/api/v1/admin/shop-category
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/admin/shop-category/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/shop-categories/{id}</code></summary>
 
 ### Description
 Admin: Update an existing shop category name.
@@ -914,14 +914,14 @@ Admin: Update an existing shop category name.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop-category/ce563774-d3d5-442e-ad1a-b884bb0a53f0?name=Mobile%20Phones' \
+  'http://localhost:8080/api/v1/admin/shop-categories/ce563774-d3d5-442e-ad1a-b884bb0a53f0?name=Mobile%20Phones' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/shop-category/{id}?name={name}
+http://localhost:8080/api/v1/admin/shop-categories/{id}?name={name}
 ```
 
 ### Response
@@ -937,7 +937,7 @@ http://localhost:8080/api/v1/admin/shop-category/{id}?name={name}
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/api/v1/admin/shop-category/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/admin/shop-categories/{id}</code></summary>
 
 ### Description
 Admin: Permanently delete a shop category.
@@ -945,14 +945,14 @@ Admin: Permanently delete a shop category.
 ### Curl
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/shop-category/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/admin/shop-categories/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/shop-category/{id}
+http://localhost:8080/api/v1/admin/shop-categories/{id}
 ```
 
 ### Response
@@ -967,7 +967,7 @@ http://localhost:8080/api/v1/admin/shop-category/{id}
 ### SHOP
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/shop/{id}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/shops/{id}</code></summary>
 
 ### Description
 Retrieve detailed information about a specific shop.
@@ -975,13 +975,13 @@ Retrieve detailed information about a specific shop.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/shop/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/shops/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/shop/{id}
+http://localhost:8080/api/v1/shops/{id}
 ```
 
 ### Response
@@ -1005,7 +1005,7 @@ http://localhost:8080/api/v1/shop/{id}
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/shop/public</code></summary>
+<summary> <code>GET</code> <code>/api/v1/shops/public</code></summary>
 
 ### Description
 Retrieve public shops with filters (status, category).
@@ -1013,13 +1013,13 @@ Retrieve public shops with filters (status, category).
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/shop/public?status=ACTIVE&limit=10' \
+  'http://localhost:8080/api/v1/shops/public?status=ACTIVE&limit=10' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/shop/public?status={status}&category={category}&limit={limit}&offset={offset}
+http://localhost:8080/api/v1/shops/public?status={status}&category={category}&limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -1045,7 +1045,7 @@ http://localhost:8080/api/v1/shop/public?status={status}&category={category}&lim
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/shop/category/{categoryId}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/shops/category/{categoryId}</code></summary>
 
 ### Description
 Retrieve shops by category.
@@ -1053,13 +1053,13 @@ Retrieve shops by category.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/shop/category/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/shops/category/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/shop/category/{categoryId}?limit={limit}&offset={offset}
+http://localhost:8080/api/v1/shops/category/{categoryId}?limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -1084,7 +1084,7 @@ http://localhost:8080/api/v1/shop/category/{categoryId}?limit={limit}&offset={of
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/shop/featured</code></summary>
+<summary> <code>GET</code> <code>/api/v1/shops/featured</code></summary>
 
 ### Description
 Retrieve featured shops.
@@ -1092,13 +1092,13 @@ Retrieve featured shops.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/shop/featured' \
+  'http://localhost:8080/api/v1/shops/featured' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/shop/featured?limit={limit}&offset={offset}
+http://localhost:8080/api/v1/shops/featured?limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -1123,7 +1123,7 @@ http://localhost:8080/api/v1/shop/featured?limit={limit}&offset={offset}
 </details>
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/seller/shop</code></summary>
+<summary> <code>POST</code> <code>/api/v1/seller/shops</code></summary>
 
 ### Description
 Seller: Create a new shop.
@@ -1131,7 +1131,7 @@ Seller: Create a new shop.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/seller/shop' \
+  'http://localhost:8080/api/v1/seller/shops' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>' \
   -H 'Content-Type: application/json' \
@@ -1144,7 +1144,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/shop
+http://localhost:8080/api/v1/seller/shops
 ```
 
 ### Response
@@ -1161,7 +1161,7 @@ http://localhost:8080/api/v1/seller/shop
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/seller/shop</code></summary>
+<summary> <code>GET</code> <code>/api/v1/seller/shops</code></summary>
 
 ### Description
 Seller: Retrieve owned shops.
@@ -1169,14 +1169,14 @@ Seller: Retrieve owned shops.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/seller/shop' \
+  'http://localhost:8080/api/v1/seller/shops' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/shop?limit={limit}&offset={offset}
+http://localhost:8080/api/v1/seller/shops?limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -1201,7 +1201,7 @@ http://localhost:8080/api/v1/seller/shop?limit={limit}&offset={offset}
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/seller/shop/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/seller/shops/{id}</code></summary>
 
 ### Description
 Seller: Update shop details.
@@ -1209,7 +1209,7 @@ Seller: Update shop details.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/seller/shop/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/seller/shops/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>' \
   -H 'Content-Type: application/json' \
@@ -1221,7 +1221,7 @@ curl -X 'PUT' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/shop/{id}
+http://localhost:8080/api/v1/seller/shops/{id}
 ```
 
 ### Response
@@ -1237,7 +1237,7 @@ http://localhost:8080/api/v1/seller/shop/{id}
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v2/seller/shop/{shopId}</code></summary>
+<summary> <code>PUT</code> <code>/api/v2/seller/shops/{shopId}</code></summary>
 
 ### Description
 Seller: Update shop details with optimized response.
@@ -1245,7 +1245,7 @@ Seller: Update shop details with optimized response.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v2/seller/shop/ce563774-d3d5-442e-ad1a-b884bb0a53f0?source=mobile' \
+  'http://localhost:8080/api/v2/seller/shops/ce563774-d3d5-442e-ad1a-b884bb0a53f0?source=mobile' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>' \
   -H 'Content-Type: application/json' \
@@ -1256,7 +1256,7 @@ curl -X 'PUT' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v2/seller/shop/{shopId}?source={source}
+http://localhost:8080/api/v2/seller/shops/{shopId}?source={source}
 ```
 
 ### Response
@@ -1275,7 +1275,7 @@ http://localhost:8080/api/v2/seller/shop/{shopId}?source={source}
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/admin/shop/status</code></summary>
+<summary> <code>GET</code> <code>/api/v1/admin/shops/status</code></summary>
 
 ### Description
 Admin: Retrieve shops filtered by status.
@@ -1283,14 +1283,14 @@ Admin: Retrieve shops filtered by status.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/shop/status?status=PENDING' \
+  'http://localhost:8080/api/v1/admin/shops/status?status=PENDING' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/shop/status?status={status}&limit={limit}&offset={offset}
+http://localhost:8080/api/v1/admin/shops/status?status={status}&limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -1315,7 +1315,7 @@ http://localhost:8080/api/v1/admin/shop/status?status={status}&limit={limit}&off
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/admin/shop/approve/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/shops/approve/{id}</code></summary>
 
 ### Description
 Admin: Approve a pending shop application.
@@ -1323,14 +1323,14 @@ Admin: Approve a pending shop application.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop/approve/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/admin/shops/approve/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/shop/approve/{id}
+http://localhost:8080/api/v1/admin/shops/approve/{id}
 ```
 
 ### Response
@@ -1343,7 +1343,7 @@ http://localhost:8080/api/v1/admin/shop/approve/{id}
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/admin/shop/reject/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/shops/reject/{id}</code></summary>
 
 ### Description
 Admin: Reject a shop application.
@@ -1351,14 +1351,14 @@ Admin: Reject a shop application.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop/reject/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/admin/shops/reject/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/shop/reject/{id}
+http://localhost:8080/api/v1/admin/shops/reject/{id}
 ```
 
 ### Response
@@ -1371,7 +1371,7 @@ http://localhost:8080/api/v1/admin/shop/reject/{id}
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/admin/shop/suspend/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/shops/suspend/{id}</code></summary>
 
 ### Description
 Admin: Suspend an active shop.
@@ -1379,14 +1379,14 @@ Admin: Suspend an active shop.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop/suspend/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/admin/shops/suspend/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/shop/suspend/{id}
+http://localhost:8080/api/v1/admin/shops/suspend/{id}
 ```
 
 ### Response
@@ -1399,7 +1399,7 @@ http://localhost:8080/api/v1/admin/shop/suspend/{id}
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/admin/shop/activate/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/shops/activate/{id}</code></summary>
 
 ### Description
 Admin: Activate a suspended shop.
@@ -1407,14 +1407,14 @@ Admin: Activate a suspended shop.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shop/activate/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/admin/shops/activate/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/shop/activate/{id}
+http://localhost:8080/api/v1/admin/shops/activate/{id}
 ```
 
 ### Response
@@ -1429,7 +1429,7 @@ http://localhost:8080/api/v1/admin/shop/activate/{id}
 ### BRAND
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/brand</code></summary>
+<summary> <code>GET</code> <code>/api/v1/brands</code></summary>
 
 ### Description
 Retrieve a paginated list of all brands.
@@ -1437,13 +1437,13 @@ Retrieve a paginated list of all brands.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/brand?limit=20&offset=0' \
+  'http://localhost:8080/api/v1/brands?limit=20&offset=0' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/brand?limit={limit}&offset={offset}
+http://localhost:8080/api/v1/brands?limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -1468,7 +1468,7 @@ http://localhost:8080/api/v1/brand?limit={limit}&offset={offset}
 </details>
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/admin/brand</code></summary>
+<summary> <code>POST</code> <code>/api/v1/admin/brands</code></summary>
 
 ### Description
 Admin: Create a new brand.
@@ -1476,7 +1476,7 @@ Admin: Create a new brand.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/brand' \
+  'http://localhost:8080/api/v1/admin/brands' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>' \
   -H 'Content-Type: application/json' \
@@ -1487,7 +1487,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/brand
+http://localhost:8080/api/v1/admin/brands
 ```
 
 ### Response
@@ -1503,7 +1503,7 @@ http://localhost:8080/api/v1/admin/brand
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/admin/brand/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/brands/{id}</code></summary>
 
 ### Description
 Admin: Update an existing brand.
@@ -1511,14 +1511,14 @@ Admin: Update an existing brand.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/brand/ce563774-d3d5-442e-ad1a-b884bb0a53f0?name=Apple%20Inc' \
+  'http://localhost:8080/api/v1/admin/brands/ce563774-d3d5-442e-ad1a-b884bb0a53f0?name=Apple%20Inc' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/brand/{id}?name={name}
+http://localhost:8080/api/v1/admin/brands/{id}?name={name}
 ```
 
 ### Response
@@ -1534,7 +1534,7 @@ http://localhost:8080/api/v1/admin/brand/{id}?name={name}
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/api/v1/admin/brand/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/admin/brands/{id}</code></summary>
 
 ### Description
 Admin: Delete a brand.
@@ -1542,14 +1542,14 @@ Admin: Delete a brand.
 ### Curl
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/brand/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/admin/brands/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/brand/{id}
+http://localhost:8080/api/v1/admin/brands/{id}
 ```
 
 ### Response
@@ -1564,7 +1564,7 @@ http://localhost:8080/api/v1/admin/brand/{id}
 ### PRODUCT CATEGORY
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/product-category</code></summary>
+<summary> <code>GET</code> <code>/api/v1/product-categories</code></summary>
 
 ### Description
 Retrieve a paginated list of all product categories.
@@ -1572,13 +1572,13 @@ Retrieve a paginated list of all product categories.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/product-category?limit=20&offset=0' \
+  'http://localhost:8080/api/v1/product-categories?limit=20&offset=0' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/product-category?limit={limit}&offset={offset}
+http://localhost:8080/api/v1/product-categories?limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -1603,7 +1603,7 @@ http://localhost:8080/api/v1/product-category?limit={limit}&offset={offset}
 </details>
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/admin/product-category</code></summary>
+<summary> <code>POST</code> <code>/api/v1/admin/product-categories</code></summary>
 
 ### Description
 Admin: Create a new product category.
@@ -1611,14 +1611,14 @@ Admin: Create a new product category.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/product-category?name=Laptops' \
+  'http://localhost:8080/api/v1/admin/product-categories?name=Laptops' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/product-category?name={name}
+http://localhost:8080/api/v1/admin/product-categories?name={name}
 ```
 
 ### Response
@@ -1634,7 +1634,7 @@ http://localhost:8080/api/v1/admin/product-category?name={name}
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/admin/product-category/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/product-categories/{id}</code></summary>
 
 ### Description
 Admin: Update an existing product category.
@@ -1642,14 +1642,14 @@ Admin: Update an existing product category.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/product-category/ce563774-d3d5-442e-ad1a-b884bb0a53f0?name=Gaming%20Laptops' \
+  'http://localhost:8080/api/v1/admin/product-categories/ce563774-d3d5-442e-ad1a-b884bb0a53f0?name=Gaming%20Laptops' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/product-category/{id}?name={name}
+http://localhost:8080/api/v1/admin/product-categories/{id}?name={name}
 ```
 
 ### Response
@@ -1665,7 +1665,7 @@ http://localhost:8080/api/v1/admin/product-category/{id}?name={name}
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/api/v1/admin/product-category/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/admin/product-categories/{id}</code></summary>
 
 ### Description
 Admin: Permanently delete a product category.
@@ -1673,14 +1673,14 @@ Admin: Permanently delete a product category.
 ### Curl
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/product-category/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/admin/product-categories/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/product-category/{id}
+http://localhost:8080/api/v1/admin/product-categories/{id}
 ```
 
 ### Response
@@ -1695,7 +1695,7 @@ http://localhost:8080/api/v1/admin/product-category/{id}
 ### PRODUCT SUB CATEGORY
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/product-subcategory</code></summary>
+<summary> <code>GET</code> <code>/api/v1/product-subcategories</code></summary>
 
 ### Description
 Retrieve subcategories for a specific category (require categoryId).
@@ -1703,13 +1703,13 @@ Retrieve subcategories for a specific category (require categoryId).
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/product-subcategory?categoryId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/product-subcategories?categoryId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/product-subcategory?categoryId={categoryId}&limit={limit}&offset={offset}
+http://localhost:8080/api/v1/product-subcategories?categoryId={categoryId}&limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -1735,7 +1735,7 @@ http://localhost:8080/api/v1/product-subcategory?categoryId={categoryId}&limit={
 </details>
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/admin/product-subcategory</code></summary>
+<summary> <code>POST</code> <code>/api/v1/admin/product-subcategories</code></summary>
 
 ### Description
 Admin: Create a new product subcategory.
@@ -1743,7 +1743,7 @@ Admin: Create a new product subcategory.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/product-subcategory' \
+  'http://localhost:8080/api/v1/admin/product-subcategories' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>' \
   -H 'Content-Type: application/json' \
@@ -1755,7 +1755,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/product-subcategory
+http://localhost:8080/api/v1/admin/product-subcategories
 ```
 
 ### Response
@@ -1772,7 +1772,7 @@ http://localhost:8080/api/v1/admin/product-subcategory
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/admin/product-subcategory/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/product-subcategories/{id}</code></summary>
 
 ### Description
 Admin: Update an existing product subcategory name.
@@ -1780,14 +1780,14 @@ Admin: Update an existing product subcategory name.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/product-subcategory/sub-uuid?name=Apple%20iPhones' \
+  'http://localhost:8080/api/v1/admin/product-subcategories/sub-uuid?name=Apple%20iPhones' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/product-subcategory/{id}?name={name}
+http://localhost:8080/api/v1/admin/product-subcategories/{id}?name={name}
 ```
 
 ### Response
@@ -1803,7 +1803,7 @@ http://localhost:8080/api/v1/admin/product-subcategory/{id}?name={name}
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/api/v1/admin/product-subcategory/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/admin/product-subcategories/{id}</code></summary>
 
 ### Description
 Admin: Permanently delete a product subcategory.
@@ -1811,14 +1811,14 @@ Admin: Permanently delete a product subcategory.
 ### Curl
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/product-subcategory/sub-uuid' \
+  'http://localhost:8080/api/v1/admin/product-subcategories/sub-uuid' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/product-subcategory/{id}
+http://localhost:8080/api/v1/admin/product-subcategories/{id}
 ```
 
 ### Response
@@ -1833,7 +1833,7 @@ http://localhost:8080/api/v1/admin/product-subcategory/{id}
 ### PRODUCT
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/product/{id}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/products/{id}</code></summary>
 
 ### Description
 Retrieve detailed information about a specific product.
@@ -1841,13 +1841,13 @@ Retrieve detailed information about a specific product.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/product/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/products/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/product/{id}
+http://localhost:8080/api/v1/products/{id}
 ```
 
 ### Response
@@ -1870,7 +1870,7 @@ http://localhost:8080/api/v1/product/{id}
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/product</code></summary>
+<summary> <code>GET</code> <code>/api/v1/products</code></summary>
 
 ### Description
 Retrieve a paginated list of products with optional filters.
@@ -1878,13 +1878,13 @@ Retrieve a paginated list of products with optional filters.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/product?maxPrice=1000&sortBy=price&sortOrder=asc' \
+  'http://localhost:8080/api/v1/products?maxPrice=1000&sortBy=price&sortOrder=asc' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/product?maxPrice={maxPrice}&minPrice={minPrice}&categoryId={categoryId}&subCategoryId={subCategoryId}&brandId={brandId}&sortBy={sortBy}&sortOrder={sortOrder}&limit={limit}&offset={offset}
+http://localhost:8080/api/v1/products?maxPrice={maxPrice}&minPrice={minPrice}&categoryId={categoryId}&subCategoryId={subCategoryId}&brandId={brandId}&sortBy={sortBy}&sortOrder={sortOrder}&limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -1910,7 +1910,7 @@ http://localhost:8080/api/v1/product?maxPrice={maxPrice}&minPrice={minPrice}&cat
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/product/search</code></summary>
+<summary> <code>GET</code> <code>/api/v1/products/search</code></summary>
 
 ### Description
 Search for products by name.
@@ -1918,13 +1918,13 @@ Search for products by name.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/product/search?name=Galaxy' \
+  'http://localhost:8080/api/v1/products/search?name=Galaxy' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/product/search?name={name}&limit={limit}&offset={offset}
+http://localhost:8080/api/v1/products/search?name={name}&limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -1949,7 +1949,7 @@ http://localhost:8080/api/v1/product/search?name={name}&limit={limit}&offset={of
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/seller/product</code></summary>
+<summary> <code>GET</code> <code>/api/v1/seller/products</code></summary>
 
 ### Description
 Seller: Retrieve seller products with filters.
@@ -1957,14 +1957,14 @@ Seller: Retrieve seller products with filters.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/seller/product' \
+  'http://localhost:8080/api/v1/seller/products' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/product?limit={limit}&offset={offset}
+http://localhost:8080/api/v1/seller/products?limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -1989,7 +1989,7 @@ http://localhost:8080/api/v1/seller/product?limit={limit}&offset={offset}
 </details>
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/seller/product</code></summary>
+<summary> <code>POST</code> <code>/api/v1/seller/products</code></summary>
 
 ### Description
 Seller: Add a new product listing.
@@ -1997,7 +1997,7 @@ Seller: Add a new product listing.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/seller/product' \
+  'http://localhost:8080/api/v1/seller/products' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>' \
   -H 'Content-Type: application/json' \
@@ -2014,7 +2014,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/product
+http://localhost:8080/api/v1/seller/products
 ```
 
 ### Response
@@ -2030,7 +2030,7 @@ http://localhost:8080/api/v1/seller/product
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/seller/product/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/seller/products/{id}</code></summary>
 
 ### Description
 Seller: Update an existing product listing.
@@ -2038,7 +2038,7 @@ Seller: Update an existing product listing.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/seller/product/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/seller/products/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>' \
   -H 'Content-Type: application/json' \
@@ -2049,7 +2049,7 @@ curl -X 'PUT' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/product/{id}
+http://localhost:8080/api/v1/seller/products/{id}
 ```
 
 ### Response
@@ -2065,7 +2065,7 @@ http://localhost:8080/api/v1/seller/product/{id}
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/api/v1/seller/product/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/seller/products/{id}</code></summary>
 
 ### Description
 Seller: Permanently delete a product listing.
@@ -2073,14 +2073,14 @@ Seller: Permanently delete a product listing.
 ### Curl
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/seller/product/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/seller/products/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/product/{id}
+http://localhost:8080/api/v1/seller/products/{id}
 ```
 
 ### Response
@@ -2093,7 +2093,7 @@ http://localhost:8080/api/v1/seller/product/{id}
 </details>
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/seller/product/image-upload</code></summary>
+<summary> <code>POST</code> <code>/api/v1/seller/products/image-upload</code></summary>
 
 ### Description
 Seller: Upload a product image.
@@ -2101,7 +2101,7 @@ Seller: Upload a product image.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/seller/product/image-upload' \
+  'http://localhost:8080/api/v1/seller/products/image-upload' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>' \
   -H 'Content-Type: multipart/form-data' \
@@ -2110,7 +2110,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/product/image-upload
+http://localhost:8080/api/v1/seller/products/image-upload
 ```
 
 ### Response
@@ -2123,7 +2123,7 @@ http://localhost:8080/api/v1/seller/product/image-upload
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/api/v1/admin/product/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/admin/products/{id}</code></summary>
 
 ### Description
 Admin: Permanently delete any product.
@@ -2131,14 +2131,14 @@ Admin: Permanently delete any product.
 ### Curl
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/product/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/admin/products/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/product/{id}
+http://localhost:8080/api/v1/admin/products/{id}
 ```
 
 ### Response
@@ -2153,7 +2153,7 @@ http://localhost:8080/api/v1/admin/product/{id}
 ### REVIEW RATING
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/review-rating</code></summary>
+<summary> <code>GET</code> <code>/api/v1/reviews</code></summary>
 
 ### Description
 Retrieve reviews and ratings for a specific product.
@@ -2161,13 +2161,13 @@ Retrieve reviews and ratings for a specific product.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/review-rating?productId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/reviews?productId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/review-rating?productId={productId}&limit={limit}&offset={offset}
+http://localhost:8080/api/v1/reviews?productId={productId}&limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -2196,7 +2196,7 @@ http://localhost:8080/api/v1/review-rating?productId={productId}&limit={limit}&o
 </details>
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/review-rating</code></summary>
+<summary> <code>POST</code> <code>/api/v1/reviews</code></summary>
 
 ### Description
 Submit a new review and rating for a product.
@@ -2204,7 +2204,7 @@ Submit a new review and rating for a product.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/review-rating' \
+  'http://localhost:8080/api/v1/reviews' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
@@ -2217,7 +2217,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/review-rating
+http://localhost:8080/api/v1/reviews
 ```
 
 ### Response
@@ -2234,7 +2234,7 @@ http://localhost:8080/api/v1/review-rating
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/review-rating/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/reviews/{id}</code></summary>
 
 ### Description
 Update an existing review and rating.
@@ -2242,14 +2242,14 @@ Update an existing review and rating.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/review-rating/review-uuid?review=Updated%20review&rating=5' \
+  'http://localhost:8080/api/v1/reviews/review-uuid?review=Updated%20review&rating=5' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/review-rating/{id}?review={review}&rating={rating}
+http://localhost:8080/api/v1/reviews/{id}?review={review}&rating={rating}
 ```
 
 ### Response
@@ -2266,7 +2266,7 @@ http://localhost:8080/api/v1/review-rating/{id}?review={review}&rating={rating}
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/api/v1/review-rating/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/reviews/{id}</code></summary>
 
 ### Description
 Delete a review and rating.
@@ -2274,14 +2274,14 @@ Delete a review and rating.
 ### Curl
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/review-rating/review-uuid' \
+  'http://localhost:8080/api/v1/reviews/review-uuid' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/review-rating/{id}
+http://localhost:8080/api/v1/reviews/{id}
 ```
 
 ### Response
@@ -2296,7 +2296,7 @@ http://localhost:8080/api/v1/review-rating/{id}
 ### CART
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/cart</code></summary>
+<summary> <code>POST</code> <code>/api/v1/carts</code></summary>
 
 ### Description
 Add an item to the authenticated user's cart.
@@ -2304,7 +2304,7 @@ Add an item to the authenticated user's cart.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/cart' \
+  'http://localhost:8080/api/v1/carts' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
@@ -2316,7 +2316,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/cart
+http://localhost:8080/api/v1/carts
 ```
 
 ### Response
@@ -2332,7 +2332,7 @@ http://localhost:8080/api/v1/cart
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/cart</code></summary>
+<summary> <code>GET</code> <code>/api/v1/carts</code></summary>
 
 ### Description
 Retrieve all items in the authenticated user's cart.
@@ -2340,14 +2340,14 @@ Retrieve all items in the authenticated user's cart.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/cart' \
+  'http://localhost:8080/api/v1/carts' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/cart?limit={limit}&offset={offset}
+http://localhost:8080/api/v1/carts?limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -2374,7 +2374,7 @@ http://localhost:8080/api/v1/cart?limit={limit}&offset={offset}
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/cart/update</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/carts/update</code></summary>
 
 ### Description
 Update the quantity of an item in the cart.
@@ -2382,7 +2382,7 @@ Update the quantity of an item in the cart.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/cart/update' \
+  'http://localhost:8080/api/v1/carts/update' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
@@ -2394,7 +2394,7 @@ curl -X 'PUT' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/cart/update
+http://localhost:8080/api/v1/carts/update
 ```
 
 ### Response
@@ -2410,7 +2410,7 @@ http://localhost:8080/api/v1/cart/update
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/api/v1/cart/remove</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/carts/remove</code></summary>
 
 ### Description
 Remove a specific item from the cart (require productId).
@@ -2418,14 +2418,14 @@ Remove a specific item from the cart (require productId).
 ### Curl
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/cart/remove?productId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/carts/remove?productId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/cart/remove?productId={productId}
+http://localhost:8080/api/v1/carts/remove?productId={productId}
 ```
 
 ### Response
@@ -2438,7 +2438,7 @@ http://localhost:8080/api/v1/cart/remove?productId={productId}
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/api/v1/cart/all</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/carts/all</code></summary>
 
 ### Description
 Remove all items from the authenticated user's cart.
@@ -2446,14 +2446,14 @@ Remove all items from the authenticated user's cart.
 ### Curl
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/cart/all' \
+  'http://localhost:8080/api/v1/carts/all' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/cart/all
+http://localhost:8080/api/v1/carts/all
 ```
 
 ### Response
@@ -2466,7 +2466,7 @@ http://localhost:8080/api/v1/cart/all
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/cart/summary</code></summary>
+<summary> <code>GET</code> <code>/api/v1/carts/summary</code></summary>
 
 ### Description
 Retrieve a summary of the cart (totals, counts).
@@ -2474,14 +2474,14 @@ Retrieve a summary of the cart (totals, counts).
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/cart/summary' \
+  'http://localhost:8080/api/v1/carts/summary' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/cart/summary
+http://localhost:8080/api/v1/carts/summary
 ```
 
 ### Response
@@ -2502,7 +2502,7 @@ http://localhost:8080/api/v1/cart/summary
 ### WISHLIST
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/wishlist</code></summary>
+<summary> <code>POST</code> <code>/api/v1/wishlists</code></summary>
 
 ### Description
 Add a product to the authenticated user's wishlist.
@@ -2510,7 +2510,7 @@ Add a product to the authenticated user's wishlist.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/wishlist' \
+  'http://localhost:8080/api/v1/wishlists' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
@@ -2521,7 +2521,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/wishlist
+http://localhost:8080/api/v1/wishlists
 ```
 
 ### Response
@@ -2536,7 +2536,7 @@ http://localhost:8080/api/v1/wishlist
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/wishlist</code></summary>
+<summary> <code>GET</code> <code>/api/v1/wishlists</code></summary>
 
 ### Description
 Retrieve all items in the user's wishlist.
@@ -2544,14 +2544,14 @@ Retrieve all items in the user's wishlist.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/wishlist' \
+  'http://localhost:8080/api/v1/wishlists' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/wishlist?limit={limit}&offset={offset}
+http://localhost:8080/api/v1/wishlists?limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -2577,7 +2577,7 @@ http://localhost:8080/api/v1/wishlist?limit={limit}&offset={offset}
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/api/v1/wishlist/remove</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/wishlists/remove</code></summary>
 
 ### Description
 Remove a specific product from the wishlist.
@@ -2585,14 +2585,14 @@ Remove a specific product from the wishlist.
 ### Curl
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/wishlist/remove?productId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/wishlists/remove?productId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/wishlist/remove?productId={productId}
+http://localhost:8080/api/v1/wishlists/remove?productId={productId}
 ```
 
 ### Response
@@ -2605,7 +2605,7 @@ http://localhost:8080/api/v1/wishlist/remove?productId={productId}
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/wishlist/check</code></summary>
+<summary> <code>GET</code> <code>/api/v1/wishlists/check</code></summary>
 
 ### Description
 Check if a specific product is in the user's wishlist.
@@ -2613,14 +2613,14 @@ Check if a specific product is in the user's wishlist.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/wishlist/check?productId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/wishlists/check?productId=ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/wishlist/check?productId={productId}
+http://localhost:8080/api/v1/wishlists/check?productId={productId}
 ```
 
 ### Response
@@ -2889,7 +2889,7 @@ http://localhost:8080/api/v1/checkout/place-order
 ### ORDER
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/order</code></summary>
+<summary> <code>GET</code> <code>/api/v1/orders</code></summary>
 
 ### Description
 Retrieve all orders for the authenticated customer.
@@ -2897,14 +2897,14 @@ Retrieve all orders for the authenticated customer.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/order?limit=10&offset=0' \
+  'http://localhost:8080/api/v1/orders?limit=10&offset=0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/order?limit={limit}&offset={offset}
+http://localhost:8080/api/v1/orders?limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -2931,7 +2931,7 @@ http://localhost:8080/api/v1/order?limit={limit}&offset={offset}
 </details>
 
 <details>
-<summary> <code>PATCH</code> <code>/api/v1/order/status/{id}</code></summary>
+<summary> <code>PATCH</code> <code>/api/v1/orders/status/{id}</code></summary>
 
 ### Description
 Update order status (Customer: CANCELED/RECEIVED, Seller: CONFIRMED/DELIVERED).
@@ -2939,14 +2939,14 @@ Update order status (Customer: CANCELED/RECEIVED, Seller: CONFIRMED/DELIVERED).
 ### Curl
 ```bash
 curl -X 'PATCH' \
-  'http://localhost:8080/api/v1/order/status/ORD-20240506-ABCD?status=canceled' \
+  'http://localhost:8080/api/v1/orders/status/ORD-20240506-ABCD?status=canceled' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/order/status/{id}?status={status}
+http://localhost:8080/api/v1/orders/status/{id}?status={status}
 ```
 
 ### Response
@@ -2962,7 +2962,7 @@ http://localhost:8080/api/v1/order/status/{id}?status={status}
 </details>
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/order/{id}/cancel</code></summary>
+<summary> <code>POST</code> <code>/api/v1/orders/{id}/cancel</code></summary>
 
 ### Description
 Cancel an order.
@@ -2970,7 +2970,7 @@ Cancel an order.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/order/ORD-20240506-ABCD/cancel' \
+  'http://localhost:8080/api/v1/orders/ORD-20240506-ABCD/cancel' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
@@ -2981,7 +2981,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/order/{id}/cancel
+http://localhost:8080/api/v1/orders/{id}/cancel
 ```
 
 ### Response
@@ -2994,7 +2994,7 @@ http://localhost:8080/api/v1/order/{id}/cancel
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/seller/order</code></summary>
+<summary> <code>GET</code> <code>/api/v1/seller/orders</code></summary>
 
 ### Description
 Seller: Retrieve orders for the seller's shop.
@@ -3002,14 +3002,14 @@ Seller: Retrieve orders for the seller's shop.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/seller/order?status=PLACED' \
+  'http://localhost:8080/api/v1/seller/orders?status=PLACED' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/order?status={status}&limit={limit}&offset={offset}
+http://localhost:8080/api/v1/seller/orders?status={status}&limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -3035,7 +3035,7 @@ http://localhost:8080/api/v1/seller/order?status={status}&limit={limit}&offset={
 </details>
 
 <details>
-<summary> <code>PATCH</code> <code>/api/v1/admin/order/status/{id}</code></summary>
+<summary> <code>PATCH</code> <code>/api/v1/admin/orders/status/{id}</code></summary>
 
 ### Description
 Admin: Update the status of any order.
@@ -3043,14 +3043,14 @@ Admin: Update the status of any order.
 ### Curl
 ```bash
 curl -X 'PATCH' \
-  'http://localhost:8080/api/v1/admin/order/status/ORD-20240506-ABCD?status=shipped' \
+  'http://localhost:8080/api/v1/admin/orders/status/ORD-20240506-ABCD?status=shipped' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/order/status/{id}?status={status}
+http://localhost:8080/api/v1/admin/orders/status/{id}?status={status}
 ```
 
 ### Response
@@ -3066,7 +3066,7 @@ http://localhost:8080/api/v1/admin/order/status/{id}?status={status}
 </details>
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/admin/order/{id}/cancel</code></summary>
+<summary> <code>POST</code> <code>/api/v1/admin/orders/{id}/cancel</code></summary>
 
 ### Description
 Admin: Cancel any order.
@@ -3074,7 +3074,7 @@ Admin: Cancel any order.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/order/ORD-20240506-ABCD/cancel' \
+  'http://localhost:8080/api/v1/admin/orders/ORD-20240506-ABCD/cancel' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>' \
   -H 'Content-Type: application/json' \
@@ -3085,7 +3085,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/order/{id}/cancel
+http://localhost:8080/api/v1/admin/orders/{id}/cancel
 ```
 
 ### Response
@@ -3098,7 +3098,7 @@ http://localhost:8080/api/v1/admin/order/{id}/cancel
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/admin/order</code></summary>
+<summary> <code>GET</code> <code>/api/v1/admin/orders</code></summary>
 
 ### Description
 Admin: Retrieve all orders with advanced filtering (status, startDate, endDate).
@@ -3106,14 +3106,14 @@ Admin: Retrieve all orders with advanced filtering (status, startDate, endDate).
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/order?status=PLACED&startDate=2024-05-01T00:00:00Z' \
+  'http://localhost:8080/api/v1/admin/orders?status=PLACED&startDate=2024-05-01T00:00:00Z' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/order?status={status}&startDate={startDate}&endDate={endDate}&limit={limit}&offset={offset}
+http://localhost:8080/api/v1/admin/orders?status={status}&startDate={startDate}&endDate={endDate}&limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -3140,7 +3140,7 @@ http://localhost:8080/api/v1/admin/order?status={status}&startDate={startDate}&e
 ### PAYMENT
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/payment</code></summary>
+<summary> <code>POST</code> <code>/api/v1/payments</code></summary>
 
 ### Description
 Create a new payment record for an order.
@@ -3148,7 +3148,7 @@ Create a new payment record for an order.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/payment' \
+  'http://localhost:8080/api/v1/payments' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
@@ -3163,7 +3163,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/payment
+http://localhost:8080/api/v1/payments
 ```
 
 ### Response
@@ -3180,7 +3180,7 @@ http://localhost:8080/api/v1/payment
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/payment/{id}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/payments/{id}</code></summary>
 
 ### Description
 Retrieve payment details by ID.
@@ -3188,14 +3188,14 @@ Retrieve payment details by ID.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/payment/pay-uuid' \
+  'http://localhost:8080/api/v1/payments/pay-uuid' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/payment/{id}
+http://localhost:8080/api/v1/payments/{id}
 ```
 
 ### Response
@@ -3213,7 +3213,7 @@ http://localhost:8080/api/v1/payment/{id}
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/payment/order/{orderId}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/payments/order/{orderId}</code></summary>
 
 ### Description
 Retrieve all payments for a specific order.
@@ -3221,14 +3221,14 @@ Retrieve all payments for a specific order.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/payment/order/ORD-20240506-ABCD' \
+  'http://localhost:8080/api/v1/payments/order/ORD-20240506-ABCD' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/payment/order/{orderId}
+http://localhost:8080/api/v1/payments/order/{orderId}
 ```
 
 ### Response
@@ -3256,7 +3256,7 @@ http://localhost:8080/api/v1/payment/order/{orderId}
 ### PRIVACY POLICY
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/policy/{policyType}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/policies/{policyType}</code></summary>
 
 ### Description
 Retrieve the latest active version of a policy by type.
@@ -3264,13 +3264,13 @@ Retrieve the latest active version of a policy by type.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/policy/privacy_policy' \
+  'http://localhost:8080/api/v1/policies/privacy_policy' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/policy/{policyType}
+http://localhost:8080/api/v1/policies/{policyType}
 ```
 
 ### Response
@@ -3289,7 +3289,7 @@ http://localhost:8080/api/v1/policy/{policyType}
 </details>
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/admin/policy</code></summary>
+<summary> <code>POST</code> <code>/api/v1/admin/policies</code></summary>
 
 ### Description
 Admin: Create a new policy document or new version.
@@ -3297,7 +3297,7 @@ Admin: Create a new policy document or new version.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/policy' \
+  'http://localhost:8080/api/v1/admin/policies' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>' \
   -H 'Content-Type: application/json' \
@@ -3310,7 +3310,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/policy
+http://localhost:8080/api/v1/admin/policies
 ```
 
 ### Response
@@ -3326,7 +3326,7 @@ http://localhost:8080/api/v1/admin/policy
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/admin/policy/{policyType}/history</code></summary>
+<summary> <code>GET</code> <code>/api/v1/admin/policies/{policyType}/history</code></summary>
 
 ### Description
 Admin: Retrieve all versions of a specific policy type.
@@ -3334,14 +3334,14 @@ Admin: Retrieve all versions of a specific policy type.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/policy/privacy_policy/history' \
+  'http://localhost:8080/api/v1/admin/policies/privacy_policy/history' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/policy/{policyType}/history
+http://localhost:8080/api/v1/admin/policies/{policyType}/history
 ```
 
 ### Response
@@ -3725,7 +3725,7 @@ http://localhost:8080/api/v1/admin/refund-requests/{id}/status
 ### COUPON
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/coupon/{code}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/coupons/{code}</code></summary>
 
 ### Description
 Retrieve detailed information about a coupon by its code.
@@ -3733,13 +3733,13 @@ Retrieve detailed information about a coupon by its code.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/coupon/SUMMER20' \
+  'http://localhost:8080/api/v1/coupons/SUMMER20' \
   -H 'accept: application/json'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/coupon/{code}
+http://localhost:8080/api/v1/coupons/{code}
 ```
 
 ### Response
@@ -3759,7 +3759,7 @@ http://localhost:8080/api/v1/coupon/{code}
 </details>
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/admin/coupon</code></summary>
+<summary> <code>POST</code> <code>/api/v1/admin/coupons</code></summary>
 
 ### Description
 Admin: Create a new discount coupon.
@@ -3767,7 +3767,7 @@ Admin: Create a new discount coupon.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/coupon' \
+  'http://localhost:8080/api/v1/admin/coupons' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>' \
   -H 'Content-Type: application/json' \
@@ -3782,7 +3782,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/coupon
+http://localhost:8080/api/v1/admin/coupons
 ```
 
 ### Response
@@ -3798,7 +3798,7 @@ http://localhost:8080/api/v1/admin/coupon
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/admin/coupon</code></summary>
+<summary> <code>GET</code> <code>/api/v1/admin/coupons</code></summary>
 
 ### Description
 Admin: Retrieve a list of all coupons.
@@ -3806,14 +3806,14 @@ Admin: Retrieve a list of all coupons.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/coupon?limit=10&offset=0' \
+  'http://localhost:8080/api/v1/admin/coupons?limit=10&offset=0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/coupon?limit={limit}&offset={offset}
+http://localhost:8080/api/v1/admin/coupons?limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -3838,7 +3838,7 @@ http://localhost:8080/api/v1/admin/coupon?limit={limit}&offset={offset}
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/admin/coupon/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/coupons/{id}</code></summary>
 
 ### Description
 Admin: Update an existing coupon.
@@ -3846,7 +3846,7 @@ Admin: Update an existing coupon.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/coupon/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/admin/coupons/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>' \
   -H 'Content-Type: application/json' \
@@ -3857,7 +3857,7 @@ curl -X 'PUT' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/coupon/{id}
+http://localhost:8080/api/v1/admin/coupons/{id}
 ```
 
 ### Response
@@ -3873,7 +3873,7 @@ http://localhost:8080/api/v1/admin/coupon/{id}
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/api/v1/admin/coupon/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/admin/coupons/{id}</code></summary>
 
 ### Description
 Admin: Delete a coupon.
@@ -3881,14 +3881,14 @@ Admin: Delete a coupon.
 ### Curl
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/coupon/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/admin/coupons/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/coupon/{id}
+http://localhost:8080/api/v1/admin/coupons/{id}
 ```
 
 ### Response
@@ -3903,7 +3903,7 @@ http://localhost:8080/api/v1/admin/coupon/{id}
 ### INVENTORY
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/seller/inventory</code></summary>
+<summary> <code>POST</code> <code>/api/v1/seller/inventories</code></summary>
 
 ### Description
 Seller: Initialize or update inventory for a product.
@@ -3911,7 +3911,7 @@ Seller: Initialize or update inventory for a product.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/seller/inventory' \
+  'http://localhost:8080/api/v1/seller/inventories' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>' \
   -H 'Content-Type: application/json' \
@@ -3924,7 +3924,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/inventory
+http://localhost:8080/api/v1/seller/inventories
 ```
 
 ### Response
@@ -3940,7 +3940,7 @@ http://localhost:8080/api/v1/seller/inventory
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/seller/inventory/stock/{productId}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/seller/inventories/stock/{productId}</code></summary>
 
 ### Description
 Seller: Update stock quantity.
@@ -3948,14 +3948,14 @@ Seller: Update stock quantity.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/seller/inventory/stock/ce563774-d3d5-442e-ad1a-b884bb0a53f0?quantity=10&operation=add' \
+  'http://localhost:8080/api/v1/seller/inventories/stock/ce563774-d3d5-442e-ad1a-b884bb0a53f0?quantity=10&operation=add' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/inventory/stock/{productId}?quantity={quantity}&operation={operation}
+http://localhost:8080/api/v1/seller/inventories/stock/{productId}?quantity={quantity}&operation={operation}
 ```
 
 ### Response
@@ -3971,7 +3971,7 @@ http://localhost:8080/api/v1/seller/inventory/stock/{productId}?quantity={quanti
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/seller/inventory/product/{productId}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/seller/inventories/product/{productId}</code></summary>
 
 ### Description
 Seller: Retrieve inventory item details by product ID.
@@ -3979,14 +3979,14 @@ Seller: Retrieve inventory item details by product ID.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/seller/inventory/product/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/seller/inventories/product/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/inventory/product/{productId}
+http://localhost:8080/api/v1/seller/inventories/product/{productId}
 ```
 
 ### Response
@@ -4003,7 +4003,7 @@ http://localhost:8080/api/v1/seller/inventory/product/{productId}
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/seller/inventory/shop/{shopId}</code></summary>
+<summary> <code>GET</code> <code>/api/v1/seller/inventories/shop/{shopId}</code></summary>
 
 ### Description
 Seller: Retrieve all inventory items for a shop.
@@ -4011,14 +4011,14 @@ Seller: Retrieve all inventory items for a shop.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/seller/inventory/shop/shop-uuid' \
+  'http://localhost:8080/api/v1/seller/inventories/shop/shop-uuid' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/inventory/shop/{shopId}?limit={limit}&offset={offset}
+http://localhost:8080/api/v1/seller/inventories/shop/{shopId}?limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -4043,7 +4043,7 @@ http://localhost:8080/api/v1/seller/inventory/shop/{shopId}?limit={limit}&offset
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/seller/inventory/low-stock</code></summary>
+<summary> <code>GET</code> <code>/api/v1/seller/inventories/low-stock</code></summary>
 
 ### Description
 Seller: Retrieve items with stock below a threshold.
@@ -4051,14 +4051,14 @@ Seller: Retrieve items with stock below a threshold.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/seller/inventory/low-stock' \
+  'http://localhost:8080/api/v1/seller/inventories/low-stock' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/seller/inventory/low-stock?limit={limit}&offset={offset}
+http://localhost:8080/api/v1/seller/inventories/low-stock?limit={limit}&offset={offset}
 ```
 
 ### Response
@@ -4086,7 +4086,7 @@ http://localhost:8080/api/v1/seller/inventory/low-stock?limit={limit}&offset={of
 ### SHIPPING METHOD
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/admin/shipping-method</code></summary>
+<summary> <code>POST</code> <code>/api/v1/admin/shipping-methods</code></summary>
 
 ### Description
 Admin: Create a new shipping method.
@@ -4094,7 +4094,7 @@ Admin: Create a new shipping method.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/shipping-method' \
+  'http://localhost:8080/api/v1/admin/shipping-methods' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>' \
   -H 'Content-Type: application/json' \
@@ -4107,7 +4107,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/shipping-method
+http://localhost:8080/api/v1/admin/shipping-methods
 ```
 
 ### Response
@@ -4123,7 +4123,7 @@ http://localhost:8080/api/v1/admin/shipping-method
 </details>
 
 <details>
-<summary> <code>PUT</code> <code>/api/v1/admin/shipping-method/{id}</code></summary>
+<summary> <code>PUT</code> <code>/api/v1/admin/shipping-methods/{id}</code></summary>
 
 ### Description
 Admin: Update an existing shipping method.
@@ -4131,7 +4131,7 @@ Admin: Update an existing shipping method.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/shipping-method/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/admin/shipping-methods/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>' \
   -H 'Content-Type: application/json' \
@@ -4142,7 +4142,7 @@ curl -X 'PUT' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/shipping-method/{id}
+http://localhost:8080/api/v1/admin/shipping-methods/{id}
 ```
 
 ### Response
@@ -4158,7 +4158,7 @@ http://localhost:8080/api/v1/admin/shipping-method/{id}
 </details>
 
 <details>
-<summary> <code>DELETE</code> <code>/api/v1/admin/shipping-method/{id}</code></summary>
+<summary> <code>DELETE</code> <code>/api/v1/admin/shipping-methods/{id}</code></summary>
 
 ### Description
 Admin: Delete a shipping method.
@@ -4166,14 +4166,14 @@ Admin: Delete a shipping method.
 ### Curl
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/shipping-method/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
+  'http://localhost:8080/api/v1/admin/shipping-methods/ce563774-d3d5-442e-ad1a-b884bb0a53f0' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/admin/shipping-method/{id}
+http://localhost:8080/api/v1/admin/shipping-methods/{id}
 ```
 
 ### Response

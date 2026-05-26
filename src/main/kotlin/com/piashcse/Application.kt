@@ -21,7 +21,6 @@ fun Application.configureAll() {
     configureDataBase()
     configureBasic()
     configureKoin()
-    configureRequestValidation()
     configureAuth()
     configureRateLimiting()
     configureSwagger()

@@ -16,7 +16,7 @@ data class ProductWithFilterRequest(
     val sortBy: String? = null, // price, createdAt, name
     val sortOrder: String? = "desc", // asc, desc
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(ProductWithFilterRequest::limit).isNotNull()
             validate(ProductWithFilterRequest::offset).isNotNull()

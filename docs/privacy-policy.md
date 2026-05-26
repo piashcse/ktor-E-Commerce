@@ -17,8 +17,8 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `GET` | `/policy/{type}` | Retrieve latest active policy by type | No |
-| `POST` | `/api/v1/admin/policy` | Create a new policy or version | Yes (Admin) |
-| `GET` | `/api/v1/admin/policy/{type}/history` | Retrieve all versions of a policy type | Yes (Admin) |
+| `POST` | `/api/v1/admin/policies` | Create a new policy or version | Yes (Admin) |
+| `GET` | `/api/v1/admin/policies/{type}/history` | Retrieve all versions of a policy type | Yes (Admin) |
 
 ---
 
@@ -40,7 +40,7 @@ Retrieve a list of all policies including Privacy Policies and Terms & Condition
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/policy/PRIVACY_POLICY' \
+  'http://localhost:8080/api/v1/policies/PRIVACY_POLICY' \
   -H 'accept: application/json'
 ```
 
@@ -113,7 +113,7 @@ Retrieve a specific policy by its type (PRIVACY_POLICY or TERMS_CONDITIONS).
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/policy/PRIVACY_POLICY' \
+  'http://localhost:8080/api/v1/policies/PRIVACY_POLICY' \
   -H 'accept: application/json'
 ```
 
@@ -172,7 +172,7 @@ Retrieve a specific policy by its unique identifier.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/policy/detail/550e8400-e29b-41d4-a716-446655440000' \
+  'http://localhost:8080/api/v1/policies/detail/550e8400-e29b-41d4-a716-446655440000' \
   -H 'accept: application/json'
 ```
 
@@ -201,7 +201,7 @@ Same as "Get Policy by Type" response fields.
 
 ### 4. Create Policy
 
-**`POST /api/v1/admin/policy`**
+**`POST /api/v1/admin/policies`**
 
 Create a new policy with specified type, title, content, version, and effective date.
 
@@ -227,7 +227,7 @@ Create a new policy with specified type, title, content, version, and effective 
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/policy' \
+  'http://localhost:8080/api/v1/admin/policies' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -302,7 +302,7 @@ Update an existing policy by its ID. You can modify the title, content, version,
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/policy/550e8400-e29b-41d4-a716-446655440003' \
+  'http://localhost:8080/api/v1/policies/550e8400-e29b-41d4-a716-446655440003' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -345,7 +345,7 @@ curl -X 'PUT' \
 
 ### 6. Deactivate Policy
 
-**`GET /api/v1/admin/policy/{type}/history`**
+**`GET /api/v1/admin/policies/{type}/history`**
 
 Deactivate a policy by its ID. This sets the policy's isActive flag to false without deleting it.
 
@@ -366,7 +366,7 @@ Deactivate a policy by its ID. This sets the policy's isActive flag to false wit
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/policy/PRIVACY_POLICY/history' \
+  'http://localhost:8080/api/v1/admin/policies/PRIVACY_POLICY/history' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```

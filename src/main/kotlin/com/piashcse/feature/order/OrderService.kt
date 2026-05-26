@@ -31,8 +31,6 @@ class OrderService : OrderRepository {
         checkoutRequest: CheckoutRequest,
     ): List<OrderResponse> =
         query {
-            checkoutRequest.validation()
-
             // 0. Check for duplicate idempotency key
             checkoutRequest.idempotencyKey?.let { key ->
                 val existingOrders = OrderDAO.find { OrderTable.idempotencyKey eq key }.toList()
@@ -180,8 +178,6 @@ class OrderService : OrderRepository {
         checkoutRequest: CheckoutRequest,
     ): com.piashcse.model.response.CheckoutSummaryResponse =
         query {
-            checkoutRequest.validation()
-
             val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
             if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
 
@@ -281,7 +277,6 @@ class OrderService : OrderRepository {
         idempotencyKey: String?,
     ): List<OrderResponse> =
         query {
-            orderRequest.validation()
             if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
             if (orderRequest.orderItems.isEmpty()) throw ValidationException(Message.Validation.INVALID_ORDER_ITEMS)
 

@@ -14,7 +14,7 @@ data class CheckoutRequest(
     val idempotencyKey: String? = null,
     val couponCode: String? = null,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(CheckoutRequest::shippingAddressId).isNotNull().isNotEmpty()
             validate(CheckoutRequest::shippingMethodId).isNotNull().isNotEmpty()

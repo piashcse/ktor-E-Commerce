@@ -78,7 +78,6 @@ fun Route.orderRoutes(orderService: OrderService) {
             val userId = call.currentUserId
             val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
             val requestBody = call.receive<CancelOrderRequest>()
-            requestBody.validation()
 
             call.respond(HttpStatusCode.OK, orderService.cancelOrder(id, userId, requestBody.reason, userType))
         }
@@ -136,7 +135,6 @@ fun Route.orderAdminRoutes(orderService: OrderService) {
         val userId = call.currentUserId
         val userType = UserType.ADMIN
         val requestBody = call.receive<CancelOrderRequest>()
-        requestBody.validation()
 
         call.respond(HttpStatusCode.OK, orderService.cancelOrder(id, userId, requestBody.reason, userType))
     }

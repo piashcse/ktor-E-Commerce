@@ -1,10 +1,12 @@
 package com.piashcse.model.request
 
+import kotlinx.serialization.Serializable
 import org.valiktor.functions.isGreaterThan
 import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
+@Serializable
 data class ProductRequest(
     val categoryId: String,
     val subCategoryId: String?,
@@ -22,7 +24,7 @@ data class ProductRequest(
     val freeShipping: Boolean?,
     val images: List<String>,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(ProductRequest::categoryId).isNotNull().isNotEmpty()
             validate(ProductRequest::name).isNotNull().isNotEmpty()

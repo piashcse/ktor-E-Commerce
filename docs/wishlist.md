@@ -48,7 +48,7 @@ Add a product to the authenticated user's wishlist.
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/wishlist' \
+  'http://localhost:8080/api/v1/wishlists' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -96,7 +96,7 @@ Retrieve all products in the authenticated user's wishlist with pagination.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/wishlist?page=1&limit=10' \
+  'http://localhost:8080/api/v1/wishlists?page=1&limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -138,7 +138,7 @@ Check if a specific product exists in the user's wishlist.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/wishlist/check?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
+  'http://localhost:8080/api/v1/wishlists/check?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
@@ -173,7 +173,7 @@ Remove a specific product from the authenticated user's wishlist.
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/wishlist/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
+  'http://localhost:8080/api/v1/wishlists/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```

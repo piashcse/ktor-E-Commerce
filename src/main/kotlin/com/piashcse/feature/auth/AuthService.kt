@@ -511,8 +511,6 @@ class AuthService(
      * Refreshes an access token using a valid refresh token.
      */
     suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair {
-        request.validate()
-
         val tokenHash = hashRefreshToken(request.refreshToken)
         val storedToken =
             refreshTokenRepository.getRefreshTokenByHash(tokenHash)

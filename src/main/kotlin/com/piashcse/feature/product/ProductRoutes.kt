@@ -45,7 +45,6 @@ fun Route.productRoutes(productService: ProductService) {
                 sortBy = call.request.queryParameters["sortBy"],
                 sortOrder = call.request.queryParameters["sortOrder"],
             )
-        params.validation()
         call.respond(HttpStatusCode.OK, productService.getProducts(params))
     }
 
@@ -64,7 +63,6 @@ fun Route.productRoutes(productService: ProductService) {
                 minPrice = call.request.queryParameters["minPrice"]?.toDoubleOrNull(),
                 categoryId = call.request.queryParameters["categoryId"],
             )
-        queryParams.validation()
         call.respond(HttpStatusCode.OK, productService.searchProduct(queryParams))
     }
 }
@@ -91,7 +89,6 @@ fun Route.productSellerRoutes(productService: ProductService) {
                 sortBy = call.request.queryParameters["sortBy"],
                 sortOrder = call.request.queryParameters["sortOrder"],
             )
-        params.validation()
         call.respond(
             HttpStatusCode.OK,
             productService.getProductsByUser(call.currentUserId, params),
@@ -104,7 +101,6 @@ fun Route.productSellerRoutes(productService: ProductService) {
      */
     post {
         val requestBody = call.receive<ProductRequest>()
-        requestBody.validation()
         call.respond(
             HttpStatusCode.OK,
             productService.createProduct(call.currentUserId, null, requestBody),

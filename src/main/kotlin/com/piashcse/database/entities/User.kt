@@ -8,6 +8,8 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.time.LocalDateTime
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 object UserTable : BaseIdTable("user") {
     val email = varchar("email", 255) // Nullable for mobile users
@@ -64,16 +66,18 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     fun isActiveAndVerified(): Boolean = isVerified && isActive
 }
 
+@Serializable
 data class UserResponse(
     val id: String,
     val email: String,
     val isVerified: Boolean?,
     var userType: UserType,
     val isActive: Boolean,
-    val createdAt: LocalDateTime?,
-    val updatedAt: LocalDateTime?,
+    val createdAt: @Contextual LocalDateTime?,
+    val updatedAt: @Contextual LocalDateTime?,
 )
 
+@Serializable
 data class LoginResponse(
     val user: UserResponse?,
     val accessToken: String,
@@ -82,4 +86,5 @@ data class LoginResponse(
     val tokenType: String = "Bearer",
 )
 
+@Serializable
 data class ChangePassword(val oldPassword: String, val newPassword: String)

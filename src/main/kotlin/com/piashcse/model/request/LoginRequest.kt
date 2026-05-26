@@ -14,7 +14,7 @@ data class LoginRequest(
     val password: String,
     val userType: String,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(LoginRequest::email).isNotNull().isEmail()
             validate(LoginRequest::password).isNotNull().hasSize(4, 10)

@@ -24,7 +24,6 @@ fun Route.checkoutRoutes(
          */
         post("shipping-address") {
             val requestBody = call.receive<ShippingAddressRequest>()
-            requestBody.validation()
             call.respond(
                 HttpStatusCode.Created,
                 shippingAddressService.createShippingAddress(call.currentUserId, requestBody),
@@ -49,7 +48,6 @@ fun Route.checkoutRoutes(
         put("shipping-address/{id}") {
             val id = call.requirePathParameter("id")
             val requestBody = call.receive<ShippingAddressRequest>()
-            requestBody.validation()
             call.respond(
                 HttpStatusCode.OK,
                 shippingAddressService.updateShippingAddress(call.currentUserId, id, requestBody),
@@ -85,7 +83,6 @@ fun Route.checkoutRoutes(
          */
         post("summary") {
             val requestBody = call.receive<CheckoutRequest>()
-            requestBody.validation()
             call.respond(
                 HttpStatusCode.OK,
                 orderService.getCheckoutSummary(call.currentUserId, requestBody),
@@ -98,7 +95,6 @@ fun Route.checkoutRoutes(
          */
         post("place-order") {
             val requestBody = call.receive<CheckoutRequest>()
-            requestBody.validation()
             call.respond(
                 HttpStatusCode.Created,
                 orderService.placeOrder(call.currentUserId, requestBody),

@@ -15,10 +15,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/admin/brand` | Create a new brand | Yes (Admin) |
+| `POST` | `/api/v1/admin/brands` | Create a new brand | Yes (Admin) |
 | `GET` | `/brand` | Retrieve list of brands | Yes |
-| `PUT` | `/api/v1/admin/brand/{id}` | Update an existing brand | Yes (Admin) |
-| `DELETE` | `/api/v1/admin/brand/{id}` | Delete a brand | Yes (Admin) |
+| `PUT` | `/api/v1/admin/brands/{id}` | Update an existing brand | Yes (Admin) |
+| `DELETE` | `/api/v1/admin/brands/{id}` | Delete a brand | Yes (Admin) |
 
 ---
 
@@ -26,7 +26,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Brand
 
-**`POST /api/v1/admin/brand`**
+**`POST /api/v1/admin/brands`**
 
 Create a new brand with a specified name.
 
@@ -46,7 +46,7 @@ Create a new brand with a specified name.
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/brand?name=Nike' \
+  'http://localhost:8080/api/v1/admin/brands?name=Nike' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -d ''
@@ -94,7 +94,7 @@ Retrieve a list of brands with optional pagination support.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/brand?limit=10' \
+  'http://localhost:8080/api/v1/brands?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -133,7 +133,7 @@ curl -X 'GET' \
 
 ### 3. Update Brand
 
-**`PUT /api/v1/admin/brand/{id}`**
+**`PUT /api/v1/admin/brands/{id}`**
 
 Update an existing brand by its ID. You can modify the brand name.
 
@@ -159,7 +159,7 @@ Update an existing brand by its ID. You can modify the brand name.
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/brand/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas' \
+  'http://localhost:8080/api/v1/admin/brands/6c5078d3-f8e3-4c88-9afe-48b5423c664f?name=Addidas' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -185,7 +185,7 @@ curl -X 'PUT' \
 
 ### 4. Delete Brand
 
-**`DELETE /api/v1/admin/brand/{id}`**
+**`DELETE /api/v1/admin/brands/{id}`**
 
 Delete a brand by its ID. This operation permanently removes the brand from the system.
 
@@ -205,7 +205,7 @@ Delete a brand by its ID. This operation permanently removes the brand from the 
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/brand/19dd1021-432c-473c-8b19-0f56d19af9ad' \
+  'http://localhost:8080/api/v1/admin/brands/19dd1021-432c-473c-8b19-0f56d19af9ad' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```

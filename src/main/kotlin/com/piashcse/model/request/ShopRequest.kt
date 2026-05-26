@@ -16,7 +16,7 @@ data class ShopRequest(
     val logo: String?,
     val coverImage: String?,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(ShopRequest::name).isNotNull().isNotEmpty()
             validate(ShopRequest::categoryId).isNotNull().isNotEmpty()

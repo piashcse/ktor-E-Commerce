@@ -10,7 +10,7 @@ import org.valiktor.validate
 
 @Serializable
 data class RegisterRequest(val email: String, val password: String, val userType: String) {
-    fun validation() {
+    init {
         validate(this) {
             validate(RegisterRequest::email).isNotNull().isEmail()
             validate(RegisterRequest::password).isNotNull().hasSize(4, 15)

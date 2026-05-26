@@ -20,7 +20,6 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
          */
         post {
             val requestBody = call.receive<WishListRequest>()
-            requestBody.validation()
             call.respond(
                 HttpStatusCode.OK,
                 wishlistService.addToWishList(call.currentUserId, requestBody.productId),

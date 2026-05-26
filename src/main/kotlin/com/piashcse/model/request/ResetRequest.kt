@@ -12,7 +12,7 @@ data class ResetRequest(
     val newPassword: String,
     val userType: String,
 ) {
-    fun validation() {
+    init {
         validate(this) {
             validate(ResetRequest::email).isNotNull().isEmail()
             validate(ResetRequest::verificationCode).isNotNull()

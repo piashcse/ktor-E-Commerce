@@ -7,6 +7,8 @@ import com.piashcse.database.entities.base.BaseIdTable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Contextual
 
 object SellerTable : BaseIdTable("seller") {
     val userId = reference("user_id", UserTable.id)
@@ -94,6 +96,7 @@ class SellerDAO(id: EntityID<String>) : BaseEntity(id, SellerTable) {
     fun isSuspended(): Boolean = status == ShopStatus.SUSPENDED
 }
 
+@Serializable
 data class SellerResponse(
     val id: String,
     val userId: String,
@@ -104,13 +107,13 @@ data class SellerResponse(
     val bankAccountNumber: String?,
     val bankName: String?,
     val bankRoutingNumber: String?,
-    val commissionRate: java.math.BigDecimal,
+    val commissionRate: @Contextual java.math.BigDecimal,
     val status: ShopStatus,
-    val totalSales: java.math.BigDecimal,
-    val totalCommission: java.math.BigDecimal,
-    val approvedAt: java.time.LocalDateTime?,
-    val suspendedAt: java.time.LocalDateTime?,
-    val terminatedAt: java.time.LocalDateTime?,
-    val createdAt: java.time.LocalDateTime?,
-    val updatedAt: java.time.LocalDateTime?,
+    val totalSales: @Contextual java.math.BigDecimal,
+    val totalCommission: @Contextual java.math.BigDecimal,
+    val approvedAt: @Contextual java.time.LocalDateTime?,
+    val suspendedAt: @Contextual java.time.LocalDateTime?,
+    val terminatedAt: @Contextual java.time.LocalDateTime?,
+    val createdAt: @Contextual java.time.LocalDateTime?,
+    val updatedAt: @Contextual java.time.LocalDateTime?,
 )

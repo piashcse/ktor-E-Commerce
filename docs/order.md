@@ -12,13 +12,13 @@ All Order endpoints require Bearer token authentication.
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/api/v1/order` | Retrieve customer orders | Yes (Customer) |
-| `PATCH` | `/api/v1/order/status/{id}` | Update order status (Customer: RECEIVED/CANCELED) | Yes (Customer) |
-| `POST` | `/api/v1/order/{id}/cancel` | Cancel an order with reason | Yes (Customer) |
-| `GET` | `/api/v1/seller/order` | Retrieve seller's shop orders | Yes (Seller) |
-| `PATCH` | `/api/v1/admin/order/status/{id}` | Update any order status | Yes (Admin) |
-| `POST` | `/api/v1/admin/order/{id}/cancel` | Cancel any order | Yes (Admin) |
-| `GET` | `/api/v1/admin/order` | Retrieve all orders with advanced filters | Yes (Admin) |
+| `GET` | `/api/v1/orders` | Retrieve customer orders | Yes (Customer) |
+| `PATCH` | `/api/v1/orders/status/{id}` | Update order status (Customer: RECEIVED/CANCELED) | Yes (Customer) |
+| `POST` | `/api/v1/orders/{id}/cancel` | Cancel an order with reason | Yes (Customer) |
+| `GET` | `/api/v1/seller/orders` | Retrieve seller's shop orders | Yes (Seller) |
+| `PATCH` | `/api/v1/admin/orders/status/{id}` | Update any order status | Yes (Admin) |
+| `POST` | `/api/v1/admin/orders/{id}/cancel` | Cancel any order | Yes (Admin) |
+| `GET` | `/api/v1/admin/orders` | Retrieve all orders with advanced filters | Yes (Admin) |
 
 ---
 
@@ -26,7 +26,7 @@ All Order endpoints require Bearer token authentication.
 
 ### 1. Get Customer Orders
 
-**`GET /api/v1/order`**
+**`GET /api/v1/orders`**
 
 Retrieve all orders placed by the authenticated customer.
 
@@ -34,7 +34,7 @@ Retrieve all orders placed by the authenticated customer.
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/order?limit=10&offset=0' \
+  'http://localhost:8080/api/v1/orders?limit=10&offset=0' \
   -H 'Authorization: Bearer <customer_token>'
 ```
 
@@ -42,7 +42,7 @@ curl -X 'GET' \
 
 ### 2. Update Order Status (Customer/Seller)
 
-**`PATCH /api/v1/order/status/{id}`**
+**`PATCH /api/v1/orders/status/{id}`**
 
 Update the status of an order. The allowed statuses depend on the user role.
 - **Customer**: `CANCELED`, `RECEIVED`
@@ -52,7 +52,7 @@ Update the status of an order. The allowed statuses depend on the user role.
 
 ```bash
 curl -X 'PATCH' \
-  'http://localhost:8080/api/v1/order/status/cbd630f6-bf9f-48ad-ac51-f806807d99fd?status=RECEIVED' \
+  'http://localhost:8080/api/v1/orders/status/cbd630f6-bf9f-48ad-ac51-f806807d99fd?status=RECEIVED' \
   -H 'Authorization: Bearer <customer_token>'
 ```
 
@@ -60,7 +60,7 @@ curl -X 'PATCH' \
 
 ### 3. Cancel Order
 
-**`POST /api/v1/order/{id}/cancel`**
+**`POST /api/v1/orders/{id}/cancel`**
 
 Cancel an order and provide a reason. This will restore stock for all items in the order.
 
@@ -74,7 +74,7 @@ Cancel an order and provide a reason. This will restore stock for all items in t
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/order/cbd630f6-bf9f-48ad-ac51-f806807d99fd/cancel' \
+  'http://localhost:8080/api/v1/orders/cbd630f6-bf9f-48ad-ac51-f806807d99fd/cancel' \
   -H 'Authorization: Bearer <customer_token>' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -86,7 +86,7 @@ curl -X 'POST' \
 
 ### 4. Get Admin Orders
 
-**`GET /api/v1/admin/order`**
+**`GET /api/v1/admin/orders`**
 
 Retrieve all orders with advanced filters.
 
