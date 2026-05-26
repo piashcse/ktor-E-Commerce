@@ -2,7 +2,6 @@ package com.piashcse.feature.product_sub_category
 
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.utils.extension.paginationParameters
-import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -17,7 +16,7 @@ fun Route.productSubCategoryRoutes(subCategoryService: ProductSubCategoryService
      * @description Retrieve subcategories for a specific category
      */
     get {
-        val categoryId = call.parameters["categoryId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "categoryId is required")
+        val categoryId = call.requireQueryParameter("categoryId")
         val (limit, offset) = call.paginationParameters()
         call.respond(
             HttpStatusCode.OK,
@@ -47,10 +46,11 @@ fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategorySe
      * @description Admin: Update an existing product subcategory name
      */
     put("{id}") {
-        val params = call.requireParameters("id", "name")
+        val id = call.requirePathParameter("id")
+        val name = call.requireQueryParameter("name")
         call.respond(
             HttpStatusCode.OK,
-            subCategoryService.updateProductSubCategory(params[0], params[1]),
+            subCategoryService.updateProductSubCategory(id, name),
         )
     }
 
@@ -59,10 +59,10 @@ fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategorySe
      * @description Admin: Permanently delete a product subcategory
      */
     delete("{id}") {
-        val id = call.requireParameters("id")
+        val id = call.requirePathParameter("id")
         call.respond(
             HttpStatusCode.OK,
-            subCategoryService.deleteProductSubCategory(id.first()),
+            subCategoryService.deleteProductSubCategory(id),
         )
     }
 }

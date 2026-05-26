@@ -1,7 +1,6 @@
 package com.piashcse.feature.product_category
 
 import com.piashcse.utils.extension.paginationParameters
-import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -33,7 +32,7 @@ fun Route.productCategoryAdminRoutes(productCategoryService: ProductCategoryServ
      * @description Admin: Create a new product category
      */
     post {
-        val (name) = call.requireParameters("name")
+        val name = call.requireQueryParameter("name")
         call.respond(HttpStatusCode.OK, productCategoryService.createCategory(name))
     }
 
@@ -42,7 +41,8 @@ fun Route.productCategoryAdminRoutes(productCategoryService: ProductCategoryServ
      * @description Admin: Update an existing product category name
      */
     put("{id}") {
-        val (id, name) = call.requireParameters("id", "name")
+        val id = call.requirePathParameter("id")
+        val name = call.requireQueryParameter("name")
         call.respond(HttpStatusCode.OK, productCategoryService.updateCategory(id, name))
     }
 
@@ -51,7 +51,7 @@ fun Route.productCategoryAdminRoutes(productCategoryService: ProductCategoryServ
      * @description Admin: Permanently delete a product category
      */
     delete("{id}") {
-        val (id) = call.requireParameters("id")
+        val id = call.requirePathParameter("id")
         call.respond(HttpStatusCode.OK, productCategoryService.deleteCategory(id))
     }
 }

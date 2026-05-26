@@ -8,7 +8,6 @@ import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.getCurrentUserType
 import com.piashcse.utils.extension.paginationParameters
-import com.piashcse.utils.extension.requireParameters
 import com.piashcse.utils.validator.InvalidEnumValueException
 import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.http.*
@@ -39,7 +38,8 @@ fun Route.orderRoutes(orderService: OrderService) {
          * @description Update order status (Customer: CANCELED/RECEIVED, Seller: CONFIRMED/DELIVERED)
          */
         patch("status/{id}") {
-            val (id, statusParam) = call.requireParameters("id", "status")
+            val id = call.requirePathParameter("id")
+            val statusParam = call.requireQueryParameter("status")
             val userId = call.currentUserId
 
             val status =
@@ -74,7 +74,7 @@ fun Route.orderRoutes(orderService: OrderService) {
          * @description Cancel an order
          */
         post("{id}/cancel") {
-            val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Order ID is required")
+            val id = call.requirePathParameter("id")
             val userId = call.currentUserId
             val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
             val requestBody = call.receive<CancelOrderRequest>()
@@ -109,7 +109,8 @@ fun Route.orderAdminRoutes(orderService: OrderService) {
      * @description Admin: Update the status of any order
      */
     patch("status/{id}") {
-        val (id, statusParam) = call.requireParameters("id", "status")
+        val id = call.requirePathParameter("id")
+        val statusParam = call.requireQueryParameter("status")
         val userId = call.currentUserId
 
         val status =
@@ -131,7 +132,7 @@ fun Route.orderAdminRoutes(orderService: OrderService) {
      * @description Admin: Cancel any order
      */
     post("{id}/cancel") {
-        val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Order ID is required")
+        val id = call.requirePathParameter("id")
         val userId = call.currentUserId
         val userType = UserType.ADMIN
         val requestBody = call.receive<CancelOrderRequest>()

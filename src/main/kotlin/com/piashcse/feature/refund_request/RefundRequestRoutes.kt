@@ -11,6 +11,7 @@ import com.piashcse.utils.extension.getCurrentUserType
 import com.piashcse.utils.extension.paginationParameters
 import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -25,7 +26,7 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
          * @description Create a refund request for an order item
          */
         post("{orderId}") {
-            val orderId = call.parameters["orderId"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Order ID is required")
+            val orderId = call.requirePathParameter("orderId")
             val userId = call.currentUserId
             val requestBody = call.receive<RefundRequestRequest>()
             requestBody.validation()
@@ -38,7 +39,7 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
          * @description Mark an approved refund as shipped
          */
         post("{id}/ship") {
-            val id = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Refund ID is required")
+            val id = call.requirePathParameter("id")
             val userId = call.currentUserId
             val requestBody = call.receive<ShipRefundRequest>()
             requestBody.validation()
@@ -53,7 +54,7 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
          * @description Get refund requests for an order
          */
         get("order/{orderId}") {
-            val orderId = call.parameters["orderId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Order ID is required")
+            val orderId = call.requirePathParameter("orderId")
             val userId = call.currentUserId
             val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
             val (limit, offset) = call.paginationParameters()
@@ -66,7 +67,7 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
          * @description Get refund request details
          */
         get("{id}") {
-            val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Refund ID is required")
+            val id = call.requirePathParameter("id")
             val refundRequest = refundRequestService.getRefundById(id)
             if (refundRequest != null) {
                 call.respond(HttpStatusCode.OK, refundRequest)
@@ -86,7 +87,7 @@ fun Route.refundSellerRoutes(refundRequestService: RefundRequestService) {
      * @description Seller: Update refund request status
      */
     put("{id}/status") {
-        val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest, "Refund ID is required")
+        val id = call.requirePathParameter("id")
         val userId = call.currentUserId
         val requestBody = call.receive<UpdateRefundStatusRequest>()
         requestBody.validation()
@@ -104,7 +105,7 @@ fun Route.refundAdminRoutes(refundRequestService: RefundRequestService) {
      * @description Admin: Get all refund requests for an order
      */
     get("order/{orderId}") {
-        val orderId = call.parameters["orderId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Order ID is required")
+        val orderId = call.requirePathParameter("orderId")
         val userId = call.currentUserId
         val userType = UserType.ADMIN
         val (limit, offset) = call.paginationParameters()
@@ -117,7 +118,7 @@ fun Route.refundAdminRoutes(refundRequestService: RefundRequestService) {
      * @description Admin: Update refund status
      */
     put("{id}/status") {
-        val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest, "Refund ID is required")
+        val id = call.requirePathParameter("id")
         val userId = call.currentUserId
         val requestBody = call.receive<UpdateRefundStatusRequest>()
         requestBody.validation()

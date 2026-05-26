@@ -9,9 +9,7 @@ import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.email.sendEmail
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.requireParameters
 import com.piashcse.utils.validator.InvalidEnumValueException
-import com.piashcse.utils.validator.MissingParameterException
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.ratelimit.*
@@ -82,7 +80,8 @@ fun Route.authRoutes(authService: AuthService) {
      * @description Verify user account with OTP
      */
     get("otp-verification") {
-        val (userId, otp) = call.requireParameters("userId", "otp")
+        val userId = call.requireQueryParameter("userId")
+        val otp = call.requireQueryParameter("otp")
         call.respond(HttpStatusCode.OK, authService.otpVerification(userId, otp))
     }
 
@@ -113,7 +112,8 @@ fun Route.authRoutes(authService: AuthService) {
          * @description Change password for authenticated user
          */
         put("change-password") {
-            val (oldPassword, newPassword) = call.requireParameters("oldPassword", "newPassword")
+            val oldPassword = call.requireQueryParameter("oldPassword")
+            val newPassword = call.requireQueryParameter("newPassword")
             val loginUser = call.principal<JwtTokenRequest>()
             authService.changePassword(loginUser?.userId!!, ChangePassword(oldPassword, newPassword)).let {
                 if (it) {
@@ -135,10 +135,8 @@ fun Route.authAdminRoutes(authService: AuthService) {
      * @description Admin: Change user type
      */
     put("/{userId}/change-user-type") {
-        val (userId) = call.requireParameters("userId")
-        val userTypeParam =
-            call.parameters["userType"]
-                ?: throw MissingParameterException("userType")
+        val userId = call.requirePathParameter("userId")
+        val userTypeParam = call.requireQueryParameter("userType")
 
         val newType =
             try {
@@ -164,7 +162,7 @@ fun Route.authAdminRoutes(authService: AuthService) {
      * @description Admin: Deactivate a user account
      */
     put("/{userId}/deactivate") {
-        val (userId) = call.requireParameters("userId")
+        val userId = call.requirePathParameter("userId")
         val currentUser = call.principal<JwtTokenRequest>()
         if (authService.deactivateUser(currentUser?.userId!!, userId)) {
             call.respond(HttpStatusCode.OK, mapOf("message" to "User deactivated successfully"))
@@ -178,7 +176,7 @@ fun Route.authAdminRoutes(authService: AuthService) {
      * @description Admin: Activate a user account
      */
     put("/{userId}/activate") {
-        val (userId) = call.requireParameters("userId")
+        val userId = call.requirePathParameter("userId")
         val currentUser = call.principal<JwtTokenRequest>()
         if (authService.activateUser(currentUser?.userId!!, userId)) {
             call.respond(HttpStatusCode.OK, mapOf("message" to "User activated successfully"))

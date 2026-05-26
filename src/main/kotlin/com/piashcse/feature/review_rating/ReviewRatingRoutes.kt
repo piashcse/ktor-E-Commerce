@@ -4,7 +4,6 @@ import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
-import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -19,7 +18,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
      * @description Retrieve reviews and ratings for a specific product
      */
     get {
-        val productId = call.parameters["productId"] ?: return@get call.respond(HttpStatusCode.BadRequest, "productId is required")
+        val productId = call.requireQueryParameter("productId")
         val (limit, offset) = call.paginationParameters()
         call.respond(
             HttpStatusCode.OK,
@@ -45,13 +44,15 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
          * @description Update an existing review and rating
          */
         put("{id}") {
-            val params = call.requireParameters("id", "review", "rating")
+            val id = call.requirePathParameter("id")
+            val review = call.requireQueryParameter("review")
+            val rating = call.requireQueryParameter("rating")
             call.respond(
                 HttpStatusCode.OK,
                 reviewRatingService.updateReviewRating(
-                    params[0],
-                    params[1],
-                    params[2].toInt(),
+                    id,
+                    review,
+                    rating.toInt(),
                 ),
             )
         }
@@ -61,10 +62,10 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
          * @description Delete a review and rating
          */
         delete("{id}") {
-            val id = call.requireParameters("id")
+            val id = call.requirePathParameter("id")
             call.respond(
                 HttpStatusCode.OK,
-                reviewRatingService.deleteReviewRating(id.first()),
+                reviewRatingService.deleteReviewRating(id),
             )
         }
     }

@@ -8,9 +8,7 @@ import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginationParameters
-import com.piashcse.utils.extension.requireParameters
 import com.piashcse.utils.validator.InvalidEnumValueException
-import com.piashcse.utils.validator.MissingParameterException
 import com.piashcse.utils.validator.NotFoundException
 import io.ktor.http.*
 import io.ktor.server.request.*
@@ -26,7 +24,7 @@ fun Route.shopRoutes(shopService: ShopService) {
      * @description Retrieve detailed information about a specific shop
      */
     get("/{id}") {
-        val (shopId) = call.requireParameters("id")
+        val shopId = call.requirePathParameter("id")
         val shop = shopService.getShopById(shopId) ?: throw NotFoundException(Message.Shops.NOT_FOUND)
         call.respond(HttpStatusCode.OK, shop)
     }
@@ -49,7 +47,7 @@ fun Route.shopRoutes(shopService: ShopService) {
          * @description Retrieve shops by category
          */
         get("/category/{categoryId}") {
-            val (categoryId) = call.requireParameters("categoryId")
+            val categoryId = call.requirePathParameter("categoryId")
             val (limit, offset) = call.paginationParameters()
             call.respond(HttpStatusCode.OK, shopService.getShopsByCategory(categoryId, limit, offset))
         }
@@ -92,7 +90,7 @@ fun Route.shopSellerRoutesV1(shopService: ShopService) {
      * @description Seller: Update shop details
      */
     put("/{id}") {
-        val (shopId) = call.requireParameters("id")
+        val shopId = call.requirePathParameter("id")
         val requestBody = call.receive<UpdateShopRequest>()
         call.respond(HttpStatusCode.OK, shopService.updateShop(call.currentUserId, shopId, requestBody))
     }
@@ -107,7 +105,7 @@ fun Route.shopSellerRoutesV2(shopService: ShopService) {
      * @description (V2) Seller: Update shop details with enhanced params and response structure
      */
     put("/{shopId}") {
-        val (shopId) = call.requireParameters("shopId")
+        val shopId = call.requirePathParameter("shopId")
         val source = call.request.queryParameters["source"] ?: "unknown"
 
         val requestBody = call.receive<UpdateShopRequest>()
@@ -132,7 +130,7 @@ fun Route.shopAdminRoutes(shopService: ShopService) {
      * @description Admin: Retrieve shops filtered by status
      */
     get("/status") {
-        val statusParam = call.parameters["status"] ?: throw MissingParameterException("status")
+        val statusParam = call.requireQueryParameter("status")
         val status =
             try {
                 ShopStatus.valueOf(statusParam.uppercase())
@@ -152,7 +150,7 @@ fun Route.shopAdminRoutes(shopService: ShopService) {
      * @description Admin: Approve a pending shop application
      */
     put("/approve/{id}") {
-        val (shopId) = call.requireParameters("id")
+        val shopId = call.requirePathParameter("id")
         call.respond(HttpStatusCode.OK, shopService.approveShop(shopId))
     }
 
@@ -161,7 +159,7 @@ fun Route.shopAdminRoutes(shopService: ShopService) {
      * @description Admin: Reject a shop application
      */
     put("/reject/{id}") {
-        val (shopId) = call.requireParameters("id")
+        val shopId = call.requirePathParameter("id")
         call.respond(HttpStatusCode.OK, shopService.rejectShop(shopId))
     }
 
@@ -170,7 +168,7 @@ fun Route.shopAdminRoutes(shopService: ShopService) {
      * @description Admin: Suspend an active shop
      */
     put("/suspend/{id}") {
-        val (shopId) = call.requireParameters("id")
+        val shopId = call.requirePathParameter("id")
         call.respond(HttpStatusCode.OK, shopService.suspendShop(shopId))
     }
 
@@ -179,7 +177,7 @@ fun Route.shopAdminRoutes(shopService: ShopService) {
      * @description Admin: Activate a suspended shop
      */
     put("/activate/{id}") {
-        val (shopId) = call.requireParameters("id")
+        val shopId = call.requirePathParameter("id")
         call.respond(HttpStatusCode.OK, shopService.activateShop(shopId))
     }
 }

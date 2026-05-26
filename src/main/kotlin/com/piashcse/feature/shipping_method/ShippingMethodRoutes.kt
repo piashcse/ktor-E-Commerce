@@ -1,7 +1,6 @@
 package com.piashcse.feature.shipping_method
 
 import com.piashcse.model.request.ShippingMethodRequest
-import com.piashcse.utils.extension.requireParameters
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -26,7 +25,7 @@ fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService
      * @description Admin: Update an existing shipping method
      */
     put("/{id}") {
-        val (id) = call.requireParameters("id")
+        val id = call.requirePathParameter("id")
         val requestBody = call.receive<ShippingMethodRequest>()
         requestBody.validation()
         call.respond(
@@ -40,7 +39,7 @@ fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService
      * @description Admin: Delete a shipping method
      */
     delete("/{id}") {
-        val (id) = call.requireParameters("id")
+        val id = call.requirePathParameter("id")
         call.respond(
             HttpStatusCode.OK,
             shippingMethodService.deleteShippingMethod(id),
