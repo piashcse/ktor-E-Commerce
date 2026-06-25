@@ -12,15 +12,16 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 object UserTable : BaseIdTable("user") {
-    val email = varchar("email", 255) // Nullable for mobile users
+    val email = varchar("email", 255)
     val userType = enumerationByName<UserType>("user_type", 100)
     val password = varchar("password", 200)
-    val otpCode = varchar("otp_code", 6)
+    val otpCode = varchar("otp_code", 6).nullable()
     val otpExpiry = datetime("otp_expiry").nullable()
+    val resetOtpCode = varchar("reset_otp_code", 6).nullable()
+    val resetOtpExpiry = datetime("reset_otp_expiry").nullable()
     val isVerified = bool("is_verified").default(false)
     val isActive = bool("is_active").default(true)
 
-    // Create a composite unique index on email and userType
     init {
         uniqueIndex("email_userType_idx", email, userType)
     }
@@ -34,6 +35,8 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     var password by UserTable.password
     var otpCode by UserTable.otpCode
     var otpExpiry by UserTable.otpExpiry
+    var resetOtpCode by UserTable.resetOtpCode
+    var resetOtpExpiry by UserTable.resetOtpExpiry
     var isVerified by UserTable.isVerified
     var isActive by UserTable.isActive
 

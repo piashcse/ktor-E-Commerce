@@ -1,6 +1,6 @@
 package com.piashcse.di
 
-import com.piashcse.feature.auth.*
+import com.piashcse.feature.auth.AuthService
 import com.piashcse.feature.brand.BrandService
 import com.piashcse.feature.cart.CartService
 import com.piashcse.feature.consent.ConsentService
@@ -25,6 +25,7 @@ import org.koin.dsl.module
 
 val serviceModule =
     module {
+        single { AuthService() }
         single { BrandService() }
         single { CartService() }
         single { OrderService() }
@@ -36,9 +37,6 @@ val serviceModule =
         single { ShopService() }
         single { ShopCategoryService() }
         single { CouponService() }
-        single { RefreshTokenRepositoryImpl() as RefreshTokenRepository }
-        single { LoginAttemptRepositoryImpl() as LoginAttemptRepository }
-        single { AuthService(get<RefreshTokenRepository>(), get<LoginAttemptRepository>()) }
         single { ProfileService() }
         single { WishListService() }
         single { PaymentService() }

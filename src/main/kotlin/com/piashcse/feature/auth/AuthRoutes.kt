@@ -1,13 +1,12 @@
 package com.piashcse.feature.auth
 
-import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.model.request.*
+import com.piashcse.model.response.ResetResult
 import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.requireRole
-import com.piashcse.utils.email.sendEmail
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.validator.InvalidEnumValueException
 import io.ktor.http.*
@@ -47,10 +46,8 @@ fun Route.authRoutes(authService: AuthService) {
          */
         post("forget-password") {
             val requestBody = call.receive<ForgetPasswordRequest>()
-            authService.forgetPassword(requestBody).let { otp ->
-                sendEmail(requestBody.email, otp)
-                call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_SENT))
-            }
+            authService.forgetPassword(requestBody)
+            call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_SENT))
         }
 
         /**
@@ -60,15 +57,12 @@ fun Route.authRoutes(authService: AuthService) {
         post("reset-password") {
             val requestBody = call.receive<ResetRequest>()
 
-            authService.resetPassword(requestBody).let {
-                when (it) {
-                    AppConstants.DataBaseTransaction.FOUND -> {
-                        call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
-                    }
-                    AppConstants.DataBaseTransaction.NOT_FOUND -> {
-                        call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_INVALID))
-                    }
-                    else -> call.respond(HttpStatusCode.InternalServerError, mapOf<String, String>("message" to Message.Errors.INTERNAL))
+            when (authService.resetPassword(requestBody)) {
+                is ResetResult.Success -> {
+                    call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
+                }
+                is ResetResult.InvalidOrExpiredOtp -> {
+                    call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_INVALID))
                 }
             }
         }

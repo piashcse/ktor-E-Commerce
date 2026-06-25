@@ -12,34 +12,33 @@ import org.apache.commons.mail.SimpleEmail
 
 private val emailScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-/**
- * Sends an email asynchronously using the configured SMTP server.
- */
-fun sendEmail(
-    toEmail: String,
-    verificationCode: String,
-    fromEmail: String = DotEnvConfig.emailUsername,
-    subject: String = AppConstants.SmtpServer.EMAIL_SUBJECT,
-    smtpHost: String = DotEnvConfig.emailHost,
-    smtpPort: Int = DotEnvConfig.emailPort,
-    smtpUser: String = DotEnvConfig.emailUsername,
-    smtpPassword: String = DotEnvConfig.emailPassword,
-) {
-    emailScope.launch {
-        try {
-            SimpleEmail().apply {
-                hostName = smtpHost
-                setSmtpPort(smtpPort)
-                setAuthenticator(DefaultAuthenticator(smtpUser, smtpPassword))
-                isSSLOnConnect = true
-                setFrom(fromEmail)
-                this.subject = subject
-                setMsg("Your verification code is: $verificationCode")
-                addTo(toEmail)
-                send()
+object EmailSender {
+    private val smtpHost = DotEnvConfig.emailHost
+    private val emailPort = DotEnvConfig.emailPort
+    private val smtpUser = DotEnvConfig.emailUsername
+    private val smtpPassword = DotEnvConfig.emailPassword
+    private val fromEmail = DotEnvConfig.emailUsername
+
+    fun sendOtp(
+        toEmail: String,
+        otp: String,
+    ) {
+        emailScope.launch {
+            try {
+                SimpleEmail().apply {
+                    hostName = smtpHost
+                    setSmtpPort(emailPort)
+                    setAuthenticator(DefaultAuthenticator(smtpUser, smtpPassword))
+                    isSSLOnConnect = true
+                    setFrom(fromEmail)
+                    subject = AppConstants.SmtpServer.EMAIL_SUBJECT
+                    setMsg("Your verification code is: $otp")
+                    addTo(toEmail)
+                    send()
+                }
+            } catch (e: EmailException) {
+                e.printStackTrace()
             }
-        } catch (e: EmailException) {
-            e.printStackTrace()
         }
     }
 }

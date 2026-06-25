@@ -8,37 +8,23 @@ import com.piashcse.model.request.JwtTokenRequest
 import java.util.*
 
 object JwtConfig {
-    private lateinit var secret: String
-    private lateinit var issuer: String
-    private lateinit var algorithm: Algorithm
-    private const val VALIDITY_MS = 15 * 60 * 1000L // 15 minutes in milliseconds
+    private val secret = DotEnvConfig.jwtSecret
+    private val issuer = DotEnvConfig.jwtIssuer
+    private val audience = DotEnvConfig.jwtAudience
+    private val algorithm = Algorithm.HMAC512(secret)
+    private val validityMs = 15 * 60 * 1000L
 
-    lateinit var verifier: JWTVerifier
-        private set
+    val verifier: JWTVerifier =
+        JWT.require(algorithm).withIssuer(issuer).withAudience(audience).build()
 
-    fun init() {
-        secret = DotEnvConfig.jwtSecret
-        issuer = DotEnvConfig.jwtIssuer
-        algorithm = Algorithm.HMAC512(secret)
-        verifier = JWT.require(algorithm)
-            .withIssuer(issuer)
-            .withAudience(DotEnvConfig.jwtAudience)
-            .build()
-    }
-
-    /**
-     * Produce a token for the given JwtTokenBody
-     */
     fun tokenProvider(jwtTokenBody: JwtTokenRequest): String =
         JWT.create()
             .withSubject("Authentication")
             .withIssuer(issuer)
-            .withAudience(DotEnvConfig.jwtAudience)
+            .withAudience(audience)
             .withClaim("email", jwtTokenBody.email)
             .withClaim("userId", jwtTokenBody.userId)
             .withClaim("userType", jwtTokenBody.userType)
-            .withExpiresAt(getExpiration())
+            .withExpiresAt(Date(System.currentTimeMillis() + validityMs))
             .sign(algorithm)
-
-    private fun getExpiration() = Date(System.currentTimeMillis() + VALIDITY_MS)
 }
