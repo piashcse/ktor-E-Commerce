@@ -22,6 +22,7 @@ object EmailSender {
     fun sendOtp(
         toEmail: String,
         otp: String,
+        subject: String = AppConstants.SmtpServer.EMAIL_SUBJECT,
     ) {
         emailScope.launch {
             try {
@@ -31,7 +32,7 @@ object EmailSender {
                     setAuthenticator(DefaultAuthenticator(smtpUser, smtpPassword))
                     isSSLOnConnect = true
                     setFrom(fromEmail)
-                    subject = AppConstants.SmtpServer.EMAIL_SUBJECT
+                    this.subject = subject
                     setMsg("Your verification code is: $otp")
                     addTo(toEmail)
                     send()

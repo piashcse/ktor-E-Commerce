@@ -85,7 +85,7 @@ data class LoginResponse(
     val user: UserResponse?,
     val accessToken: String,
     val refreshToken: String = "",
-    val expiresIn: Long = 86400,
+    val expiresIn: Long = 900,
     val tokenType: String = "Bearer",
 )
 

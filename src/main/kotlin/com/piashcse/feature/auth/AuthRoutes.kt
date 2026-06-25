@@ -72,20 +72,24 @@ fun Route.authRoutes(authService: AuthService) {
      * @tag Auth
      * @description Verify user account with OTP
      */
-    get("otp-verification") {
-        val userId = call.requireQueryParameter("userId")
-        val otp = call.requireQueryParameter("otp")
-        call.respond(HttpStatusCode.OK, authService.otpVerification(userId, otp))
+    rateLimit(RateLimitName(RateLimitNames.OTP)) {
+        get("otp-verification") {
+            val userId = call.requireQueryParameter("userId")
+            val otp = call.requireQueryParameter("otp")
+            call.respond(HttpStatusCode.OK, authService.otpVerification(userId, otp))
+        }
     }
 
     /**
      * @tag Auth
      * @description Refresh access token using refresh token
      */
-    post("refresh-token") {
-        val requestBody = call.receive<RefreshTokenRequest>()
-        val tokenPair = authService.refreshAccessToken(requestBody)
-        call.respond(HttpStatusCode.OK, tokenPair)
+    rateLimit(RateLimitName(RateLimitNames.REFRESH_TOKEN)) {
+        post("refresh-token") {
+            val requestBody = call.receive<RefreshTokenRequest>()
+            val tokenPair = authService.refreshAccessToken(requestBody)
+            call.respond(HttpStatusCode.OK, tokenPair)
+        }
     }
 
     requireRole {

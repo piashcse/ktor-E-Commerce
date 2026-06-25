@@ -42,7 +42,7 @@ class AuthService : AuthRepository {
 
     private fun generateTokenPair(userId: String, email: String, userType: String): TokenPair {
         val accessToken = JwtConfig.tokenProvider(JwtTokenRequest(userId, email, userType))
-        return TokenPair(accessToken = accessToken, refreshToken = UUID.randomUUID().toString(), expiresIn = 86400)
+        return TokenPair(accessToken = accessToken, refreshToken = UUID.randomUUID().toString(), expiresIn = 900)
     }
 
     private suspend fun storeRefreshToken(userId: String, refreshToken: String) {
@@ -143,7 +143,7 @@ class AuthService : AuthRepository {
             }
             existingUser.otpCode = otp
             existingUser.otpExpiry = otpExpiryTime
-            EmailSender.sendOtp(existingUser.email, otp)
+            EmailSender.sendOtp(existingUser.email, otp, "Account Verification")
             RegistrationResult.OtpResent(Message.Auth.OTP_SENT)
         } else {
             val inserted = UserDAO.new {
@@ -157,7 +157,7 @@ class AuthService : AuthRepository {
             if (userTypeEnum == UserType.SELLER) {
                 SellerDAO.new { userId = inserted.id; status = ShopStatus.PENDING }
             }
-            EmailSender.sendOtp(inserted.email, otp)
+            EmailSender.sendOtp(inserted.email, otp, "Account Verification")
             RegistrationResult.Created(inserted.id.value, registerRequest.email, Message.Auth.OTP_SENT)
         }
     }
@@ -260,7 +260,7 @@ class AuthService : AuthRepository {
         val otp = generateOTP()
         specificUser.resetOtpCode = otp
         specificUser.resetOtpExpiry = LocalDateTime.now().plusMinutes(10)
-        EmailSender.sendOtp(specificUser.email, otp)
+        EmailSender.sendOtp(specificUser.email, otp, "Password Reset")
         otp
     }
 

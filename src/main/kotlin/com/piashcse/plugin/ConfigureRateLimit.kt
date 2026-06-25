@@ -9,6 +9,8 @@ import kotlin.time.Duration.Companion.minutes
  */
 object RateLimitNames {
     const val AUTH = "auth"
+    const val OTP = "otp"
+    const val REFRESH_TOKEN = "refresh_token"
     const val GENERAL = "general"
 }
 
@@ -22,6 +24,8 @@ object RateLimitNames {
 fun Application.configureRateLimiting() {
     install(RateLimit) {
         registerRateLimitZone(RateLimitNames.AUTH, limit = 5, refillEvery = 10.minutes)
+        registerRateLimitZone(RateLimitNames.OTP, limit = 10, refillEvery = 10.minutes)
+        registerRateLimitZone(RateLimitNames.REFRESH_TOKEN, limit = 10, refillEvery = 10.minutes)
         registerRateLimitZone(RateLimitNames.GENERAL, limit = 100, refillEvery = 1.minutes)
     }
 }

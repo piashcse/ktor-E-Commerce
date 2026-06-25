@@ -21,5 +21,5 @@ data class TokenPair(
     val accessToken: String,
     val refreshToken: String,
     val tokenType: String = "Bearer",
-    val expiresIn: Long = 86400,
+    val expiresIn: Long = 900,
 )
