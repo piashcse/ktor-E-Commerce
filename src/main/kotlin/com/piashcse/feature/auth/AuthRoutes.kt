@@ -10,7 +10,6 @@ import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.validator.InvalidEnumValueException
 import io.ktor.http.*
-import io.ktor.server.auth.*
 import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -61,6 +60,7 @@ fun Route.authRoutes(authService: AuthService) {
                 is ResetResult.Success -> {
                     call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
                 }
+
                 is ResetResult.InvalidOrExpiredOtp -> {
                     call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_INVALID))
                 }
@@ -100,7 +100,7 @@ fun Route.authRoutes(authService: AuthService) {
         post("logout") {
             val userId = call.currentUserId
             val requestBody = call.receive<LogoutRequest>()
-            
+
             val authHeader = call.request.headers[HttpHeaders.Authorization]
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 val token = authHeader.substring(7)
@@ -118,8 +118,8 @@ fun Route.authRoutes(authService: AuthService) {
         put("change-password") {
             val oldPassword = call.requireQueryParameter("oldPassword")
             val newPassword = call.requireQueryParameter("newPassword")
-            val loginUser = call.principal<JwtTokenRequest>()
-            authService.changePassword(loginUser?.userId!!, ChangePassword(oldPassword, newPassword)).let {
+            val currentUserId = call.currentUserId
+            authService.changePassword(currentUserId, ChangePassword(oldPassword, newPassword)).let {
                 if (it) {
                     call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
                 } else {
@@ -153,8 +153,8 @@ fun Route.authAdminRoutes(authService: AuthService) {
                 )
             }
 
-        val currentUser = call.principal<JwtTokenRequest>()
-        if (authService.changeUserType(currentUser?.userId!!, userId, newType)) {
+        val currentUserId = call.currentUserId
+        if (authService.changeUserType(currentUserId, userId, newType)) {
             call.respond(HttpStatusCode.OK, mapOf("message" to "User type updated successfully"))
         } else {
             call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to update user type"))
@@ -167,8 +167,8 @@ fun Route.authAdminRoutes(authService: AuthService) {
      */
     put("/{userId}/deactivate") {
         val userId = call.requirePathParameter("userId")
-        val currentUser = call.principal<JwtTokenRequest>()
-        if (authService.deactivateUser(currentUser?.userId!!, userId)) {
+        val currentUserId = call.currentUserId
+        if (authService.deactivateUser(currentUserId, userId)) {
             call.respond(HttpStatusCode.OK, mapOf("message" to "User deactivated successfully"))
         } else {
             call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to deactivate user"))
@@ -181,8 +181,8 @@ fun Route.authAdminRoutes(authService: AuthService) {
      */
     put("/{userId}/activate") {
         val userId = call.requirePathParameter("userId")
-        val currentUser = call.principal<JwtTokenRequest>()
-        if (authService.activateUser(currentUser?.userId!!, userId)) {
+        val currentUserId = call.currentUserId
+        if (authService.activateUser(currentUserId, userId)) {
             call.respond(HttpStatusCode.OK, mapOf("message" to "User activated successfully"))
         } else {
             call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to activate user"))
