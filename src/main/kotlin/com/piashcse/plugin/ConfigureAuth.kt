@@ -11,18 +11,11 @@ import io.ktor.server.auth.jwt.*
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
-/**
- * Global Authentication Configuration.
- *
- * Configures the single optimal JWT provider ("jwt-auth") for the entire application.
- * Roles and permissions are handled downstream via [RouteAuthDsl].
- */
 fun Application.configureAuth() {
     install(Authentication) {
         jwt("jwt-auth") {
             verifier(JwtConfig.verifier)
             validate { credential ->
-                // Check if access token is blacklisted
                 val authHeader = this.request.headers[io.ktor.http.HttpHeaders.Authorization]
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {
                     val token = authHeader.substring(7)

@@ -56,18 +56,15 @@ fun Application.configureBasic() {
     configureContentNegotiation()
     configureCallLogging()
 }
-
 private fun Application.configureCORS() {
     install(CORS) {
         val allowedOrigins = DotEnvConfig.allowedOrigins.split(",")
 
-        // Allow all origins if "*" is in the list
         if (allowedOrigins.any { it.trim() == "*" }) {
             anyHost()
         } else {
             allowedOrigins.forEach { origin ->
                 val trimmed = origin.trim()
-                // Parse the URL to extract host and scheme
                 val url = Url(trimmed)
                 allowHost(
                     host = url.host,

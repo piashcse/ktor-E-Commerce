@@ -41,6 +41,31 @@ fun configureDataBase() {
             LoginAttemptTable,
             BlacklistedTokenTable,
         )
+        SchemaUtils.addMissingColumnsStatements(
+            UserTable,
+            UserProfileTable,
+            ShopTable,
+            ShopCategoryTable,
+            ProductTable,
+            ReviewRatingTable,
+            ProductCategoryTable,
+            ProductSubCategoryTable,
+            BrandTable,
+            CartItemTable,
+            OrderTable,
+            OrderItemTable,
+            WishListTable,
+            ShippingAddressTable,
+            ShippingMethodTable,
+            PaymentTable,
+            PolicyDocumentTable,
+            PolicyConsentTable,
+            InventoryTable,
+            SellerTable,
+            RefreshTokenTable,
+            LoginAttemptTable,
+            BlacklistedTokenTable,
+        ).forEach { exec(it) }
     }
 }
 

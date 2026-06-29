@@ -37,4 +37,8 @@ fun requireValidPassword(
     minLength: Int = 8,
 ) {
     if (password.length < minLength) throw ValidationException(Message.Validation.WEAK_PASSWORD)
+    if (!password.any { it.isUpperCase() }) throw ValidationException(Message.Validation.WEAK_PASSWORD)
+    if (!password.any { it.isLowerCase() }) throw ValidationException(Message.Validation.WEAK_PASSWORD)
+    if (!password.any { it.isDigit() }) throw ValidationException(Message.Validation.WEAK_PASSWORD)
+    if (!password.any { !it.isLetterOrDigit() }) throw ValidationException(Message.Validation.WEAK_PASSWORD)
 }
