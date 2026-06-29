@@ -17,7 +17,7 @@ data class LoginRequest(
     init {
         validate(this) {
             validate(LoginRequest::email).isNotNull().isEmail()
-            validate(LoginRequest::password).isNotNull().hasSize(8, 100)
+            validate(LoginRequest::password).isNotNull().hasSize(8, 64)
             validate(LoginRequest::userType).isNotNull()
                 .isIn(
                     UserType.SUPER_ADMIN.name.lowercase(),
