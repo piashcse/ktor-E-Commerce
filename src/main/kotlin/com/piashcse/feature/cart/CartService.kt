@@ -12,6 +12,7 @@ import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -98,8 +99,19 @@ class CartService : CartRepository {
     override suspend fun getCartSummary(userId: String): CartSummaryResponse = query {
         if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
 
-        val items = CartItemDAO.find { CartItemTable.userId eq userId }.mapNotNull { cartItem ->
-            val product = ProductDAO.findById(cartItem.productId.value) ?: return@mapNotNull null
+        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
+        val products = ProductDAO.find {
+            ProductTable.id inList cartItems.map { it.productId.value }.distinct()
+        }.associateBy { it.id.value }
+        val shopIds = products.values.mapNotNull { it.shopId?.value }.distinct()
+        val shops = if (shopIds.isNotEmpty()) {
+            ShopDAO.find { ShopTable.id inList shopIds }.associateBy { it.id.value }
+        } else {
+            emptyMap()
+        }
+
+        val items = cartItems.mapNotNull { cartItem ->
+            val product = products[cartItem.productId.value] ?: return@mapNotNull null
             CartItemSummary(
                 productId = product.id.value,
                 productName = product.name,
@@ -108,7 +120,7 @@ class CartService : CartRepository {
                 image = product.images.split(",").firstOrNull()?.takeIf { it.isNotBlank() },
                 stockQuantity = product.effectiveStock(),
                 shopId = product.shopId?.value,
-                shopName = product.shopId?.value?.let { ShopDAO.findById(it)?.name },
+                shopName = product.shopId?.value?.let { shops[it]?.name },
             )
         }
 

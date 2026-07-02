@@ -134,13 +134,19 @@ class OrderService : OrderRepository {
             }
         }
 
+        val shopIds = createdOrders.mapNotNull { it.shopId?.value }.distinct()
+        val sellersByShop = if (shopIds.isNotEmpty()) {
+            SellerDAO.find { SellerTable.shopId inList shopIds.map { EntityID(it, ShopTable) } }
+                .associateBy { it.shopId?.value }
+        } else {
+            emptyMap()
+        }
         createdOrders.forEach { order ->
             order.shopId?.value?.let { shopId ->
-                SellerDAO.find { SellerTable.shopId eq EntityID(shopId, ShopTable) }.firstOrNull()
-                    ?.let { seller ->
-                        seller.totalSales = seller.totalSales.add(order.subTotal)
-                        seller.totalCommission = seller.totalCommission.add(seller.calcCommission(order.subTotal))
-                    }
+                sellersByShop[shopId]?.let { seller ->
+                    seller.totalSales = seller.totalSales.add(order.subTotal)
+                    seller.totalCommission = seller.totalCommission.add(seller.calcCommission(order.subTotal))
+                }
             }
         }
 

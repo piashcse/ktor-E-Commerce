@@ -54,7 +54,7 @@ class ShopService : ShopRepository {
             val shop =
                 ShopDAO.new {
                     this.userId = EntityID(userId, ShopTable)
-                    categoryId = EntityID(shopRequest.categoryId, ShopTable)
+                    categoryId = EntityID(shopRequest.categoryId, ShopCategoryTable)
                     name = shopRequest.name
                     description = shopRequest.description
                     address = shopRequest.address

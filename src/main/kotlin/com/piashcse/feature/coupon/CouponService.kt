@@ -7,9 +7,12 @@ import com.piashcse.model.response.CouponResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.time.LocalDateTime
+import java.time.format.DateTimeParseException
 
 class CouponService : CouponRepository {
     override suspend fun createCoupon(request: CouponRequest): CouponResponse =
@@ -20,8 +23,8 @@ class CouponService : CouponRepository {
                 discountValue = request.discountValue
                 minOrderAmount = request.minOrderAmount
                 maxDiscountAmount = request.maxDiscountAmount
-                startDate = LocalDateTime.parse(request.startDate)
-                endDate = LocalDateTime.parse(request.endDate)
+                startDate = parseDate(request.startDate, "startDate")
+                endDate = parseDate(request.endDate, "endDate")
                 usageLimit = request.usageLimit
                 isActive = request.isActive
             }.toResponse()
@@ -32,18 +35,25 @@ class CouponService : CouponRepository {
         request: CouponRequest,
     ): CouponResponse =
         query {
-            val coupon = CouponDAO.findById(couponId) ?: throw Exception("Coupon not found")
+            val coupon = CouponDAO.findById(couponId) ?: throw NotFoundException("Coupon not found")
             coupon.apply {
                 code = request.code
                 discountType = request.discountType
                 discountValue = request.discountValue
                 minOrderAmount = request.minOrderAmount
                 maxDiscountAmount = request.maxDiscountAmount
-                startDate = LocalDateTime.parse(request.startDate)
-                endDate = LocalDateTime.parse(request.endDate)
+                startDate = parseDate(request.startDate, "startDate")
+                endDate = parseDate(request.endDate, "endDate")
                 usageLimit = request.usageLimit
                 isActive = request.isActive
             }.toResponse()
+        }
+
+    private fun parseDate(value: String, fieldName: String): LocalDateTime =
+        try {
+            LocalDateTime.parse(value)
+        } catch (e: DateTimeParseException) {
+            throw ValidationException("Invalid $fieldName format: $value")
         }
 
     override suspend fun getCoupons(

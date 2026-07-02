@@ -20,6 +20,10 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 
 class InventoryService : InventoryRepository {
+    companion object {
+        private const val DEFAULT_MIN_STOCK = 10
+        private const val DEFAULT_MAX_STOCK = 1000
+    }
 
     override suspend fun createOrUpdateInventory(request: InventoryRequest): InventoryResponse = query {
         if (request.productId.isBlank()) throw ValidationException(Message.Validation.blankField("Product ID"))
@@ -47,8 +51,8 @@ class InventoryService : InventoryRepository {
             productId = EntityID(request.productId, ProductTable)
             shopId = EntityID(request.shopId, ShopTable)
             stockQuantity = request.stockQuantity
-            minimumStockLevel = request.minimumStockLevel ?: 10
-            maximumStockLevel = request.maximumStockLevel ?: 1000
+            minimumStockLevel = request.minimumStockLevel ?: DEFAULT_MIN_STOCK
+            maximumStockLevel = request.maximumStockLevel ?: DEFAULT_MAX_STOCK
             status = InventoryStatus.fromStockLevel(request.stockQuantity, minimumStockLevel)
         }
         inventory.response()

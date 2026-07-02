@@ -2,6 +2,8 @@ package com.piashcse.feature.review_rating
 
 import com.piashcse.database.entities.ReviewRatingDAO
 import com.piashcse.database.entities.ReviewRatingTable
+import com.piashcse.database.entities.UserTable
+import com.piashcse.database.entities.ProductTable
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.model.response.ReviewRatingResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -59,8 +61,8 @@ class ReviewRatingService : ReviewRatingRepository {
             isReviewRatingExist?.let {
                 throw it.productId.value.throwConflict("Product")
             } ?: ReviewRatingDAO.new {
-                this.userId = EntityID(userId, ReviewRatingTable)
-                productId = EntityID(reviewRating.productId, ReviewRatingTable)
+                this.userId = EntityID(userId, UserTable)
+                productId = EntityID(reviewRating.productId, ProductTable)
                 reviewText = reviewRating.reviewText
                 rating = reviewRating.rating
             }.response()

@@ -17,6 +17,9 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
  * Service for managing brand-related operations.
  */
 class BrandService : BrandRepository {
+    companion object {
+        private const val MAX_NAME_LENGTH = 255
+    }
     /**
      * Creates a new brand if it does not already exist.
      *
@@ -29,8 +32,8 @@ class BrandService : BrandRepository {
             if (name.isBlank()) {
                 throw ValidationException(Message.Brands.BLANK_NAME)
             }
-            if (name.length > 255) {
-                throw ValidationException(Message.Brands.nameTooLong(255))
+            if (name.length > MAX_NAME_LENGTH) {
+                throw ValidationException(Message.Brands.nameTooLong(MAX_NAME_LENGTH))
             }
 
             val isBrandExist = BrandDAO.find { BrandTable.name eq name }.firstOrNull()
@@ -73,8 +76,8 @@ class BrandService : BrandRepository {
             if (name.isBlank()) {
                 throw ValidationException(Message.Brands.BLANK_NAME)
             }
-            if (name.length > 255) {
-                throw ValidationException(Message.Brands.nameTooLong(255))
+            if (name.length > MAX_NAME_LENGTH) {
+                throw ValidationException(Message.Brands.nameTooLong(MAX_NAME_LENGTH))
             }
 
             val brand =
