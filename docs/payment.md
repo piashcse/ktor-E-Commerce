@@ -43,7 +43,7 @@ Create a new payment for an existing order. The payment will be associated with 
 |-------|------|----------|-------------|
 | `amount` | number | Yes | Payment amount |
 | `orderId` | string | Yes | UUID of the order to pay for |
-| `paymentMethod` | string | Yes | Payment method used (e.g., "Bkash", "Card", "Cash") |
+| `paymentMethod` | string | Yes | Payment method (e.g., "CREDIT_CARD", "BANK_TRANSFER", "PAYPAL", "COD") |
 | `status` | string | Yes | Payment status (e.g., "COMPLETED", "PENDING", "FAILED") |
 
 #### Example Request
@@ -57,7 +57,7 @@ curl -X 'POST' \
   -d '{
   "amount": 500,
   "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
-  "paymentMethod": "Bkash",
+  "paymentMethod": "BANK_TRANSFER",
   "status": "COMPLETED"
 }'
 ```
@@ -70,7 +70,7 @@ curl -X 'POST' \
     "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
     "amount": 500,
     "status": "COMPLETED",
-    "paymentMethod": "Bkash"
+    "paymentMethod": "BANK_TRANSFER"
   }
 }
 ```
@@ -124,7 +124,7 @@ curl -X 'GET' \
       "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
       "amount": 500,
       "status": "COMPLETED",
-      "paymentMethod": "Bkash"
+      "paymentMethod": "BANK_TRANSFER"
     }
   ]
 }
@@ -178,7 +178,7 @@ curl -X 'GET' \
     "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
     "amount": 500,
     "status": "COMPLETED",
-    "paymentMethod": "Bkash"
+    "paymentMethod": "BANK_TRANSFER"
   }
 }
 ```
@@ -233,7 +233,7 @@ curl -X 'GET' \
     "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
     "amount": 500,
     "status": "COMPLETED",
-    "paymentMethod": "Bkash",
+    "paymentMethod": "BANK_TRANSFER",
     "transactionId": "TXN123456"
   }
 ]

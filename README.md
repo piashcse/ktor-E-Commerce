@@ -306,7 +306,7 @@ This API follows industry-standard patterns (Stripe, GitHub, OpenAI) for clean, 
 
 All collection-based endpoints support standardized pagination using `limit` and `offset` query parameters.
 
-- **`limit`**: Maximum number of items to return (default: 20)
+- **`limit`**: Maximum number of items to return (default: 20, some endpoints default to 10)
 - **`offset`**: Number of items to skip (default: 0)
 
 **Paginated Response Format:**
@@ -319,7 +319,7 @@ All collection-based endpoints support standardized pagination using `limit` and
   "metadata": {
     "totalCount": 100,
     "limit": 20,
-    "skip": 0
+    "offset": 0
   }
 }
 ```
@@ -785,11 +785,17 @@ http://localhost:8080/api/v1/profile
     "faxNumber": null,
     "streetAddress": "123 Main St",
     "city": "New York",
+    "state": "NY",
+    "country": "USA",
+    "postCode": "10001",
+    "gender": "Male",
     "identificationType": "Passport",
     "identificationNo": "AB123456",
     "occupation": "Developer",
-    "postCode": "10001",
-    "gender": "Male"
+    "dateOfBirth": null,
+    "bio": null,
+    "isActive": true,
+    "verified": true
   },
   "message": "Profile retrieved successfully"
 }
@@ -827,11 +833,17 @@ http://localhost:8080/api/v1/profile?firstName={firstName}&lastName={lastName}&m
     "faxNumber": null,
     "streetAddress": "123 Main St",
     "city": "New York",
+    "state": "NY",
+    "country": "USA",
+    "postCode": "10001",
+    "gender": "Male",
     "identificationType": "Passport",
     "identificationNo": "AB123456",
     "occupation": "Developer",
-    "postCode": "10001",
-    "gender": "Male"
+    "dateOfBirth": null,
+    "bio": null,
+    "isActive": true,
+    "verified": true
   },
   "message": "Profile updated successfully"
 }
@@ -997,7 +1009,7 @@ http://localhost:8080/api/v1/shops/{id}
       "id": "cat-uuid",
       "name": "Electronics"
     },
-    "status": "ACTIVE"
+    "status": "APPROVED"
   },
   "message": "Shop details retrieved"
 }
@@ -1013,7 +1025,7 @@ Retrieve public shops with filters (status, category).
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/shops/public?status=ACTIVE&limit=10' \
+  'http://localhost:8080/api/v1/shops/public?status=APPROVED&limit=10' \
   -H 'accept: application/json'
 ```
 
@@ -1030,13 +1042,13 @@ http://localhost:8080/api/v1/shops/public?status={status}&category={category}&li
       {
         "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
         "shopName": "Tech Hub",
-        "status": "ACTIVE"
+        "status": "APPROVED"
       }
     ],
     "metadata": {
       "totalCount": 1,
       "limit": 10,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Shops retrieved successfully"
@@ -1075,7 +1087,7 @@ http://localhost:8080/api/v1/shops/category/{categoryId}?limit={limit}&offset={o
     "metadata": {
       "totalCount": 1,
       "limit": 20,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Shops retrieved successfully"
@@ -1114,7 +1126,7 @@ http://localhost:8080/api/v1/shops/featured?limit={limit}&offset={offset}
     "metadata": {
       "totalCount": 5,
       "limit": 20,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Featured shops retrieved"
@@ -1192,7 +1204,7 @@ http://localhost:8080/api/v1/seller/shops?limit={limit}&offset={offset}
     "metadata": {
       "totalCount": 1,
       "limit": 20,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Shops retrieved"
@@ -1306,7 +1318,7 @@ http://localhost:8080/api/v1/admin/shops/status?status={status}&limit={limit}&of
     "metadata": {
       "totalCount": 3,
       "limit": 20,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Shops retrieved"
@@ -1438,7 +1450,8 @@ Retrieve a paginated list of all brands.
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/brands?limit=20&offset=0' \
-  -H 'accept: application/json'
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
 ```
 
 ### Request URL
@@ -1459,7 +1472,7 @@ http://localhost:8080/api/v1/brands?limit={limit}&offset={offset}
     "metadata": {
       "totalCount": 50,
       "limit": 20,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Brands retrieved"
@@ -1594,7 +1607,7 @@ http://localhost:8080/api/v1/product-categories?limit={limit}&offset={offset}
     "metadata": {
       "totalCount": 15,
       "limit": 20,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Categories retrieved"
@@ -1726,7 +1739,7 @@ http://localhost:8080/api/v1/product-subcategories?categoryId={categoryId}&limit
     "metadata": {
       "totalCount": 5,
       "limit": 20,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Subcategories retrieved"
@@ -1856,10 +1869,10 @@ http://localhost:8080/api/v1/products/{id}
   "data": {
     "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
     "name": "Galaxy S24",
-    "productDescription": "Latest flagship phone",
-    "productPrice": 999.99,
-    "productStock": 50,
-    "productImage": "http://localhost:8080/uploads/product/s24.jpg",
+    "description": "Latest flagship phone",
+    "price": 999.99,
+    "stockQuantity": 50,
+    "images": ["http://localhost:8080/uploads/product/s24.jpg"],
     "categoryId": "cat-uuid",
     "subCategoryId": "sub-uuid",
     "brandId": "brand-uuid"
@@ -1901,7 +1914,7 @@ http://localhost:8080/api/v1/products?maxPrice={maxPrice}&minPrice={minPrice}&ca
     "metadata": {
       "totalCount": 100,
       "limit": 10,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Products retrieved"
@@ -1940,7 +1953,7 @@ http://localhost:8080/api/v1/products/search?name={name}&limit={limit}&offset={o
     "metadata": {
       "totalCount": 10,
       "limit": 10,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Search results retrieved"
@@ -1980,7 +1993,7 @@ http://localhost:8080/api/v1/seller/products?limit={limit}&offset={offset}
     "metadata": {
       "totalCount": 5,
       "limit": 10,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Seller products retrieved"
@@ -2003,9 +2016,9 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "name": "New Product",
-  "productDescription": "Description",
-  "productPrice": 199.99,
-  "productStock": 100,
+  "description": "Description",
+  "price": 199.99,
+  "stockQuantity": 100,
   "categoryId": "cat-uuid",
   "subCategoryId": "sub-uuid",
   "brandId": "brand-uuid"
@@ -2022,7 +2035,10 @@ http://localhost:8080/api/v1/seller/products
 {
   "data": {
     "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-    "name": "New Product"
+    "name": "New Product",
+    "description": "Description",
+    "price": 199.99,
+    "stockQuantity": 100
   },
   "message": "Product created successfully"
 }
@@ -2057,7 +2073,7 @@ http://localhost:8080/api/v1/seller/products/{id}
 {
   "data": {
     "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-    "productPrice": 189.99
+"price": 189.99
   },
   "message": "Product updated successfully"
 }
@@ -2187,7 +2203,7 @@ http://localhost:8080/api/v1/reviews?productId={productId}&limit={limit}&offset=
     "metadata": {
       "totalCount": 1,
       "limit": 20,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Reviews retrieved successfully"
@@ -2365,7 +2381,7 @@ http://localhost:8080/api/v1/carts?limit={limit}&offset={offset}
     "metadata": {
       "totalCount": 1,
       "limit": 20,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Cart items retrieved"
@@ -2488,11 +2504,10 @@ http://localhost:8080/api/v1/carts/summary
 ```json
 {
   "data": {
-    "totalItems": 2,
-    "subTotal": 1999.98,
-    "shipping": 10.00,
-    "tax": 99.99,
-    "total": 2109.97
+    "items": [...],
+    "subtotal": 1999.98,
+    "estimatedTax": 99.99,
+    "itemCount": 2
   },
   "message": "Cart summary retrieved"
 }
@@ -2568,7 +2583,7 @@ http://localhost:8080/api/v1/wishlists?limit={limit}&offset={offset}
     "metadata": {
       "totalCount": 1,
       "limit": 20,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Wishlist retrieved"
@@ -2648,14 +2663,16 @@ curl -X 'POST' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "addressName": "Home",
   "firstName": "John",
   "lastName": "Doe",
-  "mobile": "+1234567890",
+  "email": "john@example.com",
+  "phoneNumber": "+1234567890",
   "streetAddress": "123 Main St",
   "city": "New York",
-  "postCode": "10001",
-  "country": "USA"
+  "state": "NY",
+  "zipCode": "10001",
+  "country": "USA",
+  "isDefault": true
 }'
 ```
 
@@ -2669,8 +2686,9 @@ http://localhost:8080/api/v1/checkout/shipping-address
 {
   "data": {
     "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-    "addressName": "Home",
-    "city": "New York"
+    "firstName": "John",
+    "city": "New York",
+    "isDefault": true
   },
   "message": "Shipping address added"
 }
@@ -2864,7 +2882,7 @@ curl -X 'POST' \
   -d '{
   "shippingAddressId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
   "shippingMethodId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-  "paymentMethod": "STRIPE"
+  "paymentMethod": "CREDIT_CARD"
 }'
 ```
 
@@ -2879,7 +2897,7 @@ http://localhost:8080/api/v1/checkout/place-order
   "data": {
     "orderId": "ORD-20240506-ABCD",
     "total": 1914.97,
-    "status": "PLACED"
+    "status": "PENDING"
   },
   "message": "Order placed successfully"
 }
@@ -2913,16 +2931,16 @@ http://localhost:8080/api/v1/orders?limit={limit}&offset={offset}
   "data": {
     "data": [
       {
-        "id": "ORD-20240506-ABCD",
+        "orderId": "ORD-20240506-ABCD",
         "total": 1914.97,
-        "status": "PLACED",
+        "status": "PENDING",
         "createdAt": "2024-05-06T12:00:00"
       }
     ],
     "metadata": {
       "totalCount": 1,
       "limit": 10,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Orders retrieved"
@@ -2953,7 +2971,7 @@ http://localhost:8080/api/v1/orders/status/{id}?status={status}
 ```json
 {
   "data": {
-    "id": "ORD-20240506-ABCD",
+    "orderId": "ORD-20240506-ABCD",
     "status": "CANCELED"
   },
   "message": "Order status updated"
@@ -3002,7 +3020,7 @@ Seller: Retrieve orders for the seller's shop.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/seller/orders?status=PLACED' \
+  'http://localhost:8080/api/v1/seller/orders?status=PENDING' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <seller-token>'
 ```
@@ -3018,15 +3036,15 @@ http://localhost:8080/api/v1/seller/orders?status={status}&limit={limit}&offset=
   "data": {
     "data": [
       {
-        "id": "ORD-20240506-ABCD",
+        "orderId": "ORD-20240506-ABCD",
         "total": 1914.97,
-        "status": "PLACED"
+        "status": "PENDING"
       }
     ],
     "metadata": {
       "totalCount": 1,
       "limit": 10,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Seller orders retrieved"
@@ -3043,7 +3061,7 @@ Admin: Update the status of any order.
 ### Curl
 ```bash
 curl -X 'PATCH' \
-  'http://localhost:8080/api/v1/admin/orders/status/ORD-20240506-ABCD?status=shipped' \
+  'http://localhost:8080/api/v1/admin/orders/status/ORD-20240506-ABCD?status=DELIVERED' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
@@ -3057,8 +3075,8 @@ http://localhost:8080/api/v1/admin/orders/status/{id}?status={status}
 ```json
 {
   "data": {
-    "id": "ORD-20240506-ABCD",
-    "status": "SHIPPED"
+    "orderId": "ORD-20240506-ABCD",
+    "status": "DELIVERED"
   },
   "message": "Order status updated by admin"
 }
@@ -3106,7 +3124,7 @@ Admin: Retrieve all orders with advanced filtering (status, startDate, endDate).
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/orders?status=PLACED&startDate=2024-05-01T00:00:00Z' \
+  'http://localhost:8080/api/v1/admin/orders?status=PENDING&startDate=2024-05-01T00:00:00Z' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
@@ -3122,14 +3140,14 @@ http://localhost:8080/api/v1/admin/orders?status={status}&startDate={startDate}&
   "data": {
     "data": [
       {
-        "id": "ORD-20240506-ABCD",
-        "status": "PLACED"
+        "orderId": "ORD-20240506-ABCD",
+        "status": "PENDING"
       }
     ],
     "metadata": {
       "totalCount": 10,
       "limit": 10,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "All orders retrieved"
@@ -3155,9 +3173,9 @@ curl -X 'POST' \
   -d '{
   "orderId": "ORD-20240506-ABCD",
   "transactionId": "TXN-123456",
-  "paymentMethod": "STRIPE",
-  "amount": 1914.97,
-  "status": "SUCCESS"
+  "paymentMethod": "CREDIT_CARD",
+  "amount": 1914,
+  "status": "COMPLETED"
 }'
 ```
 
@@ -3172,7 +3190,7 @@ http://localhost:8080/api/v1/payments
   "data": {
     "id": "pay-uuid",
     "orderId": "ORD-20240506-ABCD",
-    "status": "SUCCESS"
+    "status": "COMPLETED"
   },
   "message": "Payment recorded"
 }
@@ -3204,8 +3222,8 @@ http://localhost:8080/api/v1/payments/{id}
   "data": {
     "id": "pay-uuid",
     "orderId": "ORD-20240506-ABCD",
-    "amount": 1914.97,
-    "status": "SUCCESS"
+    "amount": 1914,
+    "status": "COMPLETED"
   },
   "message": "Payment details retrieved"
 }
@@ -3238,14 +3256,14 @@ http://localhost:8080/api/v1/payments/order/{orderId}
     "data": [
       {
         "id": "pay-uuid",
-        "amount": 1914.97,
-        "status": "SUCCESS"
+        "amount": 1914,
+        "status": "COMPLETED"
       }
     ],
     "metadata": {
       "totalCount": 1,
       "limit": 20,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Payments retrieved"
@@ -3482,9 +3500,9 @@ curl -X 'POST' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+  "orderItemId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
   "reason": "Damaged product",
-  "quantity": 1
+  "images": "http://localhost:8080/uploads/refunds/evidence.jpg"
 }'
 ```
 
@@ -3519,8 +3537,7 @@ curl -X 'POST' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "trackingNumber": "TRK123456",
-  "courierName": "FedEx"
+  "trackingNumber": "TRK123456"
 }'
 ```
 
@@ -3570,7 +3587,7 @@ http://localhost:8080/api/v1/refund-requests/order/{orderId}
     "metadata": {
       "totalCount": 1,
       "limit": 10,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Refund requests retrieved"
@@ -3626,7 +3643,8 @@ curl -X 'PUT' \
   -H 'Content-Type: application/json' \
   -d '{
   "status": "APPROVED",
-  "comment": "Returning approved"
+  "refundAmount": 50.0,
+  "refundMethod": "ORIGINAL"
 }'
 ```
 
@@ -3679,7 +3697,7 @@ http://localhost:8080/api/v1/admin/refund-requests/order/{orderId}
     "metadata": {
       "totalCount": 1,
       "limit": 10,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Refund requests retrieved by admin"
@@ -3751,7 +3769,12 @@ http://localhost:8080/api/v1/coupons/{code}
     "discountType": "PERCENTAGE",
     "discountValue": 20.0,
     "minOrderAmount": 50.0,
-    "expiryDate": "2024-09-01T00:00:00Z"
+    "maxDiscountAmount": 10.0,
+    "startDate": "2024-01-01T00:00:00",
+    "endDate": "2024-12-31T23:59:59",
+    "usageLimit": 100,
+    "usageCount": 5,
+    "isActive": true
   },
   "message": "Coupon details retrieved"
 }
@@ -3776,7 +3799,11 @@ curl -X 'POST' \
   "discountType": "FIXED",
   "discountValue": 10.0,
   "minOrderAmount": 30.0,
-  "expiryDate": "2025-01-31T23:59:59Z"
+  "maxDiscountAmount": 10.0,
+  "startDate": "2025-01-01T00:00:00",
+  "endDate": "2025-01-31T23:59:59",
+  "usageLimit": 100,
+  "isActive": true
 }'
 ```
 
@@ -3829,7 +3856,7 @@ http://localhost:8080/api/v1/admin/coupons?limit={limit}&offset={offset}
     "metadata": {
       "totalCount": 5,
       "limit": 10,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Coupons retrieved"
@@ -3917,8 +3944,9 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-  "quantity": 100,
-  "lowStockThreshold": 10
+  "shopId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+  "stockQuantity": 100,
+  "minimumStockLevel": 10
 }'
 ```
 
@@ -3932,7 +3960,7 @@ http://localhost:8080/api/v1/seller/inventories
 {
   "data": {
     "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-    "quantity": 100
+    "stockQuantity": 100
   },
   "message": "Inventory updated"
 }
@@ -4034,7 +4062,7 @@ http://localhost:8080/api/v1/seller/inventories/shop/{shopId}?limit={limit}&offs
     "metadata": {
       "totalCount": 15,
       "limit": 10,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Shop inventory retrieved"
@@ -4074,7 +4102,7 @@ http://localhost:8080/api/v1/seller/inventories/low-stock?limit={limit}&offset={
     "metadata": {
       "totalCount": 1,
       "limit": 10,
-      "skip": 0
+      "offset": 0
     }
   },
   "message": "Low stock items retrieved"

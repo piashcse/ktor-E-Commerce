@@ -40,7 +40,7 @@ curl -X 'PUT' \
   -d '{
   "status": "APPROVED",
   "refundAmount": 50.0,
-  "refundMethod": "original_payment"
+  "refundMethod": "ORIGINAL"
 }'
 ```
 
