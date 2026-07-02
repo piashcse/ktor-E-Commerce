@@ -12,11 +12,13 @@ import com.piashcse.model.request.OrderRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
@@ -324,6 +326,18 @@ class OrderService : OrderRepository {
     private fun generateOrderNumber(datePrefix: String, sequenceNumber: Int) =
         "ORD-$datePrefix-${sequenceNumber.toString().padStart(4, '0')}-${(1000..65535).random().toString(16).take(4).uppercase()}"
 
+    private fun Query.toOrdersPaginated(
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<OrderResponse> {
+        val totalCount = count()
+        val rows = limit(limit).offset(offset.toLong()).map { OrderDAO.wrapRow(it) }
+        val orderIds = rows.map { it.id }
+        val itemsMap = OrderItemDAO.itemsForOrders(orderIds)
+        val data = rows.map { order -> order.response(itemsMap[order.id.value]?.map { it.toResponse() }) }
+        return PaginatedResponse(data, com.piashcse.utils.common.PaginationMetadata(totalCount, limit, offset))
+    }
+
     override suspend fun getOrders(
         userId: String,
         limit: Int,
@@ -331,7 +345,7 @@ class OrderService : OrderRepository {
     ): PaginatedResponse<OrderResponse> = query {
         OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
             .orderBy(OrderTable.createdAt to SortOrder.DESC)
-            .toPaginatedResponse(limit, offset) { OrderDAO.wrapRow(it).response() }
+            .toOrdersPaginated(limit, offset)
     }
 
     override suspend fun updateOrderStatus(
@@ -397,9 +411,7 @@ class OrderService : OrderRepository {
 
         val query = OrderTable.selectAll().andWhere { OrderTable.shopId eq shopId }
         status?.let { query.andWhere { OrderTable.status eq OrderStatus.valueOf(it.uppercase()) } }
-        query.orderBy(OrderTable.createdAt to SortOrder.DESC).toPaginatedResponse(limit, offset) {
-            OrderDAO.wrapRow(it).response()
-        }
+        query.orderBy(OrderTable.createdAt to SortOrder.DESC).toOrdersPaginated(limit, offset)
     }
 
     override suspend fun getAdminOrders(
@@ -413,8 +425,6 @@ class OrderService : OrderRepository {
         status?.let { query.andWhere { OrderTable.status eq OrderStatus.valueOf(it.uppercase()) } }
         startDate?.let { query.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
         endDate?.let { query.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
-        query.orderBy(OrderTable.createdAt to SortOrder.DESC).toPaginatedResponse(limit, offset) {
-            OrderDAO.wrapRow(it).response()
-        }
+        query.orderBy(OrderTable.createdAt to SortOrder.DESC).toOrdersPaginated(limit, offset)
     }
 }

@@ -126,7 +126,7 @@ object UploadService {
             val bytes = file.streamProvider().readBytes()
 
             // Validate file size
-            require(bytes.isNotEmpty()) { "Uploaded file is empty" }
+            if (bytes.isEmpty()) throw ValidationException("Uploaded file is empty")
             if (bytes.size > maxSize) {
                 val maxSizeMB = maxSize / (1024 * 1024)
                 throw ValidationException("File size exceeds ${maxSizeMB}MB limit for $purpose upload")
@@ -144,8 +144,8 @@ object UploadService {
             val targetDir = getDirectory(directory)
             val targetFile = File(targetDir, fileName)
 
-            require(targetFile.canonicalPath.startsWith(targetDir.canonicalPath)) {
-                "Invalid file path detected"
+            if (!targetFile.canonicalPath.startsWith(targetDir.canonicalPath)) {
+                throw ValidationException("Invalid file path detected")
             }
 
             targetFile.writeBytes(bytes)
@@ -214,8 +214,8 @@ object UploadService {
         val base = File(uploadBaseDir, subDirectory).canonicalFile
         val root = File(uploadBaseDir).canonicalFile
 
-        require(base.canonicalPath.startsWith(root.canonicalPath)) {
-            "Invalid upload directory configuration"
+        if (!base.canonicalPath.startsWith(root.canonicalPath)) {
+            throw ValidationException("Invalid upload directory configuration")
         }
 
         return base

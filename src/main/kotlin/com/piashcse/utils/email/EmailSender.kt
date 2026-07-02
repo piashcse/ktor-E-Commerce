@@ -24,7 +24,7 @@ object EmailSender {
     fun sendOtp(
         toEmail: String,
         otp: String,
-        subject: String = AppConstants.SmtpServer.EMAIL_SUBJECT,
+        subject: String = AppConstants.SmtpServer.OTP_SUBJECT,
     ) {
         emailScope.launch {
             try {

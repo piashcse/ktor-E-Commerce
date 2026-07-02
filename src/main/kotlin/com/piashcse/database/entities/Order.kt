@@ -64,7 +64,7 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
     var canceledDate by OrderTable.canceledDate
     var completedDate by OrderTable.completedDate
 
-    fun response() =
+    fun response(items: List<OrderItemResponse>? = null) =
         OrderResponse(
             orderId = id.value,
             orderNumber = orderNumber,
@@ -90,18 +90,6 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
             completedDate = completedDate,
             createdAt = createdAt,
             updatedAt = updatedAt,
-            items =
-                OrderItemDAO.find { OrderItemTable.orderId eq id }.limit(50).map {
-                    OrderItemResponse(
-                        productId = it.productId.value,
-                        productName = it.productName,
-                        quantity = it.quantity,
-                        price = it.price.toFloat(),
-                        discountAmount = it.discountAmount.toFloat(),
-                        taxAmount = it.taxAmount.toFloat(),
-                        total = it.total.toFloat(),
-                        sku = it.sku,
-                    )
-                },
+            items = items ?: OrderItemDAO.itemsForOrder(id).map { it.toResponse() },
         )
 }

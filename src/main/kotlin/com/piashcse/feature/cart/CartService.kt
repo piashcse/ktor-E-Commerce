@@ -13,6 +13,7 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 class CartService : CartRepository {
@@ -90,7 +91,7 @@ class CartService : CartRepository {
 
     override suspend fun clearCart(userId: String): Boolean = query {
         if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
-        CartItemDAO.find { CartItemTable.userId eq userId }.forEach { it.delete() }
+        CartItemTable.deleteWhere { CartItemTable.userId eq userId }
         true
     }
 

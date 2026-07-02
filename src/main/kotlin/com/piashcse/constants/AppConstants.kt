@@ -14,7 +14,8 @@ object AppConstants {
     const val OTP_EXPIRY_MINUTES = 10L
 
     object SmtpServer {
-        const val EMAIL_SUBJECT = "Forget Password"
+        const val OTP_SUBJECT = "Account Verification"
+        const val RESET_SUBJECT = "Password Reset"
     }
 
 }

@@ -81,13 +81,21 @@ enum class ShopStatus {
  */
 @Serializable
 enum class InventoryStatus {
-    IN_STOCK, // Product is in stock
-    LOW_STOCK, // Product has low stock
-    OUT_OF_STOCK, // Product is out of stock
+    IN_STOCK,
+    LOW_STOCK,
+    OUT_OF_STOCK,
     ;
 
     val isAvailable get() = this == IN_STOCK
     val needsAttention get() = this in listOf(LOW_STOCK, OUT_OF_STOCK)
+
+    companion object {
+        fun fromStockLevel(stock: Int, minLevel: Int): InventoryStatus = when {
+            stock <= 0 -> OUT_OF_STOCK
+            stock <= minLevel -> LOW_STOCK
+            else -> IN_STOCK
+        }
+    }
 }
 
 /**

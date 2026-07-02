@@ -30,13 +30,7 @@ fun ProductDAO.decrementStock(quantity: Int) {
     if (inv != null) {
         val newStock = (inv.stockQuantity - quantity).coerceAtLeast(0)
         inv.stockQuantity = newStock
-        inv.status = InventoryStatus.valueOf(
-            when {
-                newStock == 0 -> "OUT_OF_STOCK"
-                newStock <= inv.minimumStockLevel -> "LOW_STOCK"
-                else -> "IN_STOCK"
-            },
-        )
+        inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
     } else {
         stockQuantity = (stockQuantity - quantity).coerceAtLeast(0)
     }
@@ -48,13 +42,7 @@ fun ProductDAO.restoreStock(quantity: Int) {
     if (inv != null) {
         val newStock = inv.stockQuantity + quantity
         inv.stockQuantity = newStock
-        inv.status = InventoryStatus.valueOf(
-            when {
-                newStock == 0 -> "OUT_OF_STOCK"
-                newStock <= inv.minimumStockLevel -> "LOW_STOCK"
-                else -> "IN_STOCK"
-            },
-        )
+        inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
     } else {
         stockQuantity = stockQuantity + quantity
     }
