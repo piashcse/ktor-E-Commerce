@@ -387,9 +387,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#swagger-view" class="md-nav__link">
+  <a href="#swagger-view-api-discovery" class="md-nav__link">
     <span class="md-ellipsis">
-      Swagger View
+      Swagger View &amp; API Discovery
     </span>
   </a>
   
@@ -451,9 +451,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#6-refund-management" class="md-nav__link">
+  <a href="#6-discount-coupon-system" class="md-nav__link">
     <span class="md-ellipsis">
-      6. Refund Management
+      6. Discount &amp; Coupon System
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-refund-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Refund Management
     </span>
   </a>
   
@@ -916,6 +925,29 @@
   
   
     <li class="md-nav__item">
+      <a href="checkout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Checkout
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="order/" class="md-nav__link">
         
   
@@ -962,12 +994,58 @@
   
   
     <li class="md-nav__item">
-      <a href="shipping/" class="md-nav__link">
+      <a href="coupon/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Shipping
+    Coupon
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="shipping-address/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Address
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="shipping-method/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Method
     
   </span>
   
@@ -1128,9 +1206,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#swagger-view" class="md-nav__link">
+  <a href="#swagger-view-api-discovery" class="md-nav__link">
     <span class="md-ellipsis">
-      Swagger View
+      Swagger View &amp; API Discovery
     </span>
   </a>
   
@@ -1192,9 +1270,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#6-refund-management" class="md-nav__link">
+  <a href="#6-discount-coupon-system" class="md-nav__link">
     <span class="md-ellipsis">
-      6. Refund Management
+      6. Discount &amp; Coupon System
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-refund-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Refund Management
     </span>
   </a>
   
@@ -1350,7 +1437,8 @@
 <p>Ktor-E-Commerce is a high-performance backend solution designed for e-commerce applications built
 with <a href="https://ktor.io/docs/welcome.html">ktor</a>. This backend leverages the power of Kotlin to provide a robust,
 scalable, and efficient service for handling your e-commerce needs.</p>
-<h2 id="swagger-view">Swagger View</h2>
+<h2 id="swagger-view-api-discovery">Swagger View &amp; API Discovery</h2>
+<p>Access interactive API documentation at the root <code>/</code> or <code>/swagger</code> endpoint when the application is running. The root URL automatically redirects to Swagger for easy API discovery for frontend developers and testers.</p>
 <p align="center">
   <img width="100%" height="40%" src="https://raw.githubusercontent.com/piashcse/ktor-E-Commerce/master/screenshots/swagger.gif" />
 </p>
@@ -1377,13 +1465,15 @@ scalable, and efficient service for handling your e-commerce needs.</p>
 <h3 id="4-shopping-cart-and-checkout">4. Shopping Cart and Checkout</h3>
 <ul>
 <li><strong>Shopping Cart</strong>: Add and remove products, update quantities, and calculate totals.</li>
-<li><strong>Cart Summary</strong>: Retrieve detailed cart summary with subtotal, tax, and item count.</li>
-<li><strong>Checkout</strong>: Streamline the checkout process with automatic stock and price validation.</li>
+<li><strong>Checkout Summary</strong>: Retrieve detailed checkout summary with subtotal, shipping, tax, and discount breakdown.</li>
+<li><strong>Checkout</strong>: Consolidated checkout process with integrated shipping address and method selection.</li>
 <li><strong>Cart Clearing</strong>: Automatic cart clearing after successful order placement.</li>
 </ul>
 <h3 id="5-order-management">5. Order Management</h3>
 <ul>
 <li><strong>Order Processing</strong>: Handle order creation with human-readable order numbers (ORD-YYYYMMDD-XXXX).</li>
+<li><strong>Order Status History</strong>: Comprehensive audit trail for every status transition.</li>
+<li><strong>Automatic Taxation</strong>: Configurable tax calculation applied during checkout.</li>
 <li><strong>Order Cancellation</strong>: Cancel PENDING/CONFIRMED orders with automatic stock restoration.</li>
 <li><strong>Seller Orders</strong>: Sellers can view and manage orders from their shop.</li>
 <li><strong>Admin Orders</strong>: Admins can view all orders with advanced filters (status, date range).</li>
@@ -1391,7 +1481,13 @@ scalable, and efficient service for handling your e-commerce needs.</p>
 <li><strong>Payment Integration</strong>: Secure payment processing with amount validation.</li>
 <li><strong>Payment History</strong>: Track all payments for each order.</li>
 </ul>
-<h3 id="6-refund-management">6. Refund Management</h3>
+<h3 id="6-discount-coupon-system">6. Discount &amp; Coupon System</h3>
+<ul>
+<li><strong>Promo Codes</strong>: Create and manage fixed or percentage-based discount coupons.</li>
+<li><strong>Usage Limits</strong>: Enforce expiration dates, usage limits, and minimum order amounts.</li>
+<li><strong>Admin Controls</strong>: Dedicated administrative interface for managing the coupon lifecycle.</li>
+</ul>
+<h3 id="7-refund-management">7. Refund Management</h3>
 <ul>
 <li><strong>Refund Requests</strong>: Customers can request refunds with reasons and evidence images.</li>
 <li><strong>Refund Approval</strong>: Sellers and admins can approve, reject, or process refunds.</li>
@@ -1412,6 +1508,8 @@ scalable, and efficient service for handling your e-commerce needs.</p>
 <li><strong>Password Strength</strong>: Enforced password complexity requirements.</li>
 <li><strong>Input Validation</strong>: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).</li>
 <li><strong>Atomic Stock Operations</strong>: Thread-safe inventory updates within database transactions.</li>
+<li><strong>Health Checks</strong>: Comprehensive health monitoring with <code>/health</code>, <code>/health/live</code>, and <code>/health/ready</code> endpoints.</li>
+<li><strong>Structured Logging</strong>: Production-ready JSON logging with correlation IDs (Request IDs) for easier debugging and log aggregation.</li>
 </ul>
 <h2 id="architecture">Architecture</h2>
 <p align="center">
@@ -1523,12 +1621,15 @@ scalable, and efficient service for handling your e-commerce needs.</p>
 <li><a href="product-category/">Product Category API</a> - Product category management</li>
 <li><a href="product-sub-category/">Product Sub-Category API</a> - Product sub-category management</li>
 <li><a href="brand/">Brand API</a> - Brand management</li>
-<li><a href="cart/">Cart API</a> - Shopping cart functionality and summary</li>
+<li><a href="cart/">Cart API</a> - Shopping cart functionality</li>
 <li><a href="wishlist/">Wishlist API</a> - Wishlist functionality</li>
-<li><a href="order/">Order API</a> - Order management, cancellation, and admin views</li>
+<li><a href="checkout/">Checkout API</a> - Consolidated checkout process and summary</li>
+<li><a href="coupon/">Coupon API</a> - Discount and promo code management</li>
+<li><a href="order/">Order API</a> - Order management and history</li>
 <li><a href="refund-request/">Refund Request API</a> - Refund lifecycle management</li>
-<li><a href="shipping/">Shipping API</a> - Shipping address management</li>
-<li><a href="payment/">Payment API</a> - Payment processing and order lookup</li>
+<li><a href="shipping-address/">Shipping Address API</a> - User shipping address management</li>
+<li><a href="shipping-method/">Shipping Method API</a> - Shipping method management</li>
+<li><a href="payment/">Payment API</a> - Payment processing</li>
 <li><a href="review-rating/">Review Rating API</a> - Product reviews and ratings</li>
 <li><a href="inventory/">Inventory API</a> - Inventory management</li>
 <li><a href="privacy-policy/">Privacy Policy API</a> - Privacy policy management</li>

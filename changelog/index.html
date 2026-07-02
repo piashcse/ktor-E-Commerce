@@ -676,6 +676,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../checkout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Checkout
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../order/" class="md-nav__link">
         
   
@@ -722,12 +745,58 @@
   
   
     <li class="md-nav__item">
-      <a href="../shipping/" class="md-nav__link">
+      <a href="../coupon/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Shipping
+    Coupon
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-address/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Address
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-method/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Method
     
   </span>
   
@@ -894,13 +963,61 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#360-latest" class="md-nav__link">
+  <a href="#410-2026-07-02" class="md-nav__link">
     <span class="md-ellipsis">
-      [3.6.0] - Latest
+      [4.1.0] - 2026-07-02
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="[3.6.0] - Latest">
+    <nav class="md-nav" aria-label="[4.1.0] - 2026-07-02">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enum-migration-api-cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enum Migration &amp; API Cleanup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#400-2026-05-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      [4.0.0] - 2026-05-03
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[4.0.0] - 2026-05-03">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#api-standardization-v2-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      API Standardization &amp; V2 Migration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#360" class="md-nav__link">
+    <span class="md-ellipsis">
+      [3.6.0]
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[3.6.0]">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1245,13 +1362,61 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#360-latest" class="md-nav__link">
+  <a href="#410-2026-07-02" class="md-nav__link">
     <span class="md-ellipsis">
-      [3.6.0] - Latest
+      [4.1.0] - 2026-07-02
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="[3.6.0] - Latest">
+    <nav class="md-nav" aria-label="[4.1.0] - 2026-07-02">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enum-migration-api-cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enum Migration &amp; API Cleanup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#400-2026-05-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      [4.0.0] - 2026-05-03
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[4.0.0] - 2026-05-03">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#api-standardization-v2-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      API Standardization &amp; V2 Migration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#360" class="md-nav__link">
+    <span class="md-ellipsis">
+      [3.6.0]
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[3.6.0]">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1581,7 +1746,42 @@
 
 
 <h1 id="changelog">Changelog</h1>
-<h2 id="360-latest">[3.6.0] - Latest</h2>
+<h2 id="410-2026-07-02">[4.1.0] - 2026-07-02</h2>
+<h3 id="enum-migration-api-cleanup">Enum Migration &amp; API Cleanup</h3>
+<ul>
+<li><strong>(refactor)</strong> - <strong>Varchar to Enum</strong>: Migrated 9 DB columns from raw <code>varchar</code> to <code>enumerationByName</code> for type safety: <code>coupon.discount_type</code>, <code>review_rating.status</code>, <code>refund_request.status</code>/<code>refund_method</code>, <code>payment.payment_method</code>, <code>order.payment_method</code>, <code>login_attempt.user_type</code>.</li>
+<li><strong>(feat)</strong> - <strong>6 New Enums</strong>: Added <code>CouponDiscountType</code>, <code>ReviewStatus</code>, <code>RefundStatus</code>, <code>RefundMethod</code>, <code>PaymentMethod</code> to <code>Enums.kt</code>.</li>
+<li><strong>(refactor)</strong> - <strong>PolicyType Centralized</strong>: Moved from nested <code>PolicyDocumentTable.PolicyType</code> to top-level <code>com.piashcse.constants.PolicyType</code>.</li>
+<li><strong>(fix)</strong> - <strong>Pagination Naming</strong>: Renamed <code>PaginationMetadata.skip</code> → <code>offset</code> for consistency with query parameter naming.</li>
+<li><strong>(perf)</strong> - <strong>N+1 Fixes</strong>: Batch-fetch in <code>CartService.getCartSummary()</code> and <code>OrderService.placeOrder()</code>; added <code>OrderItemDAO.itemsForOrders()</code> batch loader.</li>
+<li><strong>(fix)</strong> - <strong>Exception Types</strong>: <code>CouponService</code> now throws <code>NotFoundException</code> (404) instead of generic <code>Exception</code> (500).</li>
+<li><strong>(fix)</strong> - <strong>EntityID Table Refs</strong>: Corrected wrong table references in <code>ShopService.kt</code> and <code>ReviewRatingService.kt</code>.</li>
+<li><strong>(refactor)</strong> - <strong>Centralized Pagination</strong>: Extracted <code>Query.toPaginatedList()</code> building block; centralized defaults in <code>AppConstants.Pagination</code>.</li>
+<li><strong>(refactor)</strong> - <strong>Validation</strong>: <code>CallExt.paginateQueryParams()</code> now validates invalid params instead of silent fallback.</li>
+<li><strong>(fix)</strong> - <strong>DateTimeParseException</strong>: Caught and rethrown as <code>ValidationException</code> in <code>CouponService</code>.</li>
+<li><strong>(refactor)</strong> - <strong>UploadService</strong>: Consolidated 5 identical <code>MAX_*_SIZE</code> constants to 1 shared <code>MAX_FILE_SIZE</code>.</li>
+<li><strong>(refactor)</strong> - <strong>Magic Numbers</strong>: Extracted constants in <code>BrandService</code>, <code>InventoryService</code>, <code>StaticContent</code>.</li>
+</ul>
+<hr />
+<h2 id="400-2026-05-03">[4.0.0] - 2026-05-03</h2>
+<h3 id="api-standardization-v2-migration">API Standardization &amp; V2 Migration</h3>
+<ul>
+<li><strong>(feat)</strong> - <strong>Root-to-Swagger Redirect</strong>: Implemented an automatic redirect from the root URL (<code>/</code>) to the Swagger UI (<code>/swagger</code>) for better API discoverability.</li>
+<li><strong>(feat)</strong> - <strong>V2 Optimized Endpoints</strong>: Introduced <code>v2</code> namespace for optimized API contracts.<ul>
+<li>Added <code>PUT /api/v2/seller/shops/{shopId}</code> with source tracking and streamlined response structure.</li>
+</ul>
+</li>
+<li><strong>(refactor)</strong> - <strong>Routing Architecture</strong>: Standardized URL prefixes for better role isolation and organization:<ul>
+<li>Seller routes now prefixed with <code>/api/v1/seller/</code> or <code>/api/v2/seller/</code>.</li>
+<li>Admin routes now prefixed with <code>/api/v1/admin/</code>.</li>
+</ul>
+</li>
+<li><strong>(refactor)</strong> - <strong>Composition-Based Routing</strong>: Transitioned from conditional logic within routes to a composition-based pattern (e.g., separate functions for V1 and V2), improving maintainability and isolation.</li>
+<li><strong>(docs)</strong> - <strong>OpenAPI Tags</strong>: Added comprehensive <code>@tag</code> and <code>@description</code> annotations to all feature routes for high-quality Swagger documentation.</li>
+<li><strong>(docs)</strong> - <strong>Documentation Overhaul</strong>: Updated project <code>README.md</code> and <code>docs/*.md</code> files to reflect the new routing structure and V2 endpoints.</li>
+</ul>
+<hr />
+<h2 id="360">[3.6.0]</h2>
 <h3 id="per-domain-api-versioning">Per-Domain API Versioning</h3>
 <ul>
 <li><strong>(feat)</strong> - Implemented per-domain API versioning with independent version lifecycle per feature (Stripe/Shopify pattern)</li>

@@ -1053,6 +1053,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../checkout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Checkout
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../order/" class="md-nav__link">
         
   
@@ -1099,12 +1122,58 @@
   
   
     <li class="md-nav__item">
-      <a href="../shipping/" class="md-nav__link">
+      <a href="../coupon/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Shipping
+    Coupon
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-address/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Address
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-method/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Method
     
   </span>
   
@@ -1631,26 +1700,26 @@
 <tbody>
 <tr>
 <td><code>GET</code></td>
-<td><code>/review-rating</code></td>
-<td>Retrieve product reviews</td>
+<td><code>/api/v1/reviews</code></td>
+<td>Get all Reviews</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td><code>POST</code></td>
-<td><code>/review-rating</code></td>
-<td>Create a new review</td>
+<td><code>/api/v1/reviews</code></td>
+<td>Create a New Review</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td><code>PUT</code></td>
-<td><code>/review-rating/{id}</code></td>
-<td>Update an existing review</td>
+<td><code>/api/v1/reviews/{id}</code></td>
+<td>Update Review</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td><code>DELETE</code></td>
-<td><code>/review-rating/{id}</code></td>
-<td>Delete a review</td>
+<td><code>/api/v1/reviews/{id}</code></td>
+<td>Delete Review</td>
 <td>Yes</td>
 </tr>
 </tbody>
@@ -1658,7 +1727,7 @@
 <hr />
 <h2 id="endpoint-details">Endpoint Details</h2>
 <h3 id="1-get-reviews">1. Get Reviews</h3>
-<p><strong><code>GET /review-rating</code></strong></p>
+<p><strong><code>GET /api/v1/reviews</code></strong></p>
 <p>Retrieve reviews for a specific product with optional pagination support.</p>
 <h4 id="query-parameters">Query Parameters</h4>
 <table>
@@ -1710,7 +1779,7 @@
 </table>
 <h4 id="example-request">Example Request</h4>
 <pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/review-rating?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&amp;limit=10' \
+  'http://localhost:8080/api/v1/reviews?productId=cbd630f6-bf9f-48ad-ac51-f806807d99fd&amp;limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
@@ -1728,7 +1797,7 @@
   &quot;metadata&quot;: {
     &quot;totalCount&quot;: 1,
     &quot;limit&quot;: 10,
-    &quot;skip&quot;: 0
+    &quot;offset&quot;: 0
   }
 }
 </code></pre>
@@ -1776,7 +1845,7 @@
 </table>
 <hr />
 <h3 id="2-create-review">2. Create Review</h3>
-<p><strong><code>POST /review-rating</code></strong></p>
+<p><strong><code>POST /api/v1/reviews</code></strong></p>
 <p>Create a new review and rating for a product. The review will be associated with the authenticated user and specified product.</p>
 <h4 id="request-body">Request Body</h4>
 <table>
@@ -1833,7 +1902,7 @@
 </table>
 <h4 id="example-request_1">Example Request</h4>
 <pre><code class="language-bash">curl -X 'POST' \
-  'http://localhost:8080/review-rating' \
+  'http://localhost:8080/api/v1/reviews' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -1892,7 +1961,7 @@
 </table>
 <hr />
 <h3 id="3-update-review">3. Update Review</h3>
-<p><strong><code>PUT /review-rating/{id}</code></strong></p>
+<p><strong><code>PUT /api/v1/reviews/{id}</code></strong></p>
 <p>Update an existing review by its ID. You can modify both the review text and rating.</p>
 <h4 id="path-parameters">Path Parameters</h4>
 <table>
@@ -1957,7 +2026,7 @@
 </table>
 <h4 id="example-request_2">Example Request</h4>
 <pre><code class="language-bash">curl -X 'PUT' \
-  'http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&amp;rating=5' \
+  'http://localhost:8080/api/v1/reviews/70ac842b-7a81-4976-9564-d440880d1736?review=Product%20review%20edited&amp;rating=5' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
@@ -2010,7 +2079,7 @@
 </table>
 <hr />
 <h3 id="4-delete-review">4. Delete Review</h3>
-<p><strong><code>DELETE /review-rating/{id}</code></strong></p>
+<p><strong><code>DELETE /api/v1/reviews/{id}</code></strong></p>
 <p>Delete a review by its ID. This operation permanently removes the review from the system.</p>
 <h4 id="path-parameters_1">Path Parameters</h4>
 <table>
@@ -2050,7 +2119,7 @@
 </table>
 <h4 id="example-request_3">Example Request</h4>
 <pre><code class="language-bash">curl -X 'DELETE' \
-  'http://localhost:8080/review-rating/70ac842b-7a81-4976-9564-d440880d1736' \
+  'http://localhost:8080/api/v1/reviews/70ac842b-7a81-4976-9564-d440880d1736' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>

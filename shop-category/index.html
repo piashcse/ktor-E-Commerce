@@ -1053,6 +1053,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../checkout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Checkout
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../order/" class="md-nav__link">
         
   
@@ -1099,12 +1122,58 @@
   
   
     <li class="md-nav__item">
-      <a href="../shipping/" class="md-nav__link">
+      <a href="../coupon/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Shipping
+    Coupon
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-address/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Address
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-method/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Method
     
   </span>
   
@@ -1631,25 +1700,25 @@
 <tbody>
 <tr>
 <td><code>POST</code></td>
-<td><code>/shop-category</code></td>
+<td><code>/api/v1/admin/shop-categories</code></td>
 <td>Create a new shop category</td>
 <td>Yes (Admin)</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
-<td><code>/shop-category</code></td>
+<td><code>/api/v1/admin/shop-categories</code></td>
 <td>Retrieve list of shop categories</td>
 <td>Yes (Admin)</td>
 </tr>
 <tr>
 <td><code>PUT</code></td>
-<td><code>/shop-category/{id}</code></td>
+<td><code>/api/v1/admin/shop-categories/{id}</code></td>
 <td>Update an existing shop category</td>
 <td>Yes (Admin)</td>
 </tr>
 <tr>
 <td><code>DELETE</code></td>
-<td><code>/shop-category/{id}</code></td>
+<td><code>/api/v1/admin/shop-categories/{id}</code></td>
 <td>Delete a shop category</td>
 <td>Yes (Admin)</td>
 </tr>
@@ -1658,7 +1727,7 @@
 <hr />
 <h2 id="endpoint-details">Endpoint Details</h2>
 <h3 id="1-create-shop-category">1. Create Shop Category</h3>
-<p><strong><code>POST /shop-category</code></strong></p>
+<p><strong><code>POST /api/v1/admin/shop-categories</code></strong></p>
 <p>Create a new shop category. This endpoint allows administrators to add new categories for organizing shops.</p>
 <h4 id="request-body">Request Body</h4>
 <table>
@@ -1703,7 +1772,7 @@
 </table>
 <h4 id="example-request">Example Request</h4>
 <pre><code class="language-bash">curl -X 'POST' \
-  'http://localhost:8080/shop-category' \
+  'http://localhost:8080/api/v1/admin/shop-categories' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
@@ -1742,7 +1811,7 @@
 </table>
 <hr />
 <h3 id="2-get-shop-categories">2. Get Shop Categories</h3>
-<p><strong><code>GET /shop-category</code></strong></p>
+<p><strong><code>GET /api/v1/admin/shop-categories</code></strong></p>
 <p>Retrieve a list of shop categories with optional pagination support.</p>
 <h4 id="query-parameters">Query Parameters</h4>
 <table>
@@ -1788,7 +1857,7 @@
 </table>
 <h4 id="example-request_1">Example Request</h4>
 <pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/shop-category?limit=10' \
+  'http://localhost:8080/api/v1/admin/shop-categories?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
@@ -1807,7 +1876,7 @@
   &quot;metadata&quot;: {
     &quot;totalCount&quot;: 2,
     &quot;limit&quot;: 10,
-    &quot;skip&quot;: 0
+    &quot;offset&quot;: 0
   }
 }
 </code></pre>
@@ -1860,7 +1929,7 @@
 </table>
 <hr />
 <h3 id="3-update-shop-category">3. Update Shop Category</h3>
-<p><strong><code>PUT /shop-category/{id}</code></strong></p>
+<p><strong><code>PUT /api/v1/admin/shop-categories/{id}</code></strong></p>
 <p>Update an existing shop category by its ID.</p>
 <h4 id="path-parameters">Path Parameters</h4>
 <table>
@@ -1919,7 +1988,7 @@
 </table>
 <h4 id="example-request_2">Example Request</h4>
 <pre><code class="language-bash">curl -X 'PUT' \
-  'http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop' \
+  'http://localhost:8080/api/v1/admin/shop-categories/9c95c44c-3767-4ca2-9486-e28e390b3741?name=Piash%20Digital%20shop' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
@@ -1954,7 +2023,7 @@
 </table>
 <hr />
 <h3 id="4-delete-shop-category">4. Delete Shop Category</h3>
-<p><strong><code>DELETE /shop-category/{id}</code></strong></p>
+<p><strong><code>DELETE /api/v1/admin/shop-categories/{id}</code></strong></p>
 <p>Delete a shop category by its ID. This operation permanently removes the category from the system.</p>
 <h4 id="path-parameters_1">Path Parameters</h4>
 <table>
@@ -1994,7 +2063,7 @@
 </table>
 <h4 id="example-request_3">Example Request</h4>
 <pre><code class="language-bash">curl -X 'DELETE' \
-  'http://localhost:8080/shop-category/9c95c44c-3767-4ca2-9486-e28e390b3741' \
+  'http://localhost:8080/api/v1/admin/shop-categories/9c95c44c-3767-4ca2-9486-e28e390b3741' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>

@@ -975,6 +975,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../checkout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Checkout
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../order/" class="md-nav__link">
         
   
@@ -1021,12 +1044,58 @@
   
   
     <li class="md-nav__item">
-      <a href="../shipping/" class="md-nav__link">
+      <a href="../coupon/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Shipping
+    Coupon
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-address/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Address
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-method/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Method
     
   </span>
   
@@ -1475,19 +1544,19 @@
 <tbody>
 <tr>
 <td><code>GET</code></td>
-<td><code>/profile</code></td>
+<td><code>/api/v1/profile</code></td>
 <td>Retrieve user profile information</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td><code>PUT</code></td>
-<td><code>/profile</code></td>
+<td><code>/api/v1/profile</code></td>
 <td>Update user profile information</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td><code>POST</code></td>
-<td><code>/profile/image-upload</code></td>
+<td><code>/api/v1/profile/image-upload</code></td>
 <td>Upload user profile image</td>
 <td>Yes</td>
 </tr>
@@ -1496,7 +1565,7 @@
 <hr />
 <h2 id="endpoint-details">Endpoint Details</h2>
 <h3 id="1-get-user-profile">1. Get User Profile</h3>
-<p><strong><code>GET /profile</code></strong></p>
+<p><strong><code>GET /api/v1/profile</code></strong></p>
 <p>Retrieve the profile information for the authenticated user.</p>
 <h4 id="headers">Headers</h4>
 <table>
@@ -1517,7 +1586,7 @@
 </table>
 <h4 id="example-request">Example Request</h4>
 <pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/profile' \
+  'http://localhost:8080/api/v1/profile' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
@@ -1594,7 +1663,7 @@
 </table>
 <hr />
 <h3 id="2-update-user-profile">2. Update User Profile</h3>
-<p><strong><code>PUT /profile</code></strong></p>
+<p><strong><code>PUT /api/v1/profile</code></strong></p>
 <p>Update profile information for the authenticated user.</p>
 <h4 id="query-parameters">Query Parameters</h4>
 <table>
@@ -1676,7 +1745,7 @@
 </table>
 <h4 id="example-request_1">Example Request</h4>
 <pre><code class="language-bash">curl -X 'PUT' \
-  'http://localhost:8080/profile?firstName=Mehedi&amp;lastName=Hassan&amp;mobile=01812353930&amp;faxNumber=454&amp;streetAddress=Dhaka&amp;city=Dhaka&amp;postCode=1205&amp;gender=Male' \
+  'http://localhost:8080/api/v1/profile?firstName=Mehedi&amp;lastName=Hassan&amp;mobile=01812353930&amp;faxNumber=454&amp;streetAddress=Dhaka&amp;city=Dhaka&amp;postCode=1205&amp;gender=Male' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
@@ -1696,7 +1765,7 @@
 </code></pre>
 <hr />
 <h3 id="3-upload-profile-image">3. Upload Profile Image</h3>
-<p><strong><code>POST /profile/image-upload</code></strong></p>
+<p><strong><code>POST /api/v1/profile/image-upload</code></strong></p>
 <p>Upload a profile image for the authenticated user. The image will be processed and stored with a unique filename.</p>
 <h4 id="request-body">Request Body</h4>
 <table>
@@ -1747,7 +1816,7 @@
 </ul>
 <h4 id="example-request_2">Example Request</h4>
 <pre><code class="language-bash">curl -X 'POST' \
-  'http://localhost:8080/profile/image-upload' \
+  'http://localhost:8080/api/v1/profile/image-upload' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: multipart/form-data' \

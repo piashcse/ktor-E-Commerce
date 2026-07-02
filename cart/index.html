@@ -14,7 +14,7 @@
         <link rel="prev" href="../wishlist/">
       
       
-        <link rel="next" href="../order/">
+        <link rel="next" href="../checkout/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -1146,6 +1146,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../checkout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Checkout
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../order/" class="md-nav__link">
         
   
@@ -1192,12 +1215,58 @@
   
   
     <li class="md-nav__item">
-      <a href="../shipping/" class="md-nav__link">
+      <a href="../coupon/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Shipping
+    Coupon
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-address/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Address
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-method/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Method
     
   </span>
   
@@ -1817,37 +1886,37 @@
 <tbody>
 <tr>
 <td><code>POST</code></td>
-<td><code>/cart</code></td>
+<td><code>/api/v1/carts</code></td>
 <td>Add product to cart</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
-<td><code>/cart</code></td>
+<td><code>/api/v1/carts</code></td>
 <td>Retrieve cart items</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
-<td><code>/cart/summary</code></td>
+<td><code>/api/v1/carts/summary</code></td>
 <td>Retrieve cart summary with totals</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td><code>PUT</code></td>
-<td><code>/cart/update</code></td>
+<td><code>/api/v1/carts/update</code></td>
 <td>Update product quantity in cart</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td><code>DELETE</code></td>
-<td><code>/cart/remove</code></td>
+<td><code>/api/v1/carts/remove</code></td>
 <td>Remove specific product from cart</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td><code>DELETE</code></td>
-<td><code>/cart/all</code></td>
+<td><code>/api/v1/carts/all</code></td>
 <td>Clear entire cart</td>
 <td>Yes</td>
 </tr>
@@ -1856,7 +1925,7 @@
 <hr />
 <h2 id="endpoint-details">Endpoint Details</h2>
 <h3 id="1-add-product-to-cart">1. Add Product to Cart</h3>
-<p><strong><code>POST /cart</code></strong></p>
+<p><strong><code>POST /api/v1/carts</code></strong></p>
 <p>Add a product to the user's shopping cart with specified quantity. If the product already exists in the cart, this will add to the existing quantity.</p>
 <h4 id="query-parameters">Query Parameters</h4>
 <table>
@@ -1902,7 +1971,7 @@
 </table>
 <h4 id="example-request">Example Request</h4>
 <pre><code class="language-bash">curl -X 'POST' \
-  'http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&amp;quantity=1' \
+  'http://localhost:8080/api/v1/carts?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&amp;quantity=1' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -d ''
@@ -1937,7 +2006,7 @@
 </table>
 <hr />
 <h3 id="2-get-cart-items">2. Get Cart Items</h3>
-<p><strong><code>GET /cart</code></strong></p>
+<p><strong><code>GET /api/v1/carts</code></strong></p>
 <p>Retrieve all items in the user's shopping cart with detailed product information and pagination support.</p>
 <h4 id="query-parameters_1">Query Parameters</h4>
 <table>
@@ -1977,7 +2046,7 @@
 </table>
 <h4 id="example-request_1">Example Request</h4>
 <pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/cart?limit=10' \
+  'http://localhost:8080/api/v1/carts?limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
@@ -2070,7 +2139,7 @@
 </table>
 <hr />
 <h3 id="3-update-cart-item-quantity">3. Update Cart Item Quantity</h3>
-<p><strong><code>PUT /cart</code></strong></p>
+<p><strong><code>PUT /api/v1/carts/update</code></strong></p>
 <p>Update the quantity of a specific product in the user's cart. This operation sets the absolute quantity rather than adding to existing quantity.</p>
 <h4 id="query-parameters_2">Query Parameters</h4>
 <table>
@@ -2116,7 +2185,7 @@
 </table>
 <h4 id="example-request_2">Example Request</h4>
 <pre><code class="language-bash">curl -X 'PUT' \
-  'http://localhost:8080/cart?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&amp;quantity=1' \
+  'http://localhost:8080/api/v1/carts?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&amp;quantity=1' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
@@ -2170,7 +2239,7 @@
 </table>
 <hr />
 <h3 id="4-remove-product-from-cart">4. Remove Product from Cart</h3>
-<p><strong><code>DELETE /cart</code></strong></p>
+<p><strong><code>DELETE /api/v1/carts/remove</code></strong></p>
 <p>Remove a specific product from the user's cart completely, regardless of quantity.</p>
 <h4 id="query-parameters_3">Query Parameters</h4>
 <table>
@@ -2210,7 +2279,7 @@
 </table>
 <h4 id="example-request_3">Example Request</h4>
 <pre><code class="language-bash">curl -X 'DELETE' \
-  'http://localhost:8080/cart?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
+  'http://localhost:8080/api/v1/carts?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
@@ -2257,7 +2326,7 @@
 </table>
 <hr />
 <h3 id="5-clear-cart">5. Clear Cart</h3>
-<p><strong><code>DELETE /cart/all</code></strong></p>
+<p><strong><code>DELETE /api/v1/carts/all</code></strong></p>
 <p>Remove all items from the user's cart, effectively clearing the entire shopping cart.</p>
 <h4 id="headers_4">Headers</h4>
 <table>
@@ -2278,7 +2347,7 @@
 </table>
 <h4 id="example-request_4">Example Request</h4>
 <pre><code class="language-bash">curl -X 'DELETE' \
-  'http://localhost:8080/cart/all' \
+  'http://localhost:8080/api/v1/carts/all' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
@@ -2305,7 +2374,7 @@
 </table>
 <hr />
 <h3 id="6-get-cart-summary">6. Get Cart Summary</h3>
-<p><strong><code>GET /cart/summary</code></strong></p>
+<p><strong><code>GET /api/v1/carts/summary</code></strong></p>
 <p>Retrieve a summary of the user's cart including all items with product details, subtotal, estimated tax, and item count. This endpoint provides enriched data for checkout pages.</p>
 <h4 id="headers_5">Headers</h4>
 <table>
@@ -2326,7 +2395,7 @@
 </table>
 <h4 id="example-request_5">Example Request</h4>
 <pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/cart/summary' \
+  'http://localhost:8080/api/v1/carts/summary' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>

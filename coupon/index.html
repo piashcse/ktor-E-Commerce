@@ -11,10 +11,10 @@
       
       
       
-        <link rel="prev" href="../review-rating/">
+        <link rel="prev" href="../payment/">
       
       
-        <link rel="next" href="../cart/">
+        <link rel="next" href="../shipping-address/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>WishList - Ktor-E-Commerce</title>
+        <title>Coupon - Ktor-E-Commerce</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#wishlist-api" class="md-skip">
+        <a href="#coupon-management" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              WishList
+              Coupon
             
           </span>
         </div>
@@ -632,32 +632,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    WishList
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../wishlist/" class="md-nav__link">
         
   
   
@@ -668,302 +646,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#authentication" class="md-nav__link">
-    <span class="md-ellipsis">
-      Authentication
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Authentication">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#wishlist-endpoints" class="md-nav__link">
-    <span class="md-ellipsis">
-      Wishlist Endpoints
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#endpoint-details" class="md-nav__link">
-    <span class="md-ellipsis">
-      Endpoint Details
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Endpoint Details">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-add-product-to-wishlist" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Add Product to Wishlist
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Add Product to Wishlist">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#request-body" class="md-nav__link">
-    <span class="md-ellipsis">
-      Request Body
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#headers" class="md-nav__link">
-    <span class="md-ellipsis">
-      Headers
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-request" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Request
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Response
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-get-wishlist-items" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Get Wishlist Items
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Get Wishlist Items">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#query-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Query Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#headers_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Headers
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-request_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Request
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Response
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-check-product-in-wishlist" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Check Product in Wishlist
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Check Product in Wishlist">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#query-parameters_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Query Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-request_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Request
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Response
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-remove-product-from-wishlist" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Remove Product from Wishlist
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. Remove Product from Wishlist">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#query-parameters_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      Query Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#headers_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      Headers
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-request_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Request
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Response
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      Error Handling
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Error Handling">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#success-responses" class="md-nav__link">
-    <span class="md-ellipsis">
-      Success Responses
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-responses" class="md-nav__link">
-    <span class="md-ellipsis">
-      Error Responses
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#common-error-codes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Common Error Codes
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1065,10 +747,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../coupon/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Coupon
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1079,6 +783,119 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#coupon-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Coupon Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customer-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      Customer API
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Customer API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#check-coupon-validity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Check Coupon Validity
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#admin-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      Admin API
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Admin API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-coupon" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create Coupon
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-coupons" class="md-nav__link">
+    <span class="md-ellipsis">
+      List Coupons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-coupon" class="md-nav__link">
+    <span class="md-ellipsis">
+      Update Coupon
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#delete-coupon" class="md-nav__link">
+    <span class="md-ellipsis">
+      Delete Coupon
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1278,19 +1095,37 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#authentication" class="md-nav__link">
+  <a href="#coupon-types" class="md-nav__link">
     <span class="md-ellipsis">
-      Authentication
+      Coupon Types
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Authentication">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customer-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      Customer API
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Customer API">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#wishlist-endpoints" class="md-nav__link">
+  <a href="#check-coupon-validity" class="md-nav__link">
     <span class="md-ellipsis">
-      Wishlist Endpoints
+      Check Coupon Validity
     </span>
   </a>
   
@@ -1302,247 +1137,46 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#endpoint-details" class="md-nav__link">
+  <a href="#admin-api" class="md-nav__link">
     <span class="md-ellipsis">
-      Endpoint Details
+      Admin API
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Endpoint Details">
+    <nav class="md-nav" aria-label="Admin API">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-add-product-to-wishlist" class="md-nav__link">
+  <a href="#create-coupon" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Add Product to Wishlist
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. Add Product to Wishlist">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#request-body" class="md-nav__link">
-    <span class="md-ellipsis">
-      Request Body
+      Create Coupon
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#headers" class="md-nav__link">
+  <a href="#list-coupons" class="md-nav__link">
     <span class="md-ellipsis">
-      Headers
+      List Coupons
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request" class="md-nav__link">
+  <a href="#update-coupon" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Update Coupon
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response" class="md-nav__link">
+  <a href="#delete-coupon" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-get-wishlist-items" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Get Wishlist Items
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Get Wishlist Items">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#query-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Query Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#headers_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Headers
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-request_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Request
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Response
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-check-product-in-wishlist" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Check Product in Wishlist
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Check Product in Wishlist">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#query-parameters_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Query Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-request_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Request
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Response
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-remove-product-from-wishlist" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Remove Product from Wishlist
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. Remove Product from Wishlist">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#query-parameters_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      Query Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#headers_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      Headers
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-request_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Request
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Response
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      Error Handling
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Error Handling">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#success-responses" class="md-nav__link">
-    <span class="md-ellipsis">
-      Success Responses
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#error-responses" class="md-nav__link">
-    <span class="md-ellipsis">
-      Error Responses
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#common-error-codes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Common Error Codes
+      Delete Coupon
     </span>
   </a>
   
@@ -1572,339 +1206,49 @@
   
 
 
-<h1 id="wishlist-api">Wishlist API</h1>
-<p>This documentation provides comprehensive details for the Wishlist API endpoints. The API supports adding products to wishlist, retrieving user's wishlist items, checking product status, and removing products from wishlist. Wishlist functionality is user-specific and requires authentication to access personal wishlist data.</p>
-<p><strong>Base URL:</strong> <code>http://localhost:8080</code></p>
-<h2 id="authentication">Authentication</h2>
-<p>All Wishlist endpoints require Bearer token authentication. Include the access token in the Authorization header:</p>
-<pre><code>Authorization: Bearer &lt;your_access_token&gt;
-</code></pre>
-<h3 id="wishlist-endpoints">Wishlist Endpoints</h3>
-<table>
-<thead>
-<tr>
-<th>Method</th>
-<th>Endpoint</th>
-<th>Description</th>
-<th>Authentication Required</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>POST</code></td>
-<td><code>/api/v1/wishlists</code></td>
-<td>Add a product to wishlist</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/wishlists</code></td>
-<td>Retrieve user's wishlist items (Paginated)</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/wishlists/check</code></td>
-<td>Check if a product is in wishlist</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>DELETE</code></td>
-<td><code>/api/v1/wishlists/remove</code></td>
-<td>Remove a product from wishlist</td>
-<td>Yes</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="endpoint-details">Endpoint Details</h2>
-<h3 id="1-add-product-to-wishlist">1. Add Product to Wishlist</h3>
-<p><strong><code>POST /api/v1/wishlists</code></strong></p>
-<p>Add a product to the authenticated user's wishlist.</p>
-<h4 id="request-body">Request Body</h4>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>productId</code></td>
-<td>string</td>
-<td>Yes</td>
-<td>UUID of the product to add to wishlist</td>
-</tr>
-</tbody>
-</table>
-<h4 id="headers">Headers</h4>
-<table>
-<thead>
-<tr>
-<th>Header</th>
-<th>Value</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>Authorization</code></td>
-<td><code>Bearer &lt;access_token&gt;</code></td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>Content-Type</code></td>
-<td><code>application/json</code></td>
-<td>Yes</td>
-</tr>
-</tbody>
-</table>
-<h4 id="example-request">Example Request</h4>
-<pre><code class="language-bash">curl -X 'POST' \
-  'http://localhost:8080/api/v1/wishlists' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  &quot;productId&quot;: &quot;5b24d429-c981-47c8-9318-f4d61dd2c1a4&quot;
-}'
-</code></pre>
-<h4 id="example-response">Example Response</h4>
-<pre><code class="language-json">{
-    &quot;product&quot;: {
-      &quot;id&quot;: &quot;5b24d429-c981-47c8-9318-f4d61dd2c1a4&quot;,
-      &quot;categoryId&quot;: &quot;58f5c085-d04a-47de-beab-1d476b6ce432&quot;,
-      &quot;name&quot;: &quot;Polo T Shirt&quot;,
-      // ... product details
-    }
-  }
-}
-</code></pre>
-<hr />
-<h3 id="2-get-wishlist-items">2. Get Wishlist Items</h3>
-<p><strong><code>GET /api/v1/wishlists</code></strong></p>
-<p>Retrieve all products in the authenticated user's wishlist with pagination.</p>
-<h4 id="query-parameters">Query Parameters</h4>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>limit</code></td>
-<td>number</td>
-<td>No</td>
-<td>Maximum number of items to return (default: 20)</td>
-</tr>
-<tr>
-<td><code>offset</code></td>
-<td>number</td>
-<td>No</td>
-<td>Number of items to skip for pagination (default: 0)</td>
-</tr>
-</tbody>
-</table>
-<h4 id="headers_1">Headers</h4>
-<table>
-<thead>
-<tr>
-<th>Header</th>
-<th>Value</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>Authorization</code></td>
-<td><code>Bearer &lt;access_token&gt;</code></td>
-<td>Yes</td>
-</tr>
-</tbody>
-</table>
-<h4 id="example-request_1">Example Request</h4>
-<pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/api/v1/wishlists?page=1&amp;limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-</code></pre>
-<h4 id="example-response_1">Example Response</h4>
-<pre><code class="language-json">{
-  &quot;data&quot;: [
-    {
-      &quot;id&quot;: &quot;5b24d429-c981-47c8-9318-f4d61dd2c1a4&quot;,
-      &quot;name&quot;: &quot;Polo T Shirt&quot;
-      // ... product details
-    }
-  ],
-  &quot;metadata&quot;: {
-    &quot;totalCount&quot;: 1,
-    &quot;limit&quot;: 10,
-    &quot;offset&quot;: 0
-  }
-}
-</code></pre>
-<hr />
-<h3 id="3-check-product-in-wishlist">3. Check Product in Wishlist</h3>
-<p><strong><code>GET /api/v1/wishlists/check</code></strong></p>
-<p>Check if a specific product exists in the user's wishlist.</p>
-<h4 id="query-parameters_1">Query Parameters</h4>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>productId</code></td>
-<td>string</td>
-<td>Yes</td>
-<td>UUID of the product to check</td>
-</tr>
-</tbody>
-</table>
-<h4 id="example-request_2">Example Request</h4>
-<pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/api/v1/wishlists/check?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer &lt;token&gt;'
-</code></pre>
-<h4 id="example-response_2">Example Response</h4>
-<pre><code class="language-json">true
-</code></pre>
-<hr />
-<h3 id="4-remove-product-from-wishlist">4. Remove Product from Wishlist</h3>
-<p><strong><code>DELETE /api/v1/wishlists/remove</code></strong></p>
-<p>Remove a specific product from the authenticated user's wishlist.</p>
-<h4 id="query-parameters_2">Query Parameters</h4>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>productId</code></td>
-<td>string</td>
-<td>Yes</td>
-<td>UUID of the product to remove from wishlist</td>
-</tr>
-</tbody>
-</table>
-<h4 id="headers_2">Headers</h4>
-<table>
-<thead>
-<tr>
-<th>Header</th>
-<th>Value</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>Authorization</code></td>
-<td><code>Bearer &lt;access_token&gt;</code></td>
-<td>Yes</td>
-</tr>
-</tbody>
-</table>
-<h4 id="example-request_3">Example Request</h4>
-<pre><code class="language-bash">curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/wishlists/remove?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-</code></pre>
-<h4 id="example-response_3">Example Response</h4>
-<pre><code class="language-json">{
-      &quot;id&quot;: &quot;5b24d429-c981-47c8-9318-f4d61dd2c1a4&quot;,
-      &quot;name&quot;: &quot;Polo T Shirt&quot;,
-      // ... product details
-  }
-}
-</code></pre>
-<hr />
-<h2 id="error-handling">Error Handling</h2>
-<p>This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):</p>
-<h3 id="success-responses">Success Responses</h3>
+<h1 id="coupon-management">Coupon Management</h1>
+<p>The Coupon module provides a flexible way to manage discounts and promotional offers. It supports both fixed amount and percentage-based discounts with various validation rules.</p>
+<h2 id="coupon-types">Coupon Types</h2>
 <ul>
-<li><strong>HTTP status code indicates success</strong> (200, 201, 204)</li>
-<li><strong>Response body contains data directly</strong> (no wrapper object)</li>
-<li>No <code>isSuccess</code> or <code>statusCode</code> fields needed</li>
+<li><strong>FIXED</strong>: A fixed discount amount (e.g., $10 off).</li>
+<li><strong>PERCENTAGE</strong>: A percentage-based discount (e.g., 20% off).</li>
 </ul>
-<h3 id="error-responses">Error Responses</h3>
-<p><strong>Standard Error (400/401/403/404/500):</strong></p>
+<h2 id="features">Features</h2>
+<ul>
+<li><strong>Minimum Order Amount</strong>: Coupons can require a minimum subtotal to be applicable.</li>
+<li><strong>Max Discount Amount</strong>: For percentage coupons, you can cap the maximum discount value.</li>
+<li><strong>Usage Limits</strong>: Track how many times a coupon has been used and set a maximum limit.</li>
+<li><strong>Expiry Dates</strong>: Define start and end dates for promotional campaigns.</li>
+</ul>
+<h2 id="customer-api">Customer API</h2>
+<h3 id="check-coupon-validity">Check Coupon Validity</h3>
+<p><code>GET /api/v1/coupons/{code}</code></p>
+<p>Returns the coupon details if found and active.</p>
+<p><strong>Response:</strong></p>
 <pre><code class="language-json">{
-  &quot;message&quot;: &quot;Error description&quot;
+  &quot;id&quot;: &quot;uuid&quot;,
+  &quot;code&quot;: &quot;SUMMER20&quot;,
+  &quot;discountType&quot;: &quot;PERCENTAGE&quot;,
+  &quot;discountValue&quot;: 20.0,
+  &quot;minOrderAmount&quot;: 50.0,
+  &quot;maxDiscountAmount&quot;: 10.0,
+  &quot;startDate&quot;: &quot;2024-01-01T00:00:00&quot;,
+  &quot;endDate&quot;: &quot;2024-12-31T23:59:59&quot;,
+  &quot;usageLimit&quot;: 100,
+  &quot;usageCount&quot;: 5,
+  &quot;isActive&quot;: true
 }
 </code></pre>
-<p><strong>Validation Error (400):</strong></p>
-<pre><code class="language-json">{
-  &quot;message&quot;: &quot;Validation failed&quot;,
-  &quot;errors&quot;: [
-    {&quot;field&quot;: &quot;email&quot;, &quot;message&quot;: &quot;Invalid email format&quot;},
-    {&quot;field&quot;: &quot;password&quot;, &quot;message&quot;: &quot;Password must be at least 8 characters&quot;}
-  ]
-}
-</code></pre>
-<h3 id="common-error-codes">Common Error Codes</h3>
-<table>
-<thead>
-<tr>
-<th>Status Code</th>
-<th>Description</th>
-<th>Example Message</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>400</code></td>
-<td>Bad Request</td>
-<td><code>"Invalid email or password"</code></td>
-</tr>
-<tr>
-<td><code>401</code></td>
-<td>Unauthorized</td>
-<td><code>"Authentication required"</code></td>
-</tr>
-<tr>
-<td><code>403</code></td>
-<td>Forbidden</td>
-<td><code>"Insufficient permissions"</code></td>
-</tr>
-<tr>
-<td><code>404</code></td>
-<td>Not Found</td>
-<td><code>"Product not found"</code></td>
-</tr>
-<tr>
-<td><code>409</code></td>
-<td>Conflict</td>
-<td><code>"User already exists with this email"</code></td>
-</tr>
-<tr>
-<td><code>500</code></td>
-<td>Internal Server Error</td>
-<td><code>"Internal server error"</code></td>
-</tr>
-</tbody>
-</table>
-<p>All error messages are centralized and consistent across all endpoints.</p>
-<hr />
+<h2 id="admin-api">Admin API</h2>
+<p>All admin endpoints require <code>ADMIN</code> role.</p>
+<h3 id="create-coupon">Create Coupon</h3>
+<p><code>POST /api/v1/admin/coupons</code></p>
+<h3 id="list-coupons">List Coupons</h3>
+<p><code>GET /api/v1/admin/coupons?limit=10&amp;offset=0</code></p>
+<h3 id="update-coupon">Update Coupon</h3>
+<p><code>PUT /api/v1/admin/coupons/{id}</code></p>
+<h3 id="delete-coupon">Delete Coupon</h3>
+<p><code>DELETE /api/v1/admin/coupons/{id}</code></p>
 
 
 
