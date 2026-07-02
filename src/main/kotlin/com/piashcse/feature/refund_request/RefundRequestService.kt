@@ -8,15 +8,16 @@ import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
 import com.piashcse.model.response.RefundRequestResponse
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 interface RefundRequestRepository {
     suspend fun createRefundRequest(
@@ -33,7 +34,11 @@ interface RefundRequestRepository {
         offset: Int = 0,
     ): PaginatedResponse<RefundRequestResponse>
 
-    suspend fun getRefundById(refundId: String): RefundRequestResponse?
+    suspend fun getRefundById(
+        refundId: String,
+        userId: String,
+        userType: UserType,
+    ): RefundRequestResponse?
 
     suspend fun updateRefundStatus(
         refundId: String,
@@ -112,7 +117,7 @@ class RefundRequestService : RefundRequestRepository {
             val isCustomer = order.userId.value == userId
             val isSeller =
                 order.shopId?.value?.let { shopId ->
-                    SellerDAO.find { SellerTable.userId eq userId }.firstOrNull()?.shopId?.value == shopId
+                    sellerOwnsShop(userId, shopId)
                 } == true
             val isAdmin = userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
 
@@ -127,10 +132,36 @@ class RefundRequestService : RefundRequestRepository {
                 }
         }
 
-    override suspend fun getRefundById(refundId: String): RefundRequestResponse? =
+    override suspend fun getRefundById(
+        refundId: String,
+        userId: String,
+        userType: UserType,
+    ): RefundRequestResponse? =
         query {
-            RefundRequestDAO.findById(refundId)?.response()
+            val refundRequest = RefundRequestDAO.findById(refundId) ?: return@query null
+
+            val isCustomer = refundRequest.userId.value == userId
+            val isAdmin = userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
+            val isSeller = orderBelongsToUserShop(refundRequest.orderId.value, userId)
+
+            if (!isCustomer && !isSeller && !isAdmin) {
+                throw ValidationException(Message.Orders.UNAUTHORIZED)
+            }
+
+            refundRequest.response()
         }
+
+    private fun orderBelongsToUserShop(
+        orderId: String,
+        userId: String,
+    ): Boolean {
+        val order = OrderDAO.findById(orderId) ?: return false
+        val shopId = order.shopId?.value ?: return false
+        val seller = SellerDAO.find {
+            (SellerTable.userId eq userId) and (SellerTable.shopId eq EntityID(shopId, ShopTable))
+        }.firstOrNull()
+        return seller != null
+    }
 
     override suspend fun updateRefundStatus(
         refundId: String,
@@ -148,7 +179,7 @@ class RefundRequestService : RefundRequestRepository {
                     ?: throw ValidationException(Message.Errors.NOT_FOUND)
 
             val isAdmin = user.userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
-            val isSeller = SellerDAO.find { SellerTable.userId eq userId }.firstOrNull() != null
+            val isSeller = findSellerByUserId(userId) != null
 
             if (!isAdmin && !isSeller) {
                 throw ValidationException(Message.Errors.FORBIDDEN)
@@ -160,10 +191,10 @@ class RefundRequestService : RefundRequestRepository {
             }
 
             refundReq.status = request.status
-            refundReq.resolvedAt = LocalDateTime.now(java.time.ZoneOffset.UTC)
+            refundReq.resolvedAt = LocalDateTime.now(ZoneOffset.UTC)
 
             if (request.refundAmount != null) {
-                refundReq.refundAmount = java.math.BigDecimal.valueOf(request.refundAmount)
+                refundReq.refundAmount = BigDecimal.valueOf(request.refundAmount)
             }
             if (request.refundMethod != null) {
                 refundReq.refundMethod = request.refundMethod

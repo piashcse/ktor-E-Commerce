@@ -1,7 +1,7 @@
 package com.piashcse.model.request
 
 import kotlinx.serialization.Serializable
-import org.valiktor.functions.isGreaterThan
+import org.valiktor.functions.isGreaterThanOrEqualTo
 import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
@@ -14,7 +14,7 @@ data class CartRequest(
     init {
         validate(this) {
             validate(CartRequest::productId).isNotNull().isNotEmpty()
-            validate(CartRequest::quantity).isNotNull().isGreaterThan(0)
+            validate(CartRequest::quantity).isNotNull().isGreaterThanOrEqualTo(0)
         }
     }
 }

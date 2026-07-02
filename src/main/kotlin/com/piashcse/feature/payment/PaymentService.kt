@@ -3,11 +3,13 @@ package com.piashcse.feature.payment
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PaymentDAO
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.PaymentTable
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.validator.ValidationException
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
 import org.jetbrains.exposed.v1.core.SortOrder
@@ -46,12 +48,12 @@ class PaymentService : PaymentRepository {
             val existingPayments =
                 PaymentDAO.find {
                     (PaymentTable.orderId eq EntityID(paymentRequest.orderId, OrderTable)) and
-                        (PaymentTable.status eq com.piashcse.constants.PaymentStatus.COMPLETED)
+                        (PaymentTable.status eq PaymentStatus.COMPLETED)
                 }.toList()
 
             val paidAmount = existingPayments.sumOf { it.amount }
             if (paidAmount >= orderTotal) {
-                throw com.piashcse.utils.validator.ValidationException("Order already fully paid")
+                throw ValidationException("Order already fully paid")
             }
 
             // Create payment
@@ -67,7 +69,7 @@ class PaymentService : PaymentRepository {
 
             // Update order payment status if fully paid
             if (paidAmount + paymentRequest.amount >= orderTotal) {
-                order.paymentStatus = com.piashcse.constants.PaymentStatus.COMPLETED
+                order.paymentStatus = PaymentStatus.COMPLETED
             }
 
             payment.response()

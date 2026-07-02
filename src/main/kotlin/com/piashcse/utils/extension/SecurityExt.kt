@@ -1,7 +1,10 @@
 package com.piashcse.utils.extension
 
+import com.piashcse.database.entities.SellerDAO
+import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.utils.validator.ForbiddenException
+import org.jetbrains.exposed.v1.core.eq
 
 /**
  * Verifies that the resource is owned by the specified user ID.
@@ -13,3 +16,15 @@ fun <T : BaseEntity> T.verifyOwnership(expectedUserId: String, resourceName: Str
     }
     return this
 }
+
+/** Finds the seller record for a given user ID. */
+fun findSellerByUserId(userId: String): SellerDAO? =
+    SellerDAO.find { SellerTable.userId eq userId }.firstOrNull()
+
+/** Finds the seller record for a given user ID or throws ForbiddenException. */
+fun requireSellerByUserId(userId: String): SellerDAO =
+    findSellerByUserId(userId) ?: throw ForbiddenException("User is not registered as a seller")
+
+/** Checks if a seller owns a specific shop. */
+fun sellerOwnsShop(userId: String, shopId: String): Boolean =
+    findSellerByUserId(userId)?.shopId?.value == shopId

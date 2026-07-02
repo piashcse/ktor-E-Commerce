@@ -68,19 +68,37 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
         OrderResponse(
             orderId = id.value,
             orderNumber = orderNumber,
+            userId = userId.value,
+            shopId = shopId?.value,
             subTotal = subTotal.toFloat(),
             shippingCost = shippingCost.toFloat(),
+            taxAmount = taxAmount.toFloat(),
+            discountAmount = discountAmount.toFloat(),
             total = total.toFloat(),
+            currency = currency,
             status = status,
+            paymentStatus = paymentStatus,
+            couponCode = couponCode,
+            paymentMethod = paymentMethod,
+            notes = notes,
             shippingAddress = shippingAddress,
+            billingAddress = billingAddress,
             shippingMethod = shippingMethod,
+            shippingDate = shippingDate,
+            deliveredDate = deliveredDate,
+            canceledDate = canceledDate,
+            completedDate = completedDate,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
             items =
-                OrderItemDAO.find { OrderItemTable.orderId eq id }.map {
+                OrderItemDAO.find { OrderItemTable.orderId eq id }.limit(50).map {
                     OrderItemResponse(
                         productId = it.productId.value,
                         productName = it.productName,
                         quantity = it.quantity,
                         price = it.price.toFloat(),
+                        discountAmount = it.discountAmount.toFloat(),
+                        taxAmount = it.taxAmount.toFloat(),
                         total = it.total.toFloat(),
                         sku = it.sku,
                     )

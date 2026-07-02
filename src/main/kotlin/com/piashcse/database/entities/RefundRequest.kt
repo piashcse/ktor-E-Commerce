@@ -6,6 +6,7 @@ import com.piashcse.database.entities.base.BaseIdTable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 object RefundRequestTable : BaseIdTable("refund_request") {
@@ -18,7 +19,7 @@ object RefundRequestTable : BaseIdTable("refund_request") {
     val refundAmount = decimal("refund_amount", 10, 2).nullable()
     val refundMethod = varchar("refund_method", 50).nullable()
     val trackingNumber = varchar("tracking_number", 100).nullable()
-    val requestedAt = datetime("requested_at").clientDefault { LocalDateTime.now(java.time.ZoneOffset.UTC) }
+    val requestedAt = datetime("requested_at").clientDefault { LocalDateTime.now(ZoneOffset.UTC) }
     val resolvedAt = datetime("resolved_at").nullable()
     // createdAt and updatedAt are inherited from BaseIdTable
 }

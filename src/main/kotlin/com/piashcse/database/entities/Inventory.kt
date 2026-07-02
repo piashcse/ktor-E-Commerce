@@ -5,8 +5,64 @@ import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.InventoryResponse
+import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
+import java.math.BigDecimal
+import java.math.RoundingMode
+
+/** Finds the inventory record for a product in its shop, with optional for-update locking. */
+fun ProductDAO.findInventory(forUpdate: Boolean = false): InventoryDAO? {
+    val productId = this.id
+    val shopIdValue = this.shopId?.value ?: return null
+    val query = InventoryDAO.find {
+        (InventoryTable.productId eq productId) and (InventoryTable.shopId eq EntityID(shopIdValue, ShopTable))
+    }
+    return (if (forUpdate) query.forUpdate() else query).firstOrNull()
+}
+
+/** Returns effective stock: inventory stock if exists, otherwise product stock. */
+fun ProductDAO.effectiveStock(): Int = findInventory()?.stockQuantity ?: stockQuantity
+
+/** Decrements effective stock (inventory if exists, else product) and updates inventory status. */
+fun ProductDAO.decrementStock(quantity: Int) {
+    val inv = findInventory(forUpdate = true)
+    if (inv != null) {
+        val newStock = (inv.stockQuantity - quantity).coerceAtLeast(0)
+        inv.stockQuantity = newStock
+        inv.status = InventoryStatus.valueOf(
+            when {
+                newStock == 0 -> "OUT_OF_STOCK"
+                newStock <= inv.minimumStockLevel -> "LOW_STOCK"
+                else -> "IN_STOCK"
+            },
+        )
+    } else {
+        stockQuantity = (stockQuantity - quantity).coerceAtLeast(0)
+    }
+}
+
+/** Restores effective stock after cancellation. */
+fun ProductDAO.restoreStock(quantity: Int) {
+    val inv = findInventory(forUpdate = true)
+    if (inv != null) {
+        val newStock = inv.stockQuantity + quantity
+        inv.stockQuantity = newStock
+        inv.status = InventoryStatus.valueOf(
+            when {
+                newStock == 0 -> "OUT_OF_STOCK"
+                newStock <= inv.minimumStockLevel -> "LOW_STOCK"
+                else -> "IN_STOCK"
+            },
+        )
+    } else {
+        stockQuantity = stockQuantity + quantity
+    }
+}
+
+/** Calculates commission for an order subtotal. */
+fun SellerDAO.calcCommission(orderSubTotal: BigDecimal): BigDecimal =
+    orderSubTotal.multiply(commissionRate).divide(BigDecimal("100"), 2, RoundingMode.HALF_UP)
 
 object InventoryTable : BaseIdTable("inventory") {
     val productId = reference("product_id", ProductTable.id)
@@ -18,6 +74,10 @@ object InventoryTable : BaseIdTable("inventory") {
     val status = enumerationByName<InventoryStatus>("status", 50).default(InventoryStatus.IN_STOCK)
     val lastRestocked = datetime("last_restocked").nullable()
     // createdAt and updatedAt are inherited from BaseIdTable, so we don't need to redeclare them
+
+    init {
+        uniqueIndex("inventory_product_shop_idx", productId, shopId)
+    }
 }
 
 class InventoryDAO(id: EntityID<String>) : BaseEntity(id, InventoryTable) {

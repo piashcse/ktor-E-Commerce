@@ -40,14 +40,16 @@ fun Route.cartRoutes(cartService: CartService) {
 
         /**
          * @tag Cart
-         * @description Update the quantity of an item in the cart
+         * @description Set the absolute quantity of an item in the cart (0 removes the item)
          */
         put("update") {
             val requestBody = call.receive<CartRequest>()
-            call.respond(
-                HttpStatusCode.OK,
-                cartService.updateCartQuantity(call.currentUserId, requestBody.productId, requestBody.quantity),
-            )
+            val result = cartService.updateCartQuantity(call.currentUserId, requestBody.productId, requestBody.quantity)
+            if (result != null) {
+                call.respond(HttpStatusCode.OK, result)
+            } else {
+                call.respond(HttpStatusCode.OK, mapOf("message" to "Item removed from cart"))
+            }
         }
 
         /**

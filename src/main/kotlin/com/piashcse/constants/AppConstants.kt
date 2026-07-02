@@ -8,12 +8,10 @@ package com.piashcse.constants
  */
 object AppConstants {
     const val APP_VERSION = "1.0.0"
-    const val DEFAULT_TAX_PERCENTAGE = 0.05 // 5% TAX
+    const val DEFAULT_TAX_PERCENTAGE = 0.05
 
-    object DataBaseTransaction {
-        const val FOUND = 1
-        const val NOT_FOUND = 2
-    }
+    const val BCRYPT_COST = 12
+    const val OTP_EXPIRY_MINUTES = 10L
 
     object SmtpServer {
         const val EMAIL_SUBJECT = "Forget Password"

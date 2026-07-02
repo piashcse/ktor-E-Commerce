@@ -1,6 +1,7 @@
 package com.piashcse.feature.auth
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
@@ -59,18 +60,16 @@ class AuthService : AuthRepository {
 
     // ── Data helpers ──────────────────────────────────────────────────────
 
+    private fun loginAttemptPredicate(email: String, userType: UserType) =
+        (LoginAttemptTable.email eq email) and (LoginAttemptTable.userType eq userType.name)
+
     private suspend fun getRefreshTokenByHash(tokenHash: String): RefreshTokenDAO? = query {
         RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.singleOrNull()
     }
 
     private suspend fun revokeRefreshToken(tokenHash: String): Boolean = query {
-        val token = RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.singleOrNull()
-        if (token != null) {
-            token.revokedAt = Instant.now()
-            true
-        } else {
-            false
-        }
+        RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.singleOrNull()
+            ?.let { it.revokedAt = Instant.now(); true } ?: false
     }
 
     private suspend fun revokeAllUserTokens(userId: String): Boolean = query {
@@ -80,8 +79,7 @@ class AuthService : AuthRepository {
     }
 
     private suspend fun recordFailedAttempt(email: String, userType: UserType, ipAddress: String?): Int = query {
-        val predicate = (LoginAttemptTable.email eq email) and (LoginAttemptTable.userType eq userType.name)
-        val existing = LoginAttemptDAO.find { predicate }.singleOrNull()
+        val existing = LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()
         if (existing != null) {
             existing.attemptCount++
             existing.ipAddress = ipAddress
@@ -97,28 +95,19 @@ class AuthService : AuthRepository {
         }
     }
 
-    private suspend fun resetLoginAttempts(email: String, userType: UserType): Boolean = query {
-        val predicate = (LoginAttemptTable.email eq email) and (LoginAttemptTable.userType eq userType.name)
-        LoginAttemptDAO.find { predicate }.singleOrNull()?.apply {
-            attemptCount = 0
-            lockedUntil = null
-            ipAddress = null
+    private suspend fun resetLoginAttempts(email: String, userType: UserType) = query {
+        LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()?.apply {
+            attemptCount = 0; lockedUntil = null; ipAddress = null
         }
-        true
     }
 
     private suspend fun getLoginAttempt(email: String, userType: UserType): LoginAttemptDAO? = query {
-        val predicate = (LoginAttemptTable.email eq email) and (LoginAttemptTable.userType eq userType.name)
-        LoginAttemptDAO.find { predicate }.singleOrNull()
+        LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()
     }
 
     private suspend fun lockAccount(email: String, userType: UserType, lockDurationMinutes: Long): Boolean = query {
-        val predicate = (LoginAttemptTable.email eq email) and (LoginAttemptTable.userType eq userType.name)
-        LoginAttemptDAO.find { predicate }.singleOrNull()?.apply {
-            lockedUntil =
-                LocalDateTime.now(ZoneOffset.UTC).plusMinutes(lockDurationMinutes)
-                    .atZone(ZoneOffset.UTC).toInstant()
-        } != null
+        LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()
+            ?.apply { lockedUntil = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(lockDurationMinutes).atZone(ZoneOffset.UTC).toInstant() } != null
     }
 
     // ── Registration ──────────────────────────────────────────────────────
@@ -134,7 +123,7 @@ class AuthService : AuthRepository {
                 .firstOrNull()
 
         val otp = generateOTP()
-        val otpExpiryTime = LocalDateTime.now().plusMinutes(10)
+        val otpExpiryTime = LocalDateTime.now().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
 
         if (existingUser != null) {
             if (existingUser.isVerified) throw ValidationException(Message.Auth.USER_EXISTS)
@@ -150,7 +139,7 @@ class AuthService : AuthRepository {
                 email = registerRequest.email
                 otpCode = otp
                 otpExpiry = otpExpiryTime
-                password = BCrypt.withDefaults().hashToString(12, registerRequest.password.toCharArray())
+                password = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, registerRequest.password.toCharArray())
                 userType = userTypeEnum
             }
             UserProfileDAO.new { userId = inserted.id }
@@ -241,50 +230,43 @@ class AuthService : AuthRepository {
         val userEntity = UserDAO.findById(userId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
         if (!BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), userEntity.password).verified) return@query false
         if (changePassword.oldPassword == changePassword.newPassword) throw ValidationException(Message.Auth.PASSWORD_SAME)
-        userEntity.password = BCrypt.withDefaults().hashToString(12, changePassword.newPassword.toCharArray())
+        userEntity.password = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, changePassword.newPassword.toCharArray())
         true
     }
 
     // ── Forgot / Reset Password ──────────────────────────────────────────
 
+    private fun findResetUserByEmail(email: String, userTypeStr: String): UserDAO {
+        val entities = UserDAO.find { UserTable.email eq email }.toList()
+        if (entities.isEmpty()) email.throwNotFound("User")
+        val type = runCatching { UserType.valueOf(userTypeStr.uppercase()) }
+            .getOrElse { throw NotFoundException(Message.Auth.userNotFoundForRole(email, userTypeStr)) }
+        return entities.find { it.userType == type }
+            ?: throw NotFoundException(Message.Auth.userNotFoundForRole(email, userTypeStr))
+    }
+
     override suspend fun forgetPassword(forgetPasswordRequest: ForgetPasswordRequest): String = query {
-        val userEntities = UserDAO.find { UserTable.email eq forgetPasswordRequest.email }.toList()
-        if (userEntities.isEmpty()) forgetPasswordRequest.email.throwNotFound("User")
-
-        val userTypeEnum = runCatching { UserType.valueOf(forgetPasswordRequest.userType.uppercase()) }
-            .getOrElse { forgetPasswordRequest.email.throwNotFound("User") }
-
-        val specificUser = userEntities.find { it.userType == userTypeEnum }
-            ?: throw NotFoundException(Message.Auth.userNotFoundForRole(forgetPasswordRequest.email, forgetPasswordRequest.userType))
-
+        val user = findResetUserByEmail(forgetPasswordRequest.email, forgetPasswordRequest.userType)
         val otp = generateOTP()
-        specificUser.resetOtpCode = otp
-        specificUser.resetOtpExpiry = LocalDateTime.now().plusMinutes(10)
-        EmailSender.sendOtp(specificUser.email, otp, "Password Reset")
+        user.resetOtpCode = otp
+        user.resetOtpExpiry = LocalDateTime.now().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
+        EmailSender.sendOtp(user.email, otp, "Password Reset")
         otp
     }
 
     override suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult = query {
-        val userEntities = UserDAO.find { UserTable.email eq resetPasswordRequest.email }.toList()
-        if (userEntities.isEmpty()) resetPasswordRequest.email.throwNotFound("User")
+        val user = findResetUserByEmail(resetPasswordRequest.email, resetPasswordRequest.userType)
 
-        val userTypeEnum = runCatching { UserType.valueOf(resetPasswordRequest.userType.uppercase()) }
-            .getOrElse { throw NotFoundException(Message.Auth.userNotFoundForRole(resetPasswordRequest.email, resetPasswordRequest.userType)) }
-
-        val userEntity = userEntities.find { it.userType == userTypeEnum }
-            ?: throw NotFoundException(Message.Auth.userNotFoundForRole(resetPasswordRequest.email, resetPasswordRequest.userType))
-
-        if (userEntity.resetOtpExpiry == null || userEntity.resetOtpExpiry!!.isBefore(LocalDateTime.now())) {
+        if (user.resetOtpExpiry == null || user.resetOtpExpiry!!.isBefore(LocalDateTime.now()))
             return@query ResetResult.InvalidOrExpiredOtp
-        }
 
-        if (userEntity.resetOtpCode != resetPasswordRequest.verificationCode) return@query ResetResult.InvalidOrExpiredOtp
+        if (user.resetOtpCode != resetPasswordRequest.verificationCode) return@query ResetResult.InvalidOrExpiredOtp
 
         requireValidPassword(resetPasswordRequest.newPassword)
-        if (BCrypt.verifyer().verify(resetPasswordRequest.newPassword.toCharArray(), userEntity.password).verified) {
+        if (BCrypt.verifyer().verify(resetPasswordRequest.newPassword.toCharArray(), user.password).verified)
             throw ValidationException(Message.Auth.PASSWORD_SAME)
-        }
-        userEntity.password = BCrypt.withDefaults().hashToString(12, resetPasswordRequest.newPassword.toCharArray())
+
+        user.password = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, resetPasswordRequest.newPassword.toCharArray())
         ResetResult.Success
     }
 

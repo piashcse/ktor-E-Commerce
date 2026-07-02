@@ -5,6 +5,7 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.dao.id.IdTable
 import org.jetbrains.exposed.v1.dao.*
 import org.jetbrains.exposed.v1.javatime.datetime
+import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
@@ -22,13 +23,15 @@ abstract class BaseEntity(id: EntityID<String>, table: BaseIdTable) : Entity<Str
 }
 
 abstract class BaseEntityClass<E : BaseEntity>(table: BaseIdTable, entityType: Class<E>) : EntityClass<String, E>(table, entityType) {
+    private val log = LoggerFactory.getLogger(BaseEntityClass::class.java)
+
     init {
         EntityHook.subscribe { action ->
             if (action.changeType == EntityChangeType.Updated) {
                 try {
                     action.toEntity(this)?.updatedAt = currentUtc()
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    log.error("Failed to update updatedAt timestamp", e)
                 }
             }
         }

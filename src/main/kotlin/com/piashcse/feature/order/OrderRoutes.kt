@@ -8,6 +8,7 @@ import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.getCurrentUserType
 import com.piashcse.utils.extension.paginateQueryParams
+import java.time.Instant
 import com.piashcse.utils.validator.InvalidEnumValueException
 import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.http.*
@@ -148,11 +149,11 @@ fun Route.orderAdminRoutes(orderService: OrderService) {
         val status = call.request.queryParameters["status"]
         val startDate =
             call.request.queryParameters["startDate"]?.let {
-                runCatching { java.time.Instant.parse(it) }.getOrNull()
+                runCatching { Instant.parse(it) }.getOrNull()
             }
         val endDate =
             call.request.queryParameters["endDate"]?.let {
-                runCatching { java.time.Instant.parse(it) }.getOrNull()
+                runCatching { Instant.parse(it) }.getOrNull()
             }
 
         call.respond(HttpStatusCode.OK, orderService.getAdminOrders(limit, offset, status, startDate, endDate))

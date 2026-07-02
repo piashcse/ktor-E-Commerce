@@ -1,6 +1,8 @@
 package com.piashcse.model.response
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Contextual
+import kotlinx.datetime.LocalDate
 
 @Serializable
 data class UserProfileResponse(
@@ -12,9 +14,15 @@ data class UserProfileResponse(
     val faxNumber: String?,
     val streetAddress: String?,
     val city: String?,
+    val state: String? = null,
+    val country: String? = null,
     val identificationType: String?,
     val identificationNo: String?,
     val occupation: String?,
     val postCode: String?,
     val gender: String?,
+    val dateOfBirth: @Contextual LocalDate? = null,
+    val bio: String? = null,
+    val isActive: Boolean = true,
+    val verified: Boolean = false,
 )
