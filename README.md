@@ -435,7 +435,7 @@ http://localhost:8080/api/v1/auth/login
     },
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "refreshToken": "764b8a1c-9d6e-4c7b-8e1f-4a3b2c1d0e9f",
-    "expiresIn": 86400,
+    "expiresIn": 900,
     "tokenType": "Bearer"
   },
   "message": "Login successful"
@@ -601,7 +601,7 @@ http://localhost:8080/api/v1/auth/refresh-token
   "data": {
     "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "refreshToken": "8f2a3b4c-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
-    "expiresIn": 86400
+    "expiresIn": 900
   },
   "message": "Token refreshed successfully"
 }
@@ -1001,14 +1001,10 @@ http://localhost:8080/api/v1/shops/{id}
 {
   "data": {
     "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-    "userId": "user-uuid",
-    "shopName": "Tech Hub",
-    "shopDescription": "Best electronics shop",
-    "shopImage": "http://localhost:8080/uploads/shop/shop.jpg",
-    "shopCategory": {
-      "id": "cat-uuid",
-      "name": "Electronics"
-    },
+    "name": "Tech Hub",
+    "description": "Best electronics shop",
+    "logo": "http://localhost:8080/uploads/shop/shop.jpg",
+    "categoryId": "cat-uuid",
     "status": "APPROVED"
   },
   "message": "Shop details retrieved"
@@ -1041,7 +1037,7 @@ http://localhost:8080/api/v1/shops/public?status={status}&category={category}&li
     "data": [
       {
         "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-        "shopName": "Tech Hub",
+        "name": "Tech Hub",
         "status": "APPROVED"
       }
     ],
@@ -1081,7 +1077,7 @@ http://localhost:8080/api/v1/shops/category/{categoryId}?limit={limit}&offset={o
     "data": [
       {
         "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-        "shopName": "Tech Hub"
+        "name": "Tech Hub"
       }
     ],
     "metadata": {
@@ -1120,7 +1116,7 @@ http://localhost:8080/api/v1/shops/featured?limit={limit}&offset={offset}
     "data": [
       {
         "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-        "shopName": "Featured Shop"
+        "name": "Featured Shop"
       }
     ],
     "metadata": {
@@ -1148,8 +1144,8 @@ curl -X 'POST' \
   -H 'Authorization: Bearer <seller-token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "shopName": "My New Shop",
-  "shopDescription": "Selling amazing gadgets",
+  "name": "My New Shop",
+  "description": "Selling amazing gadgets",
   "categoryId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0"
 }'
 ```
@@ -1164,7 +1160,7 @@ http://localhost:8080/api/v1/seller/shops
 {
   "data": {
     "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-    "shopName": "My New Shop",
+    "name": "My New Shop",
     "status": "PENDING"
   },
   "message": "Shop created successfully and pending approval"
@@ -1198,7 +1194,7 @@ http://localhost:8080/api/v1/seller/shops?limit={limit}&offset={offset}
     "data": [
       {
         "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-        "shopName": "My New Shop"
+        "name": "My New Shop"
       }
     ],
     "metadata": {
@@ -1226,8 +1222,8 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer <seller-token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "shopName": "Updated Shop Name",
-  "shopDescription": "New description"
+  "name": "Updated Shop Name",
+  "description": "New description"
 }'
 ```
 
@@ -1241,7 +1237,7 @@ http://localhost:8080/api/v1/seller/shops/{id}
 {
   "data": {
     "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-    "shopName": "Updated Shop Name"
+    "name": "Updated Shop Name"
   },
   "message": "Shop updated successfully"
 }
@@ -1262,7 +1258,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer <seller-token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "shopName": "V2 Updated Name"
+  "name": "V2 Updated Name"
 }'
 ```
 
@@ -1277,7 +1273,7 @@ http://localhost:8080/api/v2/seller/shops/{shopId}?source={source}
   "data": {
     "v2_data": {
       "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-      "shopName": "V2 Updated Name"
+      "name": "V2 Updated Name"
     },
     "source": "mobile"
   },
@@ -1312,7 +1308,7 @@ http://localhost:8080/api/v1/admin/shops/status?status={status}&limit={limit}&of
     "data": [
       {
         "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-        "shopName": "Pending Shop"
+        "name": "Pending Shop"
       }
     ],
     "metadata": {
@@ -1908,7 +1904,7 @@ http://localhost:8080/api/v1/products?maxPrice={maxPrice}&minPrice={minPrice}&ca
       {
         "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
         "name": "Galaxy S24",
-        "productPrice": 999.99
+        "price": 999.99
       }
     ],
     "metadata": {
@@ -2059,7 +2055,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer <seller-token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "productPrice": 189.99
+  "price": 189.99
 }'
 ```
 
@@ -2195,7 +2191,7 @@ http://localhost:8080/api/v1/reviews?productId={productId}&limit={limit}&offset=
         "id": "review-uuid",
         "userId": "user-uuid",
         "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-        "review": "Excellent product!",
+        "reviewText": "Excellent product!",
         "rating": 5,
         "createdAt": "2024-05-06T12:00:00"
       }
@@ -2226,7 +2222,7 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-  "review": "Very good product",
+  "reviewText": "Very good product",
   "rating": 4
 }'
 ```
@@ -2241,7 +2237,7 @@ http://localhost:8080/api/v1/reviews
 {
   "data": {
     "id": "review-uuid",
-    "review": "Very good product",
+    "reviewText": "Very good product",
     "rating": 4
   },
   "message": "Review submitted successfully"
@@ -2273,7 +2269,7 @@ http://localhost:8080/api/v1/reviews/{id}?review={review}&rating={rating}
 {
   "data": {
     "id": "review-uuid",
-    "review": "Updated review",
+    "reviewText": "Updated review",
     "rating": 5
   },
   "message": "Review updated successfully"
@@ -2720,8 +2716,9 @@ http://localhost:8080/api/v1/checkout/shipping-address
   "data": [
     {
       "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-      "addressName": "Home",
-      "streetAddress": "123 Main St"
+      "firstName": "John",
+      "streetAddress": "123 Main St",
+      "isDefault": true
     }
   ],
   "message": "Shipping addresses retrieved"
@@ -2856,10 +2853,11 @@ http://localhost:8080/api/v1/checkout/summary
 {
   "data": {
     "subTotal": 1999.98,
-    "shipping": 15.00,
-    "tax": 99.99,
-    "discount": 200.00,
-    "total": 1914.97
+    "shippingCost": 15.00,
+    "taxAmount": 99.99,
+    "discountAmount": 200.00,
+    "total": 1914.97,
+    "itemCount": 2
   },
   "message": "Checkout summary generated"
 }
@@ -3296,9 +3294,11 @@ http://localhost:8080/api/v1/policies/{policyType}
 {
   "data": {
     "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-    "policyType": "PRIVACY_POLICY",
+    "title": "Privacy Policy",
+    "type": "PRIVACY_POLICY",
     "content": "Our privacy policy content...",
     "version": "1.0",
+    "effectiveDate": "2024-05-06T12:00:00",
     "isActive": true
   },
   "message": "Policy retrieved successfully"
@@ -3320,9 +3320,11 @@ curl -X 'POST' \
   -H 'Authorization: Bearer <admin-token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "policyType": "PRIVACY_POLICY",
+  "title": "Privacy Policy v2",
+  "type": "PRIVACY_POLICY",
   "content": "Updated privacy policy content...",
-  "version": "1.1"
+  "version": "1.1",
+  "effectiveDate": "2024-06-01T00:00:00"
 }'
 ```
 
@@ -3413,7 +3415,7 @@ http://localhost:8080/api/v1/policy-consents/consent
   "data": {
     "id": "consent-uuid",
     "policyId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-    "consentedAt": "2024-05-06T12:00:00"
+    "consentDate": "2024-05-06T12:00:00"
   },
   "message": "Consent recorded successfully"
 }
@@ -3445,8 +3447,9 @@ http://localhost:8080/api/v1/policy-consents
   "data": [
     {
       "id": "consent-uuid",
-      "policyType": "PRIVACY_POLICY",
-      "consentedAt": "2024-05-06T12:00:00"
+      "userId": "user-uuid",
+      "policyId": "PRIVACY_POLICY",
+      "consentDate": "2024-05-06T12:00:00"
     }
   ],
   "message": "User consents retrieved"
@@ -4022,8 +4025,8 @@ http://localhost:8080/api/v1/seller/inventories/product/{productId}
 {
   "data": {
     "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-    "quantity": 110,
-    "lowStockThreshold": 10
+    "stockQuantity": 110,
+    "minimumStockLevel": 10
   },
   "message": "Inventory details retrieved"
 }
@@ -4056,7 +4059,7 @@ http://localhost:8080/api/v1/seller/inventories/shop/{shopId}?limit={limit}&offs
     "data": [
       {
         "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-        "quantity": 110
+        "stockQuantity": 110
       }
     ],
     "metadata": {
@@ -4096,7 +4099,7 @@ http://localhost:8080/api/v1/seller/inventories/low-stock?limit={limit}&offset={
     "data": [
       {
         "productId": "low-stock-prod-uuid",
-        "quantity": 2
+        "stockQuantity": 2
       }
     ],
     "metadata": {

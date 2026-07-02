@@ -16,10 +16,9 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/api/v1/admin/profile` | Retrieve admin profile information | Yes (Admin) |
-| `GET` | `/profile` | Retrieve user profile information | Yes |
-| `PUT` | `/profile` | Update user profile information | Yes |
-| `POST` | `/profile/image-upload` | Upload user profile image | Yes |
+| `GET` | `/api/v1/profile` | Retrieve user profile information | Yes |
+| `PUT` | `/api/v1/profile` | Update user profile information | Yes |
+| `POST` | `/api/v1/profile/image-upload` | Upload user profile image | Yes |
 
 ---
 
@@ -27,7 +26,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Get User Profile
 
-**`GET /profile`**
+**`GET /api/v1/profile`**
 
 Retrieve the profile information for the authenticated user.
 
@@ -81,7 +80,7 @@ curl -X 'GET' \
 
 ### 2. Update User Profile
 
-**`PUT /profile`**
+**`PUT /api/v1/profile`**
 
 Update profile information for the authenticated user.
 
@@ -134,7 +133,7 @@ curl -X 'PUT' \
 
 ### 3. Upload Profile Image
 
-**`POST /profile/image-upload`**
+**`POST /api/v1/profile/image-upload`**
 
 Upload a profile image for the authenticated user. The image will be processed and stored with a unique filename.
 

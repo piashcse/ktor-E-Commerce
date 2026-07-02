@@ -17,7 +17,7 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `POST` | `/api/v1/admin/product-subcategories` | Create a new product sub category | Yes (Admin) |
-| `GET` | `/product-subcategory` | Retrieve list of product sub categories | Yes |
+| `GET` | `/api/v1/product-subcategories` | Retrieve list of product sub categories | Yes |
 | `PUT` | `/api/v1/admin/product-subcategories/{id}` | Update an existing product sub category | Yes (Admin) |
 | `DELETE` | `/api/v1/admin/product-subcategories/{id}` | Delete a product sub category | Yes (Admin) |
 
@@ -82,7 +82,7 @@ curl -X 'POST' \
 
 ### 2. Get Product Sub Categories
 
-**`GET /product-subcategory`**
+**`GET /api/v1/product-subcategories`**
 
 Retrieve a list of product sub categories with optional filtering and pagination support.
 

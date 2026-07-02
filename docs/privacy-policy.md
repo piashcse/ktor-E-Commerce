@@ -16,7 +16,7 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/policy/{type}` | Retrieve latest active policy by type | No |
+| `GET` | `/api/v1/policies/{policyType}` | Retrieve latest active policy by type | No |
 | `POST` | `/api/v1/admin/policies` | Create a new policy or version | Yes (Admin) |
 | `GET` | `/api/v1/admin/policies/{type}/history` | Retrieve all versions of a policy type | Yes (Admin) |
 
@@ -26,7 +26,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Get All Policies
 
-**`GET /policy/{type}`**
+**`GET /api/v1/policies/{policyType}`**
 
 Retrieve a list of all policies including Privacy Policies and Terms & Conditions.
 
@@ -93,7 +93,7 @@ curl -X 'GET' \
 
 ### 2. Get Policy by Type
 
-**`GET /policy/{type}`**
+**`GET /api/v1/policies/{policyType}`**
 
 Retrieve a specific policy by its type (PRIVACY_POLICY or TERMS_CONDITIONS).
 
@@ -150,54 +150,7 @@ curl -X 'GET' \
 
 ---
 
-### 3. Get Policy by ID
 
-**`GET /policy/detail/{id}`**
-
-Retrieve a specific policy by its unique identifier.
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the policy |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/policies/detail/550e8400-e29b-41d4-a716-446655440000' \
-  -H 'accept: application/json'
-```
-
-#### Example Response
-
-```json
-{
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "type": "PRIVACY_POLICY",
-    "title": "Privacy Policy",
-    "content": "This is our privacy policy...",
-    "version": "1.0",
-    "effectiveDate": "2023-01-01T00:00:00Z",
-    "isActive": true,
-    "createdAt": "2023-01-01T00:00:00Z",
-    "updatedAt": "2023-01-01T00:00:00Z"
-  }
-}
-```
-
-#### Response Fields
-
-Same as "Get Policy by Type" response fields.
-
----
 
 ### 4. Create Policy
 
@@ -269,91 +222,19 @@ curl -X 'POST' \
 
 ---
 
-### 5. Update Policy
 
-**`PUT /policy/{id}`**
 
-Update an existing policy by its ID. You can modify the title, content, version, and effective date.
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the policy to update |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-| `Authorization` | `Bearer <access_token>` | Yes |
-| `Content-Type` | `application/json` | Yes |
-
-#### Request Body
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `title` | string | No | New title for the policy |
-| `content` | string | No | New content for the policy |
-| `version` | string | No | New version number |
-| `effectiveDate` | string | No | New effective date in ISO 8601 format |
-
-#### Example Request
-
-```bash
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/policies/550e8400-e29b-41d4-a716-446655440003' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "title": "Updated Privacy Policy v2",
-  "content": "This is our further updated privacy policy...",
-  "version": "1.2",
-  "effectiveDate": "2023-07-01T00:00:00Z"
-}'
-```
-
-#### Example Response
-
-```json
-{
-    "id": "550e8400-e29b-41d4-a716-446655440003",
-    "type": "PRIVACY_POLICY",
-    "title": "Updated Privacy Policy v2",
-    "content": "This is our further updated privacy policy...",
-    "version": "1.2",
-    "effectiveDate": "2023-07-01T00:00:00Z",
-    "isActive": true
-  }
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data.id` | string | Unique identifier of the updated policy |
-| `data.type` | string | Policy type (unchanged) |
-| `data.title` | string | Updated title of the policy |
-| `data.content` | string | Updated content of the policy |
-| `data.version` | string | Updated version number |
-| `data.effectiveDate` | string | Updated effective date |
-| `data.isActive` | boolean | Whether the policy is currently active |
-
----
-
-### 6. Deactivate Policy
+### 6. Get Policy History
 
 **`GET /api/v1/admin/policies/{type}/history`**
 
-Deactivate a policy by its ID. This sets the policy's isActive flag to false without deleting it.
+Get policy version history
 
 #### Path Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the policy to deactivate |
+| `type` | string | Yes | Policy type (PRIVACY_POLICY or TERMS_CONDITIONS) |
 
 #### Headers
 
@@ -365,7 +246,7 @@ Deactivate a policy by its ID. This sets the policy's isActive flag to false wit
 #### Example Request
 
 ```bash
-curl -X 'POST' \
+curl -X 'GET' \
   'http://localhost:8080/api/v1/admin/policies/PRIVACY_POLICY/history' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
@@ -406,13 +287,13 @@ curl -X 'POST' \
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/policy-consents/consent` | Create a new policy consent record | Yes |
+| `POST` | `/api/v1/policy-consents/consent` | Create a new policy consent record | Yes |
 
 ---
 
 ### 7. Create Policy Consent
 
-**`POST /policy-consents/consent`**
+**`POST /api/v1/policy-consents/consent`**
 
 Create a new consent record when a user agrees to a privacy policy. This endpoint captures the policy ID and user information for audit purposes.
 

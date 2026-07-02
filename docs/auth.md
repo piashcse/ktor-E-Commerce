@@ -8,14 +8,14 @@ This documentation provides comprehensive details for the Authentication API end
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/auth/login` | Authenticate user and receive access + refresh tokens | No |
-| `POST` | `/auth/register` | Register a new user account | No |
-| `GET` | `/auth/otp-verification` | Verify OTP for account activation | No |
-| `POST` | `/auth/forget-password` | Request password reset verification code | No |
-| `POST` | `/auth/reset-password` | Reset password using verification code | No |
-| `POST` | `/auth/refresh-token` | Refresh access token using refresh token | No |
-| `POST` | `/auth/logout` | Logout and revoke refresh token | Yes |
-| `PUT` | `/auth/change-password` | Change password for authenticated user | Yes |
+| `POST` | `/api/v1/auth/login` | Authenticate user and receive access + refresh tokens | No |
+| `POST` | `/api/v1/auth/register` | Register a new user account | No |
+| `GET` | `/api/v1/auth/otp-verification` | Verify OTP for account activation | No |
+| `POST` | `/api/v1/auth/forget-password` | Request password reset verification code | No |
+| `POST` | `/api/v1/auth/reset-password` | Reset password using verification code | No |
+| `POST` | `/api/v1/auth/refresh-token` | Refresh access token using refresh token | No |
+| `POST` | `/api/v1/auth/logout` | Logout and revoke refresh token | Yes |
+| `PUT` | `/api/v1/auth/change-password` | Change password for authenticated user | Yes |
 | `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin/Super Admin) |
 | `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin/Super Admin) |
 | `PUT` | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin/Super Admin) |
@@ -26,7 +26,7 @@ This documentation provides comprehensive details for the Authentication API end
 
 ### 1. User Login
 
-**`POST /auth/login`**
+**`POST /api/v1/auth/login`**
 
 Authenticate a user and receive access + refresh tokens for subsequent API calls.
 
@@ -91,7 +91,7 @@ curl -X 'POST' \
 
 ### 2. User Registration
 
-**`POST /auth/register`**
+**`POST /api/v1/auth/register`**
 
 Register a new user account. Users can register with the same email for different roles.
 
@@ -140,7 +140,7 @@ curl -X 'POST' \
 
 ### 3. OTP Verification
 
-**`GET /auth/otp-verification`**
+**`GET /api/v1/auth/otp-verification`**
 
 Verify the OTP (One-Time Password) sent to user's email during registration.
 
@@ -171,7 +171,7 @@ true
 
 ### 4. Forget Password
 
-**`POST /auth/forget-password`**
+**`POST /api/v1/auth/forget-password`**
 
 Request a password reset verification code. The code will be sent to the user's email address.
 
@@ -211,7 +211,7 @@ curl -X 'POST' \
 
 ### 5. Reset Password
 
-**`POST /auth/reset-password`**
+**`POST /api/v1/auth/reset-password`**
 
 Reset user password using the verification code sent via email.
 
@@ -255,7 +255,7 @@ curl -X 'POST' \
 
 ### 6. Refresh Token
 
-**`POST /auth/refresh-token`**
+**`POST /api/v1/auth/refresh-token`**
 
 Refresh an expired access token using a valid refresh token. Returns a new access token and refresh token pair.
 
@@ -302,7 +302,7 @@ curl -X 'POST' \
 
 ### 7. Logout
 
-**`POST /auth/logout`**
+**`POST /api/v1/auth/logout`**
 
 Logout the authenticated user and revoke the refresh token to prevent further token refreshes.
 
@@ -346,7 +346,7 @@ curl -X 'POST' \
 
 ### 8. Change Password
 
-**`PUT /auth/change-password`**
+**`PUT /api/v1/auth/change-password`**
 
 Change password for an authenticated user. Requires valid access token.
 
