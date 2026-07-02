@@ -1,6 +1,6 @@
 package com.piashcse.model.request
 
-import com.piashcse.database.entities.PolicyDocumentTable
+import com.piashcse.constants.PolicyType
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
@@ -12,7 +12,7 @@ import org.valiktor.validate
 @Serializable
 data class CreatePolicyRequest(
     val title: String,
-    val type: PolicyDocumentTable.PolicyType,
+    val type: PolicyType,
     val content: String,
     val version: String,
     val effectiveDate: String,

@@ -26,21 +26,17 @@ fun Application.configureStaticContent() {
     val uploadBaseDir = System.getenv("UPLOAD_DIR") ?: "uploads"
     val uploadDir = File(uploadBaseDir).canonicalFile
 
-    // Ensure the upload directory exists
     if (!uploadDir.exists()) {
         uploadDir.mkdirs()
     }
 
     routing {
-        // Serve uploaded files from upload directory
-        // Static file serving is not auto-documented by OpenAPI
         @OptIn(ExperimentalKtorApi::class)
         staticFiles("/uploads", uploadDir) {
-            // Enable caching for better performance
             cacheControl { _ ->
                 listOf(
                     CacheControl.MaxAge(
-                        maxAgeSeconds = 3600, // 1 hour
+                        maxAgeSeconds = CacheMaxAge.ONE_HOUR,
                         visibility = CacheControl.Visibility.Public,
                         mustRevalidate = true,
                     ),
@@ -48,4 +44,8 @@ fun Application.configureStaticContent() {
             }
         }.hide()
     }
+}
+
+private object CacheMaxAge {
+    const val ONE_HOUR = 3600
 }

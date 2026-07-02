@@ -1,6 +1,7 @@
 package com.piashcse.database.entities
 
 import com.piashcse.constants.OrderStatus
+import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
@@ -24,7 +25,7 @@ object OrderTable : BaseIdTable("order") {
     val couponCode = varchar("coupon_code", 50).nullable()
     val total = decimal("total", 10, 2)
     val currency = varchar("currency", 3).default("USD") // Currency of the order
-    val paymentMethod = varchar("payment_method", 50).nullable() // Method used for payment
+    val paymentMethod = enumerationByName("payment_method", 50, PaymentMethod::class).nullable()
     val paymentStatus = enumerationByName<PaymentStatus>("payment_status", 30).default(PaymentStatus.PENDING)
     val status = enumerationByName<OrderStatus>("status", 30).default(OrderStatus.PENDING)
     val notes = text("notes").nullable() // Additional notes from customer
@@ -64,26 +65,32 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
     var canceledDate by OrderTable.canceledDate
     var completedDate by OrderTable.completedDate
 
-    fun response() =
+    fun response(items: List<OrderItemResponse>? = null) =
         OrderResponse(
             orderId = id.value,
             orderNumber = orderNumber,
+            userId = userId.value,
+            shopId = shopId?.value,
             subTotal = subTotal.toFloat(),
             shippingCost = shippingCost.toFloat(),
+            taxAmount = taxAmount.toFloat(),
+            discountAmount = discountAmount.toFloat(),
             total = total.toFloat(),
+            currency = currency,
             status = status,
+            paymentStatus = paymentStatus,
+            couponCode = couponCode,
+            paymentMethod = paymentMethod,
+            notes = notes,
             shippingAddress = shippingAddress,
+            billingAddress = billingAddress,
             shippingMethod = shippingMethod,
-            items =
-                OrderItemDAO.find { OrderItemTable.orderId eq id }.map {
-                    OrderItemResponse(
-                        productId = it.productId.value,
-                        productName = it.productName,
-                        quantity = it.quantity,
-                        price = it.price.toFloat(),
-                        total = it.total.toFloat(),
-                        sku = it.sku,
-                    )
-                },
+            shippingDate = shippingDate,
+            deliveredDate = deliveredDate,
+            canceledDate = canceledDate,
+            completedDate = completedDate,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            items = items ?: OrderItemDAO.itemsForOrder(id).map { it.toResponse() },
         )
 }

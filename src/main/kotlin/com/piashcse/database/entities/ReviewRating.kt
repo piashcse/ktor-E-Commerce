@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.ReviewStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
@@ -12,11 +13,11 @@ object ReviewRatingTable : BaseIdTable("review_rating") {
     val productId = reference("product_id", ProductTable.id)
     val reviewText = varchar("review_text", 500)
     val rating = integer("rating").check { it.between(1, 5) }
-    val title = varchar("title", 200).nullable() // Added review title
-    val isVerifiedPurchase = bool("is_verified_purchase").default(false) // Whether user actually purchased the product
-    val helpfulCount = integer("helpful_count").default(0) // Number of helpful votes
-    val notHelpfulCount = integer("not_helpful_count").default(0) // Number of not helpful votes
-    val status = varchar("status", 20).default("active") // Review status: active, hidden, flagged
+    val title = varchar("title", 200).nullable()
+    val isVerifiedPurchase = bool("is_verified_purchase").default(false)
+    val helpfulCount = integer("helpful_count").default(0)
+    val notHelpfulCount = integer("not_helpful_count").default(0)
+    val status = enumerationByName("status", 20, ReviewStatus::class).default(ReviewStatus.ACTIVE)
     // createdAt and updatedAt are inherited from BaseIdTable
 }
 

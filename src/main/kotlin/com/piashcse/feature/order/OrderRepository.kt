@@ -1,10 +1,13 @@
 package com.piashcse.feature.order
 
 import com.piashcse.constants.OrderStatus
+import com.piashcse.constants.UserType
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.OrderRequest
+import com.piashcse.model.response.CheckoutSummaryResponse
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.utils.common.PaginatedResponse
+import java.time.Instant
 
 interface OrderRepository {
     /**
@@ -29,7 +32,7 @@ interface OrderRepository {
     suspend fun getCheckoutSummary(
         userId: String,
         checkoutRequest: CheckoutRequest,
-    ): com.piashcse.model.response.CheckoutSummaryResponse
+    ): CheckoutSummaryResponse
 
     /**
      * Creates a new order for a user.
@@ -85,7 +88,7 @@ interface OrderRepository {
         orderId: String,
         userId: String,
         reason: String,
-        userType: com.piashcse.constants.UserType,
+        userType: UserType,
     ): OrderResponse
 
     /**
@@ -118,7 +121,7 @@ interface OrderRepository {
         limit: Int,
         offset: Int,
         status: String?,
-        startDate: java.time.Instant?,
-        endDate: java.time.Instant?,
+        startDate: Instant?,
+        endDate: Instant?,
     ): PaginatedResponse<OrderResponse>
 }

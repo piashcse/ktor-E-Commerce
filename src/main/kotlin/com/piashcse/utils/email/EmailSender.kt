@@ -9,10 +9,12 @@ import kotlinx.coroutines.launch
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.EmailException
 import org.apache.commons.mail.SimpleEmail
+import org.slf4j.LoggerFactory
 
 private val emailScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
 object EmailSender {
+    private val log = LoggerFactory.getLogger(EmailSender::class.java)
     private val smtpHost = DotEnvConfig.emailHost
     private val emailPort = DotEnvConfig.emailPort
     private val smtpUser = DotEnvConfig.emailUsername
@@ -22,7 +24,7 @@ object EmailSender {
     fun sendOtp(
         toEmail: String,
         otp: String,
-        subject: String = AppConstants.SmtpServer.EMAIL_SUBJECT,
+        subject: String = AppConstants.SmtpServer.OTP_SUBJECT,
     ) {
         emailScope.launch {
             try {
@@ -37,8 +39,9 @@ object EmailSender {
                     addTo(toEmail)
                     send()
                 }
+                log.info("OTP email sent successfully to $toEmail")
             } catch (e: EmailException) {
-                e.printStackTrace()
+                log.error("Failed to send OTP email to $toEmail: ${e.message}", e)
             }
         }
     }

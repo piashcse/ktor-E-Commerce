@@ -1,5 +1,6 @@
 package com.piashcse.model.request
 
+import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.isGreaterThan
@@ -12,7 +13,7 @@ data class PaymentRequest(
     val orderId: String,
     val amount: Long,
     val status: PaymentStatus,
-    val paymentMethod: String,
+    val paymentMethod: PaymentMethod,
     val transactionId: String?,
 ) {
     init {

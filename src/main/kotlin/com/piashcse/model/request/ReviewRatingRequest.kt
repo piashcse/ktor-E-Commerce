@@ -15,6 +15,7 @@ data class ReviewRatingRequest(
     init {
         validate(this) {
             validate(ReviewRatingRequest::productId).isNotNull().isNotEmpty()
+            validate(ReviewRatingRequest::reviewText).isNotNull().isNotEmpty()
             validate(ReviewRatingRequest::rating).isNotNull().isBetween(1, 5)
         }
     }

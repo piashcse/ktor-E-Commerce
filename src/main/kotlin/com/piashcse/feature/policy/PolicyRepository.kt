@@ -1,6 +1,6 @@
 package com.piashcse.feature.policy
 
-import com.piashcse.database.entities.PolicyDocumentTable
+import com.piashcse.constants.PolicyType
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.model.response.PolicyDocumentResponse
@@ -22,7 +22,7 @@ interface PolicyRepository {
     /**
      * Gets a policy document by type, returning the latest active version
      */
-    suspend fun getPolicyByType(type: PolicyDocumentTable.PolicyType): PolicyDocumentResponse
+    suspend fun getPolicyByType(type: PolicyType): PolicyDocumentResponse
 
     /**
      * Gets a policy document by ID
@@ -32,7 +32,7 @@ interface PolicyRepository {
     /**
      * Gets all policy documents, optionally filtered by type
      */
-    suspend fun getAllPolicies(type: PolicyDocumentTable.PolicyType? = null): List<PolicyDocumentResponse>
+    suspend fun getAllPolicies(type: PolicyType? = null): List<PolicyDocumentResponse>
 
     /**
      * Deactivates a policy document (doesn't delete, just marks as inactive)

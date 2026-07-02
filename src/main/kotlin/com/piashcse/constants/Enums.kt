@@ -2,6 +2,57 @@ package com.piashcse.constants
 
 import kotlinx.serialization.Serializable
 
+@Serializable
+enum class CouponDiscountType {
+    FIXED,
+    PERCENTAGE,
+}
+
+@Serializable
+enum class ReviewStatus {
+    ACTIVE,
+    HIDDEN,
+    FLAGGED,
+}
+
+@Serializable
+enum class RefundStatus {
+    PENDING,
+    APPROVED,
+    REJECTED,
+    REFUNDED,
+    SHIPPED,
+}
+
+@Serializable
+enum class RefundMethod {
+    ORIGINAL,
+    BANK_TRANSFER,
+}
+
+@Serializable
+enum class PaymentMethod {
+    CREDIT_CARD,
+    PAYPAL,
+    BANK_TRANSFER,
+    COD,
+}
+
+@Serializable
+enum class PolicyType {
+    PRIVACY_POLICY,
+    TERMS_CONDITIONS,
+    REFUND_POLICY,
+    COOKIE_POLICY,
+    DISCLAIMER,
+    EULA,
+    SHIPPING_POLICY,
+    ;
+
+    val isLegalPolicy get() = this in listOf(PRIVACY_POLICY, TERMS_CONDITIONS, DISCLAIMER, EULA)
+    val requiresConsent get() = this != SHIPPING_POLICY
+}
+
 /**
  * Status of orders throughout their lifecycle
  */
@@ -81,13 +132,21 @@ enum class ShopStatus {
  */
 @Serializable
 enum class InventoryStatus {
-    IN_STOCK, // Product is in stock
-    LOW_STOCK, // Product has low stock
-    OUT_OF_STOCK, // Product is out of stock
+    IN_STOCK,
+    LOW_STOCK,
+    OUT_OF_STOCK,
     ;
 
     val isAvailable get() = this == IN_STOCK
     val needsAttention get() = this in listOf(LOW_STOCK, OUT_OF_STOCK)
+
+    companion object {
+        fun fromStockLevel(stock: Int, minLevel: Int): InventoryStatus = when {
+            stock <= 0 -> OUT_OF_STOCK
+            stock <= minLevel -> LOW_STOCK
+            else -> IN_STOCK
+        }
+    }
 }
 
 /**

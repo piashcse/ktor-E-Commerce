@@ -65,7 +65,9 @@ fun Route.refundRequestRoutes(refundRequestService: RefundRequestService) {
          */
         get("{id}") {
             val id = call.requirePathParameter("id")
-            val refundRequest = refundRequestService.getRefundById(id)
+            val userId = call.currentUserId
+            val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
+            val refundRequest = refundRequestService.getRefundById(id, userId, userType)
             if (refundRequest != null) {
                 call.respond(HttpStatusCode.OK, refundRequest)
             } else {

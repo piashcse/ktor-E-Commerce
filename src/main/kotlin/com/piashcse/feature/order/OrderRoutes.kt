@@ -8,14 +8,29 @@ import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.getCurrentUserType
 import com.piashcse.utils.extension.paginateQueryParams
+import java.time.Instant
 import com.piashcse.utils.validator.InvalidEnumValueException
 import com.piashcse.utils.validator.UnauthorizedException
+import io.ktor.server.application.*
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+
+private fun ApplicationCall.parseOrderStatusParam(): OrderStatus {
+    val param = requireQueryParameter("status")
+    return try {
+        OrderStatus.valueOf(param.uppercase())
+    } catch (_: IllegalArgumentException) {
+        throw InvalidEnumValueException(
+            message = "Invalid order status: $param",
+            enumName = OrderStatus.values().joinToString(", ") { it.name },
+            invalidValue = param,
+        )
+    }
+}
 
 /**
  * Order-related routes for customers and sellers.
@@ -39,19 +54,8 @@ fun Route.orderRoutes(orderService: OrderService) {
          */
         patch("status/{id}") {
             val id = call.requirePathParameter("id")
-            val statusParam = call.requireQueryParameter("status")
+            val status = call.parseOrderStatusParam()
             val userId = call.currentUserId
-
-            val status =
-                try {
-                    OrderStatus.valueOf(statusParam.uppercase())
-                } catch (e: IllegalArgumentException) {
-                    throw InvalidEnumValueException(
-                        message = "Invalid order status: $statusParam",
-                        enumName = OrderStatus.values().joinToString(", ") { it.name },
-                        invalidValue = statusParam,
-                    )
-                }
 
             val isSeller = call.principal<JWTPrincipal>()?.payload?.getClaim("role")?.asString() == UserType.SELLER.name.lowercase()
             val isCustomer = call.principal<JWTPrincipal>()?.payload?.getClaim("role")?.asString() == UserType.CUSTOMER.name.lowercase()
@@ -109,20 +113,8 @@ fun Route.orderAdminRoutes(orderService: OrderService) {
      */
     patch("status/{id}") {
         val id = call.requirePathParameter("id")
-        val statusParam = call.requireQueryParameter("status")
+        val status = call.parseOrderStatusParam()
         val userId = call.currentUserId
-
-        val status =
-            try {
-                OrderStatus.valueOf(statusParam.uppercase())
-            } catch (e: IllegalArgumentException) {
-                throw InvalidEnumValueException(
-                    message = "Invalid order status: $statusParam",
-                    enumName = OrderStatus.values().joinToString(", ") { it.name },
-                    invalidValue = statusParam,
-                )
-            }
-
         call.respond(HttpStatusCode.OK, orderService.updateOrderStatus(userId, id, status))
     }
 
@@ -148,11 +140,11 @@ fun Route.orderAdminRoutes(orderService: OrderService) {
         val status = call.request.queryParameters["status"]
         val startDate =
             call.request.queryParameters["startDate"]?.let {
-                runCatching { java.time.Instant.parse(it) }.getOrNull()
+                runCatching { Instant.parse(it) }.getOrNull()
             }
         val endDate =
             call.request.queryParameters["endDate"]?.let {
-                runCatching { java.time.Instant.parse(it) }.getOrNull()
+                runCatching { Instant.parse(it) }.getOrNull()
             }
 
         call.respond(HttpStatusCode.OK, orderService.getAdminOrders(limit, offset, status, startDate, endDate))

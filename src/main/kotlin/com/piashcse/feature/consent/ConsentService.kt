@@ -1,6 +1,7 @@
 package com.piashcse.feature.consent
 
 import com.piashcse.constants.Message
+import com.piashcse.constants.PolicyType
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.model.response.UserPolicyConsentResponse
@@ -74,7 +75,7 @@ class ConsentService : ConsentRepository {
      */
     override suspend fun hasUserConsented(
         userId: String,
-        policyType: PolicyDocumentTable.PolicyType,
+        policyType: PolicyType,
     ): Boolean =
         query {
             val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")

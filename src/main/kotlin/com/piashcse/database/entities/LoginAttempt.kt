@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.UserType
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
@@ -9,7 +10,7 @@ import java.time.Instant
 
 object LoginAttemptTable : BaseIdTable("login_attempt") {
     val email = varchar("email", 255)
-    val userType = varchar("user_type", 20)
+    val userType = enumerationByName("user_type", 20, UserType::class)
     val ipAddress = varchar("ip_address", 45).nullable()
     val attemptCount = integer("attempt_count").default(0)
     val lockedUntil = timestamp("locked_until").nullable()

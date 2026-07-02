@@ -3,6 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import java.math.BigDecimal
 
@@ -21,7 +22,11 @@ object OrderItemTable : BaseIdTable("order_item") {
 }
 
 class OrderItemDAO(id: EntityID<String>) : BaseEntity(id, OrderItemTable) {
-    companion object : BaseEntityClass<OrderItemDAO>(OrderItemTable, OrderItemDAO::class.java)
+    companion object : BaseEntityClass<OrderItemDAO>(OrderItemTable, OrderItemDAO::class.java) {
+        fun itemsForOrder(orderId: EntityID<String>) = find { OrderItemTable.orderId eq orderId }.limit(50).toList()
+        fun itemsForOrders(orderIds: List<EntityID<String>>): Map<String, List<OrderItemDAO>> =
+            find { OrderItemTable.orderId inList orderIds }.groupBy { it.orderId.value }
+    }
 
     var orderId by OrderItemTable.orderId
     var productId by OrderItemTable.productId
@@ -33,4 +38,15 @@ class OrderItemDAO(id: EntityID<String>) : BaseEntity(id, OrderItemTable) {
     var total by OrderItemTable.total
     var sku by OrderItemTable.sku
     var productName by OrderItemTable.productName
+
+    fun toResponse() = com.piashcse.model.response.OrderItemResponse(
+        productId = productId.value,
+        productName = productName,
+        quantity = quantity,
+        price = price.toFloat(),
+        discountAmount = discountAmount.toFloat(),
+        taxAmount = taxAmount.toFloat(),
+        total = total.toFloat(),
+        sku = sku,
+    )
 }

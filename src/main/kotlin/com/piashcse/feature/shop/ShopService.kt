@@ -7,10 +7,7 @@ import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.model.response.ShopResponse
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.throwNotFound
-import com.piashcse.utils.extension.toPaginatedResponse
-import com.piashcse.utils.extension.verifyOwnership
+import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.NotFoundException
@@ -40,9 +37,8 @@ class ShopService : ShopRepository {
                     ?: userId.throwNotFound("User")
 
             // Verify that the user is a seller by checking for a corresponding seller record
-            val seller =
-                SellerDAO.find { SellerTable.userId eq userId }.firstOrNull()
-                    ?: throw NotFoundException(Message.Errors.SELLER_REQUIRED)
+            val seller = findSellerByUserId(userId)
+                ?: throw NotFoundException(Message.Errors.SELLER_REQUIRED)
 
             val existingShop =
                 ShopDAO.find {
@@ -58,7 +54,7 @@ class ShopService : ShopRepository {
             val shop =
                 ShopDAO.new {
                     this.userId = EntityID(userId, ShopTable)
-                    categoryId = EntityID(shopRequest.categoryId, ShopTable)
+                    categoryId = EntityID(shopRequest.categoryId, ShopCategoryTable)
                     name = shopRequest.name
                     description = shopRequest.description
                     address = shopRequest.address

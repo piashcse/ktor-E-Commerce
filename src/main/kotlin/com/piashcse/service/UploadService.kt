@@ -30,12 +30,8 @@ object UploadService {
     private const val REFUND_DIR = "refund-images"
     private const val CATEGORY_DIR = "category-images"
 
-    // File size limits
-    private const val MAX_PROFILE_SIZE = 5L * 1024 * 1024 // 5 MB
-    private const val MAX_PRODUCT_SIZE = 5L * 1024 * 1024 // 5 MB
-    private const val MAX_SHOP_SIZE = 5L * 1024 * 1024 // 5 MB
-    private const val MAX_REFUND_SIZE = 5L * 1024 * 1024 // 5 MB
-    private const val MAX_CATEGORY_SIZE = 5L * 1024 * 1024 // 5 MB
+    // File size limit (applies to all image types)
+    private const val MAX_FILE_SIZE = 5L * 1024 * 1024 // 5 MB
 
     // Allowed types
     private val ALLOWED_MIME_TYPES = setOf("image/jpeg", "image/png", "image/webp", "image/gif")
@@ -50,27 +46,27 @@ object UploadService {
     /**
      * Uploads a profile image (5MB limit).
      */
-    suspend fun uploadProfileImage(file: PartData.FileItem): String = upload(file, PROFILE_DIR, MAX_PROFILE_SIZE, "profile image")
+    suspend fun uploadProfileImage(file: PartData.FileItem): String = upload(file, PROFILE_DIR, MAX_FILE_SIZE, "profile image")
 
     /**
      * Uploads a product image (5MB limit).
      */
-    suspend fun uploadProductImage(file: PartData.FileItem): String = upload(file, PRODUCT_DIR, MAX_PRODUCT_SIZE, "product image")
+    suspend fun uploadProductImage(file: PartData.FileItem): String = upload(file, PRODUCT_DIR, MAX_FILE_SIZE, "product image")
 
     /**
      * Uploads a shop image (5MB limit).
      */
-    suspend fun uploadShopImage(file: PartData.FileItem): String = upload(file, SHOP_DIR, MAX_SHOP_SIZE, "shop image")
+    suspend fun uploadShopImage(file: PartData.FileItem): String = upload(file, SHOP_DIR, MAX_FILE_SIZE, "shop image")
 
     /**
      * Uploads a refund evidence image (5MB limit).
      */
-    suspend fun uploadRefundImage(file: PartData.FileItem): String = upload(file, REFUND_DIR, MAX_REFUND_SIZE, "refund image")
+    suspend fun uploadRefundImage(file: PartData.FileItem): String = upload(file, REFUND_DIR, MAX_FILE_SIZE, "refund image")
 
     /**
      * Uploads a category image (5MB limit).
      */
-    suspend fun uploadCategoryImage(file: PartData.FileItem): String = upload(file, CATEGORY_DIR, MAX_CATEGORY_SIZE, "category image")
+    suspend fun uploadCategoryImage(file: PartData.FileItem): String = upload(file, CATEGORY_DIR, MAX_FILE_SIZE, "category image")
 
     /**
      * Checks if the magic bytes of the file match the given extension.
@@ -126,7 +122,7 @@ object UploadService {
             val bytes = file.streamProvider().readBytes()
 
             // Validate file size
-            require(bytes.isNotEmpty()) { "Uploaded file is empty" }
+            if (bytes.isEmpty()) throw ValidationException("Uploaded file is empty")
             if (bytes.size > maxSize) {
                 val maxSizeMB = maxSize / (1024 * 1024)
                 throw ValidationException("File size exceeds ${maxSizeMB}MB limit for $purpose upload")
@@ -144,8 +140,8 @@ object UploadService {
             val targetDir = getDirectory(directory)
             val targetFile = File(targetDir, fileName)
 
-            require(targetFile.canonicalPath.startsWith(targetDir.canonicalPath)) {
-                "Invalid file path detected"
+            if (!targetFile.canonicalPath.startsWith(targetDir.canonicalPath)) {
+                throw ValidationException("Invalid file path detected")
             }
 
             targetFile.writeBytes(bytes)
@@ -214,8 +210,8 @@ object UploadService {
         val base = File(uploadBaseDir, subDirectory).canonicalFile
         val root = File(uploadBaseDir).canonicalFile
 
-        require(base.canonicalPath.startsWith(root.canonicalPath)) {
-            "Invalid upload directory configuration"
+        if (!base.canonicalPath.startsWith(root.canonicalPath)) {
+            throw ValidationException("Invalid upload directory configuration")
         }
 
         return base

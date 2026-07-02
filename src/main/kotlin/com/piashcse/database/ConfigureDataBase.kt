@@ -40,6 +40,8 @@ fun configureDataBase() {
             RefreshTokenTable,
             LoginAttemptTable,
             BlacklistedTokenTable,
+            RefundRequestTable,
+            OrderStatusHistoryTable,
         )
         SchemaUtils.addMissingColumnsStatements(
             UserTable,
@@ -65,6 +67,8 @@ fun configureDataBase() {
             RefreshTokenTable,
             LoginAttemptTable,
             BlacklistedTokenTable,
+            RefundRequestTable,
+            OrderStatusHistoryTable,
         ).forEach { exec(it) }
     }
 }
@@ -87,11 +91,8 @@ private fun initDB() {
 }
 
 private fun runFlyway(datasource: DataSource) {
-    val flyway = Flyway.configure().dataSource(datasource).load()
-    try {
-        flyway.info()
-        flyway.migrate()
-    } catch (e: Exception) {
-        throw e
+    Flyway.configure().dataSource(datasource).load().apply {
+        info()
+        migrate()
     }
 }

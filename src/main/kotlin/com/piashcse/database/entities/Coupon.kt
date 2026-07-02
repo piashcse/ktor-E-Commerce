@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.CouponDiscountType
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
@@ -8,7 +9,7 @@ import org.jetbrains.exposed.v1.javatime.datetime
 
 object CouponTable : BaseIdTable("coupon") {
     val code = varchar("code", 50).uniqueIndex()
-    val discountType = varchar("discount_type", 20) // FIXED, PERCENTAGE
+    val discountType = enumerationByName("discount_type", 20, CouponDiscountType::class)
     val discountValue = double("discount_value")
     val minOrderAmount = double("min_order_amount").default(0.0)
     val maxDiscountAmount = double("max_discount_amount").nullable()

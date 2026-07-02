@@ -45,7 +45,7 @@ interface CartRepository {
         userId: String,
         productId: String,
         quantity: Int,
-    ): Cart
+    ): Cart?
 
     /**
      * Removes a specific product from the cart.

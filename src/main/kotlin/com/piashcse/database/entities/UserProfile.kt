@@ -63,10 +63,16 @@ class UserProfileDAO(id: EntityID<String>) : BaseEntity(id, UserProfileTable) {
             faxNumber = faxNumber,
             streetAddress = streetAddress,
             city = city,
+            state = state,
+            country = country,
             identificationType = identificationType,
             identificationNo = identificationNo,
             occupation = occupation,
             postCode = postCode,
             gender = gender,
+            dateOfBirth = dateOfBirth,
+            bio = bio,
+            isActive = isActive,
+            verified = verified,
         )
 }
