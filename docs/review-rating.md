@@ -16,10 +16,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/review-rating` | Retrieve product reviews | Yes |
-| `POST` | `/review-rating` | Create a new review | Yes |
-| `PUT` | `/review-rating/{id}` | Update an existing review | Yes |
-| `DELETE` | `/review-rating/{id}` | Delete a review | Yes |
+| `GET` | `/api/v1/reviews` | Get all Reviews | Yes |
+| `POST` | `/api/v1/reviews` | Create a New Review | Yes |
+| `PUT` | `/api/v1/reviews/{id}` | Update Review | Yes |
+| `DELETE` | `/api/v1/reviews/{id}` | Delete Review | Yes |
 
 ---
 
@@ -27,7 +27,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Get Reviews
 
-**`GET /review-rating`**
+**`GET /api/v1/reviews`**
 
 Retrieve reviews for a specific product with optional pagination support.
 
@@ -90,7 +90,7 @@ curl -X 'GET' \
 
 ### 2. Create Review
 
-**`POST /review-rating`**
+**`POST /api/v1/reviews`**
 
 Create a new review and rating for a product. The review will be associated with the authenticated user and specified product.
 
@@ -151,7 +151,7 @@ curl -X 'POST' \
 
 ### 3. Update Review
 
-**`PUT /review-rating/{id}`**
+**`PUT /api/v1/reviews/{id}`**
 
 Update an existing review by its ID. You can modify both the review text and rating.
 
@@ -210,7 +210,7 @@ curl -X 'PUT' \
 
 ### 4. Delete Review
 
-**`DELETE /review-rating/{id}`**
+**`DELETE /api/v1/reviews/{id}`**
 
 Delete a review by its ID. This operation permanently removes the review from the system.
 

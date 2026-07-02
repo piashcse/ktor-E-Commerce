@@ -16,12 +16,12 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/cart` | Add product to cart | Yes |
-| `GET` | `/cart` | Retrieve cart items | Yes |
-| `GET` | `/cart/summary` | Retrieve cart summary with totals | Yes |
-| `PUT` | `/cart/update` | Update product quantity in cart | Yes |
-| `DELETE` | `/cart/remove` | Remove specific product from cart | Yes |
-| `DELETE` | `/cart/all` | Clear entire cart | Yes |
+| `POST` | `/api/v1/carts` | Add product to cart | Yes |
+| `GET` | `/api/v1/carts` | Retrieve cart items | Yes |
+| `GET` | `/api/v1/carts/summary` | Retrieve cart summary with totals | Yes |
+| `PUT` | `/api/v1/carts/update` | Update product quantity in cart | Yes |
+| `DELETE` | `/api/v1/carts/remove` | Remove specific product from cart | Yes |
+| `DELETE` | `/api/v1/carts/all` | Clear entire cart | Yes |
 
 ---
 
@@ -29,7 +29,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Add Product to Cart
 
-**`POST /cart`**
+**`POST /api/v1/carts`**
 
 Add a product to the user's shopping cart with specified quantity. If the product already exists in the cart, this will add to the existing quantity.
 
@@ -76,7 +76,7 @@ curl -X 'POST' \
 
 ### 2. Get Cart Items
 
-**`GET /cart`**
+**`GET /api/v1/carts`**
 
 Retrieve all items in the user's shopping cart with detailed product information and pagination support.
 
@@ -152,7 +152,7 @@ curl -X 'GET' \
 
 ### 3. Update Cart Item Quantity
 
-**`PUT /cart`**
+**`PUT /api/v1/carts/update`**
 
 Update the quantity of a specific product in the user's cart. This operation sets the absolute quantity rather than adding to existing quantity.
 
@@ -214,7 +214,7 @@ curl -X 'PUT' \
 
 ### 4. Remove Product from Cart
 
-**`DELETE /cart`**
+**`DELETE /api/v1/carts/remove`**
 
 Remove a specific product from the user's cart completely, regardless of quantity.
 
@@ -276,7 +276,7 @@ curl -X 'DELETE' \
 
 ### 5. Clear Cart
 
-**`DELETE /cart/all`**
+**`DELETE /api/v1/carts/all`**
 
 Remove all items from the user's cart, effectively clearing the entire shopping cart.
 
@@ -313,7 +313,7 @@ true
 
 ### 6. Get Cart Summary
 
-**`GET /cart/summary`**
+**`GET /api/v1/carts/summary`**
 
 Retrieve a summary of the user's cart including all items with product details, subtotal, estimated tax, and item count. This endpoint provides enriched data for checkout pages.
 

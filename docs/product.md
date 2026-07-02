@@ -23,11 +23,6 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/api/v1/seller/products/image-upload` | Upload product image (Seller) | Yes (Seller) |
 | `GET` | `/api/v1/products/{id}` | Retrieve a specific product | No |
 | `GET` | `/api/v1/products/search` | Search products with filters | No |
-| `GET` | `/api/v1/products/featured` | Retrieve featured products | No |
-| `GET` | `/api/v1/products/best-selling` | Retrieve best selling products | No |
-| `GET` | `/api/v1/products/hot-deals` | Retrieve products on hot deals | No |
-| `POST` | `/api/v1/admin/products` | Create a new product (Admin) | Yes (Admin) |
-| `PUT` | `/api/v1/admin/products/{id}` | Update an existing product (Admin) | Yes (Admin) |
 | `DELETE` | `/api/v1/admin/products/{id}` | Delete a product (Admin) | Yes (Admin) |
 
 ---

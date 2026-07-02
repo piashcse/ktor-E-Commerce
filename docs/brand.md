@@ -16,7 +16,7 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `POST` | `/api/v1/admin/brands` | Create a new brand | Yes (Admin) |
-| `GET` | `/brand` | Retrieve list of brands | Yes |
+| `GET` | `/api/v1/brands` | Retrieve list of brands | Yes |
 | `PUT` | `/api/v1/admin/brands/{id}` | Update an existing brand | Yes (Admin) |
 | `DELETE` | `/api/v1/admin/brands/{id}` | Delete a brand | Yes (Admin) |
 
@@ -73,7 +73,7 @@ curl -X 'POST' \
 
 ### 2. Get Brands
 
-**`GET /brand`**
+**`GET /api/v1/brands`**
 
 Retrieve a list of brands with optional pagination support.
 

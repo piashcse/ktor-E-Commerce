@@ -15,10 +15,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/payment` | Create a new payment | Yes |
-| `GET` | `/payment` | Retrieve user's payments | Yes |
-| `GET` | `/payment/{id}` | Retrieve payment by ID | Yes |
-| `GET` | `/payment/order/{orderId}` | Retrieve all payments for an order | Yes |
+| `POST` | `/api/v1/payments` | Create a new payment | Yes |
+| `GET` | `/api/v1/payments` | Retrieve user's payments | Yes |
+| `GET` | `/api/v1/payments/{id}` | Retrieve payment by ID | Yes |
+| `GET` | `/api/v1/payments/order/{orderId}` | Retrieve all payments for an order | Yes |
 
 ---
 
@@ -26,7 +26,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Payment
 
-**`POST /payment`**
+**`POST /api/v1/payments`**
 
 Create a new payment for an existing order. The payment will be associated with a specific order and include payment method details.
 
@@ -89,7 +89,7 @@ curl -X 'POST' \
 
 ### 2. Get User Payments
 
-**`GET /payment`**
+**`GET /api/v1/payments`**
 
 Retrieve a list of payments associated with the authenticated user.
 
@@ -145,7 +145,7 @@ curl -X 'GET' \
 
 ### 3. Get Payment by ID
 
-**`GET /payment/{id}`**
+**`GET /api/v1/payments/{id}`**
 
 Retrieve details of a specific payment by its ID.
 
@@ -197,7 +197,7 @@ curl -X 'GET' \
 
 ### 4. Get Payments by Order
 
-**`GET /payment/order/{orderId}`**
+**`GET /api/v1/payments/order/{orderId}`**
 
 Retrieve all payments associated with a specific order. This is useful for tracking payment history and partial payments.
 

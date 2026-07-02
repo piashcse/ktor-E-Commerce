@@ -16,10 +16,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/wishlist` | Add a product to wishlist | Yes |
-| `GET` | `/wishlist` | Retrieve user's wishlist items (Paginated) | Yes |
-| `GET` | `/wishlist/check` | Check if a product is in wishlist | Yes |
-| `DELETE` | `/wishlist/remove` | Remove a product from wishlist | Yes |
+| `POST` | `/api/v1/wishlists` | Add a product to wishlist | Yes |
+| `GET` | `/api/v1/wishlists` | Retrieve user's wishlist items (Paginated) | Yes |
+| `GET` | `/api/v1/wishlists/check` | Check if a product is in wishlist | Yes |
+| `DELETE` | `/api/v1/wishlists/remove` | Remove a product from wishlist | Yes |
 
 ---
 
@@ -27,7 +27,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Add Product to Wishlist
 
-**`POST /wishlist`**
+**`POST /api/v1/wishlists`**
 
 Add a product to the authenticated user's wishlist.
 
@@ -75,7 +75,7 @@ curl -X 'POST' \
 
 ### 2. Get Wishlist Items
 
-**`GET /wishlist`**
+**`GET /api/v1/wishlists`**
 
 Retrieve all products in the authenticated user's wishlist with pagination.
 
@@ -124,7 +124,7 @@ curl -X 'GET' \
 
 ### 3. Check Product in Wishlist
 
-**`GET /wishlist/check`**
+**`GET /api/v1/wishlists/check`**
 
 Check if a specific product exists in the user's wishlist.
 
@@ -153,7 +153,7 @@ true
 
 ### 4. Remove Product from Wishlist
 
-**`DELETE /wishlist/remove`**
+**`DELETE /api/v1/wishlists/remove`**
 
 Remove a specific product from the authenticated user's wishlist.
 
