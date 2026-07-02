@@ -336,12 +336,10 @@ class OrderService : OrderRepository {
         limit: Int,
         offset: Int,
     ): PaginatedResponse<OrderResponse> {
-        val totalCount = count()
-        val rows = limit(limit).offset(offset.toLong()).map { OrderDAO.wrapRow(it) }
-        val orderIds = rows.map { it.id }
-        val itemsMap = OrderItemDAO.itemsForOrders(orderIds)
+        val (totalCount, rows) = toPaginatedList(limit, offset) { OrderDAO.wrapRow(it) }
+        val itemsMap = OrderItemDAO.itemsForOrders(rows.map { it.id })
         val data = rows.map { order -> order.response(itemsMap[order.id.value]?.map { it.toResponse() }) }
-        return PaginatedResponse(data, com.piashcse.utils.common.PaginationMetadata(totalCount, limit, offset))
+        return PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
     }
 
     override suspend fun getOrders(

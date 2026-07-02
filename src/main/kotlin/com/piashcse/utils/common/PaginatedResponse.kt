@@ -15,6 +15,5 @@ data class PaginatedResponse<T>(
 data class PaginationMetadata(
     val totalCount: Long,
     val limit: Int,
-    val skip: Int,
-    val nextCursor: String? = null,
+    val offset: Int,
 )

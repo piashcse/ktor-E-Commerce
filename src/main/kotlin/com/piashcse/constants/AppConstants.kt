@@ -18,4 +18,9 @@ object AppConstants {
         const val RESET_SUBJECT = "Password Reset"
     }
 
+    object Pagination {
+        const val DEFAULT_LIMIT = 20
+        const val MAX_LIMIT = 100
+        const val DEFAULT_OFFSET = 0
+    }
 }
