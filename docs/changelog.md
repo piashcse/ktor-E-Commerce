@@ -4,6 +4,25 @@ hide:
 ---
 # Changelog
 
+## [4.1.0] - 2026-07-02
+
+### Enum Migration & API Cleanup
+
+- **(refactor)** - **Varchar to Enum**: Migrated 9 DB columns from raw `varchar` to `enumerationByName` for type safety: `coupon.discount_type`, `review_rating.status`, `refund_request.status`/`refund_method`, `payment.payment_method`, `order.payment_method`, `login_attempt.user_type`.
+- **(feat)** - **6 New Enums**: Added `CouponDiscountType`, `ReviewStatus`, `RefundStatus`, `RefundMethod`, `PaymentMethod` to `Enums.kt`.
+- **(refactor)** - **PolicyType Centralized**: Moved from nested `PolicyDocumentTable.PolicyType` to top-level `com.piashcse.constants.PolicyType`.
+- **(fix)** - **Pagination Naming**: Renamed `PaginationMetadata.skip` → `offset` for consistency with query parameter naming.
+- **(perf)** - **N+1 Fixes**: Batch-fetch in `CartService.getCartSummary()` and `OrderService.placeOrder()`; added `OrderItemDAO.itemsForOrders()` batch loader.
+- **(fix)** - **Exception Types**: `CouponService` now throws `NotFoundException` (404) instead of generic `Exception` (500).
+- **(fix)** - **EntityID Table Refs**: Corrected wrong table references in `ShopService.kt` and `ReviewRatingService.kt`.
+- **(refactor)** - **Centralized Pagination**: Extracted `Query.toPaginatedList()` building block; centralized defaults in `AppConstants.Pagination`.
+- **(refactor)** - **Validation**: `CallExt.paginateQueryParams()` now validates invalid params instead of silent fallback.
+- **(fix)** - **DateTimeParseException**: Caught and rethrown as `ValidationException` in `CouponService`.
+- **(refactor)** - **UploadService**: Consolidated 5 identical `MAX_*_SIZE` constants to 1 shared `MAX_FILE_SIZE`.
+- **(refactor)** - **Magic Numbers**: Extracted constants in `BrandService`, `InventoryService`, `StaticContent`.
+
+---
+
 ## [4.0.0] - 2026-05-03
 
 ### API Standardization & V2 Migration

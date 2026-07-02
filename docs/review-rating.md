@@ -70,7 +70,7 @@ curl -X 'GET' \
   "metadata": {
     "totalCount": 1,
     "limit": 10,
-    "skip": 0
+    "offset": 0
   }
 }
 ```

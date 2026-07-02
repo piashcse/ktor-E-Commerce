@@ -50,6 +50,8 @@ Finalizes the purchase and creates order records.
 {
   "shippingAddressId": "uuid",
   "shippingMethodId": "uuid",
+  "paymentMethod": "CREDIT_CARD",
+  "notes": "Leave at the door",
   "couponCode": "DISCOUNT10",
   "idempotencyKey": "unique-uuid-per-attempt"
 }
