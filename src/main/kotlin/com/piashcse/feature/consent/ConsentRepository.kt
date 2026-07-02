@@ -1,6 +1,6 @@
 package com.piashcse.feature.consent
 
-import com.piashcse.database.entities.PolicyDocumentTable
+import com.piashcse.constants.PolicyType
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.model.response.UserPolicyConsentResponse
 
@@ -23,6 +23,6 @@ interface ConsentRepository {
      */
     suspend fun hasUserConsented(
         userId: String,
-        policyType: PolicyDocumentTable.PolicyType,
+        policyType: PolicyType,
     ): Boolean
 }

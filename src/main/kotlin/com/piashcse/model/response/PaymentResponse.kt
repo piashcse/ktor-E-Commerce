@@ -1,5 +1,6 @@
 package com.piashcse.model.response
 
+import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
 import kotlinx.serialization.Serializable
 
@@ -9,6 +10,6 @@ data class PaymentResponse(
     val orderId: String,
     val amount: Long,
     val status: PaymentStatus,
-    val paymentMethod: String,
+    val paymentMethod: PaymentMethod,
     val transactionId: String?,
 )

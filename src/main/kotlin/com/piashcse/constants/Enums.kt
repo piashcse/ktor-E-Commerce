@@ -2,6 +2,57 @@ package com.piashcse.constants
 
 import kotlinx.serialization.Serializable
 
+@Serializable
+enum class CouponDiscountType {
+    FIXED,
+    PERCENTAGE,
+}
+
+@Serializable
+enum class ReviewStatus {
+    ACTIVE,
+    HIDDEN,
+    FLAGGED,
+}
+
+@Serializable
+enum class RefundStatus {
+    PENDING,
+    APPROVED,
+    REJECTED,
+    REFUNDED,
+    SHIPPED,
+}
+
+@Serializable
+enum class RefundMethod {
+    ORIGINAL,
+    BANK_TRANSFER,
+}
+
+@Serializable
+enum class PaymentMethod {
+    CREDIT_CARD,
+    PAYPAL,
+    BANK_TRANSFER,
+    COD,
+}
+
+@Serializable
+enum class PolicyType {
+    PRIVACY_POLICY,
+    TERMS_CONDITIONS,
+    REFUND_POLICY,
+    COOKIE_POLICY,
+    DISCLAIMER,
+    EULA,
+    SHIPPING_POLICY,
+    ;
+
+    val isLegalPolicy get() = this in listOf(PRIVACY_POLICY, TERMS_CONDITIONS, DISCLAIMER, EULA)
+    val requiresConsent get() = this != SHIPPING_POLICY
+}
+
 /**
  * Status of orders throughout their lifecycle
  */

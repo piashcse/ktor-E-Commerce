@@ -1,7 +1,7 @@
 package com.piashcse.feature.consent
 
 import com.piashcse.constants.UserType
-import com.piashcse.database.entities.PolicyDocumentTable
+import com.piashcse.constants.PolicyType
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
@@ -57,7 +57,7 @@ fun Route.consentRoutes(consentService: ConsentService) {
 
             val policyTypeValue =
                 runCatching {
-                    PolicyDocumentTable.PolicyType.valueOf(policyType)
+                    PolicyType.valueOf(policyType)
                 }.getOrElse {
                     throw InvalidEnumValueException(
                         "Invalid policy type: $policyType",

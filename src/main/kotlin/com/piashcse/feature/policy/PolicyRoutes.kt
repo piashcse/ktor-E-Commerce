@@ -1,6 +1,6 @@
 package com.piashcse.feature.policy
 
-import com.piashcse.database.entities.PolicyDocumentTable
+import com.piashcse.constants.PolicyType
 import com.piashcse.model.request.CreatePolicyRequest
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -20,7 +20,7 @@ fun Route.policyRoutes(policyService: PolicyService) {
         val policyTypeParam = call.requirePathParameter("policyType")
         val policyType =
             try {
-                PolicyDocumentTable.PolicyType.valueOf(policyTypeParam.uppercase())
+                PolicyType.valueOf(policyTypeParam.uppercase())
             } catch (e: IllegalArgumentException) {
                 return@get call.respond(HttpStatusCode.BadRequest, "Invalid policy type")
             }
@@ -51,7 +51,7 @@ fun Route.policyAdminRoutes(policyService: PolicyService) {
         val policyTypeParam = call.requirePathParameter("policyType")
         val policyType =
             try {
-                PolicyDocumentTable.PolicyType.valueOf(policyTypeParam.uppercase())
+                PolicyType.valueOf(policyTypeParam.uppercase())
             } catch (e: IllegalArgumentException) {
                 return@get call.respond(HttpStatusCode.BadRequest, "Invalid policy type")
             }

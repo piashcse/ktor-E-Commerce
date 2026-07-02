@@ -1,6 +1,7 @@
 package com.piashcse.feature.order
 
 import com.piashcse.constants.AppConstants
+import com.piashcse.constants.CouponDiscountType
 import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentStatus
@@ -218,14 +219,13 @@ class OrderService : OrderRepository {
         if (coupon.usageLimit != null && coupon.usageCount >= coupon.usageLimit!!)
             throw ValidationException("Coupon usage limit reached")
 
-        val discountAmount = when (coupon.discountType.uppercase()) {
-            "PERCENTAGE" -> {
+        val discountAmount = when (coupon.discountType) {
+            CouponDiscountType.PERCENTAGE -> {
                 var amount = BigDecimal(orderAmount).multiply(BigDecimal(coupon.discountValue / 100.0))
                 coupon.maxDiscountAmount?.let { amount = amount.min(BigDecimal(it)) }
                 amount
             }
-            "FIXED" -> BigDecimal(coupon.discountValue)
-            else -> BigDecimal.ZERO
+            CouponDiscountType.FIXED -> BigDecimal(coupon.discountValue)
         }
         coupon.usageCount += 1
         return discountAmount.setScale(2, RoundingMode.HALF_UP)

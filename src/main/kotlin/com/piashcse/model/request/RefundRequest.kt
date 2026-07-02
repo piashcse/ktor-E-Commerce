@@ -1,5 +1,7 @@
 package com.piashcse.model.request
 
+import com.piashcse.constants.RefundMethod
+import com.piashcse.constants.RefundStatus
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
@@ -21,13 +23,13 @@ data class RefundRequestRequest(
 
 @Serializable
 data class UpdateRefundStatusRequest(
-    val status: String,
+    val status: RefundStatus,
     val refundAmount: Double? = null,
-    val refundMethod: String? = null,
+    val refundMethod: RefundMethod? = null,
 ) {
     init {
         validate(this) {
-            validate(UpdateRefundStatusRequest::status).isNotNull().isNotEmpty()
+            validate(UpdateRefundStatusRequest::status).isNotNull()
         }
     }
 }

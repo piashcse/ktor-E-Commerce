@@ -1,6 +1,7 @@
 package com.piashcse.model.response
 
 import com.piashcse.constants.OrderStatus
+import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Contextual
@@ -21,7 +22,7 @@ data class OrderResponse(
     val status: OrderStatus,
     val paymentStatus: PaymentStatus? = null,
     val couponCode: String? = null,
-    val paymentMethod: String? = null,
+    val paymentMethod: PaymentMethod? = null,
     val notes: String? = null,
     val shippingAddress: String? = null,
     val billingAddress: String? = null,

@@ -1,5 +1,7 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.RefundMethod
+import com.piashcse.constants.RefundStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
@@ -14,10 +16,10 @@ object RefundRequestTable : BaseIdTable("refund_request") {
     val userId = reference("user_id", UserTable.id)
     val orderId = reference("order_id", OrderTable.id)
     val reason = text("reason")
-    val images = varchar("images", 2000).nullable() // Comma-separated image URLs
-    val status = varchar("status", 20).default("PENDING") // PENDING, APPROVED, REJECTED, REFUNDED, SHIPPED
+    val images = varchar("images", 2000).nullable()
+    val status = enumerationByName("status", 20, RefundStatus::class).default(RefundStatus.PENDING)
     val refundAmount = decimal("refund_amount", 10, 2).nullable()
-    val refundMethod = varchar("refund_method", 50).nullable()
+    val refundMethod = enumerationByName("refund_method", 50, RefundMethod::class).nullable()
     val trackingNumber = varchar("tracking_number", 100).nullable()
     val requestedAt = datetime("requested_at").clientDefault { LocalDateTime.now(ZoneOffset.UTC) }
     val resolvedAt = datetime("resolved_at").nullable()

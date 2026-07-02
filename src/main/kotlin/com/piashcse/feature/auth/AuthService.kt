@@ -61,7 +61,7 @@ class AuthService : AuthRepository {
     // ── Data helpers ──────────────────────────────────────────────────────
 
     private fun loginAttemptPredicate(email: String, userType: UserType) =
-        (LoginAttemptTable.email eq email) and (LoginAttemptTable.userType eq userType.name)
+        (LoginAttemptTable.email eq email) and (LoginAttemptTable.userType eq userType)
 
     private suspend fun getRefreshTokenByHash(tokenHash: String): RefreshTokenDAO? = query {
         RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.singleOrNull()
@@ -87,7 +87,7 @@ class AuthService : AuthRepository {
         } else {
             LoginAttemptDAO.new {
                 this.email = email
-                this.userType = userType.name
+                this.userType = userType
                 this.ipAddress = ipAddress
                 this.attemptCount = 1
             }

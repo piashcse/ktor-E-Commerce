@@ -1,6 +1,8 @@
 package com.piashcse.feature.refund_request
 
 import com.piashcse.constants.Message
+import com.piashcse.constants.RefundMethod
+import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.RefundRequestRequest
@@ -80,7 +82,7 @@ class RefundRequestService : RefundRequestRepository {
             val existingRefund =
                 RefundRequestDAO.find {
                     (RefundRequestTable.orderItemId eq orderItem.id) and
-                        (RefundRequestTable.status eq "PENDING")
+                        (RefundRequestTable.status eq RefundStatus.PENDING)
                 }.firstOrNull()
 
             if (existingRefund != null) {
@@ -95,7 +97,7 @@ class RefundRequestService : RefundRequestRepository {
                     this.orderId = EntityID(orderId, OrderTable)
                     this.reason = request.reason
                     this.images = request.images
-                    this.status = "PENDING"
+                    this.status = RefundStatus.PENDING
                 }
 
             refundRequest.response()
@@ -185,9 +187,8 @@ class RefundRequestService : RefundRequestRepository {
                 throw ValidationException(Message.Errors.FORBIDDEN)
             }
 
-            val validStatuses = listOf("APPROVED", "REJECTED", "REFUNDED")
-            if (request.status !in validStatuses) {
-                throw ValidationException("Invalid status. Must be one of: ${validStatuses.joinToString(", ")}")
+            if (request.status !in listOf(RefundStatus.APPROVED, RefundStatus.REJECTED, RefundStatus.REFUNDED)) {
+                throw ValidationException("Invalid status. Must be one of: APPROVED, REJECTED, REFUNDED")
             }
 
             refundReq.status = request.status
@@ -218,12 +219,12 @@ class RefundRequestService : RefundRequestRepository {
                 throw ValidationException(Message.Orders.UNAUTHORIZED)
             }
 
-            if (refundReq.status != "APPROVED") {
+            if (refundReq.status != RefundStatus.APPROVED) {
                 throw ValidationException("Refund must be approved before shipping")
             }
 
             refundReq.trackingNumber = request.trackingNumber
-            refundReq.status = "SHIPPED"
+            refundReq.status = RefundStatus.SHIPPED
 
             refundReq.response()
         }

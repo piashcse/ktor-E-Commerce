@@ -1,6 +1,7 @@
 package com.piashcse.feature.policy
 
 import com.piashcse.constants.Message
+import com.piashcse.constants.PolicyType
 import com.piashcse.database.entities.PolicyDocumentDAO
 import com.piashcse.database.entities.PolicyDocumentTable
 import com.piashcse.model.request.CreatePolicyRequest
@@ -76,7 +77,7 @@ class PolicyService : PolicyRepository {
     /**
      * Gets a policy document by type, returning the latest active version
      */
-    override suspend fun getPolicyByType(type: PolicyDocumentTable.PolicyType): PolicyDocumentResponse =
+    override suspend fun getPolicyByType(type: PolicyType): PolicyDocumentResponse =
         query {
             val policyDocument =
                 PolicyDocumentDAO.find {
@@ -98,7 +99,7 @@ class PolicyService : PolicyRepository {
     /**
      * Gets all policy documents, optionally filtered by type
      */
-    override suspend fun getAllPolicies(type: PolicyDocumentTable.PolicyType?): List<PolicyDocumentResponse> =
+    override suspend fun getAllPolicies(type: PolicyType?): List<PolicyDocumentResponse> =
         query {
             val query =
                 if (type != null) {
