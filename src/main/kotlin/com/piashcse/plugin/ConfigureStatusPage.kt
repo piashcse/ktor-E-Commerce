@@ -8,6 +8,7 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
+import org.slf4j.LoggerFactory
 import org.valiktor.ConstraintViolationException
 import org.valiktor.i18n.mapToMessage
 import java.util.Locale
@@ -36,6 +37,8 @@ private suspend fun ApplicationCall.respondValidationError(exception: Constraint
  *
  * All custom exceptions in the project extend [AppException] and are handled uniformly.
  */
+private val statusPageLog = LoggerFactory.getLogger("com.piashcse.plugin.ConfigureStatusPage")
+
 fun Application.configureStatusPage() {
     install(StatusPages) {
         exception<Throwable> { call, error ->
@@ -48,8 +51,7 @@ fun Application.configureStatusPage() {
             // 2️⃣ Application specific errors – all extend [AppException]
             when (error) {
                 is AppException -> {
-                    // Log warning for known app exceptions (including InvalidEnumValueException, MissingParameterException, etc.)
-                    call.application.environment.log.warn("${error::class.simpleName}: ${error.message}")
+                    statusPageLog.warn("${error::class.simpleName}: ${error.message}")
                     call.respond(error.code, ApiError(error.message ?: "Unknown error"))
                 }
                 is BadRequestException -> {
@@ -65,8 +67,7 @@ fun Application.configureStatusPage() {
                     call.respond(HttpStatusCode.BadRequest, ApiError(error.message ?: "Invalid argument"))
                 }
                 else -> {
-                    // 3️⃣ Unexpected errors – log stack trace and return generic 500
-                    call.application.environment.log.error("Unhandled exception: ${error::class.simpleName}", error)
+                    statusPageLog.error("Unhandled exception: ${error::class.simpleName}", error)
                     call.respond(HttpStatusCode.InternalServerError, ApiError("Internal server error"))
                 }
             }

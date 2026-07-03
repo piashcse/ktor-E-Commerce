@@ -36,7 +36,7 @@ fun Route.authRoutes(authService: AuthService) {
          */
         post("register") {
             val requestBody = call.receive<RegisterRequest>()
-            call.respond(HttpStatusCode.OK, authService.register(requestBody))
+            call.respond(HttpStatusCode.Created, authService.register(requestBody))
         }
 
         /**

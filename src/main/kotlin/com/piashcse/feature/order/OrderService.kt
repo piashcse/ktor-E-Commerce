@@ -8,6 +8,8 @@ import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toOrderItemResponse
+import com.piashcse.mapper.toOrderResponse
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.OrderRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
@@ -29,6 +31,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 class OrderService : OrderRepository {
 
@@ -38,7 +41,7 @@ class OrderService : OrderRepository {
     ): List<OrderResponse> = query {
         checkoutRequest.idempotencyKey?.let { key ->
             OrderDAO.find { OrderTable.idempotencyKey eq key }.toList().takeIf { it.isNotEmpty() }
-                ?.let { return@query it.map { it.response() } }
+                ?.let { return@query it.map { it.toOrderResponse() } }
         }
 
         val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
@@ -153,7 +156,7 @@ class OrderService : OrderRepository {
 
         cartItems.forEach { it.delete() }
         createdOrders.forEach { logStatusChange(it.id.value, it.status, "Order placed", userId) }
-        createdOrders.map { it.response() }
+        createdOrders.map { it.toOrderResponse() }
     }
 
     private fun logStatusChange(orderId: String, status: OrderStatus, notes: String?, userId: String?) {
@@ -190,17 +193,19 @@ class OrderService : OrderRepository {
 
         val taxAmount = subTotal.multiply(BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString()))
         val baseTotal = subTotal.add(BigDecimal(shippingMethod.price.toString())).add(taxAmount)
+        val baseTotalStr = baseTotal.setScale(2, RoundingMode.HALF_UP).toPlainString()
         var response = CheckoutSummaryResponse(
-            subTotal = subTotal.toFloat(),
-            shippingCost = shippingMethod.price.toFloat(),
-            taxAmount = taxAmount.setScale(2, RoundingMode.HALF_UP).toFloat(),
-            total = baseTotal.toFloat(),
+            subTotal = subTotal.setScale(2, RoundingMode.HALF_UP).toPlainString(),
+            shippingCost = BigDecimal(shippingMethod.price.toString()).setScale(2, RoundingMode.HALF_UP).toPlainString(),
+            taxAmount = taxAmount.setScale(2, RoundingMode.HALF_UP).toPlainString(),
+            total = baseTotalStr,
             itemCount = totalItems,
         )
 
         checkoutRequest.couponCode?.let {
             val discount = validateAndApplyCoupon(it, subTotal.toDouble())
-            response = response.copy(discountAmount = discount.toFloat(), total = response.total - discount.toFloat())
+            val discountedTotal = baseTotal.subtract(discount).setScale(2, RoundingMode.HALF_UP)
+            response = response.copy(discountAmount = discount.setScale(2, RoundingMode.HALF_UP).toPlainString(), total = discountedTotal.toPlainString())
         }
         response
     }
@@ -236,12 +241,12 @@ class OrderService : OrderRepository {
         orderRequest: OrderRequest,
         idempotencyKey: String?,
     ): List<OrderResponse> = query {
-        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
-        if (orderRequest.orderItems.isEmpty()) throw ValidationException(Message.Validation.INVALID_ORDER_ITEMS)
+        userId.requireNotBlank("User ID")
+        if (orderRequest.orderItems.isEmpty()) throw ValidationException(Message.Validation.EMPTY_ORDER_ITEMS)
 
         idempotencyKey?.let { key ->
             OrderDAO.find { OrderTable.idempotencyKey eq key }.firstOrNull()
-                ?.let { return@query listOf(it.response()) }
+                ?.let { return@query listOf(it.toOrderResponse()) }
         }
 
         val productsMap = ProductDAO.find {
@@ -318,7 +323,7 @@ class OrderService : OrderRepository {
             }.firstOrNull()?.delete()
         }
 
-        createdOrders.map { it.response() }
+        createdOrders.map { it.toOrderResponse() }
     }
 
     private fun validateShopsApproved(shopIds: Set<String>) {
@@ -330,7 +335,7 @@ class OrderService : OrderRepository {
     }
 
     private fun generateOrderNumber(datePrefix: String, sequenceNumber: Int) =
-        "ORD-$datePrefix-${sequenceNumber.toString().padStart(4, '0')}-${(1000..65535).random().toString(16).take(4).uppercase()}"
+        "ORD-$datePrefix-${sequenceNumber.toString().padStart(4, '0')}-${UUID.randomUUID().toString().take(8).uppercase()}"
 
     private fun Query.toOrdersPaginated(
         limit: Int,
@@ -338,7 +343,7 @@ class OrderService : OrderRepository {
     ): PaginatedResponse<OrderResponse> {
         val (totalCount, rows) = toPaginatedList(limit, offset) { OrderDAO.wrapRow(it) }
         val itemsMap = OrderItemDAO.itemsForOrders(rows.map { it.id })
-        val data = rows.map { order -> order.response(itemsMap[order.id.value]?.map { it.toResponse() }) }
+        val data = rows.map { order -> order.toOrderResponse(itemsMap[order.id.value]?.map { it.toOrderItemResponse() }) }
         return PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
     }
 
@@ -357,8 +362,8 @@ class OrderService : OrderRepository {
         orderId: String,
         status: OrderStatus,
     ): OrderResponse = query {
-        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
-        if (orderId.isBlank()) throw ValidationException(Message.Validation.blankField("Order ID"))
+        userId.requireNotBlank("User ID")
+        orderId.requireNotBlank("Order ID")
 
         val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
         val user = UserDAO.findById(userId) ?: throw ValidationException(Message.Errors.NOT_FOUND)
@@ -371,7 +376,7 @@ class OrderService : OrderRepository {
 
         order.status = status
         logStatusChange(order.id.value, status, "Status updated by user", userId)
-        order.response()
+        order.toOrderResponse()
     }
 
     override suspend fun cancelOrder(
@@ -380,7 +385,7 @@ class OrderService : OrderRepository {
         reason: String,
         userType: UserType,
     ): OrderResponse = query {
-        if (orderId.isBlank()) throw ValidationException(Message.Validation.blankField("Order ID"))
+        orderId.requireNotBlank("Order ID")
         if (reason.isBlank()) throw ValidationException(Message.Orders.CANCEL_REASON_REQUIRED)
 
         val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
@@ -401,7 +406,7 @@ class OrderService : OrderRepository {
             ProductDAO.findById(orderItem.productId.value)?.restoreStock(orderItem.quantity)
         }
 
-        order.response()
+        order.toOrderResponse()
     }
 
     override suspend fun getSellerOrders(

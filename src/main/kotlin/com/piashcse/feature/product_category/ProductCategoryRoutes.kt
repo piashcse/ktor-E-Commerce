@@ -33,7 +33,7 @@ fun Route.productCategoryAdminRoutes(productCategoryService: ProductCategoryServ
      */
     post {
         val name = call.requireQueryParameter("name")
-        call.respond(HttpStatusCode.OK, productCategoryService.createCategory(name))
+        call.respond(HttpStatusCode.Created, productCategoryService.createCategory(name))
     }
 
     /**

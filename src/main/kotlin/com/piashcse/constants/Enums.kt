@@ -109,7 +109,6 @@ enum class ProductStatus {
     ;
 
     val isActive get() = this == ACTIVE
-    val isAvailable get() = this == ACTIVE
 }
 
 /**
@@ -123,7 +122,7 @@ enum class ShopStatus {
     SUSPENDED, // Shop suspended by admin
     ;
 
-    val isOperational get() = this in listOf(APPROVED, SUSPENDED)
+    val isOperational get() = this == APPROVED
     val isActive get() = this == APPROVED
 }
 

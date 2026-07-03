@@ -5,6 +5,7 @@ import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.ShippingMethodResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import java.math.BigDecimal
 
 object ShippingMethodTable : BaseIdTable("shipping_method") {
     val name = varchar("name", 50)
@@ -26,7 +27,7 @@ class ShippingMethodDAO(id: EntityID<String>) : BaseEntity(id, ShippingMethodTab
             id = id.value,
             name = name,
             type = type,
-            price = price,
+            price = BigDecimal.valueOf(price).toPlainString(),
             deliveryTime = deliveryTime,
         )
 }

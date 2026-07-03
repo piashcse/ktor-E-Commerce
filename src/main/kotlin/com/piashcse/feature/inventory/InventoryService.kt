@@ -6,9 +6,7 @@ import com.piashcse.database.entities.*
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.throwNotFound
-import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
@@ -26,8 +24,8 @@ class InventoryService : InventoryRepository {
     }
 
     override suspend fun createOrUpdateInventory(request: InventoryRequest): InventoryResponse = query {
-        if (request.productId.isBlank()) throw ValidationException(Message.Validation.blankField("Product ID"))
-        if (request.shopId.isBlank()) throw ValidationException(Message.Validation.blankField("Shop ID"))
+        request.productId.requireNotBlank("Product ID")
+        request.shopId.requireNotBlank("Shop ID")
         if (request.stockQuantity < 0) throw ValidationException(Message.Inventory.NEGATIVE_STOCK)
         if (request.minimumStockLevel != null && request.minimumStockLevel < 0)
             throw ValidationException(Message.Validation.negativeValue("Minimum stock level"))

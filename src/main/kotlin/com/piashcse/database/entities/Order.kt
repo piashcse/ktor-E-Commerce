@@ -6,8 +6,6 @@ import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.OrderItemResponse
-import com.piashcse.model.response.OrderResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.datetime
@@ -65,32 +63,4 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
     var canceledDate by OrderTable.canceledDate
     var completedDate by OrderTable.completedDate
 
-    fun response(items: List<OrderItemResponse>? = null) =
-        OrderResponse(
-            orderId = id.value,
-            orderNumber = orderNumber,
-            userId = userId.value,
-            shopId = shopId?.value,
-            subTotal = subTotal.toFloat(),
-            shippingCost = shippingCost.toFloat(),
-            taxAmount = taxAmount.toFloat(),
-            discountAmount = discountAmount.toFloat(),
-            total = total.toFloat(),
-            currency = currency,
-            status = status,
-            paymentStatus = paymentStatus,
-            couponCode = couponCode,
-            paymentMethod = paymentMethod,
-            notes = notes,
-            shippingAddress = shippingAddress,
-            billingAddress = billingAddress,
-            shippingMethod = shippingMethod,
-            shippingDate = shippingDate,
-            deliveredDate = deliveredDate,
-            canceledDate = canceledDate,
-            completedDate = completedDate,
-            createdAt = createdAt,
-            updatedAt = updatedAt,
-            items = items ?: OrderItemDAO.itemsForOrder(id).map { it.toResponse() },
-        )
 }

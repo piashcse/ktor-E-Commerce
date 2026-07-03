@@ -73,7 +73,7 @@ fun Route.shopSellerRoutesV1(shopService: ShopService) {
      */
     post {
         val requestBody = call.receive<ShopRequest>()
-        call.respond(HttpStatusCode.OK, shopService.createShop(call.currentUserId, requestBody))
+        call.respond(HttpStatusCode.Created, shopService.createShop(call.currentUserId, requestBody))
     }
 
     /**
@@ -93,31 +93,6 @@ fun Route.shopSellerRoutesV1(shopService: ShopService) {
         val shopId = call.requirePathParameter("id")
         val requestBody = call.receive<UpdateShopRequest>()
         call.respond(HttpStatusCode.OK, shopService.updateShop(call.currentUserId, shopId, requestBody))
-    }
-}
-
-/**
- * V2 Seller Shop Management Routes.
- */
-fun Route.shopSellerRoutesV2(shopService: ShopService) {
-    /**
-     * @tag Shop
-     * @description (V2) Seller: Update shop details with enhanced params and response structure
-     */
-    put("/{shopId}") {
-        val shopId = call.requirePathParameter("shopId")
-        val source = call.request.queryParameters["source"] ?: "unknown"
-
-        val requestBody = call.receive<UpdateShopRequest>()
-        val response = shopService.updateShop(call.currentUserId, shopId, requestBody)
-
-        call.respond(
-            HttpStatusCode.OK,
-            mapOf(
-                "v2_data" to response,
-                "source" to source,
-            ),
-        )
     }
 }
 

@@ -4,10 +4,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CheckoutSummaryResponse(
-    val subTotal: Float,
-    val shippingCost: Float,
-    val taxAmount: Float = 0f,
-    val discountAmount: Float = 0f,
-    val total: Float,
+    val subTotal: String,
+    val shippingCost: String,
+    val taxAmount: String = "0.00",
+    val discountAmount: String = "0.00",
+    val total: String,
     val itemCount: Int,
 )

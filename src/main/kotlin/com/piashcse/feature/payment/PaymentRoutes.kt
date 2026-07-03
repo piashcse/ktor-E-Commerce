@@ -20,7 +20,7 @@ fun Route.paymentRoutes(paymentService: PaymentService) {
         post {
             val requestBody = call.receive<PaymentRequest>()
             call.respond(
-                HttpStatusCode.OK,
+                HttpStatusCode.Created,
                 paymentService.createPayment(requestBody),
             )
         }

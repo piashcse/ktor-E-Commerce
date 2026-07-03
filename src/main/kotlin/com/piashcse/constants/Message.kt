@@ -33,7 +33,7 @@ object Message {
         const val WEAK_PASSWORD = "Password must be at least 8 characters with uppercase, lowercase, digit, and special character"
         const val INVALID_USER_TYPE = "Invalid user type. Must be one of: CUSTOMER, SELLER, ADMIN, SUPER_ADMIN"
         const val EMPTY_PASSWORD = "Password cannot be empty"
-        const val INVALID_ORDER_ITEMS = "Order must contain at least one item"
+        const val EMPTY_ORDER_ITEMS = "Order must contain at least one item"
         const val FILE_NAME_REQUIRED = "File name is required"
         const val INVALID_FILE_TYPE = "Invalid file type. Allowed types: jpg, jpeg, png, gif, webp"
         const val FILE_REQUIRED = "No file uploaded"

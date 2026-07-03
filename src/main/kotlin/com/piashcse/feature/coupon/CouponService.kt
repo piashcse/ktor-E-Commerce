@@ -11,6 +11,7 @@ import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
 
@@ -83,9 +84,9 @@ class CouponService : CouponRepository {
             id = id.value,
             code = code,
             discountType = discountType,
-            discountValue = discountValue,
-            minOrderAmount = minOrderAmount,
-            maxDiscountAmount = maxDiscountAmount,
+            discountValue = BigDecimal.valueOf(discountValue).toPlainString(),
+            minOrderAmount = BigDecimal.valueOf(minOrderAmount).toPlainString(),
+            maxDiscountAmount = maxDiscountAmount?.let { BigDecimal.valueOf(it).toPlainString() },
             startDate = startDate.toString(),
             endDate = endDate.toString(),
             usageLimit = usageLimit,

@@ -34,7 +34,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
         post {
             val requestBody = call.receive<ReviewRatingRequest>()
             call.respond(
-                HttpStatusCode.OK,
+                HttpStatusCode.Created,
                 reviewRatingService.addReviewRating(call.currentUserId, requestBody),
             )
         }

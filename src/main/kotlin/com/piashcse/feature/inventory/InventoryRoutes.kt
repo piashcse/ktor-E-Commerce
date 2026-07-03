@@ -18,7 +18,7 @@ fun Route.inventorySellerRoutes(inventoryService: InventoryService) {
     post {
         val requestBody = call.receive<InventoryRequest>()
         call.respond(
-            HttpStatusCode.OK,
+            HttpStatusCode.Created,
             inventoryService.createOrUpdateInventory(requestBody),
         )
     }

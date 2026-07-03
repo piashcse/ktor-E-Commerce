@@ -1,5 +1,6 @@
 package com.piashcse.feature.cart
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.model.response.CartItemSummary
@@ -16,6 +17,8 @@ import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class CartService : CartRepository {
 
@@ -24,8 +27,8 @@ class CartService : CartRepository {
         productId: String,
         quantity: Int,
     ): Cart = query {
-        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
-        if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("Product ID"))
+        userId.requireNotBlank("User ID")
+        productId.requireNotBlank("Product ID")
         if (quantity <= 0) throw ValidationException(Message.Validation.notPositive("Quantity"))
 
         val existing = CartItemDAO.find {
@@ -58,8 +61,8 @@ class CartService : CartRepository {
         productId: String,
         quantity: Int,
     ): Cart? = query {
-        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
-        if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("Product ID"))
+        userId.requireNotBlank("User ID")
+        productId.requireNotBlank("Product ID")
 
         val cartItem = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
@@ -77,8 +80,8 @@ class CartService : CartRepository {
         userId: String,
         productId: String,
     ): ProductResponse = query {
-        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
-        if (productId.isBlank()) throw ValidationException(Message.Validation.blankField("Product ID"))
+        userId.requireNotBlank("User ID")
+        productId.requireNotBlank("Product ID")
 
         val cartItem = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
@@ -91,13 +94,13 @@ class CartService : CartRepository {
     }
 
     override suspend fun clearCart(userId: String): Boolean = query {
-        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
+        userId.requireNotBlank("User ID")
         CartItemTable.deleteWhere { CartItemTable.userId eq userId }
         true
     }
 
     override suspend fun getCartSummary(userId: String): CartSummaryResponse = query {
-        if (userId.isBlank()) throw ValidationException(Message.Validation.blankField("User ID"))
+        userId.requireNotBlank("User ID")
 
         val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
         val products = ProductDAO.find {
@@ -112,19 +115,21 @@ class CartService : CartRepository {
 
         val items = cartItems.mapNotNull { cartItem ->
             val product = products[cartItem.productId.value] ?: return@mapNotNull null
+            val unitPrice = product.discountPrice ?: product.price
             CartItemSummary(
                 productId = product.id.value,
                 productName = product.name,
-                price = (product.discountPrice ?: product.price).toDouble(),
+                price = unitPrice.toPlainString(),
                 quantity = cartItem.quantity,
-                image = product.images.split(",").firstOrNull()?.takeIf { it.isNotBlank() },
+                image = product.imageUrls.firstOrNull(),
                 stockQuantity = product.effectiveStock(),
                 shopId = product.shopId?.value,
                 shopName = product.shopId?.value?.let { shops[it]?.name },
             )
         }
 
-        val subtotal = items.sumOf { it.price * it.quantity }
-        CartSummaryResponse(items, subtotal, subtotal * 0.1, items.size)
+        val subtotal = items.sumOf { BigDecimal(it.price) * BigDecimal(it.quantity) }
+        val tax = subtotal.multiply(BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString())).setScale(2, RoundingMode.HALF_UP)
+        CartSummaryResponse(items, subtotal.toPlainString(), tax.toPlainString(), items.size)
     }
 }

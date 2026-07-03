@@ -8,7 +8,10 @@ import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.model.response.ProductResponse
+import com.piashcse.mapper.toProductResponse
+import com.piashcse.service.CacheService
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.NotFoundException
@@ -21,6 +24,12 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 class ProductService : ProductRepository {
+    private val cache = CacheService.cache
+
+    private suspend fun <T> cachedOrQuery(cacheKey: String, query: suspend () -> T): T {
+        cache.get<T>(cacheKey)?.let { return it }
+        return query().also { cache.set(cacheKey, it) }
+    }
 
     override suspend fun createProduct(
         userId: String,
@@ -52,10 +61,11 @@ class ProductService : ProductRepository {
             bestSeller = false
             newProduct = true
             freeShipping = productRequest.freeShipping ?: false
-            images = productRequest.images.joinToString(",")
             status = ProductStatus.ACTIVE
-        }.response()
-    }
+        }.apply {
+            setImages(productRequest.images)
+        }.toProductResponse()
+    }.also { cache.invalidatePattern("products:.*") }
 
     private fun requireSeller(userId: String) {
         if (findSellerByUserId(userId) == null) throw NotFoundException(Message.Errors.SELLER_REQUIRED)
@@ -92,9 +102,9 @@ class ProductService : ProductRepository {
             hotDeal = updateProduct.hotDeal ?: hotDeal
             featured = updateProduct.featured ?: featured
             freeShipping = updateProduct.freeShipping ?: freeShipping
-            images = if (updateProduct.images.isEmpty()) images else updateProduct.images.joinToString(",")
-        }.response()
-    }
+            if (updateProduct.images.isNotEmpty()) setImages(updateProduct.images)
+        }.toProductResponse()
+    }.also { cache.invalidatePattern("products:.*") }
 
     // ── Product listing with shared filter builder ─────────────────────────
 
@@ -115,26 +125,29 @@ class ProductService : ProductRepository {
     override suspend fun getProducts(filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
         ProductTable.selectAll().andWhere { ProductTable.status eq ProductStatus.ACTIVE }
             .applyProductFilters(filter)
-            .toPaginatedResponse(filter.limit, filter.offset) { ProductDAO.wrapRow(it).response() }
+            .toPaginatedResponse(filter.limit, filter.offset) { ProductDAO.wrapRow(it).toProductResponse() }
     }
 
     override suspend fun getProductsByShop(shopId: String, filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
         ProductTable.selectAll().andWhere {
             (ProductTable.shopId eq shopId) and (ProductTable.status eq ProductStatus.ACTIVE)
         }.applyProductFilters(filter)
-            .toPaginatedResponse(filter.limit, filter.offset) { ProductDAO.wrapRow(it).response() }
+            .toPaginatedResponse(filter.limit, filter.offset) { ProductDAO.wrapRow(it).toProductResponse() }
     }
 
     override suspend fun getProductsByUser(userId: String, filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
         ProductTable.selectAll().andWhere {
             (ProductTable.userId eq userId) and (ProductTable.status eq ProductStatus.ACTIVE)
         }.applyProductFilters(filter)
-            .toPaginatedResponse(filter.limit, filter.offset) { ProductDAO.wrapRow(it).response() }
+            .toPaginatedResponse(filter.limit, filter.offset) { ProductDAO.wrapRow(it).toProductResponse() }
     }
 
-    override suspend fun getProductDetail(productId: String): ProductResponse = query {
-        ProductDAO.findById(productId)?.response() ?: productId.throwNotFound("ProductResponse")
-    }
+    override suspend fun getProductDetail(productId: String): ProductResponse =
+        cachedOrQuery("products:detail:$productId") {
+            query {
+                ProductDAO.findById(productId)?.toProductResponse() ?: productId.throwNotFound("ProductResponse")
+            }
+        }
 
     override suspend fun deleteProduct(userId: String, productId: String): String = query {
         requireSeller(userId)
@@ -142,13 +155,13 @@ class ProductService : ProductRepository {
         product.verifyOwnership(userId, "product") { it.userId.value }
         product.delete()
         productId
-    }
+    }.also { cache.invalidatePattern("products:.*") }
 
     suspend fun deleteProductAsAdmin(productId: String): String = query {
         val product = ProductDAO.findById(productId) ?: productId.throwNotFound("ProductResponse")
         product.delete()
         productId
-    }
+    }.also { cache.invalidatePattern("products:.*") }
 
     override suspend fun incrementViewCount(productId: String) = query {
         ProductDAO.findById(productId)?.apply { viewCount = viewCount + 1 }
@@ -163,32 +176,41 @@ class ProductService : ProductRepository {
         if (!searchRequest.categoryId.isNullOrEmpty()) q.andWhere { ProductTable.categoryId eq EntityID(searchRequest.categoryId, ProductCategoryTable) }
         searchRequest.minPrice?.let { q.andWhere { ProductTable.price greaterEq BigDecimal.valueOf(it) } }
         searchRequest.maxPrice?.let { q.andWhere { ProductTable.price lessEq BigDecimal.valueOf(it) } }
-        q.toPaginatedResponse(searchRequest.limit, searchRequest.offset) { ProductDAO.wrapRow(it).response() }
+        q.toPaginatedResponse(searchRequest.limit, searchRequest.offset) { ProductDAO.wrapRow(it).toProductResponse() }
     }
 
     // ── Specialized lists ──────────────────────────────────────────────────
 
     override suspend fun getProductsByCategory(categoryId: String): PaginatedResponse<ProductResponse> = query {
         val condition: Op<Boolean> = (ProductTable.categoryId eq categoryId) and (ProductTable.status eq ProductStatus.ACTIVE)
-        val data = ProductDAO.find(condition).map { it.response() }
+        val data = ProductDAO.find(condition).map { it.toProductResponse() }
         PaginatedResponse(data, com.piashcse.utils.common.PaginationMetadata(ProductDAO.count(condition), data.size, 0))
     }
 
-    override suspend fun getFeaturedProducts(): PaginatedResponse<ProductResponse> = query {
-        val condition: Op<Boolean> = (ProductTable.featured eq true) and (ProductTable.status eq ProductStatus.ACTIVE)
-        val data = ProductDAO.find(condition).orderBy(ProductTable.createdAt to SortOrder.DESC).map { it.response() }
-        PaginatedResponse(data, com.piashcse.utils.common.PaginationMetadata(ProductDAO.count(condition), data.size, 0))
-    }
+    override suspend fun getFeaturedProducts(): PaginatedResponse<ProductResponse> =
+        cachedOrQuery("products:featured") {
+            query {
+                val condition: Op<Boolean> = (ProductTable.featured eq true) and (ProductTable.status eq ProductStatus.ACTIVE)
+                val data = ProductDAO.find(condition).orderBy(ProductTable.createdAt to SortOrder.DESC).map { it.toProductResponse() }
+                PaginatedResponse(data, PaginationMetadata(ProductDAO.count(condition), data.size, 0))
+            }
+        }
 
-    override suspend fun getBestSellingProducts(): PaginatedResponse<ProductResponse> = query {
-        val condition: Op<Boolean> = (ProductTable.bestSeller eq true) and (ProductTable.status eq ProductStatus.ACTIVE)
-        val data = ProductDAO.find(condition).orderBy(ProductTable.totalSales to SortOrder.DESC).limit(10).map { it.response() }
-        PaginatedResponse(data, com.piashcse.utils.common.PaginationMetadata(ProductDAO.count(condition), data.size, 0))
-    }
+    override suspend fun getBestSellingProducts(): PaginatedResponse<ProductResponse> =
+        cachedOrQuery("products:best-selling") {
+            query {
+                val condition: Op<Boolean> = (ProductTable.bestSeller eq true) and (ProductTable.status eq ProductStatus.ACTIVE)
+                val data = ProductDAO.find(condition).orderBy(ProductTable.totalSales to SortOrder.DESC).limit(10).map { it.toProductResponse() }
+                PaginatedResponse(data, PaginationMetadata(ProductDAO.count(condition), data.size, 0))
+            }
+        }
 
-    override suspend fun getHotDealProducts(): PaginatedResponse<ProductResponse> = query {
-        val condition: Op<Boolean> = (ProductTable.hotDeal eq true) and (ProductTable.status eq ProductStatus.ACTIVE)
-        val data = ProductDAO.find(condition).orderBy(ProductTable.discountPercentage to SortOrder.DESC).limit(10).map { it.response() }
-        PaginatedResponse(data, com.piashcse.utils.common.PaginationMetadata(ProductDAO.count(condition), data.size, 0))
-    }
+    override suspend fun getHotDealProducts(): PaginatedResponse<ProductResponse> =
+        cachedOrQuery("products:hot-deals") {
+            query {
+                val condition: Op<Boolean> = (ProductTable.hotDeal eq true) and (ProductTable.status eq ProductStatus.ACTIVE)
+                val data = ProductDAO.find(condition).orderBy(ProductTable.discountPercentage to SortOrder.DESC).limit(10).map { it.toProductResponse() }
+                PaginatedResponse(data, PaginationMetadata(ProductDAO.count(condition), data.size, 0))
+            }
+        }
 }
