@@ -21,7 +21,7 @@ fun Route.cartRoutes(cartService: CartService) {
         post {
             val requestBody = call.receive<CartRequest>()
             call.respond(
-                HttpStatusCode.OK,
+                HttpStatusCode.Created,
                 cartService.createCart(call.currentUserId, requestBody.productId, requestBody.quantity),
             )
         }

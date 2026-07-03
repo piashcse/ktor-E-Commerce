@@ -100,7 +100,7 @@ class PaymentService : PaymentRepository {
         offset: Int,
     ): PaginatedResponse<PaymentResponse> =
         query {
-            PaymentTable.selectAll().andWhere { PaymentTable.orderId eq EntityID(orderId, PaymentTable) }
+            PaymentTable.selectAll().andWhere { PaymentTable.orderId eq EntityID(orderId, OrderTable) }
                 .orderBy(PaymentTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) {
                     PaymentDAO.wrapRow(it).response()

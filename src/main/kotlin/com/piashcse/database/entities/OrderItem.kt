@@ -38,15 +38,4 @@ class OrderItemDAO(id: EntityID<String>) : BaseEntity(id, OrderItemTable) {
     var total by OrderItemTable.total
     var sku by OrderItemTable.sku
     var productName by OrderItemTable.productName
-
-    fun toResponse() = com.piashcse.model.response.OrderItemResponse(
-        productId = productId.value,
-        productName = productName,
-        quantity = quantity,
-        price = price.toFloat(),
-        discountAmount = discountAmount.toFloat(),
-        taxAmount = taxAmount.toFloat(),
-        total = total.toFloat(),
-        sku = sku,
-    )
 }

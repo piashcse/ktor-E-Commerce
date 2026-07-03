@@ -102,7 +102,7 @@ fun Route.productSellerRoutes(productService: ProductService) {
     post {
         val requestBody = call.receive<ProductRequest>()
         call.respond(
-            HttpStatusCode.OK,
+            HttpStatusCode.Created,
             productService.createProduct(call.currentUserId, null, requestBody),
         )
     }

@@ -17,7 +17,7 @@ interface AuthRepository {
     suspend fun login(loginRequest: LoginRequest): LoginResponse
     suspend fun otpVerification(userId: String, otp: String): Boolean
     suspend fun changePassword(userId: String, changePassword: ChangePassword): Boolean
-    suspend fun forgetPassword(forgetPasswordRequest: ForgetPasswordRequest): String
+    suspend fun forgetPassword(forgetPasswordRequest: ForgetPasswordRequest)
     suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult
     suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair
     suspend fun logout(userId: String, refreshToken: String?): Boolean

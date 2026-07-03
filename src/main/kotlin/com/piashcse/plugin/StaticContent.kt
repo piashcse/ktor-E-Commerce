@@ -1,5 +1,6 @@
 package com.piashcse.plugin
 
+import com.piashcse.config.DotEnvConfig
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.http.content.*
@@ -23,7 +24,7 @@ import java.io.File
  */
 fun Application.configureStaticContent() {
     // Get the upload base directory
-    val uploadBaseDir = System.getenv("UPLOAD_DIR") ?: "uploads"
+    val uploadBaseDir = DotEnvConfig.uploadDir
     val uploadDir = File(uploadBaseDir).canonicalFile
 
     if (!uploadDir.exists()) {

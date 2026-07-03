@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CartSummaryResponse(
     val items: List<CartItemSummary>,
-    val subtotal: Double,
-    val estimatedTax: Double,
+    val subtotal: String,
+    val estimatedTax: String,
     val itemCount: Int,
 )
 
@@ -14,7 +14,7 @@ data class CartSummaryResponse(
 data class CartItemSummary(
     val productId: String,
     val productName: String,
-    val price: Double,
+    val price: String,
     val quantity: Int,
     val image: String?,
     val stockQuantity: Int,

@@ -44,8 +44,8 @@ dependencies {
     // Database & migration
     implementation(libs.postgresql)
     implementation(libs.hikari)
-    implementation(libs.flyway.core)
     implementation(libs.exposed.core)
+    implementation(libs.flyway.core)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.dao)
     implementation(libs.exposed.java.time)

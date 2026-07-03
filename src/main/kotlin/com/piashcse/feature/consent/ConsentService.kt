@@ -5,8 +5,7 @@ import com.piashcse.constants.PolicyType
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.model.response.UserPolicyConsentResponse
-import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
@@ -21,12 +20,8 @@ class ConsentService : ConsentRepository {
         consentRequest: PolicyConsentRequest,
     ): UserPolicyConsentResponse =
         query {
-            if (userId.isBlank()) {
-                throw ValidationException(Message.Validation.blankField("User ID"))
-            }
-            if (consentRequest.policyId.isBlank()) {
-                throw ValidationException(Message.Validation.blankField("Policy ID"))
-            }
+            userId.requireNotBlank("User ID")
+            consentRequest.policyId.requireNotBlank("Policy ID")
 
             // Verify user and policy exist
             val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")

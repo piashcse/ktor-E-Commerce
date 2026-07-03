@@ -39,7 +39,7 @@ fun Route.brandAdminRoutes(brandService: BrandService) {
     post {
         val requestBody = call.receive<BrandRequest>()
         call.respond(
-            HttpStatusCode.OK,
+            HttpStatusCode.Created,
             brandService.createBrand(requestBody.name),
         )
     }

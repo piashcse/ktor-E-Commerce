@@ -25,6 +25,9 @@ fun findSellerByUserId(userId: String): SellerDAO? =
 fun requireSellerByUserId(userId: String): SellerDAO =
     findSellerByUserId(userId) ?: throw ForbiddenException("User is not registered as a seller")
 
-/** Checks if a seller owns a specific shop. */
+/** Checks if a seller owns a specific shop. Uses the provided seller or looks it up. */
 fun sellerOwnsShop(userId: String, shopId: String): Boolean =
-    findSellerByUserId(userId)?.shopId?.value == shopId
+    sellerOwnsShop(findSellerByUserId(userId), shopId)
+
+fun sellerOwnsShop(seller: SellerDAO?, shopId: String): Boolean =
+    seller?.shopId?.value == shopId

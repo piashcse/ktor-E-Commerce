@@ -1,5 +1,6 @@
 package com.piashcse.service
 
+import com.piashcse.config.DotEnvConfig
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.content.*
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +22,7 @@ import java.util.*
  */
 object UploadService {
     // Upload configuration
-    private val uploadBaseDir = System.getenv("UPLOAD_DIR") ?: "uploads"
+    private val uploadBaseDir = DotEnvConfig.uploadDir
 
     // Upload directories
     private const val PROFILE_DIR = "profile-images"
@@ -181,6 +182,21 @@ object UploadService {
      * Deletes a product image.
      */
     fun deleteProductImage(fileName: String?): Boolean = delete(PRODUCT_DIR, fileName)
+
+    /**
+     * Deletes a shop image.
+     */
+    fun deleteShopImage(fileName: String?): Boolean = delete(SHOP_DIR, fileName)
+
+    /**
+     * Deletes a category image.
+     */
+    fun deleteCategoryImage(fileName: String?): Boolean = delete(CATEGORY_DIR, fileName)
+
+    /**
+     * Deletes a refund image.
+     */
+    fun deleteRefundImage(fileName: String?): Boolean = delete(REFUND_DIR, fileName)
 
     /**
      * Gets the public URL for an uploaded file.

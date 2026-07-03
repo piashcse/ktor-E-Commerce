@@ -36,7 +36,7 @@ fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategorySe
     post {
         val requestBody = call.receive<ProductSubCategoryRequest>()
         call.respond(
-            HttpStatusCode.OK,
+            HttpStatusCode.Created,
             subCategoryService.addProductSubCategory(requestBody),
         )
     }

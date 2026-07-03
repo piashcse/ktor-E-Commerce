@@ -11,13 +11,11 @@ import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
 import com.piashcse.utils.common.generateOTP
 import com.piashcse.utils.email.EmailSender
-import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.InvalidCredentialsException
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
-import com.piashcse.utils.validator.requireValidEmail
-import com.piashcse.utils.validator.requireValidPassword
+
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -32,7 +30,10 @@ class AuthService : AuthRepository {
         private const val REFRESH_TOKEN_EXPIRY_SECONDS = 7L * 24 * 60 * 60
         private const val MAX_LOGIN_ATTEMPTS = 5
         private const val ACCOUNT_LOCKOUT_MINUTES = 30L
+        private const val MAX_OTP_ATTEMPTS = 5
     }
+
+    private val otpAttemptsCache = mutableMapOf<String, Int>()
 
     // ── Token helpers ─────────────────────────────────────────────────────
 
@@ -112,48 +113,48 @@ class AuthService : AuthRepository {
 
     // ── Registration ──────────────────────────────────────────────────────
 
-    override suspend fun register(registerRequest: RegisterRequest): RegistrationResult = query {
+    override suspend fun register(registerRequest: RegisterRequest): RegistrationResult {
         validateRegisterRequest(registerRequest)
 
         val userTypeEnum = runCatching { UserType.valueOf(registerRequest.userType.uppercase()) }
             .getOrDefault(UserType.CUSTOMER)
 
-        val existingUser =
-            UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType eq userTypeEnum) }
-                .firstOrNull()
+        val (email, otp, result) = query {
+            val existingUser =
+                UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType eq userTypeEnum) }
+                    .firstOrNull()
 
-        val otp = generateOTP()
-        val otpExpiryTime = LocalDateTime.now().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
+            val otp = generateOTP()
+            val otpExpiryTime = LocalDateTime.now().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
 
-        if (existingUser != null) {
-            if (existingUser.isVerified) throw ValidationException(Message.Auth.USER_EXISTS)
-            if (existingUser.otpExpiry != null && existingUser.otpExpiry!!.isAfter(LocalDateTime.now())) {
-                throw ValidationException(Message.Auth.OTP_ALREADY_SENT)
+            if (existingUser != null) {
+                if (existingUser.isVerified) throw ValidationException(Message.Auth.USER_EXISTS)
+                if (existingUser.otpExpiry != null && existingUser.otpExpiry!!.isAfter(LocalDateTime.now())) {
+                    throw ValidationException(Message.Auth.OTP_ALREADY_SENT)
+                }
+                existingUser.otpCode = otp
+                existingUser.otpExpiry = otpExpiryTime
+                Triple(existingUser.email, otp, RegistrationResult.OtpResent(Message.Auth.OTP_SENT))
+            } else {
+                val inserted = UserDAO.new {
+                    email = registerRequest.email
+                    otpCode = otp
+                    otpExpiry = otpExpiryTime
+                    password = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, registerRequest.password.toCharArray())
+                    userType = userTypeEnum
+                }
+                UserProfileDAO.new { userId = inserted.id }
+                if (userTypeEnum == UserType.SELLER) {
+                    SellerDAO.new { userId = inserted.id; status = ShopStatus.PENDING }
+                }
+                Triple(inserted.email, otp, RegistrationResult.Created(inserted.id.value, registerRequest.email, Message.Auth.OTP_SENT))
             }
-            existingUser.otpCode = otp
-            existingUser.otpExpiry = otpExpiryTime
-            EmailSender.sendOtp(existingUser.email, otp, "Account Verification")
-            RegistrationResult.OtpResent(Message.Auth.OTP_SENT)
-        } else {
-            val inserted = UserDAO.new {
-                email = registerRequest.email
-                otpCode = otp
-                otpExpiry = otpExpiryTime
-                password = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, registerRequest.password.toCharArray())
-                userType = userTypeEnum
-            }
-            UserProfileDAO.new { userId = inserted.id }
-            if (userTypeEnum == UserType.SELLER) {
-                SellerDAO.new { userId = inserted.id; status = ShopStatus.PENDING }
-            }
-            EmailSender.sendOtp(inserted.email, otp, "Account Verification")
-            RegistrationResult.Created(inserted.id.value, registerRequest.email, Message.Auth.OTP_SENT)
         }
+        EmailSender.sendOtp(email, otp, "Account Verification")
+        return result
     }
 
     private fun validateRegisterRequest(request: RegisterRequest) {
-        requireValidEmail(request.email)
-        requireValidPassword(request.password)
         if (UserType.fromString(request.userType) == null) throw ValidationException(Message.Validation.INVALID_USER_TYPE)
     }
 
@@ -177,9 +178,7 @@ class AuthService : AuthRepository {
     }
 
     private fun validateLoginRequest(request: LoginRequest) {
-        requireValidEmail(request.email)
         if (UserType.fromString(request.userType) == null) throw ValidationException(Message.Validation.INVALID_USER_TYPE)
-        if (request.password.isBlank()) throw ValidationException(Message.Validation.EMPTY_PASSWORD)
     }
 
     private suspend fun checkAccountLockout(email: String, userTypeEnum: UserType) {
@@ -221,7 +220,34 @@ class AuthService : AuthRepository {
 
     override suspend fun otpVerification(userId: String, otp: String): Boolean = query {
         val userEntity = UserDAO.findById(userId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
-        if (userEntity.otpCode == otp) { userEntity.isVerified = true; true } else false
+
+        val attemptKey = "otp_attempts_$userId"
+        val currentAttempts = otpAttemptsCache.getOrDefault(attemptKey, 0)
+        if (currentAttempts >= MAX_OTP_ATTEMPTS) {
+            userEntity.otpCode = null
+            userEntity.otpExpiry = null
+            throw ValidationException(Message.Auth.OTP_INVALID)
+        }
+
+        if (userEntity.otpExpiry == null || userEntity.otpExpiry!!.isBefore(LocalDateTime.now())) {
+            throw ValidationException(Message.Auth.OTP_INVALID)
+        }
+
+        val isValid = userEntity.otpCode == otp
+        if (isValid) {
+            userEntity.isVerified = true
+            userEntity.otpCode = null
+            userEntity.otpExpiry = null
+            otpAttemptsCache.remove(attemptKey)
+            true
+        } else {
+            otpAttemptsCache[attemptKey] = currentAttempts + 1
+            if (currentAttempts + 1 >= MAX_OTP_ATTEMPTS) {
+                userEntity.otpCode = null
+                userEntity.otpExpiry = null
+            }
+            false
+        }
     }
 
     // ── Change Password ───────────────────────────────────────────────────
@@ -245,13 +271,15 @@ class AuthService : AuthRepository {
             ?: throw NotFoundException(Message.Auth.userNotFoundForRole(email, userTypeStr))
     }
 
-    override suspend fun forgetPassword(forgetPasswordRequest: ForgetPasswordRequest): String = query {
-        val user = findResetUserByEmail(forgetPasswordRequest.email, forgetPasswordRequest.userType)
-        val otp = generateOTP()
-        user.resetOtpCode = otp
-        user.resetOtpExpiry = LocalDateTime.now().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
-        EmailSender.sendOtp(user.email, otp, "Password Reset")
-        otp
+    override suspend fun forgetPassword(forgetPasswordRequest: ForgetPasswordRequest) {
+        val (email, otp) = query {
+            val user = findResetUserByEmail(forgetPasswordRequest.email, forgetPasswordRequest.userType)
+            val otp = generateOTP()
+            user.resetOtpCode = otp
+            user.resetOtpExpiry = LocalDateTime.now().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
+            user.email to otp
+        }
+        EmailSender.sendOtp(email, otp, "Password Reset")
     }
 
     override suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult = query {
@@ -262,7 +290,6 @@ class AuthService : AuthRepository {
 
         if (user.resetOtpCode != resetPasswordRequest.verificationCode) return@query ResetResult.InvalidOrExpiredOtp
 
-        requireValidPassword(resetPasswordRequest.newPassword)
         if (BCrypt.verifyer().verify(resetPasswordRequest.newPassword.toCharArray(), user.password).verified)
             throw ValidationException(Message.Auth.PASSWORD_SAME)
 
@@ -316,8 +343,8 @@ class AuthService : AuthRepository {
         action: String,
         block: (currentUser: UserDAO, targetUser: UserDAO) -> T,
     ): T = query {
-        if (currentUserId.isBlank()) throw ValidationException("Current user ID cannot be blank")
-        if (targetUserId.isBlank()) throw ValidationException("Target user ID cannot be blank")
+        currentUserId.requireNotBlank("Current User ID")
+        targetUserId.requireNotBlank("Target User ID")
 
         val currentUser = UserDAO.findById(currentUserId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
         val targetUser = UserDAO.findById(targetUserId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)

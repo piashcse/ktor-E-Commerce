@@ -78,3 +78,5 @@ class InternalServerException(message: String = Message.Errors.INTERNAL) :
     AppException(message, HttpStatusCode.InternalServerError)
 
 class DatabaseException(message: String) : AppException(message, HttpStatusCode.InternalServerError)
+
+class EmailException(message: String) : AppException(message, HttpStatusCode.InternalServerError)

@@ -34,14 +34,14 @@ class WishListService : WishListRepository {
         query {
             val product = ProductDAO.findById(productId) ?: productId.throwNotFound("ProductResponse")
 
-            val isExits =
+            val existing =
                 WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
                     .firstOrNull()
 
-            if (isExits == null) {
+            if (existing == null) {
                 WishListDAO.new {
                     this.userId = EntityID(userId, WishListTable)
-                    this.productId = EntityID(productId, WishListTable)
+                    this.productId = EntityID(productId, ProductTable)
                 }.response(product.response())
             } else {
                 throw productId.throwConflict("ProductResponse")
@@ -87,10 +87,9 @@ class WishListService : WishListRepository {
             val wishListItem =
                 WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
                     .firstOrNull() ?: productId.throwNotFound("ProductResponse")
-
-            val productResponse = ProductDAO.findById(productId)?.response() ?: productId.throwNotFound("ProductResponse")
+            val product = ProductDAO.findById(productId)?.response() ?: productId.throwNotFound("ProductResponse")
             wishListItem.delete()
-            productResponse
+            product
         }
 
     override suspend fun isProductInWishList(

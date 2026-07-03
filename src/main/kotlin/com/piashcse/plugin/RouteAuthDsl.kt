@@ -2,6 +2,7 @@ package com.piashcse.plugin
 
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.JwtTokenRequest
+import com.piashcse.utils.common.ApiError
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -33,7 +34,7 @@ val RoleAuthorizationPlugin =
 
             val hasAccess = allowedRoles.any { role -> principal.hasAccessTo(role) }
             if (!hasAccess) {
-                call.respond(HttpStatusCode.Forbidden, mapOf("error" to "Permission Denied: Insufficient privileges"))
+                call.respond(HttpStatusCode.Forbidden, ApiError("Permission Denied: Insufficient privileges"))
             }
         }
     }

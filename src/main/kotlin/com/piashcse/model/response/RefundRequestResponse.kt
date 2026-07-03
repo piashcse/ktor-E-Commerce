@@ -13,7 +13,7 @@ data class RefundRequestResponse(
     val reason: String,
     val images: String?,
     val status: RefundStatus,
-    val refundAmount: Double?,
+    val refundAmount: String?,
     val refundMethod: RefundMethod?,
     val trackingNumber: String?,
     val requestedAt: String,

@@ -4,40 +4,40 @@ import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.ProductResponse
+import com.piashcse.mapper.toProductResponse
+import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.eq
 import java.math.BigDecimal
 
 object ProductTable : BaseIdTable("product") {
-    val userId = reference("user_id", UserTable.id) // Original creator/seller
-    val shopId = reference("shop_id", ShopTable.id).nullable() // Shop that currently sells this product
+    val userId = reference("user_id", UserTable.id)
+    val shopId = reference("shop_id", ShopTable.id).nullable()
     val name = text("name")
     val description = text("description")
     val categoryId = reference("category_id", ProductCategoryTable.id)
     val subCategoryId = reference("sub_category_id", ProductSubCategoryTable.id).nullable()
     val brandId = reference("brand_id", BrandTable.id).nullable()
-    val sku = varchar("sku", 100).uniqueIndex() // Stock Keeping Unit - unique identifier
-    val barcode = varchar("barcode", 100).nullable().index() // ProductResponse barcode for tracking
-    val weight = decimal("weight", 10, 3).nullable() // Weight in kg
-    val dimensions = varchar("dimensions", 100).nullable() // Length x Width x Height in cm
-    val minOrderQuantity = integer("min_order_quantity").default(1) // Minimum quantity required for purchase
-    val price = decimal("price", 10, 2) // Using decimal for accurate monetary calculations
+    val sku = varchar("sku", 100).uniqueIndex()
+    val barcode = varchar("barcode", 100).nullable().index()
+    val weight = decimal("weight", 10, 3).nullable()
+    val dimensions = varchar("dimensions", 100).nullable()
+    val minOrderQuantity = integer("min_order_quantity").default(1)
+    val price = decimal("price", 10, 2)
     val discountPrice = decimal("discount_price", 10, 2).nullable()
-    val discountPercentage = decimal("discount_percentage", 5, 2).nullable() // Discount percentage
+    val discountPercentage = decimal("discount_percentage", 5, 2).nullable()
     val videoLink = text("video_link").nullable()
-    val hotDeal = bool("hot_deal").default(false) // Whether it's a hot deal or not
-    val featured = bool("featured").default(false) // Whether the product is featured or not
-    val bestSeller = bool("best_seller").default(false) // Whether the product is a best seller
-    val newProduct = bool("new_product").default(false) // Whether the product is newly added
-    val freeShipping = bool("free_shipping").default(false) // Whether the product offers free shipping
-    val images = varchar("images", 2000) // Comma-separated image URLs for the product - increased size
-    val status = enumerationByName<ProductStatus>("status", 50).default(ProductStatus.ACTIVE) // ProductResponse status
-    val viewCount = integer("view_count").default(0) // Number of times the product has been viewed
-    val rating = decimal("rating", 3, 2).default(BigDecimal("0.00")) // Average rating
-    val totalReviews = integer("total_reviews").default(0) // Total number of reviews
-    val totalSales = integer("total_sales").default(0) // Total number of items sold
-    val stockQuantity = integer("stock_quantity").default(0) // Current available stock quantity
-    // createdAt and updatedAt are inherited from BaseIdTable
+    val hotDeal = bool("hot_deal").default(false)
+    val featured = bool("featured").default(false)
+    val bestSeller = bool("best_seller").default(false)
+    val newProduct = bool("new_product").default(false)
+    val freeShipping = bool("free_shipping").default(false)
+    val status = enumerationByName<ProductStatus>("status", 50).default(ProductStatus.ACTIVE)
+    val viewCount = integer("view_count").default(0)
+    val rating = decimal("rating", 3, 2).default(BigDecimal("0.00"))
+    val totalReviews = integer("total_reviews").default(0)
+    val totalSales = integer("total_sales").default(0)
+    val stockQuantity = integer("stock_quantity").default(0)
 }
 
 class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
@@ -64,7 +64,6 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
     var bestSeller by ProductTable.bestSeller
     var newProduct by ProductTable.newProduct
     var freeShipping by ProductTable.freeShipping
-    var images by ProductTable.images
     var status by ProductTable.status
     var viewCount by ProductTable.viewCount
     var rating by ProductTable.rating
@@ -72,36 +71,22 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
     var totalSales by ProductTable.totalSales
     var stockQuantity by ProductTable.stockQuantity
 
-    fun response() =
-        ProductResponse(
-            id = id.value,
-            userId = userId.value,
-            shopId = shopId?.value,
-            categoryId = categoryId.value,
-            subCategoryId = subCategoryId?.value,
-            brandId = brandId?.value,
-            name = name,
-            description = description,
-            sku = sku,
-            barcode = barcode,
-            weight = weight?.toDouble(),
-            dimensions = dimensions,
-            minOrderQuantity = minOrderQuantity,
-            stockQuantity = stockQuantity,
-            price = price.toDouble(),
-            discountPrice = discountPrice?.toDouble(),
-            discountPercentage = discountPercentage?.toDouble(),
-            videoLink = videoLink,
-            hotDeal = hotDeal,
-            featured = featured,
-            bestSeller = bestSeller,
-            newProduct = newProduct,
-            freeShipping = freeShipping,
-            images = images,
-            status = status,
-            viewCount = viewCount,
-            rating = rating.toDouble(),
-            totalReviews = totalReviews,
-            totalSales = totalSales,
-        )
+    val imageUrls: List<String>
+        get() = ProductImageDAO.find { ProductImageTable.productId eq id }
+            .orderBy(ProductImageTable.sortOrder to SortOrder.ASC)
+            .map { it.imageUrl }
+
+    fun setImages(urls: List<String>) {
+        ProductImageDAO.find { ProductImageTable.productId eq id }.forEach { it.delete() }
+        urls.forEachIndexed { index, url ->
+            ProductImageDAO.new {
+                productId = this@ProductDAO.id
+                imageUrl = url
+                sortOrder = index
+            }
+        }
+    }
+
+    @Deprecated("Use toProductResponse() from com.piashcse.mapper", ReplaceWith("toProductResponse()"))
+    fun response() = toProductResponse()
 }

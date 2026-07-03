@@ -17,7 +17,7 @@ fun Route.shopCategoryAdminRoutes(shopCategoryService: ShopCategoryService) {
     post {
         val requestBody = call.receive<ShopCategoryRequest>()
         call.respond(
-            HttpStatusCode.OK,
+            HttpStatusCode.Created,
             shopCategoryService.createCategory(requestBody.name),
         )
     }

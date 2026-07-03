@@ -50,7 +50,7 @@ class RefundRequestDAO(id: EntityID<String>) : BaseEntity(id, RefundRequestTable
             reason = reason,
             images = images,
             status = status,
-            refundAmount = refundAmount?.toDouble(),
+            refundAmount = refundAmount?.toPlainString(),
             refundMethod = refundMethod,
             trackingNumber = trackingNumber,
             requestedAt = requestedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),

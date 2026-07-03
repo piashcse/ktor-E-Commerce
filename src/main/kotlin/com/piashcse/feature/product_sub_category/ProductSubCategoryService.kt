@@ -11,6 +11,7 @@ import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -30,20 +31,16 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
      */
     override suspend fun addProductSubCategory(productSubCategory: ProductSubCategoryRequest): ProductSubCategoryResponse =
         query {
-            val isCategoryIdExist =
-                ProductCategoryDAO.findById(productSubCategory.categoryId)
-            isCategoryIdExist?.let {
-                val isSubCategoryExist =
-                    ProductSubCategoryDAO.find {
-                        ProductSubCategoryTable.name eq productSubCategory.name
-                    }.firstOrNull()
-                isSubCategoryExist?.let {
-                    throw productSubCategory.name.throwConflict("Subcategory")
-                } ?: ProductSubCategoryDAO.new {
-                    categoryId = EntityID(productSubCategory.categoryId, ProductSubCategoryTable)
-                    name = productSubCategory.name
-                }.response()
-            } ?: productSubCategory.categoryId.throwNotFound("Category")
+            ProductCategoryDAO.findById(productSubCategory.categoryId) ?: productSubCategory.categoryId.throwNotFound("Category")
+            val isSubCategoryExist = ProductSubCategoryDAO.find {
+                (ProductSubCategoryTable.categoryId eq EntityID(productSubCategory.categoryId, ProductSubCategoryTable)) and
+                    (ProductSubCategoryTable.name eq productSubCategory.name)
+            }.firstOrNull()
+            isSubCategoryExist?.let { throw productSubCategory.name.throwConflict("Subcategory") }
+            ProductSubCategoryDAO.new {
+                categoryId = EntityID(productSubCategory.categoryId, ProductSubCategoryTable)
+                name = productSubCategory.name
+            }.response()
         }
 
     /**
@@ -78,12 +75,9 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
         name: String,
     ): ProductSubCategoryResponse =
         query {
-            val suCategoryExist =
-                ProductSubCategoryDAO.findById(id)
-            suCategoryExist?.let {
-                it.name = name
-                it.response()
-            } ?: id.throwNotFound("Subcategory")
+            val subCategory = ProductSubCategoryDAO.findById(id) ?: id.throwNotFound("Subcategory")
+            subCategory.name = name
+            subCategory.response()
         }
 
     /**
@@ -95,11 +89,8 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
      */
     override suspend fun deleteProductSubCategory(subCategoryId: String): String =
         query {
-            val isSubCategoryExist =
-                ProductSubCategoryDAO.findById(subCategoryId)
-            isSubCategoryExist?.let {
-                isSubCategoryExist.delete()
-                subCategoryId
-            } ?: subCategoryId.throwNotFound("Subcategory")
+            val subCategory = ProductSubCategoryDAO.findById(subCategoryId) ?: subCategoryId.throwNotFound("Subcategory")
+            subCategory.delete()
+            subCategoryId
         }
 }
