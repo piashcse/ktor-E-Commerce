@@ -6,11 +6,11 @@ import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
 @Serializable
-data class ForgetPasswordRequest(val email: String, val userType: String) {
+data class ForgotPasswordRequest(val email: String, val userType: String) {
     init {
         validate(this) {
-            validate(ForgetPasswordRequest::email).isNotNull().isEmail()
-            validate(ForgetPasswordRequest::userType).isNotNull()
+            validate(ForgotPasswordRequest::email).isNotNull().isEmail()
+            validate(ForgotPasswordRequest::userType).isNotNull()
         }
     }
 }

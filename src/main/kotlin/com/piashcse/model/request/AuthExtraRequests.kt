@@ -17,6 +17,12 @@ data class RefreshTokenRequest(val refreshToken: String) {
 data class LogoutRequest(val refreshToken: String = "")
 
 @Serializable
+data class ChangePasswordRequest(
+    val oldPassword: String,
+    val newPassword: String,
+)
+
+@Serializable
 data class TokenPair(
     val accessToken: String,
     val refreshToken: String,

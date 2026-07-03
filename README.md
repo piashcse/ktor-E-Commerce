@@ -508,7 +508,7 @@ http://localhost:8080/api/v1/auth/otp-verification?userId={userId}&otp={otp}
 </details>
 
 <details>
-<summary> <code>POST</code> <code>/api/v1/auth/forget-password</code></summary>
+<summary> <code>POST</code> <code>/api/v1/auth/forgot-password</code></summary>
 
 ### Description
 Request password reset OTP.
@@ -516,7 +516,7 @@ Request password reset OTP.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/auth/forget-password' \
+  'http://localhost:8080/api/v1/auth/forgot-password' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -527,7 +527,7 @@ curl -X 'POST' \
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/auth/forget-password
+http://localhost:8080/api/v1/auth/forgot-password
 ```
 
 ### Response
@@ -649,14 +649,27 @@ Change password for authenticated user.
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/auth/change-password?oldPassword=p123&newPassword=newPassword123!' \
+  'http://localhost:8080/api/v1/auth/change-password' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer <token>'
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "oldPassword": "p123",
+  "newPassword": "newPassword123!"
+}'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/auth/change-password?oldPassword={oldPassword}&newPassword={newPassword}
+http://localhost:8080/api/v1/auth/change-password
+```
+
+### Request Body
+```json
+{
+  "oldPassword": "current-password",
+  "newPassword": "new-password"
+}
 ```
 
 ### Response

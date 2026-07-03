@@ -11,7 +11,7 @@ This documentation provides comprehensive details for the Authentication API end
 | `POST` | `/api/v1/auth/login` | Authenticate user and receive access + refresh tokens | No |
 | `POST` | `/api/v1/auth/register` | Register a new user account | No |
 | `GET` | `/api/v1/auth/otp-verification` | Verify OTP for account activation | No |
-| `POST` | `/api/v1/auth/forget-password` | Request password reset verification code | No |
+| `POST` | `/api/v1/auth/forgot-password` | Request password reset verification code | No |
 | `POST` | `/api/v1/auth/reset-password` | Reset password using verification code | No |
 | `POST` | `/api/v1/auth/refresh-token` | Refresh access token using refresh token | No |
 | `POST` | `/api/v1/auth/logout` | Logout and revoke refresh token | Yes |
@@ -169,9 +169,9 @@ true
 
 ---
 
-### 4. Forget Password
+### 4. Forgot Password
 
-**`POST /api/v1/auth/forget-password`**
+**`POST /api/v1/auth/forgot-password`**
 
 Request a password reset verification code. The code will be sent to the user's email address.
 
@@ -188,7 +188,7 @@ Request a password reset verification code. The code will be sent to the user's 
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/auth/forget-password' \
+  'http://localhost:8080/api/v1/auth/forgot-password' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -350,7 +350,7 @@ curl -X 'POST' \
 
 Change password for an authenticated user. Requires valid access token.
 
-#### Query Parameters
+#### Request Body
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -362,14 +362,20 @@ Change password for an authenticated user. Requires valid access token.
 | Header | Value | Required |
 |--------|-------|----------|
 | `Authorization` | `Bearer <access_token>` | Yes |
+| `Content-Type` | `application/json` | Yes |
 
 #### Example Request
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/auth/change-password?oldPassword=p1234&newPassword=newp1234' \
+  'http://localhost:8080/api/v1/auth/change-password' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "oldPassword": "p1234",
+    "newPassword": "newp1234"
+  }'
 ```
 
 #### Example Response
@@ -558,7 +564,7 @@ All error messages are centralized and consistent across all endpoints.
 ## Security Features
 
 ### Rate Limiting
-Auth endpoints (`login`, `register`, `forget-password`, `reset-password`) are rate-limited to **5 requests per 10 minutes** per IP address. Exceeding this limit returns a `429 Too Many Requests` response.
+Auth endpoints (`login`, `register`, `forgot-password`, `reset-password`) are rate-limited to **5 requests per 10 minutes** per IP address. Exceeding this limit returns a `429 Too Many Requests` response.
 
 ### Account Lockout
 After **5 consecutive failed login attempts**, the account is automatically locked for **30 minutes**. The login response includes remaining attempts count until the lockout is triggered.

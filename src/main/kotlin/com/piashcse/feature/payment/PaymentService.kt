@@ -18,6 +18,7 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import java.math.BigDecimal
 
 /**
  * Service for managing payment-related operations.
@@ -37,10 +38,11 @@ class PaymentService : PaymentRepository {
                     ?: return@query paymentRequest.orderId.throwNotFound("Order")
 
             // Validate amount matches order total
-            val orderTotal = order.total.toLong()
-            if (paymentRequest.amount != orderTotal) {
-                throw com.piashcse.utils.validator.ValidationException(
-                    "PaymentResponse amount (${paymentRequest.amount}) does not match order total ($orderTotal)",
+            val orderTotal = order.total
+            val paymentAmount = BigDecimal(paymentRequest.amount.toString())
+            if (paymentAmount.compareTo(orderTotal) != 0) {
+                throw ValidationException(
+                    "Payment amount (${paymentRequest.amount}) does not match order total ($orderTotal)",
                 )
             }
 
@@ -51,8 +53,8 @@ class PaymentService : PaymentRepository {
                         (PaymentTable.status eq PaymentStatus.COMPLETED)
                 }.toList()
 
-            val paidAmount = existingPayments.sumOf { it.amount }
-            if (paidAmount >= orderTotal) {
+            val paidAmount = existingPayments.sumOf { BigDecimal(it.amount.toString()) }
+            if (paidAmount.compareTo(orderTotal) >= 0) {
                 throw ValidationException("Order already fully paid")
             }
 
@@ -68,7 +70,7 @@ class PaymentService : PaymentRepository {
                 }
 
             // Update order payment status if fully paid
-            if (paidAmount + paymentRequest.amount >= orderTotal) {
+            if (paidAmount.add(paymentAmount).compareTo(orderTotal) >= 0) {
                 order.paymentStatus = PaymentStatus.COMPLETED
             }
 

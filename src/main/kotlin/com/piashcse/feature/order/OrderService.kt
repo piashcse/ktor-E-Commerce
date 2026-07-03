@@ -5,6 +5,7 @@ import com.piashcse.constants.CouponDiscountType
 import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.ProductStatus
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
@@ -40,7 +41,7 @@ class OrderService : OrderRepository {
         checkoutRequest: CheckoutRequest,
     ): List<OrderResponse> = query {
         checkoutRequest.idempotencyKey?.let { key ->
-            OrderDAO.find { OrderTable.idempotencyKey eq key }.toList().takeIf { it.isNotEmpty() }
+            OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.toList().takeIf { it.isNotEmpty() }
                 ?.let { return@query it.map { it.toOrderResponse() } }
         }
 
@@ -96,7 +97,9 @@ class OrderService : OrderRepository {
 
             items.forEach { cartItem ->
                 val product = productsMap[cartItem.productId.value]!!
-                if (product.effectiveStock() < cartItem.quantity)
+                if (product.status != ProductStatus.ACTIVE)
+                    throw ValidationException(Message.Products.OUT_OF_STOCK)
+                if (product.effectiveStock(forUpdate = true) < cartItem.quantity)
                     throw ValidationException(Message.Validation.insufficientStock(product.name, product.effectiveStock()))
 
                 val unitPrice = product.discountPrice ?: product.price
@@ -128,7 +131,8 @@ class OrderService : OrderRepository {
 
         checkoutRequest.couponCode?.let { code ->
             val totalSubTotal = createdOrders.map { it.subTotal }.reduce(BigDecimal::add)
-            val discount = validateAndApplyCoupon(code, totalSubTotal.toDouble())
+            val coupon = validateCoupon(code, totalSubTotal.toDouble(), forUpdate = true)
+            val discount = applyCoupon(coupon, totalSubTotal.toDouble())
             createdOrders.forEach { order ->
                 val proportion = order.subTotal.divide(totalSubTotal, 10, RoundingMode.HALF_UP)
                 val orderDiscount = discount.multiply(proportion).setScale(2, RoundingMode.HALF_UP)
@@ -203,15 +207,17 @@ class OrderService : OrderRepository {
         )
 
         checkoutRequest.couponCode?.let {
-            val discount = validateAndApplyCoupon(it, subTotal.toDouble())
+            val coupon = validateCoupon(it, subTotal.toDouble())
+            val discount = applyCoupon(coupon, subTotal.toDouble())
             val discountedTotal = baseTotal.subtract(discount).setScale(2, RoundingMode.HALF_UP)
             response = response.copy(discountAmount = discount.setScale(2, RoundingMode.HALF_UP).toPlainString(), total = discountedTotal.toPlainString())
         }
         response
     }
 
-    private fun validateAndApplyCoupon(code: String, orderAmount: Double): BigDecimal {
-        val coupon = CouponDAO.find { CouponTable.code eq code and (CouponTable.isActive eq true) }.firstOrNull()
+    private fun validateCoupon(code: String, orderAmount: Double, forUpdate: Boolean = false): CouponDAO {
+        val query = CouponDAO.find { CouponTable.code eq code and (CouponTable.isActive eq true) }
+        val coupon = (if (forUpdate) query.forUpdate() else query).firstOrNull()
             ?: throw ValidationException("Invalid or inactive coupon code")
 
         val now = LocalDateTime.now()
@@ -224,6 +230,11 @@ class OrderService : OrderRepository {
         if (coupon.usageLimit != null && coupon.usageCount >= coupon.usageLimit!!)
             throw ValidationException("Coupon usage limit reached")
 
+        return coupon
+    }
+
+    private fun applyCoupon(coupon: CouponDAO, orderAmount: Double): BigDecimal {
+        coupon.usageCount += 1
         val discountAmount = when (coupon.discountType) {
             CouponDiscountType.PERCENTAGE -> {
                 var amount = BigDecimal(orderAmount).multiply(BigDecimal(coupon.discountValue / 100.0))
@@ -232,7 +243,6 @@ class OrderService : OrderRepository {
             }
             CouponDiscountType.FIXED -> BigDecimal(coupon.discountValue)
         }
-        coupon.usageCount += 1
         return discountAmount.setScale(2, RoundingMode.HALF_UP)
     }
 
@@ -245,7 +255,7 @@ class OrderService : OrderRepository {
         if (orderRequest.orderItems.isEmpty()) throw ValidationException(Message.Validation.EMPTY_ORDER_ITEMS)
 
         idempotencyKey?.let { key ->
-            OrderDAO.find { OrderTable.idempotencyKey eq key }.firstOrNull()
+            OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.firstOrNull()
                 ?.let { return@query listOf(it.toOrderResponse()) }
         }
 
@@ -257,6 +267,8 @@ class OrderService : OrderRepository {
         orderRequest.orderItems.forEach { item ->
             val product = productsMap[item.productId]
                 ?: throw ValidationException(Message.Validation.productNotFound(item.productId))
+            if (product.status != ProductStatus.ACTIVE)
+                throw ValidationException(Message.Products.OUT_OF_STOCK)
             if (product.effectiveStock() < item.quantity)
                 throw ValidationException(Message.Validation.insufficientStock(product.name, product.effectiveStock()))
             if (product.shopId == null) throw ValidationException(Message.Orders.productDoesNotBelongToShop(product.name))
@@ -373,6 +385,9 @@ class OrderService : OrderRepository {
         val isAdmin = user.userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
 
         if (!isCustomer && !isSeller && !isAdmin) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
+
+        if (!OrderStatus.canTransitionTo(order.status, status))
+            throw ValidationException(Message.Orders.INVALID_STATUS)
 
         order.status = status
         logStatusChange(order.id.value, status, "Status updated by user", userId)

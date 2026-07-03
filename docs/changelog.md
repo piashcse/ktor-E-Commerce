@@ -4,121 +4,100 @@ hide:
 ---
 # Changelog
 
-## [4.1.0] - 2026-07-02
+## [3.5.0] - 27 May 2026
 
-### Enum Migration & API Cleanup
+### What's Changed
 
-- **(refactor)** - **Varchar to Enum**: Migrated 9 DB columns from raw `varchar` to `enumerationByName` for type safety: `coupon.discount_type`, `review_rating.status`, `refund_request.status`/`refund_method`, `payment.payment_method`, `order.payment_method`, `login_attempt.user_type`.
-- **(feat)** - **6 New Enums**: Added `CouponDiscountType`, `ReviewStatus`, `RefundStatus`, `RefundMethod`, `PaymentMethod` to `Enums.kt`.
-- **(refactor)** - **PolicyType Centralized**: Moved from nested `PolicyDocumentTable.PolicyType` to top-level `com.piashcse.constants.PolicyType`.
-- **(fix)** - **Pagination Naming**: Renamed `PaginationMetadata.skip` → `offset` for consistency with query parameter naming.
-- **(perf)** - **N+1 Fixes**: Batch-fetch in `CartService.getCartSummary()` and `OrderService.placeOrder()`; added `OrderItemDAO.itemsForOrders()` batch loader.
-- **(fix)** - **Exception Types**: `CouponService` now throws `NotFoundException` (404) instead of generic `Exception` (500).
-- **(fix)** - **EntityID Table Refs**: Corrected wrong table references in `ShopService.kt` and `ReviewRatingService.kt`.
-- **(refactor)** - **Centralized Pagination**: Extracted `Query.toPaginatedList()` building block; centralized defaults in `AppConstants.Pagination`.
-- **(refactor)** - **Validation**: `CallExt.paginateQueryParams()` now validates invalid params instead of silent fallback.
-- **(fix)** - **DateTimeParseException**: Caught and rethrown as `ValidationException` in `CouponService`.
-- **(refactor)** - **UploadService**: Consolidated 5 identical `MAX_*_SIZE` constants to 1 shared `MAX_FILE_SIZE`.
-- **(refactor)** - **Magic Numbers**: Extracted constants in `BrandService`, `InventoryService`, `StaticContent`.
+- Optimized pagination by [@piashcse](https://github.com/piashcse) in [#101](https://github.com/piashcse/ktor-E-Commerce/pull/101)
+- Improve code structure and refactoring by [@piashcse](https://github.com/piashcse) in [#102](https://github.com/piashcse/ktor-E-Commerce/pull/102)
+- Separate admin api routes with admin prefix by [@piashcse](https://github.com/piashcse) in [#103](https://github.com/piashcse/ktor-E-Commerce/pull/103)
+- Update readme and docs for Mkdocs by [@piashcse](https://github.com/piashcse) in [#104](https://github.com/piashcse/ktor-E-Commerce/pull/104)
+- Rename and code refactoring by [@piashcse](https://github.com/piashcse) in [#105](https://github.com/piashcse/ktor-E-Commerce/pull/105)
+- Seperate seller api routes by [@piashcse](https://github.com/piashcse) in [#106](https://github.com/piashcse/ktor-E-Commerce/pull/106)
+- Update docs and readme by [@piashcse](https://github.com/piashcse) in [#107](https://github.com/piashcse/ktor-E-Commerce/pull/107)
+- Update shipping address, method and coupons by [@piashcse](https://github.com/piashcse) in [#108](https://github.com/piashcse/ktor-E-Commerce/pull/108)
+- Update README.md and mkdocs by [@piashcse](https://github.com/piashcse) in [#109](https://github.com/piashcse/ktor-E-Commerce/pull/109)
+- Update end points detail curl, request, response by [@piashcse](https://github.com/piashcse) in [#110](https://github.com/piashcse/ktor-E-Commerce/pull/110)
+- Fixing tags naming issue for OpenApiSpec by [@piashcse](https://github.com/piashcse) in [#111](https://github.com/piashcse/ktor-E-Commerce/pull/111)
+- Implement static analyser ktlint and detekt by [@piashcse](https://github.com/piashcse) in [#112](https://github.com/piashcse/ktor-E-Commerce/pull/112)
+- Update readme by [@piashcse](https://github.com/piashcse) in [#113](https://github.com/piashcse/ktor-E-Commerce/pull/113)
+- Update ktor 3.4.3 to 3.5.0 by [@piashcse](https://github.com/piashcse) in [#114](https://github.com/piashcse/ktor-E-Commerce/pull/114)
+- Update required params according to ktor 3.5.0 by [@piashcse](https://github.com/piashcse) in [#115](https://github.com/piashcse/ktor-E-Commerce/pull/115)
+- Code refactor and updates for paginate query params by [@piashcse](https://github.com/piashcse) in [#116](https://github.com/piashcse/ktor-E-Commerce/pull/116)
+- Update request validation by [@piashcse](https://github.com/piashcse) in [#117](https://github.com/piashcse/ktor-E-Commerce/pull/117)
+- Improve security according to roadmap by [@piashcse](https://github.com/piashcse) in [#118](https://github.com/piashcse/ktor-E-Commerce/pull/118)
 
----
+**Full Changelog**: [3.4.1...3.5.0](https://github.com/piashcse/ktor-E-Commerce/compare/3.4.1...3.5.0)
 
-## [4.0.0] - 2026-05-03
+## [3.4.1] - 17 Apr 2026
 
-### API Standardization & V2 Migration
+### What's Changed
 
-- **(feat)** - **Root-to-Swagger Redirect**: Implemented an automatic redirect from the root URL (`/`) to the Swagger UI (`/swagger`) for better API discoverability.
-- **(feat)** - **V2 Optimized Endpoints**: Introduced `v2` namespace for optimized API contracts.
-    - Added `PUT /api/v2/seller/shops/{shopId}` with source tracking and streamlined response structure.
-- **(refactor)** - **Routing Architecture**: Standardized URL prefixes for better role isolation and organization:
-    - Seller routes now prefixed with `/api/v1/seller/` or `/api/v2/seller/`.
-    - Admin routes now prefixed with `/api/v1/admin/`.
-- **(refactor)** - **Composition-Based Routing**: Transitioned from conditional logic within routes to a composition-based pattern (e.g., separate functions for V1 and V2), improving maintainability and isolation.
-- **(docs)** - **OpenAPI Tags**: Added comprehensive `@tag` and `@description` annotations to all feature routes for high-quality Swagger documentation.
-- **(docs)** - **Documentation Overhaul**: Updated project `README.md` and `docs/*.md` files to reflect the new routing structure and V2 endpoints.
+- Update ktor 3.4.0 to 3.4.1 by [@piashcse](https://github.com/piashcse) in [#90](https://github.com/piashcse/ktor-E-Commerce/pull/90)
+- Fixing LocalDateTime issues by [@piashcse](https://github.com/piashcse) in [#91](https://github.com/piashcse/ktor-E-Commerce/pull/91)
+- Update ktor version 3.4.1 to 3.4.2 by [@piashcse](https://github.com/piashcse) in [#92](https://github.com/piashcse/ktor-E-Commerce/pull/92)
+- Improvement phase 1 by [@piashcse](https://github.com/piashcse) in [#93](https://github.com/piashcse/ktor-E-Commerce/pull/93)
+- Implemented Rate limit by [@piashcse](https://github.com/piashcse) in [#94](https://github.com/piashcse/ktor-E-Commerce/pull/94)
+- Implemented Refund order by [@piashcse](https://github.com/piashcse) in [#95](https://github.com/piashcse/ktor-E-Commerce/pull/95)
+- Optimize uploads by [@piashcse](https://github.com/piashcse) in [#96](https://github.com/piashcse/ktor-E-Commerce/pull/96)
+- Update pagination and api versioning by [@piashcse](https://github.com/piashcse) in [#97](https://github.com/piashcse/ktor-E-Commerce/pull/97)
+- Update versioning by [@piashcse](https://github.com/piashcse) in [#98](https://github.com/piashcse/ktor-E-Commerce/pull/98)
+- Simplified role and permission-related functionality by [@piashcse](https://github.com/piashcse) in [#99](https://github.com/piashcse/ktor-E-Commerce/pull/99)
+- Update mkdocs.yml by [@piashcse](https://github.com/piashcse) in [#100](https://github.com/piashcse/ktor-E-Commerce/pull/100)
 
----
+**Full Changelog**: [3.4.0...3.4.1](https://github.com/piashcse/ktor-E-Commerce/compare/3.4.0...3.4.1)
 
-## [3.6.0]
+## [3.4.0] - 30 Jan 2026
 
-### Per-Domain API Versioning
+### What's Changed
 
-- **(feat)** - Implemented per-domain API versioning with independent version lifecycle per feature (Stripe/Shopify pattern)
-- **(feat)** - Added `ApiVersionRegistry` as single source of truth for all domain version metadata
-- **(feat)** - Added `versionedRoute()` DSL extension using route-scoped plugin for automatic version headers
-- **(feat)** - Added `GET /api` discovery endpoint listing all domains with current, supported, and deprecated versions
-- **(feat)** - Automatic `X-Api-Version` and `X-Api-Domain` response headers on every API response
-- **(feat)** - RFC 8594 compliant `Sunset`, `Deprecation`, and `Link` headers for deprecated versions
-- **(feat)** - HTTP 410 Gone response for unsupported API versions
-- **(refactor)** - Migrated all 18 route files from inner `route()` wrappers to parent `versionedRoute()` DSL
-- **(refactor)** - Refactored `ConfigureRouting.kt` to use per-domain versioned route registration
-- **(docs)** - Added API Versioning section to README with discovery endpoint and header documentation
-- **(docs)** - Updated error codes table with HTTP 410 Gone status
+- Update review rating endpoints by [@piashcse](https://github.com/piashcse) in [#82](https://github.com/piashcse/ktor-E-Commerce/pull/82)
+- Improve seller module and Restructure the code by [@piashcse](https://github.com/piashcse) in [#83](https://github.com/piashcse/ktor-E-Commerce/pull/83)
+- Update readme closing tags by [@piashcse](https://github.com/piashcse) in [#84](https://github.com/piashcse/ktor-E-Commerce/pull/84)
+- Update readme docs by [@piashcse](https://github.com/piashcse) in [#85](https://github.com/piashcse/ktor-E-Commerce/pull/85)
+- Update doc for mkdocs by [@piashcse](https://github.com/piashcse) in [#86](https://github.com/piashcse/ktor-E-Commerce/pull/86)
+- Update kotlin 2.2.21 to 2.3.0 by [@piashcse](https://github.com/piashcse) in [#87](https://github.com/piashcse/ktor-E-Commerce/pull/87)
+- Update ktor 3.3.3 to 3.4.0 by [@piashcse](https://github.com/piashcse) in [#88](https://github.com/piashcse/ktor-E-Commerce/pull/88)
+- Code optimization by [@piashcse](https://github.com/piashcse) in [#89](https://github.com/piashcse/ktor-E-Commerce/pull/89)
 
-**URL Migration**: `/api/v1/*` → `/api/v1/*` (backward-compatible, no breaking changes)
-
----
-
-## [3.5.0]
-
-### API Standardization & Pagination
-
-- **(feat)** - Standardized pagination across all collection-based endpoints using `limit` and `offset` query parameters
-- **(feat)** - Implemented a unified `PaginatedResponse` wrapper for consistent data delivery
-- **(refactor)** - Transitioned all database services to use Exposed DSL pattern (`selectAll().limit().offset()`) for robust positional pagination support
-- **(fix)** - Resolved "Too many arguments for limit" compilation errors by moving away from SizedIterable pagination
-- **(docs)** - Standardized OpenAPI documentation across all features with proper pagination metadata
-- **(docs)** - Updated README andMkDocs with the new pagination standard
-
-## [3.4.0] - Latest
-
-### Security & Bug Fixes
-
-- **(security)** - Implemented rate limiting on auth endpoints (5 req/10min) to prevent brute-force attacks
-- **(security)** - Added login attempt tracking with automatic account lockout after 5 failed attempts (30min lock)
-- **(security)** - Enforced password strength validation on registration and password reset
-- **(security)** - Converted forget-password and reset-password to POST endpoints with JSON body
-- **(security)** - Implemented refresh token system with hashed storage and automatic revocation
-- **(security)** - Added logout endpoint to revoke refresh tokens
-- **(fix)** - Fixed inventory concurrency race condition with atomic stock operations in transaction
-- **(fix)** - Fixed EntityID table references in ProductService for all foreign key lookups
-- **(fix)** - Fixed duplicate DELETE route in ProductRoutes (merged seller/admin handlers)
-- **(fix)** - Fixed searchProduct memory explosion with SQL-level filtering
-- **(fix)** - Fixed adjustWhere filter logic bug with proper incremental AND chain
-- **(fix)** - Fixed getShops memory explosion with SQL-level filtering
-- **(fix)** - Fixed stockQuantity defaulting to 0 in update (now preserves existing value)
-- **(fix)** - Fixed image upload null cast with file type validation
-- **(fix)** - Fixed CORS configuration to use allowed origins from environment
-
-### Code Improvements
-
-- Extracted helper methods in InventoryService.updateStock for cleaner maintenance
-- Flattened nested conditionals in AuthService.login with single-responsibility methods
-- Extracted reusable predicate in LoginAttemptRepository
-- Simplified InvalidCredentialsException with companion object builder
-
-### New Endpoints
-
-- `POST /auth/refresh-token` - Refresh access token
-- `POST /auth/logout` - Logout and revoke tokens
-
-### Documentation
-
-- Updated auth.md with rate limiting, account lockout, and refresh token documentation
-- Updated inventory.md with atomic stock operations documentation
-
-**Full Changelog**: [3.3.0...3.4.0](https://github.com/piashcse/ktor-E-Commerce/compare/3.3.0...3.4.0)
+**Full Changelog**: [3.3.1...3.4.0](https://github.com/piashcse/ktor-E-Commerce/compare/3.3.1...3.4.0)
 
 ---
 
-## [3.3.0] - Latest
+## [3.3.1] - 28 Nov 2025
+
+### What's Changed
+
+- Improved package name and other naming convention by [@piashcse](https://github.com/piashcse) in [#63](https://github.com/piashcse/ktor-E-Commerce/pull/63)
+- Update ktor 3.1.3 to 3.2.0 by [@piashcse](https://github.com/piashcse) in [#64](https://github.com/piashcse/ktor-E-Commerce/pull/64)
+- Implemented mkdocs for API by [@piashcse](https://github.com/piashcse) in [#65](https://github.com/piashcse/ktor-E-Commerce/pull/65)
+- deploy docs by [@piashcse](https://github.com/piashcse) in [#66](https://github.com/piashcse/ktor-E-Commerce/pull/66)
+- Update Mkdocs by [@piashcse](https://github.com/piashcse) in [#67](https://github.com/piashcse/ktor-E-Commerce/pull/67)
+- Fixing mkdocs images by [@piashcse](https://github.com/piashcse) in [#68](https://github.com/piashcse/ktor-E-Commerce/pull/68)
+- Update mkdocs by [@piashcse](https://github.com/piashcse) in [#69](https://github.com/piashcse/ktor-E-Commerce/pull/69)
+- Update ktor 3.2.0 to 3.2.1 by [@piashcse](https://github.com/piashcse) in [#70](https://github.com/piashcse/ktor-E-Commerce/pull/70)
+- chore(deps): update dependencies by [@piashcse](https://github.com/piashcse) in [#71](https://github.com/piashcse/ktor-E-Commerce/pull/71)
+- Update ktor 3.2.2 to 3.2.3 by [@piashcse](https://github.com/piashcse) in [#72](https://github.com/piashcse/ktor-E-Commerce/pull/72)
+- Update ktor 3.2.3 to 3.3.0 by [@piashcse](https://github.com/piashcse) in [#73](https://github.com/piashcse/ktor-E-Commerce/pull/73)
+- Feature dot env by [@piashcse](https://github.com/piashcse) in [#74](https://github.com/piashcse/ktor-E-Commerce/pull/74)
+- Update exposed 1.0.0-rc-1 by [@piashcse](https://github.com/piashcse) in [#75](https://github.com/piashcse/ktor-E-Commerce/pull/75)
+- Updated exposed 1.0.0-rc-1 by [@piashcse](https://github.com/piashcse) in [#76](https://github.com/piashcse/ktor-E-Commerce/pull/76)
+- Code optimization by [@piashcse](https://github.com/piashcse) in [#77](https://github.com/piashcse/ktor-E-Commerce/pull/77)
+- Code Refactor by [@piashcse](https://github.com/piashcse) in [#78](https://github.com/piashcse/ktor-E-Commerce/pull/78)
+- Update ktor version 3.3.2 by [@piashcse](https://github.com/piashcse) in [#79](https://github.com/piashcse/ktor-E-Commerce/pull/79)
+- Update ktor openspec by [@piashcse](https://github.com/piashcse) in [#80](https://github.com/piashcse/ktor-E-Commerce/pull/80)
+- Update readme by [@piashcse](https://github.com/piashcse) in [#81](https://github.com/piashcse/ktor-E-Commerce/pull/81)
+
+**Full Changelog**: [3.3.0...3.3.1](https://github.com/piashcse/ktor-E-Commerce/compare/3.3.0...3.3.1)
+
+## [3.3.0] - 29 May 2025
 
 ### What's Changed
 
 - Update user profile table and user profile readme by [@piashcse](https://github.com/piashcse) in [#48](https://github.com/piashcse/ktor-E-Commerce/pull/48)
-- **(feat)** - Implemented privacy policy and user consent feature by [@piashcse](https://github.com/piashcse) in [#49](https://github.com/piashcse/ktor-E-Commerce/pull/49)
+- Implemented privacy policy and user consent feature by [@piashcse](https://github.com/piashcse) in [#49](https://github.com/piashcse/ktor-E-Commerce/pull/49)
 - Improve Privacy policy consent routes and optimization by [@piashcse](https://github.com/piashcse) in [#50](https://github.com/piashcse/ktor-E-Commerce/pull/50)
-- **(feat)** - Implemented single email register with multiple userType by [@piashcse](https://github.com/piashcse) in [#51](https://github.com/piashcse/ktor-E-Commerce/pull/51)
+- Implemented single email register with multiple userType by [@piashcse](https://github.com/piashcse) in [#51](https://github.com/piashcse/ktor-E-Commerce/pull/51)
 - Re-Architecture the piashcse/ktor-E-Commerce structure to onion architecture by [@piashcse](https://github.com/piashcse) in [#53](https://github.com/piashcse/ktor-E-Commerce/pull/53)
 - Update ktor 3.1.3 by [@piashcse](https://github.com/piashcse) in [#54](https://github.com/piashcse/ktor-E-Commerce/pull/54)
 - Improved architecture structure and naming convention by [@piashcse](https://github.com/piashcse) in [#55](https://github.com/piashcse/ktor-E-Commerce/pull/55)

@@ -43,9 +43,9 @@ fun Route.authRoutes(authService: AuthService) {
          * @tag Auth
          * @description Request password reset OTP
          */
-        post("forget-password") {
-            val requestBody = call.receive<ForgetPasswordRequest>()
-            authService.forgetPassword(requestBody)
+        post("forgot-password") {
+            val requestBody = call.receive<ForgotPasswordRequest>()
+            authService.forgotPassword(requestBody)
             call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_SENT))
         }
 
@@ -116,10 +116,9 @@ fun Route.authRoutes(authService: AuthService) {
          * @description Change password for authenticated user
          */
         put("change-password") {
-            val oldPassword = call.requireQueryParameter("oldPassword")
-            val newPassword = call.requireQueryParameter("newPassword")
+            val requestBody = call.receive<ChangePasswordRequest>()
             val currentUserId = call.currentUserId
-            authService.changePassword(currentUserId, ChangePassword(oldPassword, newPassword)).let {
+            authService.changePassword(currentUserId, ChangePassword(requestBody.oldPassword, requestBody.newPassword)).let {
                 if (it) {
                     call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
                 } else {

@@ -13,6 +13,7 @@ import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.extension.verifyOwnership
 import com.piashcse.utils.validator.ForbiddenException
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -55,6 +56,8 @@ class ReviewRatingService : ReviewRatingRepository {
         reviewRating: ReviewRatingRequest,
     ): ReviewRatingResponse =
         query {
+            if (reviewRating.rating < 1 || reviewRating.rating > 5)
+                throw ValidationException("Rating must be between 1 and 5")
             val isReviewRatingExist =
                 ReviewRatingDAO.find { ReviewRatingTable.userId eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
                     .singleOrNull()
@@ -85,6 +88,8 @@ class ReviewRatingService : ReviewRatingRepository {
         rating: Int,
     ): ReviewRatingResponse =
         query {
+            if (rating < 1 || rating > 5)
+                throw ValidationException("Rating must be between 1 and 5")
             val isReviewRatingExist =
                 ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
                     .singleOrNull()

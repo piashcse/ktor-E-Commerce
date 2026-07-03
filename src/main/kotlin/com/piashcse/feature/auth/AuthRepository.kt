@@ -3,7 +3,7 @@ package com.piashcse.feature.auth
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.database.entities.LoginResponse
-import com.piashcse.model.request.ForgetPasswordRequest
+import com.piashcse.model.request.ForgotPasswordRequest
 import com.piashcse.model.request.LoginRequest
 import com.piashcse.model.request.RefreshTokenRequest
 import com.piashcse.model.request.RegisterRequest
@@ -17,7 +17,7 @@ interface AuthRepository {
     suspend fun login(loginRequest: LoginRequest): LoginResponse
     suspend fun otpVerification(userId: String, otp: String): Boolean
     suspend fun changePassword(userId: String, changePassword: ChangePassword): Boolean
-    suspend fun forgetPassword(forgetPasswordRequest: ForgetPasswordRequest)
+    suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest)
     suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult
     suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair
     suspend fun logout(userId: String, refreshToken: String?): Boolean
