@@ -4,6 +4,21 @@ hide:
 ---
 # Changelog
 
+## [4.2.0] - 2026-07-03
+
+### Security & Bug Fixes
+
+- **(security)** - **Change Password Request Body**: Migrated `PUT /auth/change-password` from query parameters to request body to prevent credential exposure in server logs and browser history.
+- **(fix)** - **Order Status Validation**: Enforced `OrderStatus.canTransitionTo()` in `updateOrderStatus` — status transitions now follow the defined state machine.
+- **(fix)** - **Concurrency**: Added `forUpdate` row-level locking to coupon usage count and product stock decrement to prevent race conditions under load.
+- **(fix)** - **Product Check**: Added `product.status == ACTIVE` check during checkout to prevent ordering out-of-stock products.
+- **(fix)** - **Rating Validation**: Added explicit 1-5 range validation for product ratings in `ReviewRatingService`.
+- **(fix)** - **Payment Amount**: Fixed `order.total.toLong()` truncation bug — now uses `BigDecimal.compareTo()` for precise amount comparison.
+- **(fix)** - **Idempotency Scoping**: Scoped idempotency key lookup to the requesting user to prevent cross-user collisions.
+- **(fix)** - **Naming**: Renamed `forget-password` → `forgot-password` for correct English spelling (route, model, service, docs).
+- **(chore)** - **Code Cleanup**: Simplified `lockAccount()` to use `Instant.now()` directly, removed unused `ZoneOffset` import.
+- **(fix)** - **Coupon Side Effect**: Separated coupon validation from application to prevent `usageCount` increments during checkout summary calls.
+
 ## [4.1.0] - 2026-07-02
 
 ### Enum Migration & API Cleanup

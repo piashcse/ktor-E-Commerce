@@ -22,7 +22,12 @@ fun ProductDAO.findInventory(forUpdate: Boolean = false): InventoryDAO? {
 }
 
 /** Returns effective stock: inventory stock if exists, otherwise product stock. */
-fun ProductDAO.effectiveStock(): Int = findInventory()?.stockQuantity ?: stockQuantity
+fun ProductDAO.effectiveStock(forUpdate: Boolean = false): Int {
+    val inv = findInventory(forUpdate = forUpdate)
+    if (inv != null) return inv.stockQuantity
+    if (forUpdate) ProductDAO.findById(this.id.value)?.let { return it.stockQuantity }
+    return stockQuantity
+}
 
 /** Decrements effective stock (inventory if exists, else product) and updates inventory status. */
 fun ProductDAO.decrementStock(quantity: Int) {
@@ -32,7 +37,10 @@ fun ProductDAO.decrementStock(quantity: Int) {
         inv.stockQuantity = newStock
         inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
     } else {
-        stockQuantity = (stockQuantity - quantity).coerceAtLeast(0)
+        val lockedProduct = ProductDAO.find { ProductTable.id eq id }.forUpdate().firstOrNull()
+        if (lockedProduct != null) {
+            lockedProduct.stockQuantity = (lockedProduct.stockQuantity - quantity).coerceAtLeast(0)
+        }
     }
 }
 
@@ -44,7 +52,10 @@ fun ProductDAO.restoreStock(quantity: Int) {
         inv.stockQuantity = newStock
         inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
     } else {
-        stockQuantity = stockQuantity + quantity
+        val lockedProduct = ProductDAO.find { ProductTable.id eq id }.forUpdate().firstOrNull()
+        if (lockedProduct != null) {
+            lockedProduct.stockQuantity = lockedProduct.stockQuantity + quantity
+        }
     }
 }
 

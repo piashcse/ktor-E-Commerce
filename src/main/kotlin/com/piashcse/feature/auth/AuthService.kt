@@ -22,7 +22,6 @@ import org.jetbrains.exposed.v1.core.eq
 import java.security.MessageDigest
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.util.*
 
 class AuthService : AuthRepository {
@@ -108,7 +107,7 @@ class AuthService : AuthRepository {
 
     private suspend fun lockAccount(email: String, userType: UserType, lockDurationMinutes: Long): Boolean = query {
         LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()
-            ?.apply { lockedUntil = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(lockDurationMinutes).atZone(ZoneOffset.UTC).toInstant() } != null
+            ?.apply { lockedUntil = Instant.now().plusSeconds(lockDurationMinutes * 60) } != null
     }
 
     // ── Registration ──────────────────────────────────────────────────────
@@ -271,9 +270,9 @@ class AuthService : AuthRepository {
             ?: throw NotFoundException(Message.Auth.userNotFoundForRole(email, userTypeStr))
     }
 
-    override suspend fun forgetPassword(forgetPasswordRequest: ForgetPasswordRequest) {
+    override suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest) {
         val (email, otp) = query {
-            val user = findResetUserByEmail(forgetPasswordRequest.email, forgetPasswordRequest.userType)
+            val user = findResetUserByEmail(forgotPasswordRequest.email, forgotPasswordRequest.userType)
             val otp = generateOTP()
             user.resetOtpCode = otp
             user.resetOtpExpiry = LocalDateTime.now().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
