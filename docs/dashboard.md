@@ -1,25 +1,44 @@
-# Dashboard Analytics
+# Dashboard Analytics API
 
-The Dashboard module provides comprehensive analytics and insights for platform administrators, enabling data-driven decision making through real-time metrics and historical trends.
+This documentation provides comprehensive details for the Dashboard Analytics API endpoints. The API provides aggregate statistics and insights for platform administrators.
 
-## Features
-- **Summary Statistics**: Quick overview of revenue, orders, users, products, and shops.
-- **Revenue Analytics**: Detailed revenue breakdown with daily trends and average order value.
-- **Order Statistics**: Order status distribution and recent order activity.
-- **User Growth**: User registration trends with breakdown by role and daily signups.
-- **Top Products**: Best-selling products ranked by sales volume and revenue.
-- **Activity Feed**: Recent platform activity including orders and user registrations.
+**Base URL:** `http://localhost:8080`
 
-## Admin API
+## Authentication
 
-All dashboard endpoints require `ADMIN` role.
+All Dashboard endpoints require `ADMIN` role.
 
-### Get Dashboard Summary
-`GET /api/v1/admin/dashboard`
+### Dashboard Endpoints
 
-Returns aggregate statistics for the main dashboard view.
+| Method | Endpoint | Description | Authentication Required |
+|--------|----------|-------------|------------------------|
+| `GET` | `/api/v1/admin/dashboard` | Get dashboard summary | Yes (Admin) |
+| `GET` | `/api/v1/admin/dashboard/revenue` | Get revenue analytics | Yes (Admin) |
+| `GET` | `/api/v1/admin/dashboard/orders` | Get order statistics | Yes (Admin) |
+| `GET` | `/api/v1/admin/dashboard/users` | Get user growth trends | Yes (Admin) |
+| `GET` | `/api/v1/admin/dashboard/top-products` | Get top selling products | Yes (Admin) |
+| `GET` | `/api/v1/admin/dashboard/activity` | Get recent activity feed | Yes (Admin) |
 
-**Response:**
+---
+
+## Endpoint Details
+
+### 1. Get Dashboard Summary
+
+**`GET /api/v1/admin/dashboard`**
+
+Returns aggregate statistics for the main dashboard view including revenue, orders, users, products, and shops.
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/dashboard' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Example Response
+
 ```json
 {
   "revenue": { "total": "15420.50", "today": "1250.00" },
@@ -30,12 +49,31 @@ Returns aggregate statistics for the main dashboard view.
 }
 ```
 
-### Get Revenue Stats
-`GET /api/v1/admin/dashboard/revenue?startDate=2024-01-01&endDate=2024-12-31`
+---
+
+### 2. Get Revenue Stats
+
+**`GET /api/v1/admin/dashboard/revenue`**
 
 Returns revenue data with daily breakdown and average order value for a date range.
 
-**Response:**
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `startDate` | string | No | Start date (YYYY-MM-DD) |
+| `endDate` | string | No | End date (YYYY-MM-DD) |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/dashboard/revenue?startDate=2024-01-01&endDate=2024-12-31' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Example Response
+
 ```json
 {
   "totalRevenue": "15420.50",
@@ -49,12 +87,30 @@ Returns revenue data with daily breakdown and average order value for a date ran
 }
 ```
 
-### Get Order Stats
-`GET /api/v1/admin/dashboard/orders?status=PENDING`
+---
+
+### 3. Get Order Stats
+
+**`GET /api/v1/admin/dashboard/orders`**
 
 Returns order status distribution and recent orders.
 
-**Response:**
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `status` | string | No | Filter by order status (e.g., `PENDING`, `PAID`) |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/dashboard/orders?status=PENDING' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Example Response
+
 ```json
 {
   "statusDistribution": {
@@ -72,12 +128,30 @@ Returns order status distribution and recent orders.
 }
 ```
 
-### Get User Growth
-`GET /api/v1/admin/dashboard/users?days=30`
+---
+
+### 4. Get User Growth
+
+**`GET /api/v1/admin/dashboard/users`**
 
 Returns user registration trends over a specified period.
 
-**Response:**
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `days` | int | No | Number of days to look back (default: 30) |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/dashboard/users?days=30' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Example Response
+
 ```json
 {
   "totalUsers": 1250,
@@ -91,12 +165,30 @@ Returns user registration trends over a specified period.
 }
 ```
 
-### Get Top Products
-`GET /api/v1/admin/dashboard/top-products?limit=10`
+---
+
+### 5. Get Top Products
+
+**`GET /api/v1/admin/dashboard/top-products`**
 
 Returns best-selling products ranked by total sales.
 
-**Response:**
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `limit` | int | No | Number of top products to return (default: 10) |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/dashboard/top-products?limit=10' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Example Response
+
 ```json
 [
   {
@@ -112,12 +204,30 @@ Returns best-selling products ranked by total sales.
 ]
 ```
 
-### Get Recent Activity
-`GET /api/v1/admin/dashboard/activity?limit=20`
+---
+
+### 6. Get Recent Activity
+
+**`GET /api/v1/admin/dashboard/activity`**
 
 Returns a combined feed of recent orders and user registrations.
 
-**Response:**
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `limit` | int | No | Number of activities to return (default: 20) |
+
+#### Example Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/dashboard/activity?limit=20' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Example Response
+
 ```json
 [
   {
@@ -136,3 +246,13 @@ Returns a combined feed of recent orders and user registrations.
   }
 ]
 ```
+
+---
+
+## Error Handling
+
+| Status Code | Description |
+|-------------|-------------|
+| `400` | Bad Request |
+| `401` | Unauthorized |
+| `403` | Forbidden |
