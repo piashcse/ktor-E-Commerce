@@ -105,7 +105,23 @@
 - **Input Validation**: Protect against common web vulnerabilities like SQL injection and cross-site scripting (XSS).
 - **Atomic Stock Operations**: Thread-safe inventory updates within database transactions.
 
-### 10. Code Quality & Static Analysis
+### 10. Dashboard Analytics
+
+- **Summary Statistics**: Quick overview of revenue, orders, users, products, and shops.
+- **Revenue Analytics**: Detailed revenue breakdown with daily trends and average order value.
+- **Order Statistics**: Order status distribution and recent order activity.
+- **User Growth**: User registration trends with breakdown by role and daily signups.
+- **Top Products**: Best-selling products ranked by sales volume and revenue.
+- **Activity Feed**: Recent platform activity including orders and user registrations.
+
+### 11. Audit Logging
+
+- **Action Tracking**: Records every admin action with actor identity, action type, and target resource.
+- **Rich Context**: Captures actor email, role, IP address, user agent, and outcome for full audit trail.
+- **Filterable Queries**: Search audit logs by actor, action type, resource, or outcome.
+- **Immutable Records**: Append-only log records that cannot be modified or deleted.
+
+### 12. Code Quality & Static Analysis
 
 - **Ktlint**: Automated Kotlin linting to ensure consistent code style.
 - **Detekt**: Static code analysis for finding potential bugs and code smells.
@@ -377,6 +393,8 @@ The API is organized into the following modules:
 - **Shop Category** - Shop categories
 - **Privacy Policy** - Policy management
 - **Policy Consent** - User consent tracking
+- **Dashboard** - Admin dashboard analytics and metrics
+- **Audit Log** - Admin audit trail and activity tracking
 
 ### 🌐 Swagger/OpenAPI
 

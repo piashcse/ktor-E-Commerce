@@ -19,6 +19,7 @@ private val allTables = arrayOf(
     PolicyConsentTable, InventoryTable, SellerTable, RefreshTokenTable,
     LoginAttemptTable, BlacklistedTokenTable, RefundRequestTable,
     OrderStatusHistoryTable,
+    AuditLogTable,
 )
 
 fun configureDataBase() {
