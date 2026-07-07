@@ -618,13 +618,13 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-forget-password" class="md-nav__link">
+  <a href="#4-forgot-password" class="md-nav__link">
     <span class="md-ellipsis">
-      4. Forget Password
+      4. Forgot Password
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. Forget Password">
+    <nav class="md-nav" aria-label="4. Forgot Password">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -814,9 +814,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#query-parameters_1" class="md-nav__link">
+  <a href="#request-body_4" class="md-nav__link">
     <span class="md-ellipsis">
-      Query Parameters
+      Request Body
     </span>
   </a>
   
@@ -874,7 +874,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#query-parameters_2" class="md-nav__link">
+  <a href="#query-parameters_1" class="md-nav__link">
     <span class="md-ellipsis">
       Query Parameters
     </span>
@@ -1657,6 +1657,52 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../audit-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Audit Log
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1876,13 +1922,13 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-forget-password" class="md-nav__link">
+  <a href="#4-forgot-password" class="md-nav__link">
     <span class="md-ellipsis">
-      4. Forget Password
+      4. Forgot Password
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. Forget Password">
+    <nav class="md-nav" aria-label="4. Forgot Password">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2072,9 +2118,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#query-parameters_1" class="md-nav__link">
+  <a href="#request-body_4" class="md-nav__link">
     <span class="md-ellipsis">
-      Query Parameters
+      Request Body
     </span>
   </a>
   
@@ -2132,7 +2178,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#query-parameters_2" class="md-nav__link">
+  <a href="#query-parameters_1" class="md-nav__link">
     <span class="md-ellipsis">
       Query Parameters
     </span>
@@ -2476,7 +2522,7 @@
 </tr>
 <tr>
 <td><code>POST</code></td>
-<td><code>/api/v1/auth/forget-password</code></td>
+<td><code>/api/v1/auth/forgot-password</code></td>
 <td>Request password reset verification code</td>
 <td>No</td>
 </tr>
@@ -2700,8 +2746,8 @@
 <pre><code class="language-json">true
 </code></pre>
 <hr />
-<h3 id="4-forget-password">4. Forget Password</h3>
-<p><strong><code>POST /api/v1/auth/forget-password</code></strong></p>
+<h3 id="4-forgot-password">4. Forgot Password</h3>
+<p><strong><code>POST /api/v1/auth/forgot-password</code></strong></p>
 <p>Request a password reset verification code. The code will be sent to the user's email address.</p>
 <blockquote>
 <p><strong>Security</strong>: This endpoint is rate-limited to 5 requests per 10 minutes per IP address.</p>
@@ -2733,7 +2779,7 @@
 </table>
 <h4 id="example-request_3">Example Request</h4>
 <pre><code class="language-bash">curl -X 'POST' \
-  'http://localhost:8080/api/v1/auth/forget-password' \
+  'http://localhost:8080/api/v1/auth/forgot-password' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -2920,7 +2966,7 @@
 <h3 id="8-change-password">8. Change Password</h3>
 <p><strong><code>PUT /api/v1/auth/change-password</code></strong></p>
 <p>Change password for an authenticated user. Requires valid access token.</p>
-<h4 id="query-parameters_1">Query Parameters</h4>
+<h4 id="request-body_4">Request Body</h4>
 <table>
 <thead>
 <tr>
@@ -2960,13 +3006,23 @@
 <td><code>Bearer &lt;access_token&gt;</code></td>
 <td>Yes</td>
 </tr>
+<tr>
+<td><code>Content-Type</code></td>
+<td><code>application/json</code></td>
+<td>Yes</td>
+</tr>
 </tbody>
 </table>
 <h4 id="example-request_7">Example Request</h4>
 <pre><code class="language-bash">curl -X 'PUT' \
-  'http://localhost:8080/api/v1/auth/change-password?oldPassword=p1234&amp;newPassword=newp1234' \
+  'http://localhost:8080/api/v1/auth/change-password' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    &quot;oldPassword&quot;: &quot;p1234&quot;,
+    &quot;newPassword&quot;: &quot;newp1234&quot;
+  }'
 </code></pre>
 <h4 id="example-response_7">Example Response</h4>
 <p><strong>Status: 200 OK</strong></p>
@@ -2995,7 +3051,7 @@
 </tr>
 </tbody>
 </table>
-<h4 id="query-parameters_2">Query Parameters</h4>
+<h4 id="query-parameters_1">Query Parameters</h4>
 <table>
 <thead>
 <tr>
@@ -3262,7 +3318,7 @@
 <hr />
 <h2 id="security-features">Security Features</h2>
 <h3 id="rate-limiting">Rate Limiting</h3>
-<p>Auth endpoints (<code>login</code>, <code>register</code>, <code>forget-password</code>, <code>reset-password</code>) are rate-limited to <strong>5 requests per 10 minutes</strong> per IP address. Exceeding this limit returns a <code>429 Too Many Requests</code> response.</p>
+<p>Auth endpoints (<code>login</code>, <code>register</code>, <code>forgot-password</code>, <code>reset-password</code>) are rate-limited to <strong>5 requests per 10 minutes</strong> per IP address. Exceeding this limit returns a <code>429 Too Many Requests</code> response.</p>
 <h3 id="account-lockout">Account Lockout</h3>
 <p>After <strong>5 consecutive failed login attempts</strong>, the account is automatically locked for <strong>30 minutes</strong>. The login response includes remaining attempts count until the lockout is triggered.</p>
 <h3 id="password-strength">Password Strength</h3>
