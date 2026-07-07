@@ -1,6 +1,8 @@
 package com.piashcse.plugin
 
 import com.piashcse.constants.AppConstants
+import com.piashcse.feature.audit_log.AuditLogService
+import com.piashcse.feature.audit_log.auditLogAdminRoutes
 import com.piashcse.feature.auth.AuthService
 import com.piashcse.feature.auth.authAdminRoutes
 import com.piashcse.feature.auth.authRoutes
@@ -15,6 +17,8 @@ import com.piashcse.feature.consent.consentRoutes
 import com.piashcse.feature.coupon.CouponService
 import com.piashcse.feature.coupon.couponAdminRoutes
 import com.piashcse.feature.coupon.couponRoutes
+import com.piashcse.feature.dashboard.DashboardService
+import com.piashcse.feature.dashboard.dashboardAdminRoutes
 import com.piashcse.feature.inventory.InventoryService
 import com.piashcse.feature.inventory.inventoryAdminRoutes
 import com.piashcse.feature.inventory.inventorySellerRoutes
@@ -65,26 +69,28 @@ import org.koin.ktor.ext.inject
 
 @OptIn(ExperimentalKtorApi::class)
 fun Application.configureRoute() {
+    val auditLogService: AuditLogService by inject()
     val authService: AuthService by inject()
-    val cartService: CartService by inject()
     val brandService: BrandService by inject()
-    val shopService: ShopService by inject()
-    val orderService: OrderService by inject()
-    val policyService: PolicyService by inject()
-    val productService: ProductService by inject()
+    val cartService: CartService by inject()
     val consentService: ConsentService by inject()
     val couponService: CouponService by inject()
-    val profileService: ProfileService by inject()
-    val paymentService: PaymentService by inject()
+    val dashboardService: DashboardService by inject()
     val inventoryService: InventoryService by inject()
-    val wishListService: WishListService by inject()
-    val shopCategoryService: ShopCategoryService by inject()
-    val shippingMethodService: ShippingMethodService by inject()
-    val reviewRatingService: ReviewRatingService by inject()
-    val refundRequestService: RefundRequestService by inject()
-    val shippingAddressService: ShippingAddressService by inject()
+    val orderService: OrderService by inject()
+    val paymentService: PaymentService by inject()
+    val policyService: PolicyService by inject()
+    val productService: ProductService by inject()
     val productCategoryService: ProductCategoryService by inject()
     val productSubCategoryService: ProductSubCategoryService by inject()
+    val profileService: ProfileService by inject()
+    val refundRequestService: RefundRequestService by inject()
+    val reviewRatingService: ReviewRatingService by inject()
+    val shippingAddressService: ShippingAddressService by inject()
+    val shippingMethodService: ShippingMethodService by inject()
+    val shopService: ShopService by inject()
+    val shopCategoryService: ShopCategoryService by inject()
+    val wishListService: WishListService by inject()
 
     routing {
         get("/") { call.respondRedirect("/swagger") }.hide()
@@ -112,7 +118,8 @@ fun Application.configureRoute() {
                 adminRoutes(
                     authService, brandService, productCategoryService,
                     productSubCategoryService, shopCategoryService, shopService,
-                    productService, inventoryService, orderService,
+                    productService, inventoryService, orderService, dashboardService,
+                    auditLogService,
                     refundRequestService, policyService, shippingMethodService, couponService,
                 )
             }
@@ -167,7 +174,9 @@ private fun Route.adminRoutes(
     auth: AuthService, brand: BrandService,
     productCategory: ProductCategoryService, productSubCategory: ProductSubCategoryService,
     shopCategory: ShopCategoryService, shop: ShopService, product: ProductService,
-    inventory: InventoryService, order: OrderService, refundRequest: RefundRequestService,
+    inventory: InventoryService, order: OrderService, dashboard: DashboardService,
+    auditLog: AuditLogService,
+    refundRequest: RefundRequestService,
     policy: PolicyService, shippingMethod: ShippingMethodService, coupon: CouponService,
 ) {
     route("admin") {
@@ -185,6 +194,8 @@ private fun Route.adminRoutes(
             route("policies") { policyAdminRoutes(policy) }
             route("shipping-methods") { shippingMethodAdminRoutes(shippingMethod) }
             route("coupons") { couponAdminRoutes(coupon) }
+            route("dashboard") { dashboardAdminRoutes(dashboard) }
+            route("audit-logs") { auditLogAdminRoutes(auditLog) }
         }
     }
 }

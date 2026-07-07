@@ -1,10 +1,12 @@
 package com.piashcse.di
 
+import com.piashcse.feature.audit_log.AuditLogService
 import com.piashcse.feature.auth.AuthService
 import com.piashcse.feature.brand.BrandService
 import com.piashcse.feature.cart.CartService
 import com.piashcse.feature.consent.ConsentService
 import com.piashcse.feature.coupon.CouponService
+import com.piashcse.feature.dashboard.DashboardService
 import com.piashcse.feature.inventory.InventoryService
 import com.piashcse.feature.order.OrderService
 import com.piashcse.feature.payment.PaymentService
@@ -25,6 +27,7 @@ import org.koin.dsl.module
 
 val serviceModule =
     module {
+        single { AuditLogService() }
         single { AuthService() }
         single { BrandService() }
         single { CartService() }
@@ -37,6 +40,7 @@ val serviceModule =
         single { ShopService() }
         single { ShopCategoryService() }
         single { CouponService() }
+        single { DashboardService() }
         single { ProfileService() }
         single { WishListService() }
         single { PaymentService() }
