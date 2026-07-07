@@ -85,6 +85,22 @@ Access interactive API documentation at the root `/` or `/swagger` endpoint when
 - **Health Checks**: Comprehensive health monitoring with `/health`, `/health/live`, and `/health/ready` endpoints.
 - **Structured Logging**: Production-ready JSON logging with correlation IDs (Request IDs) for easier debugging and log aggregation.
 
+### 8. Dashboard Analytics
+
+- **Summary Statistics**: Quick overview of revenue, orders, users, products, and shops.
+- **Revenue Analytics**: Detailed revenue breakdown with daily trends and average order value.
+- **Order Statistics**: Order status distribution and recent order activity.
+- **User Growth**: User registration trends with breakdown by role and daily signups.
+- **Top Products**: Best-selling products ranked by sales volume and revenue.
+- **Activity Feed**: Recent platform activity including orders and user registrations.
+
+### 9. Audit Logging
+
+- **Action Tracking**: Records every admin action with actor identity, action type, and target resource.
+- **Rich Context**: Captures actor email, role, IP address, user agent, and outcome.
+- **Filterable Queries**: Search audit logs by actor, action type, resource, or outcome.
+- **Immutable Records**: Append-only log records for compliance.
+
 ## Architecture
 
 <p align="center">
@@ -221,6 +237,8 @@ For comprehensive API documentation, please refer to the following resources:
 - [Inventory API](inventory.md) - Inventory management
 - [Privacy Policy API](privacy-policy.md) - Privacy policy management
 - [Privacy Policy Consent API](privacy-policy-consent.md) - User consent tracking
+- [Dashboard API](dashboard.md) - Admin dashboard analytics
+- [Audit Log API](audit-log.md) - Admin audit log tracking
 
 
 
