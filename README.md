@@ -4247,8 +4247,371 @@ http://localhost:8080/api/v1/admin/shipping-methods/{id}
 ```
 </details>
 
+### DASHBOARD
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/dashboard</code></summary>
 
+### Description
+Admin: Get summary dashboard stats (revenue, orders, users, products, shops).
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/dashboard' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/dashboard
+```
+
+### Response
+```json
+{
+  "data": {
+    "revenue": {
+      "total": "15000.00",
+      "today": "1200.00"
+    },
+    "orders": {
+      "total": 150,
+      "today": 8,
+      "pending": 12
+    },
+    "users": {
+      "total": 500,
+      "today": 3,
+      "sellers": 25
+    },
+    "products": {
+      "total": 1200,
+      "outOfStock": 15,
+      "lowStock": 8
+    },
+    "shops": {
+      "total": 30,
+      "pendingApproval": 5
+    }
+  },
+  "message": "Dashboard stats retrieved"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/dashboard/revenue</code></summary>
+
+### Description
+Admin: Get detailed revenue stats with optional date range and daily breakdown.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/dashboard/revenue?startDate=2024-01-01&endDate=2024-12-31' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/dashboard/revenue?startDate={startDate}&endDate={endDate}
+```
+
+### Response
+```json
+{
+  "data": {
+    "totalRevenue": "15000.00",
+    "totalOrders": 120,
+    "averageOrderValue": "125.00",
+    "dailyRevenue": [
+      {
+        "date": "2024-01-01",
+        "revenue": "500.00"
+      },
+      {
+        "date": "2024-01-02",
+        "revenue": "750.00"
+      }
+    ],
+    "currency": "USD"
+  },
+  "message": "Revenue stats retrieved"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/dashboard/orders</code></summary>
+
+### Description
+Admin: Get order statistics with status distribution and recent orders.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/dashboard/orders' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/dashboard/orders?status={status}
+```
+
+### Response
+```json
+{
+  "data": {
+    "statusDistribution": {
+      "pending": 12,
+      "confirmed": 8,
+      "shipped": 5,
+      "delivered": 100,
+      "canceled": 10,
+      "returned": 2
+    },
+    "recentOrders": [
+      {
+        "orderNumber": "ORD-20240506-ABCD",
+        "status": "pending",
+        "total": "250.00",
+        "createdAt": "2024-05-06T12:00:00"
+      }
+    ]
+  },
+  "message": "Order stats retrieved"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/dashboard/users</code></summary>
+
+### Description
+Admin: Get user growth analytics over a period with role breakdown.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/dashboard/users?days=30' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/dashboard/users?days={days}
+```
+
+### Response
+```json
+{
+  "data": {
+    "totalUsers": 500,
+    "newUsersInPeriod": 45,
+    "periodDays": 30,
+    "byUserType": {
+      "customer": 450,
+      "seller": 25,
+      "admin": 5
+    },
+    "dailySignups": [
+      {
+        "date": "2024-12-01",
+        "count": 5
+      },
+      {
+        "date": "2024-12-02",
+        "count": 3
+      }
+    ]
+  },
+  "message": "User growth stats retrieved"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/dashboard/top-products</code></summary>
+
+### Description
+Admin: Get top-selling products ranked by sales volume and revenue.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/dashboard/top-products?limit=10' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/dashboard/top-products?limit={limit}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "productId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+      "name": "Galaxy S24",
+      "sku": "SKU-001",
+      "totalSales": 150,
+      "totalRevenue": "149998.50",
+      "stockQuantity": 50,
+      "rating": "4.50",
+      "status": "active"
+    }
+  ],
+  "message": "Top products retrieved"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/dashboard/activity</code></summary>
+
+### Description
+Admin: Get recent platform activity feed including orders and user registrations.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/dashboard/activity?limit=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/dashboard/activity?limit={limit}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "ORD-20240506-ABCD",
+      "type": "order",
+      "summary": "Order ORD-20240506-ABCD created - $250.00",
+      "status": "pending",
+      "createdAt": "2024-05-06T12:00:00"
+    },
+    {
+      "id": "user-uuid",
+      "type": "user",
+      "summary": "New customer registered: jane@example.com",
+      "status": "verified",
+      "createdAt": "2024-05-06T11:30:00"
+    }
+  ],
+  "message": "Activity feed retrieved"
+}
+```
+</details>
+
+### AUDIT LOG
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/audit-logs</code></summary>
+
+### Description
+Admin: Get paginated audit logs with optional filters (actorId, action, resourceType, resourceId, outcome).
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/audit-logs?action=UPDATE&outcome=SUCCESS&limit=10' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/audit-logs?actorId={actorId}&action={action}&resourceType={resourceType}&resourceId={resourceId}&outcome={outcome}&limit={limit}&offset={offset}
+```
+
+### Response
+```json
+{
+  "data": {
+    "data": [
+      {
+        "id": "log-uuid",
+        "actorId": "admin-uuid",
+        "actorEmail": "admin@example.com",
+        "actorRole": "ADMIN",
+        "action": "UPDATE",
+        "resourceType": "ORDER",
+        "resourceId": "ORD-20240506-ABCD",
+        "details": "Updated order status from PENDING to CONFIRMED",
+        "ipAddress": "192.168.1.1",
+        "userAgent": "Mozilla/5.0...",
+        "outcome": "SUCCESS",
+        "executedAt": "2024-05-06T12:00:00",
+        "createdAt": "2024-05-06T12:00:00"
+      }
+    ],
+    "metadata": {
+      "totalCount": 250,
+      "limit": 10,
+      "offset": 0
+    }
+  },
+  "message": "Audit logs retrieved"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/audit-logs/{id}</code></summary>
+
+### Description
+Admin: Get a single audit log entry by ID.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/audit-logs/log-uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/audit-logs/{id}
+```
+
+### Response
+```json
+{
+  "data": {
+    "id": "log-uuid",
+    "actorId": "admin-uuid",
+    "actorEmail": "admin@example.com",
+    "actorRole": "ADMIN",
+    "action": "CREATE",
+    "resourceType": "SHOP",
+    "resourceId": "shop-uuid",
+    "details": "Created new shop 'Tech Hub' for seller",
+    "ipAddress": "192.168.1.1",
+    "userAgent": "Mozilla/5.0...",
+    "outcome": "SUCCESS",
+    "executedAt": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00"
+  },
+  "message": "Audit log retrieved"
+}
+```
+</details>
 
 ## 👨 Developed By
 
