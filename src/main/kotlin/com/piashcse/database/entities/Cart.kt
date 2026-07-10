@@ -8,9 +8,13 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import kotlinx.serialization.Serializable
 
 object CartItemTable : BaseIdTable("cart_item") {
-    val userId = reference("user_id", UserTable.id)
+    val userId = reference("user_id", UserTable.id).index()
     val productId = reference("product_id", ProductTable.id)
     val quantity = integer("quantity").default(1)
+
+    init {
+        index(customIndexName = "cart_item_user_product_idx", isUnique = false, userId, productId)
+    }
 }
 
 class CartItemDAO(id: EntityID<String>) : BaseEntity(id, CartItemTable) {

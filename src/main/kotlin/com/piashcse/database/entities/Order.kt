@@ -12,8 +12,8 @@ import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
 
 object OrderTable : BaseIdTable("order") {
-    val userId = reference("user_id", UserTable.id)
-    val shopId = reference("shop_id", ShopTable.id).nullable() // Which shop the order belongs to (for multi-vendor)
+    val userId = reference("user_id", UserTable.id).index()
+    val shopId = reference("shop_id", ShopTable.id).nullable().index()
     val orderNumber = varchar("order_number", 50).uniqueIndex() // Unique order number for tracking
     val idempotencyKey = varchar("idempotency_key", 100).uniqueIndex().nullable() // Idempotency key to prevent duplicate orders
     val subTotal = decimal("sub_total", 10, 2)
@@ -35,6 +35,11 @@ object OrderTable : BaseIdTable("order") {
     val canceledDate = datetime("canceled_date").nullable() // When the order was canceled
     val completedDate = datetime("completed_date").nullable() // When the order was completed
     // createdAt and updatedAt are inherited from BaseIdTable
+
+    init {
+        index(customIndexName = "order_status_idx", isUnique = false, status)
+        index(customIndexName = "order_created_at_idx", isUnique = false, createdAt)
+    }
 }
 
 class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {

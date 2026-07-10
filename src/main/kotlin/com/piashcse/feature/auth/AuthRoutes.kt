@@ -73,7 +73,7 @@ fun Route.authRoutes(authService: AuthService) {
      * @description Verify user account with OTP
      */
     rateLimit(RateLimitName(RateLimitNames.OTP)) {
-        get("otp-verification") {
+        post("otp-verification") {
             val userId = call.requireQueryParameter("userId")
             val otp = call.requireQueryParameter("otp")
             call.respond(HttpStatusCode.OK, authService.otpVerification(userId, otp))

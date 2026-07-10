@@ -10,7 +10,7 @@ This documentation provides comprehensive details for the Authentication API end
 |--------|----------|-------------|------------------------|
 | `POST` | `/api/v1/auth/login` | Authenticate user and receive access + refresh tokens | No |
 | `POST` | `/api/v1/auth/register` | Register a new user account | No |
-| `GET` | `/api/v1/auth/otp-verification` | Verify OTP for account activation | No |
+| `POST` | `/api/v1/auth/otp-verification` | Verify OTP for account activation | No |
 | `POST` | `/api/v1/auth/forgot-password` | Request password reset verification code | No |
 | `POST` | `/api/v1/auth/reset-password` | Reset password using verification code | No |
 | `POST` | `/api/v1/auth/refresh-token` | Refresh access token using refresh token | No |
@@ -140,11 +140,13 @@ curl -X 'POST' \
 
 ### 3. OTP Verification
 
-**`GET /api/v1/auth/otp-verification`**
+**`POST /api/v1/auth/otp-verification`**
 
 Verify the OTP (One-Time Password) sent to user's email during registration.
 
-#### Query Parameters
+> **Security**: Limited to 5 OTP attempts per user. After 5 failed attempts the OTP is invalidated.
+
+#### Request Body
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -154,9 +156,14 @@ Verify the OTP (One-Time Password) sent to user's email during registration.
 #### Example Request
 
 ```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&otp=560674d' \
-  -H 'accept: application/json'
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/otp-verification' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "userId": "3842e19b-2608-40f8-98bd-6a6b43939fec",
+    "otp": "560674d"
+  }'
 ```
 
 #### Example Response

@@ -8,8 +8,12 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import kotlinx.serialization.Serializable
 
 object WishListTable : BaseIdTable("wishlist") {
-    val userId = reference("user_id", UserTable.id)
+    val userId = reference("user_id", UserTable.id).index()
     val productId = reference("product_id", ProductTable.id)
+
+    init {
+        index(customIndexName = "wishlist_user_product_idx", isUnique = false, userId, productId)
+    }
 }
 
 class WishListDAO(id: EntityID<String>) : BaseEntity(id, WishListTable) {

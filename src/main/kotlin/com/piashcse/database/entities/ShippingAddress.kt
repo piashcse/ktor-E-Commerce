@@ -7,7 +7,7 @@ import com.piashcse.model.response.ShippingAddressResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object ShippingAddressTable : BaseIdTable("shipping_address") {
-    val userId = reference("user_id", UserTable.id)
+    val userId = reference("user_id", UserTable.id).index()
     val firstName = varchar("first_name", 50)
     val lastName = varchar("last_name", 50)
     val email = varchar("email", 50)

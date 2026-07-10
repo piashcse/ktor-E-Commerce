@@ -9,6 +9,7 @@ import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.mapper.toProductResponse
+import com.piashcse.service.Cache
 import com.piashcse.service.CacheService
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
@@ -23,8 +24,7 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-class ProductService : ProductRepository {
-    private val cache = CacheService.cache
+class ProductService(private val cache: Cache = CacheService.cache) : ProductRepository {
 
     private suspend fun <T> cachedOrQuery(cacheKey: String, query: suspend () -> T): T {
         cache.get<T>(cacheKey)?.let { return it }
@@ -122,24 +122,45 @@ class ProductService : ProductRepository {
         return orderBy(col to if (filter.sortOrder?.lowercase() == "asc") SortOrder.ASC else SortOrder.DESC)
     }
 
+    private fun withPreloadedImages(
+        rows: List<org.jetbrains.exposed.v1.core.ResultRow>,
+        mapper: (org.jetbrains.exposed.v1.core.ResultRow, Map<String, List<String>>) -> ProductResponse,
+    ): List<ProductResponse> {
+        val productIds = rows.map { ProductDAO.wrapRow(it).id }
+        val imagesMap = ProductImageDAO.imagesForProducts(productIds)
+        return rows.map { mapper(it, imagesMap) }
+    }
+
     override suspend fun getProducts(filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
-        ProductTable.selectAll().andWhere { ProductTable.status eq ProductStatus.ACTIVE }
+        val query = ProductTable.selectAll().andWhere { ProductTable.status eq ProductStatus.ACTIVE }
             .applyProductFilters(filter)
-            .toPaginatedResponse(filter.limit, filter.offset) { ProductDAO.wrapRow(it).toProductResponse() }
+        val (totalCount, rows) = query.toPaginatedList(filter.limit, filter.offset) { it }
+        val data = withPreloadedImages(rows) { row, images ->
+            ProductDAO.wrapRow(row).toProductResponse(images[ProductDAO.wrapRow(row).id.value])
+        }
+        PaginatedResponse(data, PaginationMetadata(totalCount, filter.limit, filter.offset))
     }
 
     override suspend fun getProductsByShop(shopId: String, filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
-        ProductTable.selectAll().andWhere {
+        val query = ProductTable.selectAll().andWhere {
             (ProductTable.shopId eq shopId) and (ProductTable.status eq ProductStatus.ACTIVE)
         }.applyProductFilters(filter)
-            .toPaginatedResponse(filter.limit, filter.offset) { ProductDAO.wrapRow(it).toProductResponse() }
+        val (totalCount, rows) = query.toPaginatedList(filter.limit, filter.offset) { it }
+        val data = withPreloadedImages(rows) { row, images ->
+            ProductDAO.wrapRow(row).toProductResponse(images[ProductDAO.wrapRow(row).id.value])
+        }
+        PaginatedResponse(data, PaginationMetadata(totalCount, filter.limit, filter.offset))
     }
 
     override suspend fun getProductsByUser(userId: String, filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
-        ProductTable.selectAll().andWhere {
+        val query = ProductTable.selectAll().andWhere {
             (ProductTable.userId eq userId) and (ProductTable.status eq ProductStatus.ACTIVE)
         }.applyProductFilters(filter)
-            .toPaginatedResponse(filter.limit, filter.offset) { ProductDAO.wrapRow(it).toProductResponse() }
+        val (totalCount, rows) = query.toPaginatedList(filter.limit, filter.offset) { it }
+        val data = withPreloadedImages(rows) { row, images ->
+            ProductDAO.wrapRow(row).toProductResponse(images[ProductDAO.wrapRow(row).id.value])
+        }
+        PaginatedResponse(data, PaginationMetadata(totalCount, filter.limit, filter.offset))
     }
 
     override suspend fun getProductDetail(productId: String): ProductResponse =
@@ -176,23 +197,33 @@ class ProductService : ProductRepository {
         if (!searchRequest.categoryId.isNullOrEmpty()) q.andWhere { ProductTable.categoryId eq EntityID(searchRequest.categoryId, ProductCategoryTable) }
         searchRequest.minPrice?.let { q.andWhere { ProductTable.price greaterEq BigDecimal.valueOf(it) } }
         searchRequest.maxPrice?.let { q.andWhere { ProductTable.price lessEq BigDecimal.valueOf(it) } }
-        q.toPaginatedResponse(searchRequest.limit, searchRequest.offset) { ProductDAO.wrapRow(it).toProductResponse() }
+        val (totalCount, rows) = q.toPaginatedList(searchRequest.limit, searchRequest.offset) { it }
+        val data = withPreloadedImages(rows) { row, images ->
+            ProductDAO.wrapRow(row).toProductResponse(images[ProductDAO.wrapRow(row).id.value])
+        }
+        PaginatedResponse(data, PaginationMetadata(totalCount, searchRequest.limit, searchRequest.offset))
     }
 
     // ── Specialized lists ──────────────────────────────────────────────────
 
     override suspend fun getProductsByCategory(categoryId: String): PaginatedResponse<ProductResponse> = query {
         val condition: Op<Boolean> = (ProductTable.categoryId eq categoryId) and (ProductTable.status eq ProductStatus.ACTIVE)
-        val data = ProductDAO.find(condition).map { it.toProductResponse() }
-        PaginatedResponse(data, com.piashcse.utils.common.PaginationMetadata(ProductDAO.count(condition), data.size, 0))
+        val count = ProductDAO.count(condition)
+        val products = ProductDAO.find(condition).orderBy(ProductTable.createdAt to SortOrder.DESC).toList()
+        val imagesMap = if (products.isNotEmpty()) ProductImageDAO.imagesForProducts(products.map { it.id }) else emptyMap()
+        val data = products.map { it.toProductResponse(imagesMap[it.id.value]) }
+        PaginatedResponse(data, PaginationMetadata(count, data.size, 0))
     }
 
     override suspend fun getFeaturedProducts(): PaginatedResponse<ProductResponse> =
         cachedOrQuery("products:featured") {
             query {
                 val condition: Op<Boolean> = (ProductTable.featured eq true) and (ProductTable.status eq ProductStatus.ACTIVE)
-                val data = ProductDAO.find(condition).orderBy(ProductTable.createdAt to SortOrder.DESC).map { it.toProductResponse() }
-                PaginatedResponse(data, PaginationMetadata(ProductDAO.count(condition), data.size, 0))
+                val count = ProductDAO.count(condition)
+                val products = ProductDAO.find(condition).orderBy(ProductTable.createdAt to SortOrder.DESC).toList()
+                val imagesMap = if (products.isNotEmpty()) ProductImageDAO.imagesForProducts(products.map { it.id }) else emptyMap()
+                val data = products.map { it.toProductResponse(imagesMap[it.id.value]) }
+                PaginatedResponse(data, PaginationMetadata(count, data.size, 0))
             }
         }
 
@@ -200,8 +231,11 @@ class ProductService : ProductRepository {
         cachedOrQuery("products:best-selling") {
             query {
                 val condition: Op<Boolean> = (ProductTable.bestSeller eq true) and (ProductTable.status eq ProductStatus.ACTIVE)
-                val data = ProductDAO.find(condition).orderBy(ProductTable.totalSales to SortOrder.DESC).limit(10).map { it.toProductResponse() }
-                PaginatedResponse(data, PaginationMetadata(ProductDAO.count(condition), data.size, 0))
+                val count = ProductDAO.count(condition)
+                val products = ProductDAO.find(condition).orderBy(ProductTable.totalSales to SortOrder.DESC).limit(10).toList()
+                val imagesMap = if (products.isNotEmpty()) ProductImageDAO.imagesForProducts(products.map { it.id }) else emptyMap()
+                val data = products.map { it.toProductResponse(imagesMap[it.id.value]) }
+                PaginatedResponse(data, PaginationMetadata(count, data.size, 0))
             }
         }
 
@@ -209,8 +243,11 @@ class ProductService : ProductRepository {
         cachedOrQuery("products:hot-deals") {
             query {
                 val condition: Op<Boolean> = (ProductTable.hotDeal eq true) and (ProductTable.status eq ProductStatus.ACTIVE)
-                val data = ProductDAO.find(condition).orderBy(ProductTable.discountPercentage to SortOrder.DESC).limit(10).map { it.toProductResponse() }
-                PaginatedResponse(data, PaginationMetadata(ProductDAO.count(condition), data.size, 0))
+                val count = ProductDAO.count(condition)
+                val products = ProductDAO.find(condition).orderBy(ProductTable.discountPercentage to SortOrder.DESC).limit(10).toList()
+                val imagesMap = if (products.isNotEmpty()) ProductImageDAO.imagesForProducts(products.map { it.id }) else emptyMap()
+                val data = products.map { it.toProductResponse(imagesMap[it.id.value]) }
+                PaginatedResponse(data, PaginationMetadata(count, data.size, 0))
             }
         }
 }

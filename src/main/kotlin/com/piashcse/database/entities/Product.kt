@@ -8,14 +8,15 @@ import com.piashcse.mapper.toProductResponse
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import java.math.BigDecimal
 
 object ProductTable : BaseIdTable("product") {
-    val userId = reference("user_id", UserTable.id)
-    val shopId = reference("shop_id", ShopTable.id).nullable()
+    val userId = reference("user_id", UserTable.id).index()
+    val shopId = reference("shop_id", ShopTable.id).nullable().index()
     val name = text("name")
     val description = text("description")
-    val categoryId = reference("category_id", ProductCategoryTable.id)
+    val categoryId = reference("category_id", ProductCategoryTable.id).index()
     val subCategoryId = reference("sub_category_id", ProductSubCategoryTable.id).nullable()
     val brandId = reference("brand_id", BrandTable.id).nullable()
     val sku = varchar("sku", 100).uniqueIndex()
@@ -27,12 +28,12 @@ object ProductTable : BaseIdTable("product") {
     val discountPrice = decimal("discount_price", 10, 2).nullable()
     val discountPercentage = decimal("discount_percentage", 5, 2).nullable()
     val videoLink = text("video_link").nullable()
-    val hotDeal = bool("hot_deal").default(false)
-    val featured = bool("featured").default(false)
-    val bestSeller = bool("best_seller").default(false)
+    val hotDeal = bool("hot_deal").default(false).index()
+    val featured = bool("featured").default(false).index()
+    val bestSeller = bool("best_seller").default(false).index()
     val newProduct = bool("new_product").default(false)
     val freeShipping = bool("free_shipping").default(false)
-    val status = enumerationByName<ProductStatus>("status", 50).default(ProductStatus.ACTIVE)
+    val status = enumerationByName<ProductStatus>("status", 50).default(ProductStatus.ACTIVE).index()
     val viewCount = integer("view_count").default(0)
     val rating = decimal("rating", 3, 2).default(BigDecimal("0.00"))
     val totalReviews = integer("total_reviews").default(0)
@@ -77,7 +78,7 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
             .map { it.imageUrl }
 
     fun setImages(urls: List<String>) {
-        ProductImageDAO.find { ProductImageTable.productId eq id }.forEach { it.delete() }
+        ProductImageTable.deleteWhere { ProductImageTable.productId eq id }
         urls.forEachIndexed { index, url ->
             ProductImageDAO.new {
                 productId = this@ProductDAO.id
