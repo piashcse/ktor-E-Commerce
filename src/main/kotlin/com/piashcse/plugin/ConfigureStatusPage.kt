@@ -1,5 +1,6 @@
 package com.piashcse.plugin
 
+import com.piashcse.constants.Message
 import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.common.FieldError
 import com.piashcse.utils.validator.AppException
@@ -52,33 +53,33 @@ fun Application.configureStatusPage() {
             when (error) {
                 is AppException -> {
                     statusPageLog.warn("${error::class.simpleName}: ${error.message}")
-                    call.respond(error.code, ApiError(error.message ?: "Unknown error"))
+                    call.respond(error.code, ApiError(error.message ?: Message.Errors.INTERNAL))
                 }
                 is BadRequestException -> {
-                    call.respond(HttpStatusCode.BadRequest, ApiError(error.message ?: "Bad request"))
+                    call.respond(HttpStatusCode.BadRequest, ApiError(error.message ?: Message.Errors.VALIDATION_FAILED))
                 }
                 is MissingRequestParameterException -> {
                     call.respond(HttpStatusCode.BadRequest, ApiError("Missing parameter: ${error.parameterName}"))
                 }
                 is NumberFormatException -> {
-                    call.respond(HttpStatusCode.BadRequest, ApiError("Invalid numeric value"))
+                    call.respond(HttpStatusCode.BadRequest, ApiError(Message.Validation.invalidFormat("number")))
                 }
                 is IllegalArgumentException -> {
-                    call.respond(HttpStatusCode.BadRequest, ApiError(error.message ?: "Invalid argument"))
+                    call.respond(HttpStatusCode.BadRequest, ApiError(error.message ?: Message.Errors.VALIDATION_FAILED))
                 }
                 else -> {
                     statusPageLog.error("Unhandled exception: ${error::class.simpleName}", error)
-                    call.respond(HttpStatusCode.InternalServerError, ApiError("Internal server error"))
+                    call.respond(HttpStatusCode.InternalServerError, ApiError(Message.Errors.INTERNAL))
                 }
             }
         }
 
         // 4️⃣ Standard HTTP status shortcuts
         status(HttpStatusCode.Unauthorized) { call, _ ->
-            call.respond(HttpStatusCode.Unauthorized, ApiError("Authentication required"))
+            call.respond(HttpStatusCode.Unauthorized, ApiError(Message.Errors.UNAUTHORIZED))
         }
         status(HttpStatusCode.NotFound) { call, _ ->
-            call.respond(HttpStatusCode.NotFound, ApiError("Resource not found"))
+            call.respond(HttpStatusCode.NotFound, ApiError(Message.Errors.NOT_FOUND))
         }
         status(HttpStatusCode.MethodNotAllowed) { call, _ ->
             call.respond(HttpStatusCode.MethodNotAllowed, ApiError("Method not allowed"))

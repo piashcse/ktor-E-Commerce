@@ -3,8 +3,9 @@ package com.piashcse.feature.cart
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toCartItemSummary
+import com.piashcse.mapper.toCartResponse
 import com.piashcse.mapper.toProductResponse
-import com.piashcse.model.response.CartItemSummary
 import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -22,7 +23,7 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-class CartService : CartRepository {
+class CartRepositoryImpl : CartRepository {
 
     override suspend fun createCart(
         userId: String,
@@ -42,7 +43,7 @@ class CartService : CartRepository {
             this.userId = EntityID(userId, UserTable)
             this.productId = EntityID(productId, ProductTable)
             this.quantity = quantity
-        }.response()
+        }.toCartResponse()
     }
 
     override suspend fun getCartItems(
@@ -66,7 +67,7 @@ class CartService : CartRepository {
         val data = rows.map { row ->
             val product = products[row[CartItemTable.productId].value]
                 ?: row[CartItemTable.productId].value.throwNotFound("Product")
-            CartItemDAO.wrapRow(row).response(product.toProductResponse(imagesMap[product.id.value]))
+            CartItemDAO.wrapRow(row).toCartResponse(product.toProductResponse(imagesMap[product.id.value]))
         }
         PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
     }
@@ -88,7 +89,7 @@ class CartService : CartRepository {
 
         val product = ProductDAO.findById(cartItem.productId)
             ?: throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
-        cartItem.response(product.response())
+        cartItem.toCartResponse(product.toProductResponse())
     }
 
     override suspend fun removeCartItem(
@@ -105,7 +106,7 @@ class CartService : CartRepository {
         val product = ProductDAO.findById(cartItem.productId)
             ?: throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
         cartItem.delete()
-        product.response()
+        product.toProductResponse()
     }
 
     override suspend fun clearCart(userId: String): Boolean = query {
@@ -121,6 +122,18 @@ class CartService : CartRepository {
         val products = ProductDAO.find {
             ProductTable.id inList cartItems.map { it.productId.value }.distinct()
         }.associateBy { it.id.value }
+        val productEntityIds = products.keys.map { EntityID(it, ProductTable) }
+        val imagesMap = if (products.isNotEmpty()) {
+            ProductImageDAO.imagesForProducts(productEntityIds)
+        } else {
+            emptyMap()
+        }
+        val inventoryMap = if (products.isNotEmpty()) {
+            InventoryDAO.find { InventoryTable.productId inList productEntityIds }
+                .associate { it.productId.value to it.stockQuantity }
+        } else {
+            emptyMap()
+        }
         val shopIds = products.values.mapNotNull { it.shopId?.value }.distinct()
         val shops = if (shopIds.isNotEmpty()) {
             ShopDAO.find { ShopTable.id inList shopIds }.associateBy { it.id.value }
@@ -131,14 +144,11 @@ class CartService : CartRepository {
         val items = cartItems.mapNotNull { cartItem ->
             val product = products[cartItem.productId.value] ?: return@mapNotNull null
             val unitPrice = product.discountPrice ?: product.price
-            CartItemSummary(
-                productId = product.id.value,
-                productName = product.name,
-                price = unitPrice.toPlainString(),
-                quantity = cartItem.quantity,
-                image = product.imageUrls.firstOrNull(),
-                stockQuantity = product.effectiveStock(),
-                shopId = product.shopId?.value,
+            cartItem.toCartItemSummary(
+                product = product,
+                unitPrice = unitPrice,
+                image = imagesMap[product.id.value]?.firstOrNull(),
+                stockQuantity = inventoryMap[product.id.value] ?: product.stockQuantity,
                 shopName = product.shopId?.value?.let { shops[it]?.name },
             )
         }

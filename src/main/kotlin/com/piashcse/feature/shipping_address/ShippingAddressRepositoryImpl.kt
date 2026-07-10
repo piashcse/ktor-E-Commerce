@@ -2,24 +2,23 @@ package com.piashcse.feature.shipping_address
 
 import com.piashcse.database.entities.ShippingAddressDAO
 import com.piashcse.database.entities.ShippingAddressTable
+import com.piashcse.mapper.toShippingAddressResponse
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.model.response.ShippingAddressResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.verifyOwnership
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 
-import com.piashcse.utils.extension.verifyOwnership
-
-class ShippingAddressService : ShippingAddressRepository {
+class ShippingAddressRepositoryImpl : ShippingAddressRepository {
     override suspend fun createShippingAddress(
         userId: String,
         request: ShippingAddressRequest,
     ): ShippingAddressResponse =
         query {
             if (request.isDefault) {
-                // Unset other default addresses for this user
                 ShippingAddressDAO.find {
                     ShippingAddressTable.userId eq userId and (ShippingAddressTable.isDefault eq true)
                 }.forEach { it.isDefault = false }
@@ -37,12 +36,12 @@ class ShippingAddressService : ShippingAddressRepository {
                 country = request.country
                 zipCode = request.zipCode
                 isDefault = request.isDefault
-            }.response()
+            }.toShippingAddressResponse()
         }
 
     override suspend fun getShippingAddresses(userId: String): List<ShippingAddressResponse> =
         query {
-            ShippingAddressDAO.find { ShippingAddressTable.userId eq userId }.map { it.response() }
+            ShippingAddressDAO.find { ShippingAddressTable.userId eq userId }.map { it.toShippingAddressResponse() }
         }
 
     override suspend fun updateShippingAddress(
@@ -57,7 +56,6 @@ class ShippingAddressService : ShippingAddressRepository {
             address.verifyOwnership(userId, "shipping address") { it.userId.value }
 
             if (request.isDefault && !address.isDefault) {
-                // Unset other default addresses for this user
                 ShippingAddressDAO.find {
                     ShippingAddressTable.userId eq userId and (ShippingAddressTable.isDefault eq true)
                 }.forEach { it.isDefault = false }
@@ -74,7 +72,7 @@ class ShippingAddressService : ShippingAddressRepository {
                 country = request.country
                 zipCode = request.zipCode
                 isDefault = request.isDefault
-            }.response()
+            }.toShippingAddressResponse()
         }
 
     override suspend fun deleteShippingAddress(

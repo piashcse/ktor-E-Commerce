@@ -3,6 +3,7 @@ package com.piashcse.feature.shop
 import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toShopResponse
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.model.response.ShopResponse
@@ -19,24 +20,12 @@ import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
-class ShopService : ShopRepository {
-    /**
-     * Creates a new shop for a seller.
-     *
-     * @param userId The user ID creating the shop.
-     * @param shopRequest The shop details to create.
-     * @return The created shop.
-     */
+class ShopRepositoryImpl : ShopRepository {
     override suspend fun createShop(
         userId: String,
         shopRequest: ShopRequest,
     ): ShopResponse =
         query {
-            val user =
-                UserDAO.findById(userId)
-                    ?: userId.throwNotFound("User")
-
-            // Verify that the user is a seller by checking for a corresponding seller record
             val seller = findSellerByUserId(userId)
                 ?: throw NotFoundException(Message.Errors.SELLER_REQUIRED)
 
@@ -46,8 +35,6 @@ class ShopService : ShopRepository {
                 }.firstOrNull()
 
             if (existingShop != null) {
-                // If user already has a shop, throw an error or update the existing one
-                // For this implementation, we'll throw an exception
                 throw ConflictException(Message.Shops.ALREADY_EXISTS)
             }
 
@@ -62,23 +49,14 @@ class ShopService : ShopRepository {
                     email = shopRequest.email
                     logo = shopRequest.logo
                     coverImage = shopRequest.coverImage
-                    status = ShopStatus.PENDING // Initially pending approval
+                    status = ShopStatus.PENDING
                 }
 
-            // Update the seller record to link to the new shop
             seller.shopId = shop.id
 
-            shop.shopResponse()
+            shop.toShopResponse()
         }
 
-    /**
-     * Updates an existing shop.
-     *
-     * @param userId The user ID updating the shop.
-     * @param shopId The shop ID to update.
-     * @param shopRequest The shop details to update.
-     * @return The updated shop.
-     */
     override suspend fun updateShop(
         userId: String,
         shopId: String,
@@ -101,27 +79,15 @@ class ShopService : ShopRepository {
                 coverImage = shopRequest.coverImage ?: coverImage
             }
 
-            shop.shopResponse()
+            shop.toShopResponse()
         }
 
-    /**
-     * Gets a shop by ID.
-     *
-     * @param shopId The shop ID to retrieve.
-     * @return The shop details.
-     */
     override suspend fun getShopById(shopId: String): ShopResponse? =
         query {
             val shop = ShopDAO.findById(shopId)
-            shop?.shopResponse()
+            shop?.toShopResponse()
         }
 
-    /**
-     * Gets shops by user ID (seller).
-     *
-     * @param userId The user ID to retrieve shops for.
-     * @return A list of shops for the user.
-     */
     override suspend fun getShopsByUser(
         userId: String,
         limit: Int,
@@ -130,18 +96,10 @@ class ShopService : ShopRepository {
         query {
             ShopTable.selectAll().andWhere { ShopTable.userId eq userId }
                 .toPaginatedResponse(limit, offset) {
-                    ShopDAO.wrapRow(it).shopResponse()
+                    ShopDAO.wrapRow(it).toShopResponse()
                 }
         }
 
-    /**
-     * Gets all shops with optional filtering.
-     *
-     * @param status Optional status to filter by.
-     * @param category Optional category to filter by.
-     * @param limit Number of shops to return.
-     * @return A list of shops matching the criteria.
-     */
     override suspend fun getShops(
         status: String?,
         category: String?,
@@ -149,7 +107,6 @@ class ShopService : ShopRepository {
         offset: Int,
     ): PaginatedResponse<ShopResponse> =
         query {
-            // Validate status parameter
             val statusEnum =
                 if (status != null) {
                     try {
@@ -161,30 +118,23 @@ class ShopService : ShopRepository {
                     null
                 }
 
-            val query = ShopTable.selectAll()
+            val q = ShopTable.selectAll()
 
-            // Exclude rejected and suspended shops
-            query.andWhere { ShopTable.status neq ShopStatus.REJECTED }
-            query.andWhere { ShopTable.status neq ShopStatus.SUSPENDED }
+            q.andWhere { ShopTable.status neq ShopStatus.REJECTED }
+            q.andWhere { ShopTable.status neq ShopStatus.SUSPENDED }
 
             if (statusEnum != null) {
-                query.andWhere { ShopTable.status eq statusEnum }
+                q.andWhere { ShopTable.status eq statusEnum }
             }
             if (category != null) {
-                query.andWhere { ShopTable.categoryId eq EntityID(category, ShopCategoryTable) }
+                q.andWhere { ShopTable.categoryId eq EntityID(category, ShopCategoryTable) }
             }
 
-            query.orderBy(ShopTable.createdAt to SortOrder.DESC).toPaginatedResponse(limit, offset) {
-                ShopDAO.wrapRow(it).shopResponse()
+            q.orderBy(ShopTable.createdAt to SortOrder.DESC).toPaginatedResponse(limit, offset) {
+                ShopDAO.wrapRow(it).toShopResponse()
             }
         }
 
-    /**
-     * Gets shops by category.
-     *
-     * @param categoryId The category ID to filter by.
-     * @return A list of shops in the category.
-     */
     override suspend fun getShopsByCategory(
         categoryId: String,
         limit: Int,
@@ -194,34 +144,22 @@ class ShopService : ShopRepository {
             ShopTable.selectAll().andWhere {
                 ShopTable.categoryId eq categoryId and (ShopTable.status neq ShopStatus.REJECTED) and (ShopTable.status neq ShopStatus.SUSPENDED)
             }.toPaginatedResponse(limit, offset) {
-                ShopDAO.wrapRow(it).shopResponse()
+                ShopDAO.wrapRow(it).toShopResponse()
             }
         }
 
-    /**
-     * Gets featured shops.
-     *
-     * @return A list of featured shops.
-     */
     override suspend fun getFeaturedShops(
         limit: Int,
         offset: Int,
     ): PaginatedResponse<ShopResponse> =
         query {
-            // For now, just return shops with highest ratings, in the future this could be more complex
             ShopTable.selectAll().andWhere { ShopTable.status eq ShopStatus.APPROVED }
                 .orderBy(ShopTable.rating to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) {
-                    ShopDAO.wrapRow(it).shopResponse()
+                    ShopDAO.wrapRow(it).toShopResponse()
                 }
         }
 
-    /**
-     * Gets shops by status.
-     *
-     * @param status The status to filter by.
-     * @return A list of shops with the specified status.
-     */
     override suspend fun getShopsByStatus(
         status: ShopStatus,
         limit: Int,
@@ -230,86 +168,21 @@ class ShopService : ShopRepository {
         query {
             ShopTable.selectAll().andWhere { ShopTable.status eq status }
                 .toPaginatedResponse(limit, offset) {
-                    ShopDAO.wrapRow(it).shopResponse()
+                    ShopDAO.wrapRow(it).toShopResponse()
                 }
         }
 
-    /**
-     * Approves a shop application.
-     *
-     * @param shopId The shop ID to approve.
-     * @return The updated shop.
-     */
-    override suspend fun approveShop(shopId: String): ShopResponse =
-        query {
-            val shop =
-                ShopDAO.findById(shopId)
-                    ?: shopId.throwNotFound("ShopResponse")
+    private suspend fun setShopStatus(shopId: String, update: ShopDAO.() -> Unit): ShopResponse = query {
+        val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("ShopResponse")
+        shop.update()
+        shop.toShopResponse()
+    }
 
-            shop.apply {
-                status = ShopStatus.APPROVED
-                // Note: createdAt should remain unchanged, only updatedAt will be changed automatically by the base class
-            }
+    override suspend fun approveShop(shopId: String) = setShopStatus(shopId) { status = ShopStatus.APPROVED }
 
-            shop.shopResponse()
-        }
+    override suspend fun rejectShop(shopId: String) = setShopStatus(shopId) { status = ShopStatus.REJECTED }
 
-    /**
-     * Rejects a shop application.
-     *
-     * @param shopId The shop ID to reject.
-     * @return The updated shop.
-     */
-    override suspend fun rejectShop(shopId: String): ShopResponse =
-        query {
-            val shop =
-                ShopDAO.findById(shopId)
-                    ?: shopId.throwNotFound("ShopResponse")
+    override suspend fun suspendShop(shopId: String) = setShopStatus(shopId) { status = ShopStatus.SUSPENDED }
 
-            shop.apply {
-                status = ShopStatus.REJECTED
-            }
-
-            shop.shopResponse()
-        }
-
-    /**
-     * Suspends a shop.
-     *
-     * @param shopId The shop ID to suspend.
-     * @return The updated shop.
-     */
-    override suspend fun suspendShop(shopId: String): ShopResponse =
-        query {
-            val shop =
-                ShopDAO.findById(shopId)
-                    ?: shopId.throwNotFound("ShopResponse")
-
-            shop.apply {
-                status = ShopStatus.SUSPENDED
-            }
-
-            shop.shopResponse()
-        }
-
-    /**
-     * Activates a suspended shop.
-     *
-     * @param shopId The shop ID to activate.
-     * @return The updated shop.
-     */
-    override suspend fun activateShop(shopId: String): ShopResponse =
-        query {
-            val shop =
-                ShopDAO.findById(shopId)
-                    ?: shopId.throwNotFound("ShopResponse")
-
-            shop.apply {
-                if (shop.status == ShopStatus.SUSPENDED) {
-                    status = ShopStatus.APPROVED
-                }
-            }
-
-            shop.shopResponse()
-        }
+    override suspend fun activateShop(shopId: String) = setShopStatus(shopId) { if (status == ShopStatus.SUSPENDED) status = ShopStatus.APPROVED }
 }

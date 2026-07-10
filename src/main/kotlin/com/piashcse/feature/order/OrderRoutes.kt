@@ -1,41 +1,22 @@
 package com.piashcse.feature.order
+import org.koin.ktor.ext.inject
 import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.CancelOrderRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
-import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.getCurrentUserType
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.*
 import java.time.Instant
-import com.piashcse.utils.validator.InvalidEnumValueException
 import com.piashcse.utils.validator.UnauthorizedException
-import io.ktor.server.application.*
-import io.ktor.http.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
-
-private fun ApplicationCall.parseOrderStatusParam(): OrderStatus {
-    val param = requireQueryParameter("status")
-    return try {
-        OrderStatus.valueOf(param.uppercase())
-    } catch (_: IllegalArgumentException) {
-        throw InvalidEnumValueException(
-            message = "Invalid order status: $param",
-            enumName = OrderStatus.values().joinToString(", ") { it.name },
-            invalidValue = param,
-        )
-    }
-}
 
 /**
  * Order-related routes for customers and sellers.
  */
-fun Route.orderRoutes(orderService: OrderService) {
+fun Route.orderRoutes() {
+    val orderRepo: OrderRepository by inject()
     customerAuth {
         /**
          * @tag Order
@@ -43,7 +24,7 @@ fun Route.orderRoutes(orderService: OrderService) {
          */
         get {
             val (limit, offset) = call.paginateQueryParams()
-            call.respond(HttpStatusCode.OK, orderService.getOrders(call.currentUserId, limit, offset))
+            call.respondOk(orderRepo.getOrders(call.currentUserId, limit, offset))
         }
     }
 
@@ -54,23 +35,14 @@ fun Route.orderRoutes(orderService: OrderService) {
          */
         patch("status/{id}") {
             val id = call.requirePathParameter("id")
-            val status = call.parseOrderStatusParam()
-            val userId = call.currentUserId
+            val status = call.requireQueryParameter("status").parseEnum<OrderStatus>("status")
+            val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
 
-            val isSeller = call.principal<JWTPrincipal>()?.payload?.getClaim("role")?.asString() == UserType.SELLER.name.lowercase()
-            val isCustomer = call.principal<JWTPrincipal>()?.payload?.getClaim("role")?.asString() == UserType.CUSTOMER.name.lowercase()
+            if ((status in listOf(OrderStatus.CONFIRMED, OrderStatus.DELIVERED) && userType != UserType.SELLER) ||
+                (status in listOf(OrderStatus.CANCELED, OrderStatus.RECEIVED) && userType != UserType.CUSTOMER)
+            ) throw UnauthorizedException(Message.Orders.STATUS_NOT_ALLOWED)
 
-            val sellerOnlyStatuses = listOf(OrderStatus.CONFIRMED, OrderStatus.DELIVERED)
-            val customerOnlyStatuses = listOf(OrderStatus.CANCELED, OrderStatus.RECEIVED)
-
-            val isSellerStatusButNotSeller = status in sellerOnlyStatuses && !isSeller
-            val isCustomerStatusButNotCustomer = status in customerOnlyStatuses && !isCustomer
-
-            if (isSellerStatusButNotSeller || isCustomerStatusButNotCustomer) {
-                throw UnauthorizedException(Message.Orders.STATUS_NOT_ALLOWED)
-            }
-
-            call.respond(HttpStatusCode.OK, orderService.updateOrderStatus(userId, id, status))
+            call.respondOk(orderRepo.updateOrderStatus(call.currentUserId, id, status))
         }
 
         /**
@@ -78,12 +50,7 @@ fun Route.orderRoutes(orderService: OrderService) {
          * @description Cancel an order
          */
         post("{id}/cancel") {
-            val id = call.requirePathParameter("id")
-            val userId = call.currentUserId
-            val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
-            val requestBody = call.receive<CancelOrderRequest>()
-
-            call.respond(HttpStatusCode.OK, orderService.cancelOrder(id, userId, requestBody.reason, userType))
+            call.respondOk(orderRepo.cancelOrder(call.requirePathParameter("id"), call.currentUserId, call.receive<CancelOrderRequest>().reason, call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)))
         }
     }
 }
@@ -91,7 +58,8 @@ fun Route.orderRoutes(orderService: OrderService) {
 /**
  * Seller order management routes.
  */
-fun Route.orderSellerRoutes(orderService: OrderService) {
+fun Route.orderSellerRoutes() {
+    val orderRepo: OrderRepository by inject()
     /**
      * @tag Order
      * @description Seller: Retrieve orders for the seller's shop
@@ -99,37 +67,32 @@ fun Route.orderSellerRoutes(orderService: OrderService) {
     get {
         val (limit, offset) = call.paginateQueryParams()
         val status = call.request.queryParameters["status"]
-        call.respond(HttpStatusCode.OK, orderService.getSellerOrders(call.currentUserId, limit, offset, status))
+        call.respondOk(orderRepo.getSellerOrders(call.currentUserId, limit, offset, status))
     }
 }
 
 /**
  * Admin order management routes.
  */
-fun Route.orderAdminRoutes(orderService: OrderService) {
+fun Route.orderAdminRoutes() {
+    val orderRepo: OrderRepository by inject()
     /**
      * @tag Order
      * @description Admin: Update the status of any order
      */
     patch("status/{id}") {
         val id = call.requirePathParameter("id")
-        val status = call.parseOrderStatusParam()
-        val userId = call.currentUserId
-        call.respond(HttpStatusCode.OK, orderService.updateOrderStatus(userId, id, status))
+        val status = call.requireQueryParameter("status").parseEnum<OrderStatus>("status")
+        call.respondOk(orderRepo.updateOrderStatus(call.currentUserId, id, status))
     }
 
     /**
      * @tag Order
      * @description Admin: Cancel any order
      */
-    post("{id}/cancel") {
-        val id = call.requirePathParameter("id")
-        val userId = call.currentUserId
-        val userType = UserType.ADMIN
-        val requestBody = call.receive<CancelOrderRequest>()
-
-        call.respond(HttpStatusCode.OK, orderService.cancelOrder(id, userId, requestBody.reason, userType))
-    }
+        post("{id}/cancel") {
+            call.respondOk(orderRepo.cancelOrder(call.requirePathParameter("id"), call.currentUserId, call.receive<CancelOrderRequest>().reason, UserType.ADMIN))
+        }
 
     /**
      * @tag Order
@@ -147,6 +110,6 @@ fun Route.orderAdminRoutes(orderService: OrderService) {
                 runCatching { Instant.parse(it) }.getOrNull()
             }
 
-        call.respond(HttpStatusCode.OK, orderService.getAdminOrders(limit, offset, status, startDate, endDate))
+        call.respondOk(orderRepo.getAdminOrders(limit, offset, status, startDate, endDate))
     }
 }

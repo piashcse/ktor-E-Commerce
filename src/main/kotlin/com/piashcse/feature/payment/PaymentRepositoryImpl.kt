@@ -1,10 +1,12 @@
 package com.piashcse.feature.payment
 
+import com.piashcse.constants.Message
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PaymentDAO
-import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.PaymentTable
+import com.piashcse.mapper.toPaymentResponse
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -20,33 +22,19 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 
-/**
- * Service for managing payment-related operations.
- */
-class PaymentService : PaymentRepository {
-    /**
-     * Creates a new payment for an order based on the provided payment details.
-     *
-     * @param paymentRequest The details of the payment including order ID, amount, status, and payment method.
-     * @return The created payment entity.
-     * @throws Exception if the order with the provided order ID is not found.
-     */
+class PaymentRepositoryImpl : PaymentRepository {
     override suspend fun createPayment(paymentRequest: PaymentRequest): PaymentResponse =
         query {
             val order =
                 OrderDAO.findById(paymentRequest.orderId)
-                    ?: return@query paymentRequest.orderId.throwNotFound("Order")
+                    ?: paymentRequest.orderId.throwNotFound("Order")
 
-            // Validate amount matches order total
             val orderTotal = order.total
             val paymentAmount = BigDecimal(paymentRequest.amount.toString())
             if (paymentAmount.compareTo(orderTotal) != 0) {
-                throw ValidationException(
-                    "Payment amount (${paymentRequest.amount}) does not match order total ($orderTotal)",
-                )
+                throw ValidationException(Message.Payments.amountMismatch(paymentRequest.amount.toString(), orderTotal.toPlainString()))
             }
 
-            // Check if already fully paid
             val existingPayments =
                 PaymentDAO.find {
                     (PaymentTable.orderId eq EntityID(paymentRequest.orderId, OrderTable)) and
@@ -55,10 +43,9 @@ class PaymentService : PaymentRepository {
 
             val paidAmount = existingPayments.sumOf { BigDecimal(it.amount.toString()) }
             if (paidAmount.compareTo(orderTotal) >= 0) {
-                throw ValidationException("Order already fully paid")
+                throw ValidationException(Message.Payments.ALREADY_PAID)
             }
 
-            // Create payment
             val payment =
                 PaymentDAO.new {
                     this.orderId = EntityID(paymentRequest.orderId, OrderTable)
@@ -69,33 +56,19 @@ class PaymentService : PaymentRepository {
                     this.transactionId = paymentRequest.transactionId
                 }
 
-            // Update order payment status if fully paid
             if (paidAmount.add(paymentAmount).compareTo(orderTotal) >= 0) {
                 order.paymentStatus = PaymentStatus.COMPLETED
             }
 
-            payment.response()
+            payment.toPaymentResponse()
         }
 
-    /**
-     * Retrieves a payment by its ID.
-     *
-     * @param paymentId The ID of the payment to retrieve.
-     * @return The payment entity associated with the provided payment ID.
-     * @throws Exception if no payment is found for the given payment ID.
-     */
     override suspend fun getPaymentById(paymentId: String): PaymentResponse =
         query {
             val isOrderExist = PaymentDAO.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
-            isOrderExist?.response() ?: paymentId.throwNotFound("PaymentResponse")
+            isOrderExist?.toPaymentResponse() ?: paymentId.throwNotFound("PaymentResponse")
         }
 
-    /**
-     * Retrieves all payments for a specific order.
-     *
-     * @param orderId The ID of the order.
-     * @return A list of payments for the order.
-     */
     override suspend fun getPaymentsByOrderId(
         orderId: String,
         limit: Int,
@@ -105,7 +78,7 @@ class PaymentService : PaymentRepository {
             PaymentTable.selectAll().andWhere { PaymentTable.orderId eq EntityID(orderId, OrderTable) }
                 .orderBy(PaymentTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) {
-                    PaymentDAO.wrapRow(it).response()
+                    PaymentDAO.wrapRow(it).toPaymentResponse()
                 }
         }
 }

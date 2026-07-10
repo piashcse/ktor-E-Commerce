@@ -1,39 +1,32 @@
 package com.piashcse.feature.consent
 
-import com.piashcse.constants.UserType
 import com.piashcse.constants.PolicyType
+import com.piashcse.constants.UserType
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
-import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.validator.InvalidEnumValueException
-import io.ktor.http.*
+import com.piashcse.utils.extension.*
+
+import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 /**
  * Routes for managing user policy consents.
  */
-fun Route.consentRoutes(consentService: ConsentService) {
+fun Route.consentRoutes() {
+    val consentRepo: ConsentRepository by inject()
     customerAuth {
         /**
          * @tag Privacy-Policy-Consent
          * @description Record user consent for a specific policy document
          */
         post("consent") {
-            val consentRequest = call.receive<PolicyConsentRequest>()
-            val userId = call.currentUserId
-            val policyId = consentRequest.policyId
-            val userAgent = call.request.headers["User-Agent"]
-            val ipAddress = call.request.origin.remoteHost
-
-            val updatedRequest = consentRequest.copy(policyId, ipAddress, userAgent)
-            call.respond(
-                HttpStatusCode.OK,
-                consentService.recordConsent(userId, updatedRequest),
-            )
+            call.respondOk(call.receive<PolicyConsentRequest>().let {
+                consentRepo.recordConsent(call.currentUserId, it.copy(it.policyId, call.request.origin.remoteHost, call.request.headers["User-Agent"]))
+            })
         }
     }
 
@@ -43,8 +36,7 @@ fun Route.consentRoutes(consentService: ConsentService) {
          * @description Retrieve all consent records for the authenticated user
          */
         get {
-            val userId = call.currentUserId
-            call.respond(HttpStatusCode.OK, consentService.getUserConsents(userId))
+            call.respondOk(consentRepo.getUserConsents(call.currentUserId))
         }
 
         /**
@@ -52,22 +44,7 @@ fun Route.consentRoutes(consentService: ConsentService) {
          * @description Check if the user has consented to a specific policy type
          */
         get("{policyType}") {
-            val policyType = call.requirePathParameter("policyType")
-            val userId = call.currentUserId
-
-            val policyTypeValue =
-                runCatching {
-                    PolicyType.valueOf(policyType)
-                }.getOrElse {
-                    throw InvalidEnumValueException(
-                        "Invalid policy type: $policyType",
-                        enumName = "PolicyType",
-                        invalidValue = policyType,
-                    )
-                }
-
-            val hasConsented = consentService.hasUserConsented(userId, policyTypeValue)
-            call.respond(HttpStatusCode.OK, mapOf("hasConsented" to hasConsented))
+            call.respondOk(mapOf("hasConsented" to consentRepo.hasUserConsented(call.currentUserId, call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type"))))
         }
     }
 }

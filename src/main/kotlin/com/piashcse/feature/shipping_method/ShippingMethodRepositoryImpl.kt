@@ -1,12 +1,13 @@
 package com.piashcse.feature.shipping_method
 
 import com.piashcse.database.entities.ShippingMethodDAO
+import com.piashcse.mapper.toShippingMethodResponse
 import com.piashcse.model.request.ShippingMethodRequest
 import com.piashcse.model.response.ShippingMethodResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
 
-class ShippingMethodService : ShippingMethodRepository {
+class ShippingMethodRepositoryImpl : ShippingMethodRepository {
     override suspend fun createShippingMethod(request: ShippingMethodRequest): ShippingMethodResponse =
         query {
             ShippingMethodDAO.new {
@@ -14,12 +15,12 @@ class ShippingMethodService : ShippingMethodRepository {
                 type = request.type
                 price = request.price
                 deliveryTime = request.deliveryTime
-            }.response()
+            }.toShippingMethodResponse()
         }
 
     override suspend fun getShippingMethods(): List<ShippingMethodResponse> =
         query {
-            ShippingMethodDAO.all().map { it.response() }
+            ShippingMethodDAO.all().map { it.toShippingMethodResponse() }
         }
 
     override suspend fun updateShippingMethod(
@@ -33,7 +34,7 @@ class ShippingMethodService : ShippingMethodRepository {
                 type = request.type
                 price = request.price
                 deliveryTime = request.deliveryTime
-            }.response()
+            }.toShippingMethodResponse()
         }
 
     override suspend fun deleteShippingMethod(methodId: String): Boolean =

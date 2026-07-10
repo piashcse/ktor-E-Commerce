@@ -1,8 +1,10 @@
 package com.piashcse.feature.review_rating
 
+import com.piashcse.constants.Message
 import com.piashcse.database.entities.ReviewRatingDAO
 import com.piashcse.database.entities.ReviewRatingTable
 import com.piashcse.database.entities.UserTable
+import com.piashcse.mapper.toReviewRatingResponse
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.model.response.ReviewRatingResponse
@@ -20,17 +22,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
-/**
- * Service for managing product reviews and ratings. Provides methods to get, add, update, and delete review ratings.
- */
-class ReviewRatingService : ReviewRatingRepository {
-    /**
-     * Retrieves a list of reviews and ratings for a product.
-     *
-     * @param productId The ID of the product whose reviews and ratings are to be retrieved.
-     * @param limit The maximum number of reviews to retrieve.
-     * @return A list of reviews and ratings for the specified product.
-     */
+class ReviewRatingRepositoryImpl : ReviewRatingRepository {
     override suspend fun getReviewRating(
         productId: String,
         limit: Int,
@@ -39,48 +31,28 @@ class ReviewRatingService : ReviewRatingRepository {
         query {
             ReviewRatingTable.selectAll().andWhere { ReviewRatingTable.productId eq productId }
                 .toPaginatedResponse(limit, offset) {
-                    ReviewRatingDAO.wrapRow(it).response()
+                    ReviewRatingDAO.wrapRow(it).toReviewRatingResponse()
                 }
         }
 
-    /**
-     * Adds a new review and rating for a product. If the user has already reviewed the product, an exception is thrown.
-     *
-     * @param userId The ID of the user adding the review and rating.
-     * @param reviewRating The review and rating details to be added.
-     * @return The added review and rating.
-     * @throws alreadyExistException If the user has already reviewed the specified product.
-     */
     override suspend fun addReviewRating(
         userId: String,
         reviewRating: ReviewRatingRequest,
     ): ReviewRatingResponse =
         query {
             if (reviewRating.rating < 1 || reviewRating.rating > 5)
-                throw ValidationException("Rating must be between 1 and 5")
-            val isReviewRatingExist =
-                ReviewRatingDAO.find { ReviewRatingTable.userId eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
-                    .singleOrNull()
-            isReviewRatingExist?.let {
+                throw ValidationException(Message.Validation.RATING_OUT_OF_RANGE)
+            ReviewRatingDAO.find { ReviewRatingTable.userId eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
+                .singleOrNull()?.let {
                 throw it.productId.value.throwConflict("Product")
             } ?: ReviewRatingDAO.new {
                 this.userId = EntityID(userId, UserTable)
                 productId = EntityID(reviewRating.productId, ProductTable)
                 reviewText = reviewRating.reviewText
                 rating = reviewRating.rating
-            }.response()
+            }.toReviewRatingResponse()
         }
 
-    /**
-     * Updates an existing review and rating.
-     *
-     * @param userId The ID of the user updating the review.
-     * @param reviewId The ID of the review to be updated.
-     * @param review The updated review text.
-     * @param rating The updated rating value.
-     * @return The updated review and rating.
-     * @throws review.throwNotFound("Resource") If the review ID does not exist.
-     */
     override suspend fun updateReviewRating(
         userId: String,
         reviewId: String,
@@ -89,33 +61,20 @@ class ReviewRatingService : ReviewRatingRepository {
     ): ReviewRatingResponse =
         query {
             if (rating < 1 || rating > 5)
-                throw ValidationException("Rating must be between 1 and 5")
-            val isReviewRatingExist =
-                ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
-                    .singleOrNull()
-
-            isReviewRatingExist?.let {
+                throw ValidationException(Message.Validation.RATING_OUT_OF_RANGE)
+            ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
+                .singleOrNull()?.let {
                 it.verifyOwnership(userId, "review") { r -> r.userId.value }
                 it.reviewText = review
                 it.rating = rating
-                it.response()
+                it.toReviewRatingResponse()
             } ?: review.throwNotFound("Review")
         }
 
-    /**
-     * Deletes a review and rating by its ID.
-     *
-     * @param userId The ID of the user deleting the review.
-     * @param reviewId The ID of the review to be deleted.
-     * @return The ID of the deleted review.
-     * @throws reviewId.throwNotFound("Resource") If the review ID does not exist.
-     */
     override suspend fun deleteReviewRating(userId: String, reviewId: String): String =
         query {
-            val isReviewRatingExist =
-                ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
-                    .singleOrNull()
-            isReviewRatingExist?.let {
+            ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
+                .singleOrNull()?.let {
                 it.verifyOwnership(userId, "review") { r -> r.userId.value }
                 it.delete()
                 reviewId

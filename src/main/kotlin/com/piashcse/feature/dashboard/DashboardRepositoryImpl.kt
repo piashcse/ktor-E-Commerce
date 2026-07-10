@@ -11,9 +11,9 @@ import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.core.sum
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import org.jetbrains.exposed.v1.core.and
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
@@ -25,7 +25,7 @@ import java.time.format.DateTimeFormatter
 private val FMT = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 private val DFMT = DateTimeFormatter.ISO_DATE
 
-class DashboardService : DashboardRepository {
+class DashboardRepositoryImpl : DashboardRepository {
 
     override suspend fun getDashboardStats() = query {
         val today = LocalDateTime.now(ZoneOffset.UTC).toLocalDate().atStartOfDay()

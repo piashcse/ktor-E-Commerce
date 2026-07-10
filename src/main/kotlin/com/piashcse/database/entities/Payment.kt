@@ -28,13 +28,4 @@ class PaymentDAO(id: EntityID<String>) : BaseEntity(id, PaymentTable) {
     var paymentMethod by PaymentTable.paymentMethod
     var transactionId by PaymentTable.transactionId
 
-    fun response() =
-        PaymentResponse(
-            id = paymentId.value,
-            orderId = orderId.value,
-            amount = amount,
-            status = status,
-            paymentMethod = paymentMethod,
-            transactionId = transactionId,
-        )
 }

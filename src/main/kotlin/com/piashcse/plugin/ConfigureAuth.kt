@@ -5,11 +5,12 @@ import com.piashcse.database.entities.BlacklistedTokenDAO
 import com.piashcse.database.entities.BlacklistedTokenTable
 import com.piashcse.feature.auth.JwtConfig
 import com.piashcse.model.request.JwtTokenRequest
+import com.piashcse.utils.extension.query
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 fun Application.configureAuth() {
     install(Authentication) {
@@ -19,8 +20,8 @@ fun Application.configureAuth() {
                 val authHeader = this.request.headers[io.ktor.http.HttpHeaders.Authorization]
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {
                     val token = authHeader.substring(7)
-                    val isBlacklisted = transaction {
-                        BlacklistedTokenDAO.find { BlacklistedTokenTable.token eq token }.firstOrNull() != null
+                    val isBlacklisted = runBlocking {
+                        query { BlacklistedTokenDAO.find { BlacklistedTokenTable.token eq token }.firstOrNull() != null }
                     }
                     if (isBlacklisted) {
                         return@validate null

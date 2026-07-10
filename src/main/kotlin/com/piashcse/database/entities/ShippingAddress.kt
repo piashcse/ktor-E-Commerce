@@ -35,19 +35,4 @@ class ShippingAddressDAO(id: EntityID<String>) : BaseEntity(id, ShippingAddressT
     var zipCode by ShippingAddressTable.zipCode
     var isDefault by ShippingAddressTable.isDefault
 
-    fun response() =
-        ShippingAddressResponse(
-            id = id.value,
-            userId = userId.value,
-            firstName = firstName,
-            lastName = lastName,
-            email = email,
-            phoneNumber = phoneNumber,
-            streetAddress = streetAddress,
-            city = city,
-            state = state,
-            country = country,
-            zipCode = zipCode,
-            isDefault = isDefault,
-        )
 }

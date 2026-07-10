@@ -11,7 +11,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
 
-object OrderTable : BaseIdTable("order") {
+object OrderTable : BaseIdTable("orders") {
     val userId = reference("user_id", UserTable.id).index()
     val shopId = reference("shop_id", ShopTable.id).nullable().index()
     val orderNumber = varchar("order_number", 50).uniqueIndex() // Unique order number for tracking

@@ -33,13 +33,4 @@ class PolicyConsentDAO(id: EntityID<String>) : BaseEntity(id, PolicyConsentTable
     var ipAddress by PolicyConsentTable.ipAddress
     var userAgent by PolicyConsentTable.userAgent
 
-    fun response() =
-        UserPolicyConsentResponse(
-            id.value,
-            userId.value,
-            policyId.id.value,
-            consentDate?.toString() ?: LocalDateTime.now().toString(), // Convert LocalDateTime to string for response
-            ipAddress,
-            userAgent,
-        )
 }

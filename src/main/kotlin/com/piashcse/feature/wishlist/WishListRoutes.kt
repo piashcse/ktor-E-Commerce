@@ -2,28 +2,25 @@ package com.piashcse.feature.wishlist
 
 import com.piashcse.model.request.WishListRequest
 import com.piashcse.plugin.requireRole
-import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
-import io.ktor.http.*
+import com.piashcse.utils.extension.*
+
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 /**
  * Customer wishlist management routes.
  */
-fun Route.wishListRoutes(wishlistService: WishListService) {
+fun Route.wishListRoutes() {
+    val wishlistRepo: WishListRepository by inject()
     requireRole {
         /**
          * @tag Wishlist
          * @description Add a product to the authenticated user's wishlist
          */
         post {
-            val requestBody = call.receive<WishListRequest>()
-            call.respond(
-                HttpStatusCode.Created,
-                wishlistService.addToWishList(call.currentUserId, requestBody.productId),
-            )
+            call.respondCreated(wishlistRepo.addToWishList(call.currentUserId, call.receive<WishListRequest>().productId))
         }
 
         /**
@@ -32,10 +29,7 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
          */
         get {
             val (limit, offset) = call.paginateQueryParams()
-            call.respond(
-                HttpStatusCode.OK,
-                wishlistService.getWishList(call.currentUserId, limit, offset),
-            )
+            call.respondOk(wishlistRepo.getWishList(call.currentUserId, limit, offset))
         }
 
         /**
@@ -44,10 +38,7 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
          */
         delete("remove") {
             val productId = call.requireQueryParameter("productId")
-            call.respond(
-                HttpStatusCode.OK,
-                wishlistService.removeFromWishList(call.currentUserId, productId),
-            )
+            call.respondOk(wishlistRepo.removeFromWishList(call.currentUserId, productId))
         }
 
         /**
@@ -56,10 +47,7 @@ fun Route.wishListRoutes(wishlistService: WishListService) {
          */
         get("check") {
             val productId = call.requireQueryParameter("productId")
-            call.respond(
-                HttpStatusCode.OK,
-                wishlistService.isProductInWishList(call.currentUserId, productId),
-            )
+            call.respondOk(wishlistRepo.isProductInWishList(call.currentUserId, productId))
         }
     }
 }

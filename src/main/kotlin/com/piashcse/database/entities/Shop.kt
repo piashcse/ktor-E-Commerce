@@ -40,21 +40,4 @@ class ShopDAO(id: EntityID<String>) : BaseEntity(id, ShopTable) {
     var rating by ShopTable.rating
     var totalReviews by ShopTable.totalReviews
 
-    fun shopResponse() =
-        ShopResponse(
-            id = id.value,
-            name = name,
-            categoryId = categoryId.value,
-            description = description,
-            address = address,
-            phone = phone,
-            email = email,
-            logo = logo,
-            coverImage = coverImage,
-            status = status,
-            rating = rating,
-            totalReviews = totalReviews,
-            createdAt = createdAt,
-            updatedAt = updatedAt,
-        )
 }

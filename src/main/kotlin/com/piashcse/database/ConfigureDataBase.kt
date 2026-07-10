@@ -4,6 +4,7 @@ import com.piashcse.config.DotEnvConfig
 import com.piashcse.database.entities.*
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.core.Slf4jSqlDebugLogger
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -22,10 +23,21 @@ private val allTables = arrayOf(
     AuditLogTable,
 )
 
-fun configureDataBase() {
+fun configureDatabase() {
     val dataSource = createDataSource()
-    Database.connect(dataSource)
-    createTables()
+    val isDev = System.getenv("KTOR_DEVELOPMENT")?.toBoolean() == true
+    if (isDev) {
+        Database.connect(dataSource)
+        createTables()
+    } else {
+        Flyway.configure()
+            .dataSource(dataSource)
+            .locations("classpath:db/migration")
+            .baselineOnMigrate(true)
+            .load()
+            .migrate()
+        Database.connect(dataSource)
+    }
 }
 
 private fun createDataSource() = HikariDataSource(
@@ -44,13 +56,8 @@ private fun createDataSource() = HikariDataSource(
 )
 
 private fun createTables() {
-    val isDev = System.getenv("KTOR_DEVELOPMENT")?.toBoolean() == true
     transaction {
-        if (isDev) {
-            TransactionManager.current().addLogger(Slf4jSqlDebugLogger)
-            SchemaUtils.create(*allTables)
-        } else {
-            SchemaUtils.createMissingTablesAndColumns(*allTables)
-        }
+        TransactionManager.current().addLogger(Slf4jSqlDebugLogger)
+        SchemaUtils.createMissingTablesAndColumns(*allTables)
     }
 }

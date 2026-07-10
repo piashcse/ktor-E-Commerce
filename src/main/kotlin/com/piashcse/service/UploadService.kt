@@ -1,6 +1,7 @@
 package com.piashcse.service
 
 import com.piashcse.config.DotEnvConfig
+import com.piashcse.constants.Message
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.content.*
 import kotlinx.coroutines.Dispatchers
@@ -104,18 +105,18 @@ object UploadService {
             // Validate filename
             val originalName =
                 file.originalFileName
-                    ?: throw ValidationException("File name is required for $purpose upload")
+                    ?: throw ValidationException(Message.Upload.fileNameRequired(purpose))
 
             // Extract and validate extension
             val extension = originalName.substringAfterLast('.', "").lowercase()
             if (extension !in ALLOWED_EXTENSIONS) {
-                throw ValidationException("Invalid file type for $purpose. Allowed: ${ALLOWED_EXTENSIONS.joinToString(", ")}")
+                throw ValidationException(Message.Upload.invalidFileType(purpose, ALLOWED_EXTENSIONS.joinToString(", ")))
             }
 
             // Validate MIME type (if present)
             file.contentType?.toString()?.lowercase()?.let { mimeType ->
                 if (mimeType !in ALLOWED_MIME_TYPES) {
-                    throw ValidationException("Invalid MIME type for $purpose: $mimeType")
+                    throw ValidationException(Message.Upload.invalidMimeType(purpose, mimeType))
                 }
             }
 
@@ -123,15 +124,15 @@ object UploadService {
             val bytes = file.streamProvider().readBytes()
 
             // Validate file size
-            if (bytes.isEmpty()) throw ValidationException("Uploaded file is empty")
+            if (bytes.isEmpty()) throw ValidationException(Message.Upload.EMPTY_FILE)
             if (bytes.size > maxSize) {
                 val maxSizeMB = maxSize / (1024 * 1024)
-                throw ValidationException("File size exceeds ${maxSizeMB}MB limit for $purpose upload")
+                throw ValidationException(Message.Upload.fileTooLarge(maxSizeMB.toInt(), purpose))
             }
 
             // Validate Magic Bytes signature
             if (!isValidMagicBytes(bytes, extension)) {
-                throw ValidationException("Malicious file content detected or file format does not match $extension extension")
+                throw ValidationException(Message.Upload.maliciousContent(extension))
             }
 
             // Generate secure filename
@@ -142,7 +143,7 @@ object UploadService {
             val targetFile = File(targetDir, fileName)
 
             if (!targetFile.canonicalPath.startsWith(targetDir.canonicalPath)) {
-                throw ValidationException("Invalid file path detected")
+                throw ValidationException(Message.Upload.INVALID_FILE_PATH)
             }
 
             targetFile.writeBytes(bytes)
@@ -227,7 +228,7 @@ object UploadService {
         val root = File(uploadBaseDir).canonicalFile
 
         if (!base.canonicalPath.startsWith(root.canonicalPath)) {
-            throw ValidationException("Invalid upload directory configuration")
+            throw ValidationException(Message.Upload.INVALID_DIR_CONFIG)
         }
 
         return base

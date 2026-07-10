@@ -1,36 +1,39 @@
 package com.piashcse.feature.coupon
 
 import com.piashcse.model.request.CouponRequest
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.*
+
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
-fun Route.couponRoutes(couponService: CouponService) {
+fun Route.couponRoutes() {
+    val couponRepo: CouponRepository by inject()
     /**
      * @tag Coupon
      * @description Retrieve detailed information about a coupon by its code
      */
     get("{code}") {
         val code = call.requirePathParameter("code")
-        val coupon = couponService.getCouponByCode(code)
+        val coupon = couponRepo.getCouponByCode(code)
         if (coupon != null) {
-            call.respond(HttpStatusCode.OK, coupon)
+            call.respondOk(coupon)
         } else {
             call.respond(HttpStatusCode.NotFound, "Coupon not found")
         }
     }
 }
 
-fun Route.couponAdminRoutes(couponService: CouponService) {
+fun Route.couponAdminRoutes() {
+    val couponRepo: CouponRepository by inject()
     /**
      * @tag Coupon
      * @description Admin: Create a new discount coupon
      */
     post {
-        val request = call.receive<CouponRequest>()
-        call.respond(HttpStatusCode.Created, couponService.createCoupon(request))
+        call.respondCreated(couponRepo.createCoupon(call.receive<CouponRequest>()))
     }
 
     /**
@@ -39,7 +42,7 @@ fun Route.couponAdminRoutes(couponService: CouponService) {
      */
     get {
         val (limit, offset) = call.paginateQueryParams(defaultLimit = 10)
-        call.respond(HttpStatusCode.OK, couponService.getCoupons(limit, offset))
+        call.respondOk(couponRepo.getCoupons(limit, offset))
     }
 
     /**
@@ -48,8 +51,7 @@ fun Route.couponAdminRoutes(couponService: CouponService) {
      */
     put("{id}") {
         val id = call.requirePathParameter("id")
-        val request = call.receive<CouponRequest>()
-        call.respond(HttpStatusCode.OK, couponService.updateCoupon(id, request))
+        call.respondOk(couponRepo.updateCoupon(id, call.receive<CouponRequest>()))
     }
 
     /**
@@ -58,6 +60,6 @@ fun Route.couponAdminRoutes(couponService: CouponService) {
      */
     delete("{id}") {
         val id = call.requirePathParameter("id")
-        call.respond(HttpStatusCode.OK, couponService.deleteCoupon(id))
+        call.respondOk(couponRepo.deleteCoupon(id))
     }
 }

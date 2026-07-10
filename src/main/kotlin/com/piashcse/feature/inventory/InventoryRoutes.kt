@@ -1,26 +1,24 @@
 package com.piashcse.feature.inventory
 
 import com.piashcse.model.request.InventoryRequest
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.*
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 /**
  * Seller inventory management routes.
  */
-fun Route.inventorySellerRoutes(inventoryService: InventoryService) {
+fun Route.inventorySellerRoutes() {
+    val inventoryRepo: InventoryRepository by inject()
     /**
      * @tag Inventory
      * @description Seller: Initialize or update inventory for a product
      */
     post {
-        val requestBody = call.receive<InventoryRequest>()
-        call.respond(
-            HttpStatusCode.Created,
-            inventoryService.createOrUpdateInventory(requestBody),
-        )
+        call.respondCreated(inventoryRepo.createOrUpdateInventory(call.receive<InventoryRequest>()))
     }
 
     /**
@@ -32,10 +30,7 @@ fun Route.inventorySellerRoutes(inventoryService: InventoryService) {
         val quantityStr = call.requireQueryParameter("quantity")
         val quantity = quantityStr.toIntOrNull() ?: throw IllegalArgumentException("quantity must be an integer")
         val operation = call.parameters["operation"] ?: "set"
-        call.respond(
-            HttpStatusCode.OK,
-            inventoryService.updateStock(productId, quantity, operation),
-        )
+        call.respondOk(inventoryRepo.updateStock(productId, quantity, operation))
     }
 
     /**
@@ -44,9 +39,9 @@ fun Route.inventorySellerRoutes(inventoryService: InventoryService) {
      */
     get("/product/{productId}") {
         val productId = call.requirePathParameter("productId")
-        val inventory = inventoryService.getInventoryByProduct(productId)
+        val inventory = inventoryRepo.getInventoryByProduct(productId)
         if (inventory != null) {
-            call.respond(HttpStatusCode.OK, inventory)
+            call.respondOk(inventory)
         } else {
             call.respond(HttpStatusCode.NotFound, "Inventory not found for product")
         }
@@ -59,10 +54,7 @@ fun Route.inventorySellerRoutes(inventoryService: InventoryService) {
     get("/shop/{shopId}") {
         val shopId = call.requirePathParameter("shopId")
         val (limit, offset) = call.paginateQueryParams()
-        call.respond(
-            HttpStatusCode.OK,
-            inventoryService.getInventoryByShop(shopId, limit, offset),
-        )
+        call.respondOk(inventoryRepo.getInventoryByShop(shopId, limit, offset))
     }
 
     /**
@@ -71,16 +63,8 @@ fun Route.inventorySellerRoutes(inventoryService: InventoryService) {
      */
     get("/low-stock") {
         val (limit, offset) = call.paginateQueryParams()
-        call.respond(
-            HttpStatusCode.OK,
-            inventoryService.getLowStockProducts(limit, offset),
-        )
+        call.respondOk(inventoryRepo.getLowStockProducts(limit, offset))
     }
 }
 
-/**
- * Admin inventory routes.
- */
-fun Route.inventoryAdminRoutes(inventoryService: InventoryService) {
-    // Admin specific inventory management could be added here
-}
+

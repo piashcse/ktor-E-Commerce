@@ -32,14 +32,4 @@ class PolicyDocumentDAO(id: EntityID<String>) : BaseEntity(id, PolicyDocumentTab
     var effectiveDate by PolicyDocumentTable.effectiveDate
     var isActive by PolicyDocumentTable.isActive
 
-    fun response() =
-        PolicyDocumentResponse(
-            id.value,
-            title,
-            type.name,
-            content,
-            version,
-            effectiveDate.toString(), // Convert LocalDateTime to string for response
-            isActive,
-        )
 }

@@ -1,7 +1,7 @@
 package com.piashcse
 
 import com.piashcse.config.DotEnvConfig
-import com.piashcse.database.configureDataBase
+import com.piashcse.database.configureDatabase
 import com.piashcse.plugin.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -16,7 +16,7 @@ fun main() {
 }
 
 fun Application.configureAll() {
-    configureDataBase()
+    configureDatabase()
     configureBasic()
     configureKoin()
     configureAuth()

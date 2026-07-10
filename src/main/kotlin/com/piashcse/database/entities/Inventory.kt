@@ -91,18 +91,4 @@ class InventoryDAO(id: EntityID<String>) : BaseEntity(id, InventoryTable) {
     var status by InventoryTable.status
     var lastRestocked by InventoryTable.lastRestocked
 
-    fun response() =
-        InventoryResponse(
-            id = id.value,
-            productId = productId.value,
-            shopId = shopId.value,
-            stockQuantity = stockQuantity,
-            reservedQuantity = reservedQuantity,
-            minimumStockLevel = minimumStockLevel,
-            maximumStockLevel = maximumStockLevel,
-            status = status,
-            lastRestocked = lastRestocked,
-            createdAt = createdAt,
-            updatedAt = updatedAt,
-        )
 }

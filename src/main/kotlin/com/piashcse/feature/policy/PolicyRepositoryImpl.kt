@@ -4,6 +4,7 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.PolicyType
 import com.piashcse.database.entities.PolicyDocumentDAO
 import com.piashcse.database.entities.PolicyDocumentTable
+import com.piashcse.mapper.toPolicyDocumentResponse
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.model.response.PolicyDocumentResponse
@@ -16,13 +17,9 @@ import org.jetbrains.exposed.v1.core.neq
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class PolicyService : PolicyRepository {
-    /**
-     * Creates a new policy document
-     */
+class PolicyRepositoryImpl : PolicyRepository {
     override suspend fun createPolicy(createPolicyRequest: CreatePolicyRequest): PolicyDocumentResponse =
         query {
-            // Create a new policy document
             val policyDocument =
                 PolicyDocumentDAO.new {
                     title = createPolicyRequest.title
@@ -32,7 +29,6 @@ class PolicyService : PolicyRepository {
                     effectiveDate = LocalDateTime.parse(createPolicyRequest.effectiveDate, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 }
 
-            // If this is a new active policy of the same type, deactivate previous versions
             if (policyDocument.isActive) {
                 PolicyDocumentDAO.find {
                     PolicyDocumentTable.type eq createPolicyRequest.type and
@@ -41,12 +37,9 @@ class PolicyService : PolicyRepository {
                 }.forEach { it.isActive = false }
             }
 
-            policyDocument.response()
+            policyDocument.toPolicyDocumentResponse()
         }
 
-    /**
-     * Updates an existing policy document
-     */
     override suspend fun updatePolicy(
         id: String,
         updatePolicyRequest: UpdatePolicyRequest,
@@ -54,7 +47,6 @@ class PolicyService : PolicyRepository {
         query {
             val policyDocument = PolicyDocumentDAO.findById(id) ?: id.throwNotFound("Policy")
 
-            // Update only the fields that are provided
             updatePolicyRequest.title?.let { policyDocument.title = it }
             updatePolicyRequest.content?.let { policyDocument.content = it }
             updatePolicyRequest.version?.let { policyDocument.version = it }
@@ -62,7 +54,6 @@ class PolicyService : PolicyRepository {
             updatePolicyRequest.isActive?.let {
                 policyDocument.isActive = it
 
-                // If setting this policy to active, deactivate other policies of the same type
                 if (it) {
                     PolicyDocumentDAO.find {
                         PolicyDocumentTable.type eq policyDocument.type and
@@ -71,12 +62,9 @@ class PolicyService : PolicyRepository {
                     }.forEach { otherPolicy -> otherPolicy.isActive = false }
                 }
             }
-            policyDocument.response()
+            policyDocument.toPolicyDocumentResponse()
         }
 
-    /**
-     * Gets a policy document by type, returning the latest active version
-     */
     override suspend fun getPolicyByType(type: PolicyType): PolicyDocumentResponse =
         query {
             val policyDocument =
@@ -84,21 +72,15 @@ class PolicyService : PolicyRepository {
                     PolicyDocumentTable.type eq type and (PolicyDocumentTable.isActive eq true)
                 }.firstOrNull() ?: throw ValidationException(Message.Policy.noActivePolicy(type.name))
 
-            policyDocument.response()
+            policyDocument.toPolicyDocumentResponse()
         }
 
-    /**
-     * Gets a policy document by ID
-     */
     override suspend fun getPolicyById(id: String): PolicyDocumentResponse =
         query {
             val policyDocument = PolicyDocumentDAO.findById(id) ?: id.throwNotFound("Policy")
-            policyDocument.response()
+            policyDocument.toPolicyDocumentResponse()
         }
 
-    /**
-     * Gets all policy documents, optionally filtered by type
-     */
     override suspend fun getAllPolicies(type: PolicyType?): List<PolicyDocumentResponse> =
         query {
             val query =
@@ -108,12 +90,9 @@ class PolicyService : PolicyRepository {
                     PolicyDocumentDAO.all()
                 }
 
-            query.map { it.response() }
+            query.map { it.toPolicyDocumentResponse() }
         }
 
-    /**
-     * Deactivates a policy document (doesn't delete, just marks as inactive)
-     */
     override suspend fun deactivatePolicy(id: String): Boolean =
         query {
             val policyDocument = PolicyDocumentDAO.findById(id) ?: id.throwNotFound("Policy")

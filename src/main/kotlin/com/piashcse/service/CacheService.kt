@@ -1,7 +1,5 @@
 package com.piashcse.service
 
-import com.piashcse.config.DotEnvConfig
-import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
 interface Cache {
@@ -45,17 +43,5 @@ class MemoryCache(private val defaultTtlSeconds: Long = 300) : Cache {
 }
 
 object CacheService {
-    private val log = LoggerFactory.getLogger(CacheService::class.java)
-    val cache: Cache = createCache()
-
-    private fun createCache(): Cache {
-        val redisUrl = runCatching { DotEnvConfig.redisUrl }.getOrNull()
-        return if (!redisUrl.isNullOrBlank()) {
-            log.warn("Redis support not yet implemented, falling back to in-memory cache")
-            MemoryCache(defaultTtlSeconds = 300)
-        } else {
-            log.info("Using in-memory cache (set REDIS_URL in .env for Redis)")
-            MemoryCache(defaultTtlSeconds = 300)
-        }
-    }
+    val cache: Cache = MemoryCache(defaultTtlSeconds = 300)
 }

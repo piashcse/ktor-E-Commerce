@@ -24,7 +24,6 @@ class CartItemDAO(id: EntityID<String>) : BaseEntity(id, CartItemTable) {
     var productId by CartItemTable.productId
     var quantity by CartItemTable.quantity
 
-    fun response(product: ProductResponse? = null) = Cart(productId.value, quantity, product)
 }
 
 @Serializable

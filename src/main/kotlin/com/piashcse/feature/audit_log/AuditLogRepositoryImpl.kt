@@ -3,6 +3,7 @@ package com.piashcse.feature.audit_log
 import com.piashcse.database.entities.AuditLogDAO
 import com.piashcse.database.entities.AuditLogTable
 import com.piashcse.database.entities.UserTable
+import com.piashcse.mapper.toAuditLogResponse
 import com.piashcse.model.response.AuditLogResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
@@ -14,7 +15,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
-class AuditLogService : AuditLogRepository {
+class AuditLogRepositoryImpl : AuditLogRepository {
     override suspend fun log(actorId: String, actorEmail: String, actorRole: String, action: String, resourceType: String,
                              resourceId: String?, details: String?, ipAddress: String?, userAgent: String?, outcome: String) = query {
         AuditLogDAO.new {
@@ -34,11 +35,11 @@ class AuditLogService : AuditLogRepository {
 
         val count = q.count()
         val data = q.orderBy(AuditLogTable.executedAt to SortOrder.DESC).limit(limit).offset(offset.toLong())
-            .map { AuditLogDAO.wrapRow(it).response() }
+            .map { AuditLogDAO.wrapRow(it).toAuditLogResponse() }
         PaginatedResponse(data, PaginationMetadata(count, limit, offset))
     }
 
     override suspend fun getAuditLogById(logId: String) = query {
-        AuditLogDAO.findById(logId)?.response() ?: logId.throwNotFound("AuditLog")
+        AuditLogDAO.findById(logId)?.toAuditLogResponse() ?: logId.throwNotFound("AuditLog")
     }
 }

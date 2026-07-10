@@ -3,6 +3,7 @@ package com.piashcse.feature.inventory
 import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toInventoryResponse
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -17,7 +18,7 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 
-class InventoryService : InventoryRepository {
+class InventoryRepositoryImpl : InventoryRepository {
     companion object {
         private const val DEFAULT_MIN_STOCK = 10
         private const val DEFAULT_MAX_STOCK = 1000
@@ -53,11 +54,11 @@ class InventoryService : InventoryRepository {
             maximumStockLevel = request.maximumStockLevel ?: DEFAULT_MAX_STOCK
             status = InventoryStatus.fromStockLevel(request.stockQuantity, minimumStockLevel)
         }
-        inventory.response()
+        inventory.toInventoryResponse()
     }
 
     override suspend fun getInventoryByProduct(productId: String): InventoryResponse? = query {
-        InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()?.response()
+        InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()?.toInventoryResponse()
     }
 
     override suspend fun updateStock(
@@ -68,7 +69,7 @@ class InventoryService : InventoryRepository {
         val inventory = InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()
             ?: productId.throwNotFound("Inventory")
 
-        if (quantity <= 0) throw ValidationException("Quantity must be positive for $operation operation")
+        if (quantity <= 0) throw ValidationException(Message.Inventory.quantityNotPositive(operation))
         if (operation.lowercase() !in listOf("add", "subtract", "set"))
             throw ValidationException(Message.Inventory.invalidOperation(operation))
 
@@ -80,7 +81,7 @@ class InventoryService : InventoryRepository {
                 inventory.stockQuantity - quantity
             }
             "set" -> {
-                if (quantity < 0) throw ValidationException("Quantity cannot be negative for set operation")
+                if (quantity < 0) throw ValidationException(Message.Inventory.NEGATIVE_QUANTITY)
                 quantity
             }
             else -> throw ValidationException(Message.Inventory.invalidOperation(operation))
@@ -93,7 +94,7 @@ class InventoryService : InventoryRepository {
         inventory.apply {
             stockQuantity = newStock
             status = InventoryStatus.fromStockLevel(newStock, minimumStockLevel)
-        }.response()
+        }.toInventoryResponse()
     }
 
     override suspend fun getLowStockProducts(
@@ -102,7 +103,7 @@ class InventoryService : InventoryRepository {
     ): PaginatedResponse<InventoryResponse> = query {
         InventoryTable.selectAll().andWhere { InventoryTable.stockQuantity lessEq InventoryTable.minimumStockLevel }
             .orderBy(InventoryTable.stockQuantity to SortOrder.ASC)
-            .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).response() }
+            .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).toInventoryResponse() }
     }
 
     override suspend fun getInventoryByShop(
@@ -111,6 +112,6 @@ class InventoryService : InventoryRepository {
         offset: Int,
     ): PaginatedResponse<InventoryResponse> = query {
         InventoryTable.selectAll().andWhere { InventoryTable.shopId eq shopId }
-            .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).response() }
+            .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).toInventoryResponse() }
     }
 }

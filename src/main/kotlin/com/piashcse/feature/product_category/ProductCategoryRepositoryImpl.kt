@@ -2,26 +2,21 @@ package com.piashcse.feature.product_category
 
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductCategoryTable
+import com.piashcse.database.entities.ProductSubCategoryDAO
+import com.piashcse.database.entities.ProductSubCategoryTable
+import com.piashcse.mapper.toProductCategoryResponse
 import com.piashcse.model.response.ProductCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
-import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.extension.toPaginatedList
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
-/**
- * Service for managing product categories.
- */
-class ProductCategoryService : ProductCategoryRepository {
-    /**
-     * Creates a new product category with the given category name.
-     *
-     * @param name The name of the category to be created.
-     * @return The created product category entity.
-     * @throws Exception if a category with the provided name already exists.
-     */
+class ProductCategoryRepositoryImpl : ProductCategoryRepository {
     override suspend fun createCategory(name: String): ProductCategoryResponse =
         query {
             val isCategoryExist =
@@ -30,33 +25,30 @@ class ProductCategoryService : ProductCategoryRepository {
                 throw name.throwConflict("Category")
             } ?: ProductCategoryDAO.new {
                 this.name = name
-            }.response()
+            }.toProductCategoryResponse()
         }
 
-    /**
-     * Retrieves the list of product categories with a limit on the number of categories returned.
-     *
-     * @param limit The maximum number of categories to retrieve.
-     * @return A list of product category entities.
-     */
     override suspend fun getCategories(
         limit: Int,
         offset: Int,
     ): PaginatedResponse<ProductCategoryResponse> =
         query {
-            ProductCategoryTable.selectAll().toPaginatedResponse(limit, offset) {
-                ProductCategoryDAO.wrapRow(it).response()
+            val (totalCount, rows) = ProductCategoryTable.selectAll().toPaginatedList(limit, offset) {
+                ProductCategoryDAO.wrapRow(it)
             }
+            val categoryIds = rows.map { it.id }
+            val subCategoriesMap = if (categoryIds.isNotEmpty()) {
+                ProductSubCategoryDAO.find { ProductSubCategoryTable.categoryId inList categoryIds }
+                    .groupBy { it.categoryId.value }
+            } else {
+                emptyMap()
+            }
+            val data = rows.map { category ->
+                category.toProductCategoryResponse(subCategoriesMap[category.id.value] ?: emptyList())
+            }
+            PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
         }
 
-    /**
-     * Updates the name of an existing product category.
-     *
-     * @param categoryId The ID of the category to update.
-     * @param categoryName The new name for the category.
-     * @return The updated product category entity.
-     * @throws Exception if no category is found with the provided category ID.
-     */
     override suspend fun updateCategory(
         categoryId: String,
         name: String,
@@ -66,17 +58,10 @@ class ProductCategoryService : ProductCategoryRepository {
                 ProductCategoryDAO.findById(categoryId)
             isCategoryExist?.let {
                 it.name = name
-                it.response()
+                it.toProductCategoryResponse()
             } ?: categoryId.throwNotFound("Category")
         }
 
-    /**
-     * Deletes an existing product category by its ID.
-     *
-     * @param categoryId The ID of the category to delete.
-     * @return The ID of the deleted category.
-     * @throws Exception if no category is found with the provided category ID.
-     */
     override suspend fun deleteCategory(categoryId: String): String =
         query {
             val isCategoryExist =

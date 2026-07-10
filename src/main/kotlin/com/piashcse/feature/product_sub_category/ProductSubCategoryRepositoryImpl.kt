@@ -4,6 +4,7 @@ import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductCategoryTable
 import com.piashcse.database.entities.ProductSubCategoryDAO
 import com.piashcse.database.entities.ProductSubCategoryTable
+import com.piashcse.mapper.toProductSubCategoryResponse
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.model.response.ProductSubCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -17,18 +18,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
-/**
- * Service for managing product subcategories. Provides methods to add, update, retrieve, and delete product subcategories.
- */
-class ProductSubCategoryService : ProductSubCategoryRepository {
-    /**
-     * Adds a new product subcategory to the system.
-     *
-     * @param productSubCategory The details of the product subcategory to be added.
-     * @return The added product subcategory.
-     * @throws productSubCategory.subCategoryName.throwConflict("Resource") If a subcategory with the same name already exists.
-     * @throws productSubCategory.categoryId.throwNotFound("Resource") If the provided category ID does not exist.
-     */
+class ProductSubCategoryRepositoryImpl : ProductSubCategoryRepository {
     override suspend fun addProductSubCategory(productSubCategory: ProductSubCategoryRequest): ProductSubCategoryResponse =
         query {
             ProductCategoryDAO.findById(productSubCategory.categoryId) ?: productSubCategory.categoryId.throwNotFound("Category")
@@ -40,16 +30,9 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
             ProductSubCategoryDAO.new {
                 categoryId = EntityID(productSubCategory.categoryId, ProductSubCategoryTable)
                 name = productSubCategory.name
-            }.response()
+            }.toProductSubCategoryResponse()
         }
 
-    /**
-     * Retrieves a list of product sub-categories for a given category with a limit on the number of sub-categories returned.
-     *
-     * @param categoryId The ID of the parent category for which sub-categories are to be retrieved.
-     * @param limit The maximum number of sub-categories to retrieve.
-     * @return A list of product sub-category entities.
-     */
     override suspend fun getProductSubCategory(
         categoryId: String,
         limit: Int,
@@ -58,18 +41,10 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
         query {
             ProductSubCategoryTable.selectAll().andWhere { ProductSubCategoryTable.categoryId eq categoryId }
                 .toPaginatedResponse(limit, offset) {
-                    ProductSubCategoryDAO.wrapRow(it).response()
+                    ProductSubCategoryDAO.wrapRow(it).toProductSubCategoryResponse()
                 }
         }
 
-    /**
-     * Updates the name of a product subcategory.
-     *
-     * @param id The ID of the product subcategory to update.
-     * @param subCategoryName The new name for the subcategory.
-     * @return The updated product subcategory.
-     * @throws id.throwNotFound("Resource") If the subcategory ID does not exist.
-     */
     override suspend fun updateProductSubCategory(
         id: String,
         name: String,
@@ -77,16 +52,9 @@ class ProductSubCategoryService : ProductSubCategoryRepository {
         query {
             val subCategory = ProductSubCategoryDAO.findById(id) ?: id.throwNotFound("Subcategory")
             subCategory.name = name
-            subCategory.response()
+            subCategory.toProductSubCategoryResponse()
         }
 
-    /**
-     * Deletes a product subcategory.
-     *
-     * @param subCategoryId The ID of the product subcategory to delete.
-     * @return The ID of the deleted subcategory.
-     * @throws subCategoryId.throwNotFound("Resource") If the subcategory ID does not exist.
-     */
     override suspend fun deleteProductSubCategory(subCategoryId: String): String =
         query {
             val subCategory = ProductSubCategoryDAO.findById(subCategoryId) ?: subCategoryId.throwNotFound("Subcategory")

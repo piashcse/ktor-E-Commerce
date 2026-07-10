@@ -45,6 +45,13 @@ object Message {
             available: Int,
         ) = "Insufficient stock for $productName. Available: $available"
 
+        const val RATING_OUT_OF_RANGE = "Rating must be between 1 and 5"
+
+        fun invalidEnumValue(
+            fieldName: String,
+            value: String,
+        ) = "Invalid $fieldName: $value"
+
         fun invalidOperation(
             operation: String,
             validOps: String,
@@ -89,8 +96,20 @@ object Message {
         const val OUT_OF_STOCK = "Product is out of stock"
         const val CANNOT_CANCEL = "Order cannot be cancelled in current status"
         const val CANCEL_REASON_REQUIRED = "Cancellation reason is required"
+        const val SHOP_NOT_FOUND = "Shop not found"
+        const val SHOP_INACTIVE = "Shop is not active. Cannot place order."
+        const val INVALID_COUPON = "Invalid or inactive coupon code"
+        const val COUPON_EXPIRED = "Coupon is expired or not yet active"
+        const val COUPON_LIMIT_REACHED = "Coupon usage limit reached"
+        const val SHIPPING_ADDRESS_NOT_FOUND = "Shipping address not found"
+        const val SHIPPING_ADDRESS_UNAUTHORIZED = "Unauthorized shipping address"
+        const val SHIPPING_METHOD_NOT_FOUND = "Shipping method not found"
+        const val TOTAL_MISMATCH = "Order total mismatch"
+        const val SELLER_PROFILE_NOT_FOUND = "Seller profile not found"
+        const val NO_SHOP_ASSOCIATED = "No shop associated with seller"
 
         fun productDoesNotBelongToShop(productName: String) = "$productName does not belong to any shop"
+        fun couponMinOrderAmount(amount: String) = "Order amount is below the minimum required for this coupon ($amount)"
     }
 
     // ─── Products ──────────────────────────────────────────────────────────
@@ -100,6 +119,7 @@ object Message {
         const val UNAUTHORIZED_ADD = "You do not have permission to add products to this shop"
         const val OUT_OF_STOCK = "Product is out of stock"
         const val INSUFFICIENT_STOCK = "Insufficient stock available"
+        const val NOT_SHOP_OWNER = "You are not the owner of this shop"
     }
 
     // ─── Shops ─────────────────────────────────────────────────────────────
@@ -121,7 +141,39 @@ object Message {
         fun nameTooLong(maxLength: Int) = "Brand name cannot exceed $maxLength characters"
     }
 
-    // ─── Cart ──────────────────────────────────────────────────────────────
+    // ─── Coupons ────────────────────────────────────────────────────────────
+    object Coupons {
+        const val NOT_FOUND = "Coupon not found"
+    }
+
+    // ─── Payments ───────────────────────────────────────────────────────────
+    object Payments {
+        const val ALREADY_PAID = "Order already fully paid"
+        fun amountMismatch(paid: String, total: String) = "Payment amount ($paid) does not match order total ($total)"
+    }
+
+    // ─── Refunds ────────────────────────────────────────────────────────────
+    object Refunds {
+        const val NOT_FOUND = "Refund request not found"
+        const val ITEM_NOT_FOUND = "Order item not found"
+        const val ALREADY_EXISTS = "Refund request already exists for this item"
+        const val INVALID_STATUS = "Invalid status. Must be one of: APPROVED, REJECTED, REFUNDED"
+        const val MUST_BE_APPROVED = "Refund must be approved before shipping"
+    }
+
+    // ─── Upload ─────────────────────────────────────────────────────────────
+    object Upload {
+        const val EMPTY_FILE = "Uploaded file is empty"
+        const val INVALID_FILE_PATH = "Invalid file path detected"
+        const val INVALID_DIR_CONFIG = "Invalid upload directory configuration"
+        fun fileNameRequired(purpose: String) = "File name is required for $purpose upload"
+        fun invalidFileType(purpose: String, allowed: String) = "Invalid file type for $purpose. Allowed: $allowed"
+        fun invalidMimeType(purpose: String, mime: String) = "Invalid MIME type for $purpose: $mime"
+        fun fileTooLarge(mb: Int, purpose: String) = "File size exceeds ${mb}MB limit for $purpose upload"
+        fun maliciousContent(ext: String) = "Malicious file content detected or file format does not match $ext extension"
+    }
+
+    // ─── Inventory ──────────────────────────────────────────────────────────
     object Cart {
         const val PRODUCT_NOT_FOUND = "Product not found"
         const val EMPTY_CART = "Cart is empty"
@@ -131,6 +183,7 @@ object Message {
     object Inventory {
         const val NOT_FOUND = "Inventory record not found"
         const val NEGATIVE_STOCK = "Stock quantity cannot be negative"
+        const val NEGATIVE_QUANTITY = "Quantity cannot be negative for set operation"
 
         fun insufficientStock(
             available: Int,
@@ -138,6 +191,7 @@ object Message {
         ) = "Insufficient stock. Available: $available, Requested: $requested"
 
         fun invalidOperation(operation: String) = "Invalid operation: $operation. Use add, subtract, or set"
+        fun quantityNotPositive(operation: String) = "Quantity must be positive for $operation operation"
     }
 
     // ─── Consent ───────────────────────────────────────────────────────────
@@ -169,5 +223,8 @@ object Message {
         const val EMAIL_FAILED = "Failed to send email"
         const val SELLER_REQUIRED = "User must be registered as a seller"
         const val MISSING_PARAMETER = "Missing required parameter: %s"
+        const val NOT_OWNER = "You do not own this resource"
+        fun notOwner(resourceName: String) = "You do not own this $resourceName"
+        fun invalidParameter(name: String, value: String) = "Invalid $name: $value"
     }
 }
