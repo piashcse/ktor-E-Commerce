@@ -9,7 +9,6 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.time.LocalDateTime
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 object RefundRequestTable : BaseIdTable("refund_request") {
     val orderItemId = reference("order_item_id", OrderItemTable.id)

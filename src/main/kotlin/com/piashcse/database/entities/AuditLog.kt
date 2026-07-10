@@ -4,10 +4,8 @@ import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.database.entities.base.currentUtc
-import com.piashcse.model.response.AuditLogResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
-import java.time.format.DateTimeFormatter
 
 object AuditLogTable : BaseIdTable("audit_log") {
     val actorId = reference("actor_id", UserTable.id).index()

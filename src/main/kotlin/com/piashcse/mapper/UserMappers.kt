@@ -1,11 +1,6 @@
 package com.piashcse.mapper
 
-import com.piashcse.database.entities.SellerDAO
-import com.piashcse.database.entities.SellerTable
-import com.piashcse.database.entities.UserDAO
-import com.piashcse.database.entities.UserProfileDAO
-import com.piashcse.database.entities.SellerResponse
-import com.piashcse.database.entities.UserResponse
+import com.piashcse.database.entities.*
 import com.piashcse.model.response.UserProfileResponse
 import org.jetbrains.exposed.v1.core.eq
 

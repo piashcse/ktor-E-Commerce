@@ -1,8 +1,8 @@
 package com.piashcse.model.response
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Contextual
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class UserProfileResponse(

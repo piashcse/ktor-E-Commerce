@@ -2,15 +2,15 @@ package com.piashcse.database.entities
 
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.base.BaseEntity
-import com.piashcse.mapper.toSellerResponse
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import com.piashcse.mapper.toSellerResponse
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.time.LocalDateTime
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
 
 object UserTable : BaseIdTable("user") {
     val email = varchar("email", 255)

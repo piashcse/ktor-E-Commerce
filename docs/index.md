@@ -108,12 +108,20 @@ Access interactive API documentation at the root `/` or `/swagger` endpoint when
   <img width="60%" height="60%" src="https://raw.githubusercontent.com/piashcse/ktor-E-Commerce/master/screenshots/onion_architecture.png" />
 </p>
 <p align="center">
-<b>Fig.  Onion Architecture </b>
+<b>Fig.  Onion / Clean Architecture </b>
 </p>
+
+The project follows **Clean Architecture** with clear separation of concerns:
+
+- **Route Layer** — HTTP routing only, uses `by inject()` for dependency injection
+- **Service Layer** — Business logic orchestration, works with domain models and DTOs
+- **Repository Layer** — Data access with Exposed queries and transaction management
+- **Mapper Layer** — Object mapping between DAO entities and response DTOs
+- **Flyway** — Version-controlled database migrations for safe schema management
 
 ### Requirements
 
-- [JAVA 11](https://jdk.java.net/11/) (or latest)
+- [JAVA 17](https://jdk.java.net/17/) (or latest)
 - [PostgreSQL](https://www.postgresql.org/) (latest)
 
 ## Clone the repository

@@ -5,7 +5,9 @@ import com.piashcse.database.entities.*
 import com.piashcse.mapper.toPolicyConsentResponse
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.model.response.UserPolicyConsentResponse
-import com.piashcse.utils.extension.*
+import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.requireNotBlank
+import com.piashcse.utils.extension.throwNotFound
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import java.time.LocalDateTime

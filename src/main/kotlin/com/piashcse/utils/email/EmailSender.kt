@@ -2,13 +2,13 @@ package com.piashcse.utils.email
 
 import com.piashcse.config.DotEnvConfig
 import com.piashcse.constants.AppConstants
-import com.piashcse.utils.validator.EmailException as AppEmailException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.EmailException
 import org.apache.commons.mail.SimpleEmail
 import org.slf4j.LoggerFactory
+import com.piashcse.utils.validator.EmailException as AppEmailException
 
 object EmailSender {
     private val log = LoggerFactory.getLogger(EmailSender::class.java)

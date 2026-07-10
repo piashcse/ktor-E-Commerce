@@ -4,11 +4,11 @@ import com.piashcse.constants.ShopStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Contextual
 
 object SellerTable : BaseIdTable("seller") {
     val userId = reference("user_id", UserTable.id)

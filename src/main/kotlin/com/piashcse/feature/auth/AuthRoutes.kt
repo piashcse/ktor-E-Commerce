@@ -7,7 +7,10 @@ import com.piashcse.model.request.*
 import com.piashcse.model.response.ResetResult
 import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.requireRole
-import com.piashcse.utils.extension.*
+import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.extension.parseEnum
+import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondOk
 import io.ktor.http.*
 import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
@@ -148,6 +151,10 @@ fun Route.authAdminRoutes() {
         }
     }
 
+    /**
+     * @tag Auth
+     * @description Admin: activate a user account
+     */
     put("/{userId}/activate") {
         val userId = call.requirePathParameter("userId")
         if (authRepo.activateUser(call.currentUserId, userId)) {

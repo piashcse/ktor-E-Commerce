@@ -1,9 +1,8 @@
 package com.piashcse.feature.dashboard
 
 
-import io.ktor.server.response.*
+import com.piashcse.utils.extension.respondOk
 import io.ktor.server.routing.*
-import com.piashcse.utils.extension.*
 import org.koin.ktor.ext.inject
 
 fun Route.dashboardAdminRoutes() {
