@@ -35,6 +35,7 @@ val RoleAuthorizationPlugin =
             val hasAccess = allowedRoles.any { role -> principal.hasAccessTo(role) }
             if (!hasAccess) {
                 call.respond(HttpStatusCode.Forbidden, ApiError("Permission Denied: Insufficient privileges"))
+                return@onCall
             }
         }
     }

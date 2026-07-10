@@ -111,7 +111,7 @@ fun Route.shopAdminRoutes(shopService: ShopService) {
                 ShopStatus.valueOf(statusParam.uppercase())
             } catch (e: IllegalArgumentException) {
                 throw InvalidEnumValueException(
-                    message = "Invalid shop status: $statusParam",
+                    message = Message.Validation.invalidEnumValue("shop status", statusParam),
                     enumName = ShopStatus.values().joinToString(", ") { it.name },
                     invalidValue = statusParam,
                 )

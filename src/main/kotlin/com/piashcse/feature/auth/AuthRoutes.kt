@@ -150,7 +150,7 @@ fun Route.authAdminRoutes(userAuthService: UserAuthenticationService) {
                 UserType.valueOf(userTypeParam.uppercase())
             } catch (e: IllegalArgumentException) {
                 throw InvalidEnumValueException(
-                    message = "Invalid userType: $userTypeParam",
+                    message = Message.Validation.invalidEnumValue("userType", userTypeParam),
                     enumName = UserType.values().joinToString(", ") { it.name },
                     invalidValue = userTypeParam,
                 )

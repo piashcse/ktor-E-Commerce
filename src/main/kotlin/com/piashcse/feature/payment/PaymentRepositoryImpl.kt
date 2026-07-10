@@ -1,9 +1,10 @@
 package com.piashcse.feature.payment
 
+import com.piashcse.constants.Message
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PaymentDAO
-import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.PaymentTable
 import com.piashcse.mapper.toPaymentResponse
 import com.piashcse.model.request.PaymentRequest
@@ -31,9 +32,7 @@ class PaymentRepositoryImpl : PaymentRepository {
             val orderTotal = order.total
             val paymentAmount = BigDecimal(paymentRequest.amount.toString())
             if (paymentAmount.compareTo(orderTotal) != 0) {
-                throw ValidationException(
-                    "Payment amount (${paymentRequest.amount}) does not match order total ($orderTotal)",
-                )
+                throw ValidationException(Message.Payments.amountMismatch(paymentRequest.amount.toString(), orderTotal.toPlainString()))
             }
 
             val existingPayments =
@@ -44,7 +43,7 @@ class PaymentRepositoryImpl : PaymentRepository {
 
             val paidAmount = existingPayments.sumOf { BigDecimal(it.amount.toString()) }
             if (paidAmount.compareTo(orderTotal) >= 0) {
-                throw ValidationException("Order already fully paid")
+                throw ValidationException(Message.Payments.ALREADY_PAID)
             }
 
             val payment =

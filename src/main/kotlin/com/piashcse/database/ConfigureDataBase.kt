@@ -23,7 +23,7 @@ private val allTables = arrayOf(
     AuditLogTable,
 )
 
-fun configureDataBase() {
+fun configureDatabase() {
     val dataSource = createDataSource()
     val isDev = System.getenv("KTOR_DEVELOPMENT")?.toBoolean() == true
     if (isDev) {

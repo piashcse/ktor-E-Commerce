@@ -41,7 +41,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                 OrderItemDAO.find {
                     (OrderItemTable.id eq EntityID(request.orderItemId, OrderItemTable)) and
                         (OrderItemTable.orderId eq EntityID(orderId, OrderTable))
-                }.firstOrNull() ?: throw ValidationException("Order item not found")
+                }.firstOrNull() ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
 
             val existingRefund =
                 RefundRequestDAO.find {
@@ -50,7 +50,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                 }.firstOrNull()
 
             if (existingRefund != null) {
-                throw ValidationException("Refund request already exists for this item")
+                throw ValidationException(Message.Refunds.ALREADY_EXISTS)
             }
 
             val refundRequest =
@@ -135,7 +135,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
         query {
             val refundReq =
                 RefundRequestDAO.findById(refundId)
-                    ?: throw ValidationException("Refund request not found")
+                    ?: throw ValidationException(Message.Refunds.NOT_FOUND)
 
             val user =
                 UserDAO.findById(userId)
@@ -149,7 +149,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             }
 
             if (request.status !in listOf(RefundStatus.APPROVED, RefundStatus.REJECTED, RefundStatus.REFUNDED)) {
-                throw ValidationException("Invalid status. Must be one of: APPROVED, REJECTED, REFUNDED")
+                throw ValidationException(Message.Refunds.INVALID_STATUS)
             }
 
             refundReq.status = request.status
@@ -173,14 +173,14 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
         query {
             val refundReq =
                 RefundRequestDAO.findById(refundId)
-                    ?: throw ValidationException("Refund request not found")
+                    ?: throw ValidationException(Message.Refunds.NOT_FOUND)
 
             if (refundReq.userId.value != userId) {
                 throw ValidationException(Message.Orders.UNAUTHORIZED)
             }
 
             if (refundReq.status != RefundStatus.APPROVED) {
-                throw ValidationException("Refund must be approved before shipping")
+                throw ValidationException(Message.Refunds.MUST_BE_APPROVED)
             }
 
             refundReq.trackingNumber = request.trackingNumber

@@ -1,5 +1,6 @@
 package com.piashcse.feature.review_rating
 
+import com.piashcse.constants.Message
 import com.piashcse.database.entities.ReviewRatingDAO
 import com.piashcse.database.entities.ReviewRatingTable
 import com.piashcse.database.entities.UserTable
@@ -40,7 +41,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
     ): ReviewRatingResponse =
         query {
             if (reviewRating.rating < 1 || reviewRating.rating > 5)
-                throw ValidationException("Rating must be between 1 and 5")
+                throw ValidationException(Message.Validation.RATING_OUT_OF_RANGE)
             val isReviewRatingExist =
                 ReviewRatingDAO.find { ReviewRatingTable.userId eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
                     .singleOrNull()
@@ -62,7 +63,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
     ): ReviewRatingResponse =
         query {
             if (rating < 1 || rating > 5)
-                throw ValidationException("Rating must be between 1 and 5")
+                throw ValidationException(Message.Validation.RATING_OUT_OF_RANGE)
             val isReviewRatingExist =
                 ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
                     .singleOrNull()

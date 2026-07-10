@@ -60,9 +60,9 @@ class OrderRepositoryImpl : OrderRepository {
             emptyMap()
         }
         shopIds.forEach { shopId ->
-            val shop = shops[shopId] ?: throw ValidationException("Shop $shopId not found")
+            val shop = shops[shopId] ?: throw ValidationException(Message.Orders.SHOP_NOT_FOUND)
             if (shop.status != ShopStatus.APPROVED)
-                throw ValidationException("Shop '${shop.name}' is not active. Cannot place order.")
+                throw ValidationException(Message.Orders.SHOP_INACTIVE)
         }
     }
 
@@ -81,17 +81,17 @@ class OrderRepositoryImpl : OrderRepository {
     private fun validateCoupon(code: String, orderAmount: Double, forUpdate: Boolean = false): CouponDAO {
         val query = CouponDAO.find { CouponTable.code eq code and (CouponTable.isActive eq true) }
         val coupon = (if (forUpdate) query.forUpdate() else query).firstOrNull()
-            ?: throw ValidationException("Invalid or inactive coupon code")
+            ?: throw ValidationException(Message.Orders.INVALID_COUPON)
 
         val now = LocalDateTime.now()
         if (now.isBefore(coupon.startDate) || now.isAfter(coupon.endDate))
-            throw ValidationException("Coupon is expired or not yet active")
+            throw ValidationException(Message.Orders.COUPON_EXPIRED)
 
         if (orderAmount < coupon.minOrderAmount)
-            throw ValidationException("Order amount is below the minimum required for this coupon ($${coupon.minOrderAmount})")
+            throw ValidationException(Message.Orders.couponMinOrderAmount(coupon.minOrderAmount.toString()))
 
         if (coupon.usageLimit != null && coupon.usageCount >= coupon.usageLimit!!)
-            throw ValidationException("Coupon usage limit reached")
+            throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
 
         return coupon
     }
@@ -125,8 +125,8 @@ class OrderRepositoryImpl : OrderRepository {
         if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
 
         val shippingAddress = ShippingAddressDAO.findById(checkoutRequest.shippingAddressId)
-            ?: throw ValidationException("Shipping address not found")
-        if (shippingAddress.userId.value != userId) throw ValidationException("Unauthorized shipping address")
+            ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
+        if (shippingAddress.userId.value != userId) throw ValidationException(Message.Orders.SHIPPING_ADDRESS_UNAUTHORIZED)
 
         val fullAddress = buildString {
             append("${shippingAddress.firstName} ${shippingAddress.lastName}\n")
@@ -136,7 +136,7 @@ class OrderRepositoryImpl : OrderRepository {
         }
 
         val shippingMethod = ShippingMethodDAO.findById(checkoutRequest.shippingMethodId)
-            ?: throw ValidationException("Shipping method not found")
+            ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
 
         val productsMap = ProductDAO.find {
             ProductTable.id inList cartItems.map { it.productId.value }.distinct()
@@ -144,7 +144,7 @@ class OrderRepositoryImpl : OrderRepository {
 
         val itemsByShop = cartItems.groupBy {
             productsMap[it.productId.value]?.shopId?.value
-                ?: throw ValidationException("Product ${it.productId.value} does not belong to any shop")
+                ?: throw ValidationException(Message.Orders.productDoesNotBelongToShop(it.productId.value))
         }
         validateShopsApproved(itemsByShop.keys)
 
@@ -248,7 +248,7 @@ class OrderRepositoryImpl : OrderRepository {
         if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
 
         val shippingMethod = ShippingMethodDAO.findById(checkoutRequest.shippingMethodId)
-            ?: throw ValidationException("Shipping method not found")
+            ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
 
         val productsMap = ProductDAO.find {
             ProductTable.id inList cartItems.map { it.productId.value }.distinct()
@@ -315,7 +315,7 @@ class OrderRepositoryImpl : OrderRepository {
         }
 
         if (BigDecimal(orderRequest.total.toString()).compareTo(calculatedSubtotal) != 0)
-            throw ValidationException("Order total mismatch. Requested: ${orderRequest.total}, Calculated: $calculatedSubtotal")
+            throw ValidationException(Message.Orders.TOTAL_MISMATCH)
 
         val itemsByShop = orderRequest.orderItems.groupBy {
             val product = productsMap[it.productId] ?: it.productId.throwNotFound("Product")
@@ -457,8 +457,8 @@ class OrderRepositoryImpl : OrderRepository {
         offset: Int,
         status: String?,
     ): PaginatedResponse<OrderResponse> = query {
-        val seller = findSellerByUserId(userId) ?: throw ValidationException("Seller profile not found")
-        val shopId = seller.shopId ?: throw ValidationException("No shop associated with seller")
+        val seller = findSellerByUserId(userId) ?: throw ValidationException(Message.Orders.SELLER_PROFILE_NOT_FOUND)
+        val shopId = seller.shopId ?: throw ValidationException(Message.Orders.NO_SHOP_ASSOCIATED)
 
         val query = OrderTable.selectAll().andWhere { OrderTable.shopId eq shopId }
         status?.let { query.andWhere { OrderTable.status eq OrderStatus.valueOf(it.uppercase()) } }

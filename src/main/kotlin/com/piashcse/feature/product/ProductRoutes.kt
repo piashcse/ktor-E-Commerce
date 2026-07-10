@@ -4,6 +4,7 @@ import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
+import com.piashcse.constants.Message
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
@@ -153,7 +154,7 @@ fun Route.productSellerRoutes(
             part.dispose()
         }
 
-        call.respond(HttpStatusCode.OK, imageUrl ?: throw ValidationException("No file uploaded"))
+        call.respond(HttpStatusCode.OK, imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED))
     }
 }
 

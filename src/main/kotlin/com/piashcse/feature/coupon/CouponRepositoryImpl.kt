@@ -7,6 +7,7 @@ import com.piashcse.model.response.CouponResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.constants.Message
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.eq
@@ -36,7 +37,7 @@ class CouponRepositoryImpl : CouponRepository {
         request: CouponRequest,
     ): CouponResponse =
         query {
-            val coupon = CouponDAO.findById(couponId) ?: throw NotFoundException("Coupon not found")
+            val coupon = CouponDAO.findById(couponId) ?: throw NotFoundException(Message.Coupons.NOT_FOUND)
             coupon.apply {
                 code = request.code
                 discountType = request.discountType
@@ -76,7 +77,7 @@ class CouponRepositoryImpl : CouponRepository {
         try {
             LocalDateTime.parse(value)
         } catch (e: DateTimeParseException) {
-            throw ValidationException("Invalid $fieldName format: $value")
+            throw ValidationException(Message.Validation.invalidFormat("$fieldName: $value"))
         }
 
     private fun CouponDAO.toResponse() =

@@ -68,7 +68,7 @@ class ProductRepositoryImpl : ProductRepository {
         requireSeller(userId)
         if (shopId != null) {
             val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
-            if (shop.userId.value != userId) throw ForbiddenException("You are not the owner of this shop")
+            if (shop.userId.value != userId) throw ForbiddenException(Message.Products.NOT_SHOP_OWNER)
         }
 
         ProductDAO.new {

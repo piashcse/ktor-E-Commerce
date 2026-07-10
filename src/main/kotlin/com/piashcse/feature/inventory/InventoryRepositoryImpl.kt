@@ -69,7 +69,7 @@ class InventoryRepositoryImpl : InventoryRepository {
         val inventory = InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()
             ?: productId.throwNotFound("Inventory")
 
-        if (quantity <= 0) throw ValidationException("Quantity must be positive for $operation operation")
+        if (quantity <= 0) throw ValidationException(Message.Inventory.quantityNotPositive(operation))
         if (operation.lowercase() !in listOf("add", "subtract", "set"))
             throw ValidationException(Message.Inventory.invalidOperation(operation))
 
@@ -81,7 +81,7 @@ class InventoryRepositoryImpl : InventoryRepository {
                 inventory.stockQuantity - quantity
             }
             "set" -> {
-                if (quantity < 0) throw ValidationException("Quantity cannot be negative for set operation")
+                if (quantity < 0) throw ValidationException(Message.Inventory.NEGATIVE_QUANTITY)
                 quantity
             }
             else -> throw ValidationException(Message.Inventory.invalidOperation(operation))

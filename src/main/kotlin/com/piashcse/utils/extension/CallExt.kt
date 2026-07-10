@@ -1,6 +1,7 @@
 package com.piashcse.utils.extension
 
 import com.piashcse.constants.AppConstants
+import com.piashcse.constants.Message
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -17,7 +18,7 @@ fun ApplicationCall.paginateQueryParams(
     ): Int = when {
         raw == null -> default
         raw.toIntOrNull() != null -> raw.toInt()
-        else -> throw ValidationException("Invalid $name: $raw")
+        else -> throw ValidationException(Message.Errors.invalidParameter(name, raw))
     }
 
     val limit = parseParam("limit", request.queryParameters["limit"], defaultLimit).coerceAtMost(maxLimit)

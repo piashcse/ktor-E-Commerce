@@ -2,6 +2,7 @@ package com.piashcse.feature.profile
 
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.plugin.requireRole
+import com.piashcse.constants.Message
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.validator.ValidationException
@@ -69,7 +70,7 @@ fun Route.profileRoutes(userProfileService: ProfileService) {
                 part.dispose()
             }
 
-            call.respond(HttpStatusCode.OK, imageUrl ?: throw ValidationException("No file uploaded"))
+            call.respond(HttpStatusCode.OK, imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED))
         }
     }
 }

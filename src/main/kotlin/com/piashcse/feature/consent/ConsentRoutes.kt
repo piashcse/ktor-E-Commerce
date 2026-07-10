@@ -1,5 +1,6 @@
 package com.piashcse.feature.consent
 
+import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.constants.PolicyType
 import com.piashcse.model.request.PolicyConsentRequest
@@ -60,7 +61,7 @@ fun Route.consentRoutes(consentService: ConsentService) {
                     PolicyType.valueOf(policyType)
                 }.getOrElse {
                     throw InvalidEnumValueException(
-                        "Invalid policy type: $policyType",
+                        Message.Validation.invalidEnumValue("policy type", policyType),
                         enumName = "PolicyType",
                         invalidValue = policyType,
                     )

@@ -25,7 +25,7 @@ private fun ApplicationCall.parseOrderStatusParam(): OrderStatus {
         OrderStatus.valueOf(param.uppercase())
     } catch (_: IllegalArgumentException) {
         throw InvalidEnumValueException(
-            message = "Invalid order status: $param",
+            message = Message.Orders.INVALID_STATUS,
             enumName = OrderStatus.values().joinToString(", ") { it.name },
             invalidValue = param,
         )
