@@ -131,4 +131,12 @@ interface ProductRepository {
      * @return A list of hot deal products.
      */
     suspend fun getHotDealProducts(): PaginatedResponse<ProductResponse>
+
+    /**
+     * Deletes a product as admin without ownership checks.
+     *
+     * @param productId The unique identifier of the product to delete.
+     * @return The deleted product ID.
+     */
+    suspend fun deleteProductAsAdmin(productId: String): String
 }
