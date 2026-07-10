@@ -134,14 +134,29 @@
   <img width="60%" height="60%" src="https://github.com/piashcse/ktor-E-Commerce/blob/master/screenshots/onion_architecture.png" />
 </p>
 <p align="center">
-<b>Fig. Clean Architecture </b>
+<b>Fig. Clean / Onion Architecture </b>
 </p>
+
+The project follows **Clean Architecture** with clear separation of concerns:
+
+- **Route Layer** (`*Routes.kt`) — HTTP routing only, uses `by inject()` for dependency injection, delegates all logic to services/repositories
+- **Service Layer** (`*Service.kt`) — Business logic orchestration, works with domain models and DTOs, zero Exposed/sql imports
+- **Repository Layer** (`*Repository` interface + `*RepositoryImpl`) — Data access, Exposed queries, transaction management
+- **Mapper Layer** (`*Mappers.kt`) — Object mapping between DAO entities and response DTOs, fully separated from entities
+- **Plugin Layer** — Cross-cutting concerns: auth, status pages, routing configuration, OpenAPI generation
+
+This architecture ensures:
+- **Testability**: Repositories can be mocked for service-layer unit tests
+- **Swapability**: Data access implementation can change without affecting business logic
+- **Discoverability**: Each concern lives in its own well-named file, not hidden inside god classes
+- **Safety**: Flyway-managed schema migrations prevent destructive table recreation in production
 
 ## Built With 🛠
 
 - [Ktor](https://ktor.io/docs/welcome.html) - An asynchronous framework for creating microservices, web applications, and more.
 - [Exposed](https://github.com/JetBrains/Exposed) - A lightweight SQL library on top of JDBC driver for the Kotlin language.
 - [PostgreSQL](https://www.postgresql.org/) - A powerful, open-source object-relational database system.
+- [Flyway](https://flywaydb.org/) - Database migration tool for safe, version-controlled schema management.
 - [Koin](https://github.com/InsertKoinIO/koin) - A pragmatic lightweight dependency injection framework for Kotlin.
 - [Ktlint](https://github.com/jlleitschuh/ktlint-gradle) - An anti-bikeshedding Kotlin linter with built-in formatter.
 - [Detekt](https://detekt.dev/) - A static code analysis tool for the Kotlin programming language.
