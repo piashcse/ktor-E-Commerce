@@ -17,14 +17,17 @@ import io.ktor.server.routing.*
 /**
  * Public and seller product routes.
  */
-fun Route.productRoutes(productService: ProductService) {
+fun Route.productRoutes(
+    productCatalogService: ProductCatalogService,
+    productQueryService: ProductQueryService,
+) {
     /**
      * @tag Product
      * @description Retrieve detailed information about a specific product
      */
     get("{id}") {
         val productId = call.requirePathParameter("id")
-        call.respond(HttpStatusCode.OK, productService.getProductDetail(productId))
+        call.respond(HttpStatusCode.OK, productCatalogService.getProductDetail(productId))
     }
 
     /**
@@ -45,7 +48,7 @@ fun Route.productRoutes(productService: ProductService) {
                 sortBy = call.request.queryParameters["sortBy"],
                 sortOrder = call.request.queryParameters["sortOrder"],
             )
-        call.respond(HttpStatusCode.OK, productService.getProducts(params))
+        call.respond(HttpStatusCode.OK, productQueryService.getProducts(params))
     }
 
     /**
@@ -63,14 +66,17 @@ fun Route.productRoutes(productService: ProductService) {
                 minPrice = call.request.queryParameters["minPrice"]?.toDoubleOrNull(),
                 categoryId = call.request.queryParameters["categoryId"],
             )
-        call.respond(HttpStatusCode.OK, productService.searchProduct(queryParams))
+        call.respond(HttpStatusCode.OK, productQueryService.searchProduct(queryParams))
     }
 }
 
 /**
  * Seller product management routes.
  */
-fun Route.productSellerRoutes(productService: ProductService) {
+fun Route.productSellerRoutes(
+    productQueryService: ProductQueryService,
+    productCrudService: ProductCrudService,
+) {
     /**
      * @tag Product
      * @description Seller: Retrieve seller products
@@ -91,7 +97,7 @@ fun Route.productSellerRoutes(productService: ProductService) {
             )
         call.respond(
             HttpStatusCode.OK,
-            productService.getProductsByUser(call.currentUserId, params),
+            productQueryService.getProductsByUser(call.currentUserId, params),
         )
     }
 
@@ -103,7 +109,7 @@ fun Route.productSellerRoutes(productService: ProductService) {
         val requestBody = call.receive<ProductRequest>()
         call.respond(
             HttpStatusCode.Created,
-            productService.createProduct(call.currentUserId, null, requestBody),
+            productCrudService.createProduct(call.currentUserId, null, requestBody),
         )
     }
 
@@ -116,7 +122,7 @@ fun Route.productSellerRoutes(productService: ProductService) {
         val requestBody = call.receive<UpdateProductRequest>()
         call.respond(
             HttpStatusCode.OK,
-            productService.updateProduct(call.currentUserId, productId, requestBody),
+            productCrudService.updateProduct(call.currentUserId, productId, requestBody),
         )
     }
 
@@ -127,7 +133,7 @@ fun Route.productSellerRoutes(productService: ProductService) {
     delete("{id}") {
         val id = call.requirePathParameter("id")
         val currentUserId = call.currentUserId
-        productService.deleteProduct(currentUserId, id)
+        productCrudService.deleteProduct(currentUserId, id)
         call.respond(HttpStatusCode.OK, mapOf("message" to "Product deleted successfully"))
     }
 
@@ -154,7 +160,7 @@ fun Route.productSellerRoutes(productService: ProductService) {
 /**
  * Admin product management routes.
  */
-fun Route.productAdminRoutes(productService: ProductService) {
+fun Route.productAdminRoutes(productCrudService: ProductCrudService) {
     /**
      * @tag Product
      * @description Admin: Permanently delete any product
@@ -163,7 +169,7 @@ fun Route.productAdminRoutes(productService: ProductService) {
         val id = call.requirePathParameter("id")
         call.respond(
             HttpStatusCode.OK,
-            productService.deleteProductAsAdmin(id),
+            productCrudService.deleteProductAsAdmin(id),
         )
     }
 }

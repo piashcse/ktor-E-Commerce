@@ -18,7 +18,11 @@ import io.ktor.server.routing.*
 /**
  * Authentication and registration routes.
  */
-fun Route.authRoutes(authService: AuthService) {
+fun Route.authRoutes(
+    userAuthService: UserAuthenticationService,
+    passwordService: PasswordManagementService,
+    tokenService: TokenManagementService,
+) {
     // Rate-limited endpoints (brute-force protection)
     rateLimit(RateLimitName(RateLimitNames.AUTH)) {
         /**
@@ -27,7 +31,7 @@ fun Route.authRoutes(authService: AuthService) {
          */
         post("login") {
             val requestBody = call.receive<LoginRequest>()
-            call.respond(HttpStatusCode.OK, authService.login(requestBody))
+            call.respond(HttpStatusCode.OK, userAuthService.login(requestBody))
         }
 
         /**
@@ -36,7 +40,7 @@ fun Route.authRoutes(authService: AuthService) {
          */
         post("register") {
             val requestBody = call.receive<RegisterRequest>()
-            call.respond(HttpStatusCode.Created, authService.register(requestBody))
+            call.respond(HttpStatusCode.Created, userAuthService.register(requestBody))
         }
 
         /**
@@ -45,7 +49,7 @@ fun Route.authRoutes(authService: AuthService) {
          */
         post("forgot-password") {
             val requestBody = call.receive<ForgotPasswordRequest>()
-            authService.forgotPassword(requestBody)
+            passwordService.forgotPassword(requestBody)
             call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.OTP_SENT))
         }
 
@@ -56,7 +60,7 @@ fun Route.authRoutes(authService: AuthService) {
         post("reset-password") {
             val requestBody = call.receive<ResetRequest>()
 
-            when (authService.resetPassword(requestBody)) {
+            when (passwordService.resetPassword(requestBody)) {
                 is ResetResult.Success -> {
                     call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
                 }
@@ -76,7 +80,7 @@ fun Route.authRoutes(authService: AuthService) {
         post("otp-verification") {
             val userId = call.requireQueryParameter("userId")
             val otp = call.requireQueryParameter("otp")
-            call.respond(HttpStatusCode.OK, authService.otpVerification(userId, otp))
+            call.respond(HttpStatusCode.OK, userAuthService.otpVerification(userId, otp))
         }
     }
 
@@ -87,7 +91,7 @@ fun Route.authRoutes(authService: AuthService) {
     rateLimit(RateLimitName(RateLimitNames.REFRESH_TOKEN)) {
         post("refresh-token") {
             val requestBody = call.receive<RefreshTokenRequest>()
-            val tokenPair = authService.refreshAccessToken(requestBody)
+            val tokenPair = tokenService.refreshAccessToken(requestBody)
             call.respond(HttpStatusCode.OK, tokenPair)
         }
     }
@@ -104,10 +108,10 @@ fun Route.authRoutes(authService: AuthService) {
             val authHeader = call.request.headers[HttpHeaders.Authorization]
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 val token = authHeader.substring(7)
-                authService.blacklistToken(token)
+                tokenService.blacklistToken(token)
             }
 
-            authService.logout(userId, requestBody.refreshToken)
+            tokenService.logout(userId, requestBody.refreshToken)
             call.respond(HttpStatusCode.OK, mapOf("message" to "Logged out successfully"))
         }
 
@@ -118,7 +122,7 @@ fun Route.authRoutes(authService: AuthService) {
         put("change-password") {
             val requestBody = call.receive<ChangePasswordRequest>()
             val currentUserId = call.currentUserId
-            authService.changePassword(currentUserId, ChangePassword(requestBody.oldPassword, requestBody.newPassword)).let {
+            passwordService.changePassword(currentUserId, ChangePassword(requestBody.oldPassword, requestBody.newPassword)).let {
                 if (it) {
                     call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
                 } else {
@@ -132,7 +136,7 @@ fun Route.authRoutes(authService: AuthService) {
 /**
  * Administrative authentication/user management routes.
  */
-fun Route.authAdminRoutes(authService: AuthService) {
+fun Route.authAdminRoutes(userAuthService: UserAuthenticationService) {
     /**
      * @tag Auth
      * @description Admin: Change user type
@@ -153,7 +157,7 @@ fun Route.authAdminRoutes(authService: AuthService) {
             }
 
         val currentUserId = call.currentUserId
-        if (authService.changeUserType(currentUserId, userId, newType)) {
+        if (userAuthService.changeUserType(currentUserId, userId, newType)) {
             call.respond(HttpStatusCode.OK, mapOf("message" to "User type updated successfully"))
         } else {
             call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to update user type"))
@@ -167,7 +171,7 @@ fun Route.authAdminRoutes(authService: AuthService) {
     put("/{userId}/deactivate") {
         val userId = call.requirePathParameter("userId")
         val currentUserId = call.currentUserId
-        if (authService.deactivateUser(currentUserId, userId)) {
+        if (userAuthService.deactivateUser(currentUserId, userId)) {
             call.respond(HttpStatusCode.OK, mapOf("message" to "User deactivated successfully"))
         } else {
             call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to deactivate user"))
@@ -181,8 +185,8 @@ fun Route.authAdminRoutes(authService: AuthService) {
     put("/{userId}/activate") {
         val userId = call.requirePathParameter("userId")
         val currentUserId = call.currentUserId
-        if (authService.activateUser(currentUserId, userId)) {
-            call.respond(HttpStatusCode.OK, mapOf("message" to "User activated successfully"))
+        if (userAuthService.activateUser(currentUserId, userId)) {
+            call.respond(HttpStatusCode.OK, mapOf("message" to "Message.Auth.ACCOUNT_ACTIVATED"))
         } else {
             call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to activate user"))
         }

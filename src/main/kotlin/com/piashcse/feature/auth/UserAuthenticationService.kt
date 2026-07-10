@@ -6,16 +6,13 @@ import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
 import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
-import com.piashcse.model.response.ResetResult
 import com.piashcse.utils.email.EmailSender
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.InvalidCredentialsException
-import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
-import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 
-class AuthService(private val authRepo: AuthRepository) {
+class UserAuthenticationService(private val authRepo: AuthRepository) {
     companion object {
         private const val MAX_LOGIN_ATTEMPTS = 5
         private const val ACCOUNT_LOCKOUT_MINUTES = 30L
@@ -24,13 +21,10 @@ class AuthService(private val authRepo: AuthRepository) {
 
     private val otpAttemptsCache = ConcurrentHashMap<String, Int>()
 
-    // ── Registration ──────────────────────────────────────────────────────
-
     suspend fun register(registerRequest: RegisterRequest): RegistrationResult {
         if (UserType.fromString(registerRequest.userType) == null)
             throw ValidationException(Message.Validation.INVALID_USER_TYPE)
         val result = authRepo.register(registerRequest)
-        // Extract email from result for email sending
         val email = when (result) {
             is RegistrationResult.Created -> result.email
             is RegistrationResult.OtpResent -> registerRequest.email
@@ -38,8 +32,6 @@ class AuthService(private val authRepo: AuthRepository) {
         EmailSender.sendOtp(email, "", "Account Verification")
         return result
     }
-
-    // ── Login ─────────────────────────────────────────────────────────────
 
     suspend fun login(loginRequest: LoginRequest): LoginResponse {
         if (UserType.fromString(loginRequest.userType) == null)
@@ -75,8 +67,6 @@ class AuthService(private val authRepo: AuthRepository) {
         return LoginResponse(user.response(), tokenPair.accessToken, tokenPair.refreshToken, tokenPair.expiresIn)
     }
 
-    // ── OTP Verification ──────────────────────────────────────────────────
-
     suspend fun otpVerification(userId: String, otp: String): Boolean {
         val attemptKey = "otp_attempts_$userId"
         val currentAttempts = otpAttemptsCache.getOrDefault(attemptKey, 0)
@@ -95,37 +85,6 @@ class AuthService(private val authRepo: AuthRepository) {
         }
         return isValid
     }
-
-    // ── Change Password ───────────────────────────────────────────────────
-
-    suspend fun changePassword(userId: String, changePassword: ChangePassword): Boolean =
-        authRepo.changePassword(userId, changePassword)
-
-    // ── Forgot / Reset Password ──────────────────────────────────────────
-
-    suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest) {
-        val user = authRepo.findResetUserByEmail(forgotPasswordRequest.email, forgotPasswordRequest.userType)
-        authRepo.forgotPassword(forgotPasswordRequest)
-        EmailSender.sendOtp(user.email, "", "Password Reset")
-    }
-
-    suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult =
-        authRepo.resetPassword(resetPasswordRequest)
-
-    // ── Refresh Token ─────────────────────────────────────────────────────
-
-    suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair =
-        authRepo.refreshAccessToken(request)
-
-    // ── Logout / Blacklist ────────────────────────────────────────────────
-
-    suspend fun logout(userId: String, refreshToken: String?): Boolean =
-        authRepo.logout(userId, refreshToken)
-
-    suspend fun blacklistToken(token: String): Boolean =
-        authRepo.blacklistToken(token)
-
-    // ── Admin: User Management ────────────────────────────────────────────
 
     suspend fun changeUserType(currentUserId: String, targetUserId: String, newUserType: UserType): Boolean =
         authRepo.changeUserType(currentUserId, targetUserId, newUserType)

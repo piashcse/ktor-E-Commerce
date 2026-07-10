@@ -1,6 +1,6 @@
 package com.piashcse.feature.checkout
 
-import com.piashcse.feature.order.OrderService
+import com.piashcse.feature.order.CheckoutOrchestrator
 import com.piashcse.feature.shipping_address.ShippingAddressService
 import com.piashcse.feature.shipping_method.ShippingMethodService
 import com.piashcse.model.request.CheckoutRequest
@@ -15,7 +15,7 @@ import io.ktor.server.routing.*
 fun Route.checkoutRoutes(
     shippingAddressService: ShippingAddressService,
     shippingMethodService: ShippingMethodService,
-    orderService: OrderService,
+    checkoutOrchestrator: CheckoutOrchestrator,
 ) {
     customerAuth {
         /**
@@ -85,7 +85,7 @@ fun Route.checkoutRoutes(
             val requestBody = call.receive<CheckoutRequest>()
             call.respond(
                 HttpStatusCode.OK,
-                orderService.getCheckoutSummary(call.currentUserId, requestBody),
+                checkoutOrchestrator.getCheckoutSummary(call.currentUserId, requestBody),
             )
         }
 
@@ -97,7 +97,7 @@ fun Route.checkoutRoutes(
             val requestBody = call.receive<CheckoutRequest>()
             call.respond(
                 HttpStatusCode.Created,
-                orderService.placeOrder(call.currentUserId, requestBody),
+                checkoutOrchestrator.placeOrder(call.currentUserId, requestBody),
             )
         }
     }

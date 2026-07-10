@@ -5,7 +5,9 @@ import com.piashcse.feature.audit_log.AuditLogRepositoryImpl
 import com.piashcse.feature.audit_log.AuditLogService
 import com.piashcse.feature.auth.AuthRepository
 import com.piashcse.feature.auth.AuthRepositoryImpl
-import com.piashcse.feature.auth.AuthService
+import com.piashcse.feature.auth.PasswordManagementService
+import com.piashcse.feature.auth.TokenManagementService
+import com.piashcse.feature.auth.UserAuthenticationService
 import com.piashcse.feature.brand.BrandRepository
 import com.piashcse.feature.brand.BrandRepositoryImpl
 import com.piashcse.feature.brand.BrandService
@@ -24,18 +26,22 @@ import com.piashcse.feature.dashboard.DashboardService
 import com.piashcse.feature.inventory.InventoryRepository
 import com.piashcse.feature.inventory.InventoryRepositoryImpl
 import com.piashcse.feature.inventory.InventoryService
+import com.piashcse.feature.order.CheckoutOrchestrator
+import com.piashcse.feature.order.OrderManagementService
+import com.piashcse.feature.order.OrderQueryService
 import com.piashcse.feature.order.OrderRepository
 import com.piashcse.feature.order.OrderRepositoryImpl
-import com.piashcse.feature.order.OrderService
 import com.piashcse.feature.payment.PaymentRepository
 import com.piashcse.feature.payment.PaymentRepositoryImpl
 import com.piashcse.feature.payment.PaymentService
 import com.piashcse.feature.policy.PolicyRepository
 import com.piashcse.feature.policy.PolicyRepositoryImpl
 import com.piashcse.feature.policy.PolicyService
+import com.piashcse.feature.product.ProductCatalogService
+import com.piashcse.feature.product.ProductCrudService
+import com.piashcse.feature.product.ProductQueryService
 import com.piashcse.feature.product.ProductRepository
 import com.piashcse.feature.product.ProductRepositoryImpl
-import com.piashcse.feature.product.ProductService
 import com.piashcse.feature.product_category.ProductCategoryRepository
 import com.piashcse.feature.product_category.ProductCategoryRepositoryImpl
 import com.piashcse.feature.product_category.ProductCategoryService
@@ -96,19 +102,16 @@ val serviceModule =
         single<ShopCategoryRepository> { ShopCategoryRepositoryImpl() }
         single<WishListRepository> { WishListRepositoryImpl() }
 
-        // Services
+        // Services — unchanged (single-repo delegates)
         single { AuditLogService(get()) }
-        single { AuthService(get()) }
         single { BrandService(get()) }
         single { CartService(get()) }
         single { ConsentService(get()) }
         single { CouponService(get()) }
         single { DashboardService(get()) }
         single { InventoryService(get()) }
-        single { OrderService(get()) }
         single { PaymentService(get()) }
         single { PolicyService(get()) }
-        single { ProductService(get()) }
         single { ProductCategoryService(get()) }
         single { ProductSubCategoryService(get()) }
         single { ProfileService(get()) }
@@ -119,6 +122,21 @@ val serviceModule =
         single { ShopService(get()) }
         single { ShopCategoryService(get()) }
         single { WishListService(get()) }
+
+        // Split auth services
+        single { UserAuthenticationService(get()) }
+        single { PasswordManagementService(get()) }
+        single { TokenManagementService(get()) }
+
+        // Split product services
+        single { ProductCatalogService(get()) }
+        single { ProductQueryService(get()) }
+        single { ProductCrudService(get()) }
+
+        // Split order services
+        single { CheckoutOrchestrator(get()) }
+        single { OrderManagementService(get()) }
+        single { OrderQueryService(get()) }
 
         // Non-DI services
         single { UploadService }

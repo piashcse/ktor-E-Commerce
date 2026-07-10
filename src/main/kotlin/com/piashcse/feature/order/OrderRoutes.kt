@@ -35,7 +35,10 @@ private fun ApplicationCall.parseOrderStatusParam(): OrderStatus {
 /**
  * Order-related routes for customers and sellers.
  */
-fun Route.orderRoutes(orderService: OrderService) {
+fun Route.orderRoutes(
+    orderQueryService: OrderQueryService,
+    orderManagementService: OrderManagementService,
+) {
     customerAuth {
         /**
          * @tag Order
@@ -43,7 +46,7 @@ fun Route.orderRoutes(orderService: OrderService) {
          */
         get {
             val (limit, offset) = call.paginateQueryParams()
-            call.respond(HttpStatusCode.OK, orderService.getOrders(call.currentUserId, limit, offset))
+            call.respond(HttpStatusCode.OK, orderQueryService.getOrders(call.currentUserId, limit, offset))
         }
     }
 
@@ -70,7 +73,7 @@ fun Route.orderRoutes(orderService: OrderService) {
                 throw UnauthorizedException(Message.Orders.STATUS_NOT_ALLOWED)
             }
 
-            call.respond(HttpStatusCode.OK, orderService.updateOrderStatus(userId, id, status))
+            call.respond(HttpStatusCode.OK, orderManagementService.updateOrderStatus(userId, id, status))
         }
 
         /**
@@ -83,7 +86,7 @@ fun Route.orderRoutes(orderService: OrderService) {
             val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
             val requestBody = call.receive<CancelOrderRequest>()
 
-            call.respond(HttpStatusCode.OK, orderService.cancelOrder(id, userId, requestBody.reason, userType))
+            call.respond(HttpStatusCode.OK, orderManagementService.cancelOrder(id, userId, requestBody.reason, userType))
         }
     }
 }
@@ -91,7 +94,7 @@ fun Route.orderRoutes(orderService: OrderService) {
 /**
  * Seller order management routes.
  */
-fun Route.orderSellerRoutes(orderService: OrderService) {
+fun Route.orderSellerRoutes(orderQueryService: OrderQueryService) {
     /**
      * @tag Order
      * @description Seller: Retrieve orders for the seller's shop
@@ -99,14 +102,17 @@ fun Route.orderSellerRoutes(orderService: OrderService) {
     get {
         val (limit, offset) = call.paginateQueryParams()
         val status = call.request.queryParameters["status"]
-        call.respond(HttpStatusCode.OK, orderService.getSellerOrders(call.currentUserId, limit, offset, status))
+        call.respond(HttpStatusCode.OK, orderQueryService.getSellerOrders(call.currentUserId, limit, offset, status))
     }
 }
 
 /**
  * Admin order management routes.
  */
-fun Route.orderAdminRoutes(orderService: OrderService) {
+fun Route.orderAdminRoutes(
+    orderQueryService: OrderQueryService,
+    orderManagementService: OrderManagementService,
+) {
     /**
      * @tag Order
      * @description Admin: Update the status of any order
@@ -115,7 +121,7 @@ fun Route.orderAdminRoutes(orderService: OrderService) {
         val id = call.requirePathParameter("id")
         val status = call.parseOrderStatusParam()
         val userId = call.currentUserId
-        call.respond(HttpStatusCode.OK, orderService.updateOrderStatus(userId, id, status))
+        call.respond(HttpStatusCode.OK, orderManagementService.updateOrderStatus(userId, id, status))
     }
 
     /**
@@ -128,7 +134,7 @@ fun Route.orderAdminRoutes(orderService: OrderService) {
         val userType = UserType.ADMIN
         val requestBody = call.receive<CancelOrderRequest>()
 
-        call.respond(HttpStatusCode.OK, orderService.cancelOrder(id, userId, requestBody.reason, userType))
+        call.respond(HttpStatusCode.OK, orderManagementService.cancelOrder(id, userId, requestBody.reason, userType))
     }
 
     /**
@@ -147,6 +153,6 @@ fun Route.orderAdminRoutes(orderService: OrderService) {
                 runCatching { Instant.parse(it) }.getOrNull()
             }
 
-        call.respond(HttpStatusCode.OK, orderService.getAdminOrders(limit, offset, status, startDate, endDate))
+        call.respond(HttpStatusCode.OK, orderQueryService.getAdminOrders(limit, offset, status, startDate, endDate))
     }
 }
