@@ -9,8 +9,8 @@ import org.jetbrains.exposed.v1.core.between
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object ReviewRatingTable : BaseIdTable("review_rating") {
-    val userId = reference("user_id", UserTable.id)
-    val productId = reference("product_id", ProductTable.id)
+    val userId = reference("user_id", UserTable.id).index()
+    val productId = reference("product_id", ProductTable.id).index()
     val reviewText = varchar("review_text", 500)
     val rating = integer("rating").check { it.between(1, 5) }
     val title = varchar("title", 200).nullable()

@@ -10,13 +10,17 @@ import org.jetbrains.exposed.v1.javatime.datetime
 import java.time.format.DateTimeFormatter
 
 object AuditLogTable : BaseIdTable("audit_log") {
-    val actorId = reference("actor_id", UserTable.id)
+    val actorId = reference("actor_id", UserTable.id).index()
     val actorEmail = varchar("actor_email", 255); val actorRole = varchar("actor_role", 50)
-    val action = varchar("action", 100); val resourceType = varchar("resource_type", 100)
+    val action = varchar("action", 100).index(); val resourceType = varchar("resource_type", 100).index()
     val resourceId = varchar("resource_id", 100).nullable(); val details = text("details").nullable()
     val ipAddress = varchar("ip_address", 45).nullable(); val userAgent = text("user_agent").nullable()
-    val outcome = varchar("outcome", 20).default("SUCCESS")
+    val outcome = varchar("outcome", 20).default("SUCCESS").index()
     val executedAt = datetime("executed_at").clientDefault { currentUtc() }
+
+    init {
+        index(customIndexName = "audit_log_executed_at_idx", isUnique = false, executedAt)
+    }
 }
 
 class AuditLogDAO(id: EntityID<String>) : BaseEntity(id, AuditLogTable) {

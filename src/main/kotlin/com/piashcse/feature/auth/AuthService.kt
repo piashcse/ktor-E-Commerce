@@ -23,6 +23,7 @@ import java.security.MessageDigest
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 class AuthService : AuthRepository {
     companion object {
@@ -32,7 +33,7 @@ class AuthService : AuthRepository {
         private const val MAX_OTP_ATTEMPTS = 5
     }
 
-    private val otpAttemptsCache = mutableMapOf<String, Int>()
+    private val otpAttemptsCache = ConcurrentHashMap<String, Int>()
 
     // ── Token helpers ─────────────────────────────────────────────────────
 
@@ -128,7 +129,7 @@ class AuthService : AuthRepository {
 
             if (existingUser != null) {
                 if (existingUser.isVerified) throw ValidationException(Message.Auth.USER_EXISTS)
-                if (existingUser.otpExpiry != null && existingUser.otpExpiry!!.isAfter(LocalDateTime.now())) {
+                if (existingUser.otpExpiry?.isAfter(LocalDateTime.now()) == true) {
                     throw ValidationException(Message.Auth.OTP_ALREADY_SENT)
                 }
                 existingUser.otpCode = otp
@@ -228,7 +229,7 @@ class AuthService : AuthRepository {
             throw ValidationException(Message.Auth.OTP_INVALID)
         }
 
-        if (userEntity.otpExpiry == null || userEntity.otpExpiry!!.isBefore(LocalDateTime.now())) {
+        if (userEntity.otpExpiry?.isBefore(LocalDateTime.now()) != false) {
             throw ValidationException(Message.Auth.OTP_INVALID)
         }
 
@@ -284,7 +285,7 @@ class AuthService : AuthRepository {
     override suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult = query {
         val user = findResetUserByEmail(resetPasswordRequest.email, resetPasswordRequest.userType)
 
-        if (user.resetOtpExpiry == null || user.resetOtpExpiry!!.isBefore(LocalDateTime.now()))
+        if (user.resetOtpExpiry?.isBefore(LocalDateTime.now()) != false)
             return@query ResetResult.InvalidOrExpiredOtp
 
         if (user.resetOtpCode != resetPasswordRequest.verificationCode) return@query ResetResult.InvalidOrExpiredOtp

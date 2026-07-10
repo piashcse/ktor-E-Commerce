@@ -499,21 +499,26 @@ http://localhost:8080/api/v1/auth/register
 </details>
 
 <details>
-<summary> <code>GET</code> <code>/api/v1/auth/otp-verification</code></summary>
+<summary> <code>POST</code> <code>/api/v1/auth/otp-verification</code></summary>
 
 ### Description
 Verify user account or password reset with OTP.
 
 ### Curl
 ```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/auth/otp-verification?userId=ce563774-d3d5-442e-ad1a-b884bb0a53f0&otp=123456' \
-  -H 'accept: application/json'
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/otp-verification' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "userId": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
+    "otp": "123456"
+  }'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/auth/otp-verification?userId={userId}&otp={otp}
+http://localhost:8080/api/v1/auth/otp-verification
 ```
 
 ### Response

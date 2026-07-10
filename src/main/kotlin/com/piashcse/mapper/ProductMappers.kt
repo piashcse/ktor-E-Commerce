@@ -3,7 +3,7 @@ package com.piashcse.mapper
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.model.response.ProductResponse
 
-fun ProductDAO.toProductResponse() = ProductResponse(
+fun ProductDAO.toProductResponse(images: List<String>? = null) = ProductResponse(
     id = id.value,
     userId = userId.value,
     shopId = shopId?.value,
@@ -27,7 +27,7 @@ fun ProductDAO.toProductResponse() = ProductResponse(
     bestSeller = bestSeller,
     newProduct = newProduct,
     freeShipping = freeShipping,
-    images = imageUrls,
+    images = images ?: imageUrls,
     status = status,
     viewCount = viewCount,
     rating = rating.toDouble(),

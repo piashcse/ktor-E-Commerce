@@ -3,10 +3,12 @@ package com.piashcse.feature.cart
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toProductResponse
 import com.piashcse.model.response.CartItemSummary
 import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
@@ -48,12 +50,25 @@ class CartService : CartRepository {
         limit: Int,
         offset: Int,
     ): PaginatedResponse<Cart> = query {
-        CartItemTable.selectAll().andWhere { CartItemTable.userId eq userId }
-            .toPaginatedResponse(limit, offset) {
-                val product = ProductDAO.findById(it[CartItemTable.productId].value)
-                    ?: it[CartItemTable.productId].value.throwNotFound("Product")
-                CartItemDAO.wrapRow(it).response(product.response())
-            }
+        val query = CartItemTable.selectAll().andWhere { CartItemTable.userId eq userId }
+        val (totalCount, rows) = query.toPaginatedList(limit, offset) { it }
+        val productIds = rows.map { it[CartItemTable.productId] }
+        val products = if (productIds.isNotEmpty()) {
+            ProductDAO.find { ProductTable.id inList productIds }.associateBy { it.id.value }
+        } else {
+            emptyMap()
+        }
+        val imagesMap = if (products.isNotEmpty()) {
+            ProductImageDAO.imagesForProducts(products.keys.map { EntityID(it, ProductTable) })
+        } else {
+            emptyMap()
+        }
+        val data = rows.map { row ->
+            val product = products[row[CartItemTable.productId].value]
+                ?: row[CartItemTable.productId].value.throwNotFound("Product")
+            CartItemDAO.wrapRow(row).response(product.toProductResponse(imagesMap[product.id.value]))
+        }
+        PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
     }
 
     override suspend fun updateCartQuantity(

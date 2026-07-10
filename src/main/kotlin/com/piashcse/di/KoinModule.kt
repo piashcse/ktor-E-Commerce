@@ -22,6 +22,7 @@ import com.piashcse.feature.shipping_method.ShippingMethodService
 import com.piashcse.feature.shop.ShopService
 import com.piashcse.feature.shop_category.ShopCategoryService
 import com.piashcse.feature.wishlist.WishListService
+import com.piashcse.service.CacheService
 import com.piashcse.service.UploadService
 import org.koin.dsl.module
 
@@ -32,7 +33,7 @@ val serviceModule =
         single { BrandService() }
         single { CartService() }
         single { OrderService() }
-        single { ProductService() }
+        single { ProductService(CacheService.cache) }
         single { ProductCategoryService() }
         single { ProductSubCategoryService() }
         single { ShippingAddressService() }

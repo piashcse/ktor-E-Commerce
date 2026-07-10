@@ -96,7 +96,7 @@ class OrderService : OrderRepository {
             }
 
             items.forEach { cartItem ->
-                val product = productsMap[cartItem.productId.value]!!
+                val product = productsMap[cartItem.productId.value] ?: cartItem.productId.value.throwNotFound("Product")
                 if (product.status != ProductStatus.ACTIVE)
                     throw ValidationException(Message.Products.OUT_OF_STOCK)
                 if (product.effectiveStock(forUpdate = true) < cartItem.quantity)
@@ -280,7 +280,10 @@ class OrderService : OrderRepository {
         if (BigDecimal(orderRequest.total.toString()).compareTo(calculatedSubtotal) != 0)
             throw ValidationException("Order total mismatch. Requested: ${orderRequest.total}, Calculated: $calculatedSubtotal")
 
-        val itemsByShop = orderRequest.orderItems.groupBy { productsMap[it.productId]!!.shopId!!.value }
+        val itemsByShop = orderRequest.orderItems.groupBy {
+            val product = productsMap[it.productId] ?: it.productId.throwNotFound("Product")
+            product.shopId?.value ?: throw ValidationException(Message.Orders.productDoesNotBelongToShop(product.name))
+        }
         validateShopsApproved(itemsByShop.keys)
 
         val createdOrders = mutableListOf<OrderDAO>()
