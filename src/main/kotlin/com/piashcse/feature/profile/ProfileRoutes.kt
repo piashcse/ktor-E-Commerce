@@ -4,28 +4,27 @@ import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.plugin.requireRole
 import com.piashcse.constants.Message
 import com.piashcse.service.UploadService
-import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
-import io.ktor.http.*
+
 import io.ktor.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 /**
  * User profile management routes.
  */
-fun Route.profileRoutes(userProfileService: ProfileService) {
+fun Route.profileRoutes() {
+    val userProfileService: ProfileService by inject()
     requireRole {
         /**
          * @tag Profile
          * @description Retrieve the authenticated user's profile information
          */
         get {
-            call.respond(
-                HttpStatusCode.OK,
-                userProfileService.getProfile(call.currentUserId),
-            )
+            call.respondOk(userProfileService.getProfile(call.currentUserId))
         }
 
         /**
@@ -47,10 +46,7 @@ fun Route.profileRoutes(userProfileService: ProfileService) {
                     postCode = call.parameters["postCode"],
                     gender = call.parameters["gender"],
                 )
-            call.respond(
-                HttpStatusCode.OK,
-                userProfileService.updateProfile(call.currentUserId, params),
-            )
+            call.respondOk(userProfileService.updateProfile(call.currentUserId, params))
         }
 
         /**
@@ -70,7 +66,7 @@ fun Route.profileRoutes(userProfileService: ProfileService) {
                 part.dispose()
             }
 
-            call.respond(HttpStatusCode.OK, imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED))
+            call.respondOk(imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED))
         }
     }
 }

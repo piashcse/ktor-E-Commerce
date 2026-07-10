@@ -1,22 +1,21 @@
 package com.piashcse.feature.shipping_method
 
 import com.piashcse.model.request.ShippingMethodRequest
-import io.ktor.http.*
+
+import com.piashcse.utils.extension.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
-fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService) {
+fun Route.shippingMethodAdminRoutes() {
+    val shippingMethodRepo: ShippingMethodRepository by inject()
     /**
      * @tag Shipping-Method
      * @description Admin: Create a new shipping method
      */
     post {
-        val requestBody = call.receive<ShippingMethodRequest>()
-        call.respond(
-            HttpStatusCode.Created,
-            shippingMethodService.createShippingMethod(requestBody),
-        )
+        call.respondCreated(shippingMethodRepo.createShippingMethod(call.receive<ShippingMethodRequest>()))
     }
 
     /**
@@ -25,11 +24,7 @@ fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService
      */
     put("/{id}") {
         val id = call.requirePathParameter("id")
-        val requestBody = call.receive<ShippingMethodRequest>()
-        call.respond(
-            HttpStatusCode.OK,
-            shippingMethodService.updateShippingMethod(id, requestBody),
-        )
+        call.respondOk(shippingMethodRepo.updateShippingMethod(id, call.receive<ShippingMethodRequest>()))
     }
 
     /**
@@ -38,9 +33,6 @@ fun Route.shippingMethodAdminRoutes(shippingMethodService: ShippingMethodService
      */
     delete("/{id}") {
         val id = call.requirePathParameter("id")
-        call.respond(
-            HttpStatusCode.OK,
-            shippingMethodService.deleteShippingMethod(id),
-        )
+        call.respondOk(shippingMethodRepo.deleteShippingMethod(id))
     }
 }

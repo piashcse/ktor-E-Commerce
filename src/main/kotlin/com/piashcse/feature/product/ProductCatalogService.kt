@@ -26,6 +26,4 @@ class ProductCatalogService(
     suspend fun getHotDealProducts(): PaginatedResponse<ProductResponse> =
         cachedOrQuery("products:hot-deals") { productRepo.getHotDealProducts() }
 
-    suspend fun incrementViewCount(productId: String) =
-        productRepo.incrementViewCount(productId)
 }

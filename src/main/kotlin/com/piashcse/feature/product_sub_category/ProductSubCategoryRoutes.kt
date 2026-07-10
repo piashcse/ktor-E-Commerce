@@ -1,16 +1,18 @@
 package com.piashcse.feature.product_sub_category
 
 import com.piashcse.model.request.ProductSubCategoryRequest
-import com.piashcse.utils.extension.paginateQueryParams
-import io.ktor.http.*
+import com.piashcse.utils.extension.*
+
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 /**
  * Public product subcategory routes.
  */
-fun Route.productSubCategoryRoutes(subCategoryService: ProductSubCategoryService) {
+fun Route.productSubCategoryRoutes() {
+    val subCategoryRepo: ProductSubCategoryRepository by inject()
     /**
      * @tag Product-Sub-Category
      * @description Retrieve subcategories for a specific category
@@ -18,27 +20,21 @@ fun Route.productSubCategoryRoutes(subCategoryService: ProductSubCategoryService
     get {
         val categoryId = call.requireQueryParameter("categoryId")
         val (limit, offset) = call.paginateQueryParams()
-        call.respond(
-            HttpStatusCode.OK,
-            subCategoryService.getProductSubCategory(categoryId, limit, offset),
-        )
+        call.respondOk(subCategoryRepo.getProductSubCategory(categoryId, limit, offset))
     }
 }
 
 /**
  * Admin product subcategory management routes.
  */
-fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategoryService) {
+fun Route.productSubCategoryAdminRoutes() {
+    val subCategoryRepo: ProductSubCategoryRepository by inject()
     /**
      * @tag Product-Sub-Category
      * @description Admin: Create a new product subcategory
      */
     post {
-        val requestBody = call.receive<ProductSubCategoryRequest>()
-        call.respond(
-            HttpStatusCode.Created,
-            subCategoryService.addProductSubCategory(requestBody),
-        )
+        call.respondCreated(subCategoryRepo.addProductSubCategory(call.receive<ProductSubCategoryRequest>()))
     }
 
     /**
@@ -48,10 +44,7 @@ fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategorySe
     put("{id}") {
         val id = call.requirePathParameter("id")
         val name = call.requireQueryParameter("name")
-        call.respond(
-            HttpStatusCode.OK,
-            subCategoryService.updateProductSubCategory(id, name),
-        )
+        call.respondOk(subCategoryRepo.updateProductSubCategory(id, name))
     }
 
     /**
@@ -60,9 +53,6 @@ fun Route.productSubCategoryAdminRoutes(subCategoryService: ProductSubCategorySe
      */
     delete("{id}") {
         val id = call.requirePathParameter("id")
-        call.respond(
-            HttpStatusCode.OK,
-            subCategoryService.deleteProductSubCategory(id),
-        )
+        call.respondOk(subCategoryRepo.deleteProductSubCategory(id))
     }
 }

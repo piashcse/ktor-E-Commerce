@@ -51,6 +51,14 @@ class ProductRepositoryImpl : ProductRepository {
         return orderBy(col to if (filter.sortOrder?.lowercase() == "asc") SortOrder.ASC else SortOrder.DESC)
     }
 
+    private fun toProductPaginatedResponse(query: Query, limit: Int, offset: Int): PaginatedResponse<ProductResponse> {
+        val (totalCount, rows) = query.toPaginatedList(limit, offset) { it }
+        val data = withPreloadedImages(rows) { row, images ->
+            ProductDAO.wrapRow(row).toProductResponse(images[ProductDAO.wrapRow(row).id.value])
+        }
+        return PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
+    }
+
     private fun withPreloadedImages(
         rows: List<ResultRow>,
         mapper: (ResultRow, Map<String, List<String>>) -> ProductResponse,
@@ -123,35 +131,19 @@ class ProductRepositoryImpl : ProductRepository {
     }
 
     override suspend fun getProducts(filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
-        val query = ProductTable.selectAll().andWhere { ProductTable.status eq ProductStatus.ACTIVE }
-            .applyProductFilters(filter)
-        val (totalCount, rows) = query.toPaginatedList(filter.limit, filter.offset) { it }
-        val data = withPreloadedImages(rows) { row, images ->
-            ProductDAO.wrapRow(row).toProductResponse(images[ProductDAO.wrapRow(row).id.value])
-        }
-        PaginatedResponse(data, PaginationMetadata(totalCount, filter.limit, filter.offset))
+        toProductPaginatedResponse(ProductTable.selectAll().andWhere { ProductTable.status eq ProductStatus.ACTIVE }.applyProductFilters(filter), filter.limit, filter.offset)
     }
 
     override suspend fun getProductsByShop(shopId: String, filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
-        val query = ProductTable.selectAll().andWhere {
+        toProductPaginatedResponse(ProductTable.selectAll().andWhere {
             (ProductTable.shopId eq shopId) and (ProductTable.status eq ProductStatus.ACTIVE)
-        }.applyProductFilters(filter)
-        val (totalCount, rows) = query.toPaginatedList(filter.limit, filter.offset) { it }
-        val data = withPreloadedImages(rows) { row, images ->
-            ProductDAO.wrapRow(row).toProductResponse(images[ProductDAO.wrapRow(row).id.value])
-        }
-        PaginatedResponse(data, PaginationMetadata(totalCount, filter.limit, filter.offset))
+        }.applyProductFilters(filter), filter.limit, filter.offset)
     }
 
     override suspend fun getProductsByUser(userId: String, filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
-        val query = ProductTable.selectAll().andWhere {
+        toProductPaginatedResponse(ProductTable.selectAll().andWhere {
             (ProductTable.userId eq userId) and (ProductTable.status eq ProductStatus.ACTIVE)
-        }.applyProductFilters(filter)
-        val (totalCount, rows) = query.toPaginatedList(filter.limit, filter.offset) { it }
-        val data = withPreloadedImages(rows) { row, images ->
-            ProductDAO.wrapRow(row).toProductResponse(images[ProductDAO.wrapRow(row).id.value])
-        }
-        PaginatedResponse(data, PaginationMetadata(totalCount, filter.limit, filter.offset))
+        }.applyProductFilters(filter), filter.limit, filter.offset)
     }
 
     override suspend fun getProductDetail(productId: String): ProductResponse = query {
@@ -183,11 +175,7 @@ class ProductRepositoryImpl : ProductRepository {
         if (!searchRequest.categoryId.isNullOrEmpty()) q.andWhere { ProductTable.categoryId eq EntityID(searchRequest.categoryId, ProductCategoryTable) }
         searchRequest.minPrice?.let { q.andWhere { ProductTable.price greaterEq BigDecimal.valueOf(it) } }
         searchRequest.maxPrice?.let { q.andWhere { ProductTable.price lessEq BigDecimal.valueOf(it) } }
-        val (totalCount, rows) = q.toPaginatedList(searchRequest.limit, searchRequest.offset) { it }
-        val data = withPreloadedImages(rows) { row, images ->
-            ProductDAO.wrapRow(row).toProductResponse(images[ProductDAO.wrapRow(row).id.value])
-        }
-        PaginatedResponse(data, PaginationMetadata(totalCount, searchRequest.limit, searchRequest.offset))
+        toProductPaginatedResponse(q, searchRequest.limit, searchRequest.offset)
     }
 
     override suspend fun getProductsByCategory(categoryId: String): PaginatedResponse<ProductResponse> = query {

@@ -7,6 +7,7 @@ import com.piashcse.database.entities.*
 import com.piashcse.mapper.toUserResponse
 import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
+import com.piashcse.model.response.ResetResult
 import com.piashcse.utils.email.EmailSender
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.InvalidCredentialsException
@@ -35,11 +36,8 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
     }
 
     suspend fun login(loginRequest: LoginRequest): LoginResponse {
-        if (UserType.fromString(loginRequest.userType) == null)
-            throw ValidationException(Message.Validation.INVALID_USER_TYPE)
-
         val userTypeEnum = UserType.fromString(loginRequest.userType)
-            ?: loginRequest.email.throwNotFound("User")
+            ?: throw ValidationException(Message.Validation.INVALID_USER_TYPE)
 
         authRepo.getLoginAttempt(loginRequest.email, userTypeEnum)?.let {
             if (it.isLocked) throw ValidationException(Message.Auth.accountLocked(ACCOUNT_LOCKOUT_MINUTES))
@@ -87,12 +85,9 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
         return isValid
     }
 
-    suspend fun changeUserType(currentUserId: String, targetUserId: String, newUserType: UserType): Boolean =
-        authRepo.changeUserType(currentUserId, targetUserId, newUserType)
-
-    suspend fun deactivateUser(currentUserId: String, targetUserId: String): Boolean =
-        authRepo.deactivateUser(currentUserId, targetUserId)
-
-    suspend fun activateUser(currentUserId: String, targetUserId: String): Boolean =
-        authRepo.activateUser(currentUserId, targetUserId)
+    suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest) {
+        val user = authRepo.findResetUserByEmail(forgotPasswordRequest.email, forgotPasswordRequest.userType)
+        authRepo.forgotPassword(forgotPasswordRequest)
+        EmailSender.sendOtp(user.email, "", "Password Reset")
+    }
 }

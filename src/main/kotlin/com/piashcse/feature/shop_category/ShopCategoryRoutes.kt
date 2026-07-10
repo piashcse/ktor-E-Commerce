@@ -1,25 +1,24 @@
 package com.piashcse.feature.shop_category
 
 import com.piashcse.model.request.ShopCategoryRequest
-import io.ktor.http.*
+
+import com.piashcse.utils.extension.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 /**
  * Admin shop category management routes.
  */
-fun Route.shopCategoryAdminRoutes(shopCategoryService: ShopCategoryService) {
+fun Route.shopCategoryAdminRoutes() {
+    val shopCategoryRepo: ShopCategoryRepository by inject()
     /**
      * @tag Shop-Category
      * @description Admin: Create a new shop category
      */
     post {
-        val requestBody = call.receive<ShopCategoryRequest>()
-        call.respond(
-            HttpStatusCode.Created,
-            shopCategoryService.createCategory(requestBody.name),
-        )
+        call.respondCreated(shopCategoryRepo.createCategory(call.receive<ShopCategoryRequest>().name))
     }
 
     /**
@@ -29,10 +28,7 @@ fun Route.shopCategoryAdminRoutes(shopCategoryService: ShopCategoryService) {
     put("{id}") {
         val id = call.requirePathParameter("id")
         val name = call.requireQueryParameter("name")
-        call.respond(
-            HttpStatusCode.OK,
-            shopCategoryService.updateCategory(id, name),
-        )
+        call.respondOk(shopCategoryRepo.updateCategory(id, name))
     }
 
     /**
@@ -41,9 +37,6 @@ fun Route.shopCategoryAdminRoutes(shopCategoryService: ShopCategoryService) {
      */
     delete("{id}") {
         val id = call.requirePathParameter("id")
-        call.respond(
-            HttpStatusCode.OK,
-            shopCategoryService.deleteCategory(id),
-        )
+        call.respondOk(shopCategoryRepo.deleteCategory(id))
     }
 }

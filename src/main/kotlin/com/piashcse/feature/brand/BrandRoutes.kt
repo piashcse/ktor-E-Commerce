@@ -3,16 +3,18 @@ package com.piashcse.feature.brand
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.BrandRequest
 import com.piashcse.plugin.requireRole
-import com.piashcse.utils.extension.paginateQueryParams
-import io.ktor.http.*
+import com.piashcse.utils.extension.*
+
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 /**
  * Public brand routes.
  */
-fun Route.brandRoutes(brandService: BrandService) {
+fun Route.brandRoutes() {
+    val brandRepo: BrandRepository by inject()
     requireRole(UserType.CUSTOMER, UserType.SELLER, UserType.ADMIN) {
         /**
          * @tag Brand
@@ -20,10 +22,7 @@ fun Route.brandRoutes(brandService: BrandService) {
          */
         get {
             val (limit, offset) = call.paginateQueryParams()
-            call.respond(
-                HttpStatusCode.OK,
-                brandService.getBrands(limit, offset),
-            )
+            call.respondOk(brandRepo.getBrands(limit, offset))
         }
     }
 }
@@ -31,17 +30,14 @@ fun Route.brandRoutes(brandService: BrandService) {
 /**
  * Admin brand management routes.
  */
-fun Route.brandAdminRoutes(brandService: BrandService) {
+fun Route.brandAdminRoutes() {
+    val brandRepo: BrandRepository by inject()
     /**
      * @tag Brand
      * @description Admin: Create a new brand
      */
     post {
-        val requestBody = call.receive<BrandRequest>()
-        call.respond(
-            HttpStatusCode.Created,
-            brandService.createBrand(requestBody.name),
-        )
+        call.respondCreated(brandRepo.createBrand(call.receive<BrandRequest>().name))
     }
 
     /**
@@ -51,10 +47,7 @@ fun Route.brandAdminRoutes(brandService: BrandService) {
     put("{id}") {
         val id = call.requirePathParameter("id")
         val name = call.requireQueryParameter("name")
-        call.respond(
-            HttpStatusCode.OK,
-            brandService.updateBrand(id, name),
-        )
+        call.respondOk(brandRepo.updateBrand(id, name))
     }
 
     /**
@@ -63,9 +56,6 @@ fun Route.brandAdminRoutes(brandService: BrandService) {
      */
     delete("{id}") {
         val id = call.requirePathParameter("id")
-        call.respond(
-            HttpStatusCode.OK,
-            brandService.deleteBrand(id),
-        )
+        call.respondOk(brandRepo.deleteBrand(id))
     }
 }

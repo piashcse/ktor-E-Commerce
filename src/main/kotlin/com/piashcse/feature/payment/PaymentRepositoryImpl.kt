@@ -27,7 +27,7 @@ class PaymentRepositoryImpl : PaymentRepository {
         query {
             val order =
                 OrderDAO.findById(paymentRequest.orderId)
-                    ?: return@query paymentRequest.orderId.throwNotFound("Order")
+                    ?: paymentRequest.orderId.throwNotFound("Order")
 
             val orderTotal = order.total
             val paymentAmount = BigDecimal(paymentRequest.amount.toString())

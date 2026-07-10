@@ -10,13 +10,16 @@ class ProductCrudService(
     private val productRepo: ProductRepository,
     private val cache: Cache = CacheService.cache,
 ) {
+    companion object {
+        private const val CACHE_KEY_PATTERN = "products:.*"
+    }
     suspend fun createProduct(
         userId: String,
         shopId: String?,
         productRequest: ProductRequest,
     ): ProductResponse =
         productRepo.createProduct(userId, shopId, productRequest)
-            .also { cache.invalidatePattern("products:.*") }
+            .also { cache.invalidatePattern(CACHE_KEY_PATTERN) }
 
     suspend fun updateProduct(
         userId: String,
@@ -24,13 +27,13 @@ class ProductCrudService(
         updateProduct: UpdateProductRequest,
     ): ProductResponse =
         productRepo.updateProduct(userId, productId, updateProduct)
-            .also { cache.invalidatePattern("products:.*") }
+            .also { cache.invalidatePattern(CACHE_KEY_PATTERN) }
 
     suspend fun deleteProduct(userId: String, productId: String): String =
         productRepo.deleteProduct(userId, productId)
-            .also { cache.invalidatePattern("products:.*") }
+            .also { cache.invalidatePattern(CACHE_KEY_PATTERN) }
 
     suspend fun deleteProductAsAdmin(productId: String): String =
         productRepo.deleteProductAsAdmin(productId)
-            .also { cache.invalidatePattern("products:.*") }
+            .also { cache.invalidatePattern(CACHE_KEY_PATTERN) }
 }

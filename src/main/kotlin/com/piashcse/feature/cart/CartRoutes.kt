@@ -2,28 +2,25 @@ package com.piashcse.feature.cart
 
 import com.piashcse.model.request.CartRequest
 import com.piashcse.plugin.requireRole
-import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
-import io.ktor.http.*
+import com.piashcse.utils.extension.*
+
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 /**
  * Customer shopping cart routes.
  */
-fun Route.cartRoutes(cartService: CartService) {
+fun Route.cartRoutes() {
+    val cartRepo: CartRepository by inject()
     requireRole {
         /**
          * @tag Cart
          * @description Add an item to the authenticated user's cart
          */
         post {
-            val requestBody = call.receive<CartRequest>()
-            call.respond(
-                HttpStatusCode.Created,
-                cartService.createCart(call.currentUserId, requestBody.productId, requestBody.quantity),
-            )
+            call.respondCreated(call.receive<CartRequest>().let { cartRepo.createCart(call.currentUserId, it.productId, it.quantity) })
         }
 
         /**
@@ -32,10 +29,7 @@ fun Route.cartRoutes(cartService: CartService) {
          */
         get {
             val (limit, offset) = call.paginateQueryParams()
-            call.respond(
-                HttpStatusCode.OK,
-                cartService.getCartItems(call.currentUserId, limit, offset),
-            )
+            call.respondOk(cartRepo.getCartItems(call.currentUserId, limit, offset))
         }
 
         /**
@@ -43,13 +37,8 @@ fun Route.cartRoutes(cartService: CartService) {
          * @description Set the absolute quantity of an item in the cart (0 removes the item)
          */
         put("update") {
-            val requestBody = call.receive<CartRequest>()
-            val result = cartService.updateCartQuantity(call.currentUserId, requestBody.productId, requestBody.quantity)
-            if (result != null) {
-                call.respond(HttpStatusCode.OK, result)
-            } else {
-                call.respond(HttpStatusCode.OK, mapOf("message" to "Item removed from cart"))
-            }
+            val result = call.receive<CartRequest>().let { cartRepo.updateCartQuantity(call.currentUserId, it.productId, it.quantity) }
+            call.respondOk(result ?: mapOf("message" to "Item removed from cart"))
         }
 
         /**
@@ -58,10 +47,7 @@ fun Route.cartRoutes(cartService: CartService) {
          */
         delete("remove") {
             val productId = call.requireQueryParameter("productId")
-            call.respond(
-                HttpStatusCode.OK,
-                cartService.removeCartItem(call.currentUserId, productId),
-            )
+            call.respondOk(cartRepo.removeCartItem(call.currentUserId, productId))
         }
 
         /**
@@ -69,10 +55,7 @@ fun Route.cartRoutes(cartService: CartService) {
          * @description Remove all items from the authenticated user's cart
          */
         delete("all") {
-            call.respond(
-                HttpStatusCode.OK,
-                cartService.clearCart(call.currentUserId),
-            )
+            call.respondOk(cartRepo.clearCart(call.currentUserId))
         }
 
         /**
@@ -80,10 +63,7 @@ fun Route.cartRoutes(cartService: CartService) {
          * @description Retrieve a summary of the cart (totals, counts)
          */
         get("summary") {
-            call.respond(
-                HttpStatusCode.OK,
-                cartService.getCartSummary(call.currentUserId),
-            )
+            call.respondOk(cartRepo.getCartSummary(call.currentUserId))
         }
     }
 }

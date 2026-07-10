@@ -1,16 +1,19 @@
 package com.piashcse.feature.dashboard
 
-import io.ktor.http.*
+
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import com.piashcse.utils.extension.*
+import org.koin.ktor.ext.inject
 
-fun Route.dashboardAdminRoutes(service: DashboardService) {
+fun Route.dashboardAdminRoutes() {
+    val repo: DashboardRepository by inject()
     /**
      * @tag Dashboard
      * @description Get summary dashboard stats (revenue, orders, users, products, shops)
      */
     get {
-        call.respond(HttpStatusCode.OK, service.getDashboardStats())
+        call.respondOk(repo.getDashboardStats())
     }
 
     /**
@@ -18,10 +21,7 @@ fun Route.dashboardAdminRoutes(service: DashboardService) {
      * @description Get detailed revenue stats with optional date range and daily breakdown
      */
     get("revenue") {
-        call.respond(
-            HttpStatusCode.OK,
-            service.getRevenueStats(call.queryParameters["startDate"], call.queryParameters["endDate"]),
-        )
+        call.respondOk(repo.getRevenueStats(call.queryParameters["startDate"], call.queryParameters["endDate"]))
     }
 
     /**
@@ -29,7 +29,7 @@ fun Route.dashboardAdminRoutes(service: DashboardService) {
      * @description Get order statistics with status distribution
      */
     get("orders") {
-        call.respond(HttpStatusCode.OK, service.getOrderStats(call.queryParameters["status"]))
+        call.respondOk(repo.getOrderStats(call.queryParameters["status"]))
     }
 
     /**
@@ -37,7 +37,7 @@ fun Route.dashboardAdminRoutes(service: DashboardService) {
      * @description Get user growth analytics over a period
      */
     get("users") {
-        call.respond(HttpStatusCode.OK, service.getUserGrowth(call.queryParameters["days"]?.toIntOrNull()))
+        call.respondOk(repo.getUserGrowth(call.queryParameters["days"]?.toIntOrNull()))
     }
 
     /**
@@ -45,7 +45,7 @@ fun Route.dashboardAdminRoutes(service: DashboardService) {
      * @description Get top-selling products sorted by sales volume
      */
     get("top-products") {
-        call.respond(HttpStatusCode.OK, service.getTopProducts(call.queryParameters["limit"]?.toIntOrNull()))
+        call.respondOk(repo.getTopProducts(call.queryParameters["limit"]?.toIntOrNull()))
     }
 
     /**
@@ -53,6 +53,6 @@ fun Route.dashboardAdminRoutes(service: DashboardService) {
      * @description Get recent activity feed (orders + user registrations)
      */
     get("activity") {
-        call.respond(HttpStatusCode.OK, service.getRecentActivity(call.queryParameters["limit"]?.toIntOrNull()))
+        call.respondOk(repo.getRecentActivity(call.queryParameters["limit"]?.toIntOrNull()))
     }
 }

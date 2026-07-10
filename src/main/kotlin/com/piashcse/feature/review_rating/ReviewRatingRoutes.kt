@@ -2,17 +2,18 @@ package com.piashcse.feature.review_rating
 
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.plugin.customerAuth
-import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
-import io.ktor.http.*
+import com.piashcse.utils.extension.*
+
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 /**
  * Product review and rating routes.
  */
-fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
+fun Route.reviewRatingRoutes() {
+    val reviewRatingRepo: ReviewRatingRepository by inject()
     /**
      * @tag Review-Rating
      * @description Retrieve reviews and ratings for a specific product
@@ -20,10 +21,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
     get {
         val productId = call.requireQueryParameter("productId")
         val (limit, offset) = call.paginateQueryParams()
-        call.respond(
-            HttpStatusCode.OK,
-            reviewRatingService.getReviewRating(productId, limit, offset),
-        )
+        call.respondOk(reviewRatingRepo.getReviewRating(productId, limit, offset))
     }
 
     customerAuth {
@@ -32,11 +30,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
          * @description Submit a new review and rating for a product
          */
         post {
-            val requestBody = call.receive<ReviewRatingRequest>()
-            call.respond(
-                HttpStatusCode.Created,
-                reviewRatingService.addReviewRating(call.currentUserId, requestBody),
-            )
+            call.respondCreated(reviewRatingRepo.addReviewRating(call.currentUserId, call.receive<ReviewRatingRequest>()))
         }
 
         /**
@@ -47,15 +41,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
             val id = call.requirePathParameter("id")
             val review = call.requireQueryParameter("review")
             val rating = call.requireQueryParameter("rating")
-            call.respond(
-                HttpStatusCode.OK,
-                reviewRatingService.updateReviewRating(
-                    call.currentUserId,
-                    id,
-                    review,
-                    rating.toInt(),
-                ),
-            )
+            call.respondOk(reviewRatingRepo.updateReviewRating(call.currentUserId, id, review, rating.toInt()))
         }
 
         /**
@@ -64,10 +50,7 @@ fun Route.reviewRatingRoutes(reviewRatingService: ReviewRatingService) {
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            call.respond(
-                HttpStatusCode.OK,
-                reviewRatingService.deleteReviewRating(call.currentUserId, id),
-            )
+            call.respondOk(reviewRatingRepo.deleteReviewRating(call.currentUserId, id))
         }
     }
 }

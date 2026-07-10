@@ -42,10 +42,8 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
         query {
             if (reviewRating.rating < 1 || reviewRating.rating > 5)
                 throw ValidationException(Message.Validation.RATING_OUT_OF_RANGE)
-            val isReviewRatingExist =
-                ReviewRatingDAO.find { ReviewRatingTable.userId eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
-                    .singleOrNull()
-            isReviewRatingExist?.let {
+            ReviewRatingDAO.find { ReviewRatingTable.userId eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
+                .singleOrNull()?.let {
                 throw it.productId.value.throwConflict("Product")
             } ?: ReviewRatingDAO.new {
                 this.userId = EntityID(userId, UserTable)
@@ -64,11 +62,8 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
         query {
             if (rating < 1 || rating > 5)
                 throw ValidationException(Message.Validation.RATING_OUT_OF_RANGE)
-            val isReviewRatingExist =
-                ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
-                    .singleOrNull()
-
-            isReviewRatingExist?.let {
+            ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
+                .singleOrNull()?.let {
                 it.verifyOwnership(userId, "review") { r -> r.userId.value }
                 it.reviewText = review
                 it.rating = rating
@@ -78,10 +73,8 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
 
     override suspend fun deleteReviewRating(userId: String, reviewId: String): String =
         query {
-            val isReviewRatingExist =
-                ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
-                    .singleOrNull()
-            isReviewRatingExist?.let {
+            ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
+                .singleOrNull()?.let {
                 it.verifyOwnership(userId, "review") { r -> r.userId.value }
                 it.delete()
                 reviewId

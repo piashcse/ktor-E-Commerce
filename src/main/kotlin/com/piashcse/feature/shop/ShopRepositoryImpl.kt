@@ -26,10 +26,6 @@ class ShopRepositoryImpl : ShopRepository {
         shopRequest: ShopRequest,
     ): ShopResponse =
         query {
-            val user =
-                UserDAO.findById(userId)
-                    ?: userId.throwNotFound("User")
-
             val seller = findSellerByUserId(userId)
                 ?: throw NotFoundException(Message.Errors.SELLER_REQUIRED)
 
@@ -176,57 +172,17 @@ class ShopRepositoryImpl : ShopRepository {
                 }
         }
 
-    override suspend fun approveShop(shopId: String): ShopResponse =
-        query {
-            val shop =
-                ShopDAO.findById(shopId)
-                    ?: shopId.throwNotFound("ShopResponse")
+    private suspend fun setShopStatus(shopId: String, update: ShopDAO.() -> Unit): ShopResponse = query {
+        val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("ShopResponse")
+        shop.update()
+        shop.toShopResponse()
+    }
 
-            shop.apply {
-                status = ShopStatus.APPROVED
-            }
+    override suspend fun approveShop(shopId: String) = setShopStatus(shopId) { status = ShopStatus.APPROVED }
 
-            shop.toShopResponse()
-        }
+    override suspend fun rejectShop(shopId: String) = setShopStatus(shopId) { status = ShopStatus.REJECTED }
 
-    override suspend fun rejectShop(shopId: String): ShopResponse =
-        query {
-            val shop =
-                ShopDAO.findById(shopId)
-                    ?: shopId.throwNotFound("ShopResponse")
+    override suspend fun suspendShop(shopId: String) = setShopStatus(shopId) { status = ShopStatus.SUSPENDED }
 
-            shop.apply {
-                status = ShopStatus.REJECTED
-            }
-
-            shop.toShopResponse()
-        }
-
-    override suspend fun suspendShop(shopId: String): ShopResponse =
-        query {
-            val shop =
-                ShopDAO.findById(shopId)
-                    ?: shopId.throwNotFound("ShopResponse")
-
-            shop.apply {
-                status = ShopStatus.SUSPENDED
-            }
-
-            shop.toShopResponse()
-        }
-
-    override suspend fun activateShop(shopId: String): ShopResponse =
-        query {
-            val shop =
-                ShopDAO.findById(shopId)
-                    ?: shopId.throwNotFound("ShopResponse")
-
-            shop.apply {
-                if (shop.status == ShopStatus.SUSPENDED) {
-                    status = ShopStatus.APPROVED
-                }
-            }
-
-            shop.toShopResponse()
-        }
+    override suspend fun activateShop(shopId: String) = setShopStatus(shopId) { if (status == ShopStatus.SUSPENDED) status = ShopStatus.APPROVED }
 }

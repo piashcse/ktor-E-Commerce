@@ -1,39 +1,39 @@
 package com.piashcse.feature.product_category
 
-import com.piashcse.utils.extension.paginateQueryParams
-import io.ktor.http.*
+import com.piashcse.utils.extension.*
+
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 /**
  * Public product category routes.
  */
-fun Route.productCategoryRoutes(productCategoryService: ProductCategoryService) {
+fun Route.productCategoryRoutes() {
+    val productCategoryRepo: ProductCategoryRepository by inject()
     /**
      * @tag Product-Category
      * @description Retrieve a paginated list of all product categories
      */
     get {
         val (limit, offset) = call.paginateQueryParams()
-        call.respond(
-            HttpStatusCode.OK,
-            productCategoryService.getCategories(limit, offset),
-        )
+        call.respondOk(productCategoryRepo.getCategories(limit, offset))
     }
 }
 
 /**
  * Admin product category management routes.
  */
-fun Route.productCategoryAdminRoutes(productCategoryService: ProductCategoryService) {
+fun Route.productCategoryAdminRoutes() {
+    val productCategoryRepo: ProductCategoryRepository by inject()
     /**
      * @tag Product-Category
      * @description Admin: Create a new product category
      */
     post {
         val name = call.requireQueryParameter("name")
-        call.respond(HttpStatusCode.Created, productCategoryService.createCategory(name))
+        call.respondCreated(productCategoryRepo.createCategory(name))
     }
 
     /**
@@ -43,7 +43,7 @@ fun Route.productCategoryAdminRoutes(productCategoryService: ProductCategoryServ
     put("{id}") {
         val id = call.requirePathParameter("id")
         val name = call.requireQueryParameter("name")
-        call.respond(HttpStatusCode.OK, productCategoryService.updateCategory(id, name))
+        call.respondOk(productCategoryRepo.updateCategory(id, name))
     }
 
     /**
@@ -52,6 +52,6 @@ fun Route.productCategoryAdminRoutes(productCategoryService: ProductCategoryServ
      */
     delete("{id}") {
         val id = call.requirePathParameter("id")
-        call.respond(HttpStatusCode.OK, productCategoryService.deleteCategory(id))
+        call.respondOk(productCategoryRepo.deleteCategory(id))
     }
 }

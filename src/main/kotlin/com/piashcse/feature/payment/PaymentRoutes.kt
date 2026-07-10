@@ -2,27 +2,25 @@ package com.piashcse.feature.payment
 
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.plugin.customerAuth
-import com.piashcse.utils.extension.paginateQueryParams
-import io.ktor.http.*
+import com.piashcse.utils.extension.*
+
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 /**
  * Customer payment routes.
  */
-fun Route.paymentRoutes(paymentService: PaymentService) {
+fun Route.paymentRoutes() {
+    val paymentRepo: PaymentRepository by inject()
     customerAuth {
         /**
          * @tag Payment
          * @description Create a new payment record for an order
          */
         post {
-            val requestBody = call.receive<PaymentRequest>()
-            call.respond(
-                HttpStatusCode.Created,
-                paymentService.createPayment(requestBody),
-            )
+            call.respondCreated(paymentRepo.createPayment(call.receive<PaymentRequest>()))
         }
 
         /**
@@ -31,10 +29,7 @@ fun Route.paymentRoutes(paymentService: PaymentService) {
          */
         get("{id}") {
             val id = call.requirePathParameter("id")
-            call.respond(
-                HttpStatusCode.OK,
-                paymentService.getPaymentById(id),
-            )
+            call.respondOk(paymentRepo.getPaymentById(id))
         }
 
         /**
@@ -44,10 +39,7 @@ fun Route.paymentRoutes(paymentService: PaymentService) {
         get("order/{orderId}") {
             val orderId = call.requirePathParameter("orderId")
             val (limit, offset) = call.paginateQueryParams()
-            call.respond(
-                HttpStatusCode.OK,
-                paymentService.getPaymentsByOrderId(orderId, limit, offset),
-            )
+            call.respondOk(paymentRepo.getPaymentsByOrderId(orderId, limit, offset))
         }
     }
 }

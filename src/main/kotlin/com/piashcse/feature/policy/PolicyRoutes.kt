@@ -2,45 +2,40 @@ package com.piashcse.feature.policy
 
 import com.piashcse.constants.PolicyType
 import com.piashcse.model.request.CreatePolicyRequest
+
 import io.ktor.http.*
-import io.ktor.server.application.*
+import com.piashcse.utils.extension.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.koin.ktor.ext.inject
 
 /**
  * Public policy routes.
  */
-fun Route.policyRoutes(policyService: PolicyService) {
+fun Route.policyRoutes() {
+    val policyRepo: PolicyRepository by inject()
     /**
      * @tag Privacy-Policy
      * @description Retrieve the latest active version of a policy by type
      */
     get("{policyType}") {
-        val policyTypeParam = call.requirePathParameter("policyType")
-        val policyType =
-            try {
-                PolicyType.valueOf(policyTypeParam.uppercase())
-            } catch (e: IllegalArgumentException) {
-                return@get call.respond(HttpStatusCode.BadRequest, "Invalid policy type")
-            }
-
-        val policy = policyService.getPolicyByType(policyType)
-        call.respond(HttpStatusCode.OK, policy)
+        val policyType = call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type")
+        call.respondOk(policyRepo.getPolicyByType(policyType))
     }
 }
 
 /**
  * Admin policy management routes.
  */
-fun Route.policyAdminRoutes(policyService: PolicyService) {
+fun Route.policyAdminRoutes() {
+    val policyRepo: PolicyRepository by inject()
     /**
      * @tag Privacy-Policy
      * @description Admin: Create a new policy document or new version
      */
     post {
-        val requestBody = call.receive<CreatePolicyRequest>()
-        call.respond(HttpStatusCode.Created, policyService.createPolicy(requestBody))
+        call.respondCreated(policyRepo.createPolicy(call.receive<CreatePolicyRequest>()))
     }
 
     /**
@@ -48,13 +43,7 @@ fun Route.policyAdminRoutes(policyService: PolicyService) {
      * @description Admin: Retrieve all versions of a specific policy type
      */
     get("{policyType}/history") {
-        val policyTypeParam = call.requirePathParameter("policyType")
-        val policyType =
-            try {
-                PolicyType.valueOf(policyTypeParam.uppercase())
-            } catch (e: IllegalArgumentException) {
-                return@get call.respond(HttpStatusCode.BadRequest, "Invalid policy type")
-            }
-        call.respond(HttpStatusCode.OK, policyService.getAllPolicies(policyType))
+        val policyType = call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type")
+        call.respondOk(policyRepo.getAllPolicies(policyType))
     }
 }
