@@ -13,6 +13,10 @@ data class ProductSearchRequest(
     val maxPrice: Double?,
     val minPrice: Double?,
     val categoryId: String?,
+    val brandId: String? = null,
+    val sortBy: String? = "relevance",
+    val sortOrder: String? = "desc",
+    val useFuzzy: Boolean? = true,
 ) {
     init {
         validate(this) {

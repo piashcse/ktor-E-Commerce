@@ -37,7 +37,7 @@ fun Route.productRoutes() {
 
     /**
      * @tag Product
-     * @description Search for products by name
+     * @description Search for products by name with fuzzy matching, faceted aggregation, and ranking
      */
     get("search") {
         val (limit, offset) = call.paginateQueryParams(defaultLimit = 10)
@@ -49,8 +49,12 @@ fun Route.productRoutes() {
                 maxPrice = call.request.queryParameters["maxPrice"]?.toDoubleOrNull(),
                 minPrice = call.request.queryParameters["minPrice"]?.toDoubleOrNull(),
                 categoryId = call.request.queryParameters["categoryId"],
+                brandId = call.request.queryParameters["brandId"],
+                sortBy = call.request.queryParameters["sortBy"] ?: "relevance",
+                sortOrder = call.request.queryParameters["sortOrder"] ?: "desc",
+                useFuzzy = call.request.queryParameters["useFuzzy"]?.toBooleanStrictOrNull() ?: true,
             )
-        call.respondOk(productRepo.searchProduct(queryParams))
+        call.respondOk(productCatalogService.searchProduct(queryParams))
     }
 }
 

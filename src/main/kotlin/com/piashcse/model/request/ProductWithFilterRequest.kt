@@ -13,7 +13,7 @@ data class ProductWithFilterRequest(
     val categoryId: String?,
     val subCategoryId: String?,
     val brandId: String?,
-    val sortBy: String? = null, // price, createdAt, name
+    val sortBy: String? = null, // price, createdAt, name, best-selling, top-rated, relevance
     val sortOrder: String? = "desc", // asc, desc
 ) {
     init {
