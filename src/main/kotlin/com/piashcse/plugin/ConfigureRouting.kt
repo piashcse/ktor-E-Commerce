@@ -40,8 +40,8 @@ import com.piashcse.feature.wishlist.wishListRoutes
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.routing.openapi.hide
-import io.ktor.utils.io.ExperimentalKtorApi
+import io.ktor.server.routing.openapi.*
+import io.ktor.utils.io.*
 
 @OptIn(ExperimentalKtorApi::class)
 fun Application.configureRoute() {

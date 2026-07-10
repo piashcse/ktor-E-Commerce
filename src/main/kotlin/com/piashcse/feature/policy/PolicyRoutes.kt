@@ -2,11 +2,10 @@ package com.piashcse.feature.policy
 
 import com.piashcse.constants.PolicyType
 import com.piashcse.model.request.CreatePolicyRequest
-
-import io.ktor.http.*
-import com.piashcse.utils.extension.*
+import com.piashcse.utils.extension.parseEnum
+import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 

@@ -4,7 +4,6 @@ import com.piashcse.constants.ShopStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.model.response.ShopResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import java.math.BigDecimal
 

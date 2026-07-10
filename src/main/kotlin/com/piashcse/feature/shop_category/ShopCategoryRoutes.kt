@@ -1,10 +1,9 @@
 package com.piashcse.feature.shop_category
 
 import com.piashcse.model.request.ShopCategoryRequest
-
-import com.piashcse.utils.extension.*
+import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 

@@ -2,7 +2,9 @@ package com.piashcse.feature.shop
 
 import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
-import com.piashcse.database.entities.*
+import com.piashcse.database.entities.ShopCategoryTable
+import com.piashcse.database.entities.ShopDAO
+import com.piashcse.database.entities.ShopTable
 import com.piashcse.mapper.toShopResponse
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
@@ -10,7 +12,6 @@ import com.piashcse.model.response.ShopResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ConflictException
-import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.NotFoundException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and

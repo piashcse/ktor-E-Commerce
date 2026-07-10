@@ -1,10 +1,6 @@
 package com.piashcse.mapper
 
-import com.piashcse.database.entities.Cart
-import com.piashcse.database.entities.CartItemDAO
-import com.piashcse.database.entities.ProductDAO
-import com.piashcse.database.entities.WishList
-import com.piashcse.database.entities.WishListDAO
+import com.piashcse.database.entities.*
 import com.piashcse.model.response.CartItemSummary
 import com.piashcse.model.response.ProductResponse
 import java.math.BigDecimal

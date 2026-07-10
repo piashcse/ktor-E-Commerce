@@ -5,9 +5,9 @@ import com.piashcse.constants.UserType
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
-import com.piashcse.utils.extension.*
-
-import io.ktor.server.application.*
+import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.extension.parseEnum
+import com.piashcse.utils.extension.respondOk
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*

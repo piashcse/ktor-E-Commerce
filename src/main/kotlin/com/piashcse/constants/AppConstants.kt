@@ -23,4 +23,8 @@ object AppConstants {
         const val MAX_LIMIT = 100
         const val DEFAULT_OFFSET = 0
     }
+
+    object Authentication {
+        const val JWT_AUTHENTICATOR = "jwt-auth"
+    }
 }

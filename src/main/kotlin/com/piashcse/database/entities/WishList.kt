@@ -4,8 +4,8 @@ import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.model.response.ProductResponse
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import kotlinx.serialization.Serializable
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object WishListTable : BaseIdTable("wishlist") {
     val userId = reference("user_id", UserTable.id).index()

@@ -4,7 +4,6 @@ import com.piashcse.database.entities.AuditLogDAO
 import com.piashcse.database.entities.AuditLogTable
 import com.piashcse.database.entities.UserTable
 import com.piashcse.mapper.toAuditLogResponse
-import com.piashcse.model.response.AuditLogResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query

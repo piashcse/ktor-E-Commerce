@@ -1,5 +1,6 @@
 package com.piashcse.plugin
 
+import com.piashcse.constants.AppConstants.Authentication.JWT_AUTHENTICATOR
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.utils.common.ApiError
@@ -9,12 +10,6 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-/**
- * Architectural DSL for Role-Based Routing.
- * Promotes the Single Authenticator pattern (validating JWT once),
- * followed by Role-Based Access Control (RBAC).
- */
-
 val RoleAuthorizationPlugin =
     createRouteScopedPlugin(
         name = "RoleAuthorizationPlugin",
@@ -23,13 +18,14 @@ val RoleAuthorizationPlugin =
         val allowedRoles = pluginConfig.roles
 
         onCall { call ->
+            if (call.response.isCommitted) return@onCall
+
             val principal = call.principal<JwtTokenRequest>()
             if (principal == null) {
-                call.respond(HttpStatusCode.Unauthorized, "Missing or invalid token")
+                call.respond(HttpStatusCode.Unauthorized, ApiError("Missing or invalid token"))
                 return@onCall
             }
 
-            // If no specific roles required, any valid JWT passes
             if (allowedRoles.isEmpty()) return@onCall
 
             val hasAccess = allowedRoles.any { role -> principal.hasAccessTo(role) }
@@ -41,18 +37,14 @@ val RoleAuthorizationPlugin =
     }
 
 class RoleAuthorizationConfig {
-    var roles: Array<out UserType> = emptyArray()
+    var roles: List<UserType> = emptyList()
 }
 
-/**
- * Explicitly restrict routes to specific UserTypes with hierarchy.
- * Inherently allows ANY valid token if parameters are empty.
- */
 fun Route.requireRole(
     vararg roles: UserType,
     build: Route.() -> Unit,
 ) {
-    authenticate("jwt-auth") {
+    authenticate(JWT_AUTHENTICATOR) {
         val routeWithAuth =
             createChild(
                 object : RouteSelector() {
@@ -63,7 +55,7 @@ fun Route.requireRole(
                 },
             )
         routeWithAuth.install(RoleAuthorizationPlugin) {
-            this.roles = roles
+            this.roles = roles.toList()
         }
         routeWithAuth.build()
     }

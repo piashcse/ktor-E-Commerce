@@ -1,15 +1,14 @@
 package com.piashcse.feature.profile
 
+import com.piashcse.constants.Message
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.plugin.requireRole
-import com.piashcse.constants.Message
 import com.piashcse.service.UploadService
-import com.piashcse.utils.extension.*
+import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.ValidationException
-
 import io.ktor.http.content.*
 import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 

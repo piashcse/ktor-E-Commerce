@@ -5,7 +5,6 @@ import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.timestamp
-import java.time.Instant
 
 object BlacklistedTokenTable : BaseIdTable("blacklisted_token") {
     val token = varchar("token", 1000).uniqueIndex()

@@ -6,10 +6,10 @@ import com.piashcse.feature.shipping_method.ShippingMethodRepository
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.plugin.customerAuth
-import com.piashcse.utils.extension.*
-
+import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
