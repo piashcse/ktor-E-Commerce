@@ -2,6 +2,7 @@ package com.piashcse.feature.profile
 
 import com.piashcse.database.entities.UserProfileDAO
 import com.piashcse.database.entities.UserProfileTable
+import com.piashcse.mapper.toUserProfileResponse
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.model.response.UserProfileResponse
 import com.piashcse.utils.extension.query
@@ -12,7 +13,7 @@ class ProfileRepositoryImpl : ProfileRepository {
     override suspend fun getProfile(userId: String): UserProfileResponse = query {
         val isProfileExist =
             UserProfileDAO.find { UserProfileTable.userId eq userId }.firstOrNull()
-        isProfileExist?.response() ?: userId.throwNotFound("User")
+        isProfileExist?.toUserProfileResponse() ?: userId.throwNotFound("User")
     }
 
     override suspend fun updateProfile(
@@ -33,7 +34,7 @@ class ProfileRepositoryImpl : ProfileRepository {
             it.occupation = userProfile?.occupation ?: it.occupation
             it.postCode = userProfile?.postCode ?: it.postCode
             it.gender = userProfile?.gender ?: it.gender
-            it.response()
+            it.toUserProfileResponse()
         } ?: userId.throwNotFound("User")
     }
 
@@ -45,7 +46,7 @@ class ProfileRepositoryImpl : ProfileRepository {
             UserProfileDAO.find { UserProfileTable.userId eq userId }.firstOrNull()
         userProfileEntity?.let {
             it.image = imageUrl ?: it.image
-            it.response()
+            it.toUserProfileResponse()
         } ?: userId.throwNotFound("User")
     }
 }

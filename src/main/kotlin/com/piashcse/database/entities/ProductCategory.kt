@@ -15,8 +15,7 @@ class ProductCategoryDAO(id: EntityID<String>) : BaseEntity(id, ProductCategoryT
     companion object : BaseEntityClass<ProductCategoryDAO>(ProductCategoryTable, ProductCategoryDAO::class.java)
 
     var name by ProductCategoryTable.name
-    private val subCategories by ProductSubCategoryDAO referrersOn ProductSubCategoryTable.categoryId
+    val subCategories by ProductSubCategoryDAO referrersOn ProductSubCategoryTable.categoryId
     var image by ProductCategoryTable.image
 
-    fun response() = ProductCategoryResponse(id.value, name, subCategories.map { it.response() }, image)
 }

@@ -30,7 +30,4 @@ class AuditLogDAO(id: EntityID<String>) : BaseEntity(id, AuditLogTable) {
     var details by AuditLogTable.details; var ipAddress by AuditLogTable.ipAddress; var userAgent by AuditLogTable.userAgent
     var outcome by AuditLogTable.outcome; var executedAt by AuditLogTable.executedAt
 
-    fun response() = AuditLogResponse(id.value, actorId.value, actorEmail, actorRole, action, resourceType, resourceId,
-        details, ipAddress, userAgent, outcome, executedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-        createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 }

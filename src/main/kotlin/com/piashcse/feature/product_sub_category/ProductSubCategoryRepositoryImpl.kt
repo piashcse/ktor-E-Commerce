@@ -4,6 +4,7 @@ import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductCategoryTable
 import com.piashcse.database.entities.ProductSubCategoryDAO
 import com.piashcse.database.entities.ProductSubCategoryTable
+import com.piashcse.mapper.toProductSubCategoryResponse
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.model.response.ProductSubCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -29,7 +30,7 @@ class ProductSubCategoryRepositoryImpl : ProductSubCategoryRepository {
             ProductSubCategoryDAO.new {
                 categoryId = EntityID(productSubCategory.categoryId, ProductSubCategoryTable)
                 name = productSubCategory.name
-            }.response()
+            }.toProductSubCategoryResponse()
         }
 
     override suspend fun getProductSubCategory(
@@ -40,7 +41,7 @@ class ProductSubCategoryRepositoryImpl : ProductSubCategoryRepository {
         query {
             ProductSubCategoryTable.selectAll().andWhere { ProductSubCategoryTable.categoryId eq categoryId }
                 .toPaginatedResponse(limit, offset) {
-                    ProductSubCategoryDAO.wrapRow(it).response()
+                    ProductSubCategoryDAO.wrapRow(it).toProductSubCategoryResponse()
                 }
         }
 
@@ -51,7 +52,7 @@ class ProductSubCategoryRepositoryImpl : ProductSubCategoryRepository {
         query {
             val subCategory = ProductSubCategoryDAO.findById(id) ?: id.throwNotFound("Subcategory")
             subCategory.name = name
-            subCategory.response()
+            subCategory.toProductSubCategoryResponse()
         }
 
     override suspend fun deleteProductSubCategory(subCategoryId: String): String =

@@ -3,6 +3,7 @@ package com.piashcse.feature.shop
 import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toShopResponse
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.model.response.ShopResponse
@@ -57,7 +58,7 @@ class ShopRepositoryImpl : ShopRepository {
 
             seller.shopId = shop.id
 
-            shop.shopResponse()
+            shop.toShopResponse()
         }
 
     override suspend fun updateShop(
@@ -82,13 +83,13 @@ class ShopRepositoryImpl : ShopRepository {
                 coverImage = shopRequest.coverImage ?: coverImage
             }
 
-            shop.shopResponse()
+            shop.toShopResponse()
         }
 
     override suspend fun getShopById(shopId: String): ShopResponse? =
         query {
             val shop = ShopDAO.findById(shopId)
-            shop?.shopResponse()
+            shop?.toShopResponse()
         }
 
     override suspend fun getShopsByUser(
@@ -99,7 +100,7 @@ class ShopRepositoryImpl : ShopRepository {
         query {
             ShopTable.selectAll().andWhere { ShopTable.userId eq userId }
                 .toPaginatedResponse(limit, offset) {
-                    ShopDAO.wrapRow(it).shopResponse()
+                    ShopDAO.wrapRow(it).toShopResponse()
                 }
         }
 
@@ -134,7 +135,7 @@ class ShopRepositoryImpl : ShopRepository {
             }
 
             q.orderBy(ShopTable.createdAt to SortOrder.DESC).toPaginatedResponse(limit, offset) {
-                ShopDAO.wrapRow(it).shopResponse()
+                ShopDAO.wrapRow(it).toShopResponse()
             }
         }
 
@@ -147,7 +148,7 @@ class ShopRepositoryImpl : ShopRepository {
             ShopTable.selectAll().andWhere {
                 ShopTable.categoryId eq categoryId and (ShopTable.status neq ShopStatus.REJECTED) and (ShopTable.status neq ShopStatus.SUSPENDED)
             }.toPaginatedResponse(limit, offset) {
-                ShopDAO.wrapRow(it).shopResponse()
+                ShopDAO.wrapRow(it).toShopResponse()
             }
         }
 
@@ -159,7 +160,7 @@ class ShopRepositoryImpl : ShopRepository {
             ShopTable.selectAll().andWhere { ShopTable.status eq ShopStatus.APPROVED }
                 .orderBy(ShopTable.rating to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) {
-                    ShopDAO.wrapRow(it).shopResponse()
+                    ShopDAO.wrapRow(it).toShopResponse()
                 }
         }
 
@@ -171,7 +172,7 @@ class ShopRepositoryImpl : ShopRepository {
         query {
             ShopTable.selectAll().andWhere { ShopTable.status eq status }
                 .toPaginatedResponse(limit, offset) {
-                    ShopDAO.wrapRow(it).shopResponse()
+                    ShopDAO.wrapRow(it).toShopResponse()
                 }
         }
 
@@ -185,7 +186,7 @@ class ShopRepositoryImpl : ShopRepository {
                 status = ShopStatus.APPROVED
             }
 
-            shop.shopResponse()
+            shop.toShopResponse()
         }
 
     override suspend fun rejectShop(shopId: String): ShopResponse =
@@ -198,7 +199,7 @@ class ShopRepositoryImpl : ShopRepository {
                 status = ShopStatus.REJECTED
             }
 
-            shop.shopResponse()
+            shop.toShopResponse()
         }
 
     override suspend fun suspendShop(shopId: String): ShopResponse =
@@ -211,7 +212,7 @@ class ShopRepositoryImpl : ShopRepository {
                 status = ShopStatus.SUSPENDED
             }
 
-            shop.shopResponse()
+            shop.toShopResponse()
         }
 
     override suspend fun activateShop(shopId: String): ShopResponse =
@@ -226,6 +227,6 @@ class ShopRepositoryImpl : ShopRepository {
                 }
             }
 
-            shop.shopResponse()
+            shop.toShopResponse()
         }
 }

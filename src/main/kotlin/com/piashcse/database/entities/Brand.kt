@@ -17,5 +17,4 @@ class BrandDAO(id: EntityID<String>) : BaseEntity(id, BrandTable) {
     var name by BrandTable.name
     var logo by BrandTable.logo
 
-    fun response() = BrandResponse(id.value, name, logo)
 }

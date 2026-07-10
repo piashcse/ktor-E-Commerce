@@ -3,6 +3,7 @@ package com.piashcse.feature.review_rating
 import com.piashcse.database.entities.ReviewRatingDAO
 import com.piashcse.database.entities.ReviewRatingTable
 import com.piashcse.database.entities.UserTable
+import com.piashcse.mapper.toReviewRatingResponse
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.model.response.ReviewRatingResponse
@@ -29,7 +30,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
         query {
             ReviewRatingTable.selectAll().andWhere { ReviewRatingTable.productId eq productId }
                 .toPaginatedResponse(limit, offset) {
-                    ReviewRatingDAO.wrapRow(it).response()
+                    ReviewRatingDAO.wrapRow(it).toReviewRatingResponse()
                 }
         }
 
@@ -50,7 +51,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                 productId = EntityID(reviewRating.productId, ProductTable)
                 reviewText = reviewRating.reviewText
                 rating = reviewRating.rating
-            }.response()
+            }.toReviewRatingResponse()
         }
 
     override suspend fun updateReviewRating(
@@ -70,7 +71,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                 it.verifyOwnership(userId, "review") { r -> r.userId.value }
                 it.reviewText = review
                 it.rating = rating
-                it.response()
+                it.toReviewRatingResponse()
             } ?: review.throwNotFound("Review")
         }
 

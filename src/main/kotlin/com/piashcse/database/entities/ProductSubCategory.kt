@@ -19,5 +19,4 @@ class ProductSubCategoryDAO(id: EntityID<String>) : BaseEntity(id, ProductSubCat
     var name by ProductSubCategoryTable.name
     var image by ProductSubCategoryTable.image
 
-    fun response() = ProductSubCategoryResponse(id.value, categoryId.value, name, image)
 }

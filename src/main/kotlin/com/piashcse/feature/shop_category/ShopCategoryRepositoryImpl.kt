@@ -2,6 +2,7 @@ package com.piashcse.feature.shop_category
 
 import com.piashcse.database.entities.ShopCategoryDAO
 import com.piashcse.database.entities.ShopCategoryTable
+import com.piashcse.mapper.toShopCategoryResponse
 import com.piashcse.model.response.ShopCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
@@ -20,7 +21,7 @@ class ShopCategoryRepositoryImpl : ShopCategoryRepository {
                 throw name.throwConflict("Category")
             } ?: ShopCategoryDAO.new {
                 this.name = name
-            }.response()
+            }.toShopCategoryResponse()
         }
 
     override suspend fun getCategories(
@@ -29,7 +30,7 @@ class ShopCategoryRepositoryImpl : ShopCategoryRepository {
     ): PaginatedResponse<ShopCategoryResponse> =
         query {
             ShopCategoryTable.selectAll().toPaginatedResponse(limit, offset) {
-                ShopCategoryDAO.wrapRow(it).response()
+                ShopCategoryDAO.wrapRow(it).toShopCategoryResponse()
             }
         }
 
@@ -42,7 +43,7 @@ class ShopCategoryRepositoryImpl : ShopCategoryRepository {
                 ShopCategoryDAO.findById(categoryId)
             isShopCategoryExist?.let {
                 it.name = name
-                it.response()
+                it.toShopCategoryResponse()
             } ?: categoryId.throwNotFound("Category")
         }
 

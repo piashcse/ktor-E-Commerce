@@ -5,6 +5,7 @@ import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.PaymentTable
+import com.piashcse.mapper.toPaymentResponse
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -60,13 +61,13 @@ class PaymentRepositoryImpl : PaymentRepository {
                 order.paymentStatus = PaymentStatus.COMPLETED
             }
 
-            payment.response()
+            payment.toPaymentResponse()
         }
 
     override suspend fun getPaymentById(paymentId: String): PaymentResponse =
         query {
             val isOrderExist = PaymentDAO.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
-            isOrderExist?.response() ?: paymentId.throwNotFound("PaymentResponse")
+            isOrderExist?.toPaymentResponse() ?: paymentId.throwNotFound("PaymentResponse")
         }
 
     override suspend fun getPaymentsByOrderId(
@@ -78,7 +79,7 @@ class PaymentRepositoryImpl : PaymentRepository {
             PaymentTable.selectAll().andWhere { PaymentTable.orderId eq EntityID(orderId, OrderTable) }
                 .orderBy(PaymentTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) {
-                    PaymentDAO.wrapRow(it).response()
+                    PaymentDAO.wrapRow(it).toPaymentResponse()
                 }
         }
 }

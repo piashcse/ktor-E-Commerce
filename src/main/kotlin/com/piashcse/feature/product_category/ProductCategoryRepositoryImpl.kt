@@ -2,6 +2,7 @@ package com.piashcse.feature.product_category
 
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductCategoryTable
+import com.piashcse.mapper.toProductCategoryResponse
 import com.piashcse.model.response.ProductCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
@@ -20,7 +21,7 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
                 throw name.throwConflict("Category")
             } ?: ProductCategoryDAO.new {
                 this.name = name
-            }.response()
+            }.toProductCategoryResponse()
         }
 
     override suspend fun getCategories(
@@ -29,7 +30,7 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
     ): PaginatedResponse<ProductCategoryResponse> =
         query {
             ProductCategoryTable.selectAll().toPaginatedResponse(limit, offset) {
-                ProductCategoryDAO.wrapRow(it).response()
+                ProductCategoryDAO.wrapRow(it).toProductCategoryResponse()
             }
         }
 
@@ -42,7 +43,7 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
                 ProductCategoryDAO.findById(categoryId)
             isCategoryExist?.let {
                 it.name = name
-                it.response()
+                it.toProductCategoryResponse()
             } ?: categoryId.throwNotFound("Category")
         }
 

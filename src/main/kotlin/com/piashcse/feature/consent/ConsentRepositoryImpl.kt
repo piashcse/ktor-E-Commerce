@@ -2,6 +2,7 @@ package com.piashcse.feature.consent
 
 import com.piashcse.constants.PolicyType
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toPolicyConsentResponse
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.model.response.UserPolicyConsentResponse
 import com.piashcse.utils.extension.*
@@ -41,7 +42,7 @@ class ConsentRepositoryImpl : ConsentRepository {
                     userAgent = consentRequest.userAgent
                 }
 
-            consent.response()
+            consent.toPolicyConsentResponse()
         }
 
     override suspend fun getUserConsents(userId: String): List<UserPolicyConsentResponse> =
@@ -49,7 +50,7 @@ class ConsentRepositoryImpl : ConsentRepository {
             val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
 
             PolicyConsentDAO.find { PolicyConsentTable.userId eq user.id }
-                .map { it.response() }
+                .map { it.toPolicyConsentResponse() }
         }
 
     override suspend fun hasUserConsented(

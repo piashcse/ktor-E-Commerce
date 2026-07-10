@@ -5,6 +5,7 @@ import com.piashcse.constants.RefundMethod
 import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toRefundRequestResponse
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
@@ -62,7 +63,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                     this.status = RefundStatus.PENDING
                 }
 
-            refundRequest.response()
+            refundRequest.toRefundRequestResponse()
         }
 
     override suspend fun getRefundsByOrderId(
@@ -91,7 +92,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             RefundRequestTable.selectAll()
                 .andWhere { RefundRequestTable.orderId eq EntityID(orderId, OrderTable) }
                 .toPaginatedResponse(limit, offset) {
-                    RefundRequestDAO.wrapRow(it).response()
+                    RefundRequestDAO.wrapRow(it).toRefundRequestResponse()
                 }
         }
 
@@ -111,7 +112,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                 throw ValidationException(Message.Orders.UNAUTHORIZED)
             }
 
-            refundRequest.response()
+            refundRequest.toRefundRequestResponse()
         }
 
     private fun orderBelongsToUserShop(
@@ -161,7 +162,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                 refundReq.refundMethod = request.refundMethod
             }
 
-            refundReq.response()
+            refundReq.toRefundRequestResponse()
         }
 
     override suspend fun shipRefund(
@@ -185,6 +186,6 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             refundReq.trackingNumber = request.trackingNumber
             refundReq.status = RefundStatus.SHIPPED
 
-            refundReq.response()
+            refundReq.toRefundRequestResponse()
         }
 }

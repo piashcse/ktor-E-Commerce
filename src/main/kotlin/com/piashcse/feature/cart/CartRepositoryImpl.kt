@@ -3,6 +3,7 @@ package com.piashcse.feature.cart
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toCartResponse
 import com.piashcse.mapper.toProductResponse
 import com.piashcse.model.response.CartItemSummary
 import com.piashcse.model.response.CartSummaryResponse
@@ -42,7 +43,7 @@ class CartRepositoryImpl : CartRepository {
             this.userId = EntityID(userId, UserTable)
             this.productId = EntityID(productId, ProductTable)
             this.quantity = quantity
-        }.response()
+        }.toCartResponse()
     }
 
     override suspend fun getCartItems(
@@ -66,7 +67,7 @@ class CartRepositoryImpl : CartRepository {
         val data = rows.map { row ->
             val product = products[row[CartItemTable.productId].value]
                 ?: row[CartItemTable.productId].value.throwNotFound("Product")
-            CartItemDAO.wrapRow(row).response(product.toProductResponse(imagesMap[product.id.value]))
+            CartItemDAO.wrapRow(row).toCartResponse(product.toProductResponse(imagesMap[product.id.value]))
         }
         PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
     }
@@ -88,7 +89,7 @@ class CartRepositoryImpl : CartRepository {
 
         val product = ProductDAO.findById(cartItem.productId)
             ?: throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
-        cartItem.response(product.response())
+        cartItem.toCartResponse(product.toProductResponse())
     }
 
     override suspend fun removeCartItem(
@@ -105,7 +106,7 @@ class CartRepositoryImpl : CartRepository {
         val product = ProductDAO.findById(cartItem.productId)
             ?: throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
         cartItem.delete()
-        product.response()
+        product.toProductResponse()
     }
 
     override suspend fun clearCart(userId: String): Boolean = query {

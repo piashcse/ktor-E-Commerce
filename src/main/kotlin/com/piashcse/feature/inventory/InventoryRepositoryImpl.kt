@@ -3,6 +3,7 @@ package com.piashcse.feature.inventory
 import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toInventoryResponse
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -53,11 +54,11 @@ class InventoryRepositoryImpl : InventoryRepository {
             maximumStockLevel = request.maximumStockLevel ?: DEFAULT_MAX_STOCK
             status = InventoryStatus.fromStockLevel(request.stockQuantity, minimumStockLevel)
         }
-        inventory.response()
+        inventory.toInventoryResponse()
     }
 
     override suspend fun getInventoryByProduct(productId: String): InventoryResponse? = query {
-        InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()?.response()
+        InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()?.toInventoryResponse()
     }
 
     override suspend fun updateStock(
@@ -93,7 +94,7 @@ class InventoryRepositoryImpl : InventoryRepository {
         inventory.apply {
             stockQuantity = newStock
             status = InventoryStatus.fromStockLevel(newStock, minimumStockLevel)
-        }.response()
+        }.toInventoryResponse()
     }
 
     override suspend fun getLowStockProducts(
@@ -102,7 +103,7 @@ class InventoryRepositoryImpl : InventoryRepository {
     ): PaginatedResponse<InventoryResponse> = query {
         InventoryTable.selectAll().andWhere { InventoryTable.stockQuantity lessEq InventoryTable.minimumStockLevel }
             .orderBy(InventoryTable.stockQuantity to SortOrder.ASC)
-            .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).response() }
+            .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).toInventoryResponse() }
     }
 
     override suspend fun getInventoryByShop(
@@ -111,6 +112,6 @@ class InventoryRepositoryImpl : InventoryRepository {
         offset: Int,
     ): PaginatedResponse<InventoryResponse> = query {
         InventoryTable.selectAll().andWhere { InventoryTable.shopId eq shopId }
-            .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).response() }
+            .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).toInventoryResponse() }
     }
 }

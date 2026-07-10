@@ -22,7 +22,6 @@ class WishListDAO(id: EntityID<String>) : BaseEntity(id, WishListTable) {
     var userId by WishListTable.userId
     var productId by WishListTable.productId
 
-    fun response(product: ProductResponse? = null) = WishList(product)
 }
 
 @Serializable

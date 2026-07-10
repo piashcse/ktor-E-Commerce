@@ -15,5 +15,4 @@ class ShopCategoryDAO(id: EntityID<String>) : BaseEntity(id, ShopCategoryTable) 
 
     var name by ShopCategoryTable.name
 
-    fun response() = ShopCategoryResponse(id.value, name)
 }

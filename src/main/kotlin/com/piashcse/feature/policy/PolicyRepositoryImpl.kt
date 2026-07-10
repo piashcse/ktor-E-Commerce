@@ -4,6 +4,7 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.PolicyType
 import com.piashcse.database.entities.PolicyDocumentDAO
 import com.piashcse.database.entities.PolicyDocumentTable
+import com.piashcse.mapper.toPolicyDocumentResponse
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.model.response.PolicyDocumentResponse
@@ -36,7 +37,7 @@ class PolicyRepositoryImpl : PolicyRepository {
                 }.forEach { it.isActive = false }
             }
 
-            policyDocument.response()
+            policyDocument.toPolicyDocumentResponse()
         }
 
     override suspend fun updatePolicy(
@@ -61,7 +62,7 @@ class PolicyRepositoryImpl : PolicyRepository {
                     }.forEach { otherPolicy -> otherPolicy.isActive = false }
                 }
             }
-            policyDocument.response()
+            policyDocument.toPolicyDocumentResponse()
         }
 
     override suspend fun getPolicyByType(type: PolicyType): PolicyDocumentResponse =
@@ -71,13 +72,13 @@ class PolicyRepositoryImpl : PolicyRepository {
                     PolicyDocumentTable.type eq type and (PolicyDocumentTable.isActive eq true)
                 }.firstOrNull() ?: throw ValidationException(Message.Policy.noActivePolicy(type.name))
 
-            policyDocument.response()
+            policyDocument.toPolicyDocumentResponse()
         }
 
     override suspend fun getPolicyById(id: String): PolicyDocumentResponse =
         query {
             val policyDocument = PolicyDocumentDAO.findById(id) ?: id.throwNotFound("Policy")
-            policyDocument.response()
+            policyDocument.toPolicyDocumentResponse()
         }
 
     override suspend fun getAllPolicies(type: PolicyType?): List<PolicyDocumentResponse> =
@@ -89,7 +90,7 @@ class PolicyRepositoryImpl : PolicyRepository {
                     PolicyDocumentDAO.all()
                 }
 
-            query.map { it.response() }
+            query.map { it.toPolicyDocumentResponse() }
         }
 
     override suspend fun deactivatePolicy(id: String): Boolean =

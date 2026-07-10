@@ -1,6 +1,8 @@
 package com.piashcse.feature.wishlist
 
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toProductResponse
+import com.piashcse.mapper.toWishListResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
@@ -29,7 +31,7 @@ class WishListRepositoryImpl : WishListRepository {
                 WishListDAO.new {
                     this.userId = EntityID(userId, WishListTable)
                     this.productId = EntityID(productId, ProductTable)
-                }.response(product.response())
+                }.toWishListResponse(product.toProductResponse())
             } else {
                 throw productId.throwConflict("ProductResponse")
             }
@@ -45,7 +47,7 @@ class WishListRepositoryImpl : WishListRepository {
                 .selectAll()
                 .andWhere { WishListTable.userId eq userId }
                 .toPaginatedResponse(limit, offset) {
-                    ProductDAO.wrapRow(it).response()
+                    ProductDAO.wrapRow(it).toProductResponse()
                 }
         }
 
@@ -57,7 +59,7 @@ class WishListRepositoryImpl : WishListRepository {
             val wishListItem =
                 WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
                     .firstOrNull() ?: productId.throwNotFound("ProductResponse")
-            val product = ProductDAO.findById(productId)?.response() ?: productId.throwNotFound("ProductResponse")
+            val product = ProductDAO.findById(productId)?.toProductResponse() ?: productId.throwNotFound("ProductResponse")
             wishListItem.delete()
             product
         }

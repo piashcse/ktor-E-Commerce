@@ -53,26 +53,4 @@ class UserProfileDAO(id: EntityID<String>) : BaseEntity(id, UserProfileTable) {
     var isActive by UserProfileTable.isActive
     var verified by UserProfileTable.verified
 
-    fun response() =
-        UserProfileResponse(
-            userId = userId.value,
-            image = image,
-            firstName = firstName,
-            lastName = lastName,
-            mobile = mobile,
-            faxNumber = faxNumber,
-            streetAddress = streetAddress,
-            city = city,
-            state = state,
-            country = country,
-            identificationType = identificationType,
-            identificationNo = identificationNo,
-            occupation = occupation,
-            postCode = postCode,
-            gender = gender,
-            dateOfBirth = dateOfBirth,
-            bio = bio,
-            isActive = isActive,
-            verified = verified,
-        )
 }

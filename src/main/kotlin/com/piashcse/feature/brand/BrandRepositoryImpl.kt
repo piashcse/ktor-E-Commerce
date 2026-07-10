@@ -3,6 +3,7 @@ package com.piashcse.feature.brand
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.BrandDAO
 import com.piashcse.database.entities.BrandTable
+import com.piashcse.mapper.toBrandResponse
 import com.piashcse.model.response.BrandResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
@@ -32,7 +33,7 @@ class BrandRepositoryImpl : BrandRepository {
                 throw name.throwConflict("BrandResponse")
             } ?: BrandDAO.new {
                 this.name = name
-            }.response()
+            }.toBrandResponse()
         }
 
     override suspend fun getBrands(
@@ -41,7 +42,7 @@ class BrandRepositoryImpl : BrandRepository {
     ): PaginatedResponse<BrandResponse> =
         query {
             BrandTable.selectAll().toPaginatedResponse(limit, offset) {
-                BrandDAO.wrapRow(it).response()
+                BrandDAO.wrapRow(it).toBrandResponse()
             }
         }
 
@@ -62,7 +63,7 @@ class BrandRepositoryImpl : BrandRepository {
                     ?: brandId.throwNotFound("BrandResponse")
 
             brand.name = name
-            brand.response()
+            brand.toBrandResponse()
         }
 
     override suspend fun deleteBrand(brandId: String): String =

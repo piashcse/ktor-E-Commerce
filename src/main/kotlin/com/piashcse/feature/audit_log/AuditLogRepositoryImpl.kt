@@ -3,6 +3,7 @@ package com.piashcse.feature.audit_log
 import com.piashcse.database.entities.AuditLogDAO
 import com.piashcse.database.entities.AuditLogTable
 import com.piashcse.database.entities.UserTable
+import com.piashcse.mapper.toAuditLogResponse
 import com.piashcse.model.response.AuditLogResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
@@ -34,11 +35,11 @@ class AuditLogRepositoryImpl : AuditLogRepository {
 
         val count = q.count()
         val data = q.orderBy(AuditLogTable.executedAt to SortOrder.DESC).limit(limit).offset(offset.toLong())
-            .map { AuditLogDAO.wrapRow(it).response() }
+            .map { AuditLogDAO.wrapRow(it).toAuditLogResponse() }
         PaginatedResponse(data, PaginationMetadata(count, limit, offset))
     }
 
     override suspend fun getAuditLogById(logId: String) = query {
-        AuditLogDAO.findById(logId)?.response() ?: logId.throwNotFound("AuditLog")
+        AuditLogDAO.findById(logId)?.toAuditLogResponse() ?: logId.throwNotFound("AuditLog")
     }
 }

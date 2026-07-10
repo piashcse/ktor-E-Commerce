@@ -4,7 +4,6 @@ import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import com.piashcse.mapper.toProductResponse
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -88,6 +87,4 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
         }
     }
 
-    @Deprecated("Use toProductResponse() from com.piashcse.mapper", ReplaceWith("toProductResponse()"))
-    fun response() = toProductResponse()
 }

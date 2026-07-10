@@ -2,6 +2,7 @@ package com.piashcse.feature.shipping_address
 
 import com.piashcse.database.entities.ShippingAddressDAO
 import com.piashcse.database.entities.ShippingAddressTable
+import com.piashcse.mapper.toShippingAddressResponse
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.model.response.ShippingAddressResponse
 import com.piashcse.utils.extension.query
@@ -35,12 +36,12 @@ class ShippingAddressRepositoryImpl : ShippingAddressRepository {
                 country = request.country
                 zipCode = request.zipCode
                 isDefault = request.isDefault
-            }.response()
+            }.toShippingAddressResponse()
         }
 
     override suspend fun getShippingAddresses(userId: String): List<ShippingAddressResponse> =
         query {
-            ShippingAddressDAO.find { ShippingAddressTable.userId eq userId }.map { it.response() }
+            ShippingAddressDAO.find { ShippingAddressTable.userId eq userId }.map { it.toShippingAddressResponse() }
         }
 
     override suspend fun updateShippingAddress(
@@ -71,7 +72,7 @@ class ShippingAddressRepositoryImpl : ShippingAddressRepository {
                 country = request.country
                 zipCode = request.zipCode
                 isDefault = request.isDefault
-            }.response()
+            }.toShippingAddressResponse()
         }
 
     override suspend fun deleteShippingAddress(

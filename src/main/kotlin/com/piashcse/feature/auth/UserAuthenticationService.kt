@@ -4,6 +4,7 @@ import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toUserResponse
 import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
 import com.piashcse.utils.email.EmailSender
@@ -64,7 +65,7 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
         authRepo.resetLoginAttempts(loginRequest.email, userTypeEnum)
         val tokenPair = authRepo.generateTokenPair(user.id.value, user.email, user.userType.name)
         authRepo.storeRefreshToken(user.id.value, tokenPair.refreshToken)
-        return LoginResponse(user.response(), tokenPair.accessToken, tokenPair.refreshToken, tokenPair.expiresIn)
+        return LoginResponse(user.toUserResponse(), tokenPair.accessToken, tokenPair.refreshToken, tokenPair.expiresIn)
     }
 
     suspend fun otpVerification(userId: String, otp: String): Boolean {
