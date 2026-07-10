@@ -72,7 +72,6 @@ import com.piashcse.feature.shop_category.ShopCategoryService
 import com.piashcse.feature.wishlist.WishListRepository
 import com.piashcse.feature.wishlist.WishListRepositoryImpl
 import com.piashcse.feature.wishlist.WishListService
-import com.piashcse.service.CacheService
 import com.piashcse.service.UploadService
 import org.koin.dsl.module
 
