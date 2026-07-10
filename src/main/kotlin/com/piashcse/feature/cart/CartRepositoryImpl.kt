@@ -3,9 +3,9 @@ package com.piashcse.feature.cart
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toCartItemSummary
 import com.piashcse.mapper.toCartResponse
 import com.piashcse.mapper.toProductResponse
-import com.piashcse.model.response.CartItemSummary
 import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -122,6 +122,18 @@ class CartRepositoryImpl : CartRepository {
         val products = ProductDAO.find {
             ProductTable.id inList cartItems.map { it.productId.value }.distinct()
         }.associateBy { it.id.value }
+        val productEntityIds = products.keys.map { EntityID(it, ProductTable) }
+        val imagesMap = if (products.isNotEmpty()) {
+            ProductImageDAO.imagesForProducts(productEntityIds)
+        } else {
+            emptyMap()
+        }
+        val inventoryMap = if (products.isNotEmpty()) {
+            InventoryDAO.find { InventoryTable.productId inList productEntityIds }
+                .associate { it.productId.value to it.stockQuantity }
+        } else {
+            emptyMap()
+        }
         val shopIds = products.values.mapNotNull { it.shopId?.value }.distinct()
         val shops = if (shopIds.isNotEmpty()) {
             ShopDAO.find { ShopTable.id inList shopIds }.associateBy { it.id.value }
@@ -132,14 +144,11 @@ class CartRepositoryImpl : CartRepository {
         val items = cartItems.mapNotNull { cartItem ->
             val product = products[cartItem.productId.value] ?: return@mapNotNull null
             val unitPrice = product.discountPrice ?: product.price
-            CartItemSummary(
-                productId = product.id.value,
-                productName = product.name,
-                price = unitPrice.toPlainString(),
-                quantity = cartItem.quantity,
-                image = product.imageUrls.firstOrNull(),
-                stockQuantity = product.effectiveStock(),
-                shopId = product.shopId?.value,
+            cartItem.toCartItemSummary(
+                product = product,
+                unitPrice = unitPrice,
+                image = imagesMap[product.id.value]?.firstOrNull(),
+                stockQuantity = inventoryMap[product.id.value] ?: product.stockQuantity,
                 shopName = product.shopId?.value?.let { shops[it]?.name },
             )
         }

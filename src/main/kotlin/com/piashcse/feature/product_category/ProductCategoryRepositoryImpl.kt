@@ -2,14 +2,18 @@ package com.piashcse.feature.product_category
 
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductCategoryTable
+import com.piashcse.database.entities.ProductSubCategoryDAO
+import com.piashcse.database.entities.ProductSubCategoryTable
 import com.piashcse.mapper.toProductCategoryResponse
 import com.piashcse.model.response.ProductCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
-import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.extension.toPaginatedList
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 class ProductCategoryRepositoryImpl : ProductCategoryRepository {
@@ -29,9 +33,20 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
         offset: Int,
     ): PaginatedResponse<ProductCategoryResponse> =
         query {
-            ProductCategoryTable.selectAll().toPaginatedResponse(limit, offset) {
-                ProductCategoryDAO.wrapRow(it).toProductCategoryResponse()
+            val (totalCount, rows) = ProductCategoryTable.selectAll().toPaginatedList(limit, offset) {
+                ProductCategoryDAO.wrapRow(it)
             }
+            val categoryIds = rows.map { it.id }
+            val subCategoriesMap = if (categoryIds.isNotEmpty()) {
+                ProductSubCategoryDAO.find { ProductSubCategoryTable.categoryId inList categoryIds }
+                    .groupBy { it.categoryId.value }
+            } else {
+                emptyMap()
+            }
+            val data = rows.map { category ->
+                category.toProductCategoryResponse(subCategoriesMap[category.id.value] ?: emptyList())
+            }
+            PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
         }
 
     override suspend fun updateCategory(

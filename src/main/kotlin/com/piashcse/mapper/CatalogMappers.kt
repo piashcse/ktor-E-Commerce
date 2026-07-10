@@ -11,10 +11,11 @@ import com.piashcse.model.response.ShopCategoryResponse
 
 fun BrandDAO.toBrandResponse() = BrandResponse(id.value, name, logo)
 
-fun ProductCategoryDAO.toProductCategoryResponse() = ProductCategoryResponse(
-    id.value, name,
-    subCategories.map { it.toProductSubCategoryResponse() }, image,
-)
+fun ProductCategoryDAO.toProductCategoryResponse() =
+    toProductCategoryResponse(subCategories.toList())
+
+fun ProductCategoryDAO.toProductCategoryResponse(subCategories: List<ProductSubCategoryDAO>) =
+    ProductCategoryResponse(id.value, name, subCategories.map { it.toProductSubCategoryResponse() }, image)
 
 fun ProductSubCategoryDAO.toProductSubCategoryResponse() = ProductSubCategoryResponse(
     id.value, categoryId.value, name, image,

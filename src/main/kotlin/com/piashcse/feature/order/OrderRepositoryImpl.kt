@@ -14,6 +14,7 @@ import com.piashcse.mapper.toOrderResponse
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.OrderRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
+import com.piashcse.model.response.OrderItemResponse
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
@@ -36,19 +37,30 @@ import java.util.UUID
 
 class OrderRepositoryImpl : OrderRepository {
 
+    private fun List<OrderItemDAO>.toItemResponses() = map { it.toOrderItemResponse() }
+
+    private fun loadItemsForOrders(orders: List<OrderDAO>): Map<String, List<OrderItemResponse>> =
+        OrderItemDAO.itemsForOrders(orders.map { it.id })
+            .mapValues { (_, items) -> items.toItemResponses() }
+
     private fun Query.toOrdersPaginated(
         limit: Int,
         offset: Int,
     ): PaginatedResponse<OrderResponse> {
         val (totalCount, rows) = toPaginatedList(limit, offset) { OrderDAO.wrapRow(it) }
-        val itemsMap = OrderItemDAO.itemsForOrders(rows.map { it.id })
-        val data = rows.map { order -> order.toOrderResponse(itemsMap[order.id.value]?.map { it.toOrderItemResponse() }) }
+        val itemsMap = loadItemsForOrders(rows)
+        val data = rows.map { order -> order.toOrderResponse(itemsMap[order.id.value]) }
         return PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
     }
 
     private fun validateShopsApproved(shopIds: Set<String>) {
+        val shops = if (shopIds.isNotEmpty()) {
+            ShopDAO.find { ShopTable.id inList shopIds.map { EntityID(it, ShopTable) } }.associateBy { it.id.value }
+        } else {
+            emptyMap()
+        }
         shopIds.forEach { shopId ->
-            val shop = ShopDAO.findById(shopId) ?: throw ValidationException("Shop $shopId not found")
+            val shop = shops[shopId] ?: throw ValidationException("Shop $shopId not found")
             if (shop.status != ShopStatus.APPROVED)
                 throw ValidationException("Shop '${shop.name}' is not active. Cannot place order.")
         }
@@ -102,8 +114,11 @@ class OrderRepositoryImpl : OrderRepository {
         checkoutRequest: CheckoutRequest,
     ): List<OrderResponse> = query {
         checkoutRequest.idempotencyKey?.let { key ->
-            OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.toList().takeIf { it.isNotEmpty() }
-                ?.let { return@query it.map { it.toOrderResponse() } }
+            val existing = OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.toList()
+            if (existing.isNotEmpty()) {
+                val itemsMap = loadItemsForOrders(existing)
+                return@query existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
+            }
         }
 
         val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
@@ -221,7 +236,8 @@ class OrderRepositoryImpl : OrderRepository {
 
         cartItems.forEach { it.delete() }
         createdOrders.forEach { logStatusChange(it.id.value, it.status, "Order placed", userId) }
-        createdOrders.map { it.toOrderResponse() }
+        val itemsMap = loadItemsForOrders(createdOrders)
+        createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
     }
 
     override suspend fun getCheckoutSummary(
@@ -277,7 +293,7 @@ class OrderRepositoryImpl : OrderRepository {
 
         idempotencyKey?.let { key ->
             OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.firstOrNull()
-                ?.let { return@query listOf(it.toOrderResponse()) }
+                ?.let { order -> return@query listOf(order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())) }
         }
 
         val productsMap = ProductDAO.find {
@@ -359,7 +375,8 @@ class OrderRepositoryImpl : OrderRepository {
             }.firstOrNull()?.delete()
         }
 
-        createdOrders.map { it.toOrderResponse() }
+        val itemsMap = loadItemsForOrders(createdOrders)
+        createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
     }
 
     override suspend fun getOrders(
@@ -394,7 +411,7 @@ class OrderRepositoryImpl : OrderRepository {
 
         order.status = status
         logStatusChange(order.id.value, status, "Status updated by user", userId)
-        order.toOrderResponse()
+        order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
     }
 
     override suspend fun cancelOrder(
@@ -420,11 +437,18 @@ class OrderRepositoryImpl : OrderRepository {
         order.notes = reason
         logStatusChange(order.id.value, OrderStatus.CANCELED, reason, userId)
 
-        OrderItemDAO.find { OrderItemTable.orderId eq order.id }.forEach { orderItem ->
-            ProductDAO.findById(orderItem.productId.value)?.restoreStock(orderItem.quantity)
+        val orderItems = OrderItemDAO.find { OrderItemTable.orderId eq order.id }.toList()
+        val productIds = orderItems.map { it.productId.value }
+        val productsMap = if (productIds.isNotEmpty()) {
+            ProductDAO.find { ProductTable.id inList productIds }.associateBy { it.id.value }
+        } else {
+            emptyMap()
+        }
+        orderItems.forEach { orderItem ->
+            productsMap[orderItem.productId.value]?.restoreStock(orderItem.quantity)
         }
 
-        order.toOrderResponse()
+        order.toOrderResponse(orderItems.toItemResponses())
     }
 
     override suspend fun getSellerOrders(
