@@ -5,6 +5,7 @@ import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.model.response.ProductResponse
+import com.piashcse.model.response.SearchResponse
 import com.piashcse.utils.common.PaginatedResponse
 
 interface ProductRepository {
@@ -99,9 +100,9 @@ interface ProductRepository {
      * Searches for products based on query parameters.
      *
      * @param query The search parameters.
-     * @return A list of products matching the search.
+     * @return A list of products matching the search with faceted counts.
      */
-    suspend fun searchProduct(productQuery: ProductSearchRequest): PaginatedResponse<ProductResponse>
+    suspend fun searchProduct(productQuery: ProductSearchRequest): SearchResponse
 
     /**
      * Gets products by category.

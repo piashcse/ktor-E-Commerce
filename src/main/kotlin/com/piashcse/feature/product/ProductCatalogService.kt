@@ -1,6 +1,8 @@
 package com.piashcse.feature.product
 
+import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.response.ProductResponse
+import com.piashcse.model.response.SearchResponse
 import com.piashcse.service.Cache
 import com.piashcse.service.CacheService
 import com.piashcse.utils.common.PaginatedResponse
@@ -26,4 +28,6 @@ class ProductCatalogService(
     suspend fun getHotDealProducts(): PaginatedResponse<ProductResponse> =
         cachedOrQuery("products:hot-deals") { productRepo.getHotDealProducts() }
 
+    suspend fun searchProduct(productQuery: ProductSearchRequest): SearchResponse =
+        productRepo.searchProduct(productQuery)
 }

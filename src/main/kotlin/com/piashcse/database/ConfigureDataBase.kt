@@ -11,6 +11,10 @@ import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
+private lateinit var hikariDataSource: HikariDataSource
+
+internal fun getHikariDataSource(): HikariDataSource = hikariDataSource
+
 private val allTables = arrayOf(
     UserTable, UserProfileTable, ShopTable, ShopCategoryTable,
     ProductTable, ProductImageTable, ReviewRatingTable, ProductCategoryTable,
@@ -24,19 +28,19 @@ private val allTables = arrayOf(
 )
 
 fun configureDatabase() {
-    val dataSource = createDataSource()
+    hikariDataSource = createDataSource()
     val isDev = System.getenv("KTOR_DEVELOPMENT")?.toBoolean() == true
     if (isDev) {
-        Database.connect(dataSource)
+        Database.connect(hikariDataSource)
         createTables()
     } else {
         Flyway.configure()
-            .dataSource(dataSource)
+            .dataSource(hikariDataSource)
             .locations("classpath:db/migration")
             .baselineOnMigrate(true)
             .load()
             .migrate()
-        Database.connect(dataSource)
+        Database.connect(hikariDataSource)
     }
 }
 

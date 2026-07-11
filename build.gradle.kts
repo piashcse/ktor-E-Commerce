@@ -117,3 +117,9 @@ tasks.register("installGitHooks", Copy::class) {
 tasks.named("build") {
     dependsOn("installGitHooks")
 }
+
+tasks.test {
+    testLogging {
+        events("passed", "skipped", "failed", "standardOut", "standardError")
+    }
+}
