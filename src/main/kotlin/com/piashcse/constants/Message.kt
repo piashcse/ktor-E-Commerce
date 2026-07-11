@@ -171,6 +171,7 @@ object Message {
         fun invalidMimeType(purpose: String, mime: String) = "Invalid MIME type for $purpose: $mime"
         fun fileTooLarge(mb: Int, purpose: String) = "File size exceeds ${mb}MB limit for $purpose upload"
         fun maliciousContent(ext: String) = "Malicious file content detected or file format does not match $ext extension"
+        fun storageQuotaExceeded(purpose: String) = "Storage quota exceeded for $purpose uploads. Please free up space or contact support."
     }
 
     // ─── Inventory ──────────────────────────────────────────────────────────
