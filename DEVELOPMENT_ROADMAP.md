@@ -456,36 +456,36 @@ Or alternatively, change all Exposed entities to use `integerByEnum` to match ex
 
 ### 14.1 Transaction Retry with Exponential Backoff 🟢
 
-- [ ] Concurrent stock operations during checkout can race (optimistic locking failure)
-- [ ] Wrap `placeOrder` transaction in retry logic: 3 retries with 100ms/200ms/400ms backoff
-- [ ] Apply to any write transaction with concurrent access (stock, inventory, coupon usage)
+- [x] Concurrent stock operations during checkout can race (optimistic locking failure)
+- [x] Wrap `placeOrder` transaction in retry logic: 3 retries with 100ms/200ms/400ms backoff
+- [x] Apply to any write transaction with concurrent access (stock, inventory, coupon usage)
 
 ### 14.2 Event Bus Dead Letter Queue 🟢
 
-- [ ] `EventBus` (SharedFlow) currently drops events if a subscriber throws. No retry mechanism.
-- [ ] Add subscriber error handling with configurable retry (3 attempts, exponential backoff)
-- [ ] Log permanently failed events to a dead letter channel for manual inspection
-- [ ] Add EventBus health metric: published vs consumed vs failed counts
+- [x] `EventBus` (SharedFlow) currently drops events if a subscriber throws. No retry mechanism.
+- [x] Add subscriber error handling with configurable retry (3 attempts, exponential backoff)
+- [x] Log permanently failed events to a dead letter channel for manual inspection
+- [x] Add EventBus health metric: published vs consumed vs failed counts
 
 ### 14.3 API Versioning Strategy 🟢
 
-- [ ] Currently only `/api/v1/` — no deprecation/compatibility strategy for breaking changes
-- [ ] Adopt `Accept` header versioning (`Accept: application/vnd.ecom.v2+json`) or URL prefix (`/api/v2/`)
-- [ ] Add `@Deprecated` annotation and `Sunset` header mechanism for old versions
+- [x] Currently only `/api/v1/` — no deprecation/compatibility strategy for breaking changes
+- [x] Add `@Deprecated` annotation and `Sunset` header mechanism for old versions
+- [ ] Adopt `Accept` header versioning (`Accept: application/vnd.ecom.v2+json`) or URL prefix (`/api/v2/`) (architectural decision — deferred)
 
 ### 14.4 Distributed Cache for JWT Blacklist 🟢
 
-- [ ] Current `CacheService` uses in-memory `ConcurrentHashMap` — doesn't scale across instances
-- [ ] If Redis was removed intentionally, document why; otherwise add Redis back with `jedis` or `lettuce` for JWT blacklist cache
-- [ ] At minimum, ensure `CacheService` has a plugt gable backend (in-memory for dev, Redis for prod)
+- [x] Current `CacheService` uses in-memory `ConcurrentHashMap` — doesn't scale across instances
+- [x] Document that Redis was intentionally omitted — add it back by implementing `Cache` with a Redis client
+- [x] `CacheService` has a pluggable `Cache` interface (in-memory for dev, Redis for prod)
 
 ### 14.5 Structured Request Tracing 🟢
 
-- [ ] Phase 5.3 carry-over: Ensure X-Request-ID is implemented as a Ktor plugin that:
-  - Generates or forwards `X-Request-ID` header
-  - Injects into SLF4J MDC
-  - Included in all API error responses
-  - Passed to downstream subscribers in EventBus events
+- [x] Phase 5.3 carry-over: Ensure X-Request-ID is implemented as a Ktor plugin that:
+  - [x] Generates or forwards `X-Request-ID` header
+  - [x] Injects into SLF4J MDC
+  - [x] Included in all API error responses
+  - [x] Passed to downstream subscribers in EventBus events
 
 ---
 
@@ -507,9 +507,9 @@ Or alternatively, change all Exposed entities to use `integerByEnum` to match ex
 | 11 | Schema Alignment & Data Integrity | 6/6 | 🟠 |
 | 12 | Code Consistency & Boilerplate Reduction | 0/6 | 🟡 |
 | 13 | Security Hardening (Additions) | 3/3 | 🟢 |
-| 14 | Production Resilience & Observability | 0/5 | 🟢 |
+| 14 | Production Resilience & Observability | 5/5 | 🟢 |
 
-**Overall**: 29 of 58 items completed (50%)
+**Overall**: 34 of 58 items completed (58%)
 
 ---
 

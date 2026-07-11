@@ -107,12 +107,12 @@ class OrderRepositoryImpl : OrderRepository {
     override suspend fun placeOrder(
         userId: String,
         checkoutRequest: CheckoutRequest,
-    ): List<OrderResponse> = query {
+    ): List<OrderResponse> = retryQuery {
         checkoutRequest.idempotencyKey?.let { key ->
             val existing = OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.toList()
             if (existing.isNotEmpty()) {
                 val itemsMap = loadItemsForOrders(existing)
-                return@query existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
+                return@retryQuery existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
             }
         }
 
@@ -304,13 +304,13 @@ class OrderRepositoryImpl : OrderRepository {
         userId: String,
         orderRequest: OrderRequest,
         idempotencyKey: String?,
-    ): List<OrderResponse> = query {
+    ): List<OrderResponse> = retryQuery {
         userId.requireNotBlank("User ID")
         if (orderRequest.orderItems.isEmpty()) throw ValidationException(Message.Validation.EMPTY_ORDER_ITEMS)
 
         idempotencyKey?.let { key ->
             OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.firstOrNull()
-                ?.let { order -> return@query listOf(order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())) }
+                ?.let { order -> return@retryQuery listOf(order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())) }
         }
 
         val productsMap = ProductDAO.find {
@@ -436,7 +436,7 @@ class OrderRepositoryImpl : OrderRepository {
         userId: String,
         reason: String,
         userType: UserType,
-    ): OrderResponse = query {
+    ): OrderResponse = retryQuery {
         orderId.requireNotBlank("Order ID")
         if (reason.isBlank()) throw ValidationException(Message.Orders.CANCEL_REASON_REQUIRED)
 

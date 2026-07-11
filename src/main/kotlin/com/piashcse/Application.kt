@@ -23,6 +23,7 @@ fun main() {
 fun Application.configureAll() {
     configureDatabase()
     configureBasic()
+    installRequestTracing()
     configureKoin()
     configureAuth()
     configureRateLimiting()

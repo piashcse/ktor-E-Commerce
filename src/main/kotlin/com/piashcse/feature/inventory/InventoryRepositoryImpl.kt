@@ -8,6 +8,7 @@ import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.retryQuery
 import com.piashcse.utils.extension.requireNotBlank
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
@@ -68,7 +69,7 @@ class InventoryRepositoryImpl : InventoryRepository {
         productId: String,
         quantity: Int,
         operation: String,
-    ): InventoryResponse = query {
+    ): InventoryResponse = retryQuery {
         val inventory = InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()
             ?: productId.throwNotFound("Inventory")
 
