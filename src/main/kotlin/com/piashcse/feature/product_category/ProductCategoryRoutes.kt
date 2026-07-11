@@ -1,8 +1,10 @@
 package com.piashcse.feature.product_category
 
+import com.piashcse.plugin.RateLimitNames
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -27,31 +29,33 @@ fun Route.productCategoryRoutes() {
  */
 fun Route.productCategoryAdminRoutes() {
     val productCategoryRepo: ProductCategoryRepository by inject()
-    /**
-     * @tag Product-Category
-     * @description Admin: Create a new product category
-     */
-    post {
-        val name = call.requireQueryParameter("name")
-        call.respondCreated(productCategoryRepo.createCategory(name))
-    }
+    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+        /**
+         * @tag Product-Category
+         * @description Admin: Create a new product category
+         */
+        post {
+            val name = call.requireQueryParameter("name")
+            call.respondCreated(productCategoryRepo.createCategory(name))
+        }
 
-    /**
-     * @tag Product-Category
-     * @description Admin: Update an existing product category name
-     */
-    put("{id}") {
-        val id = call.requirePathParameter("id")
-        val name = call.requireQueryParameter("name")
-        call.respondOk(productCategoryRepo.updateCategory(id, name))
-    }
+        /**
+         * @tag Product-Category
+         * @description Admin: Update an existing product category name
+         */
+        put("{id}") {
+            val id = call.requirePathParameter("id")
+            val name = call.requireQueryParameter("name")
+            call.respondOk(productCategoryRepo.updateCategory(id, name))
+        }
 
-    /**
-     * @tag Product-Category
-     * @description Admin: Permanently delete a product category
-     */
-    delete("{id}") {
-        val id = call.requirePathParameter("id")
-        call.respondOk(productCategoryRepo.deleteCategory(id))
+        /**
+         * @tag Product-Category
+         * @description Admin: Permanently delete a product category
+         */
+        delete("{id}") {
+            val id = call.requirePathParameter("id")
+            call.respondOk(productCategoryRepo.deleteCategory(id))
+        }
     }
 }

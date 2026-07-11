@@ -13,16 +13,14 @@ import com.piashcse.utils.email.EmailSender
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.validator.InvalidCredentialsException
 import com.piashcse.utils.validator.ValidationException
-import java.util.concurrent.ConcurrentHashMap
 
 class UserAuthenticationService(private val authRepo: AuthRepository) {
     companion object {
         private const val MAX_LOGIN_ATTEMPTS = 5
         private const val ACCOUNT_LOCKOUT_MINUTES = 30L
         private const val MAX_OTP_ATTEMPTS = 5
+        private const val OTP_LOCKOUT_MINUTES = 30L
     }
-
-    private val otpAttemptsCache = ConcurrentHashMap<String, Int>()
 
     suspend fun register(registerRequest: RegisterRequest): RegistrationResult {
         if (UserType.fromString(registerRequest.userType) == null)
@@ -68,18 +66,18 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
     }
 
     suspend fun otpVerification(userId: String, otp: String): Boolean {
-        val attemptKey = "otp_attempts_$userId"
-        val currentAttempts = otpAttemptsCache.getOrDefault(attemptKey, 0)
+        val currentAttempts = authRepo.getOtpAttempt(userId)
         if (currentAttempts >= MAX_OTP_ATTEMPTS) {
             authRepo.invalidateOtp(userId)
             throw ValidationException(Message.Auth.OTP_INVALID)
         }
         val isValid = authRepo.verifyOtp(userId, otp)
         if (isValid) {
-            otpAttemptsCache.remove(attemptKey)
+            authRepo.resetOtpAttempts(userId)
         } else {
-            otpAttemptsCache[attemptKey] = currentAttempts + 1
-            if (currentAttempts + 1 >= MAX_OTP_ATTEMPTS) {
+            val newCount = authRepo.recordFailedOtpAttempt(userId)
+            if (newCount >= MAX_OTP_ATTEMPTS) {
+                authRepo.lockOtpAttempts(userId)
                 authRepo.invalidateOtp(userId)
             }
         }

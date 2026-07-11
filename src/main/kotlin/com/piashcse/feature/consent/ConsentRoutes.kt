@@ -3,11 +3,13 @@ package com.piashcse.feature.consent
 import com.piashcse.constants.PolicyType
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.PolicyConsentRequest
+import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondOk
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
@@ -19,14 +21,16 @@ import org.koin.ktor.ext.inject
 fun Route.consentRoutes() {
     val consentRepo: ConsentRepository by inject()
     customerAuth {
-        /**
-         * @tag Privacy-Policy-Consent
-         * @description Record user consent for a specific policy document
-         */
-        post("consent") {
-            call.respondOk(call.receive<PolicyConsentRequest>().let {
-                consentRepo.recordConsent(call.currentUserId, it.copy(it.policyId, call.request.origin.remoteHost, call.request.headers["User-Agent"]))
-            })
+        rateLimit(RateLimitName(RateLimitNames.WRITE)) {
+            /**
+             * @tag Privacy-Policy-Consent
+             * @description Record user consent for a specific policy document
+             */
+            post("consent") {
+                call.respondOk(call.receive<PolicyConsentRequest>().let {
+                    consentRepo.recordConsent(call.currentUserId, it.copy(it.policyId, call.request.origin.remoteHost, call.request.headers["User-Agent"]))
+                })
+            }
         }
     }
 

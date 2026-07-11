@@ -217,19 +217,19 @@ Every service previously implemented its repository interface directly — `clas
 
 ### 6.1 Rate Limiting — Full Coverage
 
-- [ ] Apply per-user rate limiting to all write endpoints (cart, order, review, product CRUD)
-- [ ] Apply global rate limits to search and catalog endpoints
-- [ ] Make rate limit values configurable via environment variables (not hardcoded constants)
+- [x] Apply per-user rate limiting to all write endpoints (cart, order, review, product CRUD)
+- [x] Apply global rate limits to search and catalog endpoints
+- [x] Make rate limit values configurable via environment variables (not hardcoded constants)
 
 ### 6.2 JWT Blacklist Optimization
 
-- [ ] Move blacklist from database queries (slow, adds latency to every request) to Redis or in-memory cache with TTL
-- [ ] Blacklist entries only need to live for the remaining token lifetime
+- [x] Move blacklist from database queries (slow, adds latency to every request) to Redis or in-memory cache with TTL
+- [x] Blacklist entries only need to live for the remaining token lifetime
 
 ### 6.3 OTP Attempt Tracking — Make Persistent
 
-- [ ] Move `otpAttemptsCache` from `ConcurrentHashMap` to database table or Redis
-- [ ] Survives restarts, works across multiple instances
+- [x] Move `otpAttemptsCache` from `ConcurrentHashMap` to database table or Redis
+- [x] Survives restarts, works across multiple instances
 
 ### 6.4 Upload Expiry & Cleanup
 
@@ -346,13 +346,13 @@ Every service previously implemented its repository interface directly — `clas
 | 3 | Database & Migrations | 1/3 | 🟠 |
 | 4 | Automated Testing | 0/4 | 🟠 |
 | 5 | Production Infrastructure | 0/4 | 🟢 |
-| 6 | Security Hardening | 0/4 | 🟢 |
+| 6 | Security Hardening | 3/4 | 🟢 |
 | 7 | Real Payment Integration | 0/4 | 🟢 |
 | 8 | Advanced Search & Discovery | 0/3 | 🟢 |
 | 9 | Advanced Coupon Engine | 0/2 | 🟢 |
 | 10 | Concurrency & Async | 0/3 | 🟢 |
 
-**Overall**: 11 of 37 items completed (30%)
+**Overall**: 14 of 37 items completed (38%)
 
 ---
 
@@ -370,7 +370,7 @@ Every service previously implemented its repository interface directly — `clas
 | 3 | ⏳ 1/3 done — indexes & constraints pending |
 | 4 | ❌ Not started |
 | 5 | ❌ Not started |
-| 6 | ❌ Not started |
+| 6 | ⏳ 3/4 done — upload expiry & cleanup pending |
 | 7 | ❌ Not started |
 | 8 | ❌ Not started |
 | 9 | ❌ Not started |

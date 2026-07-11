@@ -9,6 +9,7 @@ import com.piashcse.database.entities.*
 import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
+import com.piashcse.service.CacheService
 import com.piashcse.utils.common.generateOTP
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.requireNotBlank
@@ -28,6 +29,8 @@ class AuthRepositoryImpl : AuthRepository {
         private const val REFRESH_TOKEN_EXPIRY_SECONDS = 7L * 24 * 60 * 60
         private const val MAX_LOGIN_ATTEMPTS = 5
         private const val ACCOUNT_LOCKOUT_MINUTES = 30L
+        private const val OTP_LOCKOUT_MINUTES = 30L
+        private const val JWT_EXPIRY_SECONDS = 900L
     }
 
     // ── Token helpers ─────────────────────────────────────────────────────
@@ -230,6 +233,44 @@ class AuthRepositoryImpl : AuthRepository {
         userEntity.otpExpiry = null
     }
 
+    // ── OTP attempt tracking (persistent) ─────────────────────────────────
+
+    override suspend fun getOtpAttempt(userId: String): Int = query {
+        OtpAttemptDAO.find { OtpAttemptTable.userId eq EntityID(userId, UserTable) }
+            .singleOrNull()?.attemptCount ?: 0
+    }
+
+    override suspend fun recordFailedOtpAttempt(userId: String): Int = query {
+        val existing = OtpAttemptDAO.find { OtpAttemptTable.userId eq EntityID(userId, UserTable) }
+            .singleOrNull()
+        if (existing != null) {
+            existing.attemptCount++
+            existing.attemptCount
+        } else {
+            OtpAttemptDAO.new {
+                this.userId = EntityID(userId, UserTable)
+                this.attemptCount = 1
+            }
+            1
+        }
+    }
+
+    override suspend fun resetOtpAttempts(userId: String) {
+        query {
+            OtpAttemptDAO.find { OtpAttemptTable.userId eq EntityID(userId, UserTable) }
+                .singleOrNull()?.delete()
+        }
+    }
+
+    override suspend fun lockOtpAttempts(userId: String) {
+        query {
+            OtpAttemptDAO.find { OtpAttemptTable.userId eq EntityID(userId, UserTable) }
+                .singleOrNull()?.apply {
+                    lockedUntil = Instant.now().plusSeconds(OTP_LOCKOUT_MINUTES * 60)
+                }
+        }
+    }
+
     // ── Token refresh ─────────────────────────────────────────────────────
 
     override suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair {
@@ -261,11 +302,15 @@ class AuthRepositoryImpl : AuthRepository {
         return true
     }
 
-    override suspend fun blacklistToken(token: String): Boolean = query {
-        if (BlacklistedTokenDAO.find { BlacklistedTokenTable.token eq token }.firstOrNull() == null) {
-            BlacklistedTokenDAO.new { this.token = token; this.blacklistedAt = Instant.now() }
+    override suspend fun blacklistToken(token: String): Boolean {
+        val result = query {
+            if (BlacklistedTokenDAO.find { BlacklistedTokenTable.token eq token }.firstOrNull() == null) {
+                BlacklistedTokenDAO.new { this.token = token; this.blacklistedAt = Instant.now() }
+            }
+            true
         }
-        true
+        CacheService.cache.set("blacklisted_token:$token", true, JWT_EXPIRY_SECONDS)
+        return result
     }
 
     // ── Admin: User Management ────────────────────────────────────────────

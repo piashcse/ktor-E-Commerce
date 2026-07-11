@@ -35,6 +35,12 @@ interface AuthRepository {
     suspend fun verifyOtp(userId: String, otp: String): Boolean
     suspend fun invalidateOtp(userId: String)
 
+    // OTP attempt tracking
+    suspend fun getOtpAttempt(userId: String): Int
+    suspend fun recordFailedOtpAttempt(userId: String): Int
+    suspend fun resetOtpAttempts(userId: String)
+    suspend fun lockOtpAttempts(userId: String)
+
     // Password
     suspend fun changePassword(userId: String, changePassword: ChangePassword): Boolean
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest)
