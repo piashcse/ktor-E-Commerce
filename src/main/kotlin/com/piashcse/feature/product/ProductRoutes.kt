@@ -36,7 +36,7 @@ fun Route.productRoutes() {
          * @description Retrieve a paginated list of products with optional filters
          */
         get {
-            call.respondOk(productRepo.getProducts(call.productWithFilterRequest(defaultLimit = 10)))
+            call.respondOk(productRepo.getProducts(call.productWithFilterRequest(defaultPerPage = 10)))
         }
 
         /**
@@ -44,7 +44,7 @@ fun Route.productRoutes() {
          * @description Search for products by name with fuzzy matching, faceted aggregation, and ranking
          */
         get("search") {
-            val (limit, offset) = call.paginateQueryParams(defaultLimit = 10)
+            val (limit, offset) = call.paginateQueryParams(defaultPerPage = 10)
             val queryParams =
                 ProductSearchRequest(
                     limit = limit,
@@ -74,7 +74,7 @@ fun Route.productSellerRoutes() {
      * @description Seller: Retrieve seller products
      */
     get {
-        call.respondOk(productRepo.getProductsByUser(call.currentUserId, call.productWithFilterRequest(defaultLimit = 10)))
+        call.respondOk(productRepo.getProductsByUser(call.currentUserId, call.productWithFilterRequest(defaultPerPage = 10)))
     }
 
     rateLimit(RateLimitName(RateLimitNames.SELLER_WRITE)) {

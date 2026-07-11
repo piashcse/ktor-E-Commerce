@@ -7,15 +7,12 @@ import com.piashcse.mapper.toInventoryResponse
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.retryQuery
-import com.piashcse.utils.extension.requireNotBlank
-import com.piashcse.utils.extension.throwNotFound
-import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.extension.*
+import com.piashcse.utils.extension.*
+import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -51,8 +48,8 @@ class InventoryRepositoryImpl : InventoryRepository {
             maximumStockLevel = request.maximumStockLevel ?: maximumStockLevel
             status = InventoryStatus.fromStockLevel(stockQuantity, minimumStockLevel)
         } ?: InventoryDAO.new {
-            productId = EntityID(request.productId, ProductTable)
-            shopId = EntityID(request.shopId, ShopTable)
+            productId = request.productId.entityID(ProductTable)
+            shopId = request.shopId.entityID(ShopTable)
             stockQuantity = request.stockQuantity
             minimumStockLevel = request.minimumStockLevel ?: DEFAULT_MIN_STOCK
             maximumStockLevel = request.maximumStockLevel ?: DEFAULT_MAX_STOCK

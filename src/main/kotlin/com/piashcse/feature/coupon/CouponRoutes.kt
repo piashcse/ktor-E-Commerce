@@ -64,7 +64,7 @@ fun Route.couponAdminRoutes() {
      * @description Admin: Retrieve a list of all coupons
      */
     get {
-        val (limit, offset) = call.paginateQueryParams(defaultLimit = 10)
+        val (limit, offset) = call.paginateQueryParams(defaultPerPage = 10)
         call.respondOk(couponRepo.getCoupons(limit, offset))
     }
 }

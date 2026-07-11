@@ -7,6 +7,7 @@ import com.piashcse.utils.common.ApiError
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -69,3 +70,16 @@ fun Route.sellerAuth(build: Route.() -> Unit) = requireRole(UserType.SELLER, bui
 fun Route.adminAuth(build: Route.() -> Unit) = requireRole(UserType.ADMIN, UserType.SUPER_ADMIN, build = build)
 
 fun Route.superAdminAuth(build: Route.() -> Unit) = requireRole(UserType.SUPER_ADMIN, build = build)
+
+// Rate Limit DSL helpers
+fun Route.writeRateLimit(build: Route.() -> Unit) {
+    rateLimit(RateLimitName(RateLimitNames.WRITE)) { build() }
+}
+
+fun Route.sellerWriteRateLimit(build: Route.() -> Unit) {
+    rateLimit(RateLimitName(RateLimitNames.SELLER_WRITE)) { build() }
+}
+
+fun Route.adminWriteRateLimit(build: Route.() -> Unit) {
+    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) { build() }
+}

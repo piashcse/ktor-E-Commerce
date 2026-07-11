@@ -5,6 +5,8 @@ import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.InvalidEnumValueException
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
+import org.jetbrains.exposed.v1.core.dao.id.IdTable
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 inline fun <reified T : Enum<T>> String.parseEnum(fieldName: String): T =
     runCatching { enumValueOf<T>(uppercase()) }
@@ -25,3 +27,5 @@ fun String.throwConflict(resourceName: String): Nothing = throw ConflictExceptio
 fun String.requireNotBlank(fieldName: String) {
     if (isBlank()) throw ValidationException(Message.Validation.blankField(fieldName))
 }
+
+fun String.entityID(table: IdTable<String>) = EntityID(this, table)

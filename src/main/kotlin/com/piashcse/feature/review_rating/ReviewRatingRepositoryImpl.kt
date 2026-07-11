@@ -12,7 +12,6 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -41,8 +40,8 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                 .singleOrNull()?.let {
                 throw it.productId.value.throwConflict("Product")
             } ?: ReviewRatingDAO.new {
-                this.userId = EntityID(userId, UserTable)
-                productId = EntityID(reviewRating.productId, ProductTable)
+                this.userId = userId.entityID(UserTable)
+                productId = reviewRating.productId.entityID(ProductTable)
                 reviewText = reviewRating.reviewText
                 rating = reviewRating.rating
             }.toReviewRatingResponse()

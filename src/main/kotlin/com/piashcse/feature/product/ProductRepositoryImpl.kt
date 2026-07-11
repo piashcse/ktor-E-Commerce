@@ -19,7 +19,6 @@ import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.NotFoundException
 import org.jetbrains.exposed.v1.core.*
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -45,9 +44,9 @@ class ProductRepositoryImpl : ProductRepository {
         else null
 
     private fun Query.applyProductFilters(filter: ProductWithFilterRequest): Query {
-        filter.categoryId?.let { andWhere { ProductTable.categoryId eq EntityID(it, ProductCategoryTable) } }
-        filter.subCategoryId?.let { andWhere { ProductTable.subCategoryId eq EntityID(it, ProductSubCategoryTable) } }
-        filter.brandId?.let { andWhere { ProductTable.brandId eq EntityID(it, BrandTable) } }
+        filter.categoryId?.let { andWhere { ProductTable.categoryId eq it.entityID(ProductCategoryTable) } }
+        filter.subCategoryId?.let { andWhere { ProductTable.subCategoryId eq it.entityID(ProductSubCategoryTable) } }
+        filter.brandId?.let { andWhere { ProductTable.brandId eq it.entityID(BrandTable) } }
         filter.minPrice?.let { andWhere { ProductTable.price greaterEq BigDecimal.valueOf(it) } }
         filter.maxPrice?.let { andWhere { ProductTable.price lessEq BigDecimal.valueOf(it) } }
         val sortOrder = if (filter.sortOrder?.lowercase() == "asc") SortOrder.ASC else SortOrder.DESC
@@ -97,11 +96,11 @@ class ProductRepositoryImpl : ProductRepository {
         }
 
         ProductDAO.new {
-            this.userId = EntityID(userId, UserTable)
-            this.shopId = shopId?.let { EntityID(shopId, ShopTable) }
-            categoryId = EntityID(productRequest.categoryId, ProductCategoryTable)
-            subCategoryId = productRequest.subCategoryId?.let { EntityID(it, ProductSubCategoryTable) }
-            brandId = productRequest.brandId?.let { EntityID(it, BrandTable) }
+            this.userId = userId.entityID(UserTable)
+            this.shopId = shopId?.let { shopId.entityID(ShopTable) }
+            categoryId = productRequest.categoryId.entityID(ProductCategoryTable)
+            subCategoryId = productRequest.subCategoryId?.let { it.entityID(ProductSubCategoryTable) }
+            brandId = productRequest.brandId?.let { it.entityID(BrandTable) }
             sku = generateSKU(productRequest.name)
             name = productRequest.name
             description = productRequest.description
@@ -120,7 +119,7 @@ class ProductRepositoryImpl : ProductRepository {
             if (shopId != null) {
                 InventoryDAO.new {
                     productId = product.id
-                    this.shopId = EntityID(shopId, ShopTable)
+                    this.shopId = shopId.entityID(ShopTable)
                     stockQuantity = productRequest.stockQuantity
                     minimumStockLevel = 10
                     maximumStockLevel = 1000
@@ -141,9 +140,9 @@ class ProductRepositoryImpl : ProductRepository {
         product.verifyOwnership(userId, "product") { it.userId.value }
 
         product.apply {
-            categoryId = updateProduct.categoryId?.let { EntityID(it, ProductCategoryTable) } ?: categoryId
-            subCategoryId = updateProduct.subCategoryId?.let { EntityID(it, ProductSubCategoryTable) } ?: subCategoryId
-            brandId = updateProduct.brandId?.let { EntityID(it, BrandTable) } ?: brandId
+            categoryId = updateProduct.categoryId?.let { it.entityID(ProductCategoryTable) } ?: categoryId
+            subCategoryId = updateProduct.subCategoryId?.let { it.entityID(ProductSubCategoryTable) } ?: subCategoryId
+            brandId = updateProduct.brandId?.let { it.entityID(BrandTable) } ?: brandId
             name = updateProduct.name ?: name
             description = updateProduct.description ?: description
             price = updateProduct.price?.let { BigDecimal.valueOf(it) } ?: price
@@ -209,7 +208,7 @@ class ProductRepositoryImpl : ProductRepository {
             )
         }
 
-        val idEntities = productIds.map { EntityID(it, ProductTable) }
+        val idEntities = productIds.map { it.entityID(ProductTable) }
         val rows = ProductTable.selectAll().andWhere { ProductTable.id inList idEntities }
         val rowsById = rows.associateBy { it[ProductTable.id].value }
         val orderedRows = productIds.mapNotNull { rowsById[it] }
@@ -398,37 +397,29 @@ class ProductRepositoryImpl : ProductRepository {
         return SearchFacets(executeFacetQuery(categorySql), executeFacetQuery(brandSql))
     }
 
-    override suspend fun getProductsByCategory(categoryId: String): PaginatedResponse<ProductResponse> = query {
-        val condition: Op<Boolean> = (ProductTable.categoryId eq categoryId) and (ProductTable.status eq ProductStatus.ACTIVE)
-        val count = ProductDAO.count(condition)
-        val products = ProductDAO.find(condition).orderBy(ProductTable.createdAt to SortOrder.DESC).toList()
-        val imagesMap = if (products.isNotEmpty()) ProductImageDAO.imagesForProducts(products.map { it.id }) else emptyMap()
-        val data = products.map { it.toProductResponse(imagesMap[it.id.value]) }
-        PaginatedResponse(data, PaginationMetadata(count, data.size, 0))
-    }
+    override suspend fun getProductsByCategory(categoryId: String) =
+        queryProducts(ProductTable.categoryId eq categoryId, ProductTable.createdAt to SortOrder.DESC)
 
-    override suspend fun getFeaturedProducts(): PaginatedResponse<ProductResponse> = query {
-        val condition: Op<Boolean> = (ProductTable.featured eq true) and (ProductTable.status eq ProductStatus.ACTIVE)
-        val count = ProductDAO.count(condition)
-        val products = ProductDAO.find(condition).orderBy(ProductTable.createdAt to SortOrder.DESC).toList()
-        val imagesMap = if (products.isNotEmpty()) ProductImageDAO.imagesForProducts(products.map { it.id }) else emptyMap()
-        val data = products.map { it.toProductResponse(imagesMap[it.id.value]) }
-        PaginatedResponse(data, PaginationMetadata(count, data.size, 0))
-    }
+    override suspend fun getFeaturedProducts() =
+        queryProducts(ProductTable.featured eq true, ProductTable.createdAt to SortOrder.DESC)
 
-    override suspend fun getBestSellingProducts(): PaginatedResponse<ProductResponse> = query {
-        val condition: Op<Boolean> = (ProductTable.bestSeller eq true) and (ProductTable.status eq ProductStatus.ACTIVE)
-        val count = ProductDAO.count(condition)
-        val products = ProductDAO.find(condition).orderBy(ProductTable.totalSales to SortOrder.DESC).limit(10).toList()
-        val imagesMap = if (products.isNotEmpty()) ProductImageDAO.imagesForProducts(products.map { it.id }) else emptyMap()
-        val data = products.map { it.toProductResponse(imagesMap[it.id.value]) }
-        PaginatedResponse(data, PaginationMetadata(count, data.size, 0))
-    }
+    override suspend fun getBestSellingProducts() =
+        queryProducts(ProductTable.bestSeller eq true, ProductTable.totalSales to SortOrder.DESC, limit = 10)
 
-    override suspend fun getHotDealProducts(): PaginatedResponse<ProductResponse> = query {
-        val condition: Op<Boolean> = (ProductTable.hotDeal eq true) and (ProductTable.status eq ProductStatus.ACTIVE)
-        val count = ProductDAO.count(condition)
-        val products = ProductDAO.find(condition).orderBy(ProductTable.discountPercentage to SortOrder.DESC).limit(10).toList()
+    override suspend fun getHotDealProducts() =
+        queryProducts(ProductTable.hotDeal eq true, ProductTable.discountPercentage to SortOrder.DESC, limit = 10)
+
+    private suspend fun queryProducts(
+        condition: Op<Boolean>,
+        orderBy: Pair<Column<*>, SortOrder>,
+        limit: Int? = null,
+    ): PaginatedResponse<ProductResponse> = query {
+        val statusCondition = condition and (ProductTable.status eq ProductStatus.ACTIVE)
+        val count = ProductDAO.count(statusCondition)
+        val products = ProductDAO.find(statusCondition)
+            .orderBy(orderBy)
+            .also { if (limit != null) it.limit(limit) }
+            .toList()
         val imagesMap = if (products.isNotEmpty()) ProductImageDAO.imagesForProducts(products.map { it.id }) else emptyMap()
         val data = products.map { it.toProductResponse(imagesMap[it.id.value]) }
         PaginatedResponse(data, PaginationMetadata(count, data.size, 0))
