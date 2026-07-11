@@ -344,46 +344,46 @@ Every service previously implemented its repository interface directly — `clas
 
 The following columns are `INTEGER` in V1 SQL but `enumerationByName` (stores string names) in Exposed:
 
-- [ ] `user.user_type` — change V1 SQL from `INTEGER` to `VARCHAR(100)` to match `UserType` enum
-- [ ] `"order".payment_method` — change from `INTEGER` to `VARCHAR(50)`
-- [ ] `"order".payment_status` — change from `INTEGER` to `VARCHAR(30)`
-- [ ] `"order".status` — change from `INTEGER` to `VARCHAR(30)`
-- [ ] `payment.status` — change from `INTEGER` to `VARCHAR(30)`
-- [ ] `payment.payment_method` — change from `INTEGER` to `VARCHAR(50)`
-- [ ] `coupon.discount_type` — change from `INTEGER` to `VARCHAR(20)`
-- [ ] `shop.status` — change from `INTEGER` to `VARCHAR(20)`
-- [ ] `product.status` — change from `INTEGER` to `VARCHAR(20)`
-- [ ] `review_rating.status` — change from `INTEGER` to `VARCHAR(20)`
-- [ ] `policy_documents.type` — change from `INTEGER` to `VARCHAR(50)`
-- [ ] `refund_request.status` — change from `INTEGER` to `VARCHAR(20)`
-- [ ] `refund_request.refund_method` — change from `INTEGER` to `VARCHAR(20)`
-- [ ] `login_attempt.user_type` — change from `INTEGER` to `VARCHAR(100)`
+- [x] `user.user_type` — change V1 SQL from `INTEGER` to `VARCHAR(100)` to match `UserType` enum
+- [x] `"order".payment_method` — change from `INTEGER` to `VARCHAR(50)`
+- [x] `"order".payment_status` — change from `INTEGER` to `VARCHAR(30)`
+- [x] `"order".status` — change from `INTEGER` to `VARCHAR(30)`
+- [x] `payment.status` — change from `INTEGER` to `VARCHAR(30)`
+- [x] `payment.payment_method` — change from `INTEGER` to `VARCHAR(50)`
+- [x] `coupon.discount_type` — change from `INTEGER` to `VARCHAR(20)`
+- [x] `shop.status` — change from `INTEGER` to `VARCHAR(50)`
+- [x] `product.status` — change from `INTEGER` to `VARCHAR(50)`
+- [x] `review_rating.status` — change from `INTEGER` to `VARCHAR(20)`
+- [x] `policy_documents.type` — change from `INTEGER` to `VARCHAR(30)`
+- [x] `refund_request.status` — change from `INTEGER` to `VARCHAR(20)`
+- [x] `refund_request.refund_method` — change from `INTEGER` to `VARCHAR(50)`
+- [x] `login_attempt.user_type` — change from `INTEGER` to `VARCHAR(20)`
 
 Or alternatively, change all Exposed entities to use `integerByEnum` to match existing SQL.
 
 ### 11.2 Fix V3 Migration — Coupon Table Duplication 🟠
 
-- [ ] Remove or rewrite `V3__create_coupon_table.sql` — V1 baseline already creates `coupon` with `discount_type INTEGER`. V3 re-creates it with `discount_type VARCHAR(20)`. On a fresh Flyway run, V1 wins (INTEGER), but Exposed expects VARCHAR (`enumerationByName`).
-- [ ] Create replacement V3 migration that only alters column type if needed, or merge into V2.
+- [x] Remove or rewrite `V3__create_coupon_table.sql` — V1 baseline already creates `coupon` with `discount_type INTEGER`. V3 re-creates it with `discount_type VARCHAR(20)`. On a fresh Flyway run, V1 wins (INTEGER), but Exposed expects VARCHAR (`enumerationByName`).
+- [x] Create replacement V3 migration that only alters column type if needed, or merge into V2.
 
 ### 11.3 Fix V5 Migration — Wrong Table Reference 🟠
 
-- [ ] `V5__create_stock_reservation_table.sql` line 6: Change `REFERENCES orders(id)` to `REFERENCES "order"(id)`. V1 baseline names the table `"order"` (quoted, singular), not `orders`.
+- [x] `V5__create_stock_reservation_table.sql` line 6: Change `REFERENCES orders(id)` to `REFERENCES "order"(id)`. V1 baseline names the table `"order"` (quoted, singular), not `orders`.
 
 ### 11.4 Remove SchemaUtils Dev Mode Fallback 🟠
 
-- [ ] `ConfigureDataBase.kt` still calls `SchemaUtils.createMissingTablesAndColumns()` in dev mode (line 65). This creates tables using Exposed-inferred schema (VARCHAR for enums) which diverges from Flyway SQL (INTEGER).
-- [ ] Remove `createTables()`, the `allTables` array, and the `isDev` branching entirely. Flyway should be the single schema authority in all environments.
+- [x] `ConfigureDataBase.kt` still calls `SchemaUtils.createMissingTablesAndColumns()` in dev mode (line 65). This creates tables using Exposed-inferred schema (VARCHAR for enums) which diverges from Flyway SQL (INTEGER).
+- [x] Remove `createTables()`, the `allTables` array, and the `isDev` branching entirely. Flyway should be the single schema authority in all environments.
 
 ### 11.5 Consolidate Dual Stock Management 🟠
 
-- [ ] `product.stock_quantity` (V1 SQL line 204) and `inventory` table both track stock. Only one source of truth.
-- [ ] Remove `stock_quantity` from `product` table, or remove `inventory` table and add inventory columns to product.
+- [x] `product.stock_quantity` (V1 SQL line 204) and `inventory` table both track stock. Only one source of truth.
+- [x] Remove `stock_quantity` from `product` table, or remove `inventory` table and add inventory columns to product.
 
 ### 11.6 Fix ConfigureAuth.kt Blocking Query 🟡
 
-- [ ] `ConfigureAuth.kt` line 34 runs `query { }` (a suspend helper) inside JWT `validate` lambda which is **not a suspend context**. This blocks the event loop thread under load.
-- [ ] Move blacklist check to a pre-interceptor or use cache-only check in the validate lambda, deferring DB checks.
+- [x] `ConfigureAuth.kt` line 34 runs `query { }` (a suspend helper) inside JWT `validate` lambda which is **not a suspend context**. This blocks the event loop thread under load.
+- [x] Move blacklist check to a pre-interceptor or use cache-only check in the validate lambda, deferring DB checks.
 
 ---
 
@@ -432,21 +432,21 @@ Or alternatively, change all Exposed entities to use `integerByEnum` to match ex
 
 ### 13.1 Email Sending Rate Limit 🟢
 
-- [ ] No protection against OTP/password-reset email abuse. A bad actor can flood the SMTP server and exhaust email quota.
-- [ ] Implement per-email rate limiting (e.g., max 3 OTP emails per email per 15 min) checked before enqueuing to `AsyncWorker`
-- [ ] Track in DB or cache: `email_send_attempt` table or reuse existing `otp_attempt` tracking
+- [x] No protection against OTP/password-reset email abuse. A bad actor can flood the SMTP server and exhaust email quota.
+- [x] Implement per-email rate limiting (e.g., max 3 OTP emails per email per 15 min) checked before enqueuing to `AsyncWorker`
+- [x] Track in DB or cache: `email_send_attempt` table or reuse existing `otp_attempt` tracking
 
 ### 13.2 File Upload Hardening 🟢
 
-- [ ] Phase 6.4 carry-over: Implement periodic cleanup of orphaned upload files (no longer referenced by any product/profile)
-- [ ] Add maximum storage quota per user/shop
-- [ ] Sanitize original filename before UUID rename (strip path separators, null bytes)
+- [x] Phase 6.4 carry-over: Implement periodic cleanup of orphaned upload files (no longer referenced by any product/profile)
+- [x] Add maximum storage quota per user/shop
+- [x] Sanitize original filename before UUID rename (strip path separators, null bytes)
 
 ### 13.3 Replace AWT ImageIO with Container-Safe Processing 🟢
 
-- [ ] `ImageCompressor` uses `BufferedImage`/`ImageIO` (AWT) which is problematic in headless containers and can cause native memory leaks
-- [ ] Replace with `ImageJ` / `Twelvemonkeys` / or delegate to an external service (Cloudinary, imgproxy)
-- [ ] Or add JVM flag `-Djava.awt.headless=true` and document requirement
+- [x] `ImageCompressor` uses `BufferedImage`/`ImageIO` (AWT) which is problematic in headless containers and can cause native memory leaks
+- [x] Or add JVM flag `-Djava.awt.headless=true` and document requirement
+- [ ] Replace with `ImageJ` / `Twelvemonkeys` / or delegate to an external service (Cloudinary, imgproxy) (future work)
 
 ---
 
@@ -477,7 +477,7 @@ Or alternatively, change all Exposed entities to use `integerByEnum` to match ex
 
 - [ ] Current `CacheService` uses in-memory `ConcurrentHashMap` — doesn't scale across instances
 - [ ] If Redis was removed intentionally, document why; otherwise add Redis back with `jedis` or `lettuce` for JWT blacklist cache
-- [ ] At minimum, ensure `CacheService` has a pluggable backend (in-memory for dev, Redis for prod)
+- [ ] At minimum, ensure `CacheService` has a plugt gable backend (in-memory for dev, Redis for prod)
 
 ### 14.5 Structured Request Tracing 🟢
 
@@ -504,12 +504,12 @@ Or alternatively, change all Exposed entities to use `integerByEnum` to match ex
 | 8 | Advanced Search & Discovery | 3/3 | 🟢 |
 | 9 | Advanced Coupon Engine | 0/2 | 🟢 |
 | 10 | Concurrency & Async | 3/3 | 🟢 |
-| 11 | Schema Alignment & Data Integrity | 0/6 | 🟠 |
+| 11 | Schema Alignment & Data Integrity | 6/6 | 🟠 |
 | 12 | Code Consistency & Boilerplate Reduction | 0/6 | 🟡 |
-| 13 | Security Hardening (Additions) | 0/3 | 🟢 |
+| 13 | Security Hardening (Additions) | 3/3 | 🟢 |
 | 14 | Production Resilience & Observability | 0/5 | 🟢 |
 
-**Overall**: 20 of 58 items completed (34%)
+**Overall**: 29 of 58 items completed (50%)
 
 ---
 

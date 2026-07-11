@@ -34,10 +34,13 @@ object UploadService {
 
     // File size limit (applies to all image types)
     private const val MAX_FILE_SIZE = 5L * 1024 * 1024 // 5 MB
+    private const val MAX_STORAGE_PER_DIR = 500L * 1024 * 1024 // 500 MB per upload directory
 
     // Allowed types
     private val ALLOWED_MIME_TYPES = setOf("image/jpeg", "image/png", "image/webp", "image/gif")
     private val ALLOWED_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp", "gif")
+
+    private val INVALID_FILENAME_REGEX = Regex("""[^\w.\-]""")
 
     init {
         // Create all upload directories on startup
@@ -107,8 +110,15 @@ object UploadService {
                 file.originalFileName
                     ?: throw ValidationException(Message.Upload.fileNameRequired(purpose))
 
+            // Sanitize filename: strip null bytes, path separators, control characters
+            val sanitizedName = originalName
+                .replace(Regex("""[\x00/\\:]"""), "_")
+                .replace(Regex("""\p{Cntrl}"""), "")
+                .trim()
+                .ifEmpty { throw ValidationException(Message.Upload.fileNameRequired(purpose)) }
+
             // Extract and validate extension
-            val extension = originalName.substringAfterLast('.', "").lowercase()
+            val extension = sanitizedName.substringAfterLast('.', "").lowercase()
             if (extension !in ALLOWED_EXTENSIONS) {
                 throw ValidationException(Message.Upload.invalidFileType(purpose, ALLOWED_EXTENSIONS.joinToString(", ")))
             }
@@ -138,12 +148,17 @@ object UploadService {
             // Generate secure filename
             val fileName = "${UUID.randomUUID()}.$extension"
 
-            // Validate path and write file
+            // Validate path and storage quota
             val targetDir = getDirectory(directory)
             val targetFile = File(targetDir, fileName)
 
             if (!targetFile.canonicalPath.startsWith(targetDir.canonicalPath)) {
                 throw ValidationException(Message.Upload.INVALID_FILE_PATH)
+            }
+
+            val dirSize = targetDir.walkTopDown().filter { it.isFile }.sumOf { it.length() }
+            if (dirSize + bytes.size > MAX_STORAGE_PER_DIR) {
+                throw ValidationException(Message.Upload.storageQuotaExceeded(purpose))
             }
 
             targetFile.writeBytes(bytes)
