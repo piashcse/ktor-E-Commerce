@@ -5,11 +5,13 @@ import com.piashcse.constants.UserType
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
+import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.http.*
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -21,20 +23,22 @@ import org.koin.ktor.ext.inject
 fun Route.refundRequestRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
     customerAuth {
-        /**
-         * @tag Refund-Request
-         * @description Create a refund request for an order item
-         */
-        post("{orderId}") {
-            call.respondCreated(refundRequestRepo.createRefundRequest(call.currentUserId, call.requirePathParameter("orderId"), call.receive<RefundRequestRequest>()))
-        }
+        rateLimit(RateLimitName(RateLimitNames.WRITE)) {
+            /**
+             * @tag Refund-Request
+             * @description Create a refund request for an order item
+             */
+            post("{orderId}") {
+                call.respondCreated(refundRequestRepo.createRefundRequest(call.currentUserId, call.requirePathParameter("orderId"), call.receive<RefundRequestRequest>()))
+            }
 
-        /**
-         * @tag Refund-Request
-         * @description Mark an approved refund as shipped
-         */
-        post("{id}/ship") {
-            call.respondOk(refundRequestRepo.shipRefund(call.requirePathParameter("id"), call.receive<ShipRefundRequest>(), call.currentUserId))
+            /**
+             * @tag Refund-Request
+             * @description Mark an approved refund as shipped
+             */
+            post("{id}/ship") {
+                call.respondOk(refundRequestRepo.shipRefund(call.requirePathParameter("id"), call.receive<ShipRefundRequest>(), call.currentUserId))
+            }
         }
     }
 
@@ -68,12 +72,14 @@ fun Route.refundRequestRoutes() {
  */
 fun Route.refundSellerRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
-    /**
-     * @tag Refund
-     * @description Seller: Update refund request status
-     */
-    put("{id}/status") {
-        call.respondOk(refundRequestRepo.updateRefundStatus(call.requirePathParameter("id"), call.receive<UpdateRefundStatusRequest>(), call.currentUserId))
+    rateLimit(RateLimitName(RateLimitNames.SELLER_WRITE)) {
+        /**
+         * @tag Refund
+         * @description Seller: Update refund request status
+         */
+        put("{id}/status") {
+            call.respondOk(refundRequestRepo.updateRefundStatus(call.requirePathParameter("id"), call.receive<UpdateRefundStatusRequest>(), call.currentUserId))
+        }
     }
 }
 
@@ -82,6 +88,16 @@ fun Route.refundSellerRoutes() {
  */
 fun Route.refundAdminRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
+    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+        /**
+         * @tag Refund
+         * @description Admin: Update refund status
+         */
+        put("{id}/status") {
+            call.respondOk(refundRequestRepo.updateRefundStatus(call.requirePathParameter("id"), call.receive<UpdateRefundStatusRequest>(), call.currentUserId))
+        }
+    }
+
     /**
      * @tag Refund
      * @description Admin: Get all refund requests for an order
@@ -89,13 +105,5 @@ fun Route.refundAdminRoutes() {
     get("order/{orderId}") {
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(refundRequestRepo.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, UserType.ADMIN, limit, offset))
-    }
-
-    /**
-     * @tag Refund
-     * @description Admin: Update refund status
-     */
-    put("{id}/status") {
-        call.respondOk(refundRequestRepo.updateRefundStatus(call.requirePathParameter("id"), call.receive<UpdateRefundStatusRequest>(), call.currentUserId))
     }
 }

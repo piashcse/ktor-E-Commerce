@@ -1,10 +1,12 @@
 package com.piashcse.feature.payment
 
 import com.piashcse.model.request.PaymentRequest
+import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.customerAuth
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -15,12 +17,14 @@ import org.koin.ktor.ext.inject
 fun Route.paymentRoutes() {
     val paymentRepo: PaymentRepository by inject()
     customerAuth {
-        /**
-         * @tag Payment
-         * @description Create a new payment record for an order
-         */
-        post {
-            call.respondCreated(paymentRepo.createPayment(call.receive<PaymentRequest>()))
+        rateLimit(RateLimitName(RateLimitNames.WRITE)) {
+            /**
+             * @tag Payment
+             * @description Create a new payment record for an order
+             */
+            post {
+                call.respondCreated(paymentRepo.createPayment(call.receive<PaymentRequest>()))
+            }
         }
 
         /**

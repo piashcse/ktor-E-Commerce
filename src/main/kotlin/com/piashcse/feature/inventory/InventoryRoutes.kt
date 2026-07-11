@@ -1,10 +1,12 @@
 package com.piashcse.feature.inventory
 
 import com.piashcse.model.request.InventoryRequest
+import com.piashcse.plugin.RateLimitNames
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.http.*
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -15,24 +17,26 @@ import org.koin.ktor.ext.inject
  */
 fun Route.inventorySellerRoutes() {
     val inventoryRepo: InventoryRepository by inject()
-    /**
-     * @tag Inventory
-     * @description Seller: Initialize or update inventory for a product
-     */
-    post {
-        call.respondCreated(inventoryRepo.createOrUpdateInventory(call.receive<InventoryRequest>()))
-    }
+    rateLimit(RateLimitName(RateLimitNames.SELLER_WRITE)) {
+        /**
+         * @tag Inventory
+         * @description Seller: Initialize or update inventory for a product
+         */
+        post {
+            call.respondCreated(inventoryRepo.createOrUpdateInventory(call.receive<InventoryRequest>()))
+        }
 
-    /**
-     * @tag Inventory
-     * @description Seller: Update stock quantity
-     */
-    put("/stock/{productId}") {
-        val productId = call.requirePathParameter("productId")
-        val quantityStr = call.requireQueryParameter("quantity")
-        val quantity = quantityStr.toIntOrNull() ?: throw IllegalArgumentException("quantity must be an integer")
-        val operation = call.parameters["operation"] ?: "set"
-        call.respondOk(inventoryRepo.updateStock(productId, quantity, operation))
+        /**
+         * @tag Inventory
+         * @description Seller: Update stock quantity
+         */
+        put("/stock/{productId}") {
+            val productId = call.requirePathParameter("productId")
+            val quantityStr = call.requireQueryParameter("quantity")
+            val quantity = quantityStr.toIntOrNull() ?: throw IllegalArgumentException("quantity must be an integer")
+            val operation = call.parameters["operation"] ?: "set"
+            call.respondOk(inventoryRepo.updateStock(productId, quantity, operation))
+        }
     }
 
     /**

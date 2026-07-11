@@ -2,12 +2,14 @@ package com.piashcse.feature.profile
 
 import com.piashcse.constants.Message
 import com.piashcse.model.request.UserProfileRequest
+import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.requireRole
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.content.*
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -26,46 +28,48 @@ fun Route.profileRoutes() {
             call.respondOk(userProfileService.getProfile(call.currentUserId))
         }
 
-        /**
-         * @tag Profile
-         * @description Update the authenticated user's profile information
-         */
-        put {
-            val params =
-                UserProfileRequest(
-                    firstName = call.parameters["firstName"],
-                    lastName = call.parameters["lastName"],
-                    mobile = call.parameters["mobile"],
-                    faxNumber = call.parameters["faxNumber"],
-                    streetAddress = call.parameters["streetAddress"],
-                    city = call.parameters["city"],
-                    identificationType = call.parameters["identificationType"],
-                    identificationNo = call.parameters["identificationNo"],
-                    occupation = call.parameters["occupation"],
-                    postCode = call.parameters["postCode"],
-                    gender = call.parameters["gender"],
-                )
-            call.respondOk(userProfileService.updateProfile(call.currentUserId, params))
-        }
-
-        /**
-         * @tag Profile
-         * @description Upload a profile image
-         */
-        post("image-upload") {
-            val multipart = call.receiveMultipart()
-            var imageUrl: String? = null
-
-            multipart.forEachPart { part ->
-                if (part is PartData.FileItem) {
-                    val fileName = UploadService.uploadProfileImage(part)
-                    imageUrl = UploadService.getProfileImageUrl(fileName)
-                    userProfileService.updateProfileImage(call.currentUserId, imageUrl)
-                }
-                part.dispose()
+        rateLimit(RateLimitName(RateLimitNames.WRITE)) {
+            /**
+             * @tag Profile
+             * @description Update the authenticated user's profile information
+             */
+            put {
+                val params =
+                    UserProfileRequest(
+                        firstName = call.parameters["firstName"],
+                        lastName = call.parameters["lastName"],
+                        mobile = call.parameters["mobile"],
+                        faxNumber = call.parameters["faxNumber"],
+                        streetAddress = call.parameters["streetAddress"],
+                        city = call.parameters["city"],
+                        identificationType = call.parameters["identificationType"],
+                        identificationNo = call.parameters["identificationNo"],
+                        occupation = call.parameters["occupation"],
+                        postCode = call.parameters["postCode"],
+                        gender = call.parameters["gender"],
+                    )
+                call.respondOk(userProfileService.updateProfile(call.currentUserId, params))
             }
 
-            call.respondOk(imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED))
+            /**
+             * @tag Profile
+             * @description Upload a profile image
+             */
+            post("image-upload") {
+                val multipart = call.receiveMultipart()
+                var imageUrl: String? = null
+
+                multipart.forEachPart { part ->
+                    if (part is PartData.FileItem) {
+                        val fileName = UploadService.uploadProfileImage(part)
+                        imageUrl = UploadService.getProfileImageUrl(fileName)
+                        userProfileService.updateProfileImage(call.currentUserId, imageUrl)
+                    }
+                    part.dispose()
+                }
+
+                call.respondOk(imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED))
+            }
         }
     }
 }

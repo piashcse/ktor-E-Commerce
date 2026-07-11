@@ -2,9 +2,11 @@ package com.piashcse.feature.policy
 
 import com.piashcse.constants.PolicyType
 import com.piashcse.model.request.CreatePolicyRequest
+import com.piashcse.plugin.RateLimitNames
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -29,12 +31,14 @@ fun Route.policyRoutes() {
  */
 fun Route.policyAdminRoutes() {
     val policyRepo: PolicyRepository by inject()
-    /**
-     * @tag Privacy-Policy
-     * @description Admin: Create a new policy document or new version
-     */
-    post {
-        call.respondCreated(policyRepo.createPolicy(call.receive<CreatePolicyRequest>()))
+    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+        /**
+         * @tag Privacy-Policy
+         * @description Admin: Create a new policy document or new version
+         */
+        post {
+            call.respondCreated(policyRepo.createPolicy(call.receive<CreatePolicyRequest>()))
+        }
     }
 
     /**

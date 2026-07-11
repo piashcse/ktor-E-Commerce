@@ -124,43 +124,45 @@ fun Route.authRoutes() {
  */
 fun Route.authAdminRoutes() {
     val authRepo: AuthRepository by inject()
-    /**
-     * @tag Auth
-     * @description Admin: Change user type
-     */
-    put("/{userId}/change-user-type") {
-        val userId = call.requirePathParameter("userId")
+    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+        /**
+         * @tag Auth
+         * @description Admin: Change user type
+         */
+        put("/{userId}/change-user-type") {
+            val userId = call.requirePathParameter("userId")
 
-        if (authRepo.changeUserType(call.currentUserId, userId, call.requireQueryParameter("userType").parseEnum<UserType>("userType"))) {
-            call.respondOk(mapOf("message" to "User type updated successfully"))
-        } else {
-            call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to update user type"))
+            if (authRepo.changeUserType(call.currentUserId, userId, call.requireQueryParameter("userType").parseEnum<UserType>("userType"))) {
+                call.respondOk(mapOf("message" to "User type updated successfully"))
+            } else {
+                call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to update user type"))
+            }
         }
-    }
 
-    /**
-     * @tag Auth
-     * @description Admin: Deactivate a user account
-     */
-    put("/{userId}/deactivate") {
-        val userId = call.requirePathParameter("userId")
-        if (authRepo.deactivateUser(call.currentUserId, userId)) {
-            call.respondOk(mapOf("message" to "User deactivated successfully"))
-        } else {
-            call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to deactivate user"))
+        /**
+         * @tag Auth
+         * @description Admin: Deactivate a user account
+         */
+        put("/{userId}/deactivate") {
+            val userId = call.requirePathParameter("userId")
+            if (authRepo.deactivateUser(call.currentUserId, userId)) {
+                call.respondOk(mapOf("message" to "User deactivated successfully"))
+            } else {
+                call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to deactivate user"))
+            }
         }
-    }
 
-    /**
-     * @tag Auth
-     * @description Admin: activate a user account
-     */
-    put("/{userId}/activate") {
-        val userId = call.requirePathParameter("userId")
-        if (authRepo.activateUser(call.currentUserId, userId)) {
-            call.respondOk(mapOf("message" to "Message.Auth.ACCOUNT_ACTIVATED"))
-        } else {
-            call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to activate user"))
+        /**
+         * @tag Auth
+         * @description Admin: activate a user account
+         */
+        put("/{userId}/activate") {
+            val userId = call.requirePathParameter("userId")
+            if (authRepo.activateUser(call.currentUserId, userId)) {
+                call.respondOk(mapOf("message" to "Message.Auth.ACCOUNT_ACTIVATED"))
+            } else {
+                call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to activate user"))
+            }
         }
     }
 }
