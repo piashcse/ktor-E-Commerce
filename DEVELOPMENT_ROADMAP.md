@@ -317,22 +317,22 @@ Every service previously implemented its repository interface directly — `clas
 
 ### 10.1 Stock Reservation
 
-- [ ] Create `stock_reservation` table
-- [ ] On checkout initiation → decrement available stock, create reservation records
-- [ ] On payment success → delete reservation, finalize deduction
-- [ ] On timeout/abandon → return reserved stock to inventory (scheduled task at 15-min intervals)
+- [x] Create `stock_reservation` table
+- [x] On checkout initiation → decrement available stock, create reservation records
+- [x] On payment success → delete reservation, finalize deduction
+- [x] On timeout/abandon → return reserved stock to inventory (scheduled task at 15-min intervals)
 
 ### 10.2 Domain Event Bus
 
-- [ ] Implement pub/sub using Kotlin `SharedFlow`
-- [ ] Publish `OrderPlacedEvent`, `UserRegisteredEvent`, `PaymentCompletedEvent`
-- [ ] Decouple: order service publishes → email service + analytics service + audit service subscribe
+- [x] Implement pub/sub using Kotlin `SharedFlow`
+- [x] Publish `OrderPlacedEvent`, `UserRegisteredEvent`, `PaymentCompletedEvent`
+- [x] Decouple: order service publishes → email service + analytics service + audit service subscribe
 
 ### 10.3 Async Background Workers
 
-- [ ] Move SMTP email sending (welcome emails, OTPs, invoices, password resets) to background channel
-- [ ] Offload image compression/resizing to async workers
-- [ ] Responses should not wait for email delivery or image processing
+- [x] Move SMTP email sending (welcome emails, OTPs, invoices, password resets) to background channel
+- [x] Offload image compression/resizing to async workers
+- [x] Responses should not wait for email delivery or image processing
 
 ---
 
@@ -350,9 +350,9 @@ Every service previously implemented its repository interface directly — `clas
 | 7 | Real Payment Integration | 0/4 | 🟢 |
 | 8 | Advanced Search & Discovery | 0/3 | 🟢 |
 | 9 | Advanced Coupon Engine | 0/2 | 🟢 |
-| 10 | Concurrency & Async | 0/3 | 🟢 |
+| 10 | Concurrency & Async | 3/3 | 🟢 |
 
-**Overall**: 14 of 37 items completed (38%)
+**Overall**: 17 of 37 items completed (46%)
 
 ---
 
@@ -374,4 +374,4 @@ Every service previously implemented its repository interface directly — `clas
 | 7 | ❌ Not started |
 | 8 | ❌ Not started |
 | 9 | ❌ Not started |
-| 10 | ❌ Not started |
+| 10 | ✅ Complete |
