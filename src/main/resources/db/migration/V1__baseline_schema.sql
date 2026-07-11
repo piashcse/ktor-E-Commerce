@@ -10,7 +10,7 @@ CREATE TABLE "user" (
     created_at  TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     updated_at  TIMESTAMP,
     email       VARCHAR(255) NOT NULL,
-    user_type   INTEGER NOT NULL,
+    user_type   VARCHAR(100) NOT NULL,
     password    VARCHAR(200) NOT NULL,
     otp_code    VARCHAR(6),
     otp_expiry  TIMESTAMP,
@@ -34,7 +34,7 @@ CREATE TABLE login_attempt (
     created_at    TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     updated_at    TIMESTAMP,
     email         VARCHAR(255) NOT NULL,
-    user_type     INTEGER NOT NULL,
+    user_type     VARCHAR(20) NOT NULL,
     ip_address    VARCHAR(45),
     attempt_count INTEGER NOT NULL DEFAULT 0,
     locked_until  TIMESTAMP
@@ -65,7 +65,7 @@ CREATE TABLE policy_documents (
     created_at     TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     updated_at     TIMESTAMP,
     title          VARCHAR(255) NOT NULL,
-    type           INTEGER NOT NULL,
+    type           VARCHAR(30) NOT NULL,
     content        TEXT NOT NULL,
     version        VARCHAR(50) NOT NULL,
     effective_date TIMESTAMP NOT NULL,
@@ -132,7 +132,7 @@ CREATE TABLE shop (
     email         VARCHAR(255),
     logo          VARCHAR(500),
     cover_image   VARCHAR(500),
-    status        INTEGER NOT NULL DEFAULT 0,
+    status        VARCHAR(50) NOT NULL DEFAULT 'PENDING',
     rating        DECIMAL(3,2) NOT NULL DEFAULT 0.00,
     total_reviews INTEGER NOT NULL DEFAULT 0
 );
@@ -150,7 +150,7 @@ CREATE TABLE seller (
     bank_name                   VARCHAR(100),
     bank_routing_number         VARCHAR(50),
     commission_rate             DECIMAL(5,2) NOT NULL DEFAULT 10.00,
-    status                      INTEGER NOT NULL DEFAULT 0,
+    status              VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
     total_sales                 DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     total_commission            DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     approved_at                 TIMESTAMP,
@@ -196,12 +196,11 @@ CREATE TABLE product (
     best_seller         BOOLEAN NOT NULL DEFAULT FALSE,
     new_product         BOOLEAN NOT NULL DEFAULT FALSE,
     free_shipping       BOOLEAN NOT NULL DEFAULT FALSE,
-    status              INTEGER NOT NULL DEFAULT 0,
+    status              VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
     view_count          INTEGER NOT NULL DEFAULT 0,
     rating              DECIMAL(3,2) NOT NULL DEFAULT 0.00,
     total_reviews       INTEGER NOT NULL DEFAULT 0,
-    total_sales         INTEGER NOT NULL DEFAULT 0,
-    stock_quantity      INTEGER NOT NULL DEFAULT 0
+    total_sales         INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE UNIQUE INDEX product_sku_idx ON product(sku);
@@ -230,7 +229,7 @@ CREATE TABLE coupon (
     created_at          TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     updated_at          TIMESTAMP,
     code                VARCHAR(50) NOT NULL,
-    discount_type       INTEGER NOT NULL,
+    discount_type       VARCHAR(20) NOT NULL,
     discount_value      DOUBLE PRECISION NOT NULL,
     min_order_amount    DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     max_discount_amount DOUBLE PRECISION,
@@ -277,9 +276,9 @@ CREATE TABLE "order" (
     coupon_code       VARCHAR(50),
     total             DECIMAL(10,2) NOT NULL,
     currency          VARCHAR(3) NOT NULL DEFAULT 'USD',
-    payment_method    INTEGER,
-    payment_status    INTEGER NOT NULL DEFAULT 0,
-    status            INTEGER NOT NULL DEFAULT 0,
+    payment_method    VARCHAR(50),
+    payment_status    VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    status            VARCHAR(30) NOT NULL DEFAULT 'PENDING',
     notes             TEXT,
     shipping_method   VARCHAR(50),
     shipping_address  TEXT,
@@ -330,8 +329,8 @@ CREATE TABLE payment (
     order_id        VARCHAR(50) NOT NULL REFERENCES "order"(id),
     user_id         VARCHAR(50) NOT NULL REFERENCES "user"(id),
     amount          BIGINT NOT NULL,
-    status          INTEGER NOT NULL DEFAULT 0,
-    payment_method  INTEGER NOT NULL,
+    status          VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    payment_method  VARCHAR(50) NOT NULL,
     transaction_id  VARCHAR(100)
 );
 
@@ -386,7 +385,7 @@ CREATE TABLE review_rating (
     is_verified_purchase BOOLEAN NOT NULL DEFAULT FALSE,
     helpful_count        INTEGER NOT NULL DEFAULT 0,
     not_helpful_count    INTEGER NOT NULL DEFAULT 0,
-    status               INTEGER NOT NULL DEFAULT 0
+    status               VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
 );
 
 CREATE INDEX review_rating_user_id_idx ON review_rating(user_id);
@@ -413,9 +412,9 @@ CREATE TABLE refund_request (
     order_id        VARCHAR(50) NOT NULL REFERENCES "order"(id),
     reason          TEXT NOT NULL,
     images          VARCHAR(2000),
-    status          INTEGER NOT NULL DEFAULT 0,
+    status          VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     refund_amount   DECIMAL(10,2),
-    refund_method   INTEGER,
+    refund_method   VARCHAR(50),
     tracking_number VARCHAR(100),
     requested_at    TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     resolved_at     TIMESTAMP

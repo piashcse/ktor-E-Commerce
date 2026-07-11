@@ -1,15 +1,13 @@
-CREATE TABLE IF NOT EXISTS coupon (
-    id VARCHAR(50) PRIMARY KEY,
-    code VARCHAR(50) UNIQUE NOT NULL,
-    discount_type VARCHAR(20) NOT NULL,
-    discount_value DOUBLE PRECISION NOT NULL,
-    min_order_amount DOUBLE PRECISION DEFAULT 0.0 NOT NULL,
-    max_discount_amount DOUBLE PRECISION NULL,
-    start_date TIMESTAMP NOT NULL,
-    end_date TIMESTAMP NOT NULL,
-    usage_limit INTEGER NULL,
-    usage_count INTEGER DEFAULT 0 NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NULL
-);
+-- V3: Fix coupon.discount_type column type from INTEGER to VARCHAR
+-- V1 baseline creates coupon with discount_type INTEGER. Exposed expects VARCHAR (enumerationByName).
+-- On fresh installs V1 now creates VARCHAR, so this is a no-op.
+-- On existing DBs with INTEGER values, the USING clause provides a default mapping.
+
+ALTER TABLE coupon ALTER COLUMN discount_type TYPE VARCHAR(20)
+    USING CASE discount_type
+        WHEN 0 THEN 'FIXED'
+        WHEN 1 THEN 'PERCENTAGE'
+        ELSE 'FIXED'
+    END;
+
+ALTER TABLE coupon ALTER COLUMN discount_type SET NOT NULL;

@@ -336,6 +336,159 @@ Every service previously implemented its repository interface directly — `clas
 
 ---
 
+## Phase 11: Schema Alignment & Data Integrity 🟠
+
+> Exposed entities use `enumerationByName` (VARCHAR) but V1 SQL creates columns as INTEGER. Duplicate migrations. Wrong table references. These will cause runtime failures.
+
+### 11.1 Fix Enum Column Type Mismatches 🟠
+
+The following columns are `INTEGER` in V1 SQL but `enumerationByName` (stores string names) in Exposed:
+
+- [ ] `user.user_type` — change V1 SQL from `INTEGER` to `VARCHAR(100)` to match `UserType` enum
+- [ ] `"order".payment_method` — change from `INTEGER` to `VARCHAR(50)`
+- [ ] `"order".payment_status` — change from `INTEGER` to `VARCHAR(30)`
+- [ ] `"order".status` — change from `INTEGER` to `VARCHAR(30)`
+- [ ] `payment.status` — change from `INTEGER` to `VARCHAR(30)`
+- [ ] `payment.payment_method` — change from `INTEGER` to `VARCHAR(50)`
+- [ ] `coupon.discount_type` — change from `INTEGER` to `VARCHAR(20)`
+- [ ] `shop.status` — change from `INTEGER` to `VARCHAR(20)`
+- [ ] `product.status` — change from `INTEGER` to `VARCHAR(20)`
+- [ ] `review_rating.status` — change from `INTEGER` to `VARCHAR(20)`
+- [ ] `policy_documents.type` — change from `INTEGER` to `VARCHAR(50)`
+- [ ] `refund_request.status` — change from `INTEGER` to `VARCHAR(20)`
+- [ ] `refund_request.refund_method` — change from `INTEGER` to `VARCHAR(20)`
+- [ ] `login_attempt.user_type` — change from `INTEGER` to `VARCHAR(100)`
+
+Or alternatively, change all Exposed entities to use `integerByEnum` to match existing SQL.
+
+### 11.2 Fix V3 Migration — Coupon Table Duplication 🟠
+
+- [ ] Remove or rewrite `V3__create_coupon_table.sql` — V1 baseline already creates `coupon` with `discount_type INTEGER`. V3 re-creates it with `discount_type VARCHAR(20)`. On a fresh Flyway run, V1 wins (INTEGER), but Exposed expects VARCHAR (`enumerationByName`).
+- [ ] Create replacement V3 migration that only alters column type if needed, or merge into V2.
+
+### 11.3 Fix V5 Migration — Wrong Table Reference 🟠
+
+- [ ] `V5__create_stock_reservation_table.sql` line 6: Change `REFERENCES orders(id)` to `REFERENCES "order"(id)`. V1 baseline names the table `"order"` (quoted, singular), not `orders`.
+
+### 11.4 Remove SchemaUtils Dev Mode Fallback 🟠
+
+- [ ] `ConfigureDataBase.kt` still calls `SchemaUtils.createMissingTablesAndColumns()` in dev mode (line 65). This creates tables using Exposed-inferred schema (VARCHAR for enums) which diverges from Flyway SQL (INTEGER).
+- [ ] Remove `createTables()`, the `allTables` array, and the `isDev` branching entirely. Flyway should be the single schema authority in all environments.
+
+### 11.5 Consolidate Dual Stock Management 🟠
+
+- [ ] `product.stock_quantity` (V1 SQL line 204) and `inventory` table both track stock. Only one source of truth.
+- [ ] Remove `stock_quantity` from `product` table, or remove `inventory` table and add inventory columns to product.
+
+### 11.6 Fix ConfigureAuth.kt Blocking Query 🟡
+
+- [ ] `ConfigureAuth.kt` line 34 runs `query { }` (a suspend helper) inside JWT `validate` lambda which is **not a suspend context**. This blocks the event loop thread under load.
+- [ ] Move blacklist check to a pre-interceptor or use cache-only check in the validate lambda, deferring DB checks.
+
+---
+
+## Phase 12: Code Consistency & Boilerplate Reduction 🟡
+
+> Every domain follows the same 3-file pattern. Simple CRUD domains get dedicated Repository interface, Impl, and Routes files. Service layer is inconsistent. Centralization gaps.
+
+### 12.1 Generic CRUD Repository Base 🟡
+
+- [ ] Create generic `CrudRepository<T, ID>` base interface with standard operations: `getById`, `getAll`, `create`, `update`, `delete`
+- [ ] Create generic `CrudRepositoryImpl<T, ID, E>` base implementation using Exposed DAO reflection
+- [ ] Apply to simple CRUD domains: `Brand`, `ShopCategory`, `ShippingMethod`, `Policy`, `Consent` — no custom business logic needed
+- [ ] Eliminates ~15 files (3 per domain → 1 shared + 1 per domain)
+
+### 12.2 Consistent Service Layer Across All Features 🟡
+
+- [ ] Currently only Auth (`UserAuthenticationService`), Product (`ProductCatalogService` + `ProductCrudService`), and Profile (`ProfileService`) have service layers. All other routes call repositories directly.
+- [ ] Add `*Service` layer for every feature, injecting the corresponding `*Repository`. Routes should only interact with services.
+- [ ] `ProfileService` currently wraps `ProfileRepositoryImpl` but delegates all calls directly — merge or justify separation.
+
+### 12.3 Extract CheckoutOrchestrator Service 🟡
+
+- [ ] Phase 1.2 carry-over: Move checkout logic from `CheckoutRoutes.kt` into a dedicated `CheckoutOrchestrator` or `CheckoutService`
+- [ ] Move `ShippingAddressRepository` and `ShippingMethodRepository` usage out of `CheckoutRoutes.kt` into their own dedicated route files matching the project pattern
+
+### 12.4 Koin Module Boilerplate Reduction 🟡
+
+- [ ] 22+ repetitive `single<XRepository> { XRepositoryImpl() }` lines. Introduce a Koin `module` helper or use Koin annotation-based injection.
+- [ ] Alternatively, create an `installRepositories()` extension that bulk-registers via a list or reflection.
+
+### 12.5 Centralize All Configurable Constants 🟡
+
+- [ ] `MAX_LOGIN_ATTEMPTS=5`, `ACCOUNT_LOCKOUT_MINUTES=30`, `BCRYPT_COST=12`, `DEFAULT_TAX_PERCENTAGE=0.05` are hardcoded in `AppConstants.kt` and repository implementations
+- [ ] Move all business constants to `.env` / `DotEnvConfig.kt` — make them overridable without recompilation
+
+### 12.6 Fix Remaining Code Quality Issues 🟡
+
+- [ ] Phase 2.2 carry-over: Remove inline semicolons in `LoginAttempt.kt` `apply { }` block
+- [ ] Remove commented-out test code in `ApplicationTest.kt`
+
+---
+
+## Phase 13: Security Hardening (Additions) 🟢
+
+> Good baseline (BCrypt, OTP, lockout, magic bytes) but gaps remain beyond Phase 6.
+
+### 13.1 Email Sending Rate Limit 🟢
+
+- [ ] No protection against OTP/password-reset email abuse. A bad actor can flood the SMTP server and exhaust email quota.
+- [ ] Implement per-email rate limiting (e.g., max 3 OTP emails per email per 15 min) checked before enqueuing to `AsyncWorker`
+- [ ] Track in DB or cache: `email_send_attempt` table or reuse existing `otp_attempt` tracking
+
+### 13.2 File Upload Hardening 🟢
+
+- [ ] Phase 6.4 carry-over: Implement periodic cleanup of orphaned upload files (no longer referenced by any product/profile)
+- [ ] Add maximum storage quota per user/shop
+- [ ] Sanitize original filename before UUID rename (strip path separators, null bytes)
+
+### 13.3 Replace AWT ImageIO with Container-Safe Processing 🟢
+
+- [ ] `ImageCompressor` uses `BufferedImage`/`ImageIO` (AWT) which is problematic in headless containers and can cause native memory leaks
+- [ ] Replace with `ImageJ` / `Twelvemonkeys` / or delegate to an external service (Cloudinary, imgproxy)
+- [ ] Or add JVM flag `-Djava.awt.headless=true` and document requirement
+
+---
+
+## Phase 14: Production Resilience & Observability 🟢
+
+> Complements Phase 5 (infrastructure). Adds resilience patterns not yet covered.
+
+### 14.1 Transaction Retry with Exponential Backoff 🟢
+
+- [ ] Concurrent stock operations during checkout can race (optimistic locking failure)
+- [ ] Wrap `placeOrder` transaction in retry logic: 3 retries with 100ms/200ms/400ms backoff
+- [ ] Apply to any write transaction with concurrent access (stock, inventory, coupon usage)
+
+### 14.2 Event Bus Dead Letter Queue 🟢
+
+- [ ] `EventBus` (SharedFlow) currently drops events if a subscriber throws. No retry mechanism.
+- [ ] Add subscriber error handling with configurable retry (3 attempts, exponential backoff)
+- [ ] Log permanently failed events to a dead letter channel for manual inspection
+- [ ] Add EventBus health metric: published vs consumed vs failed counts
+
+### 14.3 API Versioning Strategy 🟢
+
+- [ ] Currently only `/api/v1/` — no deprecation/compatibility strategy for breaking changes
+- [ ] Adopt `Accept` header versioning (`Accept: application/vnd.ecom.v2+json`) or URL prefix (`/api/v2/`)
+- [ ] Add `@Deprecated` annotation and `Sunset` header mechanism for old versions
+
+### 14.4 Distributed Cache for JWT Blacklist 🟢
+
+- [ ] Current `CacheService` uses in-memory `ConcurrentHashMap` — doesn't scale across instances
+- [ ] If Redis was removed intentionally, document why; otherwise add Redis back with `jedis` or `lettuce` for JWT blacklist cache
+- [ ] At minimum, ensure `CacheService` has a pluggable backend (in-memory for dev, Redis for prod)
+
+### 14.5 Structured Request Tracing 🟢
+
+- [ ] Phase 5.3 carry-over: Ensure X-Request-ID is implemented as a Ktor plugin that:
+  - Generates or forwards `X-Request-ID` header
+  - Injects into SLF4J MDC
+  - Included in all API error responses
+  - Passed to downstream subscribers in EventBus events
+
+---
+
 ## Master Checklist Summary
 
 | Phase | Area | Items (Done/Total) | Priority |
@@ -351,12 +504,16 @@ Every service previously implemented its repository interface directly — `clas
 | 8 | Advanced Search & Discovery | 3/3 | 🟢 |
 | 9 | Advanced Coupon Engine | 0/2 | 🟢 |
 | 10 | Concurrency & Async | 3/3 | 🟢 |
+| 11 | Schema Alignment & Data Integrity | 0/6 | 🟠 |
+| 12 | Code Consistency & Boilerplate Reduction | 0/6 | 🟡 |
+| 13 | Security Hardening (Additions) | 0/3 | 🟢 |
+| 14 | Production Resilience & Observability | 0/5 | 🟢 |
 
-**Overall**: 20 of 37 items completed (54%)
+**Overall**: 20 of 58 items completed (34%)
 
 ---
 
-*Document version: 1.3 | Generated: 2026-07-11 | Project: ktor-ecom*
+*Document version: 1.4 | Generated: 2026-07-11 | Project: ktor-ecom*
 
 ---
 
@@ -375,3 +532,7 @@ Every service previously implemented its repository interface directly — `clas
 | 8 | ✅ Complete |
 | 9 | ❌ Not started |
 | 10 | ✅ Complete |
+| 11 | ❌ Not started — schema mismatches will break production |
+| 12 | ❌ Not started |
+| 13 | ❌ Not started |
+| 14 | ❌ Not started |

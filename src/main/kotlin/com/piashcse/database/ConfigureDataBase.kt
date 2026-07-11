@@ -1,47 +1,25 @@
 package com.piashcse.database
 
 import com.piashcse.config.DotEnvConfig
-import com.piashcse.database.entities.*
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway
-import org.jetbrains.exposed.v1.core.Slf4jSqlDebugLogger
 import org.jetbrains.exposed.v1.jdbc.Database
-import org.jetbrains.exposed.v1.jdbc.SchemaUtils
-import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 private lateinit var hikariDataSource: HikariDataSource
 
 internal fun getHikariDataSource(): HikariDataSource = hikariDataSource
 
-private val allTables = arrayOf(
-    UserTable, UserProfileTable, ShopTable, ShopCategoryTable,
-    ProductTable, ProductImageTable, ReviewRatingTable, ProductCategoryTable,
-    ProductSubCategoryTable, BrandTable, CartItemTable,
-    OrderTable, OrderItemTable, WishListTable, ShippingAddressTable,
-    ShippingMethodTable, PaymentTable, PolicyDocumentTable,
-    PolicyConsentTable, InventoryTable, SellerTable, RefreshTokenTable,
-    LoginAttemptTable, BlacklistedTokenTable, RefundRequestTable,
-    OrderStatusHistoryTable,
-    AuditLogTable,
-)
-
 fun configureDatabase() {
     hikariDataSource = createDataSource()
-    val isDev = System.getenv("KTOR_DEVELOPMENT")?.toBoolean() == true
-    if (isDev) {
-        Database.connect(hikariDataSource)
-        createTables()
-    } else {
-        Flyway.configure()
-            .dataSource(hikariDataSource)
-            .locations("classpath:db/migration")
-            .baselineOnMigrate(true)
-            .load()
-            .migrate()
-        Database.connect(hikariDataSource)
-    }
+    val flyway = Flyway.configure()
+        .dataSource(hikariDataSource)
+        .locations("classpath:db/migration")
+        .baselineOnMigrate(true)
+        .load()
+    flyway.repair()
+    flyway.migrate()
+    Database.connect(hikariDataSource)
 }
 
 private fun createDataSource() = HikariDataSource(
@@ -58,10 +36,3 @@ private fun createDataSource() = HikariDataSource(
         validate()
     }
 )
-
-private fun createTables() {
-    transaction {
-        TransactionManager.current().addLogger(Slf4jSqlDebugLogger)
-        SchemaUtils.createMissingTablesAndColumns(*allTables)
-    }
-}

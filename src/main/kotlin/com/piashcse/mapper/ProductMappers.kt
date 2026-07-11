@@ -17,7 +17,6 @@ fun ProductDAO.toProductResponse(images: List<String>? = null) = ProductResponse
     weight = weight?.toDouble(),
     dimensions = dimensions,
     minOrderQuantity = minOrderQuantity,
-    stockQuantity = stockQuantity,
     price = price.toPlainString(),
     discountPrice = discountPrice?.toPlainString(),
     discountPercentage = discountPercentage?.toDouble(),

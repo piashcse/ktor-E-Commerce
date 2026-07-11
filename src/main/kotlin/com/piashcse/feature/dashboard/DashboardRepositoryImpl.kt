@@ -142,9 +142,10 @@ class DashboardRepositoryImpl : DashboardRepository {
             .associate { row -> row[OrderItemTable.productId].value to (row[OrderItemTable.total.sum()] ?: BigDecimal.ZERO) }
 
         topProducts.map { p ->
+            val topStock = p.findInventory()?.stockQuantity ?: 0
             TopProductResponse(p.id.value, p.name, p.sku, p.totalSales,
                 (revenueByProduct[p.id.value] ?: BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP).toPlainString(),
-                p.stockQuantity, p.rating.setScale(2, RoundingMode.HALF_UP).toPlainString(), p.status.name.lowercase())
+                topStock, p.rating.setScale(2, RoundingMode.HALF_UP).toPlainString(), p.status.name.lowercase())
         }
     }
 

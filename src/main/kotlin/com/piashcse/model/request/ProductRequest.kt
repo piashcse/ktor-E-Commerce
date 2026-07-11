@@ -14,7 +14,7 @@ data class ProductRequest(
     val name: String,
     val description: String,
     val productCode: String?,
-    val stockQuantity: Int,
+    val stockQuantity: Int = 0,
     val price: Double,
     val discountPrice: Double?,
     val status: Int?,
@@ -30,7 +30,6 @@ data class ProductRequest(
             validate(ProductRequest::name).isNotNull().isNotEmpty()
             validate(ProductRequest::description).isNotNull().isNotEmpty()
             validate(ProductRequest::price).isNotNull().isGreaterThan(0.0)
-            validate(ProductRequest::stockQuantity).isNotNull().isGreaterThan(0)
         }
     }
 }

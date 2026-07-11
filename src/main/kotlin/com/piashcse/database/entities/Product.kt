@@ -37,7 +37,6 @@ object ProductTable : BaseIdTable("product") {
     val rating = decimal("rating", 3, 2).default(BigDecimal("0.00"))
     val totalReviews = integer("total_reviews").default(0)
     val totalSales = integer("total_sales").default(0)
-    val stockQuantity = integer("stock_quantity").default(0)
 }
 
 class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
@@ -69,7 +68,6 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
     var rating by ProductTable.rating
     var totalReviews by ProductTable.totalReviews
     var totalSales by ProductTable.totalSales
-    var stockQuantity by ProductTable.stockQuantity
 
     val imageUrls: List<String>
         get() = ProductImageDAO.find { ProductImageTable.productId eq id }

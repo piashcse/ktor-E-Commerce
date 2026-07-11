@@ -148,7 +148,7 @@ class CartRepositoryImpl : CartRepository {
                 product = product,
                 unitPrice = unitPrice,
                 image = imagesMap[product.id.value]?.firstOrNull(),
-                stockQuantity = inventoryMap[product.id.value] ?: product.stockQuantity,
+                stockQuantity = inventoryMap[product.id.value] ?: 0,
                 shopName = product.shopId?.value?.let { shops[it]?.name },
             )
         }
