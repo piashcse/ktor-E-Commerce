@@ -42,6 +42,17 @@ class MemoryCache(private val defaultTtlSeconds: Long = 300) : Cache {
     }
 }
 
+/**
+ * Pluggable cache service.
+ *
+ * Default backend: [MemoryCache] (in-memory, single-instance).
+ * To use Redis, implement [Cache] with a Redis client (e.g., Lettuce/Jedis)
+ * and change [cache] to return a Redis-backed instance.
+ *
+ * Redis was intentionally omitted from the base project to keep dependencies
+ * minimal. For multi-instance deployments, add the Redis dependency and
+ * implement a Redis-backed [Cache].
+ */
 object CacheService {
     val cache: Cache = MemoryCache(defaultTtlSeconds = 300)
 }

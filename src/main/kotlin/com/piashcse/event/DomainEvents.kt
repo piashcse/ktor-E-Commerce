@@ -2,7 +2,10 @@ package com.piashcse.event
 
 import java.time.LocalDateTime
 
-sealed class DomainEvent(open val occurredAt: LocalDateTime = LocalDateTime.now())
+sealed class DomainEvent(
+    open val occurredAt: LocalDateTime = LocalDateTime.now(),
+    open val requestId: String? = null,
+)
 
 data class OrderPlacedEvent(
     val orderId: String,

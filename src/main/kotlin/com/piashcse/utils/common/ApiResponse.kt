@@ -16,6 +16,7 @@ import kotlinx.serialization.Serializable
 data class ApiError(
     val message: String,
     val errors: List<FieldError>? = null,
+    val requestId: String? = null,
 )
 
 /**
