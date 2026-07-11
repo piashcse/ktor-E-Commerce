@@ -277,19 +277,19 @@ Every service previously implemented its repository interface directly — `clas
 
 ### 8.1 Trigram Fuzzy Search
 
-- [ ] Enable `pg_trgm` extension via Flyway
-- [ ] Create GIN index on `product.name` with `gin_trgm_ops`
-- [ ] Implement similarity threshold queries in `ProductQueryService`
+- [x] Enable `pg_trgm` extension via Flyway
+- [x] Create GIN index on `product.name` with `gin_trgm_ops`
+- [x] Implement similarity threshold queries in `ProductQueryService`
 
 ### 8.2 Faceted Aggregation
 
-- [ ] Return category and brand counts alongside search results using SQL `GROUP BY`
-- [ ] Include in search response model
+- [x] Return category and brand counts alongside search results using SQL `GROUP BY`
+- [x] Include in search response model
 
 ### 8.3 Ranking & Sorting
 
-- [ ] Implement composite ranking: `(totalSales * 0.4) + (viewCount * 0.3) + (discountLevel * 0.3)`
-- [ ] Support sorting by: relevance, price, newest, best-selling, top-rated
+- [x] Implement composite ranking: `(totalSales * 0.4) + (viewCount * 0.3) + (discountLevel * 0.3)`
+- [x] Support sorting by: relevance, price, newest, best-selling, top-rated
 
 ---
 
@@ -348,15 +348,15 @@ Every service previously implemented its repository interface directly — `clas
 | 5 | Production Infrastructure | 0/4 | 🟢 |
 | 6 | Security Hardening | 3/4 | 🟢 |
 | 7 | Real Payment Integration | 0/4 | 🟢 |
-| 8 | Advanced Search & Discovery | 0/3 | 🟢 |
+| 8 | Advanced Search & Discovery | 3/3 | 🟢 |
 | 9 | Advanced Coupon Engine | 0/2 | 🟢 |
 | 10 | Concurrency & Async | 3/3 | 🟢 |
 
-**Overall**: 17 of 37 items completed (46%)
+**Overall**: 20 of 37 items completed (54%)
 
 ---
 
-*Document version: 1.2 | Generated: 2026-07-10 | Project: ktor-ecom*
+*Document version: 1.3 | Generated: 2026-07-11 | Project: ktor-ecom*
 
 ---
 
@@ -372,6 +372,6 @@ Every service previously implemented its repository interface directly — `clas
 | 5 | ❌ Not started |
 | 6 | ⏳ 3/4 done — upload expiry & cleanup pending |
 | 7 | ❌ Not started |
-| 8 | ❌ Not started |
+| 8 | ✅ Complete |
 | 9 | ❌ Not started |
 | 10 | ✅ Complete |
