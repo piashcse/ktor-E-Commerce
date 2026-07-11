@@ -11,13 +11,11 @@ import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
 import com.piashcse.service.CacheService
 import com.piashcse.utils.common.generateOTP
-import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.requireNotBlank
-import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.*
+import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import java.security.MessageDigest
 import java.time.Instant
@@ -50,7 +48,7 @@ class AuthRepositoryImpl : AuthRepository {
         val expiresAt = Instant.now().plusSeconds(REFRESH_TOKEN_EXPIRY_SECONDS)
         query {
             RefreshTokenDAO.new {
-                this.userId = EntityID(userId, UserTable)
+                this.userId = userId.entityID(UserTable)
                 this.tokenHash = tokenHash
                 this.expiresAt = expiresAt
             }
@@ -67,7 +65,7 @@ class AuthRepositoryImpl : AuthRepository {
     }
 
     override suspend fun revokeAllUserTokens(userId: String): Boolean = query {
-        RefreshTokenDAO.find { RefreshTokenTable.userId eq EntityID(userId, UserTable) }
+        RefreshTokenDAO.find { RefreshTokenTable.userId eq userId.entityID(UserTable) }
             .forEach { it.revokedAt = Instant.now() }
         true
     }
@@ -236,19 +234,19 @@ class AuthRepositoryImpl : AuthRepository {
     // ── OTP attempt tracking (persistent) ─────────────────────────────────
 
     override suspend fun getOtpAttempt(userId: String): Int = query {
-        OtpAttemptDAO.find { OtpAttemptTable.userId eq EntityID(userId, UserTable) }
+        OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
             .singleOrNull()?.attemptCount ?: 0
     }
 
     override suspend fun recordFailedOtpAttempt(userId: String): Int = query {
-        val existing = OtpAttemptDAO.find { OtpAttemptTable.userId eq EntityID(userId, UserTable) }
+        val existing = OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
             .singleOrNull()
         if (existing != null) {
             existing.attemptCount++
             existing.attemptCount
         } else {
             OtpAttemptDAO.new {
-                this.userId = EntityID(userId, UserTable)
+                this.userId = userId.entityID(UserTable)
                 this.attemptCount = 1
             }
             1
@@ -257,14 +255,14 @@ class AuthRepositoryImpl : AuthRepository {
 
     override suspend fun resetOtpAttempts(userId: String) {
         query {
-            OtpAttemptDAO.find { OtpAttemptTable.userId eq EntityID(userId, UserTable) }
+            OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
                 .singleOrNull()?.delete()
         }
     }
 
     override suspend fun lockOtpAttempts(userId: String) {
         query {
-            OtpAttemptDAO.find { OtpAttemptTable.userId eq EntityID(userId, UserTable) }
+            OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
                 .singleOrNull()?.apply {
                     lockedUntil = Instant.now().plusSeconds(OTP_LOCKOUT_MINUTES * 60)
                 }

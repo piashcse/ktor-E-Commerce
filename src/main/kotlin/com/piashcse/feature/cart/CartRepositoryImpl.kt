@@ -14,7 +14,6 @@ import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -25,14 +24,18 @@ import java.math.RoundingMode
 
 class CartRepositoryImpl : CartRepository {
 
+    private fun requireCartParams(userId: String, productId: String, quantity: Int? = null) {
+        userId.requireNotBlank("User ID")
+        productId.requireNotBlank("Product ID")
+        if (quantity != null && quantity <= 0) throw ValidationException(Message.Validation.notPositive("Quantity"))
+    }
+
     override suspend fun createCart(
         userId: String,
         productId: String,
         quantity: Int,
     ): Cart = query {
-        userId.requireNotBlank("User ID")
-        productId.requireNotBlank("Product ID")
-        if (quantity <= 0) throw ValidationException(Message.Validation.notPositive("Quantity"))
+        requireCartParams(userId, productId, quantity)
 
         val existing = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
@@ -40,8 +43,8 @@ class CartRepositoryImpl : CartRepository {
         existing?.let { throw productId.throwConflict("Product") }
 
         CartItemDAO.new {
-            this.userId = EntityID(userId, UserTable)
-            this.productId = EntityID(productId, ProductTable)
+            this.userId = userId.entityID(UserTable)
+            this.productId = productId.entityID(ProductTable)
             this.quantity = quantity
         }.toCartResponse()
     }
@@ -60,7 +63,7 @@ class CartRepositoryImpl : CartRepository {
             emptyMap()
         }
         val imagesMap = if (products.isNotEmpty()) {
-            ProductImageDAO.imagesForProducts(products.keys.map { EntityID(it, ProductTable) })
+            ProductImageDAO.imagesForProducts(products.keys.map { it.entityID(ProductTable) })
         } else {
             emptyMap()
         }
@@ -77,8 +80,7 @@ class CartRepositoryImpl : CartRepository {
         productId: String,
         quantity: Int,
     ): Cart? = query {
-        userId.requireNotBlank("User ID")
-        productId.requireNotBlank("Product ID")
+        requireCartParams(userId, productId)
 
         val cartItem = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
@@ -96,8 +98,7 @@ class CartRepositoryImpl : CartRepository {
         userId: String,
         productId: String,
     ): ProductResponse = query {
-        userId.requireNotBlank("User ID")
-        productId.requireNotBlank("Product ID")
+        requireCartParams(userId, productId)
 
         val cartItem = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
@@ -116,13 +117,12 @@ class CartRepositoryImpl : CartRepository {
     }
 
     override suspend fun getCartSummary(userId: String): CartSummaryResponse = query {
-        userId.requireNotBlank("User ID")
 
         val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
         val products = ProductDAO.find {
             ProductTable.id inList cartItems.map { it.productId.value }.distinct()
         }.associateBy { it.id.value }
-        val productEntityIds = products.keys.map { EntityID(it, ProductTable) }
+        val productEntityIds = products.keys.map { it.entityID(ProductTable) }
         val imagesMap = if (products.isNotEmpty()) {
             ProductImageDAO.imagesForProducts(productEntityIds)
         } else {

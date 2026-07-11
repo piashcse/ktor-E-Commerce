@@ -5,12 +5,8 @@ import com.piashcse.mapper.toProductResponse
 import com.piashcse.mapper.toWishListResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.throwConflict
-import com.piashcse.utils.extension.throwNotFound
-import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.extension.*
 import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -29,8 +25,8 @@ class WishListRepositoryImpl : WishListRepository {
 
             if (existing == null) {
                 WishListDAO.new {
-                    this.userId = EntityID(userId, WishListTable)
-                    this.productId = EntityID(productId, ProductTable)
+                    this.userId = userId.entityID(WishListTable)
+                    this.productId = productId.entityID(ProductTable)
                 }.toWishListResponse(product.toProductResponse())
             } else {
                 throw productId.throwConflict("ProductResponse")

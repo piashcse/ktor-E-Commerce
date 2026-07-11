@@ -9,13 +9,11 @@ import com.piashcse.mapper.toPaymentResponse
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.throwNotFound
-import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.extension.*
+import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -36,7 +34,7 @@ class PaymentRepositoryImpl : PaymentRepository {
 
             val existingPayments =
                 PaymentDAO.find {
-                    (PaymentTable.orderId eq EntityID(paymentRequest.orderId, OrderTable)) and
+                    (PaymentTable.orderId eq paymentRequest.orderId.entityID(OrderTable)) and
                         (PaymentTable.status eq PaymentStatus.COMPLETED)
                 }.toList()
 
@@ -47,7 +45,7 @@ class PaymentRepositoryImpl : PaymentRepository {
 
             val payment =
                 PaymentDAO.new {
-                    this.orderId = EntityID(paymentRequest.orderId, OrderTable)
+                    this.orderId = paymentRequest.orderId.entityID(OrderTable)
                     this.userId = order.userId
                     this.amount = paymentRequest.amount
                     this.status = paymentRequest.status
@@ -57,7 +55,7 @@ class PaymentRepositoryImpl : PaymentRepository {
 
             if (paidAmount.add(paymentAmount).compareTo(orderTotal) >= 0) {
                 order.paymentStatus = PaymentStatus.COMPLETED
-                StockReservationDAO.find { StockReservationTable.orderId eq EntityID(paymentRequest.orderId, OrderTable) }
+                StockReservationDAO.find { StockReservationTable.orderId eq paymentRequest.orderId.entityID(OrderTable) }
                     .forEach { it.status = ReservationStatus.FINALIZED }
                 EventBus.publish(
                     PaymentCompletedEvent(
@@ -84,7 +82,7 @@ class PaymentRepositoryImpl : PaymentRepository {
         offset: Int,
     ): PaginatedResponse<PaymentResponse> =
         query {
-            PaymentTable.selectAll().andWhere { PaymentTable.orderId eq EntityID(orderId, OrderTable) }
+            PaymentTable.selectAll().andWhere { PaymentTable.orderId eq orderId.entityID(OrderTable) }
                 .orderBy(PaymentTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) {
                     PaymentDAO.wrapRow(it).toPaymentResponse()

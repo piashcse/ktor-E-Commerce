@@ -17,7 +17,6 @@ import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -50,7 +49,7 @@ class OrderRepositoryImpl : OrderRepository {
 
     private fun validateShopsApproved(shopIds: Set<String>) {
         val shops = if (shopIds.isNotEmpty()) {
-            ShopDAO.find { ShopTable.id inList shopIds.map { EntityID(it, ShopTable) } }.associateBy { it.id.value }
+            ShopDAO.find { ShopTable.id inList shopIds.map { it.entityID(ShopTable) } }.associateBy { it.id.value }
         } else {
             emptyMap()
         }
@@ -66,10 +65,10 @@ class OrderRepositoryImpl : OrderRepository {
 
     private fun logStatusChange(orderId: String, status: OrderStatus, notes: String?, userId: String?) {
         OrderStatusHistoryDAO.new {
-            this.orderId = EntityID(orderId, OrderTable)
+            this.orderId = orderId.entityID(OrderTable)
             this.status = status
             this.notes = notes
-            this.changedBy = userId?.let { EntityID(it, UserTable) }
+            this.changedBy = userId?.let { it.entityID(UserTable) }
         }
     }
 
@@ -151,8 +150,8 @@ class OrderRepositoryImpl : OrderRepository {
             var shopSubTotal = BigDecimal.ZERO
 
             val order = OrderDAO.new {
-                this.userId = EntityID(userId, UserTable)
-                this.shopId = EntityID(shopIdValue, ShopTable)
+                this.userId = userId.entityID(UserTable)
+                this.shopId = shopIdValue.entityID(ShopTable)
                 this.orderNumber = orderNumber
                 this.idempotencyKey = checkoutRequest.idempotencyKey
                 this.status = OrderStatus.PENDING
@@ -179,7 +178,7 @@ class OrderRepositoryImpl : OrderRepository {
                 val orderItem = OrderItemDAO.new {
                     orderId = order.id
                     productId = product.id
-                    shopId = EntityID(shopIdValue, ShopTable)
+                    shopId = shopIdValue.entityID(ShopTable)
                     quantity = cartItem.quantity
                     price = unitPrice
                     total = itemTotal
@@ -195,7 +194,7 @@ class OrderRepositoryImpl : OrderRepository {
                     this.orderId = order.id
                     this.orderItemId = orderItem.id
                     this.productId = product.id
-                    this.shopId = EntityID(shopIdValue, ShopTable)
+                    this.shopId = shopIdValue.entityID(ShopTable)
                     this.quantity = cartItem.quantity
                     this.status = ReservationStatus.ACTIVE
                     this.expiresAt = LocalDateTime.now().plusHours(24)
@@ -226,7 +225,7 @@ class OrderRepositoryImpl : OrderRepository {
 
         val shopIds = createdOrders.mapNotNull { it.shopId?.value }.distinct()
         val sellersByShop = if (shopIds.isNotEmpty()) {
-            SellerDAO.find { SellerTable.shopId inList shopIds.map { EntityID(it, ShopTable) } }
+            SellerDAO.find { SellerTable.shopId inList shopIds.map { it.entityID(ShopTable) } }
                 .associateBy { it.shopId?.value }
         } else {
             emptyMap()
@@ -348,8 +347,8 @@ class OrderRepositoryImpl : OrderRepository {
             var shopSubTotal = BigDecimal.ZERO
 
             val order = OrderDAO.new {
-                this.userId = EntityID(userId, UserTable)
-                this.shopId = EntityID(shopIdValue, ShopTable)
+                this.userId = userId.entityID(UserTable)
+                this.shopId = shopIdValue.entityID(ShopTable)
                 this.orderNumber = orderNumber
                 this.idempotencyKey = idempotencyKey
                 this.status = OrderStatus.PENDING
@@ -367,7 +366,7 @@ class OrderRepositoryImpl : OrderRepository {
                 OrderItemDAO.new {
                     orderId = order.id
                     productId = product.id
-                    shopId = EntityID(shopIdValue, ShopTable)
+                    shopId = shopIdValue.entityID(ShopTable)
                     quantity = itemRequest.quantity
                     price = unitPrice
                     total = itemTotal

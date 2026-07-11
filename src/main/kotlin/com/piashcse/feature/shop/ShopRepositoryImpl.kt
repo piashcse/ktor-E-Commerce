@@ -13,11 +13,12 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.NotFoundException
+import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.neq
+import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
@@ -41,8 +42,8 @@ class ShopRepositoryImpl : ShopRepository {
 
             val shop =
                 ShopDAO.new {
-                    this.userId = EntityID(userId, ShopTable)
-                    categoryId = EntityID(shopRequest.categoryId, ShopCategoryTable)
+                    this.userId = userId.entityID(ShopTable)
+                    categoryId = shopRequest.categoryId.entityID(ShopCategoryTable)
                     name = shopRequest.name
                     description = shopRequest.description
                     address = shopRequest.address
@@ -89,89 +90,50 @@ class ShopRepositoryImpl : ShopRepository {
             shop?.toShopResponse()
         }
 
-    override suspend fun getShopsByUser(
-        userId: String,
-        limit: Int,
-        offset: Int,
-    ): PaginatedResponse<ShopResponse> =
-        query {
-            ShopTable.selectAll().andWhere { ShopTable.userId eq userId }
-                .toPaginatedResponse(limit, offset) {
-                    ShopDAO.wrapRow(it).toShopResponse()
+    override suspend fun getShopsByUser(userId: String, limit: Int, offset: Int) =
+        shopPaginatedQuery(limit, offset) { andWhere { ShopTable.userId eq userId } }
+
+    override suspend fun getShops(status: String?, category: String?, limit: Int, offset: Int) =
+        shopPaginatedQuery(limit, offset, ShopTable.createdAt to SortOrder.DESC) {
+            andWhere { ShopTable.status neq ShopStatus.REJECTED }
+            andWhere { ShopTable.status neq ShopStatus.SUSPENDED }
+            status?.let {
+                val statusEnum = try {
+                    ShopStatus.valueOf(it.uppercase())
+                } catch (e: IllegalArgumentException) {
+                    throw NotFoundException(Message.Shops.invalidStatus(it))
                 }
+                andWhere { ShopTable.status eq statusEnum }
+            }
+            category?.let { andWhere { ShopTable.categoryId eq it.entityID(ShopCategoryTable) } }
         }
 
-    override suspend fun getShops(
-        status: String?,
-        category: String?,
+    override suspend fun getShopsByCategory(categoryId: String, limit: Int, offset: Int) =
+        shopPaginatedQuery(limit, offset) {
+            andWhere { ShopTable.categoryId eq categoryId }
+            andWhere { ShopTable.status neq ShopStatus.REJECTED }
+            andWhere { ShopTable.status neq ShopStatus.SUSPENDED }
+        }
+
+    override suspend fun getFeaturedShops(limit: Int, offset: Int) =
+        shopPaginatedQuery(limit, offset, ShopTable.rating to SortOrder.DESC) {
+            andWhere { ShopTable.status eq ShopStatus.APPROVED }
+        }
+
+    override suspend fun getShopsByStatus(status: ShopStatus, limit: Int, offset: Int) =
+        shopPaginatedQuery(limit, offset) { andWhere { ShopTable.status eq status } }
+
+    private suspend fun shopPaginatedQuery(
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<ShopResponse> =
-        query {
-            val statusEnum =
-                if (status != null) {
-                    try {
-                        ShopStatus.valueOf(status.uppercase())
-                    } catch (e: IllegalArgumentException) {
-                        throw NotFoundException(Message.Shops.invalidStatus(status))
-                    }
-                } else {
-                    null
-                }
-
-            val q = ShopTable.selectAll()
-
-            q.andWhere { ShopTable.status neq ShopStatus.REJECTED }
-            q.andWhere { ShopTable.status neq ShopStatus.SUSPENDED }
-
-            if (statusEnum != null) {
-                q.andWhere { ShopTable.status eq statusEnum }
-            }
-            if (category != null) {
-                q.andWhere { ShopTable.categoryId eq EntityID(category, ShopCategoryTable) }
-            }
-
-            q.orderBy(ShopTable.createdAt to SortOrder.DESC).toPaginatedResponse(limit, offset) {
-                ShopDAO.wrapRow(it).toShopResponse()
-            }
-        }
-
-    override suspend fun getShopsByCategory(
-        categoryId: String,
-        limit: Int,
-        offset: Int,
-    ): PaginatedResponse<ShopResponse> =
-        query {
-            ShopTable.selectAll().andWhere {
-                ShopTable.categoryId eq categoryId and (ShopTable.status neq ShopStatus.REJECTED) and (ShopTable.status neq ShopStatus.SUSPENDED)
-            }.toPaginatedResponse(limit, offset) {
-                ShopDAO.wrapRow(it).toShopResponse()
-            }
-        }
-
-    override suspend fun getFeaturedShops(
-        limit: Int,
-        offset: Int,
-    ): PaginatedResponse<ShopResponse> =
-        query {
-            ShopTable.selectAll().andWhere { ShopTable.status eq ShopStatus.APPROVED }
-                .orderBy(ShopTable.rating to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) {
-                    ShopDAO.wrapRow(it).toShopResponse()
-                }
-        }
-
-    override suspend fun getShopsByStatus(
-        status: ShopStatus,
-        limit: Int,
-        offset: Int,
-    ): PaginatedResponse<ShopResponse> =
-        query {
-            ShopTable.selectAll().andWhere { ShopTable.status eq status }
-                .toPaginatedResponse(limit, offset) {
-                    ShopDAO.wrapRow(it).toShopResponse()
-                }
-        }
+        orderBy: Pair<Column<*>, SortOrder>? = null,
+        filter: Query.() -> Unit,
+    ): PaginatedResponse<ShopResponse> = query {
+        val q = ShopTable.selectAll()
+        q.filter()
+        q.also { orderBy?.let { (col, dir) -> q.orderBy(col to dir) } }
+            .toPaginatedResponse(limit, offset) { ShopDAO.wrapRow(it).toShopResponse() }
+    }
 
     private suspend fun setShopStatus(shopId: String, update: ShopDAO.() -> Unit): ShopResponse = query {
         val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("ShopResponse")

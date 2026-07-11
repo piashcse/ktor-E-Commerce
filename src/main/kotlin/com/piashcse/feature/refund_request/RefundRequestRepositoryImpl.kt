@@ -10,13 +10,9 @@ import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
 import com.piashcse.model.response.RefundRequestResponse
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.extension.findSellerByUserId
-import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.sellerOwnsShop
-import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -41,8 +37,8 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
 
             val orderItem =
                 OrderItemDAO.find {
-                    (OrderItemTable.id eq EntityID(request.orderItemId, OrderItemTable)) and
-                        (OrderItemTable.orderId eq EntityID(orderId, OrderTable))
+                    (OrderItemTable.id eq request.orderItemId.entityID(OrderItemTable)) and
+                        (OrderItemTable.orderId eq orderId.entityID(OrderTable))
                 }.firstOrNull() ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
 
             val existingRefund =
@@ -58,8 +54,8 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             val refundRequest =
                 RefundRequestDAO.new {
                     this.orderItemId = orderItem.id
-                    this.userId = EntityID(userId, UserTable)
-                    this.orderId = EntityID(orderId, OrderTable)
+                    this.userId = userId.entityID(UserTable)
+                    this.orderId = orderId.entityID(OrderTable)
                     this.reason = request.reason
                     this.images = request.images
                     this.status = RefundStatus.PENDING
@@ -92,7 +88,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             }
 
             RefundRequestTable.selectAll()
-                .andWhere { RefundRequestTable.orderId eq EntityID(orderId, OrderTable) }
+                .andWhere { RefundRequestTable.orderId eq orderId.entityID(OrderTable) }
                 .toPaginatedResponse(limit, offset) {
                     RefundRequestDAO.wrapRow(it).toRefundRequestResponse()
                 }
@@ -124,7 +120,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
         val order = OrderDAO.findById(orderId) ?: return false
         val shopId = order.shopId?.value ?: return false
         val seller = SellerDAO.find {
-            (SellerTable.userId eq userId) and (SellerTable.shopId eq EntityID(shopId, ShopTable))
+            (SellerTable.userId eq userId) and (SellerTable.shopId eq shopId.entityID(ShopTable))
         }.firstOrNull()
         return seller != null
     }

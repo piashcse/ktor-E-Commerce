@@ -5,11 +5,8 @@ import com.piashcse.database.entities.ShippingAddressTable
 import com.piashcse.mapper.toShippingAddressResponse
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.model.response.ShippingAddressResponse
-import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.throwNotFound
-import com.piashcse.utils.extension.verifyOwnership
+import com.piashcse.utils.extension.*
 import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 
 class ShippingAddressRepositoryImpl : ShippingAddressRepository {
@@ -25,7 +22,7 @@ class ShippingAddressRepositoryImpl : ShippingAddressRepository {
             }
 
             ShippingAddressDAO.new {
-                this.userId = EntityID(userId, ShippingAddressTable)
+                this.userId = userId.entityID(ShippingAddressTable)
                 firstName = request.firstName
                 lastName = request.lastName
                 email = request.email

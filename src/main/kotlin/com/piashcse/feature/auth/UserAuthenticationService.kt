@@ -12,7 +12,7 @@ import com.piashcse.model.request.ForgotPasswordRequest
 import com.piashcse.model.request.LoginRequest
 import com.piashcse.model.request.RegisterRequest
 import com.piashcse.model.response.RegistrationResult
-import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.InvalidCredentialsException
 import com.piashcse.utils.validator.ValidationException
 

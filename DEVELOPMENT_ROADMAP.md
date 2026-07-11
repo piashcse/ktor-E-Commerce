@@ -456,7 +456,7 @@ Or alternatively, change all Exposed entities to use `integerByEnum` to match ex
 
 ### 14.1 Transaction Retry with Exponential Backoff 🟢
 
-- [x] Concurrent stock operations during checkout can race (optimistic locking failure)
+- [x] Concurrent stock operaftions during checkout can race (optimistic locking failure)
 - [x] Wrap `placeOrder` transaction in retry logic: 3 retries with 100ms/200ms/400ms backoff
 - [x] Apply to any write transaction with concurrent access (stock, inventory, coupon usage)
 
