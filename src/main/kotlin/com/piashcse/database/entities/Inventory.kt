@@ -21,42 +21,24 @@ fun ProductDAO.findInventory(forUpdate: Boolean = false): InventoryDAO? {
     return (if (forUpdate) query.forUpdate() else query).firstOrNull()
 }
 
-/** Returns effective stock: inventory stock if exists, otherwise product stock. */
-fun ProductDAO.effectiveStock(forUpdate: Boolean = false): Int {
-    val inv = findInventory(forUpdate = forUpdate)
-    if (inv != null) return inv.stockQuantity
-    if (forUpdate) ProductDAO.findById(this.id.value)?.let { return it.stockQuantity }
-    return stockQuantity
-}
+/** Returns effective stock from inventory (single source of truth). */
+fun ProductDAO.effectiveStock(forUpdate: Boolean = false): Int =
+    findInventory(forUpdate = forUpdate)?.stockQuantity ?: 0
 
-/** Decrements effective stock (inventory if exists, else product) and updates inventory status. */
+/** Decrements inventory stock and updates status. */
 fun ProductDAO.decrementStock(quantity: Int) {
-    val inv = findInventory(forUpdate = true)
-    if (inv != null) {
-        val newStock = (inv.stockQuantity - quantity).coerceAtLeast(0)
-        inv.stockQuantity = newStock
-        inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
-    } else {
-        val lockedProduct = ProductDAO.find { ProductTable.id eq id }.forUpdate().firstOrNull()
-        if (lockedProduct != null) {
-            lockedProduct.stockQuantity = (lockedProduct.stockQuantity - quantity).coerceAtLeast(0)
-        }
-    }
+    val inv = findInventory(forUpdate = true) ?: return
+    val newStock = (inv.stockQuantity - quantity).coerceAtLeast(0)
+    inv.stockQuantity = newStock
+    inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
 }
 
-/** Restores effective stock after cancellation. */
+/** Restores inventory stock after cancellation. */
 fun ProductDAO.restoreStock(quantity: Int) {
-    val inv = findInventory(forUpdate = true)
-    if (inv != null) {
-        val newStock = inv.stockQuantity + quantity
-        inv.stockQuantity = newStock
-        inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
-    } else {
-        val lockedProduct = ProductDAO.find { ProductTable.id eq id }.forUpdate().firstOrNull()
-        if (lockedProduct != null) {
-            lockedProduct.stockQuantity = lockedProduct.stockQuantity + quantity
-        }
-    }
+    val inv = findInventory(forUpdate = true) ?: return
+    val newStock = inv.stockQuantity + quantity
+    inv.stockQuantity = newStock
+    inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
 }
 
 /** Calculates commission for an order subtotal. */

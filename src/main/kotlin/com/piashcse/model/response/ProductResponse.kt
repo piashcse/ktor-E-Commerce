@@ -18,7 +18,6 @@ data class ProductResponse(
     val weight: Double? = null,
     val dimensions: String? = null,
     val minOrderQuantity: Int,
-    val stockQuantity: Int,
     val price: String,
     val discountPrice: String?,
     val discountPercentage: Double? = null,

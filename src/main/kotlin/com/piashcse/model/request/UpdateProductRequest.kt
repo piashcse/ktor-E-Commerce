@@ -9,7 +9,6 @@ data class UpdateProductRequest(
     val brandId: String?,
     val name: String?,
     val description: String?,
-    val stockQuantity: Int?,
     val price: Double?,
     val discountPrice: Double?,
     val status: String?,

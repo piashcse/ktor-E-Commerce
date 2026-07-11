@@ -2,16 +2,12 @@ package com.piashcse.plugin
 
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.UserType
-import com.piashcse.database.entities.BlacklistedTokenDAO
-import com.piashcse.database.entities.BlacklistedTokenTable
 import com.piashcse.feature.auth.JwtConfig
 import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.service.CacheService
-import com.piashcse.utils.extension.query
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import org.jetbrains.exposed.v1.core.eq
 import org.slf4j.LoggerFactory
 
 private val authLog = LoggerFactory.getLogger("com.piashcse.plugin.ConfigureAuth")
@@ -29,12 +25,6 @@ fun Application.configureAuth() {
                     val cached = CacheService.cache.get<Boolean>(cacheKey)
                     if (cached == true) {
                         authLog.warn("Blacklisted token rejected (from cache)")
-                        return@validate null
-                    }
-                    val isBlacklisted = query { BlacklistedTokenDAO.find { BlacklistedTokenTable.token eq token }.firstOrNull() != null }
-                    if (isBlacklisted) {
-                        CacheService.cache.set(cacheKey, true, 900)
-                        authLog.warn("Blacklisted token rejected for user")
                         return@validate null
                     }
                 }

@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS stock_reservation (
     id              VARCHAR(50) PRIMARY KEY,
     created_at      TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     updated_at      TIMESTAMP,
-    order_id        VARCHAR(50) NOT NULL REFERENCES orders(id),
+    order_id        VARCHAR(50) NOT NULL REFERENCES "order"(id),
     order_item_id   VARCHAR(50) NOT NULL REFERENCES order_item(id),
     product_id      VARCHAR(50) NOT NULL REFERENCES product(id),
     shop_id         VARCHAR(50) REFERENCES shop(id),

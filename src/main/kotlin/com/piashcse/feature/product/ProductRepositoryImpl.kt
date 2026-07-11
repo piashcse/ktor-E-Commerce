@@ -1,5 +1,6 @@
 package com.piashcse.feature.product
 
+import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.Message
 import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.*
@@ -107,7 +108,6 @@ class ProductRepositoryImpl : ProductRepository {
             price = BigDecimal.valueOf(productRequest.price)
             discountPrice = productRequest.discountPrice?.let { BigDecimal.valueOf(it) }
             discountPercentage = calcDiscountPct(productRequest.price, productRequest.discountPrice)
-            stockQuantity = productRequest.stockQuantity
             videoLink = productRequest.videoLink
             hotDeal = productRequest.hotDeal
             featured = productRequest.featured
@@ -115,9 +115,20 @@ class ProductRepositoryImpl : ProductRepository {
             newProduct = true
             freeShipping = productRequest.freeShipping ?: false
             status = ProductStatus.ACTIVE
-        }.apply {
-            setImages(productRequest.images)
-        }.toProductResponse()
+        }.let { product ->
+            product.setImages(productRequest.images)
+            if (shopId != null) {
+                InventoryDAO.new {
+                    productId = product.id
+                    this.shopId = EntityID(shopId, ShopTable)
+                    stockQuantity = productRequest.stockQuantity
+                    minimumStockLevel = 10
+                    maximumStockLevel = 1000
+                    status = InventoryStatus.fromStockLevel(productRequest.stockQuantity, 10)
+                }
+            }
+            product.toProductResponse()
+        }
     }
 
     override suspend fun updateProduct(
@@ -137,7 +148,6 @@ class ProductRepositoryImpl : ProductRepository {
             description = updateProduct.description ?: description
             price = updateProduct.price?.let { BigDecimal.valueOf(it) } ?: price
             discountPrice = updateProduct.discountPrice?.let { BigDecimal.valueOf(it) } ?: discountPrice
-            stockQuantity = updateProduct.stockQuantity ?: stockQuantity
             videoLink = updateProduct.videoLink ?: videoLink
             hotDeal = updateProduct.hotDeal ?: hotDeal
             featured = updateProduct.featured ?: featured
