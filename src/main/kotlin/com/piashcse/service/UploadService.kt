@@ -147,6 +147,7 @@ object UploadService {
             }
 
             targetFile.writeBytes(bytes)
+            AsyncWorker.enqueue(BackgroundTask.ProcessImage(targetFile.absolutePath))
             fileName
         }
 

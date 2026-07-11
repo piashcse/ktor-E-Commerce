@@ -2,10 +2,9 @@ package com.piashcse.feature.payment
 
 import com.piashcse.constants.Message
 import com.piashcse.constants.PaymentStatus
-import com.piashcse.database.entities.OrderDAO
-import com.piashcse.database.entities.OrderTable
-import com.piashcse.database.entities.PaymentDAO
-import com.piashcse.database.entities.PaymentTable
+import com.piashcse.database.entities.*
+import com.piashcse.event.EventBus
+import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.mapper.toPaymentResponse
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
@@ -58,6 +57,16 @@ class PaymentRepositoryImpl : PaymentRepository {
 
             if (paidAmount.add(paymentAmount).compareTo(orderTotal) >= 0) {
                 order.paymentStatus = PaymentStatus.COMPLETED
+                StockReservationDAO.find { StockReservationTable.orderId eq EntityID(paymentRequest.orderId, OrderTable) }
+                    .forEach { it.status = ReservationStatus.FINALIZED }
+                EventBus.publish(
+                    PaymentCompletedEvent(
+                        paymentId = payment.id.value,
+                        orderId = paymentRequest.orderId,
+                        userId = order.userId.value,
+                        amount = paymentAmount.toDouble(),
+                    )
+                )
             }
 
             payment.toPaymentResponse()

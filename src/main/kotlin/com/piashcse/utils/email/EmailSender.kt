@@ -22,6 +22,12 @@ object EmailSender {
         toEmail: String,
         otp: String,
         subject: String = AppConstants.SmtpServer.OTP_SUBJECT,
+    ) = send(toEmail, subject, "Your verification code is: $otp")
+
+    suspend fun send(
+        toEmail: String,
+        subject: String,
+        body: String,
     ) = withContext(Dispatchers.IO) {
         try {
             SimpleEmail().apply {
@@ -31,14 +37,13 @@ object EmailSender {
                 isSSLOnConnect = true
                 setFrom(fromEmail)
                 this.subject = subject
-                setMsg("Your verification code is: $otp")
+                setMsg(body)
                 addTo(toEmail)
                 send()
             }
-            log.info("OTP email sent successfully to $toEmail")
+            log.info("Email sent successfully to $toEmail (subject: $subject)")
         } catch (e: EmailException) {
-            log.error("Failed to send OTP email to $toEmail: ${e.message}", e)
-            throw AppEmailException("Failed to send email to $toEmail")
+            log.error("Failed to send email to $toEmail: ${e.message}", e)
         }
     }
 }

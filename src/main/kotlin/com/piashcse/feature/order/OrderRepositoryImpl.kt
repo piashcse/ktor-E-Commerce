@@ -2,6 +2,8 @@ package com.piashcse.feature.order
 
 import com.piashcse.constants.*
 import com.piashcse.database.entities.*
+import com.piashcse.event.EventBus
+import com.piashcse.event.OrderPlacedEvent
 import com.piashcse.mapper.toOrderItemResponse
 import com.piashcse.mapper.toOrderResponse
 import com.piashcse.model.request.CheckoutRequest
@@ -174,7 +176,7 @@ class OrderRepositoryImpl : OrderRepository {
                 val unitPrice = product.discountPrice ?: product.price
                 val itemTotal = unitPrice.multiply(BigDecimal(cartItem.quantity))
 
-                OrderItemDAO.new {
+                val orderItem = OrderItemDAO.new {
                     orderId = order.id
                     productId = product.id
                     shopId = EntityID(shopIdValue, ShopTable)
@@ -188,6 +190,17 @@ class OrderRepositoryImpl : OrderRepository {
                 }
 
                 product.decrementStock(cartItem.quantity)
+
+                StockReservationDAO.new {
+                    this.orderId = order.id
+                    this.orderItemId = orderItem.id
+                    this.productId = product.id
+                    this.shopId = EntityID(shopIdValue, ShopTable)
+                    this.quantity = cartItem.quantity
+                    this.status = ReservationStatus.ACTIVE
+                    this.expiresAt = LocalDateTime.now().plusHours(24)
+                }
+
                 shopSubTotal = shopSubTotal.add(itemTotal)
             }
 
@@ -228,7 +241,18 @@ class OrderRepositoryImpl : OrderRepository {
         }
 
         cartItems.forEach { it.delete() }
-        createdOrders.forEach { logStatusChange(it.id.value, it.status, "Order placed", userId) }
+        createdOrders.forEach {
+            logStatusChange(it.id.value, it.status, "Order placed", userId)
+            EventBus.publish(
+                OrderPlacedEvent(
+                    orderId = it.id.value,
+                    userId = userId,
+                    shopId = it.shopId?.value,
+                    orderNumber = it.orderNumber,
+                    total = it.total.toDouble(),
+                ),
+            )
+        }
         val itemsMap = loadItemsForOrders(createdOrders)
         createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
     }
@@ -440,6 +464,9 @@ class OrderRepositoryImpl : OrderRepository {
         orderItems.forEach { orderItem ->
             productsMap[orderItem.productId.value]?.restoreStock(orderItem.quantity)
         }
+
+        StockReservationDAO.find { StockReservationTable.orderId eq order.id }
+            .forEach { it.status = ReservationStatus.RELEASED }
 
         order.toOrderResponse(orderItems.toItemResponses())
     }

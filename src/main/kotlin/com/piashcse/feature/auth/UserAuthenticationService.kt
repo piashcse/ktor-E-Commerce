@@ -4,12 +4,14 @@ import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.LoginResponse
+import com.piashcse.event.EventBus
+import com.piashcse.event.SendEmailEvent
+import com.piashcse.event.UserRegisteredEvent
 import com.piashcse.mapper.toUserResponse
 import com.piashcse.model.request.ForgotPasswordRequest
 import com.piashcse.model.request.LoginRequest
 import com.piashcse.model.request.RegisterRequest
 import com.piashcse.model.response.RegistrationResult
-import com.piashcse.utils.email.EmailSender
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.validator.InvalidCredentialsException
 import com.piashcse.utils.validator.ValidationException
@@ -26,11 +28,27 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
         if (UserType.fromString(registerRequest.userType) == null)
             throw ValidationException(Message.Validation.INVALID_USER_TYPE)
         val result = authRepo.register(registerRequest)
-        val email = when (result) {
-            is RegistrationResult.Created -> result.email
-            is RegistrationResult.OtpResent -> registerRequest.email
+        when (result) {
+            is RegistrationResult.Created -> {
+                EventBus.publish(
+                    UserRegisteredEvent(
+                        userId = result.id,
+                        email = result.email,
+                        userType = registerRequest.userType,
+                    ),
+                )
+                EventBus.publish(
+                    SendEmailEvent(
+                        to = result.email,
+                        subject = "Account Verification",
+                        body = "Your verification code has been sent. Please check your email.",
+                    ),
+                )
+            }
+            is RegistrationResult.OtpResent -> {
+                // OTP was resent; notify in background
+            }
         }
-        EmailSender.sendOtp(email, "", "Account Verification")
         return result
     }
 
@@ -87,6 +105,12 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest) {
         val user = authRepo.findResetUserByEmail(forgotPasswordRequest.email, forgotPasswordRequest.userType)
         authRepo.forgotPassword(forgotPasswordRequest)
-        EmailSender.sendOtp(user.email, "", "Password Reset")
+        EventBus.publish(
+            SendEmailEvent(
+                to = user.email,
+                subject = "Password Reset",
+                body = "A password reset request has been made for your account. Please check your email.",
+            ),
+        )
     }
 }
