@@ -24,6 +24,10 @@ object AppConstants {
         const val DEFAULT_OFFSET = 0
     }
 
+    object Products {
+        const val BEST_SELLER_THRESHOLD = 10
+    }
+
     object Authentication {
         const val JWT_AUTHENTICATOR = "jwt-auth"
         const val REFRESH_TOKEN_EXPIRY_SECONDS = 7L * 24 * 60 * 60

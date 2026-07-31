@@ -28,6 +28,7 @@ fun Route.productRoutes() {
          */
         get("{id}") {
             val productId = call.requirePathParameter("id")
+            productRepo.incrementViewCount(productId)
             call.respondOk(productCatalogService.getProductDetail(productId))
         }
 

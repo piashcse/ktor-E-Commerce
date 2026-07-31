@@ -1,6 +1,7 @@
 package com.piashcse.feature.refund_request
 
 import com.piashcse.constants.Message
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
@@ -14,6 +15,7 @@ import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.time.LocalDateTime
@@ -43,7 +45,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             val existingRefund =
                 RefundRequestDAO.find {
                     (RefundRequestTable.orderItemId eq orderItem.id) and
-                        (RefundRequestTable.status eq RefundStatus.PENDING)
+                        (RefundRequestTable.status inList listOf(RefundStatus.PENDING, RefundStatus.APPROVED, RefundStatus.SHIPPED))
                 }.firstOrNull()
 
             if (existingRefund != null) {
@@ -139,27 +141,68 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                     ?: throw ValidationException(Message.Errors.NOT_FOUND)
 
             val isAdmin = user.userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
-            val isSeller = findSellerByUserId(userId) != null
+            val seller = findSellerByUserId(userId)
+            val isSeller = seller != null
 
             if (!isAdmin && !isSeller) {
                 throw ValidationException(Message.Errors.FORBIDDEN)
             }
 
-            if (request.status !in listOf(RefundStatus.APPROVED, RefundStatus.REJECTED, RefundStatus.REFUNDED)) {
-                throw ValidationException(Message.Refunds.INVALID_STATUS)
+            if (isSeller) {
+                val order =
+                    OrderDAO.findById(refundReq.orderId.value)
+                        ?: throw ValidationException(Message.Orders.NOT_FOUND)
+                val orderShopId = order.shopId?.value
+                if (orderShopId == null || !sellerOwnsShop(seller, orderShopId)) {
+                    throw ValidationException(Message.Errors.FORBIDDEN)
+                }
+            }
+
+            if (!canTransitionTo(refundReq.status, request.status)) {
+                throw ValidationException(Message.Refunds.invalidTransition(refundReq.status.name, request.status.name))
+            }
+
+            val orderItem =
+                OrderItemDAO.findById(refundReq.orderItemId.value)
+                    ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
+
+            val maxRefundAmount = orderItem.total
+            request.refundAmount?.let { amount ->
+                if (amount > maxRefundAmount) {
+                    throw ValidationException(Message.Refunds.AMOUNT_EXCEEDS_ITEM_TOTAL)
+                }
+            }
+
+            if (request.status == RefundStatus.REFUNDED && request.refundAmount == null && refundReq.refundAmount == null) {
+                throw ValidationException(Message.Refunds.REFUND_AMOUNT_REQUIRED)
             }
 
             refundReq.status = request.status
             refundReq.resolvedAt = LocalDateTime.now(ZoneOffset.UTC)
 
-            if (request.refundAmount != null) {
-                refundReq.refundAmount = request.refundAmount
-            }
-            if (request.refundMethod != null) {
-                refundReq.refundMethod = request.refundMethod
+            request.refundAmount?.let { refundReq.refundAmount = it }
+            request.refundMethod?.let { refundReq.refundMethod = it }
+
+            if (request.status == RefundStatus.REFUNDED) {
+                refundReq.refundAmount = refundReq.refundAmount ?: maxRefundAmount
+                val order =
+                    OrderDAO.findById(refundReq.orderId.value)
+                        ?: throw ValidationException(Message.Orders.NOT_FOUND)
+                order.paymentStatus = PaymentStatus.REFUNDED
             }
 
             refundReq.toRefundRequestResponse()
+        }
+
+    private fun canTransitionTo(
+        current: RefundStatus,
+        target: RefundStatus,
+    ): Boolean =
+        when (current) {
+            RefundStatus.PENDING -> target in listOf(RefundStatus.APPROVED, RefundStatus.REJECTED)
+            RefundStatus.APPROVED -> target in listOf(RefundStatus.REFUNDED, RefundStatus.REJECTED)
+            RefundStatus.SHIPPED -> target in listOf(RefundStatus.REFUNDED, RefundStatus.REJECTED)
+            RefundStatus.REJECTED, RefundStatus.REFUNDED -> false
         }
 
     override suspend fun shipRefund(

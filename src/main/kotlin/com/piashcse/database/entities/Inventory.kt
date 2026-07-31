@@ -2,6 +2,7 @@ package com.piashcse.database.entities
 
 import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.Message
+import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
@@ -49,6 +50,22 @@ fun ProductDAO.restoreStock(quantity: Int) {
 /** Calculates commission for an order subtotal. */
 fun SellerDAO.calcCommission(orderSubTotal: BigDecimal): BigDecimal =
     orderSubTotal.multiply(commissionRate).divide(BigDecimal("100"), 2, RoundingMode.HALF_UP)
+
+/** Records sales for a product and promotes it to best-seller once a threshold is crossed. */
+fun ProductDAO.addSales(quantity: Int) {
+    totalSales = totalSales + quantity
+    if (totalSales >= AppConstants.Products.BEST_SELLER_THRESHOLD) {
+        bestSeller = true
+    }
+}
+
+/** Reverses recorded sales (e.g. on order cancellation) and demotes the product if it falls below the threshold. */
+fun ProductDAO.removeSales(quantity: Int) {
+    totalSales = (totalSales - quantity).coerceAtLeast(0)
+    if (totalSales < AppConstants.Products.BEST_SELLER_THRESHOLD) {
+        bestSeller = false
+    }
+}
 
 object InventoryTable : BaseIdTable("inventory") {
     val productId = reference("product_id", ProductTable.id)

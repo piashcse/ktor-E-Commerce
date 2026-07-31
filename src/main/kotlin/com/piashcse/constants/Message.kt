@@ -156,8 +156,12 @@ object Message {
         const val NOT_FOUND = "Refund request not found"
         const val ITEM_NOT_FOUND = "Order item not found"
         const val ALREADY_EXISTS = "Refund request already exists for this item"
-        const val INVALID_STATUS = "Invalid status. Must be one of: APPROVED, REJECTED, REFUNDED"
+        const val INVALID_STATUS = "Invalid refund status transition"
         const val MUST_BE_APPROVED = "Refund must be approved before shipping"
+        const val AMOUNT_EXCEEDS_ITEM_TOTAL = "Refund amount cannot exceed the order item total"
+        const val REFUND_AMOUNT_REQUIRED = "Refund amount is required when marking a refund as REFUNDED"
+
+        fun invalidTransition(from: String, to: String) = "Cannot change refund status from $from to $to"
     }
 
     // ─── Upload ─────────────────────────────────────────────────────────────

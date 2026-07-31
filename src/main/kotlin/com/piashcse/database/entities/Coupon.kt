@@ -7,6 +7,8 @@ import com.piashcse.database.entities.base.BaseIdTable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 object CouponTable : BaseIdTable("coupon") {
     val code = varchar("code", 50).uniqueIndex()
@@ -34,4 +36,24 @@ class CouponDAO(id: EntityID<String>) : BaseEntity(id, CouponTable) {
     var usageLimit by CouponTable.usageLimit
     var usageCount by CouponTable.usageCount
     var isActive by CouponTable.isActive
+}
+
+object CouponUsageTable : BaseIdTable("coupon_usage") {
+    val couponId = reference("coupon_id", CouponTable.id).index()
+    val userId = reference("user_id", UserTable.id).index()
+    val orderId = reference("order_id", OrderTable.id).nullable()
+    val usedAt = datetime("used_at").clientDefault { LocalDateTime.now(ZoneOffset.UTC) }
+
+    init {
+        index(customIndexName = "coupon_usage_coupon_user_idx", isUnique = false, couponId, userId)
+    }
+}
+
+class CouponUsageDAO(id: EntityID<String>) : BaseEntity(id, CouponUsageTable) {
+    companion object : BaseEntityClass<CouponUsageDAO>(CouponUsageTable, CouponUsageDAO::class.java)
+
+    var couponId by CouponUsageTable.couponId
+    var userId by CouponUsageTable.userId
+    var orderId by CouponUsageTable.orderId
+    var usedAt by CouponUsageTable.usedAt
 }

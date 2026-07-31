@@ -42,7 +42,8 @@ object StockReservationCleanup {
 
         expired.map { it.orderId.value }.distinct().forEach { orderId ->
             val order = OrderDAO.findById(orderId) ?: return@forEach
-            if (order.status != OrderStatus.PENDING) return@forEach
+            val cancellable = order.status == OrderStatus.PENDING || order.status == OrderStatus.CONFIRMED
+            if (!cancellable) return@forEach
 
             val orderItems = OrderItemDAO.find { OrderItemTable.orderId eq order.id }.toList()
             val products = if (orderItems.isNotEmpty())

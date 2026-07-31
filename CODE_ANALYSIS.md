@@ -112,17 +112,56 @@ Analyzed 212 Kotlin files. Findings verified by direct inspection of source. Ord
 
 ## 3. Missing Functionality
 
-- **Idempotency keys** on payments (C4); `transactionId` stored but never checked.
-- **Atomic stock decrement** (`UPDATE ... WHERE stock_quantity >= ?` instead of read→clamp→write).
-- **Refund authorization/transition validation**: any seller can approve any refund (RefundRequestRepositoryImpl.kt:143), no transition validation, no amount cap, no `paymentStatus = REFUNDED`, repeatable after approval (only PENDING duplicates rejected :44-52).
-- **Cancel path inconsistency**: `PATCH /orders/status/{id}` to `CANCELED` (Enums.kt:77, OrderRoutes.kt:44) bypasses stock restore + refund entirely; `cancelOrder` alone restores stock and restricts statuses.
-- **`updateOrderStatus` never sets `shippingDate`/`deliveredDate`/`completedDate`/`paymentStatus`** (OrderRepositoryImpl.kt:425-429).
-- **Seller products get no inventory row** → permanently unsellable (`ProductRoutes.kt:86` passes `shopId=null`; `effectiveStock` returns 0).
-- **Ranking/analytics fields never maintained**: `totalSales`, `rating`, `totalReviews`, `viewCount` (dead code), `discountPercentage` (stale after price edit), `bestSeller` (never set) → best-selling/top-rated/hot-deals sorts are arbitrary.
-- **Coupon abuse**: `getCheckoutSummary` increments `usageCount` on preview (OrderRepositoryImpl.kt:293-298 + :94); no per-user usage tracking; `LocalDateTime.now()` vs UTC timestamps.
-- **Hard deletes violate FKs** (no `ON DELETE CASCADE`): deleting a product/category/brand with children → 500.
-- **`StockReservationCleanup`** (service/StockReservationCleanup.kt:45-59) releases reservations for non-PENDING orders without restoring stock → inventory leak.
-- **Audit logging is non-functional**: `AuditLogRepositoryImpl.log` never called; `AuditLogSubscriber` just prints to console.
+- ~~**Idempotency keys** on payments~~ ✅ (C4): `transactionId` idempotency + partial unique index implemented.
+- ~~**Atomic stock decrement**~~ ✅ (C3): `effectiveStock(forUpdate = true)` row-locked read + `decrementStock` throws instead of clamping.
+
+### ✅ DONE — M1. Refund authorization/transition validation
+**Before:** any seller could approve any refund (RefundRequestRepositoryImpl.kt:143); no transition validation; no amount cap; no `paymentStatus = REFUNDED`; only PENDING duplicates rejected.
+**Fixed by:**
+- `updateRefundStatus` now requires a seller to own the refund's order shop before acting.
+- Added transition matrix `canTransitionTo` (PENDING→APPROVED/REJECTED; APPROVED/SHIPPED→REFUNDED/REJECTED; terminal states immutable) with `Message.Refunds.invalidTransition`.
+- Refund amount is capped at the order item total (`AMOUNT_EXCEEDS_ITEM_TOTAL`); `REFUNDED` requires an amount (defaulting to the item total).
+- Marking a refund `REFUNDED` sets `order.paymentStatus = REFUNDED`.
+- `createRefundRequest` dedup now rejects existing PENDING/APPROVED/SHIPPED refunds for the same item.
+
+### ✅ DONE — M2. Cancel path consistency
+**Before:** `PATCH /orders/status/{id}` to `CANCELED` bypassed stock restore, reservation release, and refund; only `cancelOrder` restored stock.
+**Fixed by:** `updateOrderStatus` delegates CANCELED to a shared `applyOrderCancellation` (sets `canceledDate`, logs history, restores stock, releases reservations, marks paid orders `paymentStatus = REFUNDED`); `cancelOrder` uses the same routine.
+
+### ✅ DONE — M3. `updateOrderStatus` lifecycle timestamps
+**Before:** `updateOrderStatus` never set `shippingDate`/`deliveredDate`/`completedDate`/`paymentStatus`.
+**Fixed by:** DELIVERED sets `deliveredDate` (and `shippingDate` if unset); RECEIVED sets `completedDate`; PAID sets `paymentStatus = COMPLETED`; CANCELED handled by M2.
+
+### ✅ DONE — M4. Seller products get inventory row
+**Before:** seller create-product route passed `shopId = null` → no inventory row → `effectiveStock` = 0 → unsellable.
+**Fixed by:** `createProduct` falls back to the seller's `shopId` when none is given and creates the inventory row (stock from request) against that shop.
+
+### ✅ DONE — M5. Ranking/analytics fields maintained
+**Before:** `totalSales`, `rating`, `totalReviews`, `viewCount` (dead), `discountPercentage` (stale), `bestSeller` (never set) were not maintained.
+**Fixed by:**
+- `ProductDAO.addSales/removeSales` update `totalSales` and auto-set/clear `bestSeller` at the threshold (order place, createOrder, and cancel).
+- Reviews add/update/delete recompute the product `rating` and `totalReviews`.
+- Product detail view calls `incrementViewCount`.
+- `updateProduct` recomputes `discountPercentage` after price/discount edits.
+
+### ✅ DONE — M6. Coupon abuse
+**Before:** `getCheckoutSummary` preview incremented `usageCount`; no per-user usage tracking; `LocalDateTime.now()` vs UTC.
+**Fixed by:**
+- Preview now uses a side-effect-free `calculateCouponDiscount`; only `placeOrder` consumes usage via `consumeCoupon`.
+- New `coupon_usage` table (V8) records coupon per user per order.
+- Coupon date validation uses UTC (`LocalDateTime.now(ZoneOffset.UTC)`).
+
+### ✅ DONE — M7. Hard deletes violate FKs
+**Before:** deleting a product/category/brand with child rows returned 500 (no `ON DELETE CASCADE`).
+**Fixed by:** `V8` migration rewrites FK actions — CASCADE for owned children (product_image, inventory, review_rating, cart_item, wishlist, stock_reservation, sub_category, category→product) and SET NULL for nullable product refs (brand/sub-category/shop).
+
+### ✅ DONE — M8. `StockReservationCleanup` inventory leak
+**Before:** expired reservations on non-PENDING orders were released without restoring stock.
+**Fixed by:** cleanup now auto-cancels + restores stock for expired reservations on PENDING *and* CONFIRMED (unpaid) orders; paid/terminal orders are left untouched (stock legitimately consumed).
+
+### ✅ DONE — M9. Audit logging non-functional
+**Before:** `AuditLogRepositoryImpl.log` was never called; `AuditLogSubscriber` only printed to console.
+**Fixed by:** `AuditLogSubscriber` now receives `AuditLogRepository` via DI (wired in `Application.kt`) and persists DB audit rows for order-placed, user-registered, and payment-completed events (failures logged, non-fatal).
 
 ---
 
@@ -158,7 +197,7 @@ Analyzed 212 Kotlin files. Findings verified by direct inspection of source. Ord
 
 **P0 (blocks everything):** ~~align entity↔migration schema (C1)~~ ✅; ~~money types → `BigDecimal` everywhere (C2)~~ ✅; ~~make stock mutations atomic (C3)~~ ✅; ~~payment idempotent + no double-charge (C4)~~ ✅; ~~coupon negative totals (C5)~~ ✅; ~~checkout summary vs actual shipping (C6)~~ ✅; ~~fix OTP delivery (S3)~~ ✅; ~~block admin self-registration (S1)~~ ✅; ~~fix `changeUserType` authorization (S2)~~ ✅.
 
-**P1:** cancel-path stock/refund consistency; seller products get inventory; refund authorization/transitions; coupon preview side-effect; ~~deactivation + blacklist enforcement (S4)~~ ✅; ~~reset OTP brute-force + time-based lockout (S5)~~ ✅; ~~login enumeration + email echo (S6)~~ ✅; ~~rate-limit proxy awareness + client IP capture (S7)~~ ✅; ~~password policy + constant-time OTP + SMTP STARTTLS (S8)~~ ✅.
+**P1:** ~~cancel-path stock/refund consistency~~ ✅; ~~seller products get inventory~~ ✅; ~~refund authorization/transitions~~ ✅; ~~coupon preview side-effect~~ ✅; ~~deactivation + blacklist enforcement (S4)~~ ✅; ~~reset OTP brute-force + time-based lockout (S5)~~ ✅; ~~login enumeration + email echo (S6)~~ ✅; ~~rate-limit proxy awareness + client IP capture (S7)~~ ✅; ~~password policy + constant-time OTP + SMTP STARTTLS (S8)~~ ✅.
 
 **P2 (architecture):** restore service layer; move DTOs out of `database/entities`; outbox/durable events + fix EmailSubscriber addressing; generic `BaseRepository`; shared pricing module; single error-envelope (`ApiError`) everywhere.
 
