@@ -10,7 +10,7 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 object PaymentTable : BaseIdTable("payment") {
     val orderId = reference("order_id", OrderTable.id)
     val userId = reference("user_id", UserTable.id)
-    val amount = long("amount")
+    val amount = decimal("amount", 10, 2)
     val status = enumerationByName("status", 30, PaymentStatus::class).clientDefault { PaymentStatus.PENDING }
     val paymentMethod = enumerationByName("payment_method", 50, PaymentMethod::class)
     val transactionId = varchar("transaction_id", 100).nullable()

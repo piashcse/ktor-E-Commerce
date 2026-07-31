@@ -6,13 +6,14 @@ import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
+import java.math.BigDecimal
 
 object CouponTable : BaseIdTable("coupon") {
     val code = varchar("code", 50).uniqueIndex()
     val discountType = enumerationByName("discount_type", 20, CouponDiscountType::class)
-    val discountValue = double("discount_value")
-    val minOrderAmount = double("min_order_amount").default(0.0)
-    val maxDiscountAmount = double("max_discount_amount").nullable()
+    val discountValue = decimal("discount_value", 10, 2)
+    val minOrderAmount = decimal("min_order_amount", 10, 2).default(BigDecimal.ZERO)
+    val maxDiscountAmount = decimal("max_discount_amount", 10, 2).nullable()
     val startDate = datetime("start_date")
     val endDate = datetime("end_date")
     val usageLimit = integer("usage_limit").nullable()

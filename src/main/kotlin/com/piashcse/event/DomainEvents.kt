@@ -1,5 +1,6 @@
 package com.piashcse.event
 
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 sealed class DomainEvent(
@@ -12,7 +13,7 @@ data class OrderPlacedEvent(
     val userId: String,
     val shopId: String?,
     val orderNumber: String,
-    val total: Double,
+    val total: BigDecimal,
 ) : DomainEvent()
 
 data class UserRegisteredEvent(
@@ -25,7 +26,7 @@ data class PaymentCompletedEvent(
     val paymentId: String,
     val orderId: String,
     val userId: String,
-    val amount: Double,
+    val amount: BigDecimal,
 ) : DomainEvent()
 
 data class SendEmailEvent(

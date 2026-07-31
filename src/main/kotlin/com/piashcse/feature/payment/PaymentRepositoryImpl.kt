@@ -10,26 +10,29 @@ import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
-import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import java.math.BigDecimal
 
 class PaymentRepositoryImpl : PaymentRepository {
     override suspend fun createPayment(paymentRequest: PaymentRequest): PaymentResponse =
-        query {
+        retryQuery {
+            paymentRequest.transactionId?.let { txId ->
+                PaymentDAO.find { PaymentTable.transactionId eq txId }.firstOrNull()
+                    ?.let { return@retryQuery it.toPaymentResponse() }
+            }
+
             val order =
-                OrderDAO.findById(paymentRequest.orderId)
+                OrderDAO.find { OrderTable.id eq paymentRequest.orderId.entityID(OrderTable) }.forUpdate().firstOrNull()
                     ?: paymentRequest.orderId.throwNotFound("Order")
 
             val orderTotal = order.total
-            val paymentAmount = BigDecimal(paymentRequest.amount.toString())
+            val paymentAmount = paymentRequest.amount
             if (paymentAmount.compareTo(orderTotal) != 0) {
-                throw ValidationException(Message.Payments.amountMismatch(paymentRequest.amount.toString(), orderTotal.toPlainString()))
+                throw ValidationException(Message.Payments.amountMismatch(paymentRequest.amount.toPlainString(), orderTotal.toPlainString()))
             }
 
             val existingPayments =
@@ -38,7 +41,7 @@ class PaymentRepositoryImpl : PaymentRepository {
                         (PaymentTable.status eq PaymentStatus.COMPLETED)
                 }.toList()
 
-            val paidAmount = existingPayments.sumOf { BigDecimal(it.amount.toString()) }
+            val paidAmount = existingPayments.sumOf { it.amount }
             if (paidAmount.compareTo(orderTotal) >= 0) {
                 throw ValidationException(Message.Payments.ALREADY_PAID)
             }
@@ -62,7 +65,7 @@ class PaymentRepositoryImpl : PaymentRepository {
                         paymentId = payment.id.value,
                         orderId = paymentRequest.orderId,
                         userId = order.userId.value,
-                        amount = paymentAmount.toDouble(),
+                        amount = paymentAmount,
                     )
                 )
             }

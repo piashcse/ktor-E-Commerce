@@ -153,7 +153,7 @@ class CartRepositoryImpl : CartRepository {
             )
         }
 
-        val subtotal = items.sumOf { BigDecimal(it.price) * BigDecimal(it.quantity) }
+        val subtotal = items.sumOf { BigDecimal(it.price) * BigDecimal(it.quantity) }.setScale(2, RoundingMode.HALF_UP)
         val tax = subtotal.multiply(BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString())).setScale(2, RoundingMode.HALF_UP)
         CartSummaryResponse(items, subtotal.toPlainString(), tax.toPlainString(), items.size)
     }

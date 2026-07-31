@@ -16,7 +16,6 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -154,7 +153,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             refundReq.resolvedAt = LocalDateTime.now(ZoneOffset.UTC)
 
             if (request.refundAmount != null) {
-                refundReq.refundAmount = BigDecimal.valueOf(request.refundAmount)
+                refundReq.refundAmount = request.refundAmount
             }
             if (request.refundMethod != null) {
                 refundReq.refundMethod = request.refundMethod

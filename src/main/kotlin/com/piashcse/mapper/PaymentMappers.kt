@@ -6,7 +6,7 @@ import com.piashcse.model.response.PaymentResponse
 fun PaymentDAO.toPaymentResponse() = PaymentResponse(
     id = paymentId.value,
     orderId = orderId.value,
-    amount = amount,
+    amount = amount.toPlainString(),
     status = status,
     paymentMethod = paymentMethod,
     transactionId = transactionId,
