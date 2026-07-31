@@ -57,30 +57,56 @@ Analyzed 212 Kotlin files. Findings verified by direct inspection of source. Ord
 
 ## 2. Security Vulnerabilities
 
-### S1. Anyone can self-register as `ADMIN`
-`RegisterRequest.kt:17-18` validates `userType` includes `admin`; the public register route stores exactly that role (AuthRepositoryImpl.kt:113-149). No server-side guard.
+### ✅ DONE — S1. Anyone can self-register as `ADMIN`
+**Before:** `RegisterRequest.kt:17-18` validated `userType` including `admin`; the public register route stored exactly that role (AuthRepositoryImpl.kt:113-149). No server-side guard.
+**Fixed by:**
+- `RegisterRequest.kt` now restricts self-registration to `CUSTOMER`/`SELLER` only.
+- `UserAuthenticationService.register` rejects `ADMIN`/`SUPER_ADMIN` server-side (defense in depth) with `Message.Auth.REGISTRATION_ROLE_FORBIDDEN`.
 
-### S2. Privilege escalation: ADMIN → SUPER_ADMIN
-`changeUserType` (AuthRepositoryImpl.kt:334-341) only checks the **target's current** type via `canManage` (Enums.kt:167-173), never the **new** type. An ADMIN can promote any CUSTOMER/SELLER to ADMIN or SUPER_ADMIN. The query param accepts any enum value (AuthRoutes.kt:135).
+### ✅ DONE — S2. Privilege escalation: ADMIN → SUPER_ADMIN
+**Before:** `changeUserType` (AuthRepositoryImpl.kt:334-341) only checked the **target's current** type via `canManage` (Enums.kt:167-173), never the **new** type. An ADMIN could promote any CUSTOMER/SELLER to ADMIN or SUPER_ADMIN.
+**Fixed by:**
+- `changeUserType` now also requires `currentUser.userType.canManage(newUserType)` and forbids changing one's own type (prevents e.g. a SUPER_ADMIN locking everyone out).
 
-### S3. OTP never delivered → registration/reset unusable (also a logic bug)
-`UserAuthenticationService.kt:40-46,108-114` publish `SendEmailEvent` whose body never contains the OTP. `EmailSender.sendOtp` — the only method including the OTP — has zero call sites. Verification/reset flows are dead. Worse: `EmailSubscriber.kt:10-11` emails `OrderPlacedEvent.userId`/`PaymentCompletedEvent.userId` — a **UUID**, not an email address.
+### ✅ DONE — S3. OTP never delivered → registration/reset unusable (also a logic bug)
+**Before:** `UserAuthenticationService.kt:40-46,108-114` published `SendEmailEvent` whose body never contained the OTP. `EmailSender.sendOtp` — the only method including the OTP — had zero call sites. Worse: `EmailSubscriber.kt:10-11` emailed `OrderPlacedEvent.userId`/`PaymentCompletedEvent.userId` — a **UUID**, not an email address.
+**Fixed by:**
+- Registration (`Created` and `OtpResent`) and forgot-password now email the actual OTP via `SendEmailEvent`; `AuthRepository.getRegistrationOtp`/`forgotPassword` (returns OTP) added; `RegistrationResult.OtpResent` now carries `id`/`email`.
+- Dead `EmailSender.sendOtp` removed.
+- `OrderPlacedEvent`/`PaymentCompletedEvent` now carry `email` (looked up at publish time); `EmailSubscriber` sends to the real address.
 
-### S4. Deactivation / blacklist are ineffective
-- `refreshAccessToken` (AuthRepositoryImpl.kt:284) never checks `isActive`/`isVerified`; deactivation (343-353) doesn't revoke refresh tokens → deactivated users keep working.
-- Access-token blacklist is validated **only** from in-memory `CacheService` (ConfigureAuth.kt:20-30); the DB `blacklisted_token` table is never read → after restart or on a second instance, logged-out tokens work again.
+### ✅ DONE — S4. Deactivation / blacklist are ineffective
+**Before:** `refreshAccessToken` (AuthRepositoryImpl.kt:284) never checked `isActive`/`isVerified`; deactivation (343-353) didn't revoke refresh tokens → deactivated users kept working. Access-token blacklist was validated **only** from in-memory `CacheService` (ConfigureAuth.kt:20-30); the DB `blacklisted_token` table was never read → after restart or on a second instance, logged-out tokens worked again.
+**Fixed by:**
+- `refreshAccessToken` now rejects deactivated/unverified users.
+- `deactivateUser` revokes all of the target user's refresh tokens in the same transaction.
+- JWT `validate` (ConfigureAuth.kt) now checks the DB `blacklisted_token` table (durable path) and the user's active+verified status on every authenticated request.
 
-### S5. OTP brute-force + permanent lockout
-`reset-password` has **no** per-user attempt limit (AuthRepositoryImpl.kt:194-212) — 6-digit OTP, only per-IP rate limit protects it. Conversely, OTP verification lockout is permanent: failed count never decays (`lockOtpAttempts` writes `lockedUntil` but nothing reads it).
+### ✅ DONE — S5. OTP brute-force + permanent lockout
+**Before:** `reset-password` had **no** per-user attempt limit (AuthRepositoryImpl.kt:194-212). OTP verification lockout was permanent: failed count never decayed (`lockOtpAttempts` wrote `lockedUntil` but nothing read it).
+**Fixed by:**
+- `resetPassword` now enforces a per-user OTP attempt limit (5 → 30-min lock) backed by `otp_attempt`, and returns `ResetResult.Locked` (429).
+- `otpVerification` now respects `isOtpLocked` and resets the counter once the lock window expires → lockout is time-based, not permanent.
+- Login lockout counters also reset once an expired lock passes (no instant re-lock).
 
-### S6. Email enumeration
-Login returns 404 "User not found" vs 401 wrong-password (UserAuthenticationService.kt:63-74); registration and reset errors embed the email.
+### ✅ DONE — S6. Email enumeration
+**Before:** Login returned 404 "User not found" vs 401 wrong-password (UserAuthenticationService.kt:63-74); registration and reset errors embedded the email.
+**Fixed by:**
+- Login now returns the identical 401 `InvalidCredentialsException` for unknown email and wrong password (lockout still applied).
+- `Message.Auth.userNotFoundForRole` no longer echoes the email; all reset/forgot-password errors are generic.
 
-### S7. Per-IP rate limit is proxy-naive and enables account DoS
-`requestKey { call.request.local.remoteHost }` (ConfigureRateLimit.kt:57) ignores `X-Forwarded-For`; Ktor's in-memory limiter resets per instance. Account lockout (5 wrong guesses → 30 min) is a deliberate DoS primitive on any known email; `ipAddress` is always stored `null` (UserAuthenticationService.kt:64,69).
+### ✅ DONE — S7. Per-IP rate limit is proxy-naive and enables account DoS
+**Before:** `requestKey { call.request.local.remoteHost }` (ConfigureRateLimit.kt:57) ignored `X-Forwarded-For`; `ipAddress` was always stored `null` (UserAuthenticationService.kt:64,69).
+**Fixed by:**
+- Added `ApplicationCall.clientIp` (prefers `X-Forwarded-For`, then `X-Real-IP`, falls back to socket host); all global + per-user rate-limit keys now use it.
+- Login now records the real client IP in `login_attempt.ip_address`.
 
-### S8. Weak password policy
-`RegisterRequest.kt:16` only enforces 8-64 chars; `ChangePasswordRequest`/`ResetRequest.newPassword` have **no** validation at all — despite a documented complexity policy. Plain (non-constant-time) string comparison of OTPs (:205, :219). SMTP SSL on STARTTLS port 587 (EmailSender.kt:49-50, DotEnvConfig.kt:17).
+### ✅ DONE — S8. Weak password policy
+**Before:** `RegisterRequest.kt:16` only enforced 8-64 chars; `ChangePasswordRequest`/`ResetRequest.newPassword` had **no** validation at all — despite a documented complexity policy. Plain (non-constant-time) string comparison of OTPs (:205, :219). SMTP SSL on STARTTLS port 587 (EmailSender.kt:49-50, DotEnvConfig.kt:17).
+**Fixed by:**
+- New shared `PasswordPolicy` (uppercase + lowercase + digit + special char, 8-64) enforced on `RegisterRequest`, `ChangePasswordRequest`, and `ResetRequest`.
+- OTP comparisons use constant-time `MessageDigest.isEqual` (`constantTimeEquals`).
+- SMTP now uses STARTTLS on port 587 by default, with optional SSL via `EMAIL_SSL` env flag.
 
 ---
 
@@ -130,9 +156,9 @@ Login returns 404 "User not found" vs 401 wrong-password (UserAuthenticationServ
 
 > ✅ = DONE. Remaining items below.
 
-**P0 (blocks everything):** ~~align entity↔migration schema (C1)~~ ✅; ~~money types → `BigDecimal` everywhere (C2)~~ ✅; ~~make stock mutations atomic (C3)~~ ✅; ~~payment idempotent + no double-charge (C4)~~ ✅; ~~coupon negative totals (C5)~~ ✅; ~~checkout summary vs actual shipping (C6)~~ ✅; **fix OTP delivery (S3)**; **block admin self-registration (S1)**; **fix `changeUserType` authorization (S2)**.
+**P0 (blocks everything):** ~~align entity↔migration schema (C1)~~ ✅; ~~money types → `BigDecimal` everywhere (C2)~~ ✅; ~~make stock mutations atomic (C3)~~ ✅; ~~payment idempotent + no double-charge (C4)~~ ✅; ~~coupon negative totals (C5)~~ ✅; ~~checkout summary vs actual shipping (C6)~~ ✅; ~~fix OTP delivery (S3)~~ ✅; ~~block admin self-registration (S1)~~ ✅; ~~fix `changeUserType` authorization (S2)~~ ✅.
 
-**P1:** cancel-path stock/refund consistency; seller products get inventory; refund authorization/transitions; coupon preview side-effect; deactivation + blacklist enforcement.
+**P1:** cancel-path stock/refund consistency; seller products get inventory; refund authorization/transitions; coupon preview side-effect; ~~deactivation + blacklist enforcement (S4)~~ ✅; ~~reset OTP brute-force + time-based lockout (S5)~~ ✅; ~~login enumeration + email echo (S6)~~ ✅; ~~rate-limit proxy awareness + client IP capture (S7)~~ ✅; ~~password policy + constant-time OTP + SMTP STARTTLS (S8)~~ ✅.
 
 **P2 (architecture):** restore service layer; move DTOs out of `database/entities`; outbox/durable events + fix EmailSubscriber addressing; generic `BaseRepository`; shared pricing module; single error-envelope (`ApiError`) everywhere.
 

@@ -61,6 +61,7 @@ object Message {
     // ─── Auth ──────────────────────────────────────────────────────────────
     object Auth {
         const val USER_EXISTS = "User already exists with this email"
+        const val REGISTRATION_ROLE_FORBIDDEN = "Only CUSTOMER and SELLER accounts can be created through self-registration"
         const val INVALID_CREDENTIALS = "Invalid email or password"
         const val ACCOUNT_NOT_VERIFIED = "Account not verified"
         const val ACCOUNT_DEACTIVATED = "Account has been deactivated"
@@ -71,6 +72,7 @@ object Message {
         const val OTP_ALREADY_SENT = "Verification code already sent. Please wait before requesting a new one"
         const val OTP_INVALID = "Invalid or expired verification code"
         const val PASSWORD_RESET_SUCCESS = "Password reset successful"
+        const val ACCOUNT_ACTIVATED = "Account activated successfully"
         const val INVALID_REFRESH_TOKEN = "Invalid or expired refresh token"
         const val TOKEN_EXPIRED = "Refresh token expired or revoked"
 
@@ -80,10 +82,7 @@ object Message {
         // Permissions
         fun insufficientPermissions(action: String) = "Insufficient permissions to $action"
 
-        fun userNotFoundForRole(
-            email: String,
-            userType: String,
-        ) = "User with email $email not found for $userType role"
+        fun userNotFoundForRole(userType: String) = "User not found for $userType role"
     }
 
     // ─── Orders ────────────────────────────────────────────────────────────

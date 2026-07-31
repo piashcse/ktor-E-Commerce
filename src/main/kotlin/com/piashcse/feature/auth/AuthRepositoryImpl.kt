@@ -10,6 +10,7 @@ import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
 import com.piashcse.service.CacheService
+import com.piashcse.utils.common.constantTimeEquals
 import com.piashcse.utils.common.generateOTP
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.extension.*
@@ -23,13 +24,6 @@ import java.time.LocalDateTime
 import java.util.*
 
 class AuthRepositoryImpl : AuthRepository {
-    companion object {
-        private const val REFRESH_TOKEN_EXPIRY_SECONDS = 7L * 24 * 60 * 60
-        private const val MAX_LOGIN_ATTEMPTS = 5
-        private const val ACCOUNT_LOCKOUT_MINUTES = 30L
-        private const val OTP_LOCKOUT_MINUTES = 30L
-        private const val JWT_EXPIRY_SECONDS = 900L
-    }
 
     // ── Token helpers ─────────────────────────────────────────────────────
 
@@ -45,7 +39,7 @@ class AuthRepositoryImpl : AuthRepository {
 
     override suspend fun storeRefreshToken(userId: String, refreshToken: String) {
         val tokenHash = hashRefreshToken(refreshToken)
-        val expiresAt = Instant.now().plusSeconds(REFRESH_TOKEN_EXPIRY_SECONDS)
+        val expiresAt = Instant.now().plusSeconds(AppConstants.Authentication.REFRESH_TOKEN_EXPIRY_SECONDS)
         query {
             RefreshTokenDAO.new {
                 this.userId = userId.entityID(UserTable)
@@ -65,9 +59,13 @@ class AuthRepositoryImpl : AuthRepository {
     }
 
     override suspend fun revokeAllUserTokens(userId: String): Boolean = query {
+        revokeAllUserTokensTx(userId)
+        true
+    }
+
+    private fun revokeAllUserTokensTx(userId: String) {
         RefreshTokenDAO.find { RefreshTokenTable.userId eq userId.entityID(UserTable) }
             .forEach { it.revokedAt = Instant.now() }
-        true
     }
 
     // ── Login attempt helpers ────────────────────────────────────────────
@@ -129,7 +127,7 @@ class AuthRepositoryImpl : AuthRepository {
                 }
                 existingUser.otpCode = otp
                 existingUser.otpExpiry = otpExpiryTime
-                Triple(existingUser.email, otp, RegistrationResult.OtpResent(Message.Auth.OTP_SENT))
+                Triple(existingUser.email, otp, RegistrationResult.OtpResent(existingUser.id.value, existingUser.email, Message.Auth.OTP_SENT))
             } else {
                 val inserted = UserDAO.new {
                     email = registerRequest.email
@@ -158,13 +156,17 @@ class AuthRepositoryImpl : AuthRepository {
         UserDAO.findById(userId)
     }
 
+    override suspend fun getRegistrationOtp(userId: String): String? = query {
+        UserDAO.findById(userId)?.otpCode
+    }
+
     override suspend fun findResetUserByEmail(email: String, userTypeStr: String): UserDAO {
         val entities = UserDAO.find { UserTable.email eq email }.toList()
         if (entities.isEmpty()) email.throwNotFound("User")
         val type = runCatching { UserType.valueOf(userTypeStr.uppercase()) }
-            .getOrElse { throw NotFoundException(Message.Auth.userNotFoundForRole(email, userTypeStr)) }
+            .getOrElse { throw NotFoundException(Message.Auth.userNotFoundForRole(userTypeStr)) }
         return entities.find { it.userType == type }
-            ?: throw NotFoundException(Message.Auth.userNotFoundForRole(email, userTypeStr))
+            ?: throw NotFoundException(Message.Auth.userNotFoundForRole(userTypeStr))
     }
 
     // ── Password operations ───────────────────────────────────────────────
@@ -177,36 +179,58 @@ class AuthRepositoryImpl : AuthRepository {
         true
     }
 
-    override suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest) {
-        query {
-            val entities = UserDAO.find { UserTable.email eq forgotPasswordRequest.email }.toList()
-            if (entities.isEmpty()) forgotPasswordRequest.email.throwNotFound("User")
-            val type = runCatching { UserType.valueOf(forgotPasswordRequest.userType.uppercase()) }
-                .getOrElse { throw NotFoundException(Message.Auth.userNotFoundForRole(forgotPasswordRequest.email, forgotPasswordRequest.userType)) }
-            val user = entities.find { it.userType == type }
-                ?: throw NotFoundException(Message.Auth.userNotFoundForRole(forgotPasswordRequest.email, forgotPasswordRequest.userType))
-            val otp = generateOTP()
-            user.resetOtpCode = otp
-            user.resetOtpExpiry = LocalDateTime.now().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
-        }
+    override suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest): String = query {
+        val entities = UserDAO.find { UserTable.email eq forgotPasswordRequest.email }.toList()
+        if (entities.isEmpty()) forgotPasswordRequest.email.throwNotFound("User")
+        val type = runCatching { UserType.valueOf(forgotPasswordRequest.userType.uppercase()) }
+            .getOrElse { throw NotFoundException(Message.Auth.userNotFoundForRole(forgotPasswordRequest.userType)) }
+        val user = entities.find { it.userType == type }
+            ?: throw NotFoundException(Message.Auth.userNotFoundForRole(forgotPasswordRequest.userType))
+        val otp = generateOTP()
+        user.resetOtpCode = otp
+        user.resetOtpExpiry = LocalDateTime.now().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
+        otp
     }
 
     override suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult = query {
         val entities = UserDAO.find { UserTable.email eq resetPasswordRequest.email }.toList()
         if (entities.isEmpty()) resetPasswordRequest.email.throwNotFound("User")
         val type = runCatching { UserType.valueOf(resetPasswordRequest.userType.uppercase()) }
-            .getOrElse { throw NotFoundException(Message.Auth.userNotFoundForRole(resetPasswordRequest.email, resetPasswordRequest.userType)) }
+            .getOrElse { throw NotFoundException(Message.Auth.userNotFoundForRole(resetPasswordRequest.userType)) }
         val user = entities.find { it.userType == type }
-            ?: throw NotFoundException(Message.Auth.userNotFoundForRole(resetPasswordRequest.email, resetPasswordRequest.userType))
+            ?: throw NotFoundException(Message.Auth.userNotFoundForRole(resetPasswordRequest.userType))
+
+        val otpAttempt = OtpAttemptDAO.find { OtpAttemptTable.userId eq user.id }.singleOrNull()
+        if (otpAttempt?.isLocked == true) return@query ResetResult.Locked
 
         if (user.resetOtpExpiry?.isBefore(LocalDateTime.now()) != false)
             return@query ResetResult.InvalidOrExpiredOtp
 
-        if (user.resetOtpCode != resetPasswordRequest.verificationCode) return@query ResetResult.InvalidOrExpiredOtp
+        if (!constantTimeEquals(user.resetOtpCode.orEmpty(), resetPasswordRequest.verificationCode)) {
+            val attemptRecord =
+                if (otpAttempt != null) {
+                    otpAttempt.attemptCount = otpAttempt.attemptCount + 1
+                    otpAttempt
+                } else {
+                    OtpAttemptDAO.new {
+                        this.userId = user.id
+                        this.attemptCount = 1
+                    }
+                }
+            if (attemptRecord.attemptCount >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
+                attemptRecord.lockedUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
+                user.resetOtpCode = null
+                user.resetOtpExpiry = null
+            }
+            return@query ResetResult.InvalidOrExpiredOtp
+        }
 
         if (BCrypt.verifyer().verify(resetPasswordRequest.newPassword.toCharArray(), user.password).verified)
             throw ValidationException(Message.Auth.PASSWORD_SAME)
 
+        otpAttempt?.delete()
+        user.resetOtpCode = null
+        user.resetOtpExpiry = null
         user.password = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, resetPasswordRequest.newPassword.toCharArray())
         ResetResult.Success
     }
@@ -216,7 +240,7 @@ class AuthRepositoryImpl : AuthRepository {
     override suspend fun verifyOtp(userId: String, otp: String): Boolean = query {
         val userEntity = UserDAO.findById(userId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
         if (userEntity.otpExpiry?.isBefore(LocalDateTime.now()) != false) return@query false
-        val isValid = userEntity.otpCode == otp
+        val isValid = constantTimeEquals(userEntity.otpCode.orEmpty(), otp)
         if (isValid) {
             userEntity.isVerified = true
             userEntity.otpCode = null
@@ -236,6 +260,11 @@ class AuthRepositoryImpl : AuthRepository {
     override suspend fun getOtpAttempt(userId: String): Int = query {
         OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
             .singleOrNull()?.attemptCount ?: 0
+    }
+
+    override suspend fun isOtpLocked(userId: String): Boolean = query {
+        OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
+            .singleOrNull()?.isLocked == true
     }
 
     override suspend fun recordFailedOtpAttempt(userId: String): Int = query {
@@ -264,7 +293,7 @@ class AuthRepositoryImpl : AuthRepository {
         query {
             OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
                 .singleOrNull()?.apply {
-                    lockedUntil = Instant.now().plusSeconds(OTP_LOCKOUT_MINUTES * 60)
+                    lockedUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
                 }
         }
     }
@@ -282,6 +311,9 @@ class AuthRepositoryImpl : AuthRepository {
         }
 
         val user = query { UserDAO.findById(storedToken.userId.value) ?: throw NotFoundException(Message.Errors.NOT_FOUND) }
+
+        if (!user.isActive) throw ValidationException(Message.Auth.ACCOUNT_DEACTIVATED)
+        if (!user.isVerified) throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)
 
         revokeRefreshToken(tokenHash)
         val newTokenPair = generateTokenPair(user.id.value, user.email, user.userType.name)
@@ -307,7 +339,7 @@ class AuthRepositoryImpl : AuthRepository {
             }
             true
         }
-        CacheService.cache.set("blacklisted_token:$token", true, JWT_EXPIRY_SECONDS)
+        CacheService.cache.set("blacklisted_token:$token", true, AppConstants.Authentication.JWT_EXPIRY_SECONDS)
         return result
     }
 
@@ -332,7 +364,13 @@ class AuthRepositoryImpl : AuthRepository {
     }
 
     override suspend fun changeUserType(currentUserId: String, targetUserId: String, newUserType: UserType): Boolean =
-        withUsers(currentUserId, targetUserId, "change user type to $newUserType") { _, targetUser ->
+        withUsers(currentUserId, targetUserId, "change user type to $newUserType") { currentUser, targetUser ->
+            if (currentUser.id == targetUser.id) {
+                throw ValidationException(Message.Auth.insufficientPermissions("change your own user type"))
+            }
+            if (!currentUser.userType.canManage(newUserType)) {
+                throw ValidationException(Message.Auth.insufficientPermissions("change user type to $newUserType"))
+            }
             targetUser.userType = newUserType
             if (newUserType == UserType.SELLER && SellerDAO.find { SellerTable.userId eq targetUser.id }.firstOrNull() == null) {
                 SellerDAO.new { userId = targetUser.id; status = ShopStatus.PENDING }
@@ -343,6 +381,7 @@ class AuthRepositoryImpl : AuthRepository {
     override suspend fun deactivateUser(currentUserId: String, targetUserId: String): Boolean =
         withUsers(currentUserId, targetUserId, "deactivate user") { _, targetUser ->
             targetUser.isActive = false
+            revokeAllUserTokensTx(targetUser.id.value)
             true
         }
 

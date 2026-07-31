@@ -17,6 +17,7 @@ object DotEnvConfig {
     val emailPort: Int get() = DotEnv.getInt("EMAIL_PORT", 587)
     val emailUsername: String get() = requireEnv("EMAIL_USERNAME")
     val emailPassword: String get() = requireEnv("EMAIL_PASSWORD")
+    val emailSslEnabled: Boolean get() = DotEnv.getBoolean("EMAIL_SSL", false)
     val uploadDir: String get() = DotEnv.get("UPLOAD_DIR", "uploads")
 
     private fun requireEnv(key: String): String =

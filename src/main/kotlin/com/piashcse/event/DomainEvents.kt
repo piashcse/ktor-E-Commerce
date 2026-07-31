@@ -11,6 +11,7 @@ sealed class DomainEvent(
 data class OrderPlacedEvent(
     val orderId: String,
     val userId: String,
+    val email: String,
     val shopId: String?,
     val orderNumber: String,
     val total: BigDecimal,
@@ -26,6 +27,7 @@ data class PaymentCompletedEvent(
     val paymentId: String,
     val orderId: String,
     val userId: String,
+    val email: String,
     val amount: BigDecimal,
 ) : DomainEvent()
 

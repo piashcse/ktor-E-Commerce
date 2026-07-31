@@ -65,6 +65,7 @@ class PaymentRepositoryImpl : PaymentRepository {
                         paymentId = payment.id.value,
                         orderId = paymentRequest.orderId,
                         userId = order.userId.value,
+                        email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
                         amount = paymentAmount,
                     )
                 )

@@ -247,6 +247,7 @@ class OrderRepositoryImpl : OrderRepository {
                 OrderPlacedEvent(
                     orderId = it.id.value,
                     userId = userId,
+                    email = UserDAO.findById(userId)?.email.orEmpty(),
                     shopId = it.shopId?.value,
                     orderNumber = it.orderNumber,
                     total = it.total,

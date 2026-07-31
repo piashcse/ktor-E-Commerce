@@ -11,6 +11,16 @@ import io.ktor.server.response.*
 suspend inline fun <reified T : Any> ApplicationCall.respondOk(data: T) = respond(HttpStatusCode.OK, data)
 suspend inline fun <reified T : Any> ApplicationCall.respondCreated(data: T) = respond(HttpStatusCode.Created, data)
 
+/**
+ * Best-effort client IP. Prefers the left-most X-Forwarded-For entry (added by the
+ * outermost trusted proxy), then X-Real-IP, falling back to the direct socket host.
+ */
+val ApplicationCall.clientIp: String
+    get() =
+        request.headers[HttpHeaders.XForwardedFor]?.substringBefore(',')?.trim()?.takeIf { it.isNotEmpty() }
+            ?: request.headers["X-Real-IP"]?.takeIf { it.isNotEmpty() }
+            ?: request.local.remoteHost
+
 fun ApplicationCall.paginateQueryParams(
     defaultPerPage: Int = AppConstants.Pagination.DEFAULT_LIMIT,
     defaultPage: Int = 1,
