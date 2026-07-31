@@ -2,10 +2,12 @@ package com.piashcse.model.request
 
 import com.piashcse.constants.RefundMethod
 import com.piashcse.constants.RefundStatus
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
+import java.math.BigDecimal
 
 @Serializable
 data class RefundRequestRequest(
@@ -24,7 +26,7 @@ data class RefundRequestRequest(
 @Serializable
 data class UpdateRefundStatusRequest(
     val status: RefundStatus,
-    val refundAmount: Double? = null,
+    @Contextual val refundAmount: BigDecimal? = null,
     val refundMethod: RefundMethod? = null,
 ) {
     init {

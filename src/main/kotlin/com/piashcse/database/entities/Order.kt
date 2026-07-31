@@ -10,7 +10,7 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
 
-object OrderTable : BaseIdTable("orders") {
+object OrderTable : BaseIdTable("order") {
     val userId = reference("user_id", UserTable.id).index()
     val shopId = reference("shop_id", ShopTable.id).nullable().index()
     val orderNumber = varchar("order_number", 50).uniqueIndex() // Unique order number for tracking

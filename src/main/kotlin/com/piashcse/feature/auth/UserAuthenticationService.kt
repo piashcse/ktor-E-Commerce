@@ -1,6 +1,7 @@
 package com.piashcse.feature.auth
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.LoginResponse
@@ -17,16 +18,13 @@ import com.piashcse.utils.validator.InvalidCredentialsException
 import com.piashcse.utils.validator.ValidationException
 
 class UserAuthenticationService(private val authRepo: AuthRepository) {
-    companion object {
-        private const val MAX_LOGIN_ATTEMPTS = 5
-        private const val ACCOUNT_LOCKOUT_MINUTES = 30L
-        private const val MAX_OTP_ATTEMPTS = 5
-        private const val OTP_LOCKOUT_MINUTES = 30L
-    }
 
     suspend fun register(registerRequest: RegisterRequest): RegistrationResult {
-        if (UserType.fromString(registerRequest.userType) == null)
-            throw ValidationException(Message.Validation.INVALID_USER_TYPE)
+        val userType = UserType.fromString(registerRequest.userType)
+            ?: throw ValidationException(Message.Validation.INVALID_USER_TYPE)
+        if (userType == UserType.ADMIN || userType == UserType.SUPER_ADMIN) {
+            throw ValidationException(Message.Auth.REGISTRATION_ROLE_FORBIDDEN)
+        }
         val result = authRepo.register(registerRequest)
         when (result) {
             is RegistrationResult.Created -> {
@@ -37,41 +35,55 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
                         userType = registerRequest.userType,
                     ),
                 )
-                EventBus.publish(
-                    SendEmailEvent(
-                        to = result.email,
-                        subject = "Account Verification",
-                        body = "Your verification code has been sent. Please check your email.",
-                    ),
-                )
+                sendRegistrationOtp(result.id, result.email)
             }
-            is RegistrationResult.OtpResent -> {
-                // OTP was resent; notify in background
-            }
+            is RegistrationResult.OtpResent -> sendRegistrationOtp(result.id, result.email)
         }
         return result
     }
 
-    suspend fun login(loginRequest: LoginRequest): LoginResponse {
+    private suspend fun sendRegistrationOtp(userId: String, email: String) {
+        val otp = authRepo.getRegistrationOtp(userId)
+        EventBus.publish(
+            SendEmailEvent(
+                to = email,
+                subject = AppConstants.SmtpServer.OTP_SUBJECT,
+                body = "Your verification code is: ${otp.orEmpty()}",
+            ),
+        )
+    }
+
+    suspend fun login(
+        loginRequest: LoginRequest,
+        ipAddress: String? = null,
+    ): LoginResponse {
         val userTypeEnum = UserType.fromString(loginRequest.userType)
             ?: throw ValidationException(Message.Validation.INVALID_USER_TYPE)
 
         authRepo.getLoginAttempt(loginRequest.email, userTypeEnum)?.let {
-            if (it.isLocked) throw ValidationException(Message.Auth.accountLocked(ACCOUNT_LOCKOUT_MINUTES))
+            if (it.isLocked) throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES))
+            if (it.attemptCount >= AppConstants.Authentication.MAX_LOGIN_ATTEMPTS) {
+                authRepo.resetLoginAttempts(loginRequest.email, userTypeEnum)
+            }
         }
 
-        val user = authRepo.findUserByEmailAndType(loginRequest.email, userTypeEnum) ?: run {
-            authRepo.recordFailedAttempt(loginRequest.email, userTypeEnum, null)
-            loginRequest.email.throwNotFound("User")
+        val user = authRepo.findUserByEmailAndType(loginRequest.email, userTypeEnum)
+        if (user == null) {
+            val attemptCount = authRepo.recordFailedAttempt(loginRequest.email, userTypeEnum, ipAddress)
+            if (attemptCount >= AppConstants.Authentication.MAX_LOGIN_ATTEMPTS) {
+                authRepo.lockAccount(loginRequest.email, userTypeEnum, AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES)
+                throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES))
+            }
+            throw InvalidCredentialsException(remainingAttempts = AppConstants.Authentication.MAX_LOGIN_ATTEMPTS - attemptCount)
         }
 
         if (!BCrypt.verifyer().verify(loginRequest.password.toCharArray(), user.password).verified) {
-            val attemptCount = authRepo.recordFailedAttempt(loginRequest.email, userTypeEnum, null)
-            if (attemptCount >= MAX_LOGIN_ATTEMPTS) {
-                authRepo.lockAccount(loginRequest.email, userTypeEnum, ACCOUNT_LOCKOUT_MINUTES)
-                throw ValidationException(Message.Auth.accountLocked(ACCOUNT_LOCKOUT_MINUTES))
+            val attemptCount = authRepo.recordFailedAttempt(loginRequest.email, userTypeEnum, ipAddress)
+            if (attemptCount >= AppConstants.Authentication.MAX_LOGIN_ATTEMPTS) {
+                authRepo.lockAccount(loginRequest.email, userTypeEnum, AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES)
+                throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES))
             }
-            throw InvalidCredentialsException(remainingAttempts = MAX_LOGIN_ATTEMPTS - attemptCount)
+            throw InvalidCredentialsException(remainingAttempts = AppConstants.Authentication.MAX_LOGIN_ATTEMPTS - attemptCount)
         }
 
         if (!user.isActive) throw ValidationException(Message.Auth.ACCOUNT_DEACTIVATED)
@@ -84,17 +96,18 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
     }
 
     suspend fun otpVerification(userId: String, otp: String): Boolean {
-        val currentAttempts = authRepo.getOtpAttempt(userId)
-        if (currentAttempts >= MAX_OTP_ATTEMPTS) {
-            authRepo.invalidateOtp(userId)
-            throw ValidationException(Message.Auth.OTP_INVALID)
+        if (authRepo.isOtpLocked(userId)) {
+            throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES))
+        }
+        if (authRepo.getOtpAttempt(userId) >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
+            authRepo.resetOtpAttempts(userId)
         }
         val isValid = authRepo.verifyOtp(userId, otp)
         if (isValid) {
             authRepo.resetOtpAttempts(userId)
         } else {
             val newCount = authRepo.recordFailedOtpAttempt(userId)
-            if (newCount >= MAX_OTP_ATTEMPTS) {
+            if (newCount >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
                 authRepo.lockOtpAttempts(userId)
                 authRepo.invalidateOtp(userId)
             }
@@ -104,12 +117,12 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
 
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest) {
         val user = authRepo.findResetUserByEmail(forgotPasswordRequest.email, forgotPasswordRequest.userType)
-        authRepo.forgotPassword(forgotPasswordRequest)
+        val otp = authRepo.forgotPassword(forgotPasswordRequest)
         EventBus.publish(
             SendEmailEvent(
                 to = user.email,
-                subject = "Password Reset",
-                body = "A password reset request has been made for your account. Please check your email.",
+                subject = AppConstants.SmtpServer.RESET_SUBJECT,
+                body = "Your password reset code is: $otp",
             ),
         )
     }

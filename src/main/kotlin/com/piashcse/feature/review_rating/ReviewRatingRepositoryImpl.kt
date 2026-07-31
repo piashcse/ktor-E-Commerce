@@ -1,6 +1,7 @@
 package com.piashcse.feature.review_rating
 
 import com.piashcse.constants.Message
+import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ReviewRatingDAO
 import com.piashcse.database.entities.ReviewRatingTable
@@ -15,8 +16,23 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class ReviewRatingRepositoryImpl : ReviewRatingRepository {
+    private fun recalculateProductRating(productId: String) {
+        val reviews = ReviewRatingDAO.find { ReviewRatingTable.productId eq productId }.toList()
+        val product = ProductDAO.findById(productId) ?: return
+        if (reviews.isEmpty()) {
+            product.rating = BigDecimal.ZERO
+            product.totalReviews = 0
+        } else {
+            val total = reviews.map { it.rating.toBigDecimal() }.reduce(BigDecimal::add)
+            product.rating = total.divide(reviews.size.toBigDecimal(), 2, RoundingMode.HALF_UP)
+            product.totalReviews = reviews.size
+        }
+    }
+
     override suspend fun getReviewRating(
         productId: String,
         limit: Int,
@@ -39,12 +55,17 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
             ReviewRatingDAO.find { ReviewRatingTable.userId eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
                 .singleOrNull()?.let {
                 throw it.productId.value.throwConflict("Product")
-            } ?: ReviewRatingDAO.new {
-                this.userId = userId.entityID(UserTable)
-                productId = reviewRating.productId.entityID(ProductTable)
-                reviewText = reviewRating.reviewText
-                rating = reviewRating.rating
-            }.toReviewRatingResponse()
+            } ?: run {
+                val review =
+                    ReviewRatingDAO.new {
+                        this.userId = userId.entityID(UserTable)
+                        productId = reviewRating.productId.entityID(ProductTable)
+                        reviewText = reviewRating.reviewText
+                        rating = reviewRating.rating
+                    }
+                recalculateProductRating(reviewRating.productId)
+                review.toReviewRatingResponse()
+            }
         }
 
     override suspend fun updateReviewRating(
@@ -61,6 +82,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                 it.verifyOwnership(userId, "review") { r -> r.userId.value }
                 it.reviewText = review
                 it.rating = rating
+                recalculateProductRating(it.productId.value)
                 it.toReviewRatingResponse()
             } ?: review.throwNotFound("Review")
         }
@@ -70,7 +92,9 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
             ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
                 .singleOrNull()?.let {
                 it.verifyOwnership(userId, "review") { r -> r.userId.value }
+                val productId = it.productId.value
                 it.delete()
+                recalculateProductRating(productId)
                 reviewId
             } ?: reviewId.throwNotFound("Review")
         }

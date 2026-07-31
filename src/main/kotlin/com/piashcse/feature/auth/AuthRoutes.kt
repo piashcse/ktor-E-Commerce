@@ -1,5 +1,6 @@
 package com.piashcse.feature.auth
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ChangePassword
@@ -7,6 +8,7 @@ import com.piashcse.model.request.*
 import com.piashcse.model.response.ResetResult
 import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.requireRole
+import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
@@ -31,7 +33,7 @@ fun Route.authRoutes() {
          * @description Authenticate user with email, password and user type
          */
         post("login") {
-            call.respondOk(userAuthService.login(call.receive<LoginRequest>()))
+            call.respondOk(userAuthService.login(call.receive<LoginRequest>(), call.clientIp))
         }
 
         /**
@@ -63,6 +65,13 @@ fun Route.authRoutes() {
 
                 is ResetResult.InvalidOrExpiredOtp -> {
                     call.respondOk(mapOf("message" to Message.Auth.OTP_INVALID))
+                }
+
+                is ResetResult.Locked -> {
+                    call.respond(
+                        HttpStatusCode.TooManyRequests,
+                        mapOf("message" to Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES)),
+                    )
                 }
             }
         }
@@ -159,7 +168,7 @@ fun Route.authAdminRoutes() {
         put("/{userId}/activate") {
             val userId = call.requirePathParameter("userId")
             if (authRepo.activateUser(call.currentUserId, userId)) {
-                call.respondOk(mapOf("message" to "Message.Auth.ACCOUNT_ACTIVATED"))
+                call.respondOk(mapOf("message" to Message.Auth.ACCOUNT_ACTIVATED))
             } else {
                 call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to activate user"))
             }

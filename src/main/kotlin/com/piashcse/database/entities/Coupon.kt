@@ -6,13 +6,16 @@ import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
+import java.math.BigDecimal
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 object CouponTable : BaseIdTable("coupon") {
     val code = varchar("code", 50).uniqueIndex()
     val discountType = enumerationByName("discount_type", 20, CouponDiscountType::class)
-    val discountValue = double("discount_value")
-    val minOrderAmount = double("min_order_amount").default(0.0)
-    val maxDiscountAmount = double("max_discount_amount").nullable()
+    val discountValue = decimal("discount_value", 10, 2)
+    val minOrderAmount = decimal("min_order_amount", 10, 2).default(BigDecimal.ZERO)
+    val maxDiscountAmount = decimal("max_discount_amount", 10, 2).nullable()
     val startDate = datetime("start_date")
     val endDate = datetime("end_date")
     val usageLimit = integer("usage_limit").nullable()
@@ -33,4 +36,24 @@ class CouponDAO(id: EntityID<String>) : BaseEntity(id, CouponTable) {
     var usageLimit by CouponTable.usageLimit
     var usageCount by CouponTable.usageCount
     var isActive by CouponTable.isActive
+}
+
+object CouponUsageTable : BaseIdTable("coupon_usage") {
+    val couponId = reference("coupon_id", CouponTable.id).index()
+    val userId = reference("user_id", UserTable.id).index()
+    val orderId = reference("order_id", OrderTable.id).nullable()
+    val usedAt = datetime("used_at").clientDefault { LocalDateTime.now(ZoneOffset.UTC) }
+
+    init {
+        index(customIndexName = "coupon_usage_coupon_user_idx", isUnique = false, couponId, userId)
+    }
+}
+
+class CouponUsageDAO(id: EntityID<String>) : BaseEntity(id, CouponUsageTable) {
+    companion object : BaseEntityClass<CouponUsageDAO>(CouponUsageTable, CouponUsageDAO::class.java)
+
+    var couponId by CouponUsageTable.couponId
+    var userId by CouponUsageTable.userId
+    var orderId by CouponUsageTable.orderId
+    var usedAt by CouponUsageTable.usedAt
 }

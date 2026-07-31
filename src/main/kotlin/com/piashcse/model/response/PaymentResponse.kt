@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 data class PaymentResponse(
     val id: String,
     val orderId: String,
-    val amount: Long,
+    val amount: String,
     val status: PaymentStatus,
     val paymentMethod: PaymentMethod,
     val transactionId: String?,

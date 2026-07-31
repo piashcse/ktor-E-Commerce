@@ -1,5 +1,6 @@
 package com.piashcse.utils.common
 
+import java.security.MessageDigest
 import java.security.SecureRandom
 import kotlin.math.pow
 
@@ -16,3 +17,7 @@ fun generateToken(): String {
     secureRandom.nextBytes(bytes)
     return bytes.joinToString("") { "%02x".format(it) }
 }
+
+/** Constant-time string comparison to avoid timing side-channel attacks. */
+fun constantTimeEquals(a: String, b: String): Boolean =
+    MessageDigest.isEqual(a.toByteArray(Charsets.UTF_8), b.toByteArray(Charsets.UTF_8))

@@ -1,5 +1,8 @@
 package com.piashcse.model.request
 
+import com.piashcse.constants.Message
+import com.piashcse.utils.validator.PasswordPolicy
+import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.isEmail
 import org.valiktor.functions.isNotNull
@@ -18,6 +21,9 @@ data class ResetRequest(
             validate(ResetRequest::verificationCode).isNotNull()
             validate(ResetRequest::newPassword).isNotNull()
             validate(ResetRequest::userType).isNotNull()
+        }
+        if (!PasswordPolicy.isStrong(newPassword)) {
+            throw ValidationException(Message.Validation.WEAK_PASSWORD)
         }
     }
 }

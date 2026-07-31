@@ -72,17 +72,17 @@ class OrderRepositoryImpl : OrderRepository {
         }
     }
 
-    private fun validateCoupon(code: String, orderAmount: Double, forUpdate: Boolean = false): CouponDAO {
+    private fun validateCoupon(code: String, orderAmount: BigDecimal, forUpdate: Boolean = false): CouponDAO {
         val query = CouponDAO.find { CouponTable.code eq code and (CouponTable.isActive eq true) }
         val coupon = (if (forUpdate) query.forUpdate() else query).firstOrNull()
             ?: throw ValidationException(Message.Orders.INVALID_COUPON)
 
-        val now = LocalDateTime.now()
+        val now = LocalDateTime.now(ZoneOffset.UTC)
         if (now.isBefore(coupon.startDate) || now.isAfter(coupon.endDate))
             throw ValidationException(Message.Orders.COUPON_EXPIRED)
 
         if (orderAmount < coupon.minOrderAmount)
-            throw ValidationException(Message.Orders.couponMinOrderAmount(coupon.minOrderAmount.toString()))
+            throw ValidationException(Message.Orders.couponMinOrderAmount(coupon.minOrderAmount.toPlainString()))
 
         if (coupon.usageLimit != null && coupon.usageCount >= coupon.usageLimit!!)
             throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
@@ -90,17 +90,34 @@ class OrderRepositoryImpl : OrderRepository {
         return coupon
     }
 
-    private fun applyCoupon(coupon: CouponDAO, orderAmount: Double): BigDecimal {
-        coupon.usageCount += 1
-        val discountAmount = when (coupon.discountType) {
+    private fun calculateCouponDiscount(coupon: CouponDAO, orderAmount: BigDecimal): BigDecimal {
+        val discount = when (coupon.discountType) {
             CouponDiscountType.PERCENTAGE -> {
-                var amount = BigDecimal(orderAmount).multiply(BigDecimal(coupon.discountValue / 100.0))
-                coupon.maxDiscountAmount?.let { amount = amount.min(BigDecimal(it)) }
-                amount
+                val percentage = coupon.discountValue.divide(BigDecimal(100), 10, RoundingMode.HALF_UP)
+                val amount = orderAmount.multiply(percentage)
+                coupon.maxDiscountAmount?.let { amount.min(it) } ?: amount
             }
-            CouponDiscountType.FIXED -> BigDecimal(coupon.discountValue)
+            CouponDiscountType.FIXED -> coupon.discountValue
         }
-        return discountAmount.setScale(2, RoundingMode.HALF_UP)
+        return discount.min(orderAmount).setScale(2, RoundingMode.HALF_UP)
+    }
+
+    private fun consumeCoupon(
+        coupon: CouponDAO,
+        orderAmount: BigDecimal,
+        userId: String,
+        orders: List<OrderDAO>,
+    ): BigDecimal {
+        coupon.usageCount += 1
+        orders.forEach { order ->
+            CouponUsageDAO.new {
+                this.couponId = coupon.id
+                this.userId = userId.entityID(UserTable)
+                this.orderId = order.id
+                this.usedAt = LocalDateTime.now(ZoneOffset.UTC)
+            }
+        }
+        return calculateCouponDiscount(coupon, orderAmount)
     }
 
     override suspend fun placeOrder(
@@ -157,7 +174,7 @@ class OrderRepositoryImpl : OrderRepository {
                 this.status = OrderStatus.PENDING
                 this.paymentStatus = PaymentStatus.PENDING
                 this.subTotal = BigDecimal.ZERO
-                this.shippingCost = BigDecimal(shippingMethod.price.toString())
+                this.shippingCost = shippingMethod.price
                 this.shippingMethod = shippingMethod.name
                 this.total = BigDecimal.ZERO
                 this.shippingAddress = fullAddress
@@ -169,8 +186,9 @@ class OrderRepositoryImpl : OrderRepository {
                 val product = productsMap[cartItem.productId.value] ?: cartItem.productId.value.throwNotFound("Product")
                 if (product.status != ProductStatus.ACTIVE)
                     throw ValidationException(Message.Products.OUT_OF_STOCK)
-                if (product.effectiveStock(forUpdate = true) < cartItem.quantity)
-                    throw ValidationException(Message.Validation.insufficientStock(product.name, product.effectiveStock()))
+                val available = product.effectiveStock(forUpdate = true)
+                if (available < cartItem.quantity)
+                    throw ValidationException(Message.Validation.insufficientStock(product.name, available))
 
                 val unitPrice = product.discountPrice ?: product.price
                 val itemTotal = unitPrice.multiply(BigDecimal(cartItem.quantity))
@@ -189,6 +207,7 @@ class OrderRepositoryImpl : OrderRepository {
                 }
 
                 product.decrementStock(cartItem.quantity)
+                product.addSales(cartItem.quantity)
 
                 StockReservationDAO.new {
                     this.orderId = order.id
@@ -212,8 +231,8 @@ class OrderRepositoryImpl : OrderRepository {
 
         checkoutRequest.couponCode?.let { code ->
             val totalSubTotal = createdOrders.map { it.subTotal }.reduce(BigDecimal::add)
-            val coupon = validateCoupon(code, totalSubTotal.toDouble(), forUpdate = true)
-            val discount = applyCoupon(coupon, totalSubTotal.toDouble())
+            val coupon = validateCoupon(code, totalSubTotal, forUpdate = true)
+            val discount = consumeCoupon(coupon, totalSubTotal, userId, createdOrders)
             createdOrders.forEach { order ->
                 val proportion = order.subTotal.divide(totalSubTotal, 10, RoundingMode.HALF_UP)
                 val orderDiscount = discount.multiply(proportion).setScale(2, RoundingMode.HALF_UP)
@@ -246,9 +265,10 @@ class OrderRepositoryImpl : OrderRepository {
                 OrderPlacedEvent(
                     orderId = it.id.value,
                     userId = userId,
+                    email = UserDAO.findById(userId)?.email.orEmpty(),
                     shopId = it.shopId?.value,
                     orderNumber = it.orderNumber,
-                    total = it.total.toDouble(),
+                    total = it.total,
                 ),
             )
         }
@@ -279,20 +299,22 @@ class OrderRepositoryImpl : OrderRepository {
             totalItems += cartItem.quantity
         }
 
+        val shopCount = cartItems.mapNotNull { productsMap[it.productId.value]?.shopId?.value }.distinct().size
+        val shippingTotal = shippingMethod.price.multiply(BigDecimal(shopCount))
         val taxAmount = subTotal.multiply(BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString()))
-        val baseTotal = subTotal.add(BigDecimal(shippingMethod.price.toString())).add(taxAmount)
+        val baseTotal = subTotal.add(shippingTotal).add(taxAmount)
         val baseTotalStr = baseTotal.setScale(2, RoundingMode.HALF_UP).toPlainString()
         var response = CheckoutSummaryResponse(
             subTotal = subTotal.setScale(2, RoundingMode.HALF_UP).toPlainString(),
-            shippingCost = BigDecimal(shippingMethod.price.toString()).setScale(2, RoundingMode.HALF_UP).toPlainString(),
+            shippingCost = shippingTotal.setScale(2, RoundingMode.HALF_UP).toPlainString(),
             taxAmount = taxAmount.setScale(2, RoundingMode.HALF_UP).toPlainString(),
             total = baseTotalStr,
             itemCount = totalItems,
         )
 
         checkoutRequest.couponCode?.let {
-            val coupon = validateCoupon(it, subTotal.toDouble())
-            val discount = applyCoupon(coupon, subTotal.toDouble())
+            val coupon = validateCoupon(it, subTotal)
+            val discount = calculateCouponDiscount(coupon, subTotal)
             val discountedTotal = baseTotal.subtract(discount).setScale(2, RoundingMode.HALF_UP)
             response = response.copy(discountAmount = discount.setScale(2, RoundingMode.HALF_UP).toPlainString(), total = discountedTotal.toPlainString())
         }
@@ -322,15 +344,16 @@ class OrderRepositoryImpl : OrderRepository {
                 ?: throw ValidationException(Message.Validation.productNotFound(item.productId))
             if (product.status != ProductStatus.ACTIVE)
                 throw ValidationException(Message.Products.OUT_OF_STOCK)
-            if (product.effectiveStock() < item.quantity)
-                throw ValidationException(Message.Validation.insufficientStock(product.name, product.effectiveStock()))
+            val available = product.effectiveStock(forUpdate = true)
+            if (available < item.quantity)
+                throw ValidationException(Message.Validation.insufficientStock(product.name, available))
             if (product.shopId == null) throw ValidationException(Message.Orders.productDoesNotBelongToShop(product.name))
 
             val unitPrice = product.discountPrice ?: product.price
             calculatedSubtotal = calculatedSubtotal.add(unitPrice.multiply(BigDecimal(item.quantity)))
         }
 
-        if (BigDecimal(orderRequest.total.toString()).compareTo(calculatedSubtotal) != 0)
+        if (orderRequest.total.compareTo(calculatedSubtotal) != 0)
             throw ValidationException(Message.Orders.TOTAL_MISMATCH)
 
         val itemsByShop = orderRequest.orderItems.groupBy {
@@ -377,6 +400,7 @@ class OrderRepositoryImpl : OrderRepository {
                 }
 
                 product.decrementStock(itemRequest.quantity)
+                product.addSales(itemRequest.quantity)
                 shopSubTotal = shopSubTotal.add(itemTotal)
             }
 
@@ -425,8 +449,21 @@ class OrderRepositoryImpl : OrderRepository {
         if (!OrderStatus.canTransitionTo(order.status, status))
             throw ValidationException(Message.Orders.INVALID_STATUS)
 
-        order.status = status
-        logStatusChange(order.id.value, status, "Status updated by user", userId)
+        if (status == OrderStatus.CANCELED) {
+            applyOrderCancellation(order, notes = "Status updated by user", changedBy = userId)
+        } else {
+            order.status = status
+            when (status) {
+                OrderStatus.DELIVERED -> {
+                    order.deliveredDate = LocalDateTime.now()
+                    if (order.shippingDate == null) order.shippingDate = order.deliveredDate
+                }
+                OrderStatus.RECEIVED -> order.completedDate = LocalDateTime.now()
+                OrderStatus.PAID -> order.paymentStatus = PaymentStatus.COMPLETED
+                else -> {}
+            }
+            logStatusChange(order.id.value, status, "Status updated by user", userId)
+        }
         order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
     }
 
@@ -448,10 +485,22 @@ class OrderRepositoryImpl : OrderRepository {
         if (!isCustomer && !isSeller && !isAdmin) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
         if (!OrderStatus.canBeCanceled(order.status)) throw ValidationException(Message.Orders.CANNOT_CANCEL)
 
+        applyOrderCancellation(order, notes = reason, changedBy = userId)
+        order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
+    }
+
+    private fun applyOrderCancellation(
+        order: OrderDAO,
+        notes: String?,
+        changedBy: String?,
+    ) {
         order.status = OrderStatus.CANCELED
         order.canceledDate = LocalDateTime.now()
-        order.notes = reason
-        logStatusChange(order.id.value, OrderStatus.CANCELED, reason, userId)
+        order.notes = notes
+        if (order.paymentStatus == PaymentStatus.COMPLETED) {
+            order.paymentStatus = PaymentStatus.REFUNDED
+        }
+        logStatusChange(order.id.value, OrderStatus.CANCELED, notes, changedBy)
 
         val orderItems = OrderItemDAO.find { OrderItemTable.orderId eq order.id }.toList()
         val productIds = orderItems.map { it.productId.value }
@@ -462,12 +511,11 @@ class OrderRepositoryImpl : OrderRepository {
         }
         orderItems.forEach { orderItem ->
             productsMap[orderItem.productId.value]?.restoreStock(orderItem.quantity)
+            productsMap[orderItem.productId.value]?.removeSales(orderItem.quantity)
         }
 
         StockReservationDAO.find { StockReservationTable.orderId eq order.id }
             .forEach { it.status = ReservationStatus.RELEASED }
-
-        order.toOrderResponse(orderItems.toItemResponses())
     }
 
     override suspend fun getSellerOrders(

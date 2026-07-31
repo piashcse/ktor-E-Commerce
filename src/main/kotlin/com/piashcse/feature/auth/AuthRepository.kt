@@ -12,6 +12,7 @@ import com.piashcse.model.response.ResetResult
 interface AuthRepository {
     // Registration
     suspend fun register(registerRequest: RegisterRequest): RegistrationResult
+    suspend fun getRegistrationOtp(userId: String): String?
 
     // Login
     suspend fun findUserByEmailAndType(email: String, userTypeEnum: UserType): UserDAO?
@@ -37,13 +38,14 @@ interface AuthRepository {
 
     // OTP attempt tracking
     suspend fun getOtpAttempt(userId: String): Int
+    suspend fun isOtpLocked(userId: String): Boolean
     suspend fun recordFailedOtpAttempt(userId: String): Int
     suspend fun resetOtpAttempts(userId: String)
     suspend fun lockOtpAttempts(userId: String)
 
     // Password
     suspend fun changePassword(userId: String, changePassword: ChangePassword): Boolean
-    suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest)
+    suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest): String
     suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult
 
     // Token refresh

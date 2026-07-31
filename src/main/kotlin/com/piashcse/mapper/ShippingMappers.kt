@@ -4,7 +4,6 @@ import com.piashcse.database.entities.ShippingAddressDAO
 import com.piashcse.database.entities.ShippingMethodDAO
 import com.piashcse.model.response.ShippingAddressResponse
 import com.piashcse.model.response.ShippingMethodResponse
-import java.math.BigDecimal
 
 fun ShippingAddressDAO.toShippingAddressResponse() = ShippingAddressResponse(
     id = id.value,
@@ -25,6 +24,6 @@ fun ShippingMethodDAO.toShippingMethodResponse() = ShippingMethodResponse(
     id = id.value,
     name = name,
     type = type,
-    price = BigDecimal.valueOf(price).toPlainString(),
+    price = price.toPlainString(),
     deliveryTime = deliveryTime,
 )

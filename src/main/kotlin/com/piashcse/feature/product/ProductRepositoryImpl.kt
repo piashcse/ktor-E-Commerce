@@ -30,9 +30,8 @@ import java.sql.PreparedStatement
 
 class ProductRepositoryImpl : ProductRepository {
 
-    private fun requireSeller(userId: String) {
-        if (findSellerByUserId(userId) == null) throw NotFoundException(Message.Errors.SELLER_REQUIRED)
-    }
+    private fun requireSeller(userId: String): SellerDAO =
+        findSellerByUserId(userId) ?: throw NotFoundException(Message.Errors.SELLER_REQUIRED)
 
     private fun generateSKU(name: String) =
         name.replace(Regex("[^a-zA-Z0-9]"), "").take(6).uppercase() +
@@ -89,15 +88,16 @@ class ProductRepositoryImpl : ProductRepository {
         shopId: String?,
         productRequest: ProductRequest,
     ): ProductResponse = query {
-        requireSeller(userId)
-        if (shopId != null) {
-            val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
+        val seller = requireSeller(userId)
+        val resolvedShopId = shopId ?: seller.shopId?.value
+        if (resolvedShopId != null) {
+            val shop = ShopDAO.findById(resolvedShopId) ?: resolvedShopId.throwNotFound("Shop")
             if (shop.userId.value != userId) throw ForbiddenException(Message.Products.NOT_SHOP_OWNER)
         }
 
         ProductDAO.new {
             this.userId = userId.entityID(UserTable)
-            this.shopId = shopId?.let { shopId.entityID(ShopTable) }
+            this.shopId = resolvedShopId?.let { it.entityID(ShopTable) }
             categoryId = productRequest.categoryId.entityID(ProductCategoryTable)
             subCategoryId = productRequest.subCategoryId?.let { it.entityID(ProductSubCategoryTable) }
             brandId = productRequest.brandId?.let { it.entityID(BrandTable) }
@@ -116,10 +116,10 @@ class ProductRepositoryImpl : ProductRepository {
             status = ProductStatus.ACTIVE
         }.let { product ->
             product.setImages(productRequest.images)
-            if (shopId != null) {
+            if (resolvedShopId != null) {
                 InventoryDAO.new {
                     productId = product.id
-                    this.shopId = shopId.entityID(ShopTable)
+                    this.shopId = resolvedShopId.entityID(ShopTable)
                     stockQuantity = productRequest.stockQuantity
                     minimumStockLevel = 10
                     maximumStockLevel = 1000
@@ -147,6 +147,7 @@ class ProductRepositoryImpl : ProductRepository {
             description = updateProduct.description ?: description
             price = updateProduct.price?.let { BigDecimal.valueOf(it) } ?: price
             discountPrice = updateProduct.discountPrice?.let { BigDecimal.valueOf(it) } ?: discountPrice
+            discountPercentage = calcDiscountPct(price.toDouble(), discountPrice?.toDouble())
             videoLink = updateProduct.videoLink ?: videoLink
             hotDeal = updateProduct.hotDeal ?: hotDeal
             featured = updateProduct.featured ?: featured

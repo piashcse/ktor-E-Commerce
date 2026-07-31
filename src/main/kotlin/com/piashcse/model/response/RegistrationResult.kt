@@ -13,5 +13,9 @@ sealed class RegistrationResult {
     ) : RegistrationResult()
 
     @Serializable
-    data class OtpResent(override val message: String) : RegistrationResult()
+    data class OtpResent(
+        val id: String,
+        val email: String,
+        override val message: String,
+    ) : RegistrationResult()
 }

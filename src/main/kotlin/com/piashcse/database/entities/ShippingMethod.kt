@@ -8,7 +8,7 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 object ShippingMethodTable : BaseIdTable("shipping_method") {
     val name = varchar("name", 50)
     val type = varchar("type", 50).nullable() // e.g., Standard, Express
-    val price = double("price")
+    val price = decimal("price", 10, 2)
     val deliveryTime = varchar("delivery_time", 50).nullable() // e.g., 3-5 days
 }
 

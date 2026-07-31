@@ -48,7 +48,7 @@ CREATE TABLE shipping_method (
     updated_at    TIMESTAMP,
     name          VARCHAR(50) NOT NULL,
     type          VARCHAR(50),
-    price         DOUBLE PRECISION NOT NULL,
+    price         DECIMAL(10,2) NOT NULL,
     delivery_time VARCHAR(50)
 );
 
@@ -230,9 +230,9 @@ CREATE TABLE coupon (
     updated_at          TIMESTAMP,
     code                VARCHAR(50) NOT NULL,
     discount_type       VARCHAR(20) NOT NULL,
-    discount_value      DOUBLE PRECISION NOT NULL,
-    min_order_amount    DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-    max_discount_amount DOUBLE PRECISION,
+    discount_value      DECIMAL(10,2) NOT NULL,
+    min_order_amount    DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    max_discount_amount DECIMAL(10,2),
     start_date          TIMESTAMP NOT NULL,
     end_date            TIMESTAMP NOT NULL,
     usage_limit         INTEGER,
@@ -317,7 +317,7 @@ CREATE TABLE order_status_history (
     created_at  TIMESTAMP NOT NULL DEFAULT (NOW() AT TIME ZONE 'utc'),
     updated_at  TIMESTAMP,
     order_id    VARCHAR(50) NOT NULL REFERENCES "order"(id),
-    status      INTEGER NOT NULL,
+    status      VARCHAR(30) NOT NULL,
     notes       TEXT,
     changed_by  VARCHAR(50) REFERENCES "user"(id)
 );
@@ -328,7 +328,7 @@ CREATE TABLE payment (
     updated_at      TIMESTAMP,
     order_id        VARCHAR(50) NOT NULL REFERENCES "order"(id),
     user_id         VARCHAR(50) NOT NULL REFERENCES "user"(id),
-    amount          BIGINT NOT NULL,
+    amount          DECIMAL(10,2) NOT NULL,
     status          VARCHAR(30) NOT NULL DEFAULT 'PENDING',
     payment_method  VARCHAR(50) NOT NULL,
     transaction_id  VARCHAR(100)
@@ -367,7 +367,7 @@ CREATE TABLE inventory (
     reserved_quantity   INTEGER NOT NULL DEFAULT 0,
     minimum_stock_level INTEGER NOT NULL DEFAULT 10,
     maximum_stock_level INTEGER NOT NULL DEFAULT 1000,
-    status              INTEGER NOT NULL DEFAULT 0,
+    status              VARCHAR(50) NOT NULL DEFAULT 'IN_STOCK',
     last_restocked      TIMESTAMP
 );
 

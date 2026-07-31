@@ -67,7 +67,7 @@ class InventoryRepositoryImpl : InventoryRepository {
         quantity: Int,
         operation: String,
     ): InventoryResponse = retryQuery {
-        val inventory = InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()
+        val inventory = InventoryDAO.find { InventoryTable.productId eq productId }.forUpdate().firstOrNull()
             ?: productId.throwNotFound("Inventory")
 
         if (quantity <= 0) throw ValidationException(Message.Inventory.quantityNotPositive(operation))

@@ -5,12 +5,14 @@ import com.piashcse.database.configureDatabase
 import com.piashcse.event.EventBus
 import com.piashcse.event.subscriber.AuditLogSubscriber
 import com.piashcse.event.subscriber.EmailSubscriber
+import com.piashcse.feature.audit_log.AuditLogRepository
 import com.piashcse.plugin.*
 import com.piashcse.service.AsyncWorker
 import com.piashcse.service.StockReservationCleanup
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import org.koin.ktor.ext.get
 
 fun main() {
     val port = DotEnvConfig.serverPort
@@ -32,7 +34,7 @@ fun Application.configureAll() {
     configureStaticContent()
     configureRoute()
     EventBus.subscribe(EmailSubscriber())
-    EventBus.subscribe(AuditLogSubscriber())
+    EventBus.subscribe(AuditLogSubscriber(get<AuditLogRepository>()))
     EventBus.start(this)
     AsyncWorker.start(this)
     StockReservationCleanup.start(this)

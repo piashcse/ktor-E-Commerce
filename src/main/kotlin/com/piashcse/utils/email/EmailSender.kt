@@ -1,7 +1,6 @@
 package com.piashcse.utils.email
 
 import com.piashcse.config.DotEnvConfig
-import com.piashcse.constants.AppConstants
 import com.piashcse.service.CacheService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,12 +19,6 @@ object EmailSender {
 
     private const val MAX_EMAILS_PER_WINDOW = 3
     private const val EMAIL_WINDOW_SECONDS = 15 * 60L
-
-    suspend fun sendOtp(
-        toEmail: String,
-        otp: String,
-        subject: String = AppConstants.SmtpServer.OTP_SUBJECT,
-    ) = send(toEmail, subject, "Your verification code is: $otp")
 
     suspend fun send(
         toEmail: String,
@@ -46,7 +39,9 @@ object EmailSender {
                     hostName = smtpHost
                     setSmtpPort(emailPort)
                     setAuthenticator(DefaultAuthenticator(smtpUser, smtpPassword))
-                    isSSLOnConnect = true
+                    isSSLOnConnect = DotEnvConfig.emailSslEnabled
+                    isStartTLSEnabled = !DotEnvConfig.emailSslEnabled
+                    isStartTLSRequired = !DotEnvConfig.emailSslEnabled
                     setFrom(fromEmail)
                     this.subject = subject
                     setMsg(body)

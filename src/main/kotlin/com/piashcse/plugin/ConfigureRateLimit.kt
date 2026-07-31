@@ -2,6 +2,7 @@ package com.piashcse.plugin
 
 import com.piashcse.config.DotEnv
 import com.piashcse.model.request.JwtTokenRequest
+import com.piashcse.utils.extension.clientIp
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.plugins.ratelimit.*
@@ -56,7 +57,7 @@ private fun RateLimitConfig.registerGlobalZone(
 ) {
     register(RateLimitName(name)) {
         rateLimiter(limit = cfg.limit, refillPeriod = cfg.refillMinutes.minutes)
-        requestKey { call -> call.request.local.remoteHost }
+        requestKey { call -> call.clientIp }
     }
 }
 
@@ -68,7 +69,7 @@ private fun RateLimitConfig.registerPerUserZone(
         rateLimiter(limit = cfg.limit, refillPeriod = cfg.refillMinutes.minutes)
         requestKey { call ->
             call.principal<JwtTokenRequest>()?.userId?.let { "user:$it" }
-                ?: call.request.local.remoteHost
+                ?: call.clientIp
         }
     }
 }
