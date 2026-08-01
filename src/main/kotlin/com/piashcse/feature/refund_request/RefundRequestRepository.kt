@@ -18,6 +18,11 @@ data class RefundAccess(
     val currentStatus: RefundStatus,
     val currentRefundAmount: BigDecimal?,
     val maxRefundAmount: BigDecimal,
+    /**
+     * Sum of refund amounts already committed or pending for this order item,
+     * including this refund request's own amount.
+     */
+    val alreadyRefundedAmount: BigDecimal,
     val isCustomer: Boolean,
     val isSeller: Boolean,
     val isAdmin: Boolean,
@@ -31,6 +36,7 @@ data class RefundOrderAccess(
     val isCustomer: Boolean,
     val isSeller: Boolean,
     val isAdmin: Boolean,
+    val isOrderPaid: Boolean,
 )
 
 /**

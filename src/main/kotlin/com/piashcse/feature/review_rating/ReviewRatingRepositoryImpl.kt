@@ -1,9 +1,13 @@
 package com.piashcse.feature.review_rating
 
+import com.piashcse.database.entities.OrderDAO
+import com.piashcse.database.entities.OrderItemDAO
+import com.piashcse.database.entities.OrderItemTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ReviewRatingDAO
 import com.piashcse.database.entities.ReviewRatingTable
+import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.mapper.toReviewRatingResponse
 import com.piashcse.model.request.ReviewRatingRequest
@@ -55,6 +59,27 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
         )
     }
 
+    override suspend fun getReviewCreateAccess(
+        userId: String,
+        productId: String,
+    ): ReviewCreateAccess = query {
+        val deliveredStatuses = listOf(com.piashcse.constants.OrderStatus.DELIVERED, com.piashcse.constants.OrderStatus.RECEIVED)
+        val isVerifiedPurchase =
+            OrderItemDAO.find {
+                OrderItemTable.productId eq productId.entityID(ProductTable)
+            }.any { orderItem ->
+                val order = OrderDAO.findById(orderItem.orderId.value)
+                order != null && order.userId.value == userId && order.status in deliveredStatuses
+            }
+
+        val isProductSeller =
+            ProductDAO.findById(productId)?.shopId?.let { shopId ->
+                ShopDAO.findById(shopId.value)?.userId?.value == userId
+            } == true
+
+        ReviewCreateAccess(isVerifiedPurchase = isVerifiedPurchase, isProductSeller = isProductSeller)
+    }
+
     override suspend fun addReviewRating(
         userId: String,
         reviewRating: ReviewRatingRequest,
@@ -70,6 +95,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                         productId = reviewRating.productId.entityID(ProductTable)
                         reviewText = reviewRating.reviewText
                         rating = reviewRating.rating
+                        isVerifiedPurchase = true
                     }
                 recalculateProductRating(reviewRating.productId)
                 review.toReviewRatingResponse()

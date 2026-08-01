@@ -21,6 +21,16 @@ fun Application.installRequestTracing() {
         val requestId = call.attributes[X_REQUEST_ID]
         call.response.header(HttpHeaders.XRequestId, requestId)
     }
+
+    // Clean up the MDC key so the coroutine/thread context does not leak the
+    // request id into unrelated requests or async jobs.
+    intercept(ApplicationCallPipeline.Call) {
+        try {
+            proceed()
+        } finally {
+            MDC.remove("requestId")
+        }
+    }
 }
 
 fun ApplicationCall.requestId(): String = attributes[X_REQUEST_ID]

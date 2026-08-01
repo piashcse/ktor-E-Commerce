@@ -114,11 +114,13 @@ fun Route.authRoutes() {
          * @tag Auth
          * @description Change password for authenticated user
          */
-        put("change-password") {
-            if (userAuthService.changePassword(call.currentUserId, call.receive<ChangePasswordRequest>().let { ChangePassword(it.oldPassword, it.newPassword) })) {
-                call.respondOk(mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
-            } else {
-                call.respond(HttpStatusCode.Unauthorized, mapOf("message" to Message.Auth.INVALID_CREDENTIALS))
+        rateLimit(RateLimitName(RateLimitNames.WRITE)) {
+            put("change-password") {
+                if (userAuthService.changePassword(call.currentUserId, call.receive<ChangePasswordRequest>().let { ChangePassword(it.oldPassword, it.newPassword) })) {
+                    call.respondOk(mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
+                } else {
+                    call.respond(HttpStatusCode.Unauthorized, mapOf("message" to Message.Auth.INVALID_CREDENTIALS))
+                }
             }
         }
     }

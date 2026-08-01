@@ -43,23 +43,25 @@ fun Application.configureAuth() {
                     return@validate null
                 }
 
-                val (isBlacklisted, isUserActive) = query {
+                val (isBlacklisted, user) = query {
                     val blacklisted =
                         token != null &&
                             BlacklistedTokenDAO.find { BlacklistedTokenTable.token eq token }.firstOrNull() != null
-                    val user = UserDAO.findById(userId)
-                    blacklisted to (user?.isActiveAndVerified() == true)
+                    val dbUser = UserDAO.findById(userId)
+                    blacklisted to dbUser
                 }
                 if (isBlacklisted) {
                     authLog.warn("Blacklisted token rejected (from database)")
                     return@validate null
                 }
-                if (!isUserActive) {
+                if (user == null || !user.isActiveAndVerified()) {
                     authLog.warn("JWT rejected: user missing, inactive, or unverified")
                     return@validate null
                 }
 
-                JwtTokenRequest(userId, email, userTypeStr)
+                // Resolve the current role and status from the database rather than
+                // trusting the JWT claim, so role changes take effect immediately.
+                JwtTokenRequest(userId, user.email, user.userType.name)
             }
         }
     }

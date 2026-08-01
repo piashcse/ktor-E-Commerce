@@ -3,6 +3,7 @@ package com.piashcse.feature.auth
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
+import com.piashcse.constants.OtpPurpose
 import com.piashcse.constants.UserType
 import com.piashcse.event.EventBus
 import com.piashcse.event.SendEmailEvent
@@ -135,11 +136,11 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
 
     suspend fun otpVerification(userId: String, otp: String): Boolean = suspendRetryQuery {
         if (authRepo.findUserById(userId) == null) userId.throwNotFound("User")
-        if (authRepo.isOtpLocked(userId)) {
+        if (authRepo.isOtpLocked(userId, OtpPurpose.REGISTRATION)) {
             throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES))
         }
-        if (authRepo.getOtpAttempt(userId) >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
-            authRepo.resetOtpAttempts(userId)
+        if (authRepo.getOtpAttempt(userId, OtpPurpose.REGISTRATION) >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
+            authRepo.resetOtpAttempts(userId, OtpPurpose.REGISTRATION)
         }
 
         val expiry = authRepo.getRegistrationOtpExpiry(userId)
@@ -148,11 +149,11 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
 
         if (isValid) {
             authRepo.markUserVerified(userId)
-            authRepo.resetOtpAttempts(userId)
+            authRepo.resetOtpAttempts(userId, OtpPurpose.REGISTRATION)
         } else {
-            val newCount = authRepo.recordFailedOtpAttempt(userId)
+            val newCount = authRepo.recordFailedOtpAttempt(userId, OtpPurpose.REGISTRATION)
             if (newCount >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
-                authRepo.lockOtpAttempts(userId)
+                authRepo.lockOtpAttempts(userId, OtpPurpose.REGISTRATION)
                 authRepo.invalidateOtp(userId)
             }
         }
@@ -160,24 +161,36 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
     }
 
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest) = suspendRetryQuery {
-        val user = authRepo.findResetUserByEmail(forgotPasswordRequest.email, forgotPasswordRequest.userType)
+        val user = runCatching {
+            authRepo.findResetUserByEmail(forgotPasswordRequest.email, forgotPasswordRequest.userType)
+        }.getOrNull() ?: return@suspendRetryQuery null
+
+        // Throttle resends: do not mint a new OTP while the previous one is valid.
+        val existing = authRepo.getResetOtp(user.id)
+        if (existing?.expiry?.isAfter(LocalDateTime.now()) == true) return@suspendRetryQuery null
+
         val otp = generateOTP()
         authRepo.setResetOtp(user.id, otp, LocalDateTime.now().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES))
         user.email to otp
-    }.let { (email, otp) ->
-        EventBus.publish(
-            SendEmailEvent(
-                to = email,
-                subject = AppConstants.SmtpServer.RESET_SUBJECT,
-                body = "Your password reset code is: $otp",
-            ),
-        )
+    }.let { result ->
+        // Always report success whether or not the account exists, so responses
+        // do not reveal which emails are registered.
+        if (result != null) {
+            val (email, otp) = result
+            EventBus.publish(
+                SendEmailEvent(
+                    to = email,
+                    subject = AppConstants.SmtpServer.RESET_SUBJECT,
+                    body = "Your password reset code is: $otp",
+                ),
+            )
+        }
     }
 
     suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult = suspendRetryQuery {
         val user = authRepo.findResetUserByEmail(resetPasswordRequest.email, resetPasswordRequest.userType)
 
-        if (authRepo.isOtpLocked(user.id)) return@suspendRetryQuery ResetResult.Locked
+        if (authRepo.isOtpLocked(user.id, OtpPurpose.RESET)) return@suspendRetryQuery ResetResult.Locked
 
         val resetOtp = authRepo.getResetOtp(user.id)
         if (resetOtp?.expiry?.isBefore(LocalDateTime.now()) != false) {
@@ -185,9 +198,9 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
         }
 
         if (!constantTimeEquals(resetOtp.code.orEmpty(), resetPasswordRequest.verificationCode)) {
-            val attempt = authRepo.recordFailedOtpAttempt(user.id)
+            val attempt = authRepo.recordFailedOtpAttempt(user.id, OtpPurpose.RESET)
             if (attempt >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
-                authRepo.lockOtpAttempts(user.id)
+                authRepo.lockOtpAttempts(user.id, OtpPurpose.RESET)
                 authRepo.clearResetOtp(user.id)
             }
             return@suspendRetryQuery ResetResult.InvalidOrExpiredOtp
@@ -202,7 +215,8 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
             BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, resetPasswordRequest.newPassword.toCharArray()),
         )
         authRepo.clearResetOtp(user.id)
-        authRepo.resetOtpAttempts(user.id)
+        authRepo.resetOtpAttempts(user.id, OtpPurpose.RESET)
+        authRepo.revokeAllUserTokens(user.id)
         ResetResult.Success
     }
 
@@ -219,6 +233,12 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
         val user = authRepo.findUserById(storedToken.userId) ?: storedToken.userId.throwNotFound("User")
         if (!user.isActive) throw ValidationException(Message.Auth.ACCOUNT_DEACTIVATED)
         if (!user.isVerified) throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)
+
+        // A login-locked account must not be able to keep refreshing tokens.
+        if (authRepo.getLoginAttempt(user.email, user.userType)?.isLocked == true) {
+            authRepo.revokeRefreshToken(tokenHash)
+            throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES))
+        }
 
         authRepo.revokeRefreshToken(tokenHash)
         val newTokenPair = authRepo.generateTokenPair(user.id, user.email, user.userType.name)
@@ -256,6 +276,7 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
             userId,
             BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, changePassword.newPassword.toCharArray()),
         )
+        authRepo.revokeAllUserTokens(userId)
         true
     }
 
@@ -281,6 +302,7 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
         }
 
         authRepo.updateUserType(targetUserId, newUserType)
+        authRepo.revokeAllUserTokens(targetUserId)
         if (newUserType == UserType.SELLER) authRepo.createSellerProfileIfMissing(targetUserId)
         true
     }
@@ -295,6 +317,9 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
         val currentUser = authRepo.findUserById(currentUserId) ?: currentUserId.throwNotFound("User")
         val targetUser = authRepo.findUserById(targetUserId) ?: targetUserId.throwNotFound("User")
 
+        if (currentUserId == targetUserId) {
+            throw ValidationException(Message.Auth.insufficientPermissions("deactivate your own account"))
+        }
         if (!currentUser.userType.canManage(targetUser.userType)) {
             throw ValidationException(Message.Auth.insufficientPermissions("deactivate user"))
         }

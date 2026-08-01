@@ -1,5 +1,6 @@
 package com.piashcse.feature.auth
 
+import com.piashcse.constants.OtpPurpose
 import com.piashcse.constants.UserType
 import com.piashcse.model.domain.AuthUser
 import com.piashcse.model.domain.LoginAttemptInfo
@@ -48,11 +49,11 @@ interface AuthRepository {
     suspend fun lockAccount(email: String, userType: UserType, lockDurationMinutes: Long): Boolean
 
     // OTP attempt tracking
-    suspend fun getOtpAttempt(userId: String): Int
-    suspend fun isOtpLocked(userId: String): Boolean
-    suspend fun recordFailedOtpAttempt(userId: String): Int
-    suspend fun resetOtpAttempts(userId: String)
-    suspend fun lockOtpAttempts(userId: String)
+    suspend fun getOtpAttempt(userId: String, purpose: OtpPurpose): Int
+    suspend fun isOtpLocked(userId: String, purpose: OtpPurpose): Boolean
+    suspend fun recordFailedOtpAttempt(userId: String, purpose: OtpPurpose): Int
+    suspend fun resetOtpAttempts(userId: String, purpose: OtpPurpose)
+    suspend fun lockOtpAttempts(userId: String, purpose: OtpPurpose)
 
     // Password / reset persistence
     suspend fun updatePasswordHash(userId: String, newPasswordHash: String)

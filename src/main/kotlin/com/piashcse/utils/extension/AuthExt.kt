@@ -2,6 +2,7 @@ package com.piashcse.utils.extension
 
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.JwtTokenRequest
+import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.util.*
@@ -31,3 +32,6 @@ val ApplicationCall.currentUserId: String
             ?: currentUser().userId.also { attributes.put(UserIdKey, it) }
 
 fun ApplicationCall.getCurrentUserType(): UserType? = currentUserOrNull()?.getUserType()
+
+fun ApplicationCall.requireUserType(): UserType =
+    getCurrentUserType() ?: throw UnauthorizedException()

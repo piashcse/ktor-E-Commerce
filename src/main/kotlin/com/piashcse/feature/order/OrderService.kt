@@ -1,5 +1,6 @@
 package com.piashcse.feature.order
 
+import com.piashcse.constants.CacheKeys
 import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.UserType
@@ -9,6 +10,8 @@ import com.piashcse.model.request.CancelOrderRequest
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
 import com.piashcse.model.response.OrderResponse
+import com.piashcse.service.Cache
+import com.piashcse.service.CacheService
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.suspendRetryQuery
@@ -17,7 +20,10 @@ import com.piashcse.utils.validator.UnauthorizedException
 import com.piashcse.utils.validator.ValidationException
 import java.time.Instant
 
-class OrderService(private val orderRepo: OrderRepository) {
+class OrderService(
+    private val orderRepo: OrderRepository,
+    private val cache: Cache = CacheService.cache,
+) {
 
     /**
      * Places an order from the user's cart and publishes after-commit events.
@@ -46,7 +52,7 @@ class OrderService(private val orderRepo: OrderRepository) {
             )
         }
         orders
-    }
+    }.also { cache.invalidatePattern(CacheKeys.PRODUCTS_PATTERN) }
 
     /**
      * Calculates the checkout summary. Read-only projection; business rules are
@@ -85,7 +91,7 @@ class OrderService(private val orderRepo: OrderRepository) {
             throw ValidationException(Message.Orders.INVALID_STATUS)
 
         orderRepo.applyStatusTransition(orderId, status, changedBy = userId)
-    }
+    }.also { if (status == OrderStatus.CANCELED) cache.invalidatePattern(CacheKeys.PRODUCTS_PATTERN) }
 
     /**
      * Cancels an order and restores stock. Only order participants may cancel,
@@ -107,7 +113,7 @@ class OrderService(private val orderRepo: OrderRepository) {
             throw ValidationException(Message.Orders.CANNOT_CANCEL)
 
         orderRepo.cancelOrder(orderId, request.reason, changedBy = userId)
-    }
+    }.also { cache.invalidatePattern(CacheKeys.PRODUCTS_PATTERN) }
 
     suspend fun getOrders(
         userId: String,

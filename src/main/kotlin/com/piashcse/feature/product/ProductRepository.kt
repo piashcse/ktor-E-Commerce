@@ -24,6 +24,7 @@ data class ProductCreateAccess(
     val sellerExists: Boolean,
     val resolvedShopId: String?,
     val shopOwnerUserId: String?,
+    val shopStatus: com.piashcse.constants.ShopStatus?,
 )
 
 /**

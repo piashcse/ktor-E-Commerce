@@ -30,7 +30,10 @@ class CartRepositoryImpl : CartRepository {
         val existing = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
         }.singleOrNull()
-        existing?.let { throw productId.throwConflict("Product") }
+        if (existing != null) {
+            existing.quantity += quantity
+            return@query existing.toCartResponse()
+        }
 
         CartItemDAO.new {
             this.userId = userId.entityID(UserTable)

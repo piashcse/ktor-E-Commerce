@@ -1,6 +1,7 @@
 package com.piashcse.feature.payment
 
-import com.piashcse.model.request.PaymentRequest
+import com.piashcse.constants.PaymentMethod
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.utils.common.PaginatedResponse
 import java.math.BigDecimal
@@ -39,12 +40,16 @@ interface PaymentRepository {
     suspend fun getCompletedPaymentsSum(orderId: String): BigDecimal
 
     /**
-     * Persists a new payment record.
+     * Persists a new payment record. The status is derived by the service;
+     * client-supplied status is never trusted.
      */
     suspend fun createPayment(
         orderId: String,
         userId: String,
-        request: PaymentRequest,
+        amount: BigDecimal,
+        paymentMethod: PaymentMethod,
+        transactionId: String?,
+        status: PaymentStatus,
     ): PaymentResponse
 
     /**
@@ -56,6 +61,11 @@ interface PaymentRepository {
      * Resolves the email of the order's owner (for after-commit notifications).
      */
     suspend fun getUserEmail(userId: String): String?
+
+    /**
+     * Returns the user id that owns the given order, or null if it does not exist.
+     */
+    suspend fun getOrderOwnerId(orderId: String): String?
 
     /**
      * Retrieves payment details by payment ID.

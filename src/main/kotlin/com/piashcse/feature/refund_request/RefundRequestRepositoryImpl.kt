@@ -13,6 +13,7 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -38,6 +39,12 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             OrderItemDAO.findById(refundReq.orderItemId.value)
                 ?: refundReq.orderItemId.value.throwNotFound("Order item")
 
+        val alreadyRefundedAmount =
+            RefundRequestDAO.find {
+                (RefundRequestTable.orderItemId eq refundReq.orderItemId) and
+                    (RefundRequestTable.status inList listOf(RefundStatus.PENDING, RefundStatus.APPROVED, RefundStatus.SHIPPED, RefundStatus.REFUNDED))
+            }.sumOf { it.refundAmount ?: java.math.BigDecimal.ZERO }
+
         RefundAccess(
             refundId = refundReq.id.value,
             orderId = refundReq.orderId.value,
@@ -45,6 +52,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             currentStatus = refundReq.status,
             currentRefundAmount = refundReq.refundAmount,
             maxRefundAmount = orderItem.total,
+            alreadyRefundedAmount = alreadyRefundedAmount,
             isCustomer = refundReq.userId.value == userId,
             isSeller = orderBelongsToUserShop(refundReq.orderId.value, userId),
             isAdmin = user.userType.isAdminOrHigher,
@@ -68,6 +76,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             isCustomer = order.userId.value == userId,
             isSeller = orderBelongsToUserShop(orderId, userId),
             isAdmin = user.userType.isAdminOrHigher,
+            isOrderPaid = order.paymentStatus == PaymentStatus.COMPLETED,
         )
     }
 
@@ -94,7 +103,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
         val existingRefund =
             RefundRequestDAO.find {
                 (RefundRequestTable.orderItemId eq orderItem.id) and
-                    (RefundRequestTable.status inList listOf(RefundStatus.PENDING, RefundStatus.APPROVED, RefundStatus.SHIPPED))
+                    (RefundRequestTable.status inList listOf(RefundStatus.PENDING, RefundStatus.APPROVED, RefundStatus.SHIPPED, RefundStatus.REFUNDED))
             }.firstOrNull()
 
         if (existingRefund != null) {
@@ -148,10 +157,26 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             val order =
                 OrderDAO.findById(refundReq.orderId.value)
                     ?: refundReq.orderId.value.throwNotFound("Order")
-            order.paymentStatus = PaymentStatus.REFUNDED
+            order.paymentStatus = resolvedOrderRefundStatus(refundReq.orderId)
         }
 
         refundReq.toRefundRequestResponse()
+    }
+
+    /**
+     * Resolves the order-level payment status after a refund: REFUNDED when every
+     * order item is fully refunded, otherwise PARTIALLY_REFUNDED.
+     */
+    private fun resolvedOrderRefundStatus(orderId: EntityID<String>): PaymentStatus {
+        val itemIds = OrderItemDAO.find { OrderItemTable.orderId eq orderId }.map { it.id.value }.toSet()
+        if (itemIds.isEmpty()) return PaymentStatus.REFUNDED
+
+        val refundedItemIds =
+            RefundRequestDAO.find {
+                (RefundRequestTable.orderId eq orderId) and (RefundRequestTable.status eq RefundStatus.REFUNDED)
+            }.map { it.orderItemId.value }.toSet()
+
+        return if (refundedItemIds.containsAll(itemIds)) PaymentStatus.REFUNDED else PaymentStatus.PARTIALLY_REFUNDED
     }
 
     override suspend fun shipRefund(

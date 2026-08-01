@@ -24,10 +24,10 @@ class DashboardRepositoryImpl : DashboardRepository {
         val today = LocalDateTime.now(ZoneOffset.UTC).toLocalDate().atStartOfDay()
 
         val totalRevenue = OrderTable.select(OrderTable.total.sum())
-            .where { OrderTable.status neq OrderStatus.CANCELED }
+            .where { (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and (OrderTable.status neq OrderStatus.CANCELED) }
             .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
         val todayRevenue = OrderTable.select(OrderTable.total.sum())
-            .where { (OrderTable.status neq OrderStatus.CANCELED) and (OrderTable.createdAt greaterEq today) }
+            .where { (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and (OrderTable.status neq OrderStatus.CANCELED) and (OrderTable.createdAt greaterEq today) }
             .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
 
         DashboardStatsResponse(
@@ -60,10 +60,16 @@ class DashboardRepositoryImpl : DashboardRepository {
         val end = endDate?.let { LocalDate.parse(it, DFMT).atTime(LocalTime.MAX) } ?: now
 
         val totalRevenue = OrderTable.select(OrderTable.total.sum())
-            .where { (OrderTable.status neq OrderStatus.CANCELED) and (OrderTable.createdAt greaterEq start) and (OrderTable.createdAt lessEq end) }
+            .where {
+                (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
+                    (OrderTable.status neq OrderStatus.CANCELED) and
+                    (OrderTable.createdAt greaterEq start) and (OrderTable.createdAt lessEq end)
+            }
             .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
         val orderCount = OrderTable.selectAll().where {
-            (OrderTable.status neq OrderStatus.CANCELED) and (OrderTable.createdAt greaterEq start) and (OrderTable.createdAt lessEq end)
+            (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
+                (OrderTable.status neq OrderStatus.CANCELED) and
+                (OrderTable.createdAt greaterEq start) and (OrderTable.createdAt lessEq end)
         }.count()
         val avg = Money.average(totalRevenue, orderCount.toInt())
         val daily = generateSequence(start.toLocalDate()) { it.plusDays(1) }
@@ -72,7 +78,11 @@ class DashboardRepositoryImpl : DashboardRepository {
                 val dayStart = date.atStartOfDay()
                 val dayEnd = date.atTime(LocalTime.MAX)
                 val dayTotal = OrderTable.select(OrderTable.total.sum())
-                    .where { (OrderTable.status neq OrderStatus.CANCELED) and (OrderTable.createdAt greaterEq dayStart) and (OrderTable.createdAt lessEq dayEnd) }
+                    .where {
+                        (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
+                            (OrderTable.status neq OrderStatus.CANCELED) and
+                            (OrderTable.createdAt greaterEq dayStart) and (OrderTable.createdAt lessEq dayEnd)
+                    }
                     .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
                 mapOf("date" to date.format(DFMT), "revenue" to Money.plain(dayTotal))
             }.toList()

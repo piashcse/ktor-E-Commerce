@@ -3,7 +3,9 @@ package com.piashcse.feature.inventory
 import com.piashcse.constants.Message
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.plugin.RateLimitNames
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.requireUserType
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.NotFoundException
@@ -25,7 +27,12 @@ fun Route.inventorySellerRoutes() {
          * @description Seller: Initialize or update inventory for a product
          */
         post {
-            call.respondCreated(inventoryService.createOrUpdateInventory(call.receive<InventoryRequest>()))
+            call.respondCreated(
+                inventoryService.createOrUpdateInventory(
+                    userId = call.currentUserId,
+                    inventoryRequest = call.receive<InventoryRequest>(),
+                ),
+            )
         }
 
         /**
@@ -37,7 +44,14 @@ fun Route.inventorySellerRoutes() {
             val quantityStr = call.requireQueryParameter("quantity")
             val quantity = quantityStr.toIntOrNull() ?: throw ValidationException(Message.Errors.invalidParameter("quantity", quantityStr))
             val operation = call.parameters["operation"] ?: "set"
-            call.respondOk(inventoryService.updateStock(productId, quantity, operation))
+            call.respondOk(
+                inventoryService.updateStock(
+                    userId = call.currentUserId,
+                    productId = productId,
+                    quantity = quantity,
+                    operation = operation,
+                ),
+            )
         }
     }
 
@@ -48,8 +62,11 @@ fun Route.inventorySellerRoutes() {
     get("/product/{productId}") {
         val productId = call.requirePathParameter("productId")
         call.respondOk(
-            inventoryService.getInventoryByProduct(productId)
-                ?: throw NotFoundException(Message.Inventory.NOT_FOUND),
+            inventoryService.getInventoryByProduct(
+                userId = call.currentUserId,
+                userType = call.requireUserType(),
+                productId = productId,
+            ) ?: throw NotFoundException(Message.Inventory.NOT_FOUND),
         )
     }
 
@@ -60,7 +77,15 @@ fun Route.inventorySellerRoutes() {
     get("/shop/{shopId}") {
         val shopId = call.requirePathParameter("shopId")
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(inventoryService.getInventoryByShop(shopId, limit, offset))
+        call.respondOk(
+            inventoryService.getInventoryByShop(
+                userId = call.currentUserId,
+                userType = call.requireUserType(),
+                shopId = shopId,
+                limit = limit,
+                offset = offset,
+            ),
+        )
     }
 
     /**
@@ -69,7 +94,14 @@ fun Route.inventorySellerRoutes() {
      */
     get("/low-stock") {
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(inventoryService.getLowStockProducts(limit, offset))
+        call.respondOk(
+            inventoryService.getLowStockProducts(
+                userId = call.currentUserId,
+                userType = call.requireUserType(),
+                limit = limit,
+                offset = offset,
+            ),
+        )
     }
 }
 

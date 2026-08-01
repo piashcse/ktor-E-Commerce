@@ -1,9 +1,11 @@
 package com.piashcse.feature.product_category
 
+import com.piashcse.constants.Message
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductCategoryTable
 import com.piashcse.database.entities.ProductSubCategoryDAO
 import com.piashcse.database.entities.ProductSubCategoryTable
+import com.piashcse.database.entities.ProductTable
 import com.piashcse.mapper.toProductCategoryResponse
 import com.piashcse.model.response.ProductCategoryResponse
 import com.piashcse.repository.base.BaseCrudRepository
@@ -11,6 +13,7 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.toPaginatedList
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -50,5 +53,12 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository,
         name: String,
     ): ProductCategoryResponse = update(categoryId) { this.name = name }
 
-    override suspend fun deleteCategory(categoryId: String): String = delete(categoryId)
+    override suspend fun deleteCategory(categoryId: String): String {
+        findByIdOrThrow(categoryId)
+        val productsCount = query {
+            ProductTable.selectAll().where { ProductTable.categoryId eq categoryId }.count()
+        }
+        if (productsCount > 0) throw ValidationException(Message.Categories.IN_USE)
+        return delete(categoryId)
+    }
 }

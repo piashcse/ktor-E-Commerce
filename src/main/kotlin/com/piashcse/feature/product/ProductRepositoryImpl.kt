@@ -5,6 +5,7 @@ import com.piashcse.constants.AppConstants.Inventory.DEFAULT_MIN_STOCK
 import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.Message
 import com.piashcse.constants.ProductStatus
+import com.piashcse.constants.ShopStatus
 import com.piashcse.database.entities.*
 import com.piashcse.mapper.toProductResponse
 import com.piashcse.model.request.ProductRequest
@@ -37,8 +38,20 @@ class ProductRepositoryImpl : ProductRepository {
     private fun calcDiscountPct(price: Double, discountPrice: Double?): BigDecimal? =
         discountPrice?.let { Money.discountPercent(BigDecimal.valueOf(price), BigDecimal.valueOf(it)) }
 
-    private fun Query.applyProductFilters(filter: ProductWithFilterRequest): Query {
-        filter.categoryId?.let { andWhere { ProductTable.categoryId eq it.entityID(ProductCategoryTable) } }
+    /**
+     * Filters public catalog queries to products belonging to approved shops,
+     * excluding shop-less products and products from pending/suspended shops.
+     */
+    private fun approvedShopCondition(): Op<Boolean> {
+        val approvedIds = ShopDAO.find { ShopTable.status eq ShopStatus.APPROVED }.map { it.id.value }
+        return if (approvedIds.isEmpty()) {
+            Op.FALSE
+        } else {
+            ProductTable.shopId inList approvedIds.map { it.entityID(ShopTable) }
+        }
+    }
+
+    private fun Query.applyProductFilters(filter: ProductWithFilterRequest): Query {        filter.categoryId?.let { andWhere { ProductTable.categoryId eq it.entityID(ProductCategoryTable) } }
         filter.subCategoryId?.let { andWhere { ProductTable.subCategoryId eq it.entityID(ProductSubCategoryTable) } }
         filter.brandId?.let { andWhere { ProductTable.brandId eq it.entityID(BrandTable) } }
         filter.minPrice?.let { andWhere { ProductTable.price greaterEq BigDecimal.valueOf(it) } }
@@ -84,13 +97,12 @@ class ProductRepositoryImpl : ProductRepository {
     ): ProductCreateAccess = query {
         val seller = findSellerByUserId(userId)
         val resolvedShopId = shopId ?: seller?.shopId?.value
-        val shopOwnerUserId = resolvedShopId?.let { id ->
-            (ShopDAO.findById(id) ?: id.throwNotFound("Shop")).userId.value
-        }
+        val shop = resolvedShopId?.let { id -> ShopDAO.findById(id) ?: id.throwNotFound("Shop") }
         ProductCreateAccess(
             sellerExists = seller != null,
             resolvedShopId = resolvedShopId,
-            shopOwnerUserId = shopOwnerUserId,
+            shopOwnerUserId = shop?.userId?.value,
+            shopStatus = shop?.status,
         )
     }
 
@@ -169,7 +181,13 @@ class ProductRepositoryImpl : ProductRepository {
     }
 
     override suspend fun getProducts(filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
-        toProductPaginatedResponse(ProductTable.selectAll().andWhere { ProductTable.status eq ProductStatus.ACTIVE }.applyProductFilters(filter), filter.limit, filter.offset)
+        toProductPaginatedResponse(
+            ProductTable.selectAll().andWhere {
+                (ProductTable.status eq ProductStatus.ACTIVE) and approvedShopCondition()
+            }.applyProductFilters(filter),
+            filter.limit,
+            filter.offset,
+        )
     }
 
     override suspend fun getProductsByShop(shopId: String, filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
@@ -241,8 +259,8 @@ class ProductRepositoryImpl : ProductRepository {
         val dir = if (request.sortOrder?.lowercase() == "asc") "ASC" else "DESC"
         val threshold = 0.15
 
-        val whereClauses = mutableListOf("p.status = ?")
-        val whereParams = mutableListOf<Any>(ProductStatus.ACTIVE.name)
+        val whereClauses = mutableListOf("p.status = ?", "p.shop_id IN (SELECT id FROM shop WHERE status = ?)")
+        val whereParams = mutableListOf<Any>(ProductStatus.ACTIVE.name, ShopStatus.APPROVED.name)
 
         if (useTrigram) {
             whereClauses.add("similarity(p.name, ?) > ?")
@@ -359,7 +377,7 @@ class ProductRepositoryImpl : ProductRepository {
         }
 
         val extraSql = if (extraClauses.isNotEmpty()) " AND ${extraClauses.joinToString(" AND ")}" else ""
-        val baseWhere = "p.status = '$statusName' AND $matchClause$extraSql"
+        val baseWhere = "p.status = '$statusName' AND p.shop_id IN (SELECT id FROM shop WHERE status = '${ShopStatus.APPROVED.name}') AND $matchClause$extraSql"
 
         val categorySql = """
             SELECT c.id, c.name, COUNT(p.id) as cnt
@@ -425,7 +443,7 @@ class ProductRepositoryImpl : ProductRepository {
         orderBy: Pair<Column<*>, SortOrder>,
         limit: Int? = null,
     ): PaginatedResponse<ProductResponse> = query {
-        val statusCondition = condition and (ProductTable.status eq ProductStatus.ACTIVE)
+        val statusCondition = condition and (ProductTable.status eq ProductStatus.ACTIVE) and approvedShopCondition()
         val count = ProductDAO.count(statusCondition)
         val products = ProductDAO.find(statusCondition)
             .orderBy(orderBy)

@@ -31,8 +31,10 @@ class ProductCrudService(
         withCacheInvalidation {
             val access = productRepo.getCreateProductAccess(userId, shopId)
             if (!access.sellerExists) throw NotFoundException(Message.Errors.SELLER_REQUIRED)
-            if (access.shopOwnerUserId != null && access.shopOwnerUserId != userId)
-                throw ForbiddenException(Message.Products.NOT_SHOP_OWNER)
+            if (access.resolvedShopId == null) throw ForbiddenException(Message.Products.SHOP_NOT_APPROVED)
+            if (access.shopOwnerUserId != userId) throw ForbiddenException(Message.Products.NOT_SHOP_OWNER)
+            if (access.shopStatus != com.piashcse.constants.ShopStatus.APPROVED)
+                throw ForbiddenException(Message.Products.SHOP_NOT_APPROVED)
             productRepo.createProduct(userId, access.resolvedShopId, productRequest)
         }
 

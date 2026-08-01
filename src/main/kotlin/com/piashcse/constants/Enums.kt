@@ -44,6 +44,15 @@ enum class RefundMethod {
     BANK_TRANSFER,
 }
 
+/**
+ * Distinguishes OTP flows so attempt counters and lockouts are tracked per flow.
+ */
+@Serializable
+enum class OtpPurpose {
+    REGISTRATION,
+    RESET,
+}
+
 @Serializable
 enum class PaymentMethod {
     CREDIT_CARD,
@@ -88,7 +97,7 @@ enum class OrderStatus {
             when (current) {
                 PENDING -> target in listOf(CONFIRMED, CANCELED)
                 CONFIRMED -> target in listOf(PAID, CANCELED)
-                PAID -> target in listOf(DELIVERED, CANCELED)
+                PAID -> target in listOf(DELIVERED) // Paid orders are refunded via the refund flow, not canceled
                 DELIVERED -> target in listOf(RECEIVED) // Completed order can be marked as received
                 CANCELED -> false // Canceled orders cannot transition to other statuses
                 RECEIVED -> false // Completed orders remain in received status
@@ -107,6 +116,7 @@ enum class PaymentStatus {
     COMPLETED,
     FAILED,
     REFUNDED,
+    PARTIALLY_REFUNDED,
     ;
 
     val isFinal get() = this in listOf(COMPLETED, FAILED, REFUNDED)

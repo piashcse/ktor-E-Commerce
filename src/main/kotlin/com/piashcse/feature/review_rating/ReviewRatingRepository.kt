@@ -14,6 +14,15 @@ data class ReviewAccess(
 )
 
 /**
+ * Facts used to authorize review creation: whether the user purchased the
+ * product and whether the user is the product's seller.
+ */
+data class ReviewCreateAccess(
+    val isVerifiedPurchase: Boolean,
+    val isProductSeller: Boolean,
+)
+
+/**
  * Persistence boundary for the Review Rating aggregate.
  *
  * The repository is limited to data access (reads/writes + projection to DTOs).
@@ -38,6 +47,14 @@ interface ReviewRatingRepository {
         userId: String,
         reviewId: String,
     ): ReviewAccess
+
+    /**
+     * Resolves the facts needed to authorize review creation for a product.
+     */
+    suspend fun getReviewCreateAccess(
+        userId: String,
+        productId: String,
+    ): ReviewCreateAccess
 
     /**
      * Persists a new review, rejecting duplicates for the same product by the

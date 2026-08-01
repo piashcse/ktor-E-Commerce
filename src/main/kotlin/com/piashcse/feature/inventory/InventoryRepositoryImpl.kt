@@ -25,7 +25,25 @@ class InventoryRepositoryImpl : InventoryRepository {
             productId = inventory.productId.value,
             stockQuantity = inventory.stockQuantity,
             minimumStockLevel = inventory.minimumStockLevel,
+            maximumStockLevel = inventory.maximumStockLevel,
         )
+    }
+
+    override suspend fun getInventoryAccess(userId: String, shopId: String): InventoryAccess = query {
+        val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
+        InventoryAccess(isSellerOwner = sellerOwnsShop(userId, shopId), isAdmin = user.userType.isAdminOrHigher)
+    }
+
+    override suspend fun getInventoryShopId(productId: String): String? = query {
+        InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()?.shopId?.value
+    }
+
+    override suspend fun getProductShopId(productId: String): String? = query {
+        ProductDAO.findById(productId)?.shopId?.value
+    }
+
+    override suspend fun getSellerShopId(userId: String): String? = query {
+        findSellerByUserId(userId)?.shopId?.value
     }
 
     override suspend fun setStock(
@@ -70,12 +88,15 @@ class InventoryRepositoryImpl : InventoryRepository {
     }
 
     override suspend fun getLowStockProducts(
+        shopId: String?,
         limit: Int,
         offset: Int,
     ): PaginatedResponse<InventoryResponse> = query {
-        InventoryTable.selectAll().andWhere { InventoryTable.stockQuantity lessEq InventoryTable.minimumStockLevel }
-            .orderBy(InventoryTable.stockQuantity to SortOrder.ASC)
-            .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).toInventoryResponse() }
+        val query = InventoryTable.selectAll()
+        shopId?.let { query.andWhere { InventoryTable.shopId eq it } }
+        query.andWhere { InventoryTable.stockQuantity lessEq InventoryTable.minimumStockLevel }
+        query.orderBy(InventoryTable.stockQuantity to SortOrder.ASC)
+        query.toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).toInventoryResponse() }
     }
 
     override suspend fun getInventoryByShop(

@@ -46,6 +46,8 @@ object Message {
         ) = "Insufficient stock for $productName. Available: $available"
 
         const val RATING_OUT_OF_RANGE = "Rating must be between 1 and 5"
+        const val VERIFIED_PURCHASE_REQUIRED = "You can only review products you have purchased"
+        const val SELLER_SELF_REVIEW_FORBIDDEN = "Sellers cannot review their own products"
 
         fun invalidEnumValue(
             fieldName: String,
@@ -119,6 +121,7 @@ object Message {
         const val OUT_OF_STOCK = "Product is out of stock"
         const val INSUFFICIENT_STOCK = "Insufficient stock available"
         const val NOT_SHOP_OWNER = "You are not the owner of this shop"
+        const val SHOP_NOT_APPROVED = "You need an approved shop to add products"
     }
 
     // ─── Shops ─────────────────────────────────────────────────────────────
@@ -130,6 +133,11 @@ object Message {
         const val ALREADY_SUSPENDED = "Shop is already suspended"
 
         fun invalidStatus(status: String) = "Invalid shop status: $status"
+    }
+
+    // ─── Categories ─────────────────────────────────────────────────────────
+    object Categories {
+        const val IN_USE = "Category cannot be deleted because it still has products"
     }
 
     // ─── Brands ────────────────────────────────────────────────────────────
@@ -148,6 +156,8 @@ object Message {
     // ─── Payments ───────────────────────────────────────────────────────────
     object Payments {
         const val ALREADY_PAID = "Order already fully paid"
+        const val NOT_ORDER_OWNER = "You can only pay for your own orders"
+        const val NOT_PAYMENT_VIEWER = "You do not have permission to view this payment"
         fun amountMismatch(paid: String, total: String) = "Payment amount ($paid) does not match order total ($total)"
     }
 
@@ -160,6 +170,9 @@ object Message {
         const val MUST_BE_APPROVED = "Refund must be approved before shipping"
         const val AMOUNT_EXCEEDS_ITEM_TOTAL = "Refund amount cannot exceed the order item total"
         const val REFUND_AMOUNT_REQUIRED = "Refund amount is required when marking a refund as REFUNDED"
+        const val AMOUNT_NOT_POSITIVE = "Refund amount must be greater than zero"
+        const val ORDER_NOT_PAID = "Only paid orders can be refunded"
+        const val ALREADY_REFUNDED = "A refund has already been processed for this item"
 
         fun invalidTransition(from: String, to: String) = "Cannot change refund status from $from to $to"
     }
@@ -188,6 +201,8 @@ object Message {
         const val NOT_FOUND = "Inventory record not found"
         const val NEGATIVE_STOCK = "Stock quantity cannot be negative"
         const val NEGATIVE_QUANTITY = "Quantity cannot be negative for set operation"
+        const val NOT_SHOP_OWNER = "You do not have permission to manage this shop's inventory"
+        const val PRODUCT_SHOP_MISMATCH = "Product does not belong to the specified shop"
 
         fun insufficientStock(
             available: Int,
@@ -196,6 +211,7 @@ object Message {
 
         fun invalidOperation(operation: String) = "Invalid operation: $operation. Use add, subtract, or set"
         fun quantityNotPositive(operation: String) = "Quantity must be positive for $operation operation"
+        fun maxStockExceeded(max: Int) = "Stock cannot exceed the maximum level of $max"
     }
 
     // ─── Consent ───────────────────────────────────────────────────────────

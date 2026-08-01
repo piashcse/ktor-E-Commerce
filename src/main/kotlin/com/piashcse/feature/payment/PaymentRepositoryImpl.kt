@@ -1,9 +1,10 @@
 package com.piashcse.feature.payment
 
+import com.piashcse.constants.OrderStatus
+import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.*
 import com.piashcse.mapper.toPaymentResponse
-import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
@@ -39,15 +40,18 @@ class PaymentRepositoryImpl : PaymentRepository {
     override suspend fun createPayment(
         orderId: String,
         userId: String,
-        request: PaymentRequest,
+        amount: BigDecimal,
+        paymentMethod: PaymentMethod,
+        transactionId: String?,
+        status: PaymentStatus,
     ): PaymentResponse = query {
         PaymentDAO.new {
             this.orderId = orderId.entityID(OrderTable)
             this.userId = userId.entityID(UserTable)
-            this.amount = request.amount
-            this.status = request.status
-            this.paymentMethod = request.paymentMethod
-            this.transactionId = request.transactionId
+            this.amount = amount
+            this.status = status
+            this.paymentMethod = paymentMethod
+            this.transactionId = transactionId
         }.toPaymentResponse()
     }
 
@@ -55,6 +59,7 @@ class PaymentRepositoryImpl : PaymentRepository {
         query {
             val order = OrderDAO.findById(orderId) ?: return@query
             order.paymentStatus = PaymentStatus.COMPLETED
+            order.status = OrderStatus.PAID
             StockReservationDAO.find { StockReservationTable.orderId eq orderId.entityID(OrderTable) }
                 .forEach { it.status = ReservationStatus.FINALIZED }
         }
@@ -62,6 +67,10 @@ class PaymentRepositoryImpl : PaymentRepository {
 
     override suspend fun getUserEmail(userId: String): String? = query {
         UserDAO.findById(userId)?.email
+    }
+
+    override suspend fun getOrderOwnerId(orderId: String): String? = query {
+        OrderDAO.findById(orderId)?.userId?.value
     }
 
     override suspend fun getPaymentById(paymentId: String): PaymentResponse =

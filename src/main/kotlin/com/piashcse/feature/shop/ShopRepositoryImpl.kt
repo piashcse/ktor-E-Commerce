@@ -13,10 +13,10 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -102,17 +102,14 @@ class ShopRepositoryImpl : ShopRepository {
 
     override suspend fun getShops(status: ShopStatus?, category: String?, limit: Int, offset: Int) =
         shopPaginatedQuery(limit, offset, ShopTable.createdAt to SortOrder.DESC) {
-            andWhere { ShopTable.status neq ShopStatus.REJECTED }
-            andWhere { ShopTable.status neq ShopStatus.SUSPENDED }
-            status?.let { andWhere { ShopTable.status eq it } }
+            andWhere { ShopTable.status eq ShopStatus.APPROVED }
             category?.let { andWhere { ShopTable.categoryId eq it.entityID(ShopCategoryTable) } }
         }
 
     override suspend fun getShopsByCategory(categoryId: String, limit: Int, offset: Int) =
         shopPaginatedQuery(limit, offset) {
             andWhere { ShopTable.categoryId eq categoryId }
-            andWhere { ShopTable.status neq ShopStatus.REJECTED }
-            andWhere { ShopTable.status neq ShopStatus.SUSPENDED }
+            andWhere { ShopTable.status eq ShopStatus.APPROVED }
         }
 
     override suspend fun getFeaturedShops(limit: Int, offset: Int) =
@@ -141,11 +138,34 @@ class ShopRepositoryImpl : ShopRepository {
         shop.toShopResponse()
     }
 
-    override suspend fun approveShop(shopId: String) = setShopStatus(shopId) { status = ShopStatus.APPROVED }
+    override suspend fun approveShop(shopId: String) = query {
+        val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
+        if (shop.status == ShopStatus.APPROVED) throw ConflictException(Message.Shops.ALREADY_APPROVED)
+        if (shop.status != ShopStatus.PENDING) throw ValidationException(Message.Shops.invalidStatus(shop.status.name))
+        shop.status = ShopStatus.APPROVED
+        shop.toShopResponse()
+    }
 
-    override suspend fun rejectShop(shopId: String) = setShopStatus(shopId) { status = ShopStatus.REJECTED }
+    override suspend fun rejectShop(shopId: String) = query {
+        val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
+        if (shop.status != ShopStatus.PENDING && shop.status != ShopStatus.APPROVED)
+            throw ValidationException(Message.Shops.invalidStatus(shop.status.name))
+        shop.status = ShopStatus.REJECTED
+        shop.toShopResponse()
+    }
 
-    override suspend fun suspendShop(shopId: String) = setShopStatus(shopId) { status = ShopStatus.SUSPENDED }
+    override suspend fun suspendShop(shopId: String) = query {
+        val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
+        if (shop.status == ShopStatus.SUSPENDED) throw ConflictException(Message.Shops.ALREADY_SUSPENDED)
+        if (shop.status != ShopStatus.APPROVED) throw ValidationException(Message.Shops.invalidStatus(shop.status.name))
+        shop.status = ShopStatus.SUSPENDED
+        shop.toShopResponse()
+    }
 
-    override suspend fun activateShop(shopId: String) = setShopStatus(shopId) { if (status == ShopStatus.SUSPENDED) status = ShopStatus.APPROVED }
+    override suspend fun activateShop(shopId: String) = query {
+        val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
+        if (shop.status != ShopStatus.SUSPENDED) throw ValidationException(Message.Shops.invalidStatus(shop.status.name))
+        shop.status = ShopStatus.APPROVED
+        shop.toShopResponse()
+    }
 }

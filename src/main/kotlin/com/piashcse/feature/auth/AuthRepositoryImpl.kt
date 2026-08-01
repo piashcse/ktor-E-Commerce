@@ -3,6 +3,7 @@ package com.piashcse.feature.auth
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.AppConstants.Authentication.JWT_EXPIRY_SECONDS
 import com.piashcse.constants.Message
+import com.piashcse.constants.OtpPurpose
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
@@ -193,18 +194,21 @@ class AuthRepositoryImpl : AuthRepository {
 
     // ── OTP attempt tracking ─────────────────────────────────────────────
 
-    override suspend fun getOtpAttempt(userId: String): Int = query {
-        OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
+    private fun otpAttemptPredicate(userId: String, purpose: OtpPurpose) =
+        (OtpAttemptTable.userId eq userId.entityID(UserTable)) and (OtpAttemptTable.purpose eq purpose.name)
+
+    override suspend fun getOtpAttempt(userId: String, purpose: OtpPurpose): Int = query {
+        OtpAttemptDAO.find { otpAttemptPredicate(userId, purpose) }
             .singleOrNull()?.attemptCount ?: 0
     }
 
-    override suspend fun isOtpLocked(userId: String): Boolean = query {
-        OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
+    override suspend fun isOtpLocked(userId: String, purpose: OtpPurpose): Boolean = query {
+        OtpAttemptDAO.find { otpAttemptPredicate(userId, purpose) }
             .singleOrNull()?.isLocked == true
     }
 
-    override suspend fun recordFailedOtpAttempt(userId: String): Int = query {
-        val existing = OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
+    override suspend fun recordFailedOtpAttempt(userId: String, purpose: OtpPurpose): Int = query {
+        val existing = OtpAttemptDAO.find { otpAttemptPredicate(userId, purpose) }
             .singleOrNull()
         if (existing != null) {
             existing.attemptCount++
@@ -212,22 +216,23 @@ class AuthRepositoryImpl : AuthRepository {
         } else {
             OtpAttemptDAO.new {
                 this.userId = userId.entityID(UserTable)
+                this.purpose = purpose.name
                 this.attemptCount = 1
             }
             1
         }
     }
 
-    override suspend fun resetOtpAttempts(userId: String) {
+    override suspend fun resetOtpAttempts(userId: String, purpose: OtpPurpose) {
         query {
-            OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
+            OtpAttemptDAO.find { otpAttemptPredicate(userId, purpose) }
                 .singleOrNull()?.delete()
         }
     }
 
-    override suspend fun lockOtpAttempts(userId: String) {
+    override suspend fun lockOtpAttempts(userId: String, purpose: OtpPurpose) {
         query {
-            OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
+            OtpAttemptDAO.find { otpAttemptPredicate(userId, purpose) }
                 .singleOrNull()?.apply {
                     lockedUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
                 }

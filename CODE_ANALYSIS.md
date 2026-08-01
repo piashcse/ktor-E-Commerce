@@ -3,6 +3,8 @@
 Analyzed 246 Kotlin files. Findings verified by direct inspection of source. Ordered by severity.
 
 > **Status legend:** ✅ DONE = implemented and verified (compiles + `./gradlew build` passes). Items not marked remain open.
+>
+> **Round 2 (2026-08-01):** full re-audit for logical bugs, role-management/permission gaps and missing functionality → see **§7**. Findings there are **open** unless marked ✅.
 
 ---
 
@@ -230,3 +232,144 @@ Full-project pass moving rules out of repositories and removing duplication/dead
 **P2 (architecture):** ~~restore service layer~~ ✅; ~~move DTOs out of `database/entities`~~ ✅; ~~outbox/durable events + fix EmailSubscriber addressing~~ ✅ (after-commit publish); ~~generic `BaseRepository`~~ ✅; ~~shared pricing module~~ ✅; services own business logic (access facts, atomic writes, centralized enum/not-found/pagination/money, single-source constants, dead code removed) ✅ (A6); single error-envelope (`ApiError`) everywhere (partially done — see §5).
 
 **P3 (industry standard):** one integration test (`testApplication` + Testcontainers); real health checks; JSON logging + MDC cleanup; OpenAPI auth schemes; enable lint failures in CI; `suspendRetryQuery` → catch only transient DB errors.
+
+---
+
+## 7. Round-2 Deep Audit — logical bugs, permissions & missing functionality (2026-08-01)
+
+Re-audit of every route/service/repo plus auth, money movement, inventory, catalog and caching. All findings below were verified by direct source inspection (file:line). Resolution status for each item is tracked in [7.7 Round-2 fixes applied](#77-round-2-fixes-applied).
+
+### 7.1 Critical
+
+| # | Finding | Location | Impact |
+|---|---|---|---|
+| R2-C1 | **Payment bypass: client-supplied `status` + no order-ownership check + finalize ignores the new payment's status.** `createPayment` forces `amount == order.total`, stores `request.status` verbatim, and finalizes the order as paid when `paid + amount >= total` regardless of whether the *new* payment is `COMPLETED`. No payment gateway call exists anywhere. | `PaymentService.kt:21-52`, `PaymentRepositoryImpl.kt:39-61`, `PaymentRequest.kt:17`, `PaymentRoutes.kt:25-27` | Any authenticated user can POST `amount=order.total, status=FAILED` and get a paid order for free; can also pay for someone else's order. |
+| R2-C2 | **Cross-tenant inventory: any seller can read/write any shop's stock.** Routes never pass `currentUserId`; service/repo have no `sellerOwnsShop`/product-owner check. `getLowStockProducts` leaks every shop's low-stock data. | `InventoryRoutes.kt:27-73`, `InventoryService.kt:21-76`, `InventoryRepositoryImpl.kt:21-88` | Seller A can zero a competitor's stock, inflate own stock, or scrape all shops' inventory. |
+| R2-C3 | **Payment/order IDOR on reads.** `getPaymentById` / `getPaymentsByOrderId` have no ownership/role filter; `customerAuth` admits any authenticated user. | `PaymentService.kt:57-63`, `PaymentRepositoryImpl.kt:67-84`, `PaymentRoutes.kt:34-47` | Any user reads any order's payment records (amounts, transaction ids). |
+| R2-C4 | **Same order item can be refunded repeatedly (over-refund).** Dedup only blocks `PENDING/APPROVED/SHIPPED`; after `REFUNDED` (or `REJECTED`) a new request is allowed. `maxRefundAmount` is per-request (`orderItem.total`), not the remaining balance. | `RefundRequestRepositoryImpl.kt:94-102`, `:47` | 2× (or n×) refund of a single item beyond what was paid. |
+| R2-C5 | **`finalizeOrderPayment` never sets `order.status = PAID`** (only `paymentStatus=COMPLETED` + reservations FINALIZED), so the order lifecycle and money movement are decoupled; conversely the admin `PAID` transition sets `paymentStatus=COMPLETED` with no payment record and no reservation finalize. | `PaymentRepositoryImpl.kt:54-61`, `OrderRepositoryImpl.kt:448-454` | Paid orders stay `PENDING` (customer can still cancel; seller can't progress `CONFIRMED→DELIVERED`), and unpaid orders can be flagged paid. |
+| R2-C6 | **Coupon usage and seller `totalSales`/`totalCommission` are never reversed on cancellation.** `applyOrderCancellation` restores stock/sales but not coupon `usageCount`/`CouponUsage` rows or seller payout metrics credited at placement. | `OrderRepositoryImpl.kt:238-265` vs `476-503` | Canceled orders permanently burn coupon capacity and inflate seller/dashboard payouts. |
+| R2-C7 | **Review/rating allowed without purchase; sellers can rate their own products.** Only rating range + duplicate check are enforced. | `ReviewRatingService.kt:21-28`, `ReviewRatingRepositoryImpl.kt:58-77` | Review-bombing and 5-star self-rating manipulate `product.rating`/`totalReviews`. |
+| R2-C8 | **Products can be published with no shop / non-approved shop, as `ACTIVE`, and appear in the public catalog.** Route hardcodes `shopId=null`; `getCreateProductAccess` returns nulls when the seller has no shop, skipping the ownership guard; no `ShopStatus.APPROVED` check; no `SellerTable.status` check anywhere. | `ProductRoutes.kt:86`, `ProductCrudService.kt:26-37`, `ProductRepositoryImpl.kt:81-135,171-173`, `AuthRepositoryImpl.kt:160-162` | Unapproved/no-shop sellers list phantom products that pass `placeOrder` validation yet can never be bought (`SHOP_INACTIVE`). |
+
+### 7.2 High
+
+| # | Finding | Location | Impact |
+|---|---|---|---|
+| R2-H1 | **Password change / reset / role change do NOT revoke tokens.** `changePassword`, `resetPassword`, `changeUserType` update the hash/type but never call `revokeAllUserTokens` or blacklist access tokens. | `UserAuthenticationService.kt:200-206,247-260,262-286` | Stolen refresh tokens survive a password change; demoted users keep old-role access tokens until expiry. |
+| R2-H2 | **JWT `userType` claim is trusted; DB role is never re-checked per request.** `ConfigureAuth.validate` checks only blacklist + active/verified. | `ConfigureAuth.kt:37-62`, `JwtConfig.kt:26-28` | A demoted ADMIN/SELLER keeps full old-role authority for up to 900 s; role changes are not enforced immediately. |
+| R2-H3 | **Locked account can still mint tokens via `/auth/refresh`.** `refreshAccessToken` checks active/verified but never the login lockout. | `UserAuthenticationService.kt:209-227` | Lockout is trivially bypassed with any pre-lock refresh token. |
+| R2-H4 | **Customer can cancel a PAID order through `PATCH /orders/status`.** The status matrix allows `PAID→CANCELED` and customers may set CANCELED, whereas `cancelOrder` restricts to `PENDING/CONFIRMED` (`canBeCanceled`). Cancel sets `paymentStatus=REFUNDED` with no refund process. | `OrderService.kt:78-85` vs `106-107`, `Enums.kt:91,97`, `OrderRepositoryImpl.kt:484-486` | Inconsistent cancellation rules; a paid order can be canceled/flagged "refunded" with no money returned. |
+| R2-H5 | **Refund requests accepted for unpaid / non-delivered orders.** `createRefundRequest` only checks the caller owns the order. | `RefundRequestService.kt:24-28`, `RefundRequestRepositoryImpl.kt:83-115` | Refunds "paid out" for money never collected. |
+| R2-H6 | **One refunded item marks the whole order `paymentStatus=REFUNDED`.** | `RefundRequestRepositoryImpl.kt:147-152` | Multi-item orders become "refunded" while other items remain paid. |
+| R2-H7 | **Self-deactivation allowed (SUPER_ADMIN can lock themselves out).** `deactivateUser` has no `currentUser.id == targetUser.id` guard (unlike `changeUserType`). | `UserAuthenticationService.kt:288-305` | A SUPER_ADMIN deactivating themselves leaves no admin able to re-activate. |
+| R2-H8 | **Forgot/reset-password leaks account existence and role.** 404 vs 200 and two distinct 404 messages depending on email/role. | `AuthRepositoryImpl.kt:126-133`, `AuthRoutes.kt:49-52` | Unauthenticated email enumeration. |
+| R2-H9 | **Shared OTP attempt counter between register and reset; public `userId` lets anyone DoS a victim's OTP flow.** Product/shop responses expose other users' `userId`; 5 wrong attempts lock the victim's `otp_attempt` for 30 min, repeatable; reset path doesn't auto-reset after expiry. | `OtpAttempt.kt`, `UserAuthenticationService.kt:136-160,177-207` | Lockout poisoning + registration/reset DoS. |
+
+### 7.3 Medium
+
+| # | Finding | Location | Impact |
+|---|---|---|---|
+| R2-M1 | `CUSTOMER` guard is universal (`isCustomerOrHigher = true`), so any `requireRole(...,CUSTOMER,...)` admits every role — the intent "exclude admin/seller" is unenforceable. | `Enums.kt:189`, `RouteAuthDsl.kt:66` | False sense of role separation; future role types silently gain all `CUSTOMER` guards. |
+| R2-M2 | **Deleting a category CASCADE-wipes every product** (and by chain their images/inventory/reviews/cart/wishlist/reservations) or 500s once order items exist (`order_item.product_id` not cascaded). | `V8__...:80-82`, `ProductCategoryRepositoryImpl.kt:53` | Destructive or unpredictable admin delete. |
+| R2-M3 | **Dashboard revenue counts unpaid orders and ignores refunds** (`status != CANCELED` only); "outOfStock" counts `ProductStatus.OUT_OF_STOCK`, which is never set anywhere. | `DashboardRepositoryImpl.kt:26-31,47,62-68` | Revenue/today/avg overstated for every unpaid order. |
+| R2-M4 | **Cart: duplicate add → 409 instead of quantity merge; no unique `(user_id, product_id)`; no ACTIVE/stock validation on add or quantity update.** | `CartRepositoryImpl.kt:25-40,68-82`, `V1__...:347` | 409s, race-prone duplicate rows, carts with unorderable items. |
+| R2-M5 | **Wishlist/review duplicate prevention is race-prone** (pre-check only; non-unique indexes). | `WishListRepositoryImpl.kt:23-34`, `ReviewRatingRepositoryImpl.kt:63-66`, `V1__...:358,391-392` | Concurrent inserts create duplicate rows. |
+| R2-M6 | **Product caches stale after sales/rating changes.** `products:best-selling`/`products:detail:*` invalidated only on create/update/delete + view-count; order placement/review mutations never invalidate. | `ProductCatalogService.kt:21-22,40-41`, `OrderRepositoryImpl.kt:216`, `ReviewRatingRepositoryImpl.kt:74,88,97` | Best-selling lists and detail pages show stale data up to 300 s TTL. |
+| R2-M7 | **MDC `requestId` never removed** → previous request's id leaks into unrelated logs on thread reuse. | `RequestTracing.kt:12-18` | Corrupted log correlation. |
+| R2-M8 | **Rate limiting keyed on spoofable `X-Forwarded-For`/`X-Real-IP`** with no proxy trust config. | `CallExt.kt:18-22`, `ConfigureRateLimit.kt:54-62` | Header rotation bypasses AUTH/OTP/SEARCH buckets (brute force, scraping). |
+| R2-M9 | **PENDING shops visible in public listings; `GET /shops/{id}` returns any status.** | `ShopRepositoryImpl.kt:94-116`, `ShopRoutes.kt:26-30` | Unapproved business data disclosed before approval. |
+| R2-M10 | **Catalog shows products of non-APPROVED shops** (queries filter only `ProductStatus.ACTIVE`). | `ProductRepositoryImpl.kt:171-173,423-437` | Users see items they can't purchase. |
+| R2-M11 | **`updateStock` cannot SET stock to 0** (the `quantity <= 0` guard runs for `SET` too); max stock and `min<=max` never enforced. | `InventoryService.kt:29-41`, `InventoryRepositoryImpl.kt:43-66` | Operational gaps (can't zero stock; stock can exceed configured max). |
+| R2-M12 | **Policy consent not enforced at registration** (no consent field, nothing persisted). | `RegisterRequest.kt:15`, `UserAuthenticationService.kt:41-81` | Compliance/GDPR gap. |
+| R2-M13 | **No policy update/deactivate routes** (`updatePolicy`/`deactivatePolicy` unreachable). | `PolicyRoutes.kt:32-52`, `PolicyService.kt:19-33` | Policies can never be amended or retired. |
+| R2-M14 | **Coupon has no per-user limit and usage rows aren't deduped**; `CouponUsage` `(couponId,userId)` index is non-unique; multi-shop checkouts create one row per order but `usageCount += 1`. | `Coupon.kt:47-49`, `OrderRepositoryImpl.kt:103-119,241` | One user can exhaust a coupon; usage accounting inconsistent. |
+| R2-M15 | **Refund amount accepts negative/zero values.** | `RefundRequestService.kt:82-86`, `RefundRequestRepositoryImpl.kt:144` | Nonsensical negative refund records. |
+| R2-M16 | **`shipRefund` bypasses the refund transition matrix** (no `APPROVED→SHIPPED` edge) and doesn't tie to order state. | `RefundRequestService.kt:99-111`, `Enums.kt:28-38` | Inconsistent refund state machine. |
+| R2-M17 | **`StockReservationCleanup` auto-cancel skips side effects** (no coupon reversal, no seller sales/commission reversal, no `OrderStatusHistory`). | `StockReservationCleanup.kt:43-60` | Metrics drift vs normal cancellation. |
+| R2-M18 | **`reservedQuantity` inventory column is dead** — never written; reservations are only `StockReservation` rows. | `Inventory.kt:74,92` | UI always shows 0 reserved; no real available-stock accounting. |
+| R2-M19 | **Public coupon lookup leaks discount configuration** (type/value/min-order/limit). | `CouponRoutes.kt:22-25`, `CouponRepositoryImpl.kt:58-60` | Info disclosure / coupon enumeration. |
+| R2-M20 | **`change-password` is not rate-limited** → unauthenticated-ish brute force of `oldPassword` by a session holder. | `AuthRoutes.kt:117-123`, `ConfigureRateLimit.kt` | Password-guessing within an existing session. |
+| R2-M21 | **OTP resend silently drops emails after the rate limit** (API still returns `OTP_SENT`). | `EmailSender.kt:20-34`, `UserAuthenticationService.kt:53-59` | Users stranded without OTP and no feedback. |
+| R2-M22 | **`RoleAuthorizationPlugin.onCall` responds but doesn't terminate routing** — the route handler still executes (side effects run) before the committed-response error surfaces. | `RouteAuthDsl.kt:21-37` | Defense-in-depth gap; relies on service-layer re-checks. |
+| R2-M23 | **Checkout summary vs placed-order totals can differ by a cent** (per-shop tax rounding vs aggregate). | `OrderRepositoryImpl.kt:231` vs `:300` | Customer charged differently than the quoted summary. |
+| R2-M24 | **Concurrent cancel/status update can double-restore stock** (cancelability read outside the transaction; no in-tx status guard). | `OrderRepositoryImpl.kt:476-503` | Stock drifts upward on concurrent cancellations. |
+| R2-M25 | **Brand listing is auth-gated while categories are public; no public shop-category listing exists.** | `BrandRoutes.kt:20`, `ShopCategoryRoutes.kt:15-45` | Inconsistent public API surface; onboarding can't fetch shop categories. |
+| R2-M26 | **Shop approve/reject/suspend/activate have no transition validation**; `activateShop` silently no-ops unless SUSPENDED. | `ShopRepositoryImpl.kt:144-150` | Nonsensical admin states (re-approve, reject a live shop). |
+| R2-M27 | **`blacklisted_token` table grows unbounded and stores full JWTs in plaintext.** | `BlacklistedToken.kt:9-12`, `AuthRepositoryImpl.kt:269-275` | Storage growth + token-material exposure in DB. |
+| R2-M28 | **SUPER_ADMIN can freely promote/demote SUPER_ADMINs** (only self-change blocked); `superAdminAuth` primitive is unused — ADMIN ≡ SUPER_ADMIN in practice. | `Enums.kt:191-197`, `RouteAuthDsl.kt:72` | No admin/separation or escalation audit. |
+
+### 7.4 Low / design gaps
+
+- **Login timing + state enumeration:** non-existent account returns 401 without running BCrypt (timing side-channel); deactivated/unverified return distinct 400s vs wrong-password 401; `remainingAttempts` disclosed to unauthenticated callers. `UserAuthenticationService.kt:101-128`.
+- **Lockout DoS on non-existent accounts:** `recordFailedAttempt` writes `login_attempt` rows for arbitrary (email, role); rows never cleaned. `AuthRepositoryImpl.kt:81-114`.
+- **`getProductsByUser` hides a seller's own inactive products; no product status-update path exists** (`OUT_OF_STOCK` never set). `ProductRepositoryImpl.kt:181-185`.
+- **`getProductDetail` serves any status** (no ACTIVE filter). `ProductRepositoryImpl.kt:187-189`.
+- **`getCartSummary` picks an arbitrary inventory row** for products in multiple shops. `CartRepositoryImpl.kt:115-118`.
+- **Dashboard:** "today" order count includes CANCELED (`DashboardRepositoryImpl.kt:39`); `getRecentActivity` embeds user emails (`:162`); `getTopProducts` N+1 (`:144`).
+- **`generateOTP` off-by-one** (max value never produced). `SecurityUtils.kt:9-13`.
+- **OTP expiry uses server-local time** vs DB UTC. `UserAuthenticationService.kt:51,165`.
+- **`suspendRetryQuery` retries all exceptions** incl. validation (register race surfaces as `OTP_ALREADY_SENT` after retries; latency). `TransactionExt.kt:39-66`.
+- **Logout requires a still-valid access token** (expired → 401 before logout). `AuthRoutes.kt:98-111`.
+- **`getInventoryForUpdate` fine; low-stock listing includes OUT_OF_STOCK; `stock == min` classified LOW_STOCK.** `InventoryRepositoryImpl.kt:76`, `Enums.kt:167-171`.
+- **Dead `createOrder` direct-order endpoint** — defined, never routed, no tax/shipping/coupon/reservations. `OrderRepositoryImpl.kt:321-417`.
+- **`register` doubles as OTP resend gated by 10-min expiry; no dedicated throttled resend endpoint.**
+
+### 7.5 Missing functionality (confirmed absent)
+
+- Payment gateway / real charge / webhooks — `createPayment` only writes a DB row.
+- Invoice generation; refund to original payment method; partial payments/partial refunds.
+- Order cancellation window; stock reorder/alert automation; multi-currency (orders always `"USD"` default).
+- Per-user coupon limits; account deletion/closure; email-change flow; admin-forced password reset; MFA; password expiry; remember-me; session-revocation UI.
+- Seller approval gate (PENDING status is ignored); consent enforcement at registration; policy update/deactivate routes.
+- Category/brand/shop/product public-read consistency (shop-category listing, public brands).
+
+### 7.6 Round-2 priority fix list
+
+**R2-P0 (fix first — payment/inventory integrity):** R2-C1 payment bypass (server-derived status + ownership) → C2 inventory ownership → C3 payment IDOR → C5 `order.status = PAID` in finalize + PAID requires payment → C8 product/no-shop approval gate.
+
+**R2-P1 (money correctness):** C4 refund dedup (cumulative cap + unique orderItem) → C6 coupon/seller-metric reversal on cancel → C7 verified-purchase reviews → H4 cancel-PAID inconsistency → H5 refund-on-unpaid → H6 per-item refund tracking → M3 dashboard revenue → M23 summary/placeOrder cents.
+
+**R2-P2 (auth/session):** H1 token revocation on password/role change → H2 DB role re-check in `ConfigureAuth` → H3 lockout check in refresh → H7 self-deactivation guard → H8/H9 reset-enumeration + shared OTP counter → M20 change-password rate limit → M21 OTP resend.
+
+**R2-P3 (data integrity/UX):** M2 category delete semantics → M4/M5 unique constraints (cart/wishlist/review/coupon_usage) → M6 cache invalidation on sales/rating → M7 MDC cleanup → M9/M10 shop/product visibility by APPROVED → M11 stock SET-0 + max enforcement → M12/M13 consent + policy routes → M24 concurrency-safe cancel → M26 shop transition validation.
+
+**R2-P4 (hardening):** M8 forwarded-header trust → M19 coupon lookup → M22 role-plugin finish → M27 blacklist purge/hash → M28 SUPER_ADMIN separation + `superAdminAuth` adoption.
+
+### 7.7 Round-2 fixes applied
+
+All items below are implemented, compiling and ktlint-clean (`./gradlew compileKotlin compileTestKotlin ktlintCheck`). Verified 2026-08-01.
+
+**Critical — resolved ✅**
+- **R2-C1 / R2-C3 (payment bypass + read IDOR):** `PaymentRequest.status` no longer trusted — `PaymentService.createPayment` derives `PaymentStatus.COMPLETED` server-side, rejects non-owners (`Message.Payments.NOT_ORDER_OWNER`), keeps the idempotency/order-match + overpayment checks, and `getPaymentById`/`getPaymentsByOrderId` take `(callerUserId, userType)` and enforce owner-or-admin (`ensurePaymentViewAccess`). Added `ApplicationCall.requireUserType()`. `PaymentRoutes.kt`, `PaymentService.kt`, `PaymentRepository(+Impl).kt`, `AuthExt.kt`.
+- **R2-C2 (cross-tenant inventory):** new `InventoryAccess(isSellerOwner, isAdmin)` fact + `getInventoryShopId`/`getProductShopId`/`getSellerShopId`; all service methods now take `userId`/`userType` and enforce owner-or-admin; `getLowStockProducts` is scoped to the seller's own shop. `InventoryRoutes.kt`, `InventoryService.kt`, `InventoryRepository(+Impl).kt`, `Message.Inventory`.
+- **R2-C5 (finalize never set `PAID`):** `finalizeOrderPayment` now sets `order.status = OrderStatus.PAID` + `paymentStatus=COMPLETED` + reservations FINALIZED. `PaymentRepositoryImpl.kt`.
+- **R2-C4 / R2-H5 / R2-H6 / R2-M15 (refund money safety):** `createRefundRequest` now requires a COMPLETED payment (`RefundOrderAccess.isOrderPaid`) and blocks re-request when a `REFUNDED` refund exists; `RefundAccess` carries `alreadyRefundedAmount` (all active + REFUNDED) and the service caps the new amount at `itemTotal − otherRefunds` and rejects non-positive amounts; order `paymentStatus` becomes `PARTIALLY_REFUNDED` until every item is refunded (new enum value, VARCHAR storage — no migration needed). `Enums.kt`, `RefundRequestRepository(+Impl).kt`, `RefundRequestService.kt`.
+- **R2-C6 (no reversal on cancel):** `applyOrderCancellation` now reverses coupon `usageCount`/deletes `CouponUsage` rows and subtracts seller `totalSales`/`totalCommission` (floored at 0). `OrderRepositoryImpl.kt`.
+- **R2-C7 (reviews without purchase / self-rating):** new `ReviewCreateAccess(isVerifiedPurchase, isProductSeller)`; reviews now require a DELIVERED/RECEIVED order and block the product's shop owner; `is_verified_purchase` is set true. `ReviewRatingRepository(+Impl).kt`, `ReviewRatingService.kt`.
+- **R2-C8 (no-shop / non-approved products):** `ProductCreateAccess` now carries `shopStatus`; `createProduct` requires a seller with an owned, `APPROVED` shop; public catalog queries (`getProducts`, `getProductsByCategory`, featured/best-selling/hot-deals, and raw-SQL search + facets) only return products from `APPROVED` shops. `ProductCrudService.kt`, `ProductRepository(+Impl).kt`, `Message.Products`.
+
+**High — resolved ✅**
+- **R2-H1 (tokens survive password/role change):** `changePassword`, `resetPassword`, `changeUserType` now call `revokeAllUserTokens`. `UserAuthenticationService.kt`.
+- **R2-H2 (JWT claim trusted):** `ConfigureAuth.validate` loads the user from DB and issues `JwtTokenRequest(..., user.userType.name)` from the DB row, so role/status changes take effect immediately. `ConfigureAuth.kt`.
+- **R2-H3 (locked account refresh):** `refreshAccessToken` rejects (and revokes) refresh when the user's login attempt is locked. `UserAuthenticationService.kt`.
+- **R2-H4 (cancel-PAID inconsistency):** removed `PAID → CANCELED` from `OrderStatus.canTransitionTo`; paid orders must go through the refund flow. `Enums.kt`.
+- **R2-H7 (self-deactivation):** `deactivateUser` now blocks `currentUserId == targetUserId`. `UserAuthenticationService.kt`.
+- **R2-H8 (reset enumeration):** `forgotPassword` no longer reveals account existence — missing users and role mismatches return the generic OTP-sent response without an email. `UserAuthenticationService.kt`.
+- **R2-H9 (shared OTP counter):** `otp_attempt` now tracks attempts per `(user_id, purpose)` via new `OtpPurpose` (REGISTRATION/RESET); repo/service thread the purpose through every counter call. `V9__...sql`, `OtpAttempt.kt`, `AuthRepository(+Impl).kt`, `UserAuthenticationService.kt`.
+
+**Medium — resolved ✅**
+- **R2-M2 (category delete wipe):** `deleteCategory` blocks deletion while products reference the category (`Message.Categories.IN_USE`). `ProductCategoryRepositoryImpl.kt`.
+- **R2-M3 (dashboard revenue counts unpaid):** revenue/today/avg queries now require `paymentStatus = COMPLETED`. `DashboardRepositoryImpl.kt`.
+- **R2-M4 (cart 409 / duplicate rows):** `createCart` merges quantity on an existing row; V9 adds a unique `(user_id, product_id)` index. `CartRepositoryImpl.kt`, `V9__...sql`.
+- **R2-M5 (race-prone wishlist/review):** V9 adds unique indexes on `wishlist` and `review_rating` `(user_id, product_id)`. `V9__...sql`.
+- **R2-M6 (stale product caches):** order placement/cancel and review add/update/delete invalidate `CacheKeys.PRODUCTS_PATTERN`. `OrderService.kt`, `ReviewRatingService.kt`.
+- **R2-M7 (MDC leak):** a `Call`-stage interceptor removes `requestId` from MDC after completion. `RequestTracing.kt`.
+- **R2-M9 (PENDING shops visible):** public `getShops`/`getShopsByCategory` now return only `APPROVED` shops (admin status views untouched). `ShopRepositoryImpl.kt`.
+- **R2-M10 (non-approved shop products):** see R2-C8 — all public catalog queries filter to approved shops.
+- **R2-M11 (stock SET-0 / max):** `updateStock` allows `SET 0`, rejects only negative / non-SET-zero, enforces `maximumStockLevel`, and `createOrUpdateInventory` validates `min ≤ max`. `InventoryService.kt`.
+- **R2-M20 (change-password brute force):** `PATCH change-password` is now wrapped in the per-user `WRITE` rate-limit zone. `AuthRoutes.kt`.
+- **R2-M21 (OTP resend):** `forgotPassword` reuses a still-valid reset OTP instead of silently dropping the resend. `UserAuthenticationService.kt`.
+- **R2-M26 (shop transitions):** approve/reject/suspend/activate now validate the current status (`invalidStatus`, `ALREADY_APPROVED`/`ALREADY_SUSPENDED`). `ShopRepositoryImpl.kt`.
+
+**Still open (out of scope of this pass):** R2-M1, R2-M8, R2-M12, R2-M13, R2-M14 (partially — unique coupon_usage index added in V9), R2-M16, R2-M17, R2-M18, R2-M19, R2-M22, R2-M23, R2-M24, R2-M25, R2-M27, R2-M28, and the 7.4 Low items.

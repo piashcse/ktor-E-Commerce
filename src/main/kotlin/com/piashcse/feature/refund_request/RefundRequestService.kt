@@ -10,6 +10,7 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.suspendRetryQuery
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
+import java.math.BigDecimal
 
 class RefundRequestService(private val refundRequestRepo: RefundRequestRepository) {
 
@@ -24,6 +25,7 @@ class RefundRequestService(private val refundRequestRepo: RefundRequestRepositor
     ): RefundRequestResponse = suspendRetryQuery {
         val access = refundRequestRepo.getRefundOrderAccess(userId, orderId)
         if (!access.isCustomer) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
+        if (!access.isOrderPaid) throw ValidationException(Message.Refunds.ORDER_NOT_PAID)
 
         refundRequestRepo.createRefundRequest(userId, orderId, request)
     }
@@ -80,7 +82,12 @@ class RefundRequestService(private val refundRequestRepo: RefundRequestRepositor
         }
 
         request.refundAmount?.let { amount ->
-            if (amount > access.maxRefundAmount) {
+            if (amount <= BigDecimal.ZERO) {
+                throw ValidationException(Message.Refunds.AMOUNT_NOT_POSITIVE)
+            }
+            val otherRefunds = access.alreadyRefundedAmount - (access.currentRefundAmount ?: BigDecimal.ZERO)
+            val cap = access.maxRefundAmount - otherRefunds
+            if (amount > cap) {
                 throw ValidationException(Message.Refunds.AMOUNT_EXCEEDS_ITEM_TOTAL)
             }
         }

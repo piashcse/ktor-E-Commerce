@@ -500,6 +500,33 @@ class OrderRepositoryImpl : OrderRepository {
 
         StockReservationDAO.find { StockReservationTable.orderId eq order.id }
             .forEach { it.status = ReservationStatus.RELEASED }
+
+        reverseCouponUsage(order)
+        reverseSellerMetrics(order)
+    }
+
+    /**
+     * Reverses coupon usage records and their usage-count increments that were
+     * applied when the order was placed.
+     */
+    private fun reverseCouponUsage(order: OrderDAO) {
+        CouponUsageDAO.find { CouponUsageTable.orderId eq order.id }.forEach { usage ->
+            CouponDAO.findById(usage.couponId.value)?.let { coupon ->
+                if (coupon.usageCount > 0) coupon.usageCount -= 1
+            }
+            usage.delete()
+        }
+    }
+
+    /**
+     * Reverses the seller sales/commission metrics that were applied when the
+     * order was placed, without going below zero.
+     */
+    private fun reverseSellerMetrics(order: OrderDAO) {
+        val shopId = order.shopId?.value ?: return
+        val seller = SellerDAO.find { SellerTable.shopId eq shopId }.firstOrNull() ?: return
+        seller.totalSales = (seller.totalSales - order.subTotal).coerceAtLeast(BigDecimal.ZERO)
+        seller.totalCommission = (seller.totalCommission - seller.calcCommission(order.subTotal)).coerceAtLeast(BigDecimal.ZERO)
     }
 
     override suspend fun getOrders(
