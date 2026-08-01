@@ -7,37 +7,17 @@ data class JwtTokenRequest(val userId: String, val email: String, val userType: 
     /**
      * Check if current user has access to a specific role (with hierarchy)
      */
-    fun hasAccessTo(role: UserType): Boolean {
-        val currentUserType =
-            try {
-                UserType.valueOf(this.userType.uppercase())
-            } catch (e: IllegalArgumentException) {
-                return false
-            }
-        return currentUserType.hasAccessTo(role)
-    }
+    fun hasAccessTo(role: UserType): Boolean = getUserType()?.hasAccessTo(role) ?: false
 
     /**
      * Check if current user has specific role
      */
-    fun hasRole(role: UserType): Boolean {
-        return try {
-            UserType.valueOf(this.userType.uppercase()) == role
-        } catch (e: IllegalArgumentException) {
-            false
-        }
-    }
+    fun hasRole(role: UserType): Boolean = getUserType() == role
 
     /**
      * Get current user type
      */
-    fun getUserType(): UserType? {
-        return try {
-            UserType.valueOf(this.userType.uppercase())
-        } catch (e: IllegalArgumentException) {
-            null
-        }
-    }
+    fun getUserType(): UserType? = UserType.fromString(userType)
 
     /**
      * Check if user is super admin

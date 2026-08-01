@@ -8,7 +8,6 @@ import com.piashcse.mapper.toProductCategoryResponse
 import com.piashcse.model.response.ProductCategoryResponse
 import com.piashcse.repository.base.BaseCrudRepository
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.toPaginatedList
@@ -43,7 +42,7 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository,
         val data = rows.map { category ->
             category.toProductCategoryResponse(subCategoriesMap[category.id.value] ?: emptyList())
         }
-        PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
+        PaginatedResponse.of(data, totalCount, limit, offset)
     }
 
     override suspend fun updateCategory(

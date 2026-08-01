@@ -4,42 +4,52 @@ import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 
+/**
+ * Locked read of an inventory row used by [InventoryService] to compute the
+ * new stock level under a row lock.
+ */
+data class InventoryStockInfo(
+    val productId: String,
+    val stockQuantity: Int,
+    val minimumStockLevel: Int,
+)
+
+/**
+ * Persistence boundary for the Inventory feature.
+ *
+ * The repository is limited to data access (reads/writes + projection).
+ * Validation lives in [InventoryService]; stock arithmetic for `updateStock`
+ * and status computation from resolved stock levels live in [InventoryService],
+ * while [createOrUpdateInventory] computes the status after resolving the
+ * persisted minimum/maximum stock levels for the product+shop key.
+ */
 interface InventoryRepository {
     /**
+     * Locks the inventory row for a product and returns its current stock.
+     */
+    suspend fun getInventoryForUpdate(productId: String): InventoryStockInfo
+
+    /**
+     * Persists a new stock quantity and status for a product.
+     */
+    suspend fun setStock(
+        productId: String,
+        newStock: Int,
+        status: com.piashcse.constants.InventoryStatus,
+    ): InventoryResponse
+
+    /**
      * Creates or updates inventory for a product.
-     *
-     * @param inventoryRequest The inventory details to create or update.
-     * @return The created/updated inventory record.
      */
     suspend fun createOrUpdateInventory(inventoryRequest: InventoryRequest): InventoryResponse
 
     /**
      * Gets inventory by product ID.
-     *
-     * @param productId The product ID to get inventory for.
-     * @return The inventory record for the product.
      */
     suspend fun getInventoryByProduct(productId: String): InventoryResponse?
 
     /**
-     * Updates inventory stock for a product.
-     *
-     * @param productId The product ID to update.
-     * @param quantity The quantity to update by.
-     * @param operation The operation to perform: "add", "subtract", or "set".
-     * @return The updated inventory record.
-     */
-    suspend fun updateStock(
-        productId: String,
-        quantity: Int,
-        operation: String = "add",
-    ): InventoryResponse
-
-    /**
      * Gets low stock products.
-     *
-     * @param limit The maximum number of products to return.
-     * @return A list of products with low stock.
      */
     suspend fun getLowStockProducts(
         limit: Int = 10,
@@ -48,9 +58,6 @@ interface InventoryRepository {
 
     /**
      * Gets inventory by shop ID.
-     *
-     * @param shopId The shop ID to get inventory for.
-     * @return A list of inventory records for the shop.
      */
     suspend fun getInventoryByShop(
         shopId: String,

@@ -28,6 +28,11 @@ object AppConstants {
         const val BEST_SELLER_THRESHOLD = 10
     }
 
+    object Inventory {
+        const val DEFAULT_MIN_STOCK = 10
+        const val DEFAULT_MAX_STOCK = 1000
+    }
+
     object Authentication {
         const val JWT_AUTHENTICATOR = "jwt-auth"
         const val REFRESH_TOKEN_EXPIRY_SECONDS = 7L * 24 * 60 * 60

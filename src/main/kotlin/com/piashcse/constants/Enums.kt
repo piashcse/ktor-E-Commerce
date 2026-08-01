@@ -22,6 +22,20 @@ enum class RefundStatus {
     REJECTED,
     REFUNDED,
     SHIPPED,
+    ;
+
+    companion object {
+        fun canTransitionTo(
+            current: RefundStatus,
+            target: RefundStatus,
+        ): Boolean =
+            when (current) {
+                PENDING -> target in listOf(APPROVED, REJECTED)
+                APPROVED -> target in listOf(REFUNDED, REJECTED)
+                SHIPPED -> target in listOf(REFUNDED, REJECTED)
+                REJECTED, REFUNDED -> false
+            }
+    }
 }
 
 @Serializable
@@ -124,6 +138,16 @@ enum class ShopStatus {
 
     val isOperational get() = this == APPROVED
     val isActive get() = this == APPROVED
+}
+
+/**
+ * Inventory stock mutation operations.
+ */
+@Serializable
+enum class StockOperation {
+    ADD,
+    SUBTRACT,
+    SET,
 }
 
 /**

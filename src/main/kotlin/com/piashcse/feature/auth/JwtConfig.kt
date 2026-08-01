@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.piashcse.config.DotEnvConfig
+import com.piashcse.constants.AppConstants.Authentication.JWT_EXPIRY_SECONDS
 import com.piashcse.model.request.JwtTokenRequest
 import java.util.*
 
@@ -12,7 +13,7 @@ object JwtConfig {
     private val issuer = DotEnvConfig.jwtIssuer
     private val audience = DotEnvConfig.jwtAudience
     private val algorithm = Algorithm.HMAC512(secret)
-    private val validityMs = 15 * 60 * 1000L
+    private val validityMs = JWT_EXPIRY_SECONDS * 1000L
 
     val verifier: JWTVerifier =
         JWT.require(algorithm).withIssuer(issuer).withAudience(audience).build()

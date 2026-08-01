@@ -1,83 +1,73 @@
 package com.piashcse.feature.payment
 
-import com.piashcse.constants.Message
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.*
-import com.piashcse.event.EventBus
-import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.mapper.toPaymentResponse
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
-import com.piashcse.utils.validator.ValidationException
+import com.piashcse.utils.money.Money
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import java.math.BigDecimal
 
 class PaymentRepositoryImpl : PaymentRepository {
-    override suspend fun createPayment(paymentRequest: PaymentRequest): PaymentResponse =
-        retryQuery {
-            paymentRequest.transactionId?.let { txId ->
-                PaymentDAO.find { PaymentTable.transactionId eq txId }.firstOrNull()
-                    ?.let { return@retryQuery it.toPaymentResponse() }
-            }
 
-            val order =
-                OrderDAO.find { OrderTable.id eq paymentRequest.orderId.entityID(OrderTable) }.forUpdate().firstOrNull()
-                    ?: paymentRequest.orderId.throwNotFound("Order")
+    override suspend fun getPaymentByTransactionId(transactionId: String): PaymentResponse? = query {
+        PaymentDAO.find { PaymentTable.transactionId eq transactionId }.firstOrNull()?.toPaymentResponse()
+    }
 
-            val orderTotal = order.total
-            val paymentAmount = paymentRequest.amount
-            if (paymentAmount.compareTo(orderTotal) != 0) {
-                throw ValidationException(Message.Payments.amountMismatch(paymentRequest.amount.toPlainString(), orderTotal.toPlainString()))
-            }
+    override suspend fun getOrderForPayment(orderId: String): OrderPaymentInfo = query {
+        val order = OrderDAO.find { OrderTable.id eq orderId.entityID(OrderTable) }.forUpdate().firstOrNull()
+            ?: orderId.throwNotFound("Order")
+        OrderPaymentInfo(orderId = order.id.value, userId = order.userId.value, orderTotal = order.total)
+    }
 
-            val existingPayments =
-                PaymentDAO.find {
-                    (PaymentTable.orderId eq paymentRequest.orderId.entityID(OrderTable)) and
-                        (PaymentTable.status eq PaymentStatus.COMPLETED)
-                }.toList()
+    override suspend fun getCompletedPaymentsSum(orderId: String): BigDecimal = query {
+        Money.round(
+            PaymentDAO.find {
+                (PaymentTable.orderId eq orderId.entityID(OrderTable)) and
+                    (PaymentTable.status eq PaymentStatus.COMPLETED)
+            }.toList().sumOf { it.amount },
+        )
+    }
 
-            val paidAmount = existingPayments.sumOf { it.amount }
-            if (paidAmount.compareTo(orderTotal) >= 0) {
-                throw ValidationException(Message.Payments.ALREADY_PAID)
-            }
+    override suspend fun createPayment(
+        orderId: String,
+        userId: String,
+        request: PaymentRequest,
+    ): PaymentResponse = query {
+        PaymentDAO.new {
+            this.orderId = orderId.entityID(OrderTable)
+            this.userId = userId.entityID(UserTable)
+            this.amount = request.amount
+            this.status = request.status
+            this.paymentMethod = request.paymentMethod
+            this.transactionId = request.transactionId
+        }.toPaymentResponse()
+    }
 
-            val payment =
-                PaymentDAO.new {
-                    this.orderId = paymentRequest.orderId.entityID(OrderTable)
-                    this.userId = order.userId
-                    this.amount = paymentRequest.amount
-                    this.status = paymentRequest.status
-                    this.paymentMethod = paymentRequest.paymentMethod
-                    this.transactionId = paymentRequest.transactionId
-                }
-
-            if (paidAmount.add(paymentAmount).compareTo(orderTotal) >= 0) {
-                order.paymentStatus = PaymentStatus.COMPLETED
-                StockReservationDAO.find { StockReservationTable.orderId eq paymentRequest.orderId.entityID(OrderTable) }
-                    .forEach { it.status = ReservationStatus.FINALIZED }
-                EventBus.publish(
-                    PaymentCompletedEvent(
-                        paymentId = payment.id.value,
-                        orderId = paymentRequest.orderId,
-                        userId = order.userId.value,
-                        email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
-                        amount = paymentAmount,
-                    )
-                )
-            }
-
-            payment.toPaymentResponse()
+    override suspend fun finalizeOrderPayment(orderId: String) {
+        query {
+            val order = OrderDAO.findById(orderId) ?: return@query
+            order.paymentStatus = PaymentStatus.COMPLETED
+            StockReservationDAO.find { StockReservationTable.orderId eq orderId.entityID(OrderTable) }
+                .forEach { it.status = ReservationStatus.FINALIZED }
         }
+    }
+
+    override suspend fun getUserEmail(userId: String): String? = query {
+        UserDAO.findById(userId)?.email
+    }
 
     override suspend fun getPaymentById(paymentId: String): PaymentResponse =
         query {
             val isOrderExist = PaymentDAO.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
-            isOrderExist?.toPaymentResponse() ?: paymentId.throwNotFound("PaymentResponse")
+            isOrderExist?.toPaymentResponse() ?: paymentId.throwNotFound("Payment")
         }
 
     override suspend fun getPaymentsByOrderId(

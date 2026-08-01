@@ -5,9 +5,16 @@ import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
 
+/**
+ * Persistence boundary for the Cart aggregate.
+ *
+ * The repository is limited to data access (reads/writes + projection to DTOs).
+ * All validation and transaction orchestration live in [CartService].
+ */
 interface CartRepository {
     /**
-     * Adds a product to the cart or updates its quantity if already present.
+     * Adds a product to the cart or rejects a duplicate. Assumes the caller has
+     * validated the quantity.
      *
      * @param userId The unique identifier of the user.
      * @param productId The unique identifier of the product.
@@ -34,7 +41,8 @@ interface CartRepository {
     ): PaginatedResponse<CartResponse>
 
     /**
-     * Updates the quantity of a specific product in the cart.
+     * Sets the quantity of a specific product in the cart. Assumes the caller
+     * has handled the remove-on-zero rule.
      *
      * @param userId The unique identifier of the user.
      * @param productId The unique identifier of the product.

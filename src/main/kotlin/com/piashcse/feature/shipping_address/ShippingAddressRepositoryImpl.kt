@@ -41,8 +41,18 @@ class ShippingAddressRepositoryImpl : ShippingAddressRepository {
             ShippingAddressDAO.find { ShippingAddressTable.userId eq userId }.map { it.toShippingAddressResponse() }
         }
 
-    override suspend fun updateShippingAddress(
+    override suspend fun getShippingAddressAccess(
         userId: String,
+        addressId: String,
+    ): ShippingAddressAccess = query {
+        val address = ShippingAddressDAO.findById(addressId) ?: addressId.throwNotFound("ShippingAddress")
+        ShippingAddressAccess(
+            addressId = address.id.value,
+            isOwner = address.userId.value == userId,
+        )
+    }
+
+    override suspend fun updateShippingAddress(
         addressId: String,
         request: ShippingAddressRequest,
     ): ShippingAddressResponse =
@@ -50,11 +60,10 @@ class ShippingAddressRepositoryImpl : ShippingAddressRepository {
             val address =
                 ShippingAddressDAO.findById(addressId) ?: addressId.throwNotFound("ShippingAddress")
 
-            address.verifyOwnership(userId, "shipping address") { it.userId.value }
-
+            val ownerId = address.userId.value
             if (request.isDefault && !address.isDefault) {
                 ShippingAddressDAO.find {
-                    ShippingAddressTable.userId eq userId and (ShippingAddressTable.isDefault eq true)
+                    ShippingAddressTable.userId eq ownerId and (ShippingAddressTable.isDefault eq true)
                 }.forEach { it.isDefault = false }
             }
 
@@ -72,15 +81,10 @@ class ShippingAddressRepositoryImpl : ShippingAddressRepository {
             }.toShippingAddressResponse()
         }
 
-    override suspend fun deleteShippingAddress(
-        userId: String,
-        addressId: String,
-    ): Boolean =
+    override suspend fun deleteShippingAddress(addressId: String): Boolean =
         query {
             val address =
                 ShippingAddressDAO.findById(addressId) ?: addressId.throwNotFound("ShippingAddress")
-
-            address.verifyOwnership(userId, "shipping address") { it.userId.value }
 
             address.delete()
             true

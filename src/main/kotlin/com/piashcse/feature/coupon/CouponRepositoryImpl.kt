@@ -1,46 +1,34 @@
 package com.piashcse.feature.coupon
 
-import com.piashcse.constants.Message
 import com.piashcse.database.entities.CouponDAO
 import com.piashcse.database.entities.CouponTable
+import com.piashcse.mapper.toCouponResponse
 import com.piashcse.model.request.CouponRequest
 import com.piashcse.model.response.CouponResponse
 import com.piashcse.repository.base.BaseCrudRepository
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.validator.NotFoundException
-import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.eq
 import java.time.LocalDateTime
-import java.time.format.DateTimeParseException
 
 class CouponRepositoryImpl : CouponRepository,
     BaseCrudRepository<CouponDAO, CouponResponse>(CouponDAO, CouponTable, "Coupon") {
 
-    override fun CouponDAO.toResponse() =
-        CouponResponse(
-            id = id.value,
-            code = code,
-            discountType = discountType,
-            discountValue = discountValue.toPlainString(),
-            minOrderAmount = minOrderAmount.toPlainString(),
-            maxDiscountAmount = maxDiscountAmount?.toPlainString(),
-            startDate = startDate.toString(),
-            endDate = endDate.toString(),
-            usageLimit = usageLimit,
-            usageCount = usageCount,
-            isActive = isActive,
-        )
+    override fun CouponDAO.toResponse() = toCouponResponse()
 
-    override suspend fun createCoupon(request: CouponRequest): CouponResponse =
+    override suspend fun createCoupon(
+        request: CouponRequest,
+        startDate: LocalDateTime,
+        endDate: LocalDateTime,
+    ): CouponResponse =
         create {
             code = request.code
             discountType = request.discountType
             discountValue = request.discountValue
             minOrderAmount = request.minOrderAmount
             maxDiscountAmount = request.maxDiscountAmount
-            startDate = parseDate(request.startDate, "startDate")
-            endDate = parseDate(request.endDate, "endDate")
+            this.startDate = startDate
+            this.endDate = endDate
             usageLimit = request.usageLimit
             isActive = request.isActive
         }
@@ -48,14 +36,16 @@ class CouponRepositoryImpl : CouponRepository,
     override suspend fun updateCoupon(
         couponId: String,
         request: CouponRequest,
+        startDate: LocalDateTime,
+        endDate: LocalDateTime,
     ): CouponResponse = update(couponId) {
         code = request.code
         discountType = request.discountType
         discountValue = request.discountValue
         minOrderAmount = request.minOrderAmount
         maxDiscountAmount = request.maxDiscountAmount
-        startDate = parseDate(request.startDate, "startDate")
-        endDate = parseDate(request.endDate, "endDate")
+        this.startDate = startDate
+        this.endDate = endDate
         usageLimit = request.usageLimit
         isActive = request.isActive
     }
@@ -74,11 +64,4 @@ class CouponRepositoryImpl : CouponRepository,
         coupon.delete()
         true
     }
-
-    private fun parseDate(value: String, fieldName: String): LocalDateTime =
-        try {
-            LocalDateTime.parse(value)
-        } catch (e: DateTimeParseException) {
-            throw ValidationException(Message.Validation.invalidFormat("$fieldName: $value"))
-        }
 }

@@ -3,12 +3,16 @@ package com.piashcse.feature.wishlist
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.model.response.WishListResponse
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.extension.suspendRetryQuery
 
 class WishListService(private val wishlistRepo: WishListRepository) {
+    /**
+     * Adds a product to the user's wish list. Runs in a retryable transaction.
+     */
     suspend fun addToWishList(
         userId: String,
         productId: String,
-    ): WishListResponse = wishlistRepo.addToWishList(userId, productId)
+    ): WishListResponse = suspendRetryQuery { wishlistRepo.addToWishList(userId, productId) }
 
     suspend fun getWishList(
         userId: String,
@@ -16,10 +20,13 @@ class WishListService(private val wishlistRepo: WishListRepository) {
         offset: Int,
     ): PaginatedResponse<ProductResponse> = wishlistRepo.getWishList(userId, limit, offset)
 
+    /**
+     * Removes a product from the user's wish list. Runs in a retryable transaction.
+     */
     suspend fun removeFromWishList(
         userId: String,
         productId: String,
-    ): ProductResponse = wishlistRepo.removeFromWishList(userId, productId)
+    ): ProductResponse = suspendRetryQuery { wishlistRepo.removeFromWishList(userId, productId) }
 
     suspend fun isProductInWishList(
         userId: String,

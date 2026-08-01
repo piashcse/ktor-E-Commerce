@@ -1,5 +1,6 @@
 package com.piashcse.feature.product
 
+import com.piashcse.constants.CacheKeys
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.response.ProductResponse
@@ -18,7 +19,7 @@ class ProductCatalogService(
     }
 
     suspend fun getProductDetail(productId: String): ProductResponse =
-        cachedOrQuery("products:detail:$productId") { productRepo.getProductDetail(productId) }
+        cachedOrQuery(CacheKeys.Products.detail(productId)) { productRepo.getProductDetail(productId) }
 
     suspend fun getProducts(productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse> =
         productRepo.getProducts(productQuery)
@@ -30,17 +31,17 @@ class ProductCatalogService(
 
     suspend fun incrementViewCount(productId: String) {
         productRepo.incrementViewCount(productId)
-        cache.invalidatePattern("products:detail:$productId")
+        cache.invalidatePattern(CacheKeys.Products.detail(productId))
     }
 
     suspend fun getFeaturedProducts(): PaginatedResponse<ProductResponse> =
-        cachedOrQuery("products:featured") { productRepo.getFeaturedProducts() }
+        cachedOrQuery(CacheKeys.Products.FEATURED) { productRepo.getFeaturedProducts() }
 
     suspend fun getBestSellingProducts(): PaginatedResponse<ProductResponse> =
-        cachedOrQuery("products:best-selling") { productRepo.getBestSellingProducts() }
+        cachedOrQuery(CacheKeys.Products.BEST_SELLING) { productRepo.getBestSellingProducts() }
 
     suspend fun getHotDealProducts(): PaginatedResponse<ProductResponse> =
-        cachedOrQuery("products:hot-deals") { productRepo.getHotDealProducts() }
+        cachedOrQuery(CacheKeys.Products.HOT_DEALS) { productRepo.getHotDealProducts() }
 
     suspend fun searchProduct(productQuery: ProductSearchRequest): SearchResponse =
         productRepo.searchProduct(productQuery)

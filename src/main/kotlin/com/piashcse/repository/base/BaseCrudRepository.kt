@@ -4,7 +4,6 @@ import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
@@ -48,7 +47,7 @@ abstract class BaseCrudRepository<DAO : BaseEntity, RESP>(
     ): PaginatedResponse<RESP> = query {
         val filtered = entityClass.find(filter)
         val data = filtered.limit(limit).offset(offset.toLong()).map { it.toResponse() }
-        PaginatedResponse(data, PaginationMetadata(filtered.count(), limit, offset))
+        PaginatedResponse.of(data, filtered.count(), limit, offset)
     }
 
     /** Finds an entity by id or throws not-found. */

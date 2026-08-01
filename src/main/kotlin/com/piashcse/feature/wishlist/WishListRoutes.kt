@@ -2,7 +2,7 @@ package com.piashcse.feature.wishlist
 
 import com.piashcse.model.request.WishListRequest
 import com.piashcse.plugin.RateLimitNames
-import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.customerAuth
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
@@ -17,7 +17,7 @@ import org.koin.ktor.ext.inject
  */
 fun Route.wishListRoutes() {
     val wishlistService: WishListService by inject()
-    requireRole {
+    customerAuth {
         rateLimit(RateLimitName(RateLimitNames.WRITE)) {
             /**
              * @tag Wishlist

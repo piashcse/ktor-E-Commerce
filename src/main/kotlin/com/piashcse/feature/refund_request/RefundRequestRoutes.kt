@@ -9,11 +9,9 @@ import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.*
-import com.piashcse.utils.validator.UnauthorizedException
-import io.ktor.http.*
+import com.piashcse.utils.validator.NotFoundException
 import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
-import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
@@ -49,7 +47,7 @@ fun Route.refundRequestRoutes() {
          */
         get("order/{orderId}") {
             val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(refundRequestService.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED), limit, offset))
+            call.respondOk(refundRequestService.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, limit, offset))
         }
 
         /**
@@ -57,11 +55,11 @@ fun Route.refundRequestRoutes() {
          * @description Get refund request details
          */
         get("{id}") {
-            val refundRequest = refundRequestService.getRefundById(call.requirePathParameter("id"), call.currentUserId, call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED))
+            val refundRequest = refundRequestService.getRefundById(call.requirePathParameter("id"), call.currentUserId)
             if (refundRequest != null) {
                 call.respondOk(refundRequest)
             } else {
-                call.respond(HttpStatusCode.NotFound, "Refund request not found")
+                throw NotFoundException(Message.Refunds.NOT_FOUND)
             }
         }
     }
@@ -104,6 +102,6 @@ fun Route.refundAdminRoutes() {
      */
     get("order/{orderId}") {
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(refundRequestService.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, UserType.ADMIN, limit, offset))
+        call.respondOk(refundRequestService.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, limit, offset))
     }
 }

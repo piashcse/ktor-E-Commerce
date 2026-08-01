@@ -227,7 +227,6 @@ object Message {
         const val EMAIL_FAILED = "Failed to send email"
         const val SELLER_REQUIRED = "User must be registered as a seller"
         const val MISSING_PARAMETER = "Missing required parameter: %s"
-        const val NOT_OWNER = "You do not own this resource"
         fun notOwner(resourceName: String) = "You do not own this $resourceName"
         fun invalidParameter(name: String, value: String) = "Invalid $name: $value"
     }

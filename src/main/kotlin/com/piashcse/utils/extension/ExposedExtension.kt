@@ -1,7 +1,6 @@
 package com.piashcse.utils.extension
 
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.common.PaginationMetadata
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.jdbc.Query
 
@@ -24,5 +23,5 @@ fun <T> Query.toPaginatedResponse(
     mapper: (ResultRow) -> T,
 ): PaginatedResponse<T> {
     val (totalCount, data) = toPaginatedList(limit, offset, mapper)
-    return PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
+    return PaginatedResponse.of(data, totalCount, limit, offset)
 }

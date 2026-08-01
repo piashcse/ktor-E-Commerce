@@ -2,8 +2,6 @@ package com.piashcse.feature.order
 
 import com.piashcse.constants.*
 import com.piashcse.database.entities.*
-import com.piashcse.event.EventBus
-import com.piashcse.event.OrderPlacedEvent
 import com.piashcse.mapper.toOrderItemResponse
 import com.piashcse.mapper.toOrderResponse
 import com.piashcse.model.request.CheckoutRequest
@@ -15,7 +13,6 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.money.Money
-import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.Query
@@ -45,7 +42,7 @@ class OrderRepositoryImpl : OrderRepository {
         val (totalCount, rows) = toPaginatedList(limit, offset) { OrderDAO.wrapRow(it) }
         val itemsMap = loadItemsForOrders(rows)
         val data = rows.map { order -> order.toOrderResponse(itemsMap[order.id.value]) }
-        return PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
+        return PaginatedResponse.of(data, totalCount, limit, offset)
     }
 
     private fun validateShopsApproved(shopIds: Set<String>) {
@@ -121,15 +118,24 @@ class OrderRepositoryImpl : OrderRepository {
         return calculateCouponDiscount(coupon, orderAmount)
     }
 
+    override suspend fun getPlaceOrderAccess(
+        userId: String,
+        shippingAddressId: String,
+    ): PlaceOrderAccess = query {
+        val address = ShippingAddressDAO.findById(shippingAddressId)
+            ?: shippingAddressId.throwNotFound("Shipping address")
+        PlaceOrderAccess(isShippingAddressOwner = address.userId.value == userId)
+    }
+
     override suspend fun placeOrder(
         userId: String,
         checkoutRequest: CheckoutRequest,
-    ): List<OrderResponse> = retryQuery {
+    ): List<OrderResponse> = query {
         checkoutRequest.idempotencyKey?.let { key ->
             val existing = OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.toList()
             if (existing.isNotEmpty()) {
                 val itemsMap = loadItemsForOrders(existing)
-                return@retryQuery existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
+                return@query existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
             }
         }
 
@@ -138,7 +144,6 @@ class OrderRepositoryImpl : OrderRepository {
 
         val shippingAddress = ShippingAddressDAO.findById(checkoutRequest.shippingAddressId)
             ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
-        if (shippingAddress.userId.value != userId) throw ValidationException(Message.Orders.SHIPPING_ADDRESS_UNAUTHORIZED)
 
         val fullAddress = buildString {
             append("${shippingAddress.firstName} ${shippingAddress.lastName}\n")
@@ -262,16 +267,6 @@ class OrderRepositoryImpl : OrderRepository {
         cartItems.forEach { it.delete() }
         createdOrders.forEach {
             logStatusChange(it.id.value, it.status, "Order placed", userId)
-            EventBus.publish(
-                OrderPlacedEvent(
-                    orderId = it.id.value,
-                    userId = userId,
-                    email = UserDAO.findById(userId)?.email.orEmpty(),
-                    shopId = it.shopId?.value,
-                    orderNumber = it.orderNumber,
-                    total = it.total,
-                ),
-            )
         }
         val itemsMap = loadItemsForOrders(createdOrders)
         createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
@@ -327,13 +322,13 @@ class OrderRepositoryImpl : OrderRepository {
         userId: String,
         orderRequest: OrderRequest,
         idempotencyKey: String?,
-    ): List<OrderResponse> = retryQuery {
+    ): List<OrderResponse> = query {
         userId.requireNotBlank("User ID")
         if (orderRequest.orderItems.isEmpty()) throw ValidationException(Message.Validation.EMPTY_ORDER_ITEMS)
 
         idempotencyKey?.let { key ->
             OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.firstOrNull()
-                ?.let { order -> return@retryQuery listOf(order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())) }
+                ?.let { order -> return@query listOf(order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())) }
         }
 
         val productsMap = ProductDAO.find {
@@ -421,38 +416,33 @@ class OrderRepositoryImpl : OrderRepository {
         createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
     }
 
-    override suspend fun getOrders(
-        userId: String,
-        limit: Int,
-        offset: Int,
-    ): PaginatedResponse<OrderResponse> = query {
-        OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
-            .orderBy(OrderTable.createdAt to SortOrder.DESC)
-            .toOrdersPaginated(limit, offset)
-    }
-
-    override suspend fun updateOrderStatus(
+    override suspend fun getOrderAccess(
         userId: String,
         orderId: String,
-        status: OrderStatus,
-    ): OrderResponse = query {
-        userId.requireNotBlank("User ID")
+    ): OrderAccess = query {
         orderId.requireNotBlank("Order ID")
 
-        val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
-        val user = UserDAO.findById(userId) ?: throw ValidationException(Message.Errors.NOT_FOUND)
+        val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
+        val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
 
-        val isCustomer = order.userId.value == userId
-        val isSeller = order.shopId?.value?.let { sellerOwnsShop(userId, it) } == true
-        val isAdmin = user.userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
+        OrderAccess(
+            orderId = order.id.value,
+            currentStatus = order.status,
+            isCustomer = order.userId.value == userId,
+            isSeller = order.shopId?.value?.let { sellerOwnsShop(userId, it) } == true,
+            isAdmin = user.userType.isAdminOrHigher,
+        )
+    }
 
-        if (!isCustomer && !isSeller && !isAdmin) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
-
-        if (!OrderStatus.canTransitionTo(order.status, status))
-            throw ValidationException(Message.Orders.INVALID_STATUS)
+    override suspend fun applyStatusTransition(
+        orderId: String,
+        status: OrderStatus,
+        changedBy: String,
+    ): OrderResponse = query {
+        val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
 
         if (status == OrderStatus.CANCELED) {
-            applyOrderCancellation(order, notes = "Status updated by user", changedBy = userId)
+            applyOrderCancellation(order, notes = "Status updated by user", changedBy = changedBy)
         } else {
             order.status = status
             when (status) {
@@ -464,31 +454,23 @@ class OrderRepositoryImpl : OrderRepository {
                 OrderStatus.PAID -> order.paymentStatus = PaymentStatus.COMPLETED
                 else -> {}
             }
-            logStatusChange(order.id.value, status, "Status updated by user", userId)
+            logStatusChange(order.id.value, status, "Status updated by user", changedBy)
         }
         order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
     }
 
     override suspend fun cancelOrder(
         orderId: String,
-        userId: String,
         reason: String,
-        userType: UserType,
-    ): OrderResponse = retryQuery {
-        orderId.requireNotBlank("Order ID")
-        if (reason.isBlank()) throw ValidationException(Message.Orders.CANCEL_REASON_REQUIRED)
-
-        val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
-
-        val isCustomer = order.userId.value == userId
-        val isSeller = order.shopId?.value?.let { sellerOwnsShop(userId, it) } == true
-        val isAdmin = userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
-
-        if (!isCustomer && !isSeller && !isAdmin) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
-        if (!OrderStatus.canBeCanceled(order.status)) throw ValidationException(Message.Orders.CANNOT_CANCEL)
-
-        applyOrderCancellation(order, notes = reason, changedBy = userId)
+        changedBy: String,
+    ): OrderResponse = query {
+        val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
+        applyOrderCancellation(order, notes = reason, changedBy = changedBy)
         order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
+    }
+
+    override suspend fun getUserEmail(userId: String): String? = query {
+        UserDAO.findById(userId)?.email
     }
 
     private fun applyOrderCancellation(
@@ -520,29 +502,39 @@ class OrderRepositoryImpl : OrderRepository {
             .forEach { it.status = ReservationStatus.RELEASED }
     }
 
+    override suspend fun getOrders(
+        userId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<OrderResponse> = query {
+        OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
+            .orderBy(OrderTable.createdAt to SortOrder.DESC)
+            .toOrdersPaginated(limit, offset)
+    }
+
     override suspend fun getSellerOrders(
         userId: String,
         limit: Int,
         offset: Int,
-        status: String?,
+        status: OrderStatus?,
     ): PaginatedResponse<OrderResponse> = query {
         val seller = findSellerByUserId(userId) ?: throw ValidationException(Message.Orders.SELLER_PROFILE_NOT_FOUND)
         val shopId = seller.shopId ?: throw ValidationException(Message.Orders.NO_SHOP_ASSOCIATED)
 
         val query = OrderTable.selectAll().andWhere { OrderTable.shopId eq shopId }
-        status?.let { query.andWhere { OrderTable.status eq OrderStatus.valueOf(it.uppercase()) } }
+        status?.let { query.andWhere { OrderTable.status eq it } }
         query.orderBy(OrderTable.createdAt to SortOrder.DESC).toOrdersPaginated(limit, offset)
     }
 
     override suspend fun getAdminOrders(
         limit: Int,
         offset: Int,
-        status: String?,
+        status: OrderStatus?,
         startDate: Instant?,
         endDate: Instant?,
     ): PaginatedResponse<OrderResponse> = query {
         val query = OrderTable.selectAll()
-        status?.let { query.andWhere { OrderTable.status eq OrderStatus.valueOf(it.uppercase()) } }
+        status?.let { query.andWhere { OrderTable.status eq it } }
         startDate?.let { query.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
         endDate?.let { query.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
         query.orderBy(OrderTable.createdAt to SortOrder.DESC).toOrdersPaginated(limit, offset)

@@ -1,5 +1,7 @@
 package com.piashcse.feature.product
 
+import com.piashcse.constants.AppConstants.Inventory.DEFAULT_MAX_STOCK
+import com.piashcse.constants.AppConstants.Inventory.DEFAULT_MIN_STOCK
 import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.Message
 import com.piashcse.constants.ProductStatus
@@ -17,8 +19,6 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.money.Money
-import com.piashcse.utils.validator.ForbiddenException
-import com.piashcse.utils.validator.NotFoundException
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -29,9 +29,6 @@ import java.sql.Connection
 import java.sql.PreparedStatement
 
 class ProductRepositoryImpl : ProductRepository {
-
-    private fun requireSeller(userId: String): SellerDAO =
-        findSellerByUserId(userId) ?: throw NotFoundException(Message.Errors.SELLER_REQUIRED)
 
     private fun generateSKU(name: String) =
         name.replace(Regex("[^a-zA-Z0-9]"), "").take(6).uppercase() +
@@ -63,7 +60,7 @@ class ProductRepositoryImpl : ProductRepository {
         val data = withPreloadedImages(rows) { row, images ->
             ProductDAO.wrapRow(row).toProductResponse(images[ProductDAO.wrapRow(row).id.value])
         }
-        return PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
+        return PaginatedResponse.of(data, totalCount, limit, offset)
     }
 
     private fun withPreloadedImages(
@@ -81,21 +78,30 @@ class ProductRepositoryImpl : ProductRepository {
             .orderBy(ProductTable.discountPercentage to SortOrder.DESC)
     }
 
+    override suspend fun getCreateProductAccess(
+        userId: String,
+        shopId: String?,
+    ): ProductCreateAccess = query {
+        val seller = findSellerByUserId(userId)
+        val resolvedShopId = shopId ?: seller?.shopId?.value
+        val shopOwnerUserId = resolvedShopId?.let { id ->
+            (ShopDAO.findById(id) ?: id.throwNotFound("Shop")).userId.value
+        }
+        ProductCreateAccess(
+            sellerExists = seller != null,
+            resolvedShopId = resolvedShopId,
+            shopOwnerUserId = shopOwnerUserId,
+        )
+    }
+
     override suspend fun createProduct(
         userId: String,
         shopId: String?,
         productRequest: ProductRequest,
     ): ProductResponse = query {
-        val seller = requireSeller(userId)
-        val resolvedShopId = shopId ?: seller.shopId?.value
-        if (resolvedShopId != null) {
-            val shop = ShopDAO.findById(resolvedShopId) ?: resolvedShopId.throwNotFound("Shop")
-            if (shop.userId.value != userId) throw ForbiddenException(Message.Products.NOT_SHOP_OWNER)
-        }
-
         ProductDAO.new {
             this.userId = userId.entityID(UserTable)
-            this.shopId = resolvedShopId?.let { it.entityID(ShopTable) }
+            this.shopId = shopId?.let { it.entityID(ShopTable) }
             categoryId = productRequest.categoryId.entityID(ProductCategoryTable)
             subCategoryId = productRequest.subCategoryId?.let { it.entityID(ProductSubCategoryTable) }
             brandId = productRequest.brandId?.let { it.entityID(BrandTable) }
@@ -114,14 +120,14 @@ class ProductRepositoryImpl : ProductRepository {
             status = ProductStatus.ACTIVE
         }.let { product ->
             product.setImages(productRequest.images)
-            if (resolvedShopId != null) {
+            if (shopId != null) {
                 InventoryDAO.new {
                     productId = product.id
-                    this.shopId = resolvedShopId.entityID(ShopTable)
+                    this.shopId = shopId.entityID(ShopTable)
                     stockQuantity = productRequest.stockQuantity
-                    minimumStockLevel = 10
-                    maximumStockLevel = 1000
-                    status = InventoryStatus.fromStockLevel(productRequest.stockQuantity, 10)
+                    minimumStockLevel = DEFAULT_MIN_STOCK
+                    maximumStockLevel = DEFAULT_MAX_STOCK
+                    status = InventoryStatus.fromStockLevel(productRequest.stockQuantity, DEFAULT_MIN_STOCK)
                 }
             }
             product.toProductResponse()
@@ -129,13 +135,10 @@ class ProductRepositoryImpl : ProductRepository {
     }
 
     override suspend fun updateProduct(
-        userId: String,
         productId: String,
         updateProduct: UpdateProductRequest,
     ): ProductResponse = query {
-        requireSeller(userId)
         val product = ProductDAO.findById(productId) ?: productId.throwNotFound("Product")
-        product.verifyOwnership(userId, "product") { it.userId.value }
 
         product.apply {
             categoryId = updateProduct.categoryId?.let { it.entityID(ProductCategoryTable) } ?: categoryId
@@ -152,6 +155,17 @@ class ProductRepositoryImpl : ProductRepository {
             freeShipping = updateProduct.freeShipping ?: freeShipping
             if (updateProduct.images.isNotEmpty()) setImages(updateProduct.images)
         }.toProductResponse()
+    }
+
+    override suspend fun getProductAccess(
+        userId: String,
+        productId: String,
+    ): ProductAccess = query {
+        val product = ProductDAO.findById(productId) ?: productId.throwNotFound("Product")
+        ProductAccess(
+            productId = product.id.value,
+            isOwner = product.userId.value == userId,
+        )
     }
 
     override suspend fun getProducts(filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> = query {
@@ -171,7 +185,7 @@ class ProductRepositoryImpl : ProductRepository {
     }
 
     override suspend fun getProductDetail(productId: String): ProductResponse = query {
-        ProductDAO.findById(productId)?.toProductResponse() ?: productId.throwNotFound("ProductResponse")
+        ProductDAO.findById(productId)?.toProductResponse() ?: productId.throwNotFound("Product")
     }
 
     override suspend fun incrementViewCount(productId: String) = query {
@@ -179,16 +193,14 @@ class ProductRepositoryImpl : ProductRepository {
         Unit
     }
 
-    override suspend fun deleteProduct(userId: String, productId: String): String = query {
-        requireSeller(userId)
+    override suspend fun deleteProduct(productId: String): String = query {
         val product = ProductDAO.findById(productId) ?: productId.throwNotFound("Product")
-        product.verifyOwnership(userId, "product") { it.userId.value }
         product.delete()
         productId
     }
 
     override suspend fun deleteProductAsAdmin(productId: String): String = query {
-        val product = ProductDAO.findById(productId) ?: productId.throwNotFound("ProductResponse")
+        val product = ProductDAO.findById(productId) ?: productId.throwNotFound("Product")
         product.delete()
         productId
     }
@@ -421,6 +433,6 @@ class ProductRepositoryImpl : ProductRepository {
             .toList()
         val imagesMap = if (products.isNotEmpty()) ProductImageDAO.imagesForProducts(products.map { it.id }) else emptyMap()
         val data = products.map { it.toProductResponse(imagesMap[it.id.value]) }
-        PaginatedResponse(data, PaginationMetadata(count, data.size, 0))
+        PaginatedResponse.of(data, count, limit ?: data.size, 0)
     }
 }

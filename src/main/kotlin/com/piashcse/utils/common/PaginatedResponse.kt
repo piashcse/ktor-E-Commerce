@@ -6,7 +6,16 @@ import kotlinx.serialization.Serializable
 data class PaginatedResponse<T>(
     val data: List<T>,
     val metadata: PaginationMetadata,
-)
+) {
+    companion object {
+        fun <T> of(
+            data: List<T>,
+            totalCount: Long,
+            limit: Int,
+            offset: Int,
+        ): PaginatedResponse<T> = PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
+    }
+}
 
 @Serializable
 data class PaginationMetadata(

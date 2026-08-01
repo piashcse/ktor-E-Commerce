@@ -6,7 +6,6 @@ import com.piashcse.mapper.toPolicyConsentResponse
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.model.response.UserPolicyConsentResponse
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.requireNotBlank
 import com.piashcse.utils.extension.throwNotFound
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
@@ -18,9 +17,6 @@ class ConsentRepositoryImpl : ConsentRepository {
         consentRequest: PolicyConsentRequest,
     ): UserPolicyConsentResponse =
         query {
-            userId.requireNotBlank("User ID")
-            consentRequest.policyId.requireNotBlank("Policy ID")
-
             val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
             val policy =
                 PolicyDocumentDAO.findById(consentRequest.policyId)

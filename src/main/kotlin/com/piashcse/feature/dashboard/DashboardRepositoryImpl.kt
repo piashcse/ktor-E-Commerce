@@ -9,7 +9,6 @@ import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -66,7 +65,7 @@ class DashboardRepositoryImpl : DashboardRepository {
         val orderCount = OrderTable.selectAll().where {
             (OrderTable.status neq OrderStatus.CANCELED) and (OrderTable.createdAt greaterEq start) and (OrderTable.createdAt lessEq end)
         }.count()
-        val avg = if (orderCount > 0) Money.round(totalRevenue.divide(BigDecimal(orderCount), 2, RoundingMode.HALF_UP)) else BigDecimal.ZERO
+        val avg = Money.average(totalRevenue, orderCount.toInt())
         val daily = generateSequence(start.toLocalDate()) { it.plusDays(1) }
             .takeWhile { it <= end.toLocalDate() }
             .map { date ->
@@ -81,9 +80,9 @@ class DashboardRepositoryImpl : DashboardRepository {
         RevenueStatsResponse(Money.plain(totalRevenue), orderCount, Money.plain(avg), daily)
     }
 
-    override suspend fun getOrderStats(status: String?) = query {
+    override suspend fun getOrderStats(status: OrderStatus?) = query {
         val ordersQuery = if (status != null) {
-            OrderTable.selectAll().where { OrderTable.status eq OrderStatus.valueOf(status.uppercase()) }
+            OrderTable.selectAll().where { OrderTable.status eq status }
         } else {
             OrderTable.selectAll()
         }

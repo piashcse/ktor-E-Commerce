@@ -2,8 +2,7 @@ package com.piashcse.feature.audit_log
 
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondOk
-import io.ktor.http.*
-import io.ktor.server.response.*
+import com.piashcse.utils.validator.MissingParameterException
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
@@ -23,7 +22,7 @@ fun Route.auditLogAdminRoutes() {
      * @description Get a single audit log entry by ID
      */
     get("{id}") {
-        val id = call.pathParameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Missing id")
+        val id = call.pathParameters["id"] ?: throw MissingParameterException("id")
         call.respondOk(auditLogService.getAuditLogById(id))
     }
 }

@@ -6,7 +6,7 @@ import com.piashcse.constants.UserType
 import com.piashcse.model.request.*
 import com.piashcse.model.response.ResetResult
 import com.piashcse.plugin.RateLimitNames
-import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.customerAuth
 import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.parseEnum
@@ -95,7 +95,7 @@ fun Route.authRoutes() {
         }
     }
 
-    requireRole {
+    customerAuth {
         /**
          * @tag Auth
          * @description Logout authenticated user

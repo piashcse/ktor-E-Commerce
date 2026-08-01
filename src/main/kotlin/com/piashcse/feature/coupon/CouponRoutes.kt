@@ -1,11 +1,12 @@
 package com.piashcse.feature.coupon
 
+import com.piashcse.constants.Message
 import com.piashcse.model.request.CouponRequest
 import com.piashcse.plugin.RateLimitNames
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
-import io.ktor.http.*
+import com.piashcse.utils.validator.NotFoundException
 import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -20,12 +21,7 @@ fun Route.couponRoutes() {
      */
     get("{code}") {
         val code = call.requirePathParameter("code")
-        val coupon = couponService.getCouponByCode(code)
-        if (coupon != null) {
-            call.respondOk(coupon)
-        } else {
-            call.respond(HttpStatusCode.NotFound, "Coupon not found")
-        }
+        call.respondOk(couponService.getCouponByCode(code) ?: throw NotFoundException(Message.Coupons.NOT_FOUND))
     }
 }
 

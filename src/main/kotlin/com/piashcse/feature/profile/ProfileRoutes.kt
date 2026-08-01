@@ -3,7 +3,7 @@ package com.piashcse.feature.profile
 import com.piashcse.constants.Message
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.plugin.RateLimitNames
-import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.customerAuth
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondOk
@@ -19,7 +19,7 @@ import org.koin.ktor.ext.inject
  */
 fun Route.profileRoutes() {
     val userProfileService: ProfileService by inject()
-    requireRole {
+    customerAuth {
         /**
          * @tag Profile
          * @description Retrieve the authenticated user's profile information

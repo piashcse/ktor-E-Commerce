@@ -47,12 +47,6 @@ class InvalidCredentialsException(
     }
 }
 
-class UnverifiedAccountException(message: String = Message.Auth.ACCOUNT_NOT_VERIFIED) :
-    AppException(message, HttpStatusCode.Unauthorized)
-
-class DeactivatedAccountException(message: String = Message.Auth.ACCOUNT_DEACTIVATED) :
-    AppException(message, HttpStatusCode.Unauthorized)
-
 // ─── 403 Forbidden ─────────────────────────────────────────────────────────
 
 class ForbiddenException(message: String = Message.Errors.FORBIDDEN) :
@@ -66,17 +60,3 @@ class NotFoundException(message: String = Message.Errors.NOT_FOUND) :
 // ─── 409 Conflict ──────────────────────────────────────────────────────────
 
 class ConflictException(message: String) : AppException(message, HttpStatusCode.Conflict)
-
-// ─── 429 Too Many Requests ─────────────────────────────────────────────────
-
-class RateLimitExceededException(message: String = "Too many requests") :
-    AppException(message, HttpStatusCode.TooManyRequests)
-
-// ─── 500 Internal Server Error ─────────────────────────────────────────────
-
-class InternalServerException(message: String = Message.Errors.INTERNAL) :
-    AppException(message, HttpStatusCode.InternalServerError)
-
-class DatabaseException(message: String) : AppException(message, HttpStatusCode.InternalServerError)
-
-class EmailException(message: String) : AppException(message, HttpStatusCode.InternalServerError)

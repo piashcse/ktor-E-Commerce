@@ -15,7 +15,6 @@ import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.NotFoundException
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.SortOrder
-import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.Query
@@ -59,8 +58,18 @@ class ShopRepositoryImpl : ShopRepository {
             shop.toShopResponse()
         }
 
-    override suspend fun updateShop(
+    override suspend fun getShopAccess(
         userId: String,
+        shopId: String,
+    ): ShopAccess = query {
+        val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
+        ShopAccess(
+            shopId = shop.id.value,
+            isOwner = shop.userId.value == userId,
+        )
+    }
+
+    override suspend fun updateShop(
         shopId: String,
         shopRequest: UpdateShopRequest,
     ): ShopResponse =
@@ -68,8 +77,6 @@ class ShopRepositoryImpl : ShopRepository {
             val shop =
                 ShopDAO.findById(shopId)
                     ?: shopId.throwNotFound("Shop")
-
-            shop.verifyOwnership(userId, "shop") { it.userId.value }
 
             shop.apply {
                 name = shopRequest.name ?: name
@@ -93,18 +100,11 @@ class ShopRepositoryImpl : ShopRepository {
     override suspend fun getShopsByUser(userId: String, limit: Int, offset: Int) =
         shopPaginatedQuery(limit, offset) { andWhere { ShopTable.userId eq userId } }
 
-    override suspend fun getShops(status: String?, category: String?, limit: Int, offset: Int) =
+    override suspend fun getShops(status: ShopStatus?, category: String?, limit: Int, offset: Int) =
         shopPaginatedQuery(limit, offset, ShopTable.createdAt to SortOrder.DESC) {
             andWhere { ShopTable.status neq ShopStatus.REJECTED }
             andWhere { ShopTable.status neq ShopStatus.SUSPENDED }
-            status?.let {
-                val statusEnum = try {
-                    ShopStatus.valueOf(it.uppercase())
-                } catch (e: IllegalArgumentException) {
-                    throw NotFoundException(Message.Shops.invalidStatus(it))
-                }
-                andWhere { ShopTable.status eq statusEnum }
-            }
+            status?.let { andWhere { ShopTable.status eq it } }
             category?.let { andWhere { ShopTable.categoryId eq it.entityID(ShopCategoryTable) } }
         }
 
@@ -136,7 +136,7 @@ class ShopRepositoryImpl : ShopRepository {
     }
 
     private suspend fun setShopStatus(shopId: String, update: ShopDAO.() -> Unit): ShopResponse = query {
-        val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("ShopResponse")
+        val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
         shop.update()
         shop.toShopResponse()
     }

@@ -3,20 +3,35 @@ package com.piashcse.feature.auth
 import com.piashcse.constants.UserType
 import com.piashcse.model.domain.AuthUser
 import com.piashcse.model.domain.LoginAttemptInfo
+import com.piashcse.model.domain.OtpInfo
 import com.piashcse.model.domain.StoredRefreshToken
-import com.piashcse.model.request.*
-import com.piashcse.model.response.RegistrationResult
-import com.piashcse.model.response.ResetResult
+import com.piashcse.model.request.TokenPair
+import java.time.LocalDateTime
 
+/**
+ * Persistence contract for the auth feature.
+ *
+ * Deliberately free of business logic: no role checks, no lockout/expiry policy,
+ * no token-rotation orchestration, no cache side-effects, no event publishing.
+ * Those belong to [UserAuthenticationService].
+ */
 interface AuthRepository {
-    // Registration
-    suspend fun register(registerRequest: RegisterRequest): RegistrationResult
-    suspend fun getRegistrationOtp(userId: String): String?
-
-    // Login
+    // Registration (persistence + fact reads)
     suspend fun findUserByEmailAndType(email: String, userTypeEnum: UserType): AuthUser?
     suspend fun findUserById(userId: String): AuthUser?
     suspend fun findResetUserByEmail(email: String, userTypeStr: String): AuthUser
+    suspend fun getRegistrationOtp(userId: String): String?
+    suspend fun getRegistrationOtpExpiry(userId: String): LocalDateTime?
+    suspend fun createUserWithProfile(
+        email: String,
+        passwordHash: String,
+        userType: UserType,
+        otp: String,
+        otpExpiry: LocalDateTime,
+    ): String
+    suspend fun resendRegistrationOtp(userId: String, otp: String, otpExpiry: LocalDateTime)
+    suspend fun markUserVerified(userId: String)
+    suspend fun invalidateOtp(userId: String)
 
     // Token management
     suspend fun storeRefreshToken(userId: String, refreshToken: String)
@@ -24,16 +39,13 @@ interface AuthRepository {
     suspend fun revokeRefreshToken(tokenHash: String): Boolean
     suspend fun revokeAllUserTokens(userId: String): Boolean
     fun generateTokenPair(userId: String, email: String, userType: String): TokenPair
+    fun hashRefreshToken(token: String): String
 
     // Login attempt tracking
     suspend fun getLoginAttempt(email: String, userType: UserType): LoginAttemptInfo?
     suspend fun recordFailedAttempt(email: String, userType: UserType, ipAddress: String?): Int
     suspend fun resetLoginAttempts(email: String, userType: UserType)
     suspend fun lockAccount(email: String, userType: UserType, lockDurationMinutes: Long): Boolean
-
-    // OTP
-    suspend fun verifyOtp(userId: String, otp: String): Boolean
-    suspend fun invalidateOtp(userId: String)
 
     // OTP attempt tracking
     suspend fun getOtpAttempt(userId: String): Int
@@ -42,20 +54,17 @@ interface AuthRepository {
     suspend fun resetOtpAttempts(userId: String)
     suspend fun lockOtpAttempts(userId: String)
 
-    // Password
-    suspend fun changePassword(userId: String, changePassword: ChangePassword): Boolean
-    suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest): String
-    suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult
+    // Password / reset persistence
+    suspend fun updatePasswordHash(userId: String, newPasswordHash: String)
+    suspend fun setResetOtp(userId: String, otp: String, otpExpiry: LocalDateTime)
+    suspend fun getResetOtp(userId: String): OtpInfo?
+    suspend fun clearResetOtp(userId: String)
 
-    // Token refresh
-    suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair
+    // Blacklist persistence
+    suspend fun insertBlacklistedToken(token: String)
 
-    // Logout / Blacklist
-    suspend fun logout(userId: String, refreshToken: String?): Boolean
-    suspend fun blacklistToken(token: String): Boolean
-
-    // Admin
-    suspend fun changeUserType(currentUserId: String, targetUserId: String, newUserType: UserType): Boolean
-    suspend fun deactivateUser(currentUserId: String, targetUserId: String): Boolean
-    suspend fun activateUser(currentUserId: String, targetUserId: String): Boolean
+    // Admin (persistence only; authorization is owned by the service)
+    suspend fun updateUserType(userId: String, newUserType: UserType)
+    suspend fun createSellerProfileIfMissing(userId: String)
+    suspend fun setUserActive(userId: String, active: Boolean)
 }

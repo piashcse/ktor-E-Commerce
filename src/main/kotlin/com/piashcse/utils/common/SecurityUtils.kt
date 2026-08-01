@@ -12,12 +12,6 @@ fun generateOTP(length: Int = 6): String {
     return (secureRandom.nextInt(max - min) + min).toString()
 }
 
-fun generateToken(): String {
-    val bytes = ByteArray(32)
-    secureRandom.nextBytes(bytes)
-    return bytes.joinToString("") { "%02x".format(it) }
-}
-
 /** Constant-time string comparison to avoid timing side-channel attacks. */
 fun constantTimeEquals(a: String, b: String): Boolean =
     MessageDigest.isEqual(a.toByteArray(Charsets.UTF_8), b.toByteArray(Charsets.UTF_8))

@@ -9,11 +9,9 @@ import com.piashcse.model.response.CartResponse
 import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.money.Money
 import com.piashcse.utils.validator.NotFoundException
-import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
@@ -24,19 +22,11 @@ import java.math.BigDecimal
 
 class CartRepositoryImpl : CartRepository {
 
-    private fun requireCartParams(userId: String, productId: String, quantity: Int? = null) {
-        userId.requireNotBlank("User ID")
-        productId.requireNotBlank("Product ID")
-        if (quantity != null && quantity <= 0) throw ValidationException(Message.Validation.notPositive("Quantity"))
-    }
-
     override suspend fun createCart(
         userId: String,
         productId: String,
         quantity: Int,
     ): CartResponse = query {
-        requireCartParams(userId, productId, quantity)
-
         val existing = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
         }.singleOrNull()
@@ -72,7 +62,7 @@ class CartRepositoryImpl : CartRepository {
                 ?: row[CartItemTable.productId].value.throwNotFound("Product")
             CartItemDAO.wrapRow(row).toCartResponse(product.toProductResponse(imagesMap[product.id.value]))
         }
-        PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
+        PaginatedResponse.of(data, totalCount, limit, offset)
     }
 
     override suspend fun updateCartQuantity(
@@ -80,13 +70,10 @@ class CartRepositoryImpl : CartRepository {
         productId: String,
         quantity: Int,
     ): CartResponse? = query {
-        requireCartParams(userId, productId)
-
         val cartItem = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
         }.singleOrNull() ?: productId.throwNotFound("Product")
 
-        if (quantity == 0) { cartItem.delete(); return@query null }
         cartItem.quantity = quantity
 
         val product = ProductDAO.findById(cartItem.productId)
@@ -98,8 +85,6 @@ class CartRepositoryImpl : CartRepository {
         userId: String,
         productId: String,
     ): ProductResponse = query {
-        requireCartParams(userId, productId)
-
         val cartItem = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
         }.singleOrNull() ?: productId.throwNotFound("Product")
@@ -111,7 +96,6 @@ class CartRepositoryImpl : CartRepository {
     }
 
     override suspend fun clearCart(userId: String): Boolean = query {
-        userId.requireNotBlank("User ID")
         CartItemTable.deleteWhere { CartItemTable.userId eq userId }
         true
     }

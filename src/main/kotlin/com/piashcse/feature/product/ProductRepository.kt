@@ -8,12 +8,47 @@ import com.piashcse.model.response.ProductResponse
 import com.piashcse.model.response.SearchResponse
 import com.piashcse.utils.common.PaginatedResponse
 
+/**
+ * Facts about a product used by the service layer to enforce authorization.
+ */
+data class ProductAccess(
+    val productId: String,
+    val isOwner: Boolean,
+)
+
+/**
+ * Facts used to authorize product creation, resolving the target shop so the
+ * service can enforce seller and shop-ownership rules.
+ */
+data class ProductCreateAccess(
+    val sellerExists: Boolean,
+    val resolvedShopId: String?,
+    val shopOwnerUserId: String?,
+)
+
+/**
+ * Persistence boundary for the Product aggregate.
+ *
+ * The repository is limited to data access (reads/writes + projection to DTOs).
+ * All authorization, validation and transaction orchestration live in the
+ * product service layer.
+ */
 interface ProductRepository {
     /**
-     * Creates a new product.
+     * Resolves the authorization facts for product creation: whether the user is
+     * a registered seller and, if a shop is involved, who owns it.
+     */
+    suspend fun getCreateProductAccess(
+        userId: String,
+        shopId: String?,
+    ): ProductCreateAccess
+
+    /**
+     * Creates a new product. Assumes the caller has already authorized the
+     * seller and shop.
      *
      * @param userId The unique identifier of the user creating the product.
-     * @param shopId The shop where the product will be listed
+     * @param shopId The resolved shop where the product will be listed
      * @param productRequest The details of the product to create.
      * @return The created product.
      */
@@ -24,15 +59,22 @@ interface ProductRepository {
     ): ProductResponse
 
     /**
-     * Updates an existing product.
+     * Resolves the authorization facts for a product relative to [userId].
+     * Throws if the product does not exist.
+     */
+    suspend fun getProductAccess(
+        userId: String,
+        productId: String,
+    ): ProductAccess
+
+    /**
+     * Updates an existing product. Assumes the caller has authorized the product.
      *
-     * @param userId The unique identifier of the user updating the product.
      * @param productId The unique identifier of the product to update.
      * @param update The product details to update.
      * @return The updated product.
      */
     suspend fun updateProduct(
-        userId: String,
         productId: String,
         updateProduct: UpdateProductRequest,
     ): ProductResponse
@@ -85,16 +127,12 @@ interface ProductRepository {
     suspend fun incrementViewCount(productId: String)
 
     /**
-     * Deletes a specific product.
+     * Deletes a specific product. Assumes the caller has authorized the product.
      *
-     * @param userId The unique identifier of the user deleting the product.
      * @param productId The unique identifier of the product to delete.
      * @return A confirmation message.
      */
-    suspend fun deleteProduct(
-        userId: String,
-        productId: String,
-    ): String
+    suspend fun deleteProduct(productId: String): String
 
     /**
      * Searches for products based on query parameters.

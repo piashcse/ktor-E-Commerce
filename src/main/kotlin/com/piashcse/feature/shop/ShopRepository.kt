@@ -6,9 +6,25 @@ import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.model.response.ShopResponse
 import com.piashcse.utils.common.PaginatedResponse
 
+/**
+ * Facts about a shop used by the service layer to enforce authorization.
+ */
+data class ShopAccess(
+    val shopId: String,
+    val isOwner: Boolean,
+)
+
+/**
+ * Persistence boundary for the Shop aggregate.
+ *
+ * The repository is limited to data access (reads/writes + projection to DTOs).
+ * All authorization, validation and transaction orchestration live in
+ * [ShopService].
+ */
 interface ShopRepository {
     /**
-     * Creates a new shop for a seller.
+     * Creates a new shop for a seller. Assumes the caller has already authorized
+     * the seller; enforces the one-shop-per-user rule within the transaction.
      *
      * @param userId The user ID creating the shop.
      * @param shopRequest The shop details to create.
@@ -20,15 +36,22 @@ interface ShopRepository {
     ): ShopResponse
 
     /**
-     * Updates an existing shop.
+     * Resolves the authorization facts for a shop relative to [userId].
+     * Throws if the shop does not exist.
+     */
+    suspend fun getShopAccess(
+        userId: String,
+        shopId: String,
+    ): ShopAccess
+
+    /**
+     * Updates an existing shop. Assumes the caller has authorized the shop.
      *
-     * @param userId The user ID updating the shop.
      * @param shopId The shop ID to update.
      * @param shopRequest The shop details to update.
      * @return The updated shop.
      */
     suspend fun updateShop(
-        userId: String,
         shopId: String,
         shopRequest: UpdateShopRequest,
     ): ShopResponse
@@ -56,7 +79,8 @@ interface ShopRepository {
     ): PaginatedResponse<ShopResponse>
 
     /**
-     * Gets all shops with optional filtering.
+     * Gets all shops with optional filtering. The caller is responsible for
+     * parsing and validating the status string.
      *
      * @param status Optional status to filter by.
      * @param category Optional category to filter by.
@@ -65,7 +89,7 @@ interface ShopRepository {
      * @return A list of shops matching the criteria.
      */
     suspend fun getShops(
-        status: String? = null,
+        status: ShopStatus? = null,
         category: String? = null,
         limit: Int = 20,
         offset: Int = 0,

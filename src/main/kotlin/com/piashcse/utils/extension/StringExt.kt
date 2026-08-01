@@ -20,8 +20,6 @@ inline fun <reified T : Enum<T>> String.parseEnum(fieldName: String): T =
 
 fun String.throwNotFound(resourceName: String): Nothing = throw NotFoundException("$resourceName not found")
 
-fun String.throwNotFound(): Nothing = throw NotFoundException()
-
 fun String.throwConflict(resourceName: String): Nothing = throw ConflictException("$resourceName already exists")
 
 fun String.requireNotBlank(fieldName: String) {

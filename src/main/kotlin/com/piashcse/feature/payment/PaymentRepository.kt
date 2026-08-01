@@ -3,29 +3,67 @@ package com.piashcse.feature.payment
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.utils.common.PaginatedResponse
+import java.math.BigDecimal
 
+/**
+ * Read facts needed by [PaymentService] to validate a payment while holding a
+ * row lock on the order.
+ */
+data class OrderPaymentInfo(
+    val orderId: String,
+    val userId: String,
+    val orderTotal: BigDecimal,
+)
+
+/**
+ * Persistence boundary for the Payment feature.
+ *
+ * The repository is limited to data access (reads/writes + projection).
+ * Payment validation rules, overpayment checks and domain event publishing
+ * live in [PaymentService].
+ */
 interface PaymentRepository {
     /**
-     * Processes a new payment.
-     *
-     * @param paymentRequest The payment details.
-     * @return The created payment record.
+     * Returns an existing payment for a transaction id (idempotency lookup).
      */
-    suspend fun createPayment(paymentRequest: PaymentRequest): PaymentResponse
+    suspend fun getPaymentByTransactionId(transactionId: String): PaymentResponse?
+
+    /**
+     * Locks the order row for payment processing and returns payment facts.
+     */
+    suspend fun getOrderForPayment(orderId: String): OrderPaymentInfo
+
+    /**
+     * Sum of completed payments for an order.
+     */
+    suspend fun getCompletedPaymentsSum(orderId: String): BigDecimal
+
+    /**
+     * Persists a new payment record.
+     */
+    suspend fun createPayment(
+        orderId: String,
+        userId: String,
+        request: PaymentRequest,
+    ): PaymentResponse
+
+    /**
+     * Marks an order as fully paid and finalizes its stock reservations.
+     */
+    suspend fun finalizeOrderPayment(orderId: String)
+
+    /**
+     * Resolves the email of the order's owner (for after-commit notifications).
+     */
+    suspend fun getUserEmail(userId: String): String?
 
     /**
      * Retrieves payment details by payment ID.
-     *
-     * @param paymentId The unique identifier of the payment.
-     * @return The payment details.
      */
     suspend fun getPaymentById(paymentId: String): PaymentResponse
 
     /**
      * Retrieves all payments for a specific order.
-     *
-     * @param orderId The unique identifier of the order.
-     * @return A list of payments for the order.
      */
     suspend fun getPaymentsByOrderId(
         orderId: String,

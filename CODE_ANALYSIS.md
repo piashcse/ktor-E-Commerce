@@ -1,6 +1,6 @@
 # Ktor E-Commerce — Codebase Analysis Report
 
-Analyzed 212 Kotlin files. Findings verified by direct inspection of source. Ordered by severity.
+Analyzed 246 Kotlin files. Findings verified by direct inspection of source. Ordered by severity.
 
 > **Status legend:** ✅ DONE = implemented and verified (compiles + `./gradlew build` passes). Items not marked remain open.
 
@@ -39,7 +39,7 @@ Analyzed 212 Kotlin files. Findings verified by direct inspection of source. Ord
 **Before:** PaymentRepositoryImpl.kt:35-57 checked existing payments with no `forUpdate` and no unique constraint — two concurrent `createPayment` calls double-completed an order; `transactionId` was stored but never checked.
 
 **Fixed by:**
-- `createPayment` is now `retryQuery` + locks the order row (`forUpdate()`) so concurrent payments serialize.
+- `createPayment` is now `suspendRetryQuery` + locks the order row (`forUpdate()`) so concurrent payments serialize.
 - Idempotency: a `transactionId` that already exists returns the existing payment instead of creating a duplicate.
 - `V7` migration adds `payment_order_completed_idx` — a partial unique index on `payment(order_id) WHERE status = 'COMPLETED'` as a DB-level guard.
 
@@ -177,7 +177,7 @@ Analyzed 212 Kotlin files. Findings verified by direct inspection of source. Ord
 
 ### ✅ DONE — A3. Events published inside transactions
 **Before:** `tryEmit` before commit → phantom events if tx rolls back; no outbox pattern. `EventBus` counters/subscribers were unsynchronized; `deadLetterCount` read `replayCache` of a `replay=0` flow → always 0; `tryEmit` return value ignored (silent drop on full buffer). `EmailSender` swallowed exceptions, defeating EventBus retry/dead-letter.
-**Fixed by:** `EventBus.publish` now defers events while a DB transaction is active; `query`/`retryQuery` flush them only after commit and discard on rollback (after-commit publishing in `TransactionExt.kt`). Counters are `AtomicLong`, subscribers use `CopyOnWriteArrayList`, `deadLetterCount` is a real counter, `tryEmit` falls back to async `emit` when the buffer is full. `EmailSender.send` rethrows `EmailException` (so EventBus retries then dead-letters) and restores the rate-limit counter on failure.
+**Fixed by:** `EventBus.publish` now defers events while a DB transaction is active; `query`/`suspendRetryQuery` flush them only after commit and discard on rollback (after-commit publishing in `TransactionExt.kt`). Counters are `AtomicLong`, subscribers use `CopyOnWriteArrayList`, `deadLetterCount` is a real counter, `tryEmit` falls back to async `emit` when the buffer is full. `EmailSender.send` rethrows `EmailException` (so EventBus retries then dead-letters) and restores the rate-limit counter on failure.
 
 ### ✅ DONE — A4. Money math duplicated 4×
 **Before:** Money/pricing duplicated in cart summary, checkout summary, placeOrder, createOrder with different rounding/shipping semantics — no shared `Money`/`PriceCalculator`.
@@ -186,6 +186,20 @@ Analyzed 212 Kotlin files. Findings verified by direct inspection of source. Ord
 ### ✅ DONE — A5. No generic base repository
 **Before:** 22 near-identical CRUD repo pairs (Brand vs Category vs ShopCategory vs SubCategory...). No modular monolith boundaries; `CheckoutRoutes` reached across 3 feature packages.
 **Fixed by:** Generic `BaseCrudRepository<DAO, RESP>` in `repository/base/` (create, paged getAll/listAll, findByIdOrThrow, update, delete, exists; abstract `DAO.toResponse()`). Refactored to extend it: `BrandRepositoryImpl`, `ShopCategoryRepositoryImpl`, `ProductCategoryRepositoryImpl`, `ProductSubCategoryRepositoryImpl`, `ShippingMethodRepositoryImpl`, `CouponRepositoryImpl`, `PolicyRepositoryImpl` (policy keeps custom deactivate-siblings logic). Custom-ownership features (shipping_address, consent, profile, order, etc.) intentionally left as-is. Checkout now delegates through `CheckoutService`.
+
+### ✅ DONE — A6. Services own business logic + code-quality cleanup (2026-08)
+Full-project pass moving rules out of repositories and removing duplication/dead code. All items verified (`./gradlew compileKotlin`, `./gradlew ktlintCheck`).
+- **Authz moved to services via typed access facts** — product create (`ProductCreateAccess`, `ProductCrudService` throws `SELLER_REQUIRED`/`NOT_SHOP_OWNER`) and order ownership (`PlaceOrderAccess`, `OrderService` throws `SHIPPING_ADDRESS_UNAUTHORIZED`). Repos are pure persistence + fact reads (`getXxxAccess`); writes are wrapped in `suspendRetryQuery` with authz inside the transaction.
+- **`OrderService.updateOrderStatus`/`cancelOrder` now fully atomic** — authz + transition commit in one transaction; access check runs inside the tx.
+- **Enum parsing centralized** — `String.parseEnum<T>(field)` (→ `InvalidEnumValueException`) used across order/shop/dashboard/inventory/auth; `UserType.fromString` replaces the 3 duplicated `valueOf` try/catch blocks in `JwtTokenRequest`; new `StockOperation` enum (ADD/SUBTRACT/SET).
+- **Not-found normalized** — repos use `String.throwNotFound(resourceName)` instead of `ValidationException(Message.*.NOT_FOUND)`; raw-string 404/400 responses in coupon/inventory/audit-log/refund-request routes replaced with typed exceptions; `UserAuthenticationService` not-founds now identify the missing resource.
+- **Pagination factory** — `PaginatedResponse.of(data, totalCount, limit, offset)` replaces hand-built sites in 5 repos and fixes a `limit=data.size` bug in `ProductRepositoryImpl`.
+- **Coupon date parsing moved to `CouponService`**; `mapper/CouponMappers.kt` extracted (kills inline `toResponse`).
+- **Route authz DSL aligned** — cart/wishlist/profile/auth customer routes use `customerAuth {}` instead of no-role `requireRole {}`; dead `ApplicationCall.requireRole` suspend helper deleted.
+- **Money math consolidated** — `Money.average`/`Money.round`/`Money.plain` in dashboard, payment, and email subscriber; `RoundingMode` duplicated code removed.
+- **Single-source constants** — JWT expiry (`AppConstants.Authentication.JWT_EXPIRY_SECONDS`; was hardcoded 3 ways) and stock min/max (`AppConstants.Inventory.*`); cache keys unified in `constants/CacheKeys.kt`; `ProductCrudService` cache invalidation deduped into one `withCacheInvalidation` helper.
+- **Dead code removed** — `verifyOwnership`, `requireSellerByUserId`, no-arg `throwNotFound()`, non-suspend `retryQuery` (superseded by `suspendRetryQuery`), `SecurityUtils.generateToken`, `Message.Errors.NOT_OWNER`, and 6 unused exceptions (`UnverifiedAccountException`, `DeactivatedAccountException`, `RateLimitExceededException`, `InternalServerException`, `DatabaseException`, `EmailException`).
+- **Repo KDoc corrected** for `InventoryRepository.createOrUpdateInventory` (status computed repo-side because min/max defaults resolve inside the composite-key write); refund `REFUNDED` amount defaulting removed from the repo (unreachable — `RefundRequestService` already requires an amount).
 
 ---
 
@@ -199,8 +213,8 @@ Analyzed 212 Kotlin files. Findings verified by direct inspection of source. Ord
 | OpenAPI | No Bearer security scheme, no error schemas; README references non-existent `openapi.json` |
 | Request validation | `ktor-server-request-validation` declared but never installed; valiktor on some DTOs only |
 | Env/config validation | `ignoreIfMissing=true`/`ignoreIfMalformed=true`; no fail-fast startup validation; dual HOCON+.env systems |
-| Error consistency | Ad-hoc `mapOf`/raw-string bodies alongside `ApiError`; Ktor rate-limit 429 is plain text; malformed JSON → 500 (no `ContentTransformationException` handler); literal bug `"Message.Auth.ACCOUNT_ACTIVATED"` (AuthRoutes.kt:162) |
-| Lint/CI | Both `detekt` and `ktlint` have `ignoreFailures=true` (build.gradle.kts:94,98) → hooks never block; `retryQuery` retries *all* exceptions (3× on validation errors, TransactionExt.kt:30-40); graceful shutdown uses deprecated API |
+| Error consistency | Partially fixed: coupon/inventory/audit-log/refund-request routes now throw typed exceptions (`NotFoundException`/`ValidationException`/`MissingParameterException` → `ApiError`) and the `"Message.Auth.ACCOUNT_ACTIVATED"` literal bug is fixed (now the constant, AuthRoutes.kt:167). Remaining: ad-hoc `mapOf` bodies in auth/product/cart/consent routes; Ktor rate-limit 429 is plain text; malformed JSON → 500 (no `ContentTransformationException` handler) |
+| Lint/CI | Both `detekt` and `ktlint` have `ignoreFailures=true` (build.gradle.kts:94,98) → hooks never block; `suspendRetryQuery` retries *all* exceptions (3× on validation errors, TransactionExt.kt:39); graceful shutdown uses deprecated API |
 | Concurrency | Missing indexes on FK/date/filter columns; no unique constraints on `wishlist(user_id,product_id)`, `cart_item(user_id,product_id)`, `review_rating`; dashboard does per-day queries + N+1 |
 
 ---
@@ -213,6 +227,6 @@ Analyzed 212 Kotlin files. Findings verified by direct inspection of source. Ord
 
 **P1:** ~~cancel-path stock/refund consistency~~ ✅; ~~seller products get inventory~~ ✅; ~~refund authorization/transitions~~ ✅; ~~coupon preview side-effect~~ ✅; ~~deactivation + blacklist enforcement (S4)~~ ✅; ~~reset OTP brute-force + time-based lockout (S5)~~ ✅; ~~login enumeration + email echo (S6)~~ ✅; ~~rate-limit proxy awareness + client IP capture (S7)~~ ✅; ~~password policy + constant-time OTP + SMTP STARTTLS (S8)~~ ✅.
 
-**P2 (architecture):** ~~restore service layer~~ ✅; ~~move DTOs out of `database/entities`~~ ✅; ~~outbox/durable events + fix EmailSubscriber addressing~~ ✅ (after-commit publish); ~~generic `BaseRepository`~~ ✅; ~~shared pricing module~~ ✅; single error-envelope (`ApiError`) everywhere.
+**P2 (architecture):** ~~restore service layer~~ ✅; ~~move DTOs out of `database/entities`~~ ✅; ~~outbox/durable events + fix EmailSubscriber addressing~~ ✅ (after-commit publish); ~~generic `BaseRepository`~~ ✅; ~~shared pricing module~~ ✅; services own business logic (access facts, atomic writes, centralized enum/not-found/pagination/money, single-source constants, dead code removed) ✅ (A6); single error-envelope (`ApiError`) everywhere (partially done — see §5).
 
-**P3 (industry standard):** one integration test (`testApplication` + Testcontainers); real health checks; JSON logging + MDC cleanup; OpenAPI auth schemes; enable lint failures in CI; `retryQuery` → catch only transient DB errors.
+**P3 (industry standard):** one integration test (`testApplication` + Testcontainers); real health checks; JSON logging + MDC cleanup; OpenAPI auth schemes; enable lint failures in CI; `suspendRetryQuery` → catch only transient DB errors.

@@ -1,22 +1,38 @@
 package com.piashcse.feature.shop
 
+import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.model.response.ShopResponse
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.extension.parseEnum
+import com.piashcse.utils.extension.suspendRetryQuery
+import com.piashcse.utils.validator.ForbiddenException
 
 class ShopService(private val shopRepo: ShopRepository) {
+    /**
+     * Creates a new shop. Runs in a retryable transaction.
+     */
     suspend fun createShop(
         userId: String,
         shopRequest: ShopRequest,
-    ): ShopResponse = shopRepo.createShop(userId, shopRequest)
+    ): ShopResponse = suspendRetryQuery {
+        shopRepo.createShop(userId, shopRequest)
+    }
 
+    /**
+     * Updates a shop after verifying ownership. Runs in a retryable transaction.
+     */
     suspend fun updateShop(
         userId: String,
         shopId: String,
         shopRequest: UpdateShopRequest,
-    ): ShopResponse = shopRepo.updateShop(userId, shopId, shopRequest)
+    ): ShopResponse = suspendRetryQuery {
+        val access = shopRepo.getShopAccess(userId, shopId)
+        if (!access.isOwner) throw ForbiddenException(Message.Errors.notOwner("shop"))
+        shopRepo.updateShop(shopId, shopRequest)
+    }
 
     suspend fun getShopById(shopId: String): ShopResponse? = shopRepo.getShopById(shopId)
 
@@ -26,12 +42,18 @@ class ShopService(private val shopRepo: ShopRepository) {
         offset: Int = 0,
     ): PaginatedResponse<ShopResponse> = shopRepo.getShopsByUser(userId, limit, offset)
 
+    /**
+     * Retrieves public shops, validating the status filter before querying.
+     */
     suspend fun getShops(
         status: String? = null,
         category: String? = null,
         limit: Int = 20,
         offset: Int = 0,
-    ): PaginatedResponse<ShopResponse> = shopRepo.getShops(status, category, limit, offset)
+    ): PaginatedResponse<ShopResponse> {
+        val statusEnum = status?.parseEnum<ShopStatus>("status")
+        return shopRepo.getShops(statusEnum, category, limit, offset)
+    }
 
     suspend fun getShopsByCategory(
         categoryId: String,
@@ -50,11 +72,23 @@ class ShopService(private val shopRepo: ShopRepository) {
         offset: Int = 0,
     ): PaginatedResponse<ShopResponse> = shopRepo.getShopsByStatus(status, limit, offset)
 
-    suspend fun approveShop(shopId: String): ShopResponse = shopRepo.approveShop(shopId)
+    /**
+     * Approves a shop application. Runs in a retryable transaction.
+     */
+    suspend fun approveShop(shopId: String): ShopResponse = suspendRetryQuery { shopRepo.approveShop(shopId) }
 
-    suspend fun rejectShop(shopId: String): ShopResponse = shopRepo.rejectShop(shopId)
+    /**
+     * Rejects a shop application. Runs in a retryable transaction.
+     */
+    suspend fun rejectShop(shopId: String): ShopResponse = suspendRetryQuery { shopRepo.rejectShop(shopId) }
 
-    suspend fun suspendShop(shopId: String): ShopResponse = shopRepo.suspendShop(shopId)
+    /**
+     * Suspends a shop. Runs in a retryable transaction.
+     */
+    suspend fun suspendShop(shopId: String): ShopResponse = suspendRetryQuery { shopRepo.suspendShop(shopId) }
 
-    suspend fun activateShop(shopId: String): ShopResponse = shopRepo.activateShop(shopId)
+    /**
+     * Activates a suspended shop. Runs in a retryable transaction.
+     */
+    suspend fun activateShop(shopId: String): ShopResponse = suspendRetryQuery { shopRepo.activateShop(shopId) }
 }

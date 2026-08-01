@@ -1,11 +1,13 @@
 package com.piashcse.feature.inventory
 
+import com.piashcse.constants.Message
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.plugin.RateLimitNames
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
-import io.ktor.http.*
+import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -33,7 +35,7 @@ fun Route.inventorySellerRoutes() {
         put("/stock/{productId}") {
             val productId = call.requirePathParameter("productId")
             val quantityStr = call.requireQueryParameter("quantity")
-            val quantity = quantityStr.toIntOrNull() ?: throw IllegalArgumentException("quantity must be an integer")
+            val quantity = quantityStr.toIntOrNull() ?: throw ValidationException(Message.Errors.invalidParameter("quantity", quantityStr))
             val operation = call.parameters["operation"] ?: "set"
             call.respondOk(inventoryService.updateStock(productId, quantity, operation))
         }
@@ -45,12 +47,10 @@ fun Route.inventorySellerRoutes() {
      */
     get("/product/{productId}") {
         val productId = call.requirePathParameter("productId")
-        val inventory = inventoryService.getInventoryByProduct(productId)
-        if (inventory != null) {
-            call.respondOk(inventory)
-        } else {
-            call.respond(HttpStatusCode.NotFound, "Inventory not found for product")
-        }
+        call.respondOk(
+            inventoryService.getInventoryByProduct(productId)
+                ?: throw NotFoundException(Message.Inventory.NOT_FOUND),
+        )
     }
 
     /**
