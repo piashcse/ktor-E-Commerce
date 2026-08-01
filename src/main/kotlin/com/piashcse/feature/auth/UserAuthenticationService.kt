@@ -4,15 +4,21 @@ import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
-import com.piashcse.database.entities.LoginResponse
 import com.piashcse.event.EventBus
 import com.piashcse.event.SendEmailEvent
 import com.piashcse.event.UserRegisteredEvent
 import com.piashcse.mapper.toUserResponse
+import com.piashcse.model.request.ChangePassword
 import com.piashcse.model.request.ForgotPasswordRequest
 import com.piashcse.model.request.LoginRequest
+import com.piashcse.model.request.LogoutRequest
+import com.piashcse.model.request.RefreshTokenRequest
 import com.piashcse.model.request.RegisterRequest
+import com.piashcse.model.request.ResetRequest
+import com.piashcse.model.request.TokenPair
+import com.piashcse.model.response.LoginResponse
 import com.piashcse.model.response.RegistrationResult
+import com.piashcse.model.response.ResetResult
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.InvalidCredentialsException
 import com.piashcse.utils.validator.ValidationException
@@ -90,8 +96,8 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
         if (!user.isVerified) throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)
 
         authRepo.resetLoginAttempts(loginRequest.email, userTypeEnum)
-        val tokenPair = authRepo.generateTokenPair(user.id.value, user.email, user.userType.name)
-        authRepo.storeRefreshToken(user.id.value, tokenPair.refreshToken)
+        val tokenPair = authRepo.generateTokenPair(user.id, user.email, user.userType.name)
+        authRepo.storeRefreshToken(user.id, tokenPair.refreshToken)
         return LoginResponse(user.toUserResponse(), tokenPair.accessToken, tokenPair.refreshToken, tokenPair.expiresIn)
     }
 
@@ -126,4 +132,38 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
             ),
         )
     }
+
+    suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult =
+        authRepo.resetPassword(resetPasswordRequest)
+
+    suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair =
+        authRepo.refreshAccessToken(request)
+
+    suspend fun logout(
+        userId: String,
+        refreshToken: String?,
+    ): Boolean = authRepo.logout(userId, refreshToken)
+
+    suspend fun blacklistToken(token: String): Boolean = authRepo.blacklistToken(token)
+
+    suspend fun changePassword(
+        userId: String,
+        changePassword: ChangePassword,
+    ): Boolean = authRepo.changePassword(userId, changePassword)
+
+    suspend fun changeUserType(
+        currentUserId: String,
+        targetUserId: String,
+        newUserType: UserType,
+    ): Boolean = authRepo.changeUserType(currentUserId, targetUserId, newUserType)
+
+    suspend fun deactivateUser(
+        currentUserId: String,
+        targetUserId: String,
+    ): Boolean = authRepo.deactivateUser(currentUserId, targetUserId)
+
+    suspend fun activateUser(
+        currentUserId: String,
+        targetUserId: String,
+    ): Boolean = authRepo.activateUser(currentUserId, targetUserId)
 }

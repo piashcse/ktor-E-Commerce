@@ -13,14 +13,14 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Route.couponRoutes() {
-    val couponRepo: CouponRepository by inject()
+    val couponService: CouponService by inject()
     /**
      * @tag Coupon
      * @description Retrieve detailed information about a coupon by its code
      */
     get("{code}") {
         val code = call.requirePathParameter("code")
-        val coupon = couponRepo.getCouponByCode(code)
+        val coupon = couponService.getCouponByCode(code)
         if (coupon != null) {
             call.respondOk(coupon)
         } else {
@@ -30,14 +30,14 @@ fun Route.couponRoutes() {
 }
 
 fun Route.couponAdminRoutes() {
-    val couponRepo: CouponRepository by inject()
+    val couponService: CouponService by inject()
     rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
         /**
          * @tag Coupon
          * @description Admin: Create a new discount coupon
          */
         post {
-            call.respondCreated(couponRepo.createCoupon(call.receive<CouponRequest>()))
+            call.respondCreated(couponService.createCoupon(call.receive<CouponRequest>()))
         }
 
         /**
@@ -46,7 +46,7 @@ fun Route.couponAdminRoutes() {
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(couponRepo.updateCoupon(id, call.receive<CouponRequest>()))
+            call.respondOk(couponService.updateCoupon(id, call.receive<CouponRequest>()))
         }
 
         /**
@@ -55,7 +55,7 @@ fun Route.couponAdminRoutes() {
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(couponRepo.deleteCoupon(id))
+            call.respondOk(couponService.deleteCoupon(id))
         }
     }
 
@@ -65,6 +65,6 @@ fun Route.couponAdminRoutes() {
      */
     get {
         val (limit, offset) = call.paginateQueryParams(defaultPerPage = 10)
-        call.respondOk(couponRepo.getCoupons(limit, offset))
+        call.respondOk(couponService.getCoupons(limit, offset))
     }
 }

@@ -16,7 +16,7 @@ import org.koin.ktor.ext.inject
  * Product review and rating routes.
  */
 fun Route.reviewRatingRoutes() {
-    val reviewRatingRepo: ReviewRatingRepository by inject()
+    val reviewRatingService: ReviewRatingService by inject()
     /**
      * @tag Review-Rating
      * @description Retrieve reviews and ratings for a specific product
@@ -24,7 +24,7 @@ fun Route.reviewRatingRoutes() {
     get {
         val productId = call.requireQueryParameter("productId")
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(reviewRatingRepo.getReviewRating(productId, limit, offset))
+        call.respondOk(reviewRatingService.getReviewRating(productId, limit, offset))
     }
 
     customerAuth {
@@ -34,7 +34,7 @@ fun Route.reviewRatingRoutes() {
              * @description Submit a new review and rating for a product
              */
             post {
-                call.respondCreated(reviewRatingRepo.addReviewRating(call.currentUserId, call.receive<ReviewRatingRequest>()))
+                call.respondCreated(reviewRatingService.addReviewRating(call.currentUserId, call.receive<ReviewRatingRequest>()))
             }
 
             /**
@@ -45,7 +45,7 @@ fun Route.reviewRatingRoutes() {
                 val id = call.requirePathParameter("id")
                 val review = call.requireQueryParameter("review")
                 val rating = call.requireQueryParameter("rating")
-                call.respondOk(reviewRatingRepo.updateReviewRating(call.currentUserId, id, review, rating.toInt()))
+                call.respondOk(reviewRatingService.updateReviewRating(call.currentUserId, id, review, rating.toInt()))
             }
 
             /**
@@ -54,7 +54,7 @@ fun Route.reviewRatingRoutes() {
              */
             delete("{id}") {
                 val id = call.requirePathParameter("id")
-                call.respondOk(reviewRatingRepo.deleteReviewRating(call.currentUserId, id))
+                call.respondOk(reviewRatingService.deleteReviewRating(call.currentUserId, id))
             }
         }
     }

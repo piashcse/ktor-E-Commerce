@@ -1,7 +1,7 @@
 package com.piashcse.feature.wishlist
 
-import com.piashcse.database.entities.WishList
 import com.piashcse.model.response.ProductResponse
+import com.piashcse.model.response.WishListResponse
 import com.piashcse.utils.common.PaginatedResponse
 
 interface WishListRepository {
@@ -15,7 +15,7 @@ interface WishListRepository {
     suspend fun addToWishList(
         userId: String,
         productId: String,
-    ): WishList
+    ): WishListResponse
 
     /**
      * Retrieves a list of products from the user's wish list.

@@ -1,6 +1,6 @@
 package com.piashcse.feature.cart
 
-import com.piashcse.database.entities.Cart
+import com.piashcse.model.response.CartResponse
 import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -18,7 +18,7 @@ interface CartRepository {
         userId: String,
         productId: String,
         quantity: Int,
-    ): Cart
+    ): CartResponse
 
     /**
      * Retrieves all cart items for a user.
@@ -31,7 +31,7 @@ interface CartRepository {
         userId: String,
         limit: Int,
         offset: Int = 0,
-    ): PaginatedResponse<Cart>
+    ): PaginatedResponse<CartResponse>
 
     /**
      * Updates the quantity of a specific product in the cart.
@@ -45,7 +45,7 @@ interface CartRepository {
         userId: String,
         productId: String,
         quantity: Int,
-    ): Cart?
+    ): CartResponse?
 
     /**
      * Removes a specific product from the cart.

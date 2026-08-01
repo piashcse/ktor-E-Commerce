@@ -16,7 +16,7 @@ import org.koin.ktor.ext.inject
  * Customer wishlist management routes.
  */
 fun Route.wishListRoutes() {
-    val wishlistRepo: WishListRepository by inject()
+    val wishlistService: WishListService by inject()
     requireRole {
         rateLimit(RateLimitName(RateLimitNames.WRITE)) {
             /**
@@ -24,7 +24,7 @@ fun Route.wishListRoutes() {
              * @description Add a product to the authenticated user's wishlist
              */
             post {
-                call.respondCreated(wishlistRepo.addToWishList(call.currentUserId, call.receive<WishListRequest>().productId))
+                call.respondCreated(wishlistService.addToWishList(call.currentUserId, call.receive<WishListRequest>().productId))
             }
 
             /**
@@ -33,7 +33,7 @@ fun Route.wishListRoutes() {
              */
             delete("remove") {
                 val productId = call.requireQueryParameter("productId")
-                call.respondOk(wishlistRepo.removeFromWishList(call.currentUserId, productId))
+                call.respondOk(wishlistService.removeFromWishList(call.currentUserId, productId))
             }
         }
 
@@ -43,7 +43,7 @@ fun Route.wishListRoutes() {
          */
         get {
             val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(wishlistRepo.getWishList(call.currentUserId, limit, offset))
+            call.respondOk(wishlistService.getWishList(call.currentUserId, limit, offset))
         }
 
         /**
@@ -52,7 +52,7 @@ fun Route.wishListRoutes() {
          */
         get("check") {
             val productId = call.requireQueryParameter("productId")
-            call.respondOk(wishlistRepo.isProductInWishList(call.currentUserId, productId))
+            call.respondOk(wishlistService.isProductInWishList(call.currentUserId, productId))
         }
     }
 }

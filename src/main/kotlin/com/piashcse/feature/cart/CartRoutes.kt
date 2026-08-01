@@ -16,7 +16,7 @@ import org.koin.ktor.ext.inject
  * Customer shopping cart routes.
  */
 fun Route.cartRoutes() {
-    val cartRepo: CartRepository by inject()
+    val cartService: CartService by inject()
     requireRole {
         rateLimit(RateLimitName(RateLimitNames.WRITE)) {
             /**
@@ -24,7 +24,7 @@ fun Route.cartRoutes() {
              * @description Add an item to the authenticated user's cart
              */
             post {
-                call.respondCreated(call.receive<CartRequest>().let { cartRepo.createCart(call.currentUserId, it.productId, it.quantity) })
+                call.respondCreated(call.receive<CartRequest>().let { cartService.createCart(call.currentUserId, it.productId, it.quantity) })
             }
 
             /**
@@ -32,7 +32,7 @@ fun Route.cartRoutes() {
              * @description Set the absolute quantity of an item in the cart (0 removes the item)
              */
             put("update") {
-                val result = call.receive<CartRequest>().let { cartRepo.updateCartQuantity(call.currentUserId, it.productId, it.quantity) }
+                val result = call.receive<CartRequest>().let { cartService.updateCartQuantity(call.currentUserId, it.productId, it.quantity) }
                 call.respondOk(result ?: mapOf("message" to "Item removed from cart"))
             }
 
@@ -42,7 +42,7 @@ fun Route.cartRoutes() {
              */
             delete("remove") {
                 val productId = call.requireQueryParameter("productId")
-                call.respondOk(cartRepo.removeCartItem(call.currentUserId, productId))
+                call.respondOk(cartService.removeCartItem(call.currentUserId, productId))
             }
 
             /**
@@ -50,7 +50,7 @@ fun Route.cartRoutes() {
              * @description Remove all items from the authenticated user's cart
              */
             delete("all") {
-                call.respondOk(cartRepo.clearCart(call.currentUserId))
+                call.respondOk(cartService.clearCart(call.currentUserId))
             }
         }
 
@@ -60,7 +60,7 @@ fun Route.cartRoutes() {
          */
         get {
             val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(cartRepo.getCartItems(call.currentUserId, limit, offset))
+            call.respondOk(cartService.getCartItems(call.currentUserId, limit, offset))
         }
 
         /**
@@ -68,7 +68,7 @@ fun Route.cartRoutes() {
          * @description Retrieve a summary of the cart (totals, counts)
          */
         get("summary") {
-            call.respondOk(cartRepo.getCartSummary(call.currentUserId))
+            call.respondOk(cartService.getCartSummary(call.currentUserId))
         }
     }
 }

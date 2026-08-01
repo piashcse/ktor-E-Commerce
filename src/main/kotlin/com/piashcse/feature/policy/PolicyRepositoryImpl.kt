@@ -8,6 +8,8 @@ import com.piashcse.mapper.toPolicyDocumentResponse
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.model.response.PolicyDocumentResponse
+import com.piashcse.repository.base.BaseCrudRepository
+import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.validator.ValidationException
@@ -17,7 +19,15 @@ import org.jetbrains.exposed.v1.core.neq
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class PolicyRepositoryImpl : PolicyRepository {
+class PolicyRepositoryImpl : PolicyRepository,
+    BaseCrudRepository<PolicyDocumentDAO, PolicyDocumentResponse>(
+        PolicyDocumentDAO,
+        PolicyDocumentTable,
+        "Policy",
+    ) {
+
+    override fun PolicyDocumentDAO.toResponse(): PolicyDocumentResponse = toPolicyDocumentResponse()
+
     override suspend fun createPolicy(createPolicyRequest: CreatePolicyRequest): PolicyDocumentResponse =
         query {
             val policyDocument =
@@ -28,15 +38,9 @@ class PolicyRepositoryImpl : PolicyRepository {
                     version = createPolicyRequest.version
                     effectiveDate = LocalDateTime.parse(createPolicyRequest.effectiveDate, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 }
-
             if (policyDocument.isActive) {
-                PolicyDocumentDAO.find {
-                    PolicyDocumentTable.type eq createPolicyRequest.type and
-                        (PolicyDocumentTable.id neq policyDocument.id) and
-                        (PolicyDocumentTable.isActive eq true)
-                }.forEach { it.isActive = false }
+                deactivateSiblingsTx(policyDocument.id.value, policyDocument.type, policyDocument.isActive)
             }
-
             policyDocument.toPolicyDocumentResponse()
         }
 
@@ -46,22 +50,12 @@ class PolicyRepositoryImpl : PolicyRepository {
     ): PolicyDocumentResponse =
         query {
             val policyDocument = PolicyDocumentDAO.findById(id) ?: id.throwNotFound("Policy")
-
             updatePolicyRequest.title?.let { policyDocument.title = it }
             updatePolicyRequest.content?.let { policyDocument.content = it }
             updatePolicyRequest.version?.let { policyDocument.version = it }
             updatePolicyRequest.effectiveDate?.let { policyDocument.effectiveDate = LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME) }
-            updatePolicyRequest.isActive?.let {
-                policyDocument.isActive = it
-
-                if (it) {
-                    PolicyDocumentDAO.find {
-                        PolicyDocumentTable.type eq policyDocument.type and
-                            (PolicyDocumentTable.id neq policyDocument.id) and
-                            (PolicyDocumentTable.isActive eq true)
-                    }.forEach { otherPolicy -> otherPolicy.isActive = false }
-                }
-            }
+            updatePolicyRequest.isActive?.let { policyDocument.isActive = it }
+            deactivateSiblingsTx(id, policyDocument.type, policyDocument.isActive)
             policyDocument.toPolicyDocumentResponse()
         }
 
@@ -99,4 +93,13 @@ class PolicyRepositoryImpl : PolicyRepository {
             policyDocument.isActive = false
             true
         }
+
+    private fun deactivateSiblingsTx(id: String, type: PolicyType, isActive: Boolean) {
+        if (!isActive) return
+        PolicyDocumentDAO.find {
+            PolicyDocumentTable.type eq type and
+                (PolicyDocumentTable.id neq id.entityID(PolicyDocumentTable)) and
+                (PolicyDocumentTable.isActive eq true)
+        }.forEach { it.isActive = false }
+    }
 }

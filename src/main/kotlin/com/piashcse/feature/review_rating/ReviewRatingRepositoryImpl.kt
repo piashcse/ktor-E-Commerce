@@ -11,13 +11,13 @@ import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.model.response.ReviewRatingResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.money.Money
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 class ReviewRatingRepositoryImpl : ReviewRatingRepository {
     private fun recalculateProductRating(productId: String) {
@@ -28,7 +28,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
             product.totalReviews = 0
         } else {
             val total = reviews.map { it.rating.toBigDecimal() }.reduce(BigDecimal::add)
-            product.rating = total.divide(reviews.size.toBigDecimal(), 2, RoundingMode.HALF_UP)
+            product.rating = Money.average(total, reviews.size)
             product.totalReviews = reviews.size
         }
     }

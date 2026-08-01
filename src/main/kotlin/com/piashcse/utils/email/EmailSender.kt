@@ -33,8 +33,8 @@ object EmailSender {
         }
         CacheService.cache.set(rateLimitKey, recentSends + 1, EMAIL_WINDOW_SECONDS)
 
-        withContext(Dispatchers.IO) {
-            try {
+        try {
+            withContext(Dispatchers.IO) {
                 SimpleEmail().apply {
                     hostName = smtpHost
                     setSmtpPort(emailPort)
@@ -48,10 +48,13 @@ object EmailSender {
                     addTo(toEmail)
                     send()
                 }
-                log.info("Email sent successfully to $toEmail (subject: $subject)")
-            } catch (e: EmailException) {
-                log.error("Failed to send email to $toEmail: ${e.message}", e)
             }
+            log.info("Email sent successfully to $toEmail (subject: $subject)")
+        } catch (e: EmailException) {
+            // Roll back the rate-limit counter so failed attempts don't burn the window.
+            CacheService.cache.set(rateLimitKey, recentSends, EMAIL_WINDOW_SECONDS)
+            log.error("Failed to send email to $toEmail: ${e.message}", e)
+            throw e
         }
     }
 }

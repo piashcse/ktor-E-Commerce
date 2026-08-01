@@ -19,7 +19,7 @@ import org.koin.ktor.ext.inject
  * Routes for managing user policy consents.
  */
 fun Route.consentRoutes() {
-    val consentRepo: ConsentRepository by inject()
+    val consentService: ConsentService by inject()
     customerAuth {
         rateLimit(RateLimitName(RateLimitNames.WRITE)) {
             /**
@@ -28,7 +28,7 @@ fun Route.consentRoutes() {
              */
             post("consent") {
                 call.respondOk(call.receive<PolicyConsentRequest>().let {
-                    consentRepo.recordConsent(call.currentUserId, it.copy(it.policyId, call.request.origin.remoteHost, call.request.headers["User-Agent"]))
+                    consentService.recordConsent(call.currentUserId, it.copy(it.policyId, call.request.origin.remoteHost, call.request.headers["User-Agent"]))
                 })
             }
         }
@@ -40,7 +40,7 @@ fun Route.consentRoutes() {
          * @description Retrieve all consent records for the authenticated user
          */
         get {
-            call.respondOk(consentRepo.getUserConsents(call.currentUserId))
+            call.respondOk(consentService.getUserConsents(call.currentUserId))
         }
 
         /**
@@ -48,7 +48,7 @@ fun Route.consentRoutes() {
          * @description Check if the user has consented to a specific policy type
          */
         get("{policyType}") {
-            call.respondOk(mapOf("hasConsented" to consentRepo.hasUserConsented(call.currentUserId, call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type"))))
+            call.respondOk(mapOf("hasConsented" to consentService.hasUserConsented(call.currentUserId, call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type"))))
         }
     }
 }

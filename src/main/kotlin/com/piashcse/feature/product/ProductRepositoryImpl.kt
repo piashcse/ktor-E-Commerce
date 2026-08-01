@@ -16,6 +16,7 @@ import com.piashcse.model.response.SearchResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.money.Money
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.NotFoundException
 import org.jetbrains.exposed.v1.core.*
@@ -24,7 +25,6 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.sql.Connection
 import java.sql.PreparedStatement
 
@@ -38,9 +38,7 @@ class ProductRepositoryImpl : ProductRepository {
             System.currentTimeMillis().toString().takeLast(6)
 
     private fun calcDiscountPct(price: Double, discountPrice: Double?): BigDecimal? =
-        if (discountPrice != null && discountPrice < price)
-            BigDecimal.valueOf((price - discountPrice) / price * 100).setScale(2, RoundingMode.HALF_UP)
-        else null
+        discountPrice?.let { Money.discountPercent(BigDecimal.valueOf(price), BigDecimal.valueOf(it)) }
 
     private fun Query.applyProductFilters(filter: ProductWithFilterRequest): Query {
         filter.categoryId?.let { andWhere { ProductTable.categoryId eq it.entityID(ProductCategoryTable) } }

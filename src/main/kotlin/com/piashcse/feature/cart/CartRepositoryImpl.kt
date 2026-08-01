@@ -1,16 +1,17 @@
 package com.piashcse.feature.cart
 
-import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.mapper.toCartItemSummary
 import com.piashcse.mapper.toCartResponse
 import com.piashcse.mapper.toProductResponse
+import com.piashcse.model.response.CartResponse
 import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.money.Money
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
@@ -20,7 +21,6 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 class CartRepositoryImpl : CartRepository {
 
@@ -34,7 +34,7 @@ class CartRepositoryImpl : CartRepository {
         userId: String,
         productId: String,
         quantity: Int,
-    ): Cart = query {
+    ): CartResponse = query {
         requireCartParams(userId, productId, quantity)
 
         val existing = CartItemDAO.find {
@@ -53,7 +53,7 @@ class CartRepositoryImpl : CartRepository {
         userId: String,
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<Cart> = query {
+    ): PaginatedResponse<CartResponse> = query {
         val query = CartItemTable.selectAll().andWhere { CartItemTable.userId eq userId }
         val (totalCount, rows) = query.toPaginatedList(limit, offset) { it }
         val productIds = rows.map { it[CartItemTable.productId] }
@@ -79,7 +79,7 @@ class CartRepositoryImpl : CartRepository {
         userId: String,
         productId: String,
         quantity: Int,
-    ): Cart? = query {
+    ): CartResponse? = query {
         requireCartParams(userId, productId)
 
         val cartItem = CartItemDAO.find {
@@ -141,9 +141,11 @@ class CartRepositoryImpl : CartRepository {
             emptyMap()
         }
 
+        val lines = mutableListOf<Pair<BigDecimal, Int>>()
         val items = cartItems.mapNotNull { cartItem ->
             val product = products[cartItem.productId.value] ?: return@mapNotNull null
             val unitPrice = product.discountPrice ?: product.price
+            lines += unitPrice to cartItem.quantity
             cartItem.toCartItemSummary(
                 product = product,
                 unitPrice = unitPrice,
@@ -153,8 +155,8 @@ class CartRepositoryImpl : CartRepository {
             )
         }
 
-        val subtotal = items.sumOf { BigDecimal(it.price) * BigDecimal(it.quantity) }.setScale(2, RoundingMode.HALF_UP)
-        val tax = subtotal.multiply(BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString())).setScale(2, RoundingMode.HALF_UP)
-        CartSummaryResponse(items, subtotal.toPlainString(), tax.toPlainString(), items.size)
+        val subtotal = Money.subtotal(lines)
+        val tax = Money.taxOn(subtotal)
+        CartSummaryResponse(items, Money.plain(subtotal), Money.plain(tax), items.size)
     }
 }

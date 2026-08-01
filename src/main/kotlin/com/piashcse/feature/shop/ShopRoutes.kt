@@ -18,14 +18,14 @@ import org.koin.ktor.ext.inject
  * Shop Discovery Routes.
  */
 fun Route.shopRoutes() {
-    val shopRepo: ShopRepository by inject()
+    val shopService: ShopService by inject()
     /**
      * @tag Shop
      * @description Retrieve detailed information about a specific shop
      */
     get("/{id}") {
         val shopId = call.requirePathParameter("id")
-        val shop = shopRepo.getShopById(shopId) ?: throw NotFoundException(Message.Shops.NOT_FOUND)
+        val shop = shopService.getShopById(shopId) ?: throw NotFoundException(Message.Shops.NOT_FOUND)
         call.respondOk(shop)
     }
 
@@ -36,7 +36,7 @@ fun Route.shopRoutes() {
          */
         get("/public") {
             val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(shopRepo.getShops(call.request.queryParameters["status"], call.request.queryParameters["category"], limit, offset))
+            call.respondOk(shopService.getShops(call.request.queryParameters["status"], call.request.queryParameters["category"], limit, offset))
         }
 
         /**
@@ -46,7 +46,7 @@ fun Route.shopRoutes() {
         get("/category/{categoryId}") {
             val categoryId = call.requirePathParameter("categoryId")
             val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(shopRepo.getShopsByCategory(categoryId, limit, offset))
+            call.respondOk(shopService.getShopsByCategory(categoryId, limit, offset))
         }
 
         /**
@@ -55,7 +55,7 @@ fun Route.shopRoutes() {
          */
         get("/featured") {
             val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(shopRepo.getFeaturedShops(limit, offset))
+            call.respondOk(shopService.getFeaturedShops(limit, offset))
         }
     }
 }
@@ -64,14 +64,14 @@ fun Route.shopRoutes() {
  * V1 Seller Shop Management Routes.
  */
 fun Route.shopSellerRoutesV1() {
-    val shopRepo: ShopRepository by inject()
+    val shopService: ShopService by inject()
     rateLimit(RateLimitName(RateLimitNames.SELLER_WRITE)) {
         /**
          * @tag Shop
          * @description Seller: Create a new shop
          */
         post {
-            call.respondCreated(shopRepo.createShop(call.currentUserId, call.receive<ShopRequest>()))
+            call.respondCreated(shopService.createShop(call.currentUserId, call.receive<ShopRequest>()))
         }
 
         /**
@@ -80,7 +80,7 @@ fun Route.shopSellerRoutesV1() {
          */
         put("/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(shopRepo.updateShop(call.currentUserId, shopId, call.receive<UpdateShopRequest>()))
+            call.respondOk(shopService.updateShop(call.currentUserId, shopId, call.receive<UpdateShopRequest>()))
         }
     }
 
@@ -90,7 +90,7 @@ fun Route.shopSellerRoutesV1() {
      */
     get {
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(shopRepo.getShopsByUser(call.currentUserId, limit, offset))
+        call.respondOk(shopService.getShopsByUser(call.currentUserId, limit, offset))
     }
 }
 
@@ -98,7 +98,7 @@ fun Route.shopSellerRoutesV1() {
  * Admin Shop Management Routes.
  */
 fun Route.shopAdminRoutes() {
-    val shopRepo: ShopRepository by inject()
+    val shopService: ShopService by inject()
     rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
         /**
          * @tag Shop
@@ -106,7 +106,7 @@ fun Route.shopAdminRoutes() {
          */
         put("/approve/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(shopRepo.approveShop(shopId))
+            call.respondOk(shopService.approveShop(shopId))
         }
 
         /**
@@ -115,7 +115,7 @@ fun Route.shopAdminRoutes() {
          */
         put("/reject/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(shopRepo.rejectShop(shopId))
+            call.respondOk(shopService.rejectShop(shopId))
         }
 
         /**
@@ -124,7 +124,7 @@ fun Route.shopAdminRoutes() {
          */
         put("/suspend/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(shopRepo.suspendShop(shopId))
+            call.respondOk(shopService.suspendShop(shopId))
         }
 
         /**
@@ -133,7 +133,7 @@ fun Route.shopAdminRoutes() {
          */
         put("/activate/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(shopRepo.activateShop(shopId))
+            call.respondOk(shopService.activateShop(shopId))
         }
     }
 
@@ -143,6 +143,6 @@ fun Route.shopAdminRoutes() {
      */
     get("/status") {
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(shopRepo.getShopsByStatus(call.requireQueryParameter("status").parseEnum<ShopStatus>("shop status"), limit, offset))
+        call.respondOk(shopService.getShopsByStatus(call.requireQueryParameter("status").parseEnum<ShopStatus>("shop status"), limit, offset))
     }
 }

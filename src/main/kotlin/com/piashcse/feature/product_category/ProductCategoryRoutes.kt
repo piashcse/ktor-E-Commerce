@@ -13,14 +13,14 @@ import org.koin.ktor.ext.inject
  * Public product category routes.
  */
 fun Route.productCategoryRoutes() {
-    val productCategoryRepo: ProductCategoryRepository by inject()
+    val productCategoryService: ProductCategoryService by inject()
     /**
      * @tag Product-Category
      * @description Retrieve a paginated list of all product categories
      */
     get {
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(productCategoryRepo.getCategories(limit, offset))
+        call.respondOk(productCategoryService.getCategories(limit, offset))
     }
 }
 
@@ -28,7 +28,7 @@ fun Route.productCategoryRoutes() {
  * Admin product category management routes.
  */
 fun Route.productCategoryAdminRoutes() {
-    val productCategoryRepo: ProductCategoryRepository by inject()
+    val productCategoryService: ProductCategoryService by inject()
     rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
         /**
          * @tag Product-Category
@@ -36,7 +36,7 @@ fun Route.productCategoryAdminRoutes() {
          */
         post {
             val name = call.requireQueryParameter("name")
-            call.respondCreated(productCategoryRepo.createCategory(name))
+            call.respondCreated(productCategoryService.createCategory(name))
         }
 
         /**
@@ -46,7 +46,7 @@ fun Route.productCategoryAdminRoutes() {
         put("{id}") {
             val id = call.requirePathParameter("id")
             val name = call.requireQueryParameter("name")
-            call.respondOk(productCategoryRepo.updateCategory(id, name))
+            call.respondOk(productCategoryService.updateCategory(id, name))
         }
 
         /**
@@ -55,7 +55,7 @@ fun Route.productCategoryAdminRoutes() {
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(productCategoryRepo.deleteCategory(id))
+            call.respondOk(productCategoryService.deleteCategory(id))
         }
     }
 }

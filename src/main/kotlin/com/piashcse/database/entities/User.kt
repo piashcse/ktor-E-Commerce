@@ -5,8 +5,7 @@ import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.mapper.toSellerResponse
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
+import com.piashcse.model.response.SellerResponse
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.datetime
@@ -56,26 +55,3 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
      */
     fun isActiveAndVerified(): Boolean = isVerified && isActive
 }
-
-@Serializable
-data class UserResponse(
-    val id: String,
-    val email: String,
-    val isVerified: Boolean?,
-    var userType: UserType,
-    val isActive: Boolean,
-    val createdAt: @Contextual LocalDateTime?,
-    val updatedAt: @Contextual LocalDateTime?,
-)
-
-@Serializable
-data class LoginResponse(
-    val user: UserResponse?,
-    val accessToken: String,
-    val refreshToken: String = "",
-    val expiresIn: Long = 900,
-    val tokenType: String = "Bearer",
-)
-
-@Serializable
-data class ChangePassword(val oldPassword: String, val newPassword: String)

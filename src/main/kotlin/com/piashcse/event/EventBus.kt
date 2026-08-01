@@ -4,6 +4,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import org.slf4j.LoggerFactory
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicLong
 
 interface Subscriber {
     suspend fun onEvent(event: DomainEvent)
@@ -27,23 +29,32 @@ object EventBus {
     private val log = LoggerFactory.getLogger(EventBus::class.java)
     private val _events = MutableSharedFlow<DomainEvent>(extraBufferCapacity = 64)
     val events = _events.asSharedFlow()
-    private val subscribers = mutableListOf<Subscriber>()
+    private val subscribers = CopyOnWriteArrayList<Subscriber>()
     private var job: Job? = null
 
-    private var publishedCount = 0L
-    private var consumedCount = 0L
-    private var failedCount = 0L
+    private val publishedCount = AtomicLong(0)
+    private val consumedCount = AtomicLong(0)
+    private val failedCount = AtomicLong(0)
+    private val deadLetterCount = AtomicLong(0)
 
     private val _deadLetter = MutableSharedFlow<DeadLetterEvent>(extraBufferCapacity = 64)
     val deadLetterEvents = _deadLetter.asSharedFlow()
 
     private const val MAX_RETRIES = 3
 
+    // Scope used to drain events that cannot be emitted synchronously (buffer full).
+    private val publishScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    // Deferred publishing: events published inside a DB transaction are buffered
+    // on the current thread and only emitted after the surrounding transaction commits.
+    private val pendingDepth = ThreadLocal.withInitial { 0 }
+    private val pendingEvents = ThreadLocal.withInitial { mutableListOf<DomainEvent>() }
+
     fun metrics(): EventBusMetrics = EventBusMetrics(
-        published = publishedCount,
-        consumed = consumedCount,
-        failed = failedCount,
-        deadLetterCount = _deadLetter.replayCache.size,
+        published = publishedCount.get(),
+        consumed = consumedCount.get(),
+        failed = failedCount.get(),
+        deadLetterCount = deadLetterCount.get().toInt(),
     )
 
     fun subscribe(subscriber: Subscriber) {
@@ -51,8 +62,51 @@ object EventBus {
     }
 
     fun publish(event: DomainEvent) {
-        _events.tryEmit(event)
-        publishedCount++
+        if (pendingDepth.get() > 0) {
+            pendingEvents.get().add(event)
+        } else {
+            emit(event)
+        }
+    }
+
+    private fun emit(event: DomainEvent) {
+        if (_events.tryEmit(event)) {
+            publishedCount.incrementAndGet()
+        } else {
+            publishScope.launch {
+                _events.emit(event)
+                publishedCount.incrementAndGet()
+            }
+        }
+    }
+
+    /** Marks the beginning of a transaction scope; published events are deferred until commit. */
+    fun beginAfterCommitScope() {
+        pendingDepth.set(pendingDepth.get() + 1)
+    }
+
+    /** Flushes events deferred during the transaction after a successful commit. */
+    fun commitAfterCommitScope() {
+        val depth = pendingDepth.get() - 1
+        if (depth == 0) {
+            val events = pendingEvents.get()
+            pendingEvents.set(mutableListOf())
+            pendingDepth.set(0)
+            events.forEach { emit(it) }
+        } else {
+            pendingDepth.set(depth)
+        }
+    }
+
+    /** Discards events deferred during a rolled-back transaction. */
+    fun abortAfterCommitScope() {
+        val depth = pendingDepth.get() - 1
+        if (depth <= 0) {
+            pendingEvents.set(mutableListOf())
+            pendingDepth.set(0)
+        } else {
+            pendingDepth.set(depth)
+        }
     }
 
     fun start(scope: CoroutineScope) {
@@ -79,12 +133,13 @@ object EventBus {
                         }
                     }
                     if (lastError != null) {
-                        failedCount++
+                        failedCount.incrementAndGet()
                         log.error(
                             "${subscriber::class.simpleName} permanently failed on ${event::class.simpleName}" +
                                 " after $MAX_RETRIES attempts",
                             lastError,
                         )
+                        deadLetterCount.incrementAndGet()
                         _deadLetter.tryEmit(
                             DeadLetterEvent(
                                 event = event,
@@ -95,7 +150,7 @@ object EventBus {
                         )
                     }
                 }
-                consumedCount++
+                consumedCount.incrementAndGet()
             }
         }
     }
@@ -103,5 +158,6 @@ object EventBus {
     fun stop() {
         job?.cancel()
         job = null
+        publishScope.cancel()
     }
 }

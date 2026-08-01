@@ -16,7 +16,7 @@ import org.koin.ktor.ext.inject
  * Public brand routes.
  */
 fun Route.brandRoutes() {
-    val brandRepo: BrandRepository by inject()
+    val brandService: BrandService by inject()
     requireRole(UserType.CUSTOMER, UserType.SELLER, UserType.ADMIN) {
         /**
          * @tag Brand
@@ -24,7 +24,7 @@ fun Route.brandRoutes() {
          */
         get {
             val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(brandRepo.getBrands(limit, offset))
+            call.respondOk(brandService.getBrands(limit, offset))
         }
     }
 }
@@ -33,14 +33,14 @@ fun Route.brandRoutes() {
  * Admin brand management routes.
  */
 fun Route.brandAdminRoutes() {
-    val brandRepo: BrandRepository by inject()
+    val brandService: BrandService by inject()
     rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
         /**
          * @tag Brand
          * @description Admin: Create a new brand
          */
         post {
-            call.respondCreated(brandRepo.createBrand(call.receive<BrandRequest>().name))
+            call.respondCreated(brandService.createBrand(call.receive<BrandRequest>().name))
         }
 
         /**
@@ -50,7 +50,7 @@ fun Route.brandAdminRoutes() {
         put("{id}") {
             val id = call.requirePathParameter("id")
             val name = call.requireQueryParameter("name")
-            call.respondOk(brandRepo.updateBrand(id, name))
+            call.respondOk(brandService.updateBrand(id, name))
         }
 
         /**
@@ -59,7 +59,7 @@ fun Route.brandAdminRoutes() {
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(brandRepo.deleteBrand(id))
+            call.respondOk(brandService.deleteBrand(id))
         }
     }
 }

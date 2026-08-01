@@ -1,6 +1,7 @@
 package com.piashcse.feature.product
 
 import com.piashcse.model.request.ProductSearchRequest
+import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.model.response.SearchResponse
 import com.piashcse.service.Cache
@@ -18,6 +19,19 @@ class ProductCatalogService(
 
     suspend fun getProductDetail(productId: String): ProductResponse =
         cachedOrQuery("products:detail:$productId") { productRepo.getProductDetail(productId) }
+
+    suspend fun getProducts(productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse> =
+        productRepo.getProducts(productQuery)
+
+    suspend fun getProductsByUser(
+        userId: String,
+        productQuery: ProductWithFilterRequest,
+    ): PaginatedResponse<ProductResponse> = productRepo.getProductsByUser(userId, productQuery)
+
+    suspend fun incrementViewCount(productId: String) {
+        productRepo.incrementViewCount(productId)
+        cache.invalidatePattern("products:detail:$productId")
+    }
 
     suspend fun getFeaturedProducts(): PaginatedResponse<ProductResponse> =
         cachedOrQuery("products:featured") { productRepo.getFeaturedProducts() }

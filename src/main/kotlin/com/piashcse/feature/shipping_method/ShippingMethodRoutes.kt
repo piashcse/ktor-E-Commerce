@@ -10,14 +10,14 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Route.shippingMethodAdminRoutes() {
-    val shippingMethodRepo: ShippingMethodRepository by inject()
+    val shippingMethodService: ShippingMethodService by inject()
     rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
         /**
          * @tag Shipping-Method
          * @description Admin: Create a new shipping method
          */
         post {
-            call.respondCreated(shippingMethodRepo.createShippingMethod(call.receive<ShippingMethodRequest>()))
+            call.respondCreated(shippingMethodService.createShippingMethod(call.receive<ShippingMethodRequest>()))
         }
 
         /**
@@ -26,7 +26,7 @@ fun Route.shippingMethodAdminRoutes() {
          */
         put("/{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(shippingMethodRepo.updateShippingMethod(id, call.receive<ShippingMethodRequest>()))
+            call.respondOk(shippingMethodService.updateShippingMethod(id, call.receive<ShippingMethodRequest>()))
         }
 
         /**
@@ -35,7 +35,7 @@ fun Route.shippingMethodAdminRoutes() {
          */
         delete("/{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(shippingMethodRepo.deleteShippingMethod(id))
+            call.respondOk(shippingMethodService.deleteShippingMethod(id))
         }
     }
 }

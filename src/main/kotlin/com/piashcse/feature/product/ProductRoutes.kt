@@ -19,7 +19,6 @@ import org.koin.ktor.ext.inject
  */
 fun Route.productRoutes() {
     val productCatalogService: ProductCatalogService by inject()
-    val productRepo: ProductRepository by inject()
 
     rateLimit(RateLimitName(RateLimitNames.SEARCH)) {
         /**
@@ -28,7 +27,7 @@ fun Route.productRoutes() {
          */
         get("{id}") {
             val productId = call.requirePathParameter("id")
-            productRepo.incrementViewCount(productId)
+            productCatalogService.incrementViewCount(productId)
             call.respondOk(productCatalogService.getProductDetail(productId))
         }
 
@@ -37,7 +36,7 @@ fun Route.productRoutes() {
          * @description Retrieve a paginated list of products with optional filters
          */
         get {
-            call.respondOk(productRepo.getProducts(call.productWithFilterRequest(defaultPerPage = 10)))
+            call.respondOk(productCatalogService.getProducts(call.productWithFilterRequest(defaultPerPage = 10)))
         }
 
         /**
@@ -68,14 +67,14 @@ fun Route.productRoutes() {
  * Seller product management routes.
  */
 fun Route.productSellerRoutes() {
-    val productRepo: ProductRepository by inject()
     val productCrudService: ProductCrudService by inject()
+    val productCatalogService: ProductCatalogService by inject()
     /**
      * @tag Product
      * @description Seller: Retrieve seller products
      */
     get {
-        call.respondOk(productRepo.getProductsByUser(call.currentUserId, call.productWithFilterRequest(defaultPerPage = 10)))
+        call.respondOk(productCatalogService.getProductsByUser(call.currentUserId, call.productWithFilterRequest(defaultPerPage = 10)))
     }
 
     rateLimit(RateLimitName(RateLimitNames.SELLER_WRITE)) {

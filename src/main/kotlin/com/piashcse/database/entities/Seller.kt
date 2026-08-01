@@ -4,8 +4,6 @@ import com.piashcse.constants.ShopStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
-import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
@@ -74,25 +72,3 @@ class SellerDAO(id: EntityID<String>) : BaseEntity(id, SellerTable) {
      */
     fun isSuspended(): Boolean = status == ShopStatus.SUSPENDED
 }
-
-@Serializable
-data class SellerResponse(
-    val id: String,
-    val userId: String,
-    val shopId: String?,
-    val businessName: String?,
-    val businessRegistrationNumber: String?,
-    val taxId: String?,
-    val bankAccountNumber: String?,
-    val bankName: String?,
-    val bankRoutingNumber: String?,
-    val commissionRate: @Contextual java.math.BigDecimal,
-    val status: ShopStatus,
-    val totalSales: @Contextual java.math.BigDecimal,
-    val totalCommission: @Contextual java.math.BigDecimal,
-    val approvedAt: @Contextual java.time.LocalDateTime?,
-    val suspendedAt: @Contextual java.time.LocalDateTime?,
-    val terminatedAt: @Contextual java.time.LocalDateTime?,
-    val createdAt: @Contextual java.time.LocalDateTime?,
-    val updatedAt: @Contextual java.time.LocalDateTime?,
-)

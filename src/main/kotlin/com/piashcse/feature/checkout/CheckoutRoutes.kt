@@ -1,8 +1,5 @@
 package com.piashcse.feature.checkout
 
-import com.piashcse.feature.order.OrderRepository
-import com.piashcse.feature.shipping_address.ShippingAddressRepository
-import com.piashcse.feature.shipping_method.ShippingMethodRepository
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.plugin.RateLimitNames
@@ -16,9 +13,7 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Route.checkoutRoutes() {
-    val shippingAddressRepo: ShippingAddressRepository by inject()
-    val shippingMethodRepo: ShippingMethodRepository by inject()
-    val orderRepo: OrderRepository by inject()
+    val checkoutService: CheckoutService by inject()
     customerAuth {
         rateLimit(RateLimitName(RateLimitNames.WRITE)) {
             /**
@@ -26,7 +21,7 @@ fun Route.checkoutRoutes() {
              * @description Add a new shipping address for the authenticated user
              */
             post("shipping-address") {
-                call.respondCreated(shippingAddressRepo.createShippingAddress(call.currentUserId, call.receive<ShippingAddressRequest>()))
+                call.respondCreated(checkoutService.createShippingAddress(call.currentUserId, call.receive<ShippingAddressRequest>()))
             }
 
             /**
@@ -34,7 +29,7 @@ fun Route.checkoutRoutes() {
              * @description Update an existing shipping address
              */
             put("shipping-address/{id}") {
-                call.respondOk(shippingAddressRepo.updateShippingAddress(call.currentUserId, call.requirePathParameter("id"), call.receive<ShippingAddressRequest>()))
+                call.respondOk(checkoutService.updateShippingAddress(call.currentUserId, call.requirePathParameter("id"), call.receive<ShippingAddressRequest>()))
             }
 
             /**
@@ -43,7 +38,7 @@ fun Route.checkoutRoutes() {
              */
             delete("shipping-address/{id}") {
                 val id = call.requirePathParameter("id")
-                call.respondOk(shippingAddressRepo.deleteShippingAddress(call.currentUserId, id))
+                call.respondOk(checkoutService.deleteShippingAddress(call.currentUserId, id))
             }
 
             /**
@@ -51,7 +46,7 @@ fun Route.checkoutRoutes() {
              * @description Get a summary of the checkout (totals) without placing an order
              */
             post("summary") {
-                call.respondOk(orderRepo.getCheckoutSummary(call.currentUserId, call.receive<CheckoutRequest>()))
+                call.respondOk(checkoutService.getCheckoutSummary(call.currentUserId, call.receive<CheckoutRequest>()))
             }
 
             /**
@@ -59,7 +54,7 @@ fun Route.checkoutRoutes() {
              * @description Place a new order from the cart
              */
             post("place-order") {
-                call.respondCreated(orderRepo.placeOrder(call.currentUserId, call.receive<CheckoutRequest>()))
+                call.respondCreated(checkoutService.placeOrder(call.currentUserId, call.receive<CheckoutRequest>()))
             }
         }
 
@@ -68,7 +63,7 @@ fun Route.checkoutRoutes() {
          * @description Retrieve all shipping addresses for the authenticated user
          */
         get("shipping-address") {
-            call.respondOk(shippingAddressRepo.getShippingAddresses(call.currentUserId))
+            call.respondOk(checkoutService.getShippingAddresses(call.currentUserId))
         }
 
         /**
@@ -76,7 +71,7 @@ fun Route.checkoutRoutes() {
          * @description Retrieve all available shipping methods
          */
         get("shipping-method") {
-            call.respondOk(shippingMethodRepo.getShippingMethods())
+            call.respondOk(checkoutService.getShippingMethods())
         }
     }
 }

@@ -4,6 +4,7 @@ import com.piashcse.database.entities.*
 import com.piashcse.mapper.toProductResponse
 import com.piashcse.mapper.toWishListResponse
 import com.piashcse.model.response.ProductResponse
+import com.piashcse.model.response.WishListResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import org.jetbrains.exposed.v1.core.and
@@ -15,7 +16,7 @@ class WishListRepositoryImpl : WishListRepository {
     override suspend fun addToWishList(
         userId: String,
         productId: String,
-    ): WishList =
+    ): WishListResponse =
         query {
             val product = ProductDAO.findById(productId) ?: productId.throwNotFound("ProductResponse")
 

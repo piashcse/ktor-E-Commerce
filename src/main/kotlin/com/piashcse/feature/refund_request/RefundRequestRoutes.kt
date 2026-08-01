@@ -21,7 +21,7 @@ import org.koin.ktor.ext.inject
  * Public/User/Seller refund request routes.
  */
 fun Route.refundRequestRoutes() {
-    val refundRequestRepo: RefundRequestRepository by inject()
+    val refundRequestService: RefundRequestService by inject()
     customerAuth {
         rateLimit(RateLimitName(RateLimitNames.WRITE)) {
             /**
@@ -29,7 +29,7 @@ fun Route.refundRequestRoutes() {
              * @description Create a refund request for an order item
              */
             post("{orderId}") {
-                call.respondCreated(refundRequestRepo.createRefundRequest(call.currentUserId, call.requirePathParameter("orderId"), call.receive<RefundRequestRequest>()))
+                call.respondCreated(refundRequestService.createRefundRequest(call.currentUserId, call.requirePathParameter("orderId"), call.receive<RefundRequestRequest>()))
             }
 
             /**
@@ -37,7 +37,7 @@ fun Route.refundRequestRoutes() {
              * @description Mark an approved refund as shipped
              */
             post("{id}/ship") {
-                call.respondOk(refundRequestRepo.shipRefund(call.requirePathParameter("id"), call.receive<ShipRefundRequest>(), call.currentUserId))
+                call.respondOk(refundRequestService.shipRefund(call.requirePathParameter("id"), call.receive<ShipRefundRequest>(), call.currentUserId))
             }
         }
     }
@@ -49,7 +49,7 @@ fun Route.refundRequestRoutes() {
          */
         get("order/{orderId}") {
             val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(refundRequestRepo.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED), limit, offset))
+            call.respondOk(refundRequestService.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED), limit, offset))
         }
 
         /**
@@ -57,7 +57,7 @@ fun Route.refundRequestRoutes() {
          * @description Get refund request details
          */
         get("{id}") {
-            val refundRequest = refundRequestRepo.getRefundById(call.requirePathParameter("id"), call.currentUserId, call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED))
+            val refundRequest = refundRequestService.getRefundById(call.requirePathParameter("id"), call.currentUserId, call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED))
             if (refundRequest != null) {
                 call.respondOk(refundRequest)
             } else {
@@ -71,14 +71,14 @@ fun Route.refundRequestRoutes() {
  * Seller refund management routes.
  */
 fun Route.refundSellerRoutes() {
-    val refundRequestRepo: RefundRequestRepository by inject()
+    val refundRequestService: RefundRequestService by inject()
     rateLimit(RateLimitName(RateLimitNames.SELLER_WRITE)) {
         /**
          * @tag Refund
          * @description Seller: Update refund request status
          */
         put("{id}/status") {
-            call.respondOk(refundRequestRepo.updateRefundStatus(call.requirePathParameter("id"), call.receive<UpdateRefundStatusRequest>(), call.currentUserId))
+            call.respondOk(refundRequestService.updateRefundStatus(call.requirePathParameter("id"), call.receive<UpdateRefundStatusRequest>(), call.currentUserId))
         }
     }
 }
@@ -87,14 +87,14 @@ fun Route.refundSellerRoutes() {
  * Admin refund management routes.
  */
 fun Route.refundAdminRoutes() {
-    val refundRequestRepo: RefundRequestRepository by inject()
+    val refundRequestService: RefundRequestService by inject()
     rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
         /**
          * @tag Refund
          * @description Admin: Update refund status
          */
         put("{id}/status") {
-            call.respondOk(refundRequestRepo.updateRefundStatus(call.requirePathParameter("id"), call.receive<UpdateRefundStatusRequest>(), call.currentUserId))
+            call.respondOk(refundRequestService.updateRefundStatus(call.requirePathParameter("id"), call.receive<UpdateRefundStatusRequest>(), call.currentUserId))
         }
     }
 
@@ -104,6 +104,6 @@ fun Route.refundAdminRoutes() {
      */
     get("order/{orderId}") {
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(refundRequestRepo.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, UserType.ADMIN, limit, offset))
+        call.respondOk(refundRequestService.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, UserType.ADMIN, limit, offset))
     }
 }

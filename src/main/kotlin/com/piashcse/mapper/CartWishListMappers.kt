@@ -2,10 +2,12 @@ package com.piashcse.mapper
 
 import com.piashcse.database.entities.*
 import com.piashcse.model.response.CartItemSummary
+import com.piashcse.model.response.CartResponse
 import com.piashcse.model.response.ProductResponse
+import com.piashcse.model.response.WishListResponse
 import java.math.BigDecimal
 
-fun CartItemDAO.toCartResponse(product: ProductResponse? = null) = Cart(productId.value, quantity, product)
+fun CartItemDAO.toCartResponse(product: ProductResponse? = null) = CartResponse(productId.value, quantity, product)
 
 fun CartItemDAO.toCartItemSummary(
     product: ProductDAO,
@@ -24,4 +26,4 @@ fun CartItemDAO.toCartItemSummary(
     shopName = shopName,
 )
 
-fun WishListDAO.toWishListResponse(product: ProductResponse? = null) = WishList(product)
+fun WishListDAO.toWishListResponse(product: ProductResponse? = null) = WishListResponse(product)

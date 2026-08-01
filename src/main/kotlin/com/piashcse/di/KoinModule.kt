@@ -2,52 +2,71 @@ package com.piashcse.di
 
 import com.piashcse.feature.audit_log.AuditLogRepository
 import com.piashcse.feature.audit_log.AuditLogRepositoryImpl
+import com.piashcse.feature.audit_log.AuditLogService
 import com.piashcse.feature.auth.AuthRepository
 import com.piashcse.feature.auth.AuthRepositoryImpl
 import com.piashcse.feature.auth.UserAuthenticationService
 import com.piashcse.feature.brand.BrandRepository
 import com.piashcse.feature.brand.BrandRepositoryImpl
+import com.piashcse.feature.brand.BrandService
 import com.piashcse.feature.cart.CartRepository
 import com.piashcse.feature.cart.CartRepositoryImpl
+import com.piashcse.feature.cart.CartService
+import com.piashcse.feature.checkout.CheckoutService
 import com.piashcse.feature.consent.ConsentRepository
 import com.piashcse.feature.consent.ConsentRepositoryImpl
+import com.piashcse.feature.consent.ConsentService
 import com.piashcse.feature.coupon.CouponRepository
 import com.piashcse.feature.coupon.CouponRepositoryImpl
+import com.piashcse.feature.coupon.CouponService
 import com.piashcse.feature.dashboard.DashboardRepository
 import com.piashcse.feature.dashboard.DashboardRepositoryImpl
+import com.piashcse.feature.dashboard.DashboardService
 import com.piashcse.feature.inventory.InventoryRepository
 import com.piashcse.feature.inventory.InventoryRepositoryImpl
+import com.piashcse.feature.inventory.InventoryService
 import com.piashcse.feature.order.OrderRepository
 import com.piashcse.feature.order.OrderRepositoryImpl
+import com.piashcse.feature.order.OrderService
 import com.piashcse.feature.payment.PaymentRepository
 import com.piashcse.feature.payment.PaymentRepositoryImpl
+import com.piashcse.feature.payment.PaymentService
 import com.piashcse.feature.policy.PolicyRepository
 import com.piashcse.feature.policy.PolicyRepositoryImpl
+import com.piashcse.feature.policy.PolicyService
 import com.piashcse.feature.product.ProductCatalogService
 import com.piashcse.feature.product.ProductCrudService
 import com.piashcse.feature.product.ProductRepository
 import com.piashcse.feature.product.ProductRepositoryImpl
 import com.piashcse.feature.product_category.ProductCategoryRepository
 import com.piashcse.feature.product_category.ProductCategoryRepositoryImpl
+import com.piashcse.feature.product_category.ProductCategoryService
 import com.piashcse.feature.product_sub_category.ProductSubCategoryRepository
 import com.piashcse.feature.product_sub_category.ProductSubCategoryRepositoryImpl
+import com.piashcse.feature.product_sub_category.ProductSubCategoryService
 import com.piashcse.feature.profile.ProfileRepository
 import com.piashcse.feature.profile.ProfileRepositoryImpl
 import com.piashcse.feature.profile.ProfileService
 import com.piashcse.feature.refund_request.RefundRequestRepository
 import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
+import com.piashcse.feature.refund_request.RefundRequestService
 import com.piashcse.feature.review_rating.ReviewRatingRepository
 import com.piashcse.feature.review_rating.ReviewRatingRepositoryImpl
+import com.piashcse.feature.review_rating.ReviewRatingService
 import com.piashcse.feature.shipping_address.ShippingAddressRepository
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
 import com.piashcse.feature.shipping_method.ShippingMethodRepository
 import com.piashcse.feature.shipping_method.ShippingMethodRepositoryImpl
+import com.piashcse.feature.shipping_method.ShippingMethodService
 import com.piashcse.feature.shop.ShopRepository
 import com.piashcse.feature.shop.ShopRepositoryImpl
+import com.piashcse.feature.shop.ShopService
 import com.piashcse.feature.shop_category.ShopCategoryRepository
 import com.piashcse.feature.shop_category.ShopCategoryRepositoryImpl
+import com.piashcse.feature.shop_category.ShopCategoryService
 import com.piashcse.feature.wishlist.WishListRepository
 import com.piashcse.feature.wishlist.WishListRepositoryImpl
+import com.piashcse.feature.wishlist.WishListService
 import com.piashcse.service.UploadService
 import org.koin.dsl.module
 
@@ -79,6 +98,25 @@ val serviceModule =
 
         // Services with business logic
         single { ProfileService(get()) }
+        single { BrandService(get()) }
+        single { CartService(get()) }
+        single { ConsentService(get()) }
+        single { CouponService(get()) }
+        single { DashboardService(get()) }
+        single { InventoryService(get()) }
+        single { OrderService(get()) }
+        single { PaymentService(get()) }
+        single { PolicyService(get()) }
+        single { ProductCategoryService(get()) }
+        single { ProductSubCategoryService(get()) }
+        single { RefundRequestService(get()) }
+        single { ReviewRatingService(get()) }
+        single { ShippingMethodService(get()) }
+        single { ShopService(get()) }
+        single { ShopCategoryService(get()) }
+        single { WishListService(get()) }
+        single { AuditLogService(get()) }
+        single { CheckoutService(get(), get(), get()) }
 
         // Split auth services
         single { UserAuthenticationService(get()) }

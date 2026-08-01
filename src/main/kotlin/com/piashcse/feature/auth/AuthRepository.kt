@@ -1,10 +1,9 @@
 package com.piashcse.feature.auth
 
 import com.piashcse.constants.UserType
-import com.piashcse.database.entities.ChangePassword
-import com.piashcse.database.entities.LoginAttemptDAO
-import com.piashcse.database.entities.RefreshTokenDAO
-import com.piashcse.database.entities.UserDAO
+import com.piashcse.model.domain.AuthUser
+import com.piashcse.model.domain.LoginAttemptInfo
+import com.piashcse.model.domain.StoredRefreshToken
 import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
@@ -15,19 +14,19 @@ interface AuthRepository {
     suspend fun getRegistrationOtp(userId: String): String?
 
     // Login
-    suspend fun findUserByEmailAndType(email: String, userTypeEnum: UserType): UserDAO?
-    suspend fun findUserById(userId: String): UserDAO?
-    suspend fun findResetUserByEmail(email: String, userTypeStr: String): UserDAO
+    suspend fun findUserByEmailAndType(email: String, userTypeEnum: UserType): AuthUser?
+    suspend fun findUserById(userId: String): AuthUser?
+    suspend fun findResetUserByEmail(email: String, userTypeStr: String): AuthUser
 
     // Token management
     suspend fun storeRefreshToken(userId: String, refreshToken: String)
-    suspend fun getRefreshTokenByHash(tokenHash: String): RefreshTokenDAO?
+    suspend fun getRefreshTokenByHash(tokenHash: String): StoredRefreshToken?
     suspend fun revokeRefreshToken(tokenHash: String): Boolean
     suspend fun revokeAllUserTokens(userId: String): Boolean
     fun generateTokenPair(userId: String, email: String, userType: String): TokenPair
 
     // Login attempt tracking
-    suspend fun getLoginAttempt(email: String, userType: UserType): LoginAttemptDAO?
+    suspend fun getLoginAttempt(email: String, userType: UserType): LoginAttemptInfo?
     suspend fun recordFailedAttempt(email: String, userType: UserType, ipAddress: String?): Int
     suspend fun resetLoginAttempts(email: String, userType: UserType)
     suspend fun lockAccount(email: String, userType: UserType, lockDurationMinutes: Long): Boolean

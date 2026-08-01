@@ -4,6 +4,7 @@ import com.piashcse.constants.*
 import com.piashcse.database.entities.*
 import com.piashcse.model.response.*
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.money.Money
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -32,8 +33,8 @@ class DashboardRepositoryImpl : DashboardRepository {
 
         DashboardStatsResponse(
             revenue = mapOf(
-                "total" to totalRevenue.setScale(2, RoundingMode.HALF_UP).toPlainString(),
-                "today" to todayRevenue.setScale(2, RoundingMode.HALF_UP).toPlainString(),
+                "total" to Money.plain(totalRevenue),
+                "today" to Money.plain(todayRevenue),
             ),
             orders = mapOf(
                 "total" to OrderTable.selectAll().count(), "today" to OrderTable.selectAll().where { OrderTable.createdAt greaterEq today }.count(),
@@ -65,8 +66,7 @@ class DashboardRepositoryImpl : DashboardRepository {
         val orderCount = OrderTable.selectAll().where {
             (OrderTable.status neq OrderStatus.CANCELED) and (OrderTable.createdAt greaterEq start) and (OrderTable.createdAt lessEq end)
         }.count()
-        val avg = if (orderCount > 0) totalRevenue.divide(BigDecimal(orderCount), 2, RoundingMode.HALF_UP) else BigDecimal.ZERO
-
+        val avg = if (orderCount > 0) Money.round(totalRevenue.divide(BigDecimal(orderCount), 2, RoundingMode.HALF_UP)) else BigDecimal.ZERO
         val daily = generateSequence(start.toLocalDate()) { it.plusDays(1) }
             .takeWhile { it <= end.toLocalDate() }
             .map { date ->
@@ -75,10 +75,10 @@ class DashboardRepositoryImpl : DashboardRepository {
                 val dayTotal = OrderTable.select(OrderTable.total.sum())
                     .where { (OrderTable.status neq OrderStatus.CANCELED) and (OrderTable.createdAt greaterEq dayStart) and (OrderTable.createdAt lessEq dayEnd) }
                     .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
-                mapOf("date" to date.format(DFMT), "revenue" to dayTotal.setScale(2, RoundingMode.HALF_UP).toPlainString())
+                mapOf("date" to date.format(DFMT), "revenue" to Money.plain(dayTotal))
             }.toList()
 
-        RevenueStatsResponse(totalRevenue.setScale(2).toPlainString(), orderCount, avg.setScale(2).toPlainString(), daily)
+        RevenueStatsResponse(Money.plain(totalRevenue), orderCount, Money.plain(avg), daily)
     }
 
     override suspend fun getOrderStats(status: String?) = query {
@@ -95,7 +95,7 @@ class DashboardRepositoryImpl : DashboardRepository {
             val dao = OrderDAO.wrapRow(it)
             mapOf(
                 "orderNumber" to dao.orderNumber, "status" to dao.status.name.lowercase(),
-                "total" to dao.total.setScale(2, RoundingMode.HALF_UP).toPlainString(),
+                "total" to Money.plain(dao.total),
                 "createdAt" to dao.createdAt.format(FMT),
             )
         }
@@ -144,8 +144,8 @@ class DashboardRepositoryImpl : DashboardRepository {
         topProducts.map { p ->
             val topStock = p.findInventory()?.stockQuantity ?: 0
             TopProductResponse(p.id.value, p.name, p.sku, p.totalSales,
-                (revenueByProduct[p.id.value] ?: BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP).toPlainString(),
-                topStock, p.rating.setScale(2, RoundingMode.HALF_UP).toPlainString(), p.status.name.lowercase())
+                Money.plain(revenueByProduct[p.id.value] ?: BigDecimal.ZERO),
+                topStock, Money.plain(p.rating), p.status.name.lowercase())
         }
     }
 
@@ -154,7 +154,7 @@ class DashboardRepositoryImpl : DashboardRepository {
         val orders = OrderTable.selectAll().orderBy(OrderTable.createdAt to SortOrder.DESC).limit(max).map {
             val dao = OrderDAO.wrapRow(it)
             RecentActivityResponse(dao.id.value, "order",
-                "Order ${dao.orderNumber} created - \$${dao.total.setScale(2, RoundingMode.HALF_UP)}",
+                "Order ${dao.orderNumber} created - \$${Money.plain(dao.total)}",
                 dao.status.name.lowercase(), dao.createdAt.format(FMT))
         }
         val users = UserTable.selectAll().orderBy(UserTable.createdAt to SortOrder.DESC).limit(max).map {

@@ -14,7 +14,7 @@ import org.koin.ktor.ext.inject
  * Public product subcategory routes.
  */
 fun Route.productSubCategoryRoutes() {
-    val subCategoryRepo: ProductSubCategoryRepository by inject()
+    val subCategoryService: ProductSubCategoryService by inject()
     /**
      * @tag Product-Sub-Category
      * @description Retrieve subcategories for a specific category
@@ -22,7 +22,7 @@ fun Route.productSubCategoryRoutes() {
     get {
         val categoryId = call.requireQueryParameter("categoryId")
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(subCategoryRepo.getProductSubCategory(categoryId, limit, offset))
+        call.respondOk(subCategoryService.getProductSubCategory(categoryId, limit, offset))
     }
 }
 
@@ -30,14 +30,14 @@ fun Route.productSubCategoryRoutes() {
  * Admin product subcategory management routes.
  */
 fun Route.productSubCategoryAdminRoutes() {
-    val subCategoryRepo: ProductSubCategoryRepository by inject()
+    val subCategoryService: ProductSubCategoryService by inject()
     rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
         /**
          * @tag Product-Sub-Category
          * @description Admin: Create a new product subcategory
          */
         post {
-            call.respondCreated(subCategoryRepo.addProductSubCategory(call.receive<ProductSubCategoryRequest>()))
+            call.respondCreated(subCategoryService.addProductSubCategory(call.receive<ProductSubCategoryRequest>()))
         }
 
         /**
@@ -47,7 +47,7 @@ fun Route.productSubCategoryAdminRoutes() {
         put("{id}") {
             val id = call.requirePathParameter("id")
             val name = call.requireQueryParameter("name")
-            call.respondOk(subCategoryRepo.updateProductSubCategory(id, name))
+            call.respondOk(subCategoryService.updateProductSubCategory(id, name))
         }
 
         /**
@@ -56,7 +56,7 @@ fun Route.productSubCategoryAdminRoutes() {
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(subCategoryRepo.deleteProductSubCategory(id))
+            call.respondOk(subCategoryService.deleteProductSubCategory(id))
         }
     }
 }

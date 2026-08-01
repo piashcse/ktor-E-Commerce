@@ -13,14 +13,14 @@ import org.koin.ktor.ext.inject
  * Admin shop category management routes.
  */
 fun Route.shopCategoryAdminRoutes() {
-    val shopCategoryRepo: ShopCategoryRepository by inject()
+    val shopCategoryService: ShopCategoryService by inject()
     rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
         /**
          * @tag Shop-Category
          * @description Admin: Create a new shop category
          */
         post {
-            call.respondCreated(shopCategoryRepo.createCategory(call.receive<ShopCategoryRequest>().name))
+            call.respondCreated(shopCategoryService.createCategory(call.receive<ShopCategoryRequest>().name))
         }
 
         /**
@@ -30,7 +30,7 @@ fun Route.shopCategoryAdminRoutes() {
         put("{id}") {
             val id = call.requirePathParameter("id")
             val name = call.requireQueryParameter("name")
-            call.respondOk(shopCategoryRepo.updateCategory(id, name))
+            call.respondOk(shopCategoryService.updateCategory(id, name))
         }
 
         /**
@@ -39,7 +39,7 @@ fun Route.shopCategoryAdminRoutes() {
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(shopCategoryRepo.deleteCategory(id))
+            call.respondOk(shopCategoryService.deleteCategory(id))
         }
     }
 }

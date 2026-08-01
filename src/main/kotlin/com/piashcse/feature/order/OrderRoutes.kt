@@ -18,7 +18,7 @@ import java.time.Instant
  * Order-related routes for customers and sellers.
  */
 fun Route.orderRoutes() {
-    val orderRepo: OrderRepository by inject()
+    val orderService: OrderService by inject()
     customerAuth {
         /**
          * @tag Order
@@ -26,7 +26,7 @@ fun Route.orderRoutes() {
          */
         get {
             val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(orderRepo.getOrders(call.currentUserId, limit, offset))
+            call.respondOk(orderService.getOrders(call.currentUserId, limit, offset))
         }
     }
 
@@ -41,11 +41,7 @@ fun Route.orderRoutes() {
                 val status = call.requireQueryParameter("status").parseEnum<OrderStatus>("status")
                 val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
 
-                if ((status in listOf(OrderStatus.CONFIRMED, OrderStatus.DELIVERED) && userType != UserType.SELLER) ||
-                    (status in listOf(OrderStatus.CANCELED, OrderStatus.RECEIVED) && userType != UserType.CUSTOMER)
-                ) throw UnauthorizedException(Message.Orders.STATUS_NOT_ALLOWED)
-
-                call.respondOk(orderRepo.updateOrderStatus(call.currentUserId, id, status))
+                call.respondOk(orderService.updateOrderStatus(call.currentUserId, id, status, userType))
             }
 
             /**
@@ -53,7 +49,7 @@ fun Route.orderRoutes() {
              * @description Cancel an order
              */
             post("{id}/cancel") {
-                call.respondOk(orderRepo.cancelOrder(call.requirePathParameter("id"), call.currentUserId, call.receive<CancelOrderRequest>().reason, call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)))
+                call.respondOk(orderService.cancelOrder(call.requirePathParameter("id"), call.currentUserId, call.receive<CancelOrderRequest>(), call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)))
             }
         }
     }
@@ -63,7 +59,7 @@ fun Route.orderRoutes() {
  * Seller order management routes.
  */
 fun Route.orderSellerRoutes() {
-    val orderRepo: OrderRepository by inject()
+    val orderService: OrderService by inject()
     /**
      * @tag Order
      * @description Seller: Retrieve orders for the seller's shop
@@ -71,7 +67,7 @@ fun Route.orderSellerRoutes() {
     get {
         val (limit, offset) = call.paginateQueryParams()
         val status = call.request.queryParameters["status"]
-        call.respondOk(orderRepo.getSellerOrders(call.currentUserId, limit, offset, status))
+        call.respondOk(orderService.getSellerOrders(call.currentUserId, limit, offset, status))
     }
 }
 
@@ -79,7 +75,7 @@ fun Route.orderSellerRoutes() {
  * Admin order management routes.
  */
 fun Route.orderAdminRoutes() {
-    val orderRepo: OrderRepository by inject()
+    val orderService: OrderService by inject()
     rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
         /**
          * @tag Order
@@ -88,7 +84,7 @@ fun Route.orderAdminRoutes() {
         patch("status/{id}") {
             val id = call.requirePathParameter("id")
             val status = call.requireQueryParameter("status").parseEnum<OrderStatus>("status")
-            call.respondOk(orderRepo.updateOrderStatus(call.currentUserId, id, status))
+            call.respondOk(orderService.updateOrderStatus(call.currentUserId, id, status, UserType.ADMIN))
         }
 
         /**
@@ -96,7 +92,7 @@ fun Route.orderAdminRoutes() {
          * @description Admin: Cancel any order
          */
         post("{id}/cancel") {
-            call.respondOk(orderRepo.cancelOrder(call.requirePathParameter("id"), call.currentUserId, call.receive<CancelOrderRequest>().reason, UserType.ADMIN))
+            call.respondOk(orderService.cancelOrder(call.requirePathParameter("id"), call.currentUserId, call.receive<CancelOrderRequest>(), UserType.ADMIN))
         }
     }
 
@@ -116,6 +112,6 @@ fun Route.orderAdminRoutes() {
                 runCatching { Instant.parse(it) }.getOrNull()
             }
 
-        call.respondOk(orderRepo.getAdminOrders(limit, offset, status, startDate, endDate))
+        call.respondOk(orderService.getAdminOrders(limit, offset, status, startDate, endDate))
     }
 }

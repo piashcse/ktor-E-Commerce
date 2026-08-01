@@ -14,6 +14,7 @@ import com.piashcse.model.response.OrderResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.money.Money
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
@@ -99,7 +100,7 @@ class OrderRepositoryImpl : OrderRepository {
             }
             CouponDiscountType.FIXED -> coupon.discountValue
         }
-        return discount.min(orderAmount).setScale(2, RoundingMode.HALF_UP)
+        return Money.round(discount.min(orderAmount))
     }
 
     private fun consumeCoupon(
@@ -191,7 +192,7 @@ class OrderRepositoryImpl : OrderRepository {
                     throw ValidationException(Message.Validation.insufficientStock(product.name, available))
 
                 val unitPrice = product.discountPrice ?: product.price
-                val itemTotal = unitPrice.multiply(BigDecimal(cartItem.quantity))
+                val itemTotal = Money.lineTotal(unitPrice, cartItem.quantity)
 
                 val orderItem = OrderItemDAO.new {
                     orderId = order.id
@@ -222,10 +223,10 @@ class OrderRepositoryImpl : OrderRepository {
                 shopSubTotal = shopSubTotal.add(itemTotal)
             }
 
-            val taxAmount = shopSubTotal.multiply(BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString()))
+            val taxAmount = Money.taxOn(shopSubTotal)
             order.subTotal = shopSubTotal
-            order.taxAmount = taxAmount.setScale(2, RoundingMode.HALF_UP)
-            order.total = shopSubTotal.add(order.shippingCost).add(order.taxAmount)
+            order.taxAmount = taxAmount
+            order.total = Money.total(shopSubTotal, order.shippingCost, order.taxAmount)
             createdOrders.add(order)
         }
 
@@ -235,7 +236,7 @@ class OrderRepositoryImpl : OrderRepository {
             val discount = consumeCoupon(coupon, totalSubTotal, userId, createdOrders)
             createdOrders.forEach { order ->
                 val proportion = order.subTotal.divide(totalSubTotal, 10, RoundingMode.HALF_UP)
-                val orderDiscount = discount.multiply(proportion).setScale(2, RoundingMode.HALF_UP)
+                val orderDiscount = Money.round(discount.multiply(proportion))
                 order.discountAmount = orderDiscount
                 order.couponCode = code
                 order.total = order.total.subtract(orderDiscount)
@@ -290,33 +291,34 @@ class OrderRepositoryImpl : OrderRepository {
             ProductTable.id inList cartItems.map { it.productId.value }.distinct()
         }.associateBy { it.id.value }
 
-        var subTotal = BigDecimal.ZERO
+        val lines = mutableListOf<Pair<BigDecimal, Int>>()
         var totalItems = 0
         cartItems.forEach { cartItem ->
             val product = productsMap[cartItem.productId.value]!!
-            val unitPrice = product.discountPrice ?: product.price
-            subTotal = subTotal.add(unitPrice.multiply(BigDecimal(cartItem.quantity)))
+            lines += (product.discountPrice ?: product.price) to cartItem.quantity
             totalItems += cartItem.quantity
         }
 
+        val subTotal = Money.subtotal(lines)
         val shopCount = cartItems.mapNotNull { productsMap[it.productId.value]?.shopId?.value }.distinct().size
-        val shippingTotal = shippingMethod.price.multiply(BigDecimal(shopCount))
-        val taxAmount = subTotal.multiply(BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString()))
-        val baseTotal = subTotal.add(shippingTotal).add(taxAmount)
-        val baseTotalStr = baseTotal.setScale(2, RoundingMode.HALF_UP).toPlainString()
+        val shippingTotal = Money.shippingTotal(shippingMethod.price, shopCount)
+        val taxAmount = Money.taxOn(subTotal)
+        val baseTotal = Money.total(subTotal, shippingTotal, taxAmount)
         var response = CheckoutSummaryResponse(
-            subTotal = subTotal.setScale(2, RoundingMode.HALF_UP).toPlainString(),
-            shippingCost = shippingTotal.setScale(2, RoundingMode.HALF_UP).toPlainString(),
-            taxAmount = taxAmount.setScale(2, RoundingMode.HALF_UP).toPlainString(),
-            total = baseTotalStr,
+            subTotal = Money.plain(subTotal),
+            shippingCost = Money.plain(shippingTotal),
+            taxAmount = Money.plain(taxAmount),
+            total = Money.plain(baseTotal),
             itemCount = totalItems,
         )
 
         checkoutRequest.couponCode?.let {
             val coupon = validateCoupon(it, subTotal)
             val discount = calculateCouponDiscount(coupon, subTotal)
-            val discountedTotal = baseTotal.subtract(discount).setScale(2, RoundingMode.HALF_UP)
-            response = response.copy(discountAmount = discount.setScale(2, RoundingMode.HALF_UP).toPlainString(), total = discountedTotal.toPlainString())
+            response = response.copy(
+                discountAmount = Money.plain(discount),
+                total = Money.plain(baseTotal.subtract(discount)),
+            )
         }
         response
     }
@@ -350,7 +352,7 @@ class OrderRepositoryImpl : OrderRepository {
             if (product.shopId == null) throw ValidationException(Message.Orders.productDoesNotBelongToShop(product.name))
 
             val unitPrice = product.discountPrice ?: product.price
-            calculatedSubtotal = calculatedSubtotal.add(unitPrice.multiply(BigDecimal(item.quantity)))
+            calculatedSubtotal = calculatedSubtotal.add(Money.lineTotal(unitPrice, item.quantity))
         }
 
         if (orderRequest.total.compareTo(calculatedSubtotal) != 0)
@@ -384,7 +386,7 @@ class OrderRepositoryImpl : OrderRepository {
             items.forEach { itemRequest ->
                 val product = productsMap[itemRequest.productId]!!
                 val unitPrice = product.discountPrice ?: product.price
-                val itemTotal = unitPrice.multiply(BigDecimal(itemRequest.quantity))
+                val itemTotal = Money.lineTotal(unitPrice, itemRequest.quantity)
 
                 OrderItemDAO.new {
                     orderId = order.id

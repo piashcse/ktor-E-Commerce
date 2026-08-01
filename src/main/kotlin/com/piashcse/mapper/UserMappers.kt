@@ -1,11 +1,22 @@
 package com.piashcse.mapper
 
 import com.piashcse.database.entities.*
+import com.piashcse.model.domain.AuthUser
+import com.piashcse.model.response.SellerResponse
 import com.piashcse.model.response.UserProfileResponse
+import com.piashcse.model.response.UserResponse
 import org.jetbrains.exposed.v1.core.eq
 
 fun UserDAO.toUserResponse() = UserResponse(
     id.value, email, isVerified, userType, isActive, createdAt, updatedAt,
+)
+
+fun UserDAO.toAuthUser() = AuthUser(
+    id.value, email, userType, password, isVerified, isActive, createdAt, updatedAt,
+)
+
+fun AuthUser.toUserResponse() = UserResponse(
+    id, email, isVerified, userType, isActive, createdAt, updatedAt,
 )
 
 fun UserDAO.toSellerInfo(): SellerResponse? {

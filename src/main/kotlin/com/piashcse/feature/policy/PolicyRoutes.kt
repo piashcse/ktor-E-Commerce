@@ -15,14 +15,14 @@ import org.koin.ktor.ext.inject
  * Public policy routes.
  */
 fun Route.policyRoutes() {
-    val policyRepo: PolicyRepository by inject()
+    val policyService: PolicyService by inject()
     /**
      * @tag Privacy-Policy
      * @description Retrieve the latest active version of a policy by type
      */
     get("{policyType}") {
         val policyType = call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type")
-        call.respondOk(policyRepo.getPolicyByType(policyType))
+        call.respondOk(policyService.getPolicyByType(policyType))
     }
 }
 
@@ -30,14 +30,14 @@ fun Route.policyRoutes() {
  * Admin policy management routes.
  */
 fun Route.policyAdminRoutes() {
-    val policyRepo: PolicyRepository by inject()
+    val policyService: PolicyService by inject()
     rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
         /**
          * @tag Privacy-Policy
          * @description Admin: Create a new policy document or new version
          */
         post {
-            call.respondCreated(policyRepo.createPolicy(call.receive<CreatePolicyRequest>()))
+            call.respondCreated(policyService.createPolicy(call.receive<CreatePolicyRequest>()))
         }
     }
 
@@ -47,6 +47,6 @@ fun Route.policyAdminRoutes() {
      */
     get("{policyType}/history") {
         val policyType = call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type")
-        call.respondOk(policyRepo.getAllPolicies(policyType))
+        call.respondOk(policyService.getAllPolicies(policyType))
     }
 }

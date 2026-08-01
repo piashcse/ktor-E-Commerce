@@ -6,13 +6,13 @@ import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import com.piashcse.utils.money.Money
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 /** Finds the inventory record for a product in its shop, with optional for-update locking. */
 fun ProductDAO.findInventory(forUpdate: Boolean = false): InventoryDAO? {
@@ -49,7 +49,7 @@ fun ProductDAO.restoreStock(quantity: Int) {
 
 /** Calculates commission for an order subtotal. */
 fun SellerDAO.calcCommission(orderSubTotal: BigDecimal): BigDecimal =
-    orderSubTotal.multiply(commissionRate).divide(BigDecimal("100"), 2, RoundingMode.HALF_UP)
+    Money.percent(orderSubTotal, commissionRate)
 
 /** Records sales for a product and promotes it to best-seller once a threshold is crossed. */
 fun ProductDAO.addSales(quantity: Int) {

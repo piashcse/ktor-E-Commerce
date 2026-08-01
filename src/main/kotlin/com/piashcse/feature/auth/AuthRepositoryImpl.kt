@@ -6,6 +6,10 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
+import com.piashcse.mapper.toAuthUser
+import com.piashcse.model.domain.AuthUser
+import com.piashcse.model.domain.LoginAttemptInfo
+import com.piashcse.model.domain.StoredRefreshToken
 import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
@@ -49,8 +53,10 @@ class AuthRepositoryImpl : AuthRepository {
         }
     }
 
-    override suspend fun getRefreshTokenByHash(tokenHash: String): RefreshTokenDAO? = query {
-        RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.singleOrNull()
+    override suspend fun getRefreshTokenByHash(tokenHash: String): StoredRefreshToken? = query {
+        RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.singleOrNull()?.let {
+            StoredRefreshToken(it.userId.value, it.tokenHash, it.expiresAt, it.revokedAt)
+        }
     }
 
     override suspend fun revokeRefreshToken(tokenHash: String): Boolean = query {
@@ -97,8 +103,10 @@ class AuthRepositoryImpl : AuthRepository {
         Unit
     }
 
-    override suspend fun getLoginAttempt(email: String, userType: UserType): LoginAttemptDAO? = query {
-        LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()
+    override suspend fun getLoginAttempt(email: String, userType: UserType): LoginAttemptInfo? = query {
+        LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()?.let {
+            LoginAttemptInfo(it.email, it.userType, it.attemptCount, it.lockedUntil)
+        }
     }
 
     override suspend fun lockAccount(email: String, userType: UserType, lockDurationMinutes: Long): Boolean = query {
@@ -148,24 +156,24 @@ class AuthRepositoryImpl : AuthRepository {
 
     // ── User helpers ──────────────────────────────────────────────────────
 
-    override suspend fun findUserByEmailAndType(email: String, userTypeEnum: UserType): UserDAO? = query {
-        UserDAO.find { UserTable.email eq email and (UserTable.userType eq userTypeEnum) }.firstOrNull()
+    override suspend fun findUserByEmailAndType(email: String, userTypeEnum: UserType): AuthUser? = query {
+        UserDAO.find { UserTable.email eq email and (UserTable.userType eq userTypeEnum) }.firstOrNull()?.toAuthUser()
     }
 
-    override suspend fun findUserById(userId: String): UserDAO? = query {
-        UserDAO.findById(userId)
+    override suspend fun findUserById(userId: String): AuthUser? = query {
+        UserDAO.findById(userId)?.toAuthUser()
     }
 
     override suspend fun getRegistrationOtp(userId: String): String? = query {
         UserDAO.findById(userId)?.otpCode
     }
 
-    override suspend fun findResetUserByEmail(email: String, userTypeStr: String): UserDAO {
+    override suspend fun findResetUserByEmail(email: String, userTypeStr: String): AuthUser {
         val entities = UserDAO.find { UserTable.email eq email }.toList()
         if (entities.isEmpty()) email.throwNotFound("User")
         val type = runCatching { UserType.valueOf(userTypeStr.uppercase()) }
             .getOrElse { throw NotFoundException(Message.Auth.userNotFoundForRole(userTypeStr)) }
-        return entities.find { it.userType == type }
+        return entities.find { it.userType == type }?.toAuthUser()
             ?: throw NotFoundException(Message.Auth.userNotFoundForRole(userTypeStr))
     }
 
@@ -310,7 +318,7 @@ class AuthRepositoryImpl : AuthRepository {
             throw NotFoundException(Message.Auth.TOKEN_EXPIRED)
         }
 
-        val user = query { UserDAO.findById(storedToken.userId.value) ?: throw NotFoundException(Message.Errors.NOT_FOUND) }
+        val user = query { UserDAO.findById(storedToken.userId) ?: throw NotFoundException(Message.Errors.NOT_FOUND) }
 
         if (!user.isActive) throw ValidationException(Message.Auth.ACCOUNT_DEACTIVATED)
         if (!user.isVerified) throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)

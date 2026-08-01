@@ -15,7 +15,7 @@ import org.koin.ktor.ext.inject
  * Customer payment routes.
  */
 fun Route.paymentRoutes() {
-    val paymentRepo: PaymentRepository by inject()
+    val paymentService: PaymentService by inject()
     customerAuth {
         rateLimit(RateLimitName(RateLimitNames.WRITE)) {
             /**
@@ -23,7 +23,7 @@ fun Route.paymentRoutes() {
              * @description Create a new payment record for an order
              */
             post {
-                call.respondCreated(paymentRepo.createPayment(call.receive<PaymentRequest>()))
+                call.respondCreated(paymentService.createPayment(call.receive<PaymentRequest>()))
             }
         }
 
@@ -33,7 +33,7 @@ fun Route.paymentRoutes() {
          */
         get("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(paymentRepo.getPaymentById(id))
+            call.respondOk(paymentService.getPaymentById(id))
         }
 
         /**
@@ -43,7 +43,7 @@ fun Route.paymentRoutes() {
         get("order/{orderId}") {
             val orderId = call.requirePathParameter("orderId")
             val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(paymentRepo.getPaymentsByOrderId(orderId, limit, offset))
+            call.respondOk(paymentService.getPaymentsByOrderId(orderId, limit, offset))
         }
     }
 }

@@ -16,14 +16,14 @@ import org.koin.ktor.ext.inject
  * Seller inventory management routes.
  */
 fun Route.inventorySellerRoutes() {
-    val inventoryRepo: InventoryRepository by inject()
+    val inventoryService: InventoryService by inject()
     rateLimit(RateLimitName(RateLimitNames.SELLER_WRITE)) {
         /**
          * @tag Inventory
          * @description Seller: Initialize or update inventory for a product
          */
         post {
-            call.respondCreated(inventoryRepo.createOrUpdateInventory(call.receive<InventoryRequest>()))
+            call.respondCreated(inventoryService.createOrUpdateInventory(call.receive<InventoryRequest>()))
         }
 
         /**
@@ -35,7 +35,7 @@ fun Route.inventorySellerRoutes() {
             val quantityStr = call.requireQueryParameter("quantity")
             val quantity = quantityStr.toIntOrNull() ?: throw IllegalArgumentException("quantity must be an integer")
             val operation = call.parameters["operation"] ?: "set"
-            call.respondOk(inventoryRepo.updateStock(productId, quantity, operation))
+            call.respondOk(inventoryService.updateStock(productId, quantity, operation))
         }
     }
 
@@ -45,7 +45,7 @@ fun Route.inventorySellerRoutes() {
      */
     get("/product/{productId}") {
         val productId = call.requirePathParameter("productId")
-        val inventory = inventoryRepo.getInventoryByProduct(productId)
+        val inventory = inventoryService.getInventoryByProduct(productId)
         if (inventory != null) {
             call.respondOk(inventory)
         } else {
@@ -60,7 +60,7 @@ fun Route.inventorySellerRoutes() {
     get("/shop/{shopId}") {
         val shopId = call.requirePathParameter("shopId")
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(inventoryRepo.getInventoryByShop(shopId, limit, offset))
+        call.respondOk(inventoryService.getInventoryByShop(shopId, limit, offset))
     }
 
     /**
@@ -69,7 +69,7 @@ fun Route.inventorySellerRoutes() {
      */
     get("/low-stock") {
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(inventoryRepo.getLowStockProducts(limit, offset))
+        call.respondOk(inventoryService.getLowStockProducts(limit, offset))
     }
 }
 

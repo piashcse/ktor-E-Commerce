@@ -1,5 +1,6 @@
 package com.piashcse.utils.extension
 
+import com.piashcse.event.EventBus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -10,10 +11,22 @@ import kotlin.time.Duration.Companion.milliseconds
 //  DATABASE QUERY HELPERS
 // ============================================================================
 
-/** Execute a block within a database transaction on the IO dispatcher. */
+/**
+ * Execute a block within a database transaction on the IO dispatcher.
+ * Domain events published inside the block are emitted only after the
+ * transaction commits successfully (discarded on rollback).
+ */
 suspend fun <T> query(block: () -> T): T =
     withContext(Dispatchers.IO) {
-        transaction { block() }
+        EventBus.beginAfterCommitScope()
+        try {
+            val result = transaction { block() }
+            EventBus.commitAfterCommitScope()
+            result
+        } catch (e: Exception) {
+            EventBus.abortAfterCommitScope()
+            throw e
+        }
     }
 
 /**

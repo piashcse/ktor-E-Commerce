@@ -167,11 +167,25 @@ Analyzed 212 Kotlin files. Findings verified by direct inspection of source. Ord
 
 ## 4. Architectural Issues
 
-1. **Routes call repositories directly** — service layer was deleted (git `ea46016`) despite README claiming Clean Architecture. `OrderRepositoryImpl` is a 500-line god object mixing persistence, pricing, coupon validation, stock locking, commissions, and event publishing.
-2. **DAO objects leak through repo interfaces** (`AuthRepository.kt:17-29` returns `UserDAO`/`RefreshTokenDAO`); response DTOs live inside entity files (`User.kt:60-81` `UserResponse`/`LoginResponse`, `Seller.kt:78-98`, `Cart.kt:30`, `WishList.kt:28`).
-3. **Events published inside transactions** — `tryEmit` before commit → phantom events if tx rolls back; no outbox pattern. `EventBus` counters/subscribers are unsynchronized; `deadLetterCount` reads `replayCache` of a `replay=0` flow → always 0; `tryEmit` return value ignored (silent drop on full buffer). `EmailSender` swallows exceptions, defeating EventBus retry/dead-letter.
-4. **Money math duplicated 4×** (cart summary, checkout summary, placeOrder, createOrder) with different rounding/shipping semantics — no shared `Money`/`PriceCalculator`.
-5. **No generic base repository** — 22 near-identical CRUD repo pairs (Brand vs Category vs ShopCategory vs SubCategory...). No modular monolith boundaries; `CheckoutRoutes` reaches across 3 feature packages.
+### ✅ DONE — A1. Routes call repositories directly
+**Before:** Service layer was deleted (git `ea46016`) despite README claiming Clean Architecture. Routes injected `XRepository` directly; `OrderRepositoryImpl` was a 500-line god object mixing persistence, pricing, coupon validation, stock locking, commissions, and event publishing.
+**Fixed by:** Restored a thin service layer for every feature — `BrandService`, `CartService`, `CheckoutService`, `ConsentService`, `CouponService`, `DashboardService`, `InventoryService`, `OrderService`, `PaymentService`, `PolicyService`, `ProductCategoryService`, `ProductSubCategoryService`, `RefundRequestService`, `ReviewRatingService`, `ShippingMethodService`, `ShopService`, `ShopCategoryService`, `WishListService`, `AuditLogService` — plus the existing `UserAuthenticationService`, `ProfileService`, `ProductCatalogService`, `ProductCrudService`. `CheckoutRoutes` now goes through a single `CheckoutService` (no cross-package repo access). All 22 route files now inject services, never repositories. Wired in `KoinModule.kt` (`serviceModule`).
+
+### ✅ DONE — A2. DAO objects leak through repo interfaces
+**Before:** `AuthRepository.kt:17-29` returned `UserDAO`/`RefreshTokenDAO`; response DTOs lived inside entity files (`User.kt:60-81` `UserResponse`/`LoginResponse`, `Seller.kt:78-98`, `Cart.kt:30`, `WishList.kt:28`).
+**Fixed by:** DAOs no longer cross repo boundaries — `AuthRepository` returns domain models (`AuthUser`, `StoredRefreshToken`, `LoginAttemptInfo` in `model/domain/`). DTOs relocated to `model/response/` (`UserResponse`, `LoginResponse`, `SellerResponse`, `CartResponse`, `WishListResponse`) and `model/request/ChangePassword.kt`; entity files are now pure tables/DAOs. Mappers updated (`UserMappers`, `CartWishListMappers`).
+
+### ✅ DONE — A3. Events published inside transactions
+**Before:** `tryEmit` before commit → phantom events if tx rolls back; no outbox pattern. `EventBus` counters/subscribers were unsynchronized; `deadLetterCount` read `replayCache` of a `replay=0` flow → always 0; `tryEmit` return value ignored (silent drop on full buffer). `EmailSender` swallowed exceptions, defeating EventBus retry/dead-letter.
+**Fixed by:** `EventBus.publish` now defers events while a DB transaction is active; `query`/`retryQuery` flush them only after commit and discard on rollback (after-commit publishing in `TransactionExt.kt`). Counters are `AtomicLong`, subscribers use `CopyOnWriteArrayList`, `deadLetterCount` is a real counter, `tryEmit` falls back to async `emit` when the buffer is full. `EmailSender.send` rethrows `EmailException` (so EventBus retries then dead-letters) and restores the rate-limit counter on failure.
+
+### ✅ DONE — A4. Money math duplicated 4×
+**Before:** Money/pricing duplicated in cart summary, checkout summary, placeOrder, createOrder with different rounding/shipping semantics — no shared `Money`/`PriceCalculator`.
+**Fixed by:** Shared `com.piashcse.utils.money.Money` module (2dp HALF_UP rounding, `lineTotal`, `subtotal`, `taxOn`, `shippingTotal`, `total`, `percent`, `discountPercent`, `average`). Applied in `CartRepositoryImpl`, `OrderRepositoryImpl` (`getCheckoutSummary`, `placeOrder`, `createOrder`), `ProductRepositoryImpl`, `Inventory`, `DashboardRepositoryImpl`, `ReviewRatingRepositoryImpl`.
+
+### ✅ DONE — A5. No generic base repository
+**Before:** 22 near-identical CRUD repo pairs (Brand vs Category vs ShopCategory vs SubCategory...). No modular monolith boundaries; `CheckoutRoutes` reached across 3 feature packages.
+**Fixed by:** Generic `BaseCrudRepository<DAO, RESP>` in `repository/base/` (create, paged getAll/listAll, findByIdOrThrow, update, delete, exists; abstract `DAO.toResponse()`). Refactored to extend it: `BrandRepositoryImpl`, `ShopCategoryRepositoryImpl`, `ProductCategoryRepositoryImpl`, `ProductSubCategoryRepositoryImpl`, `ShippingMethodRepositoryImpl`, `CouponRepositoryImpl`, `PolicyRepositoryImpl` (policy keeps custom deactivate-siblings logic). Custom-ownership features (shipping_address, consent, profile, order, etc.) intentionally left as-is. Checkout now delegates through `CheckoutService`.
 
 ---
 
@@ -199,6 +213,6 @@ Analyzed 212 Kotlin files. Findings verified by direct inspection of source. Ord
 
 **P1:** ~~cancel-path stock/refund consistency~~ ✅; ~~seller products get inventory~~ ✅; ~~refund authorization/transitions~~ ✅; ~~coupon preview side-effect~~ ✅; ~~deactivation + blacklist enforcement (S4)~~ ✅; ~~reset OTP brute-force + time-based lockout (S5)~~ ✅; ~~login enumeration + email echo (S6)~~ ✅; ~~rate-limit proxy awareness + client IP capture (S7)~~ ✅; ~~password policy + constant-time OTP + SMTP STARTTLS (S8)~~ ✅.
 
-**P2 (architecture):** restore service layer; move DTOs out of `database/entities`; outbox/durable events + fix EmailSubscriber addressing; generic `BaseRepository`; shared pricing module; single error-envelope (`ApiError`) everywhere.
+**P2 (architecture):** ~~restore service layer~~ ✅; ~~move DTOs out of `database/entities`~~ ✅; ~~outbox/durable events + fix EmailSubscriber addressing~~ ✅ (after-commit publish); ~~generic `BaseRepository`~~ ✅; ~~shared pricing module~~ ✅; single error-envelope (`ApiError`) everywhere.
 
 **P3 (industry standard):** one integration test (`testApplication` + Testcontainers); real health checks; JSON logging + MDC cleanup; OpenAPI auth schemes; enable lint failures in CI; `retryQuery` → catch only transient DB errors.

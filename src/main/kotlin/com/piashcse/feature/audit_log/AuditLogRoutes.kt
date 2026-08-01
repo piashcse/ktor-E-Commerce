@@ -8,14 +8,14 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Route.auditLogAdminRoutes() {
-    val repo: AuditLogRepository by inject()
+    val auditLogService: AuditLogService by inject()
     /**
      * @tag AuditLog
      * @description Get paginated audit logs with optional filters
      */
     get {
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(repo.getAuditLogs(limit, offset, call.queryParameters["actorId"], call.queryParameters["action"], call.queryParameters["resourceType"], call.queryParameters["resourceId"], call.queryParameters["outcome"]))
+        call.respondOk(auditLogService.getAuditLogs(limit, offset, call.queryParameters["actorId"], call.queryParameters["action"], call.queryParameters["resourceType"], call.queryParameters["resourceId"], call.queryParameters["outcome"]))
     }
 
     /**
@@ -24,6 +24,6 @@ fun Route.auditLogAdminRoutes() {
      */
     get("{id}") {
         val id = call.pathParameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Missing id")
-        call.respondOk(repo.getAuditLogById(id))
+        call.respondOk(auditLogService.getAuditLogById(id))
     }
 }

@@ -1,46 +1,43 @@
 package com.piashcse.feature.shipping_method
 
 import com.piashcse.database.entities.ShippingMethodDAO
+import com.piashcse.database.entities.ShippingMethodTable
 import com.piashcse.mapper.toShippingMethodResponse
 import com.piashcse.model.request.ShippingMethodRequest
 import com.piashcse.model.response.ShippingMethodResponse
-import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.repository.base.BaseCrudRepository
 
-class ShippingMethodRepositoryImpl : ShippingMethodRepository {
+class ShippingMethodRepositoryImpl : ShippingMethodRepository,
+    BaseCrudRepository<ShippingMethodDAO, ShippingMethodResponse>(
+        ShippingMethodDAO,
+        ShippingMethodTable,
+        "ShippingMethod",
+    ) {
+
+    override fun ShippingMethodDAO.toResponse(): ShippingMethodResponse = toShippingMethodResponse()
+
     override suspend fun createShippingMethod(request: ShippingMethodRequest): ShippingMethodResponse =
-        query {
-            ShippingMethodDAO.new {
-                name = request.name
-                type = request.type
-                price = request.price
-                deliveryTime = request.deliveryTime
-            }.toShippingMethodResponse()
+        create {
+            name = request.name
+            type = request.type
+            price = request.price
+            deliveryTime = request.deliveryTime
         }
 
-    override suspend fun getShippingMethods(): List<ShippingMethodResponse> =
-        query {
-            ShippingMethodDAO.all().map { it.toShippingMethodResponse() }
-        }
+    override suspend fun getShippingMethods(): List<ShippingMethodResponse> = listAll()
 
     override suspend fun updateShippingMethod(
         methodId: String,
         request: ShippingMethodRequest,
-    ): ShippingMethodResponse =
-        query {
-            val method = ShippingMethodDAO.findById(methodId) ?: methodId.throwNotFound("ShippingMethod")
-            method.apply {
-                name = request.name
-                type = request.type
-                price = request.price
-                deliveryTime = request.deliveryTime
-            }.toShippingMethodResponse()
-        }
+    ): ShippingMethodResponse = update(methodId) {
+        name = request.name
+        type = request.type
+        price = request.price
+        deliveryTime = request.deliveryTime
+    }
 
-    override suspend fun deleteShippingMethod(methodId: String): Boolean =
-        query {
-            val method = ShippingMethodDAO.findById(methodId) ?: methodId.throwNotFound("ShippingMethod")
-            method.delete()
-            true
-        }
+    override suspend fun deleteShippingMethod(methodId: String): Boolean {
+        delete(methodId)
+        return true
+    }
 }
