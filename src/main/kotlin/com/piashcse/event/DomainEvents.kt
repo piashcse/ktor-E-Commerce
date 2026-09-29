@@ -1,42 +1,58 @@
 package com.piashcse.event
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-sealed class DomainEvent(
-    open val occurredAt: LocalDateTime = LocalDateTime.now(),
-    open val requestId: String? = null,
-)
+@Serializable
+sealed class DomainEvent {
+    abstract val occurredAt: @Contextual LocalDateTime
+    abstract val requestId: String?
+}
 
+@Serializable
 data class OrderPlacedEvent(
     val orderId: String,
     val userId: String,
     val email: String,
     val shopId: String?,
     val orderNumber: String,
-    val total: BigDecimal,
+    val total: @Contextual BigDecimal,
+    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val requestId: String? = null,
 ) : DomainEvent()
 
+@Serializable
 data class UserRegisteredEvent(
     val userId: String,
     val email: String,
     val userType: String,
+    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val requestId: String? = null,
 ) : DomainEvent()
 
+@Serializable
 data class PaymentCompletedEvent(
     val paymentId: String,
     val orderId: String,
     val userId: String,
     val email: String,
-    val amount: BigDecimal,
+    val amount: @Contextual BigDecimal,
+    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val requestId: String? = null,
 ) : DomainEvent()
 
+@Serializable
 data class SendEmailEvent(
     val to: String,
     val subject: String,
     val body: String,
+    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val requestId: String? = null,
 ) : DomainEvent()
 
+@Serializable
 data class AdminActionEvent(
     val actorId: String,
     val actorEmail: String,
@@ -45,8 +61,11 @@ data class AdminActionEvent(
     val resourceType: String,
     val resourceId: String?,
     val details: String? = null,
+    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val requestId: String? = null,
 ) : DomainEvent()
 
+@Serializable
 data class RefundStatusChangedEvent(
     val refundId: String,
     val orderId: String,
@@ -54,4 +73,6 @@ data class RefundStatusChangedEvent(
     val email: String,
     val fromStatus: String,
     val toStatus: String,
+    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val requestId: String? = null,
 ) : DomainEvent()

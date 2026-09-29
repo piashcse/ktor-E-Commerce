@@ -11,7 +11,6 @@ import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.model.response.ShopResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
-import com.piashcse.event.AdminActionEvent
 import com.piashcse.event.EventBus
 import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.NotFoundException
@@ -151,7 +150,7 @@ class ShopRepositoryImpl : ShopRepository {
             shop.toShopResponse()
         }
         if (actorId != null) {
-            EventBus.publish(AdminActionEvent(actorId, actorEmail.orEmpty(), actorRole ?: "ADMIN", action, "SHOP", shopId, null))
+            EventBus.publishAdminAction(Triple(actorId, actorEmail.orEmpty(), actorRole ?: "ADMIN"), action, "SHOP", shopId)
         }
         return response
     }

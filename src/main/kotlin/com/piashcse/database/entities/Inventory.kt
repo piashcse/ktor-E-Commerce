@@ -51,7 +51,7 @@ fun ProductDAO.restoreStock(quantity: Int) {
 
 /** Calculates commission for an order subtotal. */
 fun SellerDAO.calcCommission(orderSubTotal: BigDecimal): BigDecimal =
-    orderSubTotal.multiply(commissionRate).divide(BigDecimal("100"), 2, RoundingMode.HALF_UP)
+    com.piashcse.utils.common.Money.commission(orderSubTotal, commissionRate)
 
 /** Records sales for a product and promotes it to best-seller once a threshold is crossed. */
 fun ProductDAO.addSales(quantity: Int) {

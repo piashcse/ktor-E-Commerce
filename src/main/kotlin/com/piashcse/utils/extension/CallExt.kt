@@ -56,6 +56,13 @@ fun ApplicationCall.paginateQueryParams(
     }
 }
 
+/**
+ * Stripe-style idempotency key: `Idempotency-Key` header wins, body field is fallback.
+ * Returns null when neither is present.
+ */
+fun ApplicationCall.idempotencyKey(bodyKey: String? = null): String? =
+    request.headers["Idempotency-Key"]?.takeIf { it.isNotBlank() } ?: bodyKey?.takeIf { it.isNotBlank() }
+
 fun ApplicationCall.productWithFilterRequest(defaultPerPage: Int = AppConstants.Pagination.DEFAULT_LIMIT): ProductWithFilterRequest {
     val (perPage, offset) = paginateQueryParams(defaultPerPage)
     return ProductWithFilterRequest(

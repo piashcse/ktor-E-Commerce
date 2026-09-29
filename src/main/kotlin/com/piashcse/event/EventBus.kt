@@ -63,6 +63,25 @@ object EventBus {
         return accepted
     }
 
+    /** Shared admin-audit publisher: `actor` is `(id, email, role)`. */
+    fun publishAdminAction(
+        actor: Triple<String, String, String>,
+        action: String,
+        resourceType: String,
+        resourceId: String?,
+        details: String? = null,
+    ): Boolean = publish(
+        AdminActionEvent(
+            actorId = actor.first,
+            actorEmail = actor.second,
+            actorRole = actor.third,
+            action = action,
+            resourceType = resourceType,
+            resourceId = resourceId,
+            details = details,
+        ),
+    )
+
     fun start(scope: CoroutineScope) {
         job = scope.launch {
             events.collect { event ->

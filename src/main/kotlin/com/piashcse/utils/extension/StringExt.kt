@@ -29,3 +29,9 @@ fun String.requireNotBlank(fieldName: String) {
 }
 
 fun String.entityID(table: IdTable<String>) = EntityID(this, table)
+
+/** Shared catalog-name validation (Brand/Category/ShopCategory): blank + 255 backstop. */
+fun String.requireValidName(resourceName: String, maxLength: Int = 255) {
+    if (isBlank()) throw ValidationException(Message.Validation.blankField(resourceName))
+    if (length > maxLength) throw ValidationException(Message.Validation.blankField("$resourceName (max $maxLength chars)"))
+}

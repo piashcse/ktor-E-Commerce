@@ -33,7 +33,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
             product.totalReviews = 0
         } else {
             val total = reviews.map { it.rating.toBigDecimal() }.reduce(BigDecimal::add)
-            product.rating = total.divide(reviews.size.toBigDecimal(), 2, RoundingMode.HALF_UP)
+            product.rating = com.piashcse.utils.common.Money.average(total, reviews.size.toLong())
             product.totalReviews = reviews.size
         }
     }

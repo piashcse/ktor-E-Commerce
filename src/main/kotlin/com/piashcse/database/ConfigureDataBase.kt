@@ -10,6 +10,10 @@ private lateinit var hikariDataSource: HikariDataSource
 
 internal fun getHikariDataSource(): HikariDataSource = hikariDataSource
 
+fun closeDataSource() {
+    if (::hikariDataSource.isInitialized && !hikariDataSource.isClosed) hikariDataSource.close()
+}
+
 fun configureDatabase() {
     hikariDataSource = createDataSource()
     val flyway = Flyway.configure()
@@ -17,7 +21,6 @@ fun configureDatabase() {
         .locations("classpath:db/migration")
         .baselineOnMigrate(true)
         .load()
-    flyway.repair()
     flyway.migrate()
     Database.connect(hikariDataSource)
 }

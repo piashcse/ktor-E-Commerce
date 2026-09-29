@@ -8,7 +8,7 @@ import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
-import java.math.RoundingMode
+import com.piashcse.utils.common.Money
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -32,8 +32,8 @@ class DashboardRepositoryImpl : DashboardRepository {
 
         DashboardStatsResponse(
             revenue = mapOf(
-                "total" to totalRevenue.setScale(2, RoundingMode.HALF_UP).toPlainString(),
-                "today" to todayRevenue.setScale(2, RoundingMode.HALF_UP).toPlainString(),
+                "total" to Money.str(totalRevenue),
+                "today" to Money.str(todayRevenue),
             ),
             orders = mapOf(
                 "total" to OrderTable.selectAll().count(), "today" to OrderTable.selectAll().where { OrderTable.createdAt greaterEq today }.count(),
@@ -66,7 +66,7 @@ class DashboardRepositoryImpl : DashboardRepository {
         val orderCount = OrderTable.selectAll().where {
             (OrderTable.status neq OrderStatus.CANCELED) and (OrderTable.createdAt greaterEq start) and (OrderTable.createdAt lessEq end)
         }.count()
-        val avg = if (orderCount > 0) totalRevenue.divide(BigDecimal(orderCount), 2, RoundingMode.HALF_UP) else BigDecimal.ZERO
+        val avg = Money.average(totalRevenue, orderCount)
 
         // Single range query grouped in Kotlin (was 1 query/day = N+1).
         val rangeRows = OrderTable.selectAll().where {
@@ -77,10 +77,10 @@ class DashboardRepositoryImpl : DashboardRepository {
             .takeWhile { it <= end.toLocalDate() }
             .map { date ->
                 val dayTotal = (byDay[date] ?: emptyList()).fold(BigDecimal.ZERO) { acc, row -> acc.add(row[OrderTable.total]) }
-                mapOf("date" to date.format(DFMT), "revenue" to dayTotal.setScale(2, RoundingMode.HALF_UP).toPlainString())
+                mapOf("date" to date.format(DFMT), "revenue" to Money.str(dayTotal))
             }.toList()
 
-        RevenueStatsResponse(totalRevenue.setScale(2).toPlainString(), orderCount, avg.setScale(2).toPlainString(), daily)
+        RevenueStatsResponse(Money.str(totalRevenue), orderCount, Money.str(avg), daily)
     }
 
     override suspend fun getOrderStats(status: String?) = query {
@@ -97,7 +97,7 @@ class DashboardRepositoryImpl : DashboardRepository {
             val dao = OrderDAO.wrapRow(it)
             mapOf(
                 "orderNumber" to dao.orderNumber, "status" to dao.status.name.lowercase(),
-                "total" to dao.total.setScale(2, RoundingMode.HALF_UP).toPlainString(),
+                "total" to Money.str(dao.total),
                 "createdAt" to dao.createdAt.format(FMT),
             )
         }
@@ -150,8 +150,8 @@ class DashboardRepositoryImpl : DashboardRepository {
         topProducts.map { p ->
             val topStock = inventoryMap[p.id.value] ?: 0
             TopProductResponse(p.id.value, p.name, p.sku, p.totalSales,
-                (revenueByProduct[p.id.value] ?: BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP).toPlainString(),
-                topStock, p.rating.setScale(2, RoundingMode.HALF_UP).toPlainString(), p.status.name.lowercase())
+                Money.str(revenueByProduct[p.id.value] ?: BigDecimal.ZERO),
+                topStock, Money.str(p.rating), p.status.name.lowercase())
         }
     }
 
@@ -170,7 +170,7 @@ class DashboardRepositoryImpl : DashboardRepository {
             .where { (OrderTable.shopId eq shopId) and (OrderTable.status neq OrderStatus.CANCELED) }
             .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
         DashboardStatsResponse(
-            revenue = mapOf("total" to revenue.setScale(2, RoundingMode.HALF_UP).toPlainString(), "today" to "0.00"),
+            revenue = mapOf("total" to Money.str(revenue), "today" to "0.00"),
             orders = mapOf("total" to shopOrders().count(), "today" to shopOrders().where { OrderTable.createdAt greaterEq today }.count(), "pending" to shopOrders().where { OrderTable.status eq OrderStatus.PENDING }.count(), "canceled" to shopOrders().where { OrderTable.status eq OrderStatus.CANCELED }.count()),
             users = mapOf("total" to 0, "today" to 0, "sellers" to 0),
             products = mapOf("total" to ProductTable.selectAll().where { ProductTable.shopId eq shopId }.count(), "outOfStock" to 0, "lowStock" to 0),
@@ -183,7 +183,7 @@ class DashboardRepositoryImpl : DashboardRepository {
         val orders = OrderTable.selectAll().orderBy(OrderTable.createdAt to SortOrder.DESC).limit(max).map {
             val dao = OrderDAO.wrapRow(it)
             RecentActivityResponse(dao.id.value, "order",
-                "Order ${dao.orderNumber} created - \$${dao.total.setScale(2, RoundingMode.HALF_UP)}",
+                "Order ${dao.orderNumber} created - \$${Money.str(dao.total)}",
                 dao.status.name.lowercase(), dao.createdAt.format(FMT))
         }
         val users = UserTable.selectAll().orderBy(UserTable.createdAt to SortOrder.DESC).limit(max).map {

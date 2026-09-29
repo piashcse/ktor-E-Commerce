@@ -1,6 +1,7 @@
 package com.piashcse
 
 import com.piashcse.config.DotEnvConfig
+import com.piashcse.database.closeDataSource
 import com.piashcse.database.configureDatabase
 import com.piashcse.event.EventBus
 import com.piashcse.event.subscriber.AuditLogSubscriber
@@ -9,6 +10,8 @@ import com.piashcse.event.subscriber.NotificationSubscriber
 import com.piashcse.feature.audit_log.AuditLogRepository
 import com.piashcse.plugin.*
 import com.piashcse.service.AsyncWorker
+import com.piashcse.service.OutboxPoller
+import com.piashcse.service.configureOutboxPoller
 import com.piashcse.service.StockReservationCleanup
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -38,10 +41,13 @@ fun Application.configureAll() {
     EventBus.subscribe(AuditLogSubscriber(get<AuditLogRepository>()))
     EventBus.subscribe(NotificationSubscriber())
     EventBus.start(this)
+    configureOutboxPoller()
     AsyncWorker.start(this)
     StockReservationCleanup.start(this)
     @Suppress("DEPRECATION")
     environment.monitor.subscribe(ApplicationStopped) {
+        OutboxPoller.stop()
+        closeDataSource()
         AsyncWorker.stop()
         StockReservationCleanup.stop()
         EventBus.stop()

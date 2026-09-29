@@ -11,11 +11,13 @@ import io.ktor.http.*
 open class AppException(
     message: String,
     val code: HttpStatusCode = HttpStatusCode.BadRequest,
+    /** Machine-readable error code (Stripe-style `code`). */
+    open val errorCode: String = "BAD_REQUEST",
 ) : Exception(message)
 
 // ─── 400 Bad Request ───────────────────────────────────────────────────────
 
-class ValidationException(message: String) : AppException(message, HttpStatusCode.BadRequest)
+class ValidationException(message: String, override val errorCode: String = "VALIDATION_FAILED") : AppException(message, HttpStatusCode.BadRequest, errorCode)
 
 class InvalidEnumValueException(
     message: String,
@@ -29,7 +31,7 @@ class MissingParameterException(parameterName: String) :
 // ─── 401 Unauthorized ──────────────────────────────────────────────────────
 
 class UnauthorizedException(message: String = Message.Errors.UNAUTHORIZED) :
-    AppException(message, HttpStatusCode.Unauthorized)
+    AppException(message, HttpStatusCode.Unauthorized, "UNAUTHORIZED")
 
 class InvalidCredentialsException(
     remainingAttempts: Int? = null,
@@ -56,26 +58,26 @@ class DeactivatedAccountException(message: String = Message.Auth.ACCOUNT_DEACTIV
 // ─── 403 Forbidden ─────────────────────────────────────────────────────────
 
 class ForbiddenException(message: String = Message.Errors.FORBIDDEN) :
-    AppException(message, HttpStatusCode.Forbidden)
+    AppException(message, HttpStatusCode.Forbidden, "FORBIDDEN")
 
 // ─── 404 Not Found ─────────────────────────────────────────────────────────
 
 class NotFoundException(message: String = Message.Errors.NOT_FOUND) :
-    AppException(message, HttpStatusCode.NotFound)
+    AppException(message, HttpStatusCode.NotFound, "NOT_FOUND")
 
 // ─── 409 Conflict ──────────────────────────────────────────────────────────
 
-class ConflictException(message: String) : AppException(message, HttpStatusCode.Conflict)
+class ConflictException(message: String) : AppException(message, HttpStatusCode.Conflict, "CONFLICT")
 
 // ─── 429 Too Many Requests ─────────────────────────────────────────────────
 
 class RateLimitExceededException(message: String = "Too many requests") :
-    AppException(message, HttpStatusCode.TooManyRequests)
+    AppException(message, HttpStatusCode.TooManyRequests, "RATE_LIMITED")
 
 // ─── 500 Internal Server Error ─────────────────────────────────────────────
 
 class InternalServerException(message: String = Message.Errors.INTERNAL) :
-    AppException(message, HttpStatusCode.InternalServerError)
+    AppException(message, HttpStatusCode.InternalServerError, "INTERNAL")
 
 class DatabaseException(message: String) : AppException(message, HttpStatusCode.InternalServerError)
 

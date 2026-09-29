@@ -11,6 +11,7 @@ import com.piashcse.model.response.ProductCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.requireValidName
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedList
@@ -21,6 +22,7 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 class ProductCategoryRepositoryImpl : ProductCategoryRepository {
     override suspend fun createCategory(name: String): ProductCategoryResponse =
         query {
+            name.requireValidName("ProductCategory")
             val isCategoryExist =
                 ProductCategoryDAO.find { ProductCategoryTable.name eq name }.firstOrNull()
             isCategoryExist?.let {
@@ -56,6 +58,7 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
         name: String,
     ): ProductCategoryResponse =
         query {
+            name.requireValidName("ProductCategory")
             val isCategoryExist =
                 ProductCategoryDAO.findById(categoryId)
             isCategoryExist?.let {

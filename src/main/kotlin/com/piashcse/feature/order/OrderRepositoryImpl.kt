@@ -2,8 +2,8 @@ package com.piashcse.feature.order
 
 import com.piashcse.constants.*
 import com.piashcse.database.entities.*
-import com.piashcse.event.EventBus
 import com.piashcse.event.OrderPlacedEvent
+import com.piashcse.event.OutboxPublisher
 import com.piashcse.mapper.toOrderItemResponse
 import com.piashcse.mapper.toOrderResponse
 import com.piashcse.model.request.CheckoutRequest
@@ -101,13 +101,12 @@ class OrderRepositoryImpl : OrderRepository {
     private fun calculateCouponDiscount(coupon: CouponDAO, orderAmount: BigDecimal): BigDecimal {
         val discount = when (coupon.discountType) {
             CouponDiscountType.PERCENTAGE -> {
-                val percentage = coupon.discountValue.divide(BigDecimal(100), 10, RoundingMode.HALF_UP)
-                val amount = orderAmount.multiply(percentage)
+                val amount = com.piashcse.utils.common.Money.percentOf(orderAmount, coupon.discountValue)
                 coupon.maxDiscountAmount?.let { amount.min(it) } ?: amount
             }
             CouponDiscountType.FIXED -> coupon.discountValue
         }
-        return discount.min(orderAmount).setScale(2, RoundingMode.HALF_UP)
+        return com.piashcse.utils.common.Money.scale2(discount.min(orderAmount))
     }
 
     private fun consumeCoupon(
@@ -132,11 +131,9 @@ class OrderRepositoryImpl : OrderRepository {
         userId: String,
         checkoutRequest: CheckoutRequest,
     ): List<OrderResponse> {
-        // Cached once: avoids N+1 UserDAO lookups per split order + out-of-txn use after commit.
+        // Cached once: avoids N+1 UserDAO lookups per split order.
         val callerEmail = query { UserDAO.findById(userId)?.email.orEmpty() }
-        data class Placed(val orderId: String, val shopId: String?, val orderNumber: String, val total: BigDecimal)
-        val (responses, placedEvents) = retryQuery {
-            val pendingEvents = mutableListOf<Placed>()
+        val responses = retryQuery {
             val result: List<OrderResponse> = run {
                 checkoutRequest.idempotencyKey?.let { key ->
                     val existing = OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.toList()
@@ -249,8 +246,7 @@ class OrderRepositoryImpl : OrderRepository {
             val coupon = validateCoupon(code, totalSubTotal, forUpdate = true, userId = userId)
             val discount = consumeCoupon(coupon, totalSubTotal, userId, createdOrders)
             createdOrders.forEach { order ->
-                val proportion = order.subTotal.divide(totalSubTotal, 10, RoundingMode.HALF_UP)
-                val orderDiscount = discount.multiply(proportion).setScale(2, RoundingMode.HALF_UP)
+                val orderDiscount = com.piashcse.utils.common.Money.proportionalSplit(discount, order.subTotal, totalSubTotal)
                 order.discountAmount = orderDiscount
                 order.couponCode = code
                 order.total = order.total.subtract(orderDiscount)
@@ -276,28 +272,26 @@ class OrderRepositoryImpl : OrderRepository {
         cartItems.forEach { it.delete() }
         createdOrders.forEach {
             logStatusChange(it.id.value, it.status, "Order placed", userId)
-            pendingEvents.add(Placed(it.id.value, it.shopId?.value, it.orderNumber, it.total))
-        }
-        val itemsMap = loadItemsForOrders(createdOrders)
-        createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
-            } // end run
-            Pair(result, pendingEvents)
-        }
-        // Publish AFTER commit: no ghost emails on rollback, no duplicates on retry.
-        placedEvents.forEach {
-            EventBus.publish(
+            // Durable: outbox row commits atomically; OutboxPoller relays (no ghost on rollback/retry).
+            OutboxPublisher.enqueueTx(
+                "ORDER", it.id.value,
                 OrderPlacedEvent(
-                    orderId = it.orderId,
+                    orderId = it.id.value,
                     userId = userId,
                     email = callerEmail,
-                    shopId = it.shopId,
+                    shopId = it.shopId?.value,
                     orderNumber = it.orderNumber,
                     total = it.total,
                 ),
             )
         }
-        return responses
+        val itemsMap = loadItemsForOrders(createdOrders)
+        createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
+        }
+        result
     }
+    return responses
+}
 
     override suspend fun getCheckoutSummary(
         userId: String,
@@ -463,11 +457,7 @@ class OrderRepositoryImpl : OrderRepository {
         val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
         val user = UserDAO.findById(userId) ?: throw ValidationException(Message.Errors.NOT_FOUND)
 
-        val isCustomer = order.userId.value == userId
-        val isSeller = order.shopId?.value?.let { sellerOwnsShop(userId, it) } == true
-        val isAdmin = user.userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
-
-        if (!isCustomer && !isSeller && !isAdmin) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
+        requireOrderAccess(order.userId.value, order.shopId?.value, userId, user.userType)
 
         if (!OrderStatus.canTransitionTo(order.status, status))
             throw ValidationException(Message.Orders.INVALID_STATUS)
@@ -501,11 +491,7 @@ class OrderRepositoryImpl : OrderRepository {
 
         val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
 
-        val isCustomer = order.userId.value == userId
-        val isSeller = order.shopId?.value?.let { sellerOwnsShop(userId, it) } == true
-        val isAdmin = userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
-
-        if (!isCustomer && !isSeller && !isAdmin) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
+        requireOrderAccess(order.userId.value, order.shopId?.value, userId, userType)
         if (!OrderStatus.canBeCanceled(order.status)) throw ValidationException(Message.Orders.CANNOT_CANCEL)
 
         applyOrderCancellation(order, notes = reason, changedBy = userId)

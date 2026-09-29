@@ -14,6 +14,10 @@ object SellerPayoutTable : BaseIdTable("seller_payout") {
     val payoutAmount = decimal("payout_amount", 10, 2)
     val status = varchar("status", 20).default("PENDING").index()
     val paidAt = datetime("paid_at").nullable()
+
+    init {
+        uniqueIndex("seller_payout_seller_order_unique", sellerId, orderId)
+    }
 }
 
 class SellerPayoutDAO(id: EntityID<String>) : BaseEntity(id, SellerPayoutTable) {

@@ -5,7 +5,7 @@ import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
-import com.piashcse.event.EventBus
+import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.RefundStatusChangedEvent
 import com.piashcse.mapper.toRefundRequestResponse
 import com.piashcse.model.request.RefundRequestRequest
@@ -197,7 +197,8 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                 order.paymentStatus = PaymentStatus.REFUNDED
             }
 
-            EventBus.publish(
+            OutboxPublisher.enqueueTx(
+                "REFUND", refundReq.id.value,
                 RefundStatusChangedEvent(
                     refundId = refundReq.id.value,
                     orderId = refundReq.orderId.value,

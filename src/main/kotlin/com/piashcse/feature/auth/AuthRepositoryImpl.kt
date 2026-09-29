@@ -6,7 +6,6 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
-import com.piashcse.event.AdminActionEvent
 import com.piashcse.event.EventBus
 import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
@@ -14,7 +13,6 @@ import com.piashcse.model.response.ResetResult
 import com.piashcse.service.CacheService
 import com.piashcse.utils.common.constantTimeEquals
 import com.piashcse.utils.common.generateOTP
-import com.piashcse.utils.extension.*
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
@@ -69,6 +67,14 @@ class AuthRepositoryImpl : AuthRepository {
         RefreshTokenDAO.find { RefreshTokenTable.userId eq userId.entityID(UserTable) }
             .forEach { it.revokedAt = Instant.now() }
     }
+
+    private fun registrationAttempt(
+        userId: org.jetbrains.exposed.v1.core.dao.id.EntityID<String>,
+        forUpdate: Boolean = false,
+    ) = (if (forUpdate) OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId) and (OtpAttemptTable.purpose eq "GENERAL") }.forUpdate() else OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId) and (OtpAttemptTable.purpose eq "GENERAL") }).singleOrNull()
+
+    private fun resetAttempt(userId: org.jetbrains.exposed.v1.core.dao.id.EntityID<String>) =
+        OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId) and (OtpAttemptTable.purpose eq "RESET") }.singleOrNull()
 
     // ── Login attempt helpers ────────────────────────────────────────────
 
@@ -202,7 +208,7 @@ class AuthRepositoryImpl : AuthRepository {
         val user = entities.find { it.userType == type }
             ?: throw NotFoundException(Message.Auth.userNotFoundForRole(resetPasswordRequest.userType))
 
-        val otpAttempt = OtpAttemptDAO.find { (OtpAttemptTable.userId eq user.id) and (OtpAttemptTable.purpose eq "RESET") }.singleOrNull()
+        val otpAttempt = resetAttempt(user.id)
         if (otpAttempt?.isLocked == true) return@query ResetResult.Locked
 
         if (user.resetOtpExpiry?.isBefore(LocalDateTime.now()) != false)
@@ -241,7 +247,7 @@ class AuthRepositoryImpl : AuthRepository {
     // ── OTP ───────────────────────────────────────────────────────────────
 
     override suspend fun verifyOtp(userId: String, otp: String): Boolean = query {
-        OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId.entityID(UserTable)) and (OtpAttemptTable.purpose eq "GENERAL") }.singleOrNull()?.let {
+        registrationAttempt(userId.entityID(UserTable))?.let {
             if (it.isLocked) throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES))
         }
         val userEntity = UserDAO.findById(userId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
@@ -264,18 +270,15 @@ class AuthRepositoryImpl : AuthRepository {
     // ── OTP attempt tracking (persistent) ─────────────────────────────────
 
     override suspend fun getOtpAttempt(userId: String): Int = query {
-        OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId.entityID(UserTable)) and (OtpAttemptTable.purpose eq "GENERAL") }
-            .singleOrNull()?.attemptCount ?: 0
+        registrationAttempt(userId.entityID(UserTable))?.attemptCount ?: 0
     }
 
     override suspend fun isOtpLocked(userId: String): Boolean = query {
-        OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId.entityID(UserTable)) and (OtpAttemptTable.purpose eq "GENERAL") }
-            .singleOrNull()?.isLocked == true
+        registrationAttempt(userId.entityID(UserTable))?.isLocked == true
     }
 
     override suspend fun recordFailedOtpAttempt(userId: String): Int = query {
-        val existing = OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId.entityID(UserTable)) and (OtpAttemptTable.purpose eq "GENERAL") }
-            .forUpdate().singleOrNull()
+        val existing = registrationAttempt(userId.entityID(UserTable), forUpdate = true)
         if (existing != null) {
             existing.attemptCount++
             existing.attemptCount
@@ -291,15 +294,13 @@ class AuthRepositoryImpl : AuthRepository {
 
     override suspend fun resetOtpAttempts(userId: String) {
         query {
-            OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId.entityID(UserTable)) and (OtpAttemptTable.purpose eq "GENERAL") }
-                .singleOrNull()?.delete()
+            registrationAttempt(userId.entityID(UserTable))?.delete()
         }
     }
 
     override suspend fun lockOtpAttempts(userId: String) {
         query {
-            OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId.entityID(UserTable)) and (OtpAttemptTable.purpose eq "GENERAL") }
-                .singleOrNull()?.apply {
+            registrationAttempt(userId.entityID(UserTable))?.apply {
                     lockedUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
                 }
         }
@@ -316,6 +317,8 @@ class AuthRepositoryImpl : AuthRepository {
                     ?: throw NotFoundException(Message.Auth.INVALID_REFRESH_TOKEN)
 
             if (!storedToken.isValid) {
+                // Reuse detection: suspected theft — revoke entire token family so the rotated session dies too.
+                runCatching { revokeAllUserTokensTx(storedToken.userId.value) }
                 storedToken.revokedAt = Instant.now()
                 throw NotFoundException(Message.Auth.TOKEN_EXPIRED)
             }
@@ -390,7 +393,7 @@ class AuthRepositoryImpl : AuthRepository {
             }
             Triple(currentUser.id.value, currentUser.email, currentUser.userType.name)
         }
-        EventBus.publish(AdminActionEvent(actor.first, actor.second, actor.third, "USER_CHANGE_TYPE", "USER", targetUserId, "Changed to $newUserType"))
+        EventBus.publishAdminAction(actor, "USER_CHANGE_TYPE", "USER", targetUserId, "Changed to $newUserType")
         return true
     }
 
@@ -400,7 +403,7 @@ class AuthRepositoryImpl : AuthRepository {
             revokeAllUserTokensTx(targetUser.id.value)
             Triple(currentUser.id.value, currentUser.email, currentUser.userType.name)
         }
-        EventBus.publish(AdminActionEvent(actor.first, actor.second, actor.third, "USER_DEACTIVATE", "USER", targetUserId, null))
+        EventBus.publishAdminAction(actor, "USER_DEACTIVATE", "USER", targetUserId)
         return true
     }
 
@@ -409,7 +412,7 @@ class AuthRepositoryImpl : AuthRepository {
             targetUser.isActive = true
             Triple(currentUser.id.value, currentUser.email, currentUser.userType.name)
         }
-        EventBus.publish(AdminActionEvent(actor.first, actor.second, actor.third, "USER_ACTIVATE", "USER", targetUserId, null))
+        EventBus.publishAdminAction(actor, "USER_ACTIVATE", "USER", targetUserId)
         return true
     }
 }

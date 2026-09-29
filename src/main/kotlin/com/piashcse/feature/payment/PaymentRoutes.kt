@@ -6,6 +6,7 @@ import com.piashcse.plugin.customerAuth
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.idempotencyKey
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
@@ -24,7 +25,9 @@ fun Route.paymentRoutes() {
              * @description Create a new payment record for an order
              */
             post {
-                call.respondCreated(paymentRepo.createPayment(call.receive<PaymentRequest>(), call.currentUserId))
+                val body = call.receive<PaymentRequest>()
+                val txKey = call.idempotencyKey(body.transactionId)
+                call.respondCreated(paymentRepo.createPayment(body.copy(transactionId = txKey), call.currentUserId))
             }
         }
 

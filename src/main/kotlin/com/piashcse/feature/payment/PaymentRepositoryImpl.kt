@@ -3,7 +3,7 @@ package com.piashcse.feature.payment
 import com.piashcse.constants.Message
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.*
-import com.piashcse.event.EventBus
+import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.mapper.toPaymentResponse
 import com.piashcse.model.request.PaymentRequest
@@ -19,8 +19,7 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 
 class PaymentRepositoryImpl : PaymentRepository {
     override suspend fun createPayment(paymentRequest: PaymentRequest, callerUserId: String): PaymentResponse {
-        data class Completed(val paymentId: String, val orderId: String, val userId: String, val email: String, val amount: java.math.BigDecimal)
-        val (response, completedEvent) = retryQuery {
+        val (response, _) = retryQuery {
             paymentRequest.transactionId?.let { txId ->
                 PaymentDAO.find { PaymentTable.transactionId eq txId }.firstOrNull()
                     ?.let { existing ->
@@ -68,33 +67,23 @@ class PaymentRepositoryImpl : PaymentRepository {
                     this.transactionId = paymentRequest.transactionId
                 }
 
-            var event: Completed? = null
             if (paidAmount.add(paymentAmount).compareTo(orderTotal) >= 0) {
                 order.paymentStatus = PaymentStatus.COMPLETED
                 StockReservationDAO.find { StockReservationTable.orderId eq paymentRequest.orderId.entityID(OrderTable) }
                     .forEach { it.status = ReservationStatus.FINALIZED }
-                event = Completed(
-                    paymentId = payment.id.value,
-                    orderId = paymentRequest.orderId,
-                    userId = order.userId.value,
-                    email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
-                    amount = paymentAmount,
+                OutboxPublisher.enqueueTx(
+                    "PAYMENT", payment.id.value,
+                    PaymentCompletedEvent(
+                        paymentId = payment.id.value,
+                        orderId = paymentRequest.orderId,
+                        userId = order.userId.value,
+                        email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
+                        amount = paymentAmount,
+                    ),
                 )
             }
 
-            Pair(payment.toPaymentResponse(), event)
-        }
-        // Publish AFTER commit: no phantom payment emails on rollback/retry.
-        completedEvent?.let {
-            EventBus.publish(
-                PaymentCompletedEvent(
-                    paymentId = it.paymentId,
-                    orderId = it.orderId,
-                    userId = it.userId,
-                    email = it.email,
-                    amount = it.amount,
-                ),
-            )
+            Pair(payment.toPaymentResponse(), null)
         }
         return response
     }

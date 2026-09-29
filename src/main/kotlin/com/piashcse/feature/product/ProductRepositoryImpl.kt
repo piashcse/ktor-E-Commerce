@@ -22,11 +22,11 @@ import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import com.piashcse.utils.db.bindParams
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.sql.Connection
-import java.sql.PreparedStatement
 
 class ProductRepositoryImpl : ProductRepository {
 
@@ -296,28 +296,18 @@ class ProductRepositoryImpl : ProductRepository {
         val conn = TransactionManager.current().connection.connection as Connection
         var totalCount = 0
 
-        fun setParams(stmt: PreparedStatement, params: List<Any>, startIdx: Int = 1) {
-            var idx = startIdx
-            for (p in params) {
-                when (p) {
-                    is Int -> stmt.setInt(idx++, p)
-                    is String -> stmt.setString(idx++, p)
-                    is Double -> stmt.setBigDecimal(idx++, java.math.BigDecimal(p.toString()))
-                    is java.math.BigDecimal -> stmt.setBigDecimal(idx++, p)
-                }
-            }
-        }
+
 
         conn.prepareStatement(countSql).use { stmt ->
-            setParams(stmt, whereParams)
+            stmt.bindParams(whereParams)
             val rs = stmt.executeQuery()
             if (rs.next()) totalCount = rs.getInt(1)
         }
 
         val ids = mutableListOf<String>()
         conn.prepareStatement(dataSql).use { stmt ->
-            setParams(stmt, whereParams)
-            setParams(stmt, orderParams, whereParams.size + 1)
+            var nextIdx = stmt.bindParams(whereParams)
+            nextIdx = stmt.bindParams(orderParams, nextIdx)
             stmt.setInt(whereParams.size + orderParams.size + 1, request.limit)
             stmt.setInt(whereParams.size + orderParams.size + 2, request.offset)
             val rs = stmt.executeQuery()
@@ -401,15 +391,7 @@ class ProductRepositoryImpl : ProductRepository {
         fun executeFacetQuery(sql: String): List<FacetCount> {
             val results = mutableListOf<FacetCount>()
             conn.prepareStatement(sql).use { stmt ->
-                var idx = 1
-                for (p in allParams) {
-                    when (p) {
-                        is Int -> stmt.setInt(idx++, p)
-                        is String -> stmt.setString(idx++, p)
-                        is Double -> stmt.setBigDecimal(idx++, java.math.BigDecimal(p.toString()))
-                        is java.math.BigDecimal -> stmt.setBigDecimal(idx++, p)
-                    }
-                }
+                stmt.bindParams(allParams)
                 stmt.executeQuery().use { rs ->
                     while (rs.next()) {
                         results.add(FacetCount(rs.getString("id"), rs.getString("name"), rs.getLong("cnt")))

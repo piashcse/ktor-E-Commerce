@@ -6,7 +6,6 @@ import com.piashcse.database.entities.SupportedCurrencies
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.eq
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 /** Converts base-USD amounts to checkout currency using fx_rate (falls back to 1.0). */
 object FxService {
@@ -19,6 +18,6 @@ object FxService {
 
     suspend fun convertUsd(amountUsd: BigDecimal, targetCurrency: String): BigDecimal {
         val rate = rateTo(targetCurrency)
-        return amountUsd.multiply(rate).setScale(2, RoundingMode.HALF_UP)
+        return com.piashcse.utils.common.Money.scale2(amountUsd.multiply(rate))
     }
 }

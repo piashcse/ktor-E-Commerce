@@ -9,6 +9,7 @@ import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.customerAuth
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.idempotencyKey
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
@@ -59,7 +60,9 @@ fun Route.checkoutRoutes() {
              * @description Place a new order from the cart
              */
             post("place-order") {
-                call.respondCreated(orderRepo.placeOrder(call.currentUserId, call.receive<CheckoutRequest>()))
+                val body = call.receive<CheckoutRequest>()
+                val key = call.idempotencyKey(body.idempotencyKey)
+                call.respondCreated(orderRepo.placeOrder(call.currentUserId, body.copy(idempotencyKey = key)))
             }
         }
 
