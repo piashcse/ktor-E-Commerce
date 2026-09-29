@@ -267,6 +267,13 @@ class ProductRepositoryImpl : ProductRepository {
             whereClauses.add("p.price <= ?")
             whereParams.add(request.maxPrice)
         }
+        if (request.minRating != null) {
+            whereClauses.add("p.rating >= ?")
+            whereParams.add(request.minRating)
+        }
+        if (request.inStockOnly == true) {
+            whereClauses.add("EXISTS (SELECT 1 FROM inventory i WHERE i.product_id = p.id AND i.stock_quantity > 0)")
+        }
 
         val whereSql = whereClauses.joinToString(" AND ")
 
@@ -355,6 +362,13 @@ class ProductRepositoryImpl : ProductRepository {
         if (request.maxPrice != null) {
             extraClauses.add("p.price <= ?")
             extraParams.add(request.maxPrice)
+        }
+        if (request.minRating != null) {
+            extraClauses.add("p.rating >= ?")
+            extraParams.add(request.minRating)
+        }
+        if (request.inStockOnly == true) {
+            extraClauses.add("EXISTS (SELECT 1 FROM inventory i WHERE i.product_id = p.id AND i.stock_quantity > 0)")
         }
 
         val extraSql = if (extraClauses.isNotEmpty()) " AND ${extraClauses.joinToString(" AND ")}" else ""

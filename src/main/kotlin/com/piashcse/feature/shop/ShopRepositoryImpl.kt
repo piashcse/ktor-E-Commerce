@@ -11,6 +11,8 @@ import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.model.response.ShopResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
+import com.piashcse.event.AdminActionEvent
+import com.piashcse.event.EventBus
 import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.NotFoundException
 import org.jetbrains.exposed.v1.core.Column
@@ -135,17 +137,34 @@ class ShopRepositoryImpl : ShopRepository {
             .toPaginatedResponse(limit, offset) { ShopDAO.wrapRow(it).toShopResponse() }
     }
 
-    private suspend fun setShopStatus(shopId: String, update: ShopDAO.() -> Unit): ShopResponse = query {
-        val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("ShopResponse")
-        shop.update()
-        shop.toShopResponse()
+    private suspend fun setShopStatus(
+        shopId: String,
+        action: String,
+        actorId: String?,
+        actorEmail: String?,
+        actorRole: String?,
+        update: ShopDAO.() -> Unit,
+    ): ShopResponse {
+        val response = query {
+            val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("ShopResponse")
+            shop.update()
+            shop.toShopResponse()
+        }
+        if (actorId != null) {
+            EventBus.publish(AdminActionEvent(actorId, actorEmail.orEmpty(), actorRole ?: "ADMIN", action, "SHOP", shopId, null))
+        }
+        return response
     }
 
-    override suspend fun approveShop(shopId: String) = setShopStatus(shopId) { status = ShopStatus.APPROVED }
+    override suspend fun approveShop(shopId: String, actorId: String?, actorEmail: String?, actorRole: String?) =
+        setShopStatus(shopId, "SHOP_APPROVE", actorId, actorEmail, actorRole) { status = ShopStatus.APPROVED }
 
-    override suspend fun rejectShop(shopId: String) = setShopStatus(shopId) { status = ShopStatus.REJECTED }
+    override suspend fun rejectShop(shopId: String, actorId: String?, actorEmail: String?, actorRole: String?) =
+        setShopStatus(shopId, "SHOP_REJECT", actorId, actorEmail, actorRole) { status = ShopStatus.REJECTED }
 
-    override suspend fun suspendShop(shopId: String) = setShopStatus(shopId) { status = ShopStatus.SUSPENDED }
+    override suspend fun suspendShop(shopId: String, actorId: String?, actorEmail: String?, actorRole: String?) =
+        setShopStatus(shopId, "SHOP_SUSPEND", actorId, actorEmail, actorRole) { status = ShopStatus.SUSPENDED }
 
-    override suspend fun activateShop(shopId: String) = setShopStatus(shopId) { if (status == ShopStatus.SUSPENDED) status = ShopStatus.APPROVED }
+    override suspend fun activateShop(shopId: String, actorId: String?, actorEmail: String?, actorRole: String?) =
+        setShopStatus(shopId, "SHOP_ACTIVATE", actorId, actorEmail, actorRole) { if (status == ShopStatus.SUSPENDED) status = ShopStatus.APPROVED }
 }

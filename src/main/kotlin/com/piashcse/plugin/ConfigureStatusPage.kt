@@ -17,6 +17,13 @@ import java.util.*
 private fun Throwable.firstConstraintViolation(): ConstraintViolationException? =
     generateSequence(this) { it.cause }.filterIsInstance<ConstraintViolationException>().firstOrNull()
 
+private fun Throwable.isDuplicateKey(): Boolean =
+    generateSequence(this) { it.cause }.any { t ->
+        val msg = (t.message ?: "").lowercase()
+        "duplicate" in msg || "unique" in msg || "23505" in msg ||
+            t::class.simpleName?.contains("ConstraintViolation", ignoreCase = true) == true
+    }
+
 private suspend fun ApplicationCall.respondValidationError(exception: ConstraintViolationException) {
     val fieldErrors = exception.constraintViolations
         .mapToMessage(baseName = "messages", locale = Locale.ENGLISH)
@@ -39,6 +46,13 @@ fun Application.configureStatusPage() {
         exception<Throwable> { call, error ->
             error.firstConstraintViolation()?.let {
                 call.respondValidationError(it)
+                return@exception
+            }
+
+            // DB unique violations (wishlist/cart/review/idempotency races) → 409, not 500.
+            if (error.isDuplicateKey()) {
+                statusPageLog.warn("Duplicate key: ${error.message}")
+                call.respond(HttpStatusCode.Conflict, call.errorResponse("Resource already exists"))
                 return@exception
             }
 

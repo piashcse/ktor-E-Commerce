@@ -5,7 +5,11 @@ import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
+
+@Serializable
+data class MarkAllReadResponse(val markedRead: Long)
 
 fun Route.notificationRoutes() {
     val repo: NotificationRepository by inject()
@@ -22,7 +26,7 @@ fun Route.notificationRoutes() {
             call.respondOk(repo.markRead(call.currentUserId, call.parameters["id"] ?: throw IllegalArgumentException("id required")))
         }
         post("read-all") {
-            call.respondOk(mapOf("markedRead" to repo.markAllRead(call.currentUserId)))
+            call.respondOk(MarkAllReadResponse(repo.markAllRead(call.currentUserId)))
         }
     }
 }

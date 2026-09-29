@@ -106,7 +106,7 @@ fun Route.shopAdminRoutes() {
          */
         put("/approve/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(shopRepo.approveShop(shopId))
+            call.respondOk(shopRepo.approveShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType))
         }
 
         /**
@@ -115,7 +115,7 @@ fun Route.shopAdminRoutes() {
          */
         put("/reject/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(shopRepo.rejectShop(shopId))
+            call.respondOk(shopRepo.rejectShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType))
         }
 
         /**
@@ -124,7 +124,7 @@ fun Route.shopAdminRoutes() {
          */
         put("/suspend/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(shopRepo.suspendShop(shopId))
+            call.respondOk(shopRepo.suspendShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType))
         }
 
         /**
@@ -133,7 +133,7 @@ fun Route.shopAdminRoutes() {
          */
         put("/activate/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(shopRepo.activateShop(shopId))
+            call.respondOk(shopRepo.activateShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType))
         }
     }
 

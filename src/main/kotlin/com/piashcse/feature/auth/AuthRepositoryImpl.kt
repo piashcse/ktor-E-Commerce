@@ -202,7 +202,7 @@ class AuthRepositoryImpl : AuthRepository {
         val user = entities.find { it.userType == type }
             ?: throw NotFoundException(Message.Auth.userNotFoundForRole(resetPasswordRequest.userType))
 
-        val otpAttempt = OtpAttemptDAO.find { OtpAttemptTable.userId eq user.id }.singleOrNull()
+        val otpAttempt = OtpAttemptDAO.find { (OtpAttemptTable.userId eq user.id) and (OtpAttemptTable.purpose eq "RESET") }.singleOrNull()
         if (otpAttempt?.isLocked == true) return@query ResetResult.Locked
 
         if (user.resetOtpExpiry?.isBefore(LocalDateTime.now()) != false)
@@ -216,6 +216,7 @@ class AuthRepositoryImpl : AuthRepository {
                 } else {
                     OtpAttemptDAO.new {
                         this.userId = user.id
+                        this.purpose = "RESET"
                         this.attemptCount = 1
                     }
                 }
@@ -240,7 +241,7 @@ class AuthRepositoryImpl : AuthRepository {
     // ── OTP ───────────────────────────────────────────────────────────────
 
     override suspend fun verifyOtp(userId: String, otp: String): Boolean = query {
-        OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }.singleOrNull()?.let {
+        OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId.entityID(UserTable)) and (OtpAttemptTable.purpose eq "GENERAL") }.singleOrNull()?.let {
             if (it.isLocked) throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES))
         }
         val userEntity = UserDAO.findById(userId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
@@ -263,17 +264,17 @@ class AuthRepositoryImpl : AuthRepository {
     // ── OTP attempt tracking (persistent) ─────────────────────────────────
 
     override suspend fun getOtpAttempt(userId: String): Int = query {
-        OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
+        OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId.entityID(UserTable)) and (OtpAttemptTable.purpose eq "GENERAL") }
             .singleOrNull()?.attemptCount ?: 0
     }
 
     override suspend fun isOtpLocked(userId: String): Boolean = query {
-        OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
+        OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId.entityID(UserTable)) and (OtpAttemptTable.purpose eq "GENERAL") }
             .singleOrNull()?.isLocked == true
     }
 
     override suspend fun recordFailedOtpAttempt(userId: String): Int = query {
-        val existing = OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
+        val existing = OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId.entityID(UserTable)) and (OtpAttemptTable.purpose eq "GENERAL") }
             .forUpdate().singleOrNull()
         if (existing != null) {
             existing.attemptCount++
@@ -281,6 +282,7 @@ class AuthRepositoryImpl : AuthRepository {
         } else {
             OtpAttemptDAO.new {
                 this.userId = userId.entityID(UserTable)
+                this.purpose = "GENERAL"
                 this.attemptCount = 1
             }
             1
@@ -289,14 +291,14 @@ class AuthRepositoryImpl : AuthRepository {
 
     override suspend fun resetOtpAttempts(userId: String) {
         query {
-            OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
+            OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId.entityID(UserTable)) and (OtpAttemptTable.purpose eq "GENERAL") }
                 .singleOrNull()?.delete()
         }
     }
 
     override suspend fun lockOtpAttempts(userId: String) {
         query {
-            OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
+            OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId.entityID(UserTable)) and (OtpAttemptTable.purpose eq "GENERAL") }
                 .singleOrNull()?.apply {
                     lockedUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
                 }

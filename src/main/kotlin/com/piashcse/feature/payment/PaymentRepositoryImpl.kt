@@ -18,8 +18,9 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 class PaymentRepositoryImpl : PaymentRepository {
-    override suspend fun createPayment(paymentRequest: PaymentRequest, callerUserId: String): PaymentResponse =
-        retryQuery {
+    override suspend fun createPayment(paymentRequest: PaymentRequest, callerUserId: String): PaymentResponse {
+        data class Completed(val paymentId: String, val orderId: String, val userId: String, val email: String, val amount: java.math.BigDecimal)
+        val (response, completedEvent) = retryQuery {
             paymentRequest.transactionId?.let { txId ->
                 PaymentDAO.find { PaymentTable.transactionId eq txId }.firstOrNull()
                     ?.let { existing ->
@@ -28,7 +29,7 @@ class PaymentRepositoryImpl : PaymentRepository {
                         if (existingOrder == null || existingOrder.userId.value != callerUserId) {
                             throw ValidationException(Message.Errors.FORBIDDEN)
                         }
-                        return@retryQuery existing.toPaymentResponse()
+                        return@retryQuery Pair(existing.toPaymentResponse(), null)
                     }
             }
 
@@ -67,23 +68,36 @@ class PaymentRepositoryImpl : PaymentRepository {
                     this.transactionId = paymentRequest.transactionId
                 }
 
+            var event: Completed? = null
             if (paidAmount.add(paymentAmount).compareTo(orderTotal) >= 0) {
                 order.paymentStatus = PaymentStatus.COMPLETED
                 StockReservationDAO.find { StockReservationTable.orderId eq paymentRequest.orderId.entityID(OrderTable) }
                     .forEach { it.status = ReservationStatus.FINALIZED }
-                EventBus.publish(
-                    PaymentCompletedEvent(
-                        paymentId = payment.id.value,
-                        orderId = paymentRequest.orderId,
-                        userId = order.userId.value,
-                        email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
-                        amount = paymentAmount,
-                    )
+                event = Completed(
+                    paymentId = payment.id.value,
+                    orderId = paymentRequest.orderId,
+                    userId = order.userId.value,
+                    email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
+                    amount = paymentAmount,
                 )
             }
 
-            payment.toPaymentResponse()
+            Pair(payment.toPaymentResponse(), event)
         }
+        // Publish AFTER commit: no phantom payment emails on rollback/retry.
+        completedEvent?.let {
+            EventBus.publish(
+                PaymentCompletedEvent(
+                    paymentId = it.paymentId,
+                    orderId = it.orderId,
+                    userId = it.userId,
+                    email = it.email,
+                    amount = it.amount,
+                ),
+            )
+        }
+        return response
+    }
 
     override suspend fun getPaymentById(paymentId: String, callerUserId: String): PaymentResponse =
         query {

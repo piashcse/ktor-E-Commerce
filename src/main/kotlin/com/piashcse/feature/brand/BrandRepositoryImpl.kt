@@ -2,6 +2,8 @@ package com.piashcse.feature.brand
 
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.BrandDAO
+import com.piashcse.database.entities.ProductDAO
+import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.BrandTable
 import com.piashcse.mapper.toBrandResponse
 import com.piashcse.model.response.BrandResponse
@@ -68,10 +70,12 @@ class BrandRepositoryImpl : BrandRepository {
 
     override suspend fun deleteBrand(brandId: String): String =
         query {
-            val isBrandExist = BrandDAO.findById(brandId)
-            isBrandExist?.let {
-                it.delete()
-                brandId
-            } ?: brandId.throwNotFound("BrandResponse")
+            val brand = BrandDAO.findById(brandId) ?: brandId.throwNotFound("BrandResponse")
+            // Guard vs ON DELETE SET NULL/CASCADE data loss: block while products still reference this brand.
+            if (!ProductDAO.find { ProductTable.brandId eq brandId }.empty()) {
+                throw com.piashcse.utils.validator.ConflictException("Cannot delete brand: products still reference it. Reassign or soft-delete products first.")
+            }
+            brand.delete()
+            brandId
         }
 }

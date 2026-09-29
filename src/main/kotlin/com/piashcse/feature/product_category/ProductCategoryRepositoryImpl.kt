@@ -1,6 +1,8 @@
 package com.piashcse.feature.product_category
 
 import com.piashcse.database.entities.ProductCategoryDAO
+import com.piashcse.database.entities.ProductDAO
+import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ProductCategoryTable
 import com.piashcse.database.entities.ProductSubCategoryDAO
 import com.piashcse.database.entities.ProductSubCategoryTable
@@ -64,11 +66,14 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
 
     override suspend fun deleteCategory(categoryId: String): String =
         query {
-            val isCategoryExist =
-                ProductCategoryDAO.findById(categoryId)
-            isCategoryExist?.let {
-                isCategoryExist.delete()
-                categoryId
-            } ?: categoryId.throwNotFound("Category")
+            val category = ProductCategoryDAO.findById(categoryId) ?: categoryId.throwNotFound("Category")
+            if (!ProductSubCategoryDAO.find { ProductSubCategoryTable.categoryId eq categoryId }.empty()) {
+                throw com.piashcse.utils.validator.ConflictException("Cannot delete category: sub-categories still reference it.")
+            }
+            if (!ProductDAO.find { ProductTable.categoryId eq categoryId }.empty()) {
+                throw com.piashcse.utils.validator.ConflictException("Cannot delete category: products still reference it. Reassign or soft-delete products first.")
+            }
+            category.delete()
+            categoryId
         }
 }

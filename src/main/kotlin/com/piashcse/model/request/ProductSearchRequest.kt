@@ -17,6 +17,8 @@ data class ProductSearchRequest(
     val sortBy: String? = "relevance",
     val sortOrder: String? = "desc",
     val useFuzzy: Boolean? = true,
+    val inStockOnly: Boolean? = null,
+    val minRating: Double? = null,
 ) {
     init {
         validate(this) {

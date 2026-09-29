@@ -38,6 +38,8 @@ import com.piashcse.feature.shop.shopRoutes
 import com.piashcse.feature.shop.shopSellerRoutesV1
 import com.piashcse.feature.shop_category.shopCategoryAdminRoutes
 import com.piashcse.feature.notification.notificationRoutes
+import com.piashcse.feature.payout.payoutAdminRoutes
+import com.piashcse.feature.payout.payoutSellerRoutes
 import com.piashcse.feature.wishlist.wishListRoutes
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -122,6 +124,7 @@ private fun Route.sellerRoutes() {
             route("orders") { orderSellerRoutes() }
             route("refund-requests") { refundSellerRoutes() }
             route("dashboard") { dashboardSellerRoutes() }
+            route("payouts") { payoutSellerRoutes() }
         }
     }
 }
@@ -143,6 +146,7 @@ private fun Route.adminRoutes() {
             route("coupons") { couponAdminRoutes() }
             route("dashboard") { dashboardAdminRoutes() }
             route("audit-logs") { auditLogAdminRoutes() }
+            route("payouts") { payoutAdminRoutes() }
         }
     }
 }

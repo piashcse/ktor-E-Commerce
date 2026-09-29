@@ -131,14 +131,20 @@ class OrderRepositoryImpl : OrderRepository {
     override suspend fun placeOrder(
         userId: String,
         checkoutRequest: CheckoutRequest,
-    ): List<OrderResponse> = retryQuery {
-        checkoutRequest.idempotencyKey?.let { key ->
-            val existing = OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.toList()
-            if (existing.isNotEmpty()) {
-                val itemsMap = loadItemsForOrders(existing)
-                return@retryQuery existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
-            }
-        }
+    ): List<OrderResponse> {
+        // Cached once: avoids N+1 UserDAO lookups per split order + out-of-txn use after commit.
+        val callerEmail = query { UserDAO.findById(userId)?.email.orEmpty() }
+        data class Placed(val orderId: String, val shopId: String?, val orderNumber: String, val total: BigDecimal)
+        val (responses, placedEvents) = retryQuery {
+            val pendingEvents = mutableListOf<Placed>()
+            val result: List<OrderResponse> = run {
+                checkoutRequest.idempotencyKey?.let { key ->
+                    val existing = OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.toList()
+                    if (existing.isNotEmpty()) {
+                        val itemsMap = loadItemsForOrders(existing)
+                        return@run existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
+                    }
+                }
 
         val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
         if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
@@ -188,6 +194,7 @@ class OrderRepositoryImpl : OrderRepository {
                 this.shippingAddress = fullAddress
                 this.paymentMethod = checkoutRequest.paymentMethod
                 this.notes = checkoutRequest.notes
+                this.currency = checkoutRequest.currency.uppercase()
             }
 
             items.forEach { cartItem ->
@@ -269,19 +276,27 @@ class OrderRepositoryImpl : OrderRepository {
         cartItems.forEach { it.delete() }
         createdOrders.forEach {
             logStatusChange(it.id.value, it.status, "Order placed", userId)
+            pendingEvents.add(Placed(it.id.value, it.shopId?.value, it.orderNumber, it.total))
+        }
+        val itemsMap = loadItemsForOrders(createdOrders)
+        createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
+            } // end run
+            Pair(result, pendingEvents)
+        }
+        // Publish AFTER commit: no ghost emails on rollback, no duplicates on retry.
+        placedEvents.forEach {
             EventBus.publish(
                 OrderPlacedEvent(
-                    orderId = it.id.value,
+                    orderId = it.orderId,
                     userId = userId,
-                    email = UserDAO.findById(userId)?.email.orEmpty(),
-                    shopId = it.shopId?.value,
+                    email = callerEmail,
+                    shopId = it.shopId,
                     orderNumber = it.orderNumber,
                     total = it.total,
                 ),
             )
         }
-        val itemsMap = loadItemsForOrders(createdOrders)
-        createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
+        return responses
     }
 
     override suspend fun getCheckoutSummary(
@@ -298,34 +313,32 @@ class OrderRepositoryImpl : OrderRepository {
             ProductTable.id inList cartItems.map { it.productId.value }.distinct()
         }.associateBy { it.id.value }
 
-        var subTotal = BigDecimal.ZERO
         var totalItems = 0
-        cartItems.forEach { cartItem ->
-            val product = productsMap[cartItem.productId.value]
-                ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
-            val unitPrice = product.discountPrice ?: product.price
-            subTotal = subTotal.add(unitPrice.multiply(BigDecimal(cartItem.quantity)))
-            totalItems += cartItem.quantity
-        }
+        cartItems.forEach { totalItems += it.quantity }
 
         val shopCount = cartItems.mapNotNull { productsMap[it.productId.value]?.shopId?.value }.distinct().size
-        val shippingTotal = shippingMethod.price.multiply(BigDecimal(shopCount))
-        val taxAmount = subTotal.multiply(BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString()))
-        val baseTotal = subTotal.add(shippingTotal).add(taxAmount)
-        val baseTotalStr = baseTotal.setScale(2, RoundingMode.HALF_UP).toPlainString()
-        var response = CheckoutSummaryResponse(
-            subTotal = subTotal.setScale(2, RoundingMode.HALF_UP).toPlainString(),
-            shippingCost = shippingTotal.setScale(2, RoundingMode.HALF_UP).toPlainString(),
-            taxAmount = taxAmount.setScale(2, RoundingMode.HALF_UP).toPlainString(),
-            total = baseTotalStr,
-            itemCount = totalItems,
-        )
+        val pricing = com.piashcse.service.PricingService
+        val sub = pricing.subtotal(cartItems.map { cartItem ->
+            val product = productsMap[cartItem.productId.value]
+                ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
+            (product.discountPrice ?: product.price) to cartItem.quantity
+        })
+        val ship = pricing.shipping(shippingMethod.price, shopCount)
+        var response = pricing.breakdown(sub, ship).let {
+            CheckoutSummaryResponse(
+                subTotal = it.subTotal.toPlainString(),
+                shippingCost = it.shippingTotal.toPlainString(),
+                taxAmount = it.taxAmount.toPlainString(),
+                total = it.total.toPlainString(),
+                itemCount = totalItems,
+            )
+        }
 
         checkoutRequest.couponCode?.let {
-            val coupon = validateCoupon(it, subTotal, userId = userId)
-            val discount = calculateCouponDiscount(coupon, subTotal)
-            val discountedTotal = baseTotal.subtract(discount).setScale(2, RoundingMode.HALF_UP)
-            response = response.copy(discountAmount = discount.setScale(2, RoundingMode.HALF_UP).toPlainString(), total = discountedTotal.toPlainString())
+            val coupon = validateCoupon(it, sub, userId = userId)
+            val discount = calculateCouponDiscount(coupon, sub)
+            val withCoupon = pricing.breakdown(sub, ship, discount)
+            response = response.copy(discountAmount = withCoupon.discount.toPlainString(), total = withCoupon.total.toPlainString())
         }
         response
     }

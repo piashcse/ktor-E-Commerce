@@ -15,6 +15,8 @@ import com.piashcse.feature.coupon.CouponRepository
 import com.piashcse.feature.coupon.CouponRepositoryImpl
 import com.piashcse.feature.notification.NotificationRepository
 import com.piashcse.feature.notification.NotificationRepositoryImpl
+import com.piashcse.feature.payout.PayoutRepository
+import com.piashcse.feature.payout.PayoutRepositoryImpl
 import com.piashcse.feature.dashboard.DashboardRepository
 import com.piashcse.feature.dashboard.DashboardRepositoryImpl
 import com.piashcse.feature.inventory.InventoryRepository
@@ -64,6 +66,7 @@ val serviceModule =
         single<CartRepository> { CartRepositoryImpl() }
         single<ConsentRepository> { ConsentRepositoryImpl() }
         single<NotificationRepository> { NotificationRepositoryImpl() }
+        single<PayoutRepository> { PayoutRepositoryImpl() }
         single<CouponRepository> { CouponRepositoryImpl() }
         single<DashboardRepository> { DashboardRepositoryImpl() }
         single<InventoryRepository> { InventoryRepositoryImpl() }
