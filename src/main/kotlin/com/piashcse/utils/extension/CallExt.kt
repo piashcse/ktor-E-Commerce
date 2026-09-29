@@ -9,6 +9,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 
 suspend inline fun <reified T : Any> ApplicationCall.respondOk(data: T) = respond(HttpStatusCode.OK, data)
+
 suspend inline fun <reified T : Any> ApplicationCall.respondCreated(data: T) = respond(HttpStatusCode.Created, data)
 
 /**
@@ -33,14 +34,20 @@ fun ApplicationCall.paginateQueryParams(
     defaultPage: Int = 1,
     maxPerPage: Int = AppConstants.Pagination.MAX_LIMIT,
 ): Pair<Int, Int> {
-    fun parseParam(name: String, raw: String?, default: Int): Int = when {
-        raw == null -> default
-        raw.toIntOrNull() != null -> raw.toInt()
-        else -> throw ValidationException(Message.Errors.invalidParameter(name, raw))
-    }
+    fun parseParam(
+        name: String,
+        raw: String?,
+        default: Int,
+    ): Int =
+        when {
+            raw == null -> default
+            raw.toIntOrNull() != null -> raw.toInt()
+            else -> throw ValidationException(Message.Errors.invalidParameter(name, raw))
+        }
 
-    val perPage = parseParam("perPage", request.queryParameters["perPage"], defaultPerPage)
-        .coerceAtMost(maxPerPage).coerceAtLeast(1)
+    val perPage =
+        parseParam("perPage", request.queryParameters["perPage"], defaultPerPage)
+            .coerceAtMost(maxPerPage).coerceAtLeast(1)
     val page = parseParam("page", request.queryParameters["page"], defaultPage).coerceAtLeast(1)
 
     // Support legacy limit/offset params, but page/perPage take precedence

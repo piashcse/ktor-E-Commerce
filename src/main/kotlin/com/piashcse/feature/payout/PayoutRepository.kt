@@ -16,7 +16,17 @@ data class PayoutResponse(
 )
 
 interface PayoutRepository {
-    suspend fun sellerPayouts(sellerUserId: String, limit: Int, offset: Int): PaginatedResponse<PayoutResponse>
-    suspend fun allPayouts(limit: Int, offset: Int, status: String?): PaginatedResponse<PayoutResponse>
+    suspend fun sellerPayouts(
+        sellerUserId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<PayoutResponse>
+
+    suspend fun allPayouts(
+        limit: Int,
+        offset: Int,
+        status: String?,
+    ): PaginatedResponse<PayoutResponse>
+
     suspend fun markPaid(payoutId: String): PayoutResponse
 }

@@ -4,7 +4,10 @@ import java.math.BigDecimal
 import java.sql.PreparedStatement
 
 /** Shared JDBC binder for raw-SQL search/facet queries (was copy-pasted in ProductRepositoryImpl). */
-fun PreparedStatement.bindParams(params: List<Any>, startIdx: Int = 1): Int {
+fun PreparedStatement.bindParams(
+    params: List<Any>,
+    startIdx: Int = 1,
+): Int {
     var idx = startIdx
     for (p in params) {
         when (p) {

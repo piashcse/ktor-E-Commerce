@@ -36,7 +36,9 @@ fun Route.shopRoutes() {
          */
         get("/public") {
             val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(shopRepo.getShops(call.request.queryParameters["status"], call.request.queryParameters["category"], limit, offset))
+            call.respondOk(
+                shopRepo.getShops(call.request.queryParameters["status"], call.request.queryParameters["category"], limit, offset),
+            )
         }
 
         /**
@@ -106,7 +108,9 @@ fun Route.shopAdminRoutes() {
          */
         put("/approve/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(shopRepo.approveShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType))
+            call.respondOk(
+                shopRepo.approveShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType),
+            )
         }
 
         /**
@@ -115,7 +119,9 @@ fun Route.shopAdminRoutes() {
          */
         put("/reject/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(shopRepo.rejectShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType))
+            call.respondOk(
+                shopRepo.rejectShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType),
+            )
         }
 
         /**
@@ -124,7 +130,9 @@ fun Route.shopAdminRoutes() {
          */
         put("/suspend/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(shopRepo.suspendShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType))
+            call.respondOk(
+                shopRepo.suspendShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType),
+            )
         }
 
         /**
@@ -133,7 +141,9 @@ fun Route.shopAdminRoutes() {
          */
         put("/activate/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(shopRepo.activateShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType))
+            call.respondOk(
+                shopRepo.activateShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType),
+            )
         }
     }
 

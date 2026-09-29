@@ -16,5 +16,4 @@ class ProductCategoryDAO(id: EntityID<String>) : BaseEntity(id, ProductCategoryT
     var name by ProductCategoryTable.name
     val subCategories by ProductSubCategoryDAO referrersOn ProductSubCategoryTable.categoryId
     var image by ProductCategoryTable.image
-
 }

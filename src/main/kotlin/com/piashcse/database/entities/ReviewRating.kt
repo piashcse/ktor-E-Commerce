@@ -36,5 +36,4 @@ class ReviewRatingDAO(id: EntityID<String>) : BaseEntity(id, ReviewRatingTable) 
     var helpfulCount by ReviewRatingTable.helpfulCount
     var notHelpfulCount by ReviewRatingTable.notHelpfulCount
     var status by ReviewRatingTable.status
-
 }

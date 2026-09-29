@@ -11,7 +11,10 @@ class ProductCatalogService(
     private val productRepo: ProductRepository,
     private val cache: Cache = CacheService.cache,
 ) {
-    private suspend fun <T> cachedOrQuery(cacheKey: String, query: suspend () -> T): T {
+    private suspend fun <T> cachedOrQuery(
+        cacheKey: String,
+        query: suspend () -> T,
+    ): T {
         cache.get<T>(cacheKey)?.let { return it }
         return query().also { cache.set(cacheKey, it) }
     }
@@ -28,6 +31,5 @@ class ProductCatalogService(
     suspend fun getHotDealProducts(): PaginatedResponse<ProductResponse> =
         cachedOrQuery("products:hot-deals") { productRepo.getHotDealProducts() }
 
-    suspend fun searchProduct(productQuery: ProductSearchRequest): SearchResponse =
-        productRepo.searchProduct(productQuery)
+    suspend fun searchProduct(productQuery: ProductSearchRequest): SearchResponse = productRepo.searchProduct(productQuery)
 }

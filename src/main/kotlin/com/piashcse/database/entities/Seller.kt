@@ -48,7 +48,6 @@ class SellerDAO(id: EntityID<String>) : BaseEntity(id, SellerTable) {
     var suspendedAt by SellerTable.suspendedAt
     var terminatedAt by SellerTable.terminatedAt
 
-
     /**
      * Get the associated user information
      */

@@ -30,7 +30,6 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.server.status.pages)
     implementation(libs.ktor.server.call.logging)
-    implementation(libs.ktor.server.request.validation)
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.rateLimit)
     implementation(libs.ktor.server.auth)
@@ -45,6 +44,7 @@ dependencies {
     implementation(libs.hikari)
     implementation(libs.exposed.core)
     implementation(libs.flyway.core)
+    implementation(libs.flyway.postgres)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.dao)
     implementation(libs.exposed.java.time)
@@ -61,6 +61,11 @@ dependencies {
     implementation(libs.ktor.swagger.ui)
     implementation(libs.ktor.open.api)
 
+    // Observability
+    implementation(libs.micrometer.core)
+    implementation(libs.micrometer.prometheus)
+    implementation(libs.ktor.server.metrics.micrometer)
+
     // Dependency injection (Koin)
     implementation(libs.koin.ktor)
     implementation(libs.koin.core)
@@ -68,7 +73,10 @@ dependencies {
 
     // Testing
     testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.ktor.client.content.negotiation)
     testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.testcontainers.postgresql)
 }
 
 kotlin {
@@ -91,11 +99,11 @@ detekt {
     config.setFrom(files("config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     allRules = false
-    ignoreFailures = true
+    ignoreFailures = false
 }
 
 ktlint {
-    ignoreFailures.set(true)
+    ignoreFailures.set(false)
     verbose.set(true)
     outputToConsole.set(true)
     coloredOutput.set(true)

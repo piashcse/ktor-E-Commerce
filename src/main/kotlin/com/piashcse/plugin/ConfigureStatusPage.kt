@@ -25,9 +25,10 @@ private fun Throwable.isDuplicateKey(): Boolean =
     }
 
 private suspend fun ApplicationCall.respondValidationError(exception: ConstraintViolationException) {
-    val fieldErrors = exception.constraintViolations
-        .mapToMessage(baseName = "messages", locale = Locale.ENGLISH)
-        .map { FieldError(field = it.property, message = it.message) }
+    val fieldErrors =
+        exception.constraintViolations
+            .mapToMessage(baseName = "messages", locale = Locale.ENGLISH)
+            .map { FieldError(field = it.property, message = it.message) }
     respond(
         HttpStatusCode.BadRequest,
         ApiError(message = "Validation failed", code = "VALIDATION_FAILED", errors = fieldErrors, requestId = requestId()),
@@ -64,40 +65,75 @@ fun Application.configureStatusPage() {
                 }
                 // MissingRequestParameterException extends BadRequestException — must come first.
                 is MissingRequestParameterException -> {
-                    call.respond(HttpStatusCode.BadRequest, call.errorResponse("Missing parameter: ${error.parameterName}", HttpStatusCode.BadRequest, "MISSING_PARAMETER"))
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        call.errorResponse("Missing parameter: ${error.parameterName}", HttpStatusCode.BadRequest, "MISSING_PARAMETER"),
+                    )
                 }
                 is BadRequestException -> {
-                    call.respond(HttpStatusCode.BadRequest, call.errorResponse(error.message ?: Message.Errors.VALIDATION_FAILED, HttpStatusCode.BadRequest, "VALIDATION_FAILED"))
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        call.errorResponse(
+                            error.message ?: Message.Errors.VALIDATION_FAILED,
+                            HttpStatusCode.BadRequest,
+                            "VALIDATION_FAILED",
+                        ),
+                    )
                 }
                 is io.ktor.serialization.JsonConvertException,
                 is kotlinx.serialization.SerializationException,
                 -> {
-                    call.respond(HttpStatusCode.BadRequest, call.errorResponse(Message.Errors.VALIDATION_FAILED, HttpStatusCode.BadRequest, "VALIDATION_FAILED"))
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        call.errorResponse(Message.Errors.VALIDATION_FAILED, HttpStatusCode.BadRequest, "VALIDATION_FAILED"),
+                    )
                 }
                 is NumberFormatException -> {
-                    call.respond(HttpStatusCode.BadRequest, call.errorResponse(Message.Validation.invalidFormat("number"), HttpStatusCode.BadRequest, "INVALID_FORMAT"))
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        call.errorResponse(Message.Validation.invalidFormat("number"), HttpStatusCode.BadRequest, "INVALID_FORMAT"),
+                    )
                 }
                 is IllegalArgumentException -> {
-                    call.respond(HttpStatusCode.BadRequest, call.errorResponse(error.message ?: Message.Errors.VALIDATION_FAILED, HttpStatusCode.BadRequest, "VALIDATION_FAILED"))
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        call.errorResponse(
+                            error.message ?: Message.Errors.VALIDATION_FAILED,
+                            HttpStatusCode.BadRequest,
+                            "VALIDATION_FAILED",
+                        ),
+                    )
                 }
                 else -> {
                     statusPageLog.error("Unhandled exception: ${error::class.simpleName}", error)
-                    call.respond(HttpStatusCode.InternalServerError, call.errorResponse(Message.Errors.INTERNAL, HttpStatusCode.InternalServerError, "INTERNAL"))
+                    call.respond(
+                        HttpStatusCode.InternalServerError,
+                        call.errorResponse(Message.Errors.INTERNAL, HttpStatusCode.InternalServerError, "INTERNAL"),
+                    )
                 }
             }
         }
 
         status(HttpStatusCode.Unauthorized) { call, _ ->
-            call.respond(HttpStatusCode.Unauthorized, call.errorResponse(Message.Errors.UNAUTHORIZED, HttpStatusCode.Unauthorized, "UNAUTHORIZED"))
+            call.respond(
+                HttpStatusCode.Unauthorized,
+                call.errorResponse(Message.Errors.UNAUTHORIZED, HttpStatusCode.Unauthorized, "UNAUTHORIZED"),
+            )
         }
         status(HttpStatusCode.NotFound) { call, _ ->
             call.respond(HttpStatusCode.NotFound, call.errorResponse(Message.Errors.NOT_FOUND, HttpStatusCode.NotFound, "NOT_FOUND"))
         }
         status(HttpStatusCode.MethodNotAllowed) { call, _ ->
-            call.respond(HttpStatusCode.MethodNotAllowed, call.errorResponse("Method not allowed", HttpStatusCode.MethodNotAllowed, "METHOD_NOT_ALLOWED"))
+            call.respond(
+                HttpStatusCode.MethodNotAllowed,
+                call.errorResponse("Method not allowed", HttpStatusCode.MethodNotAllowed, "METHOD_NOT_ALLOWED"),
+            )
         }
         status(HttpStatusCode.TooManyRequests) { call, _ ->
-            call.respond(HttpStatusCode.TooManyRequests, call.errorResponse("Rate limit exceeded. Please try again later.", HttpStatusCode.TooManyRequests, "RATE_LIMITED"))
+            call.respond(
+                HttpStatusCode.TooManyRequests,
+                call.errorResponse("Rate limit exceeded. Please try again later.", HttpStatusCode.TooManyRequests, "RATE_LIMITED"),
+            )
         }
     }
 }

@@ -51,5 +51,4 @@ class UserProfileDAO(id: EntityID<String>) : BaseEntity(id, UserProfileTable) {
     var bio by UserProfileTable.bio
     var isActive by UserProfileTable.isActive
     var verified by UserProfileTable.verified
-
 }

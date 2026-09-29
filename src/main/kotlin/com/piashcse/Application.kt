@@ -11,8 +11,8 @@ import com.piashcse.feature.audit_log.AuditLogRepository
 import com.piashcse.plugin.*
 import com.piashcse.service.AsyncWorker
 import com.piashcse.service.OutboxPoller
-import com.piashcse.service.configureOutboxPoller
 import com.piashcse.service.StockReservationCleanup
+import com.piashcse.service.configureOutboxPoller
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -29,6 +29,7 @@ fun main() {
 fun Application.configureAll() {
     configureDatabase()
     configureBasic()
+    configureMetrics()
     installRequestTracing()
     configureKoin()
     configureAuth()

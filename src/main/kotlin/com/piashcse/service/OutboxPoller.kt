@@ -7,7 +7,6 @@ import com.piashcse.event.OutboxPublisher
 import com.piashcse.utils.extension.query
 import io.ktor.server.application.*
 import kotlinx.coroutines.*
-import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.isNull
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -18,14 +17,19 @@ object OutboxPoller {
     private val log = LoggerFactory.getLogger(OutboxPoller::class.java)
     private var job: Job? = null
 
-    fun start(scope: CoroutineScope, intervalMs: Long = 5_000L, batchSize: Int = 50) {
+    fun start(
+        scope: CoroutineScope,
+        intervalMs: Long = 5_000L,
+        batchSize: Int = 50,
+    ) {
         if (job != null) return
-        job = scope.launch(Dispatchers.IO) {
-            while (isActive) {
-                runCatching { drain(batchSize) }.onFailure { log.warn("Outbox drain failed: ${it.message}") }
-                delay(intervalMs)
+        job =
+            scope.launch(Dispatchers.IO) {
+                while (isActive) {
+                    runCatching { drain(batchSize) }.onFailure { log.warn("Outbox drain failed: ${it.message}") }
+                    delay(intervalMs)
+                }
             }
-        }
     }
 
     fun stop() {
@@ -33,25 +37,27 @@ object OutboxPoller {
         job = null
     }
 
-    suspend fun drain(batchSize: Int = 50): Int = query {
-        val pending = OutboxDAO.find { OutboxTable.publishedAt.isNull() }
-            .limit(batchSize).toList()
-        var delivered = 0
-        pending.forEach { row ->
-            val event = OutboxPublisher.decode(row.eventType, row.payload)
-            if (event == null) {
-                row.publishedAt = LocalDateTime.now(ZoneOffset.UTC) // poison — skip
-                return@forEach
+    suspend fun drain(batchSize: Int = 50): Int =
+        query {
+            val pending =
+                OutboxDAO.find { OutboxTable.publishedAt.isNull() }
+                    .limit(batchSize).toList()
+            var delivered = 0
+            pending.forEach { row ->
+                val event = OutboxPublisher.decode(row.eventType, row.payload)
+                if (event == null) {
+                    row.publishedAt = LocalDateTime.now(ZoneOffset.UTC) // poison — skip
+                    return@forEach
+                }
+                if (EventBus.publish(event)) {
+                    row.publishedAt = LocalDateTime.now(ZoneOffset.UTC)
+                    delivered++
+                } else {
+                    row.attempts = row.attempts + 1
+                }
             }
-            if (EventBus.publish(event)) {
-                row.publishedAt = LocalDateTime.now(ZoneOffset.UTC)
-                delivered++
-            } else {
-                row.attempts = row.attempts + 1
-            }
+            delivered
         }
-        delivered
-    }
 }
 
 fun Application.configureOutboxPoller() = OutboxPoller.start(this)

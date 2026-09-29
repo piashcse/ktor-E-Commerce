@@ -8,9 +8,10 @@ object DotEnvConfig {
     val dbPassword: String get() = requireEnv("DB_PASSWORD")
     val serverPort: Int get() = DotEnv.getInt("PORT", 8080)
     val serverHost: String get() = DotEnv.get("HOST", "localhost")
-    val jwtSecret: String get() = requireEnv("JWT_SECRET").also {
-        require(it.length >= 32) { "JWT_SECRET must be at least 32 characters." }
-    }
+    val jwtSecret: String get() =
+        requireEnv("JWT_SECRET").also {
+            require(it.length >= 32) { "JWT_SECRET must be at least 32 characters." }
+        }
     val jwtIssuer: String get() = DotEnv.get("JWT_ISSUER", "piashcse")
     val jwtAudience: String get() = DotEnv.get("JWT_AUDIENCE", "ktor-ecommerce")
     val jwtRealm: String get() = DotEnv.get("JWT_REALM", "ktor-ecommerce")

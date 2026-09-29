@@ -108,6 +108,7 @@ object Message {
         const val NO_SHOP_ASSOCIATED = "No shop associated with seller"
 
         fun productDoesNotBelongToShop(productName: String) = "$productName does not belong to any shop"
+
         fun couponMinOrderAmount(amount: String) = "Order amount is below the minimum required for this coupon ($amount)"
     }
 
@@ -148,7 +149,11 @@ object Message {
     // ─── Payments ───────────────────────────────────────────────────────────
     object Payments {
         const val ALREADY_PAID = "Order already fully paid"
-        fun amountMismatch(paid: String, total: String) = "Payment amount ($paid) does not match order total ($total)"
+
+        fun amountMismatch(
+            paid: String,
+            total: String,
+        ) = "Payment amount ($paid) does not match order total ($total)"
     }
 
     // ─── Refunds ────────────────────────────────────────────────────────────
@@ -161,7 +166,10 @@ object Message {
         const val AMOUNT_EXCEEDS_ITEM_TOTAL = "Refund amount cannot exceed the order item total"
         const val REFUND_AMOUNT_REQUIRED = "Refund amount is required when marking a refund as REFUNDED"
 
-        fun invalidTransition(from: String, to: String) = "Cannot change refund status from $from to $to"
+        fun invalidTransition(
+            from: String,
+            to: String,
+        ) = "Cannot change refund status from $from to $to"
     }
 
     // ─── Upload ─────────────────────────────────────────────────────────────
@@ -169,11 +177,26 @@ object Message {
         const val EMPTY_FILE = "Uploaded file is empty"
         const val INVALID_FILE_PATH = "Invalid file path detected"
         const val INVALID_DIR_CONFIG = "Invalid upload directory configuration"
+
         fun fileNameRequired(purpose: String) = "File name is required for $purpose upload"
-        fun invalidFileType(purpose: String, allowed: String) = "Invalid file type for $purpose. Allowed: $allowed"
-        fun invalidMimeType(purpose: String, mime: String) = "Invalid MIME type for $purpose: $mime"
-        fun fileTooLarge(mb: Int, purpose: String) = "File size exceeds ${mb}MB limit for $purpose upload"
+
+        fun invalidFileType(
+            purpose: String,
+            allowed: String,
+        ) = "Invalid file type for $purpose. Allowed: $allowed"
+
+        fun invalidMimeType(
+            purpose: String,
+            mime: String,
+        ) = "Invalid MIME type for $purpose: $mime"
+
+        fun fileTooLarge(
+            mb: Int,
+            purpose: String,
+        ) = "File size exceeds ${mb}MB limit for $purpose upload"
+
         fun maliciousContent(ext: String) = "Malicious file content detected or file format does not match $ext extension"
+
         fun storageQuotaExceeded(purpose: String) = "Storage quota exceeded for $purpose uploads. Please free up space or contact support."
     }
 
@@ -195,6 +218,7 @@ object Message {
         ) = "Insufficient stock. Available: $available, Requested: $requested"
 
         fun invalidOperation(operation: String) = "Invalid operation: $operation. Use add, subtract, or set"
+
         fun quantityNotPositive(operation: String) = "Quantity must be positive for $operation operation"
     }
 
@@ -228,7 +252,12 @@ object Message {
         const val SELLER_REQUIRED = "User must be registered as a seller"
         const val MISSING_PARAMETER = "Missing required parameter: %s"
         const val NOT_OWNER = "You do not own this resource"
+
         fun notOwner(resourceName: String) = "You do not own this $resourceName"
-        fun invalidParameter(name: String, value: String) = "Invalid $name: $value"
+
+        fun invalidParameter(
+            name: String,
+            value: String,
+        ) = "Invalid $name: $value"
     }
 }

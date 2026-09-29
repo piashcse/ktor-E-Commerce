@@ -13,6 +13,7 @@ class ProductCrudService(
     companion object {
         private const val CACHE_KEY_PATTERN = "products:.*"
     }
+
     suspend fun createProduct(
         userId: String,
         shopId: String?,
@@ -29,7 +30,10 @@ class ProductCrudService(
         productRepo.updateProduct(userId, productId, updateProduct)
             .also { cache.invalidatePattern(CACHE_KEY_PATTERN) }
 
-    suspend fun deleteProduct(userId: String, productId: String): String =
+    suspend fun deleteProduct(
+        userId: String,
+        productId: String,
+    ): String =
         productRepo.deleteProduct(userId, productId)
             .also { cache.invalidatePattern(CACHE_KEY_PATTERN) }
 

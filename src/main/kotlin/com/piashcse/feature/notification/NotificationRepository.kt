@@ -20,8 +20,19 @@ data class NotificationResponse(
 data class UnreadCountResponse(val unreadCount: Long)
 
 interface NotificationRepository {
-    suspend fun list(userId: String, limit: Int, offset: Int, unreadOnly: Boolean = false): PaginatedResponse<NotificationResponse>
+    suspend fun list(
+        userId: String,
+        limit: Int,
+        offset: Int,
+        unreadOnly: Boolean = false,
+    ): PaginatedResponse<NotificationResponse>
+
     suspend fun unreadCount(userId: String): Long
-    suspend fun markRead(userId: String, notificationId: String): NotificationResponse
+
+    suspend fun markRead(
+        userId: String,
+        notificationId: String,
+    ): NotificationResponse
+
     suspend fun markAllRead(userId: String): Long
 }

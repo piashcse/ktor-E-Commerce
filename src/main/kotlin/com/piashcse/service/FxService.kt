@@ -9,14 +9,18 @@ import java.math.BigDecimal
 
 /** Converts base-USD amounts to checkout currency using fx_rate (falls back to 1.0). */
 object FxService {
-    suspend fun rateTo(targetCurrency: String): BigDecimal = query {
-        SupportedCurrencies.requireValid(targetCurrency)
-        if (targetCurrency.uppercase() == "USD") return@query BigDecimal.ONE
-        FxRateDAO.find { FxRateTable.targetCurrency eq targetCurrency.uppercase() }
-            .firstOrNull()?.rate ?: BigDecimal.ONE
-    }
+    suspend fun rateTo(targetCurrency: String): BigDecimal =
+        query {
+            SupportedCurrencies.requireValid(targetCurrency)
+            if (targetCurrency.uppercase() == "USD") return@query BigDecimal.ONE
+            FxRateDAO.find { FxRateTable.targetCurrency eq targetCurrency.uppercase() }
+                .firstOrNull()?.rate ?: BigDecimal.ONE
+        }
 
-    suspend fun convertUsd(amountUsd: BigDecimal, targetCurrency: String): BigDecimal {
+    suspend fun convertUsd(
+        amountUsd: BigDecimal,
+        targetCurrency: String,
+    ): BigDecimal {
         val rate = rateTo(targetCurrency)
         return com.piashcse.utils.common.Money.scale2(amountUsd.multiply(rate))
     }

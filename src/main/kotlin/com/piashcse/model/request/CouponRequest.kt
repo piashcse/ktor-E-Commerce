@@ -16,8 +16,9 @@ data class CouponRequest(
     @Contextual val discountValue: BigDecimal,
     @Contextual val minOrderAmount: BigDecimal = BigDecimal.ZERO,
     @Contextual val maxDiscountAmount: BigDecimal? = null,
-    val startDate: String, // ISO date string
-    val endDate: String, // ISO date string
+    // ISO date strings
+    val startDate: String,
+    val endDate: String,
     val usageLimit: Int? = null,
     val isActive: Boolean = true,
 ) {

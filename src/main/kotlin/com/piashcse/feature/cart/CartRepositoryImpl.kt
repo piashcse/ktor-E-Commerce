@@ -21,8 +21,11 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 
 class CartRepositoryImpl : CartRepository {
-
-    private fun requireCartParams(userId: String, productId: String, quantity: Int? = null) {
+    private fun requireCartParams(
+        userId: String,
+        productId: String,
+        quantity: Int? = null,
+    ) {
         userId.requireNotBlank("User ID")
         productId.requireNotBlank("Product ID")
         if (quantity != null && quantity <= 0) throw ValidationException(Message.Validation.notPositive("Quantity"))
@@ -32,141 +35,163 @@ class CartRepositoryImpl : CartRepository {
         userId: String,
         productId: String,
         quantity: Int,
-    ): Cart = query {
-        requireCartParams(userId, productId, quantity)
+    ): Cart =
+        query {
+            requireCartParams(userId, productId, quantity)
 
-        val product = ProductDAO.findById(productId) ?: productId.throwNotFound("Product")
-        val stock = product.effectiveStock()
-        if (quantity > stock) throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
+            val product = ProductDAO.findById(productId) ?: productId.throwNotFound("Product")
+            val stock = product.effectiveStock()
+            if (quantity > stock) throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
 
-        val existing = CartItemDAO.find {
-            CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
-        }.singleOrNull()
-        existing?.let { throw productId.throwConflict("Product") }
+            val existing =
+                CartItemDAO.find {
+                    CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
+                }.singleOrNull()
+            existing?.let { throw productId.throwConflict("Product") }
 
-        try {
-            CartItemDAO.new {
-                this.userId = userId.entityID(UserTable)
-                this.productId = productId.entityID(ProductTable)
-                this.quantity = quantity
-            }.toCartResponse()
-        } catch (e: Exception) {
-            // Unique constraint race: concurrent adds → 409 not 500.
-            if ((e.message ?: "").contains("duplicate", ignoreCase = true)) throw productId.throwConflict("Product")
-            throw e
+            try {
+                CartItemDAO.new {
+                    this.userId = userId.entityID(UserTable)
+                    this.productId = productId.entityID(ProductTable)
+                    this.quantity = quantity
+                }.toCartResponse()
+            } catch (e: Exception) {
+                // Unique constraint race: concurrent adds → 409 not 500.
+                if ((e.message ?: "").contains("duplicate", ignoreCase = true)) throw productId.throwConflict("Product")
+                throw e
+            }
         }
-    }
 
     override suspend fun getCartItems(
         userId: String,
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<Cart> = query {
-        val query = CartItemTable.selectAll().andWhere { CartItemTable.userId eq userId }
-        val (totalCount, rows) = query.toPaginatedList(limit, offset) { it }
-        val productIds = rows.map { it[CartItemTable.productId] }
-        val products = if (productIds.isNotEmpty()) {
-            ProductDAO.find { ProductTable.id inList productIds }.associateBy { it.id.value }
-        } else {
-            emptyMap()
+    ): PaginatedResponse<Cart> =
+        query {
+            val query = CartItemTable.selectAll().andWhere { CartItemTable.userId eq userId }
+            val (totalCount, rows) = query.toPaginatedList(limit, offset) { it }
+            val productIds = rows.map { it[CartItemTable.productId] }
+            val products =
+                if (productIds.isNotEmpty()) {
+                    ProductDAO.find { ProductTable.id inList productIds }.associateBy { it.id.value }
+                } else {
+                    emptyMap()
+                }
+            val imagesMap =
+                if (products.isNotEmpty()) {
+                    ProductImageDAO.imagesForProducts(products.keys.map { it.entityID(ProductTable) })
+                } else {
+                    emptyMap()
+                }
+            val data =
+                rows.map { row ->
+                    val product =
+                        products[row[CartItemTable.productId].value]
+                            ?: row[CartItemTable.productId].value.throwNotFound("Product")
+                    CartItemDAO.wrapRow(row).toCartResponse(product.toProductResponse(imagesMap[product.id.value]))
+                }
+            PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
         }
-        val imagesMap = if (products.isNotEmpty()) {
-            ProductImageDAO.imagesForProducts(products.keys.map { it.entityID(ProductTable) })
-        } else {
-            emptyMap()
-        }
-        val data = rows.map { row ->
-            val product = products[row[CartItemTable.productId].value]
-                ?: row[CartItemTable.productId].value.throwNotFound("Product")
-            CartItemDAO.wrapRow(row).toCartResponse(product.toProductResponse(imagesMap[product.id.value]))
-        }
-        PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
-    }
 
     override suspend fun updateCartQuantity(
         userId: String,
         productId: String,
         quantity: Int,
-    ): Cart? = query {
-        requireCartParams(userId, productId, quantity)
+    ): Cart? =
+        query {
+            requireCartParams(userId, productId, quantity)
 
-        val cartItem = CartItemDAO.find {
-            CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
-        }.singleOrNull() ?: productId.throwNotFound("Product")
+            val cartItem =
+                CartItemDAO.find {
+                    CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
+                }.singleOrNull() ?: productId.throwNotFound("Product")
 
-        if (quantity == 0) { cartItem.delete(); return@query null }
+            if (quantity == 0) {
+                cartItem.delete()
+                return@query null
+            }
 
-        val product = ProductDAO.findById(cartItem.productId)
-            ?: throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
-        val stock = product.effectiveStock()
-        if (quantity > stock) throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
-        cartItem.quantity = quantity
+            val product =
+                ProductDAO.findById(cartItem.productId)
+                    ?: throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
+            val stock = product.effectiveStock()
+            if (quantity > stock) throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
+            cartItem.quantity = quantity
 
-        cartItem.toCartResponse(product.toProductResponse())
-    }
+            cartItem.toCartResponse(product.toProductResponse())
+        }
 
     override suspend fun removeCartItem(
         userId: String,
         productId: String,
-    ): ProductResponse = query {
-        requireCartParams(userId, productId)
+    ): ProductResponse =
+        query {
+            requireCartParams(userId, productId)
 
-        val cartItem = CartItemDAO.find {
-            CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
-        }.singleOrNull() ?: productId.throwNotFound("Product")
+            val cartItem =
+                CartItemDAO.find {
+                    CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
+                }.singleOrNull() ?: productId.throwNotFound("Product")
 
-        val product = ProductDAO.findById(cartItem.productId)
-            ?: throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
-        cartItem.delete()
-        product.toProductResponse()
-    }
-
-    override suspend fun clearCart(userId: String): Boolean = query {
-        userId.requireNotBlank("User ID")
-        CartItemTable.deleteWhere { CartItemTable.userId eq userId }
-        true
-    }
-
-    override suspend fun getCartSummary(userId: String): CartSummaryResponse = query {
-
-        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
-        val products = ProductDAO.find {
-            ProductTable.id inList cartItems.map { it.productId.value }.distinct()
-        }.associateBy { it.id.value }
-        val productEntityIds = products.keys.map { it.entityID(ProductTable) }
-        val imagesMap = if (products.isNotEmpty()) {
-            ProductImageDAO.imagesForProducts(productEntityIds)
-        } else {
-            emptyMap()
-        }
-        val inventoryMap = if (products.isNotEmpty()) {
-            InventoryDAO.find { InventoryTable.productId inList productEntityIds }
-                .associate { it.productId.value to it.stockQuantity }
-        } else {
-            emptyMap()
-        }
-        val shopIds = products.values.mapNotNull { it.shopId?.value }.distinct()
-        val shops = if (shopIds.isNotEmpty()) {
-            ShopDAO.find { ShopTable.id inList shopIds }.associateBy { it.id.value }
-        } else {
-            emptyMap()
+            val product =
+                ProductDAO.findById(cartItem.productId)
+                    ?: throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
+            cartItem.delete()
+            product.toProductResponse()
         }
 
-        val items = cartItems.mapNotNull { cartItem ->
-            val product = products[cartItem.productId.value] ?: return@mapNotNull null
-            val unitPrice = product.discountPrice ?: product.price
-            cartItem.toCartItemSummary(
-                product = product,
-                unitPrice = unitPrice,
-                image = imagesMap[product.id.value]?.firstOrNull(),
-                stockQuantity = inventoryMap[product.id.value] ?: 0,
-                shopName = product.shopId?.value?.let { shops[it]?.name },
-            )
+    override suspend fun clearCart(userId: String): Boolean =
+        query {
+            userId.requireNotBlank("User ID")
+            CartItemTable.deleteWhere { CartItemTable.userId eq userId }
+            true
         }
 
-        val lines = items.map { BigDecimal(it.price) to it.quantity }
-        val subtotal = com.piashcse.service.PricingService.subtotal(lines)
-        val tax = com.piashcse.service.PricingService.tax(subtotal)
-        CartSummaryResponse(items, subtotal.toPlainString(), tax.toPlainString(), items.size)
-    }
+    override suspend fun getCartSummary(userId: String): CartSummaryResponse =
+        query {
+            val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
+            val products =
+                ProductDAO.find {
+                    ProductTable.id inList cartItems.map { it.productId.value }.distinct()
+                }.associateBy { it.id.value }
+            val productEntityIds = products.keys.map { it.entityID(ProductTable) }
+            val imagesMap =
+                if (products.isNotEmpty()) {
+                    ProductImageDAO.imagesForProducts(productEntityIds)
+                } else {
+                    emptyMap()
+                }
+            val inventoryMap =
+                if (products.isNotEmpty()) {
+                    InventoryDAO.find { InventoryTable.productId inList productEntityIds }
+                        .associate { it.productId.value to it.stockQuantity }
+                } else {
+                    emptyMap()
+                }
+            val shopIds = products.values.mapNotNull { it.shopId?.value }.distinct()
+            val shops =
+                if (shopIds.isNotEmpty()) {
+                    ShopDAO.find { ShopTable.id inList shopIds }.associateBy { it.id.value }
+                } else {
+                    emptyMap()
+                }
+
+            val items =
+                cartItems.mapNotNull { cartItem ->
+                    val product = products[cartItem.productId.value] ?: return@mapNotNull null
+                    val unitPrice = product.discountPrice ?: product.price
+                    cartItem.toCartItemSummary(
+                        product = product,
+                        unitPrice = unitPrice,
+                        image = imagesMap[product.id.value]?.firstOrNull(),
+                        stockQuantity = inventoryMap[product.id.value] ?: 0,
+                        shopName = product.shopId?.value?.let { shops[it]?.name },
+                    )
+                }
+
+            val lines = items.map { BigDecimal(it.price) to it.quantity }
+            val subtotal = com.piashcse.service.PricingService.subtotal(lines)
+            val tax = com.piashcse.service.PricingService.tax(subtotal)
+            CartSummaryResponse(items, subtotal.toPlainString(), tax.toPlainString(), items.size)
+        }
 }

@@ -17,5 +17,4 @@ class ProductSubCategoryDAO(id: EntityID<String>) : BaseEntity(id, ProductSubCat
     var categoryId by ProductSubCategoryTable.categoryId
     var name by ProductSubCategoryTable.name
     var image by ProductSubCategoryTable.image
-
 }

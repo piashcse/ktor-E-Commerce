@@ -13,5 +13,4 @@ class ShopCategoryDAO(id: EntityID<String>) : BaseEntity(id, ShopCategoryTable) 
     companion object : BaseEntityClass<ShopCategoryDAO>(ShopCategoryTable, ShopCategoryDAO::class.java)
 
     var name by ShopCategoryTable.name
-
 }

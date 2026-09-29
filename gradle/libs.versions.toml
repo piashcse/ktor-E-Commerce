@@ -1,21 +1,24 @@
 [versions]
-ktor-version = "3.5.1"
-kotlin-version = "2.4.0"
-logback-version = "1.5.32"
-exposed-version = "1.3.0"
-flyway-version = "9.22.3"
+ktor-version = "3.6.0"
+kotlin-version = "2.4.20"
+logback-version = "1.6.4"
+exposed-version = "1.5.0"
+flyway-version = "13.8.0"
 
-postgre-sql-version = "42.7.8"
-hikari-version = "7.0.2"
+postgre-sql-version = "42.7.13"
+hikari-version = "7.1.0"
 bcrypt-version = "0.10.2"
-commons-email-version ="1.5"
+commons-email-version = "1.6.0"
 valiktor-core-version = "0.12.0"
-commons-io-version = "2.17.0"
+commons-io-version = "2.22.0"
 shadow-version = "9.2.2"
-koin-version = "4.2.0"
-dotenv-version = "6.4.1"
-ktlint-version = "12.1.2"
+koin-version = "4.2.2"
+dotenv-version = "6.5.1"
+ktlint-version = "12.3.0"
 detekt-version = "1.23.8"
+mockk-version = "1.14.11"
+testcontainers-version = "1.21.4"
+micrometer-version = "1.17.1"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
@@ -27,14 +30,17 @@ ktor-server-auth = { module = "io.ktor:ktor-server-auth-jvm", version.ref = "kto
 ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt-jvm", version.ref = "ktor-version" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor-version" }
 ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor-version" }
-ktor-server-request-validation = { module = "io.ktor:ktor-server-request-validation", version.ref = "ktor-version" }
 ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor-version" }
 ktor-server-rateLimit = { module = "io.ktor:ktor-server-rate-limit", version.ref = "ktor-version" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-version" }
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor-version" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor-version" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin-version" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk-version" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers-version" }
 
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway-version" }
+flyway-postgres = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway-version" }
 
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed-version" }
 exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed-version" }
@@ -53,6 +59,9 @@ koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin-version" 
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-version" }
 koin-logger = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin-version" }
 dotenv-kotlin = { module = "io.github.cdimascio:dotenv-kotlin", version.ref = "dotenv-version" }
+micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer-version" }
+micrometer-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer-version" }
+ktor-server-metrics-micrometer = { module = "io.ktor:ktor-server-metrics-micrometer", version.ref = "ktor-version" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }

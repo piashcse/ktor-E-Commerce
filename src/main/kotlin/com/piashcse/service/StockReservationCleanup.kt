@@ -16,13 +16,14 @@ object StockReservationCleanup {
     private var job: Job? = null
 
     fun start(scope: CoroutineScope) {
-        job = scope.launch {
-            while (isActive) {
-                runCatching { releaseExpired() }
-                    .onFailure { log.error("Cleanup failed", it) }
-                delay(15 * 60 * 1000L)
+        job =
+            scope.launch {
+                while (isActive) {
+                    runCatching { releaseExpired() }
+                        .onFailure { log.error("Cleanup failed", it) }
+                    delay(15 * 60 * 1000L)
+                }
             }
-        }
     }
 
     fun stop() {
@@ -30,33 +31,38 @@ object StockReservationCleanup {
         job = null
     }
 
-    private suspend fun releaseExpired() = query {
-        val expired = StockReservationDAO.find {
-            (StockReservationTable.status eq ReservationStatus.ACTIVE) and
-                (StockReservationTable.expiresAt less LocalDateTime.now())
-        }.toList()
+    private suspend fun releaseExpired() =
+        query {
+            val expired =
+                StockReservationDAO.find {
+                    (StockReservationTable.status eq ReservationStatus.ACTIVE) and
+                        (StockReservationTable.expiresAt less LocalDateTime.now())
+                }.toList()
 
-        if (expired.isEmpty()) return@query
+            if (expired.isEmpty()) return@query
 
-        log.info("Releasing ${expired.size} expired reservation(s)")
+            log.info("Releasing ${expired.size} expired reservation(s)")
 
-        expired.map { it.orderId.value }.distinct().forEach { orderId ->
-            val order = OrderDAO.findById(orderId) ?: return@forEach
-            val cancellable = order.status == OrderStatus.PENDING || order.status == OrderStatus.CONFIRMED
-            if (!cancellable) return@forEach
+            expired.map { it.orderId.value }.distinct().forEach { orderId ->
+                val order = OrderDAO.findById(orderId) ?: return@forEach
+                val cancellable = order.status == OrderStatus.PENDING || order.status == OrderStatus.CONFIRMED
+                if (!cancellable) return@forEach
 
-            val orderItems = OrderItemDAO.find { OrderItemTable.orderId eq order.id }.toList()
-            val products = if (orderItems.isNotEmpty())
-                ProductDAO.find { ProductTable.id inList orderItems.map { it.productId.value } }
-                    .associateBy { it.id.value }
-            else emptyMap()
+                val orderItems = OrderItemDAO.find { OrderItemTable.orderId eq order.id }.toList()
+                val products =
+                    if (orderItems.isNotEmpty()) {
+                        ProductDAO.find { ProductTable.id inList orderItems.map { it.productId.value } }
+                            .associateBy { it.id.value }
+                    } else {
+                        emptyMap()
+                    }
 
-            orderItems.forEach { products[it.productId.value]?.restoreStock(it.quantity) }
-            order.status = OrderStatus.CANCELED
-            order.canceledDate = LocalDateTime.now()
-            order.notes = "Auto-canceled: expired stock reservation"
+                orderItems.forEach { products[it.productId.value]?.restoreStock(it.quantity) }
+                order.status = OrderStatus.CANCELED
+                order.canceledDate = LocalDateTime.now()
+                order.notes = "Auto-canceled: expired stock reservation"
+            }
+
+            expired.forEach { it.status = ReservationStatus.RELEASED }
         }
-
-        expired.forEach { it.status = ReservationStatus.RELEASED }
-    }
 }

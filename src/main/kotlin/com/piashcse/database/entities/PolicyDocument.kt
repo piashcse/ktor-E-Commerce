@@ -30,5 +30,4 @@ class PolicyDocumentDAO(id: EntityID<String>) : BaseEntity(id, PolicyDocumentTab
     var version by PolicyDocumentTable.version
     var effectiveDate by PolicyDocumentTable.effectiveDate
     var isActive by PolicyDocumentTable.isActive
-
 }

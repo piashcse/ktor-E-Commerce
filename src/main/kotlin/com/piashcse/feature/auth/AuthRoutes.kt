@@ -122,7 +122,13 @@ fun Route.authRoutes() {
          * @description Change password for authenticated user
          */
         put("change-password") {
-            if (authRepo.changePassword(call.currentUserId, call.receive<ChangePasswordRequest>().let { ChangePassword(it.oldPassword, it.newPassword) })) {
+            if (authRepo.changePassword(
+                    call.currentUserId,
+                    call.receive<ChangePasswordRequest>().let {
+                        ChangePassword(it.oldPassword, it.newPassword)
+                    },
+                )
+            ) {
                 call.respondOk(MessageResponse(Message.Auth.PASSWORD_CHANGE_SUCCESS))
             } else {
                 call.respond(HttpStatusCode.Unauthorized, MessageResponse(Message.Auth.INVALID_CREDENTIALS))
@@ -144,7 +150,12 @@ fun Route.authAdminRoutes() {
         put("/{userId}/change-user-type") {
             val userId = call.requirePathParameter("userId")
 
-            if (authRepo.changeUserType(call.currentUserId, userId, call.requireQueryParameter("userType").parseEnum<UserType>("userType"))) {
+            if (authRepo.changeUserType(
+                    call.currentUserId,
+                    userId,
+                    call.requireQueryParameter("userType").parseEnum<UserType>("userType"),
+                )
+            ) {
                 call.respondOk(MessageResponse("User type updated successfully"))
             } else {
                 call.respond(HttpStatusCode.InternalServerError, MessageResponse("Failed to update user type"))

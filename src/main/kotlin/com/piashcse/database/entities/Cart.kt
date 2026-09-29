@@ -23,7 +23,6 @@ class CartItemDAO(id: EntityID<String>) : BaseEntity(id, CartItemTable) {
     var userId by CartItemTable.userId
     var productId by CartItemTable.productId
     var quantity by CartItemTable.quantity
-
 }
 
 @Serializable

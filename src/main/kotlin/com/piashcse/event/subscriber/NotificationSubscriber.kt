@@ -1,7 +1,6 @@
 package com.piashcse.event.subscriber
 
 import com.piashcse.database.entities.NotificationDAO
-import com.piashcse.database.entities.NotificationTable
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerPayoutDAO
@@ -48,22 +47,27 @@ class NotificationSubscriber : Subscriber {
     override suspend fun onEvent(event: DomainEvent) {
         try {
             when (event) {
-                is OrderPlacedEvent -> query {
-                    notify(
-                        event.userId, "ORDER_PLACED",
-                        "Order ${event.orderNumber} placed",
-                        "Total ${com.piashcse.utils.common.Money.str(event.total)}",
-                        "ORDER", event.orderId,
-                    )
-                    Unit
-                }
+                is OrderPlacedEvent ->
+                    query {
+                        notify(
+                            event.userId,
+                            "ORDER_PLACED",
+                            "Order ${event.orderNumber} placed",
+                            "Total ${com.piashcse.utils.common.Money.str(event.total)}",
+                            "ORDER",
+                            event.orderId,
+                        )
+                        Unit
+                    }
                 is PaymentCompletedEvent -> {
                     query {
                         notify(
-                            event.userId, "PAYMENT_COMPLETED",
+                            event.userId,
+                            "PAYMENT_COMPLETED",
                             "Payment received",
                             "Amount ${com.piashcse.utils.common.Money.str(event.amount)} for order ${event.orderId}",
-                            "PAYMENT", event.paymentId,
+                            "PAYMENT",
+                            event.paymentId,
                         )
                         Unit
                     }
@@ -72,12 +76,14 @@ class NotificationSubscriber : Subscriber {
                         query {
                             val order = OrderDAO.findById(event.orderId) ?: return@query
                             val shopId = order.shopId?.value ?: return@query
-                            val seller = SellerDAO.find { SellerTable.shopId eq shopId.entityID(ShopTable) }.firstOrNull()
-                                ?: return@query
-                            val exists = SellerPayoutDAO.find {
-                                (com.piashcse.database.entities.SellerPayoutTable.sellerId eq seller.id) and
-                                    (com.piashcse.database.entities.SellerPayoutTable.orderId eq order.id)
-                            }.firstOrNull() != null
+                            val seller =
+                                SellerDAO.find { SellerTable.shopId eq shopId.entityID(ShopTable) }.firstOrNull()
+                                    ?: return@query
+                            val exists =
+                                SellerPayoutDAO.find {
+                                    (com.piashcse.database.entities.SellerPayoutTable.sellerId eq seller.id) and
+                                        (com.piashcse.database.entities.SellerPayoutTable.orderId eq order.id)
+                                }.firstOrNull() != null
                             if (exists) return@query
                             val commission = com.piashcse.utils.common.Money.commission(order.subTotal, seller.commissionRate)
                             SellerPayoutDAO.new {
@@ -92,15 +98,18 @@ class NotificationSubscriber : Subscriber {
                         }
                     }.onFailure { log.warn("Payout capture failed for order ${event.orderId}: ${it.message}") }
                 }
-                is RefundStatusChangedEvent -> query {
-                    notify(
-                        event.userId, "REFUND_${event.toStatus}",
-                        "Refund ${event.toStatus.lowercase()}",
-                        "Refund ${event.refundId}: ${event.fromStatus} -> ${event.toStatus}",
-                        "REFUND", event.refundId,
-                    )
-                    Unit
-                }
+                is RefundStatusChangedEvent ->
+                    query {
+                        notify(
+                            event.userId,
+                            "REFUND_${event.toStatus}",
+                            "Refund ${event.toStatus.lowercase()}",
+                            "Refund ${event.refundId}: ${event.fromStatus} -> ${event.toStatus}",
+                            "REFUND",
+                            event.refundId,
+                        )
+                        Unit
+                    }
                 is UserRegisteredEvent, is SendEmailEvent, is AdminActionEvent -> Unit
             }
         } catch (e: Exception) {

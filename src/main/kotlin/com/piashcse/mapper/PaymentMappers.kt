@@ -3,11 +3,12 @@ package com.piashcse.mapper
 import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.model.response.PaymentResponse
 
-fun PaymentDAO.toPaymentResponse() = PaymentResponse(
-    id = paymentId.value,
-    orderId = orderId.value,
-    amount = amount.toPlainString(),
-    status = status,
-    paymentMethod = paymentMethod,
-    transactionId = transactionId,
-)
+fun PaymentDAO.toPaymentResponse() =
+    PaymentResponse(
+        id = paymentId.value,
+        orderId = orderId.value,
+        amount = amount.toPlainString(),
+        status = status,
+        paymentMethod = paymentMethod,
+        transactionId = transactionId,
+    )

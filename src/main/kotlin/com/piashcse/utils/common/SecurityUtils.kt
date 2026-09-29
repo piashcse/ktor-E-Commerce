@@ -19,5 +19,7 @@ fun generateToken(): String {
 }
 
 /** Constant-time string comparison to avoid timing side-channel attacks. */
-fun constantTimeEquals(a: String, b: String): Boolean =
-    MessageDigest.isEqual(a.toByteArray(Charsets.UTF_8), b.toByteArray(Charsets.UTF_8))
+fun constantTimeEquals(
+    a: String,
+    b: String,
+): Boolean = MessageDigest.isEqual(a.toByteArray(Charsets.UTF_8), b.toByteArray(Charsets.UTF_8))

@@ -14,7 +14,6 @@ import com.piashcse.model.response.OrderResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
-import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.Query
@@ -30,7 +29,6 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 class OrderRepositoryImpl : OrderRepository {
-
     private fun List<OrderItemDAO>.toItemResponses() = map { it.toOrderItemResponse() }
 
     private fun loadItemsForOrders(orders: List<OrderDAO>): Map<String, List<OrderItemResponse>> =
@@ -48,22 +46,31 @@ class OrderRepositoryImpl : OrderRepository {
     }
 
     private fun validateShopsApproved(shopIds: Set<String>) {
-        val shops = if (shopIds.isNotEmpty()) {
-            ShopDAO.find { ShopTable.id inList shopIds.map { it.entityID(ShopTable) } }.associateBy { it.id.value }
-        } else {
-            emptyMap()
-        }
+        val shops =
+            if (shopIds.isNotEmpty()) {
+                ShopDAO.find { ShopTable.id inList shopIds.map { it.entityID(ShopTable) } }.associateBy { it.id.value }
+            } else {
+                emptyMap()
+            }
         shopIds.forEach { shopId ->
             val shop = shops[shopId] ?: throw ValidationException(Message.Orders.SHOP_NOT_FOUND)
-            if (shop.status != ShopStatus.APPROVED)
+            if (shop.status != ShopStatus.APPROVED) {
                 throw ValidationException(Message.Orders.SHOP_INACTIVE)
+            }
         }
     }
 
-    private fun generateOrderNumber(datePrefix: String, sequenceNumber: Int) =
-        "ORD-$datePrefix-${sequenceNumber.toString().padStart(4, '0')}-${UUID.randomUUID().toString().take(8).uppercase()}"
+    private fun generateOrderNumber(
+        datePrefix: String,
+        sequenceNumber: Int,
+    ) = "ORD-$datePrefix-${sequenceNumber.toString().padStart(4, '0')}-${UUID.randomUUID().toString().take(8).uppercase()}"
 
-    private fun logStatusChange(orderId: String, status: OrderStatus, notes: String?, userId: String?) {
+    private fun logStatusChange(
+        orderId: String,
+        status: OrderStatus,
+        notes: String?,
+        userId: String?,
+    ) {
         OrderStatusHistoryDAO.new {
             this.orderId = orderId.entityID(OrderTable)
             this.status = status
@@ -72,40 +79,54 @@ class OrderRepositoryImpl : OrderRepository {
         }
     }
 
-    private fun validateCoupon(code: String, orderAmount: BigDecimal, forUpdate: Boolean = false, userId: String? = null): CouponDAO {
+    private fun validateCoupon(
+        code: String,
+        orderAmount: BigDecimal,
+        forUpdate: Boolean = false,
+        userId: String? = null,
+    ): CouponDAO {
         val query = CouponDAO.find { CouponTable.code eq code and (CouponTable.isActive eq true) }
-        val coupon = (if (forUpdate) query.forUpdate() else query).firstOrNull()
-            ?: throw ValidationException(Message.Orders.INVALID_COUPON)
+        val coupon =
+            (if (forUpdate) query.forUpdate() else query).firstOrNull()
+                ?: throw ValidationException(Message.Orders.INVALID_COUPON)
 
         val now = LocalDateTime.now(ZoneOffset.UTC)
-        if (now.isBefore(coupon.startDate) || now.isAfter(coupon.endDate))
+        if (now.isBefore(coupon.startDate) || now.isAfter(coupon.endDate)) {
             throw ValidationException(Message.Orders.COUPON_EXPIRED)
+        }
 
-        if (orderAmount < coupon.minOrderAmount)
+        if (orderAmount < coupon.minOrderAmount) {
             throw ValidationException(Message.Orders.couponMinOrderAmount(coupon.minOrderAmount.toPlainString()))
+        }
 
-        if (coupon.usageLimit != null && coupon.usageCount >= coupon.usageLimit!!)
+        if (coupon.usageLimit != null && coupon.usageCount >= coupon.usageLimit!!) {
             throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
+        }
 
         // Per-user reuse guard: coupon_usage is now read, not write-only.
         if (userId != null) {
-            val alreadyUsed = CouponUsageDAO.find {
-                (CouponUsageTable.couponId eq coupon.id) and (CouponUsageTable.userId eq userId.entityID(UserTable))
-            }.firstOrNull() != null
+            val alreadyUsed =
+                CouponUsageDAO.find {
+                    (CouponUsageTable.couponId eq coupon.id) and (CouponUsageTable.userId eq userId.entityID(UserTable))
+                }.firstOrNull() != null
             if (alreadyUsed) throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
         }
 
         return coupon
     }
 
-    private fun calculateCouponDiscount(coupon: CouponDAO, orderAmount: BigDecimal): BigDecimal {
-        val discount = when (coupon.discountType) {
-            CouponDiscountType.PERCENTAGE -> {
-                val amount = com.piashcse.utils.common.Money.percentOf(orderAmount, coupon.discountValue)
-                coupon.maxDiscountAmount?.let { amount.min(it) } ?: amount
+    private fun calculateCouponDiscount(
+        coupon: CouponDAO,
+        orderAmount: BigDecimal,
+    ): BigDecimal {
+        val discount =
+            when (coupon.discountType) {
+                CouponDiscountType.PERCENTAGE -> {
+                    val amount = com.piashcse.utils.common.Money.percentOf(orderAmount, coupon.discountValue)
+                    coupon.maxDiscountAmount?.let { amount.min(it) } ?: amount
+                }
+                CouponDiscountType.FIXED -> coupon.discountValue
             }
-            CouponDiscountType.FIXED -> coupon.discountValue
-        }
         return com.piashcse.utils.common.Money.scale2(discount.min(orderAmount))
     }
 
@@ -133,370 +154,412 @@ class OrderRepositoryImpl : OrderRepository {
     ): List<OrderResponse> {
         // Cached once: avoids N+1 UserDAO lookups per split order.
         val callerEmail = query { UserDAO.findById(userId)?.email.orEmpty() }
-        val responses = retryQuery {
-            val result: List<OrderResponse> = run {
-                checkoutRequest.idempotencyKey?.let { key ->
-                    val existing = OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.toList()
-                    if (existing.isNotEmpty()) {
-                        val itemsMap = loadItemsForOrders(existing)
-                        return@run existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
+        val responses =
+            retryQuery {
+                val result: List<OrderResponse> =
+                    run {
+                        checkoutRequest.idempotencyKey?.let { key ->
+                            val existing = OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.toList()
+                            if (existing.isNotEmpty()) {
+                                val itemsMap = loadItemsForOrders(existing)
+                                return@run existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
+                            }
+                        }
+
+                        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
+                        if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
+
+                        val shippingAddress =
+                            ShippingAddressDAO.findById(checkoutRequest.shippingAddressId)
+                                ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
+                        if (shippingAddress.userId.value != userId) throw ValidationException(Message.Orders.SHIPPING_ADDRESS_UNAUTHORIZED)
+
+                        val fullAddress =
+                            buildString {
+                                append("${shippingAddress.firstName} ${shippingAddress.lastName}\n")
+                                append("${shippingAddress.streetAddress}, ${shippingAddress.city}, ${shippingAddress.state ?: ""}\n")
+                                append("${shippingAddress.country}, ${shippingAddress.zipCode}\n")
+                                append("Phone: ${shippingAddress.phoneNumber}")
+                            }
+
+                        val shippingMethod =
+                            ShippingMethodDAO.findById(checkoutRequest.shippingMethodId)
+                                ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
+
+                        val productsMap =
+                            ProductDAO.find {
+                                ProductTable.id inList cartItems.map { it.productId.value }.distinct()
+                            }.associateBy { it.id.value }
+
+                        val itemsByShop =
+                            cartItems.groupBy {
+                                productsMap[it.productId.value]?.shopId?.value
+                                    ?: throw ValidationException(Message.Orders.productDoesNotBelongToShop(it.productId.value))
+                            }
+                        validateShopsApproved(itemsByShop.keys)
+
+                        val createdOrders = mutableListOf<OrderDAO>()
+                        val today = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
+
+                        itemsByShop.entries.forEachIndexed { index, (shopIdValue, items) ->
+                            val orderNumber = generateOrderNumber(today, index + 1)
+                            var shopSubTotal = BigDecimal.ZERO
+
+                            val order =
+                                OrderDAO.new {
+                                    this.userId = userId.entityID(UserTable)
+                                    this.shopId = shopIdValue.entityID(ShopTable)
+                                    this.orderNumber = orderNumber
+                                    this.idempotencyKey = checkoutRequest.idempotencyKey
+                                    this.status = OrderStatus.PENDING
+                                    this.paymentStatus = PaymentStatus.PENDING
+                                    this.subTotal = BigDecimal.ZERO
+                                    this.shippingCost = shippingMethod.price
+                                    this.shippingMethod = shippingMethod.name
+                                    this.total = BigDecimal.ZERO
+                                    this.shippingAddress = fullAddress
+                                    this.paymentMethod = checkoutRequest.paymentMethod
+                                    this.notes = checkoutRequest.notes
+                                    this.currency = checkoutRequest.currency.uppercase()
+                                }
+
+                            items.forEach { cartItem ->
+                                val product = productsMap[cartItem.productId.value] ?: cartItem.productId.value.throwNotFound("Product")
+                                if (product.status != ProductStatus.ACTIVE) {
+                                    throw ValidationException(Message.Products.OUT_OF_STOCK)
+                                }
+                                val available = product.effectiveStock(forUpdate = true)
+                                if (available < cartItem.quantity) {
+                                    throw ValidationException(Message.Validation.insufficientStock(product.name, available))
+                                }
+
+                                val unitPrice = product.discountPrice ?: product.price
+                                val itemTotal = unitPrice.multiply(BigDecimal(cartItem.quantity))
+
+                                val orderItem =
+                                    OrderItemDAO.new {
+                                        orderId = order.id
+                                        productId = product.id
+                                        shopId = shopIdValue.entityID(ShopTable)
+                                        quantity = cartItem.quantity
+                                        price = unitPrice
+                                        total = itemTotal
+                                        sku = product.sku
+                                        productName = product.name
+                                        taxAmount = BigDecimal.ZERO
+                                        discountAmount = BigDecimal.ZERO
+                                    }
+
+                                product.decrementStock(cartItem.quantity)
+                                product.addSales(cartItem.quantity)
+
+                                StockReservationDAO.new {
+                                    this.orderId = order.id
+                                    this.orderItemId = orderItem.id
+                                    this.productId = product.id
+                                    this.shopId = shopIdValue.entityID(ShopTable)
+                                    this.quantity = cartItem.quantity
+                                    this.status = ReservationStatus.ACTIVE
+                                    this.expiresAt = LocalDateTime.now().plusHours(24)
+                                }
+
+                                shopSubTotal = shopSubTotal.add(itemTotal)
+                            }
+
+                            val taxAmount = shopSubTotal.multiply(BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString()))
+                            order.subTotal = shopSubTotal
+                            order.taxAmount = taxAmount.setScale(2, RoundingMode.HALF_UP)
+                            order.total = shopSubTotal.add(order.shippingCost).add(order.taxAmount)
+                            createdOrders.add(order)
+                        }
+
+                        checkoutRequest.couponCode?.let { code ->
+                            val totalSubTotal = createdOrders.map { it.subTotal }.reduce(BigDecimal::add)
+                            val coupon = validateCoupon(code, totalSubTotal, forUpdate = true, userId = userId)
+                            val discount = consumeCoupon(coupon, totalSubTotal, userId, createdOrders)
+                            createdOrders.forEach { order ->
+                                val orderDiscount =
+                                    com.piashcse.utils.common.Money.proportionalSplit(
+                                        discount,
+                                        order.subTotal,
+                                        totalSubTotal,
+                                    )
+                                order.discountAmount = orderDiscount
+                                order.couponCode = code
+                                order.total = order.total.subtract(orderDiscount)
+                            }
+                        }
+
+                        val shopIds = createdOrders.mapNotNull { it.shopId?.value }.distinct()
+                        val sellersByShop =
+                            if (shopIds.isNotEmpty()) {
+                                SellerDAO.find { SellerTable.shopId inList shopIds.map { it.entityID(ShopTable) } }
+                                    .associateBy { it.shopId?.value }
+                            } else {
+                                emptyMap()
+                            }
+                        createdOrders.forEach { order ->
+                            order.shopId?.value?.let { shopId ->
+                                sellersByShop[shopId]?.let { seller ->
+                                    seller.totalSales = seller.totalSales.add(order.subTotal)
+                                    seller.totalCommission = seller.totalCommission.add(seller.calcCommission(order.subTotal))
+                                }
+                            }
+                        }
+
+                        cartItems.forEach { it.delete() }
+                        createdOrders.forEach {
+                            logStatusChange(it.id.value, it.status, "Order placed", userId)
+                            // Durable: outbox row commits atomically; OutboxPoller relays (no ghost on rollback/retry).
+                            OutboxPublisher.enqueueTx(
+                                "ORDER",
+                                it.id.value,
+                                OrderPlacedEvent(
+                                    orderId = it.id.value,
+                                    userId = userId,
+                                    email = callerEmail,
+                                    shopId = it.shopId?.value,
+                                    orderNumber = it.orderNumber,
+                                    total = it.total,
+                                ),
+                            )
+                        }
+                        val itemsMap = loadItemsForOrders(createdOrders)
+                        createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
                     }
-                }
-
-        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
-        if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
-
-        val shippingAddress = ShippingAddressDAO.findById(checkoutRequest.shippingAddressId)
-            ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
-        if (shippingAddress.userId.value != userId) throw ValidationException(Message.Orders.SHIPPING_ADDRESS_UNAUTHORIZED)
-
-        val fullAddress = buildString {
-            append("${shippingAddress.firstName} ${shippingAddress.lastName}\n")
-            append("${shippingAddress.streetAddress}, ${shippingAddress.city}, ${shippingAddress.state ?: ""}\n")
-            append("${shippingAddress.country}, ${shippingAddress.zipCode}\n")
-            append("Phone: ${shippingAddress.phoneNumber}")
-        }
-
-        val shippingMethod = ShippingMethodDAO.findById(checkoutRequest.shippingMethodId)
-            ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
-
-        val productsMap = ProductDAO.find {
-            ProductTable.id inList cartItems.map { it.productId.value }.distinct()
-        }.associateBy { it.id.value }
-
-        val itemsByShop = cartItems.groupBy {
-            productsMap[it.productId.value]?.shopId?.value
-                ?: throw ValidationException(Message.Orders.productDoesNotBelongToShop(it.productId.value))
-        }
-        validateShopsApproved(itemsByShop.keys)
-
-        val createdOrders = mutableListOf<OrderDAO>()
-        val today = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-
-        itemsByShop.entries.forEachIndexed { index, (shopIdValue, items) ->
-            val orderNumber = generateOrderNumber(today, index + 1)
-            var shopSubTotal = BigDecimal.ZERO
-
-            val order = OrderDAO.new {
-                this.userId = userId.entityID(UserTable)
-                this.shopId = shopIdValue.entityID(ShopTable)
-                this.orderNumber = orderNumber
-                this.idempotencyKey = checkoutRequest.idempotencyKey
-                this.status = OrderStatus.PENDING
-                this.paymentStatus = PaymentStatus.PENDING
-                this.subTotal = BigDecimal.ZERO
-                this.shippingCost = shippingMethod.price
-                this.shippingMethod = shippingMethod.name
-                this.total = BigDecimal.ZERO
-                this.shippingAddress = fullAddress
-                this.paymentMethod = checkoutRequest.paymentMethod
-                this.notes = checkoutRequest.notes
-                this.currency = checkoutRequest.currency.uppercase()
+                result
             }
-
-            items.forEach { cartItem ->
-                val product = productsMap[cartItem.productId.value] ?: cartItem.productId.value.throwNotFound("Product")
-                if (product.status != ProductStatus.ACTIVE)
-                    throw ValidationException(Message.Products.OUT_OF_STOCK)
-                val available = product.effectiveStock(forUpdate = true)
-                if (available < cartItem.quantity)
-                    throw ValidationException(Message.Validation.insufficientStock(product.name, available))
-
-                val unitPrice = product.discountPrice ?: product.price
-                val itemTotal = unitPrice.multiply(BigDecimal(cartItem.quantity))
-
-                val orderItem = OrderItemDAO.new {
-                    orderId = order.id
-                    productId = product.id
-                    shopId = shopIdValue.entityID(ShopTable)
-                    quantity = cartItem.quantity
-                    price = unitPrice
-                    total = itemTotal
-                    sku = product.sku
-                    productName = product.name
-                    taxAmount = BigDecimal.ZERO
-                    discountAmount = BigDecimal.ZERO
-                }
-
-                product.decrementStock(cartItem.quantity)
-                product.addSales(cartItem.quantity)
-
-                StockReservationDAO.new {
-                    this.orderId = order.id
-                    this.orderItemId = orderItem.id
-                    this.productId = product.id
-                    this.shopId = shopIdValue.entityID(ShopTable)
-                    this.quantity = cartItem.quantity
-                    this.status = ReservationStatus.ACTIVE
-                    this.expiresAt = LocalDateTime.now().plusHours(24)
-                }
-
-                shopSubTotal = shopSubTotal.add(itemTotal)
-            }
-
-            val taxAmount = shopSubTotal.multiply(BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString()))
-            order.subTotal = shopSubTotal
-            order.taxAmount = taxAmount.setScale(2, RoundingMode.HALF_UP)
-            order.total = shopSubTotal.add(order.shippingCost).add(order.taxAmount)
-            createdOrders.add(order)
-        }
-
-        checkoutRequest.couponCode?.let { code ->
-            val totalSubTotal = createdOrders.map { it.subTotal }.reduce(BigDecimal::add)
-            val coupon = validateCoupon(code, totalSubTotal, forUpdate = true, userId = userId)
-            val discount = consumeCoupon(coupon, totalSubTotal, userId, createdOrders)
-            createdOrders.forEach { order ->
-                val orderDiscount = com.piashcse.utils.common.Money.proportionalSplit(discount, order.subTotal, totalSubTotal)
-                order.discountAmount = orderDiscount
-                order.couponCode = code
-                order.total = order.total.subtract(orderDiscount)
-            }
-        }
-
-        val shopIds = createdOrders.mapNotNull { it.shopId?.value }.distinct()
-        val sellersByShop = if (shopIds.isNotEmpty()) {
-            SellerDAO.find { SellerTable.shopId inList shopIds.map { it.entityID(ShopTable) } }
-                .associateBy { it.shopId?.value }
-        } else {
-            emptyMap()
-        }
-        createdOrders.forEach { order ->
-            order.shopId?.value?.let { shopId ->
-                sellersByShop[shopId]?.let { seller ->
-                    seller.totalSales = seller.totalSales.add(order.subTotal)
-                    seller.totalCommission = seller.totalCommission.add(seller.calcCommission(order.subTotal))
-                }
-            }
-        }
-
-        cartItems.forEach { it.delete() }
-        createdOrders.forEach {
-            logStatusChange(it.id.value, it.status, "Order placed", userId)
-            // Durable: outbox row commits atomically; OutboxPoller relays (no ghost on rollback/retry).
-            OutboxPublisher.enqueueTx(
-                "ORDER", it.id.value,
-                OrderPlacedEvent(
-                    orderId = it.id.value,
-                    userId = userId,
-                    email = callerEmail,
-                    shopId = it.shopId?.value,
-                    orderNumber = it.orderNumber,
-                    total = it.total,
-                ),
-            )
-        }
-        val itemsMap = loadItemsForOrders(createdOrders)
-        createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
-        }
-        result
+        return responses
     }
-    return responses
-}
 
     override suspend fun getCheckoutSummary(
         userId: String,
         checkoutRequest: CheckoutRequest,
-    ): CheckoutSummaryResponse = query {
-        val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
-        if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
+    ): CheckoutSummaryResponse =
+        query {
+            val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
+            if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
 
-        val shippingMethod = ShippingMethodDAO.findById(checkoutRequest.shippingMethodId)
-            ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
+            val shippingMethod =
+                ShippingMethodDAO.findById(checkoutRequest.shippingMethodId)
+                    ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
 
-        val productsMap = ProductDAO.find {
-            ProductTable.id inList cartItems.map { it.productId.value }.distinct()
-        }.associateBy { it.id.value }
+            val productsMap =
+                ProductDAO.find {
+                    ProductTable.id inList cartItems.map { it.productId.value }.distinct()
+                }.associateBy { it.id.value }
 
-        var totalItems = 0
-        cartItems.forEach { totalItems += it.quantity }
+            var totalItems = 0
+            cartItems.forEach { totalItems += it.quantity }
 
-        val shopCount = cartItems.mapNotNull { productsMap[it.productId.value]?.shopId?.value }.distinct().size
-        val pricing = com.piashcse.service.PricingService
-        val sub = pricing.subtotal(cartItems.map { cartItem ->
-            val product = productsMap[cartItem.productId.value]
-                ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
-            (product.discountPrice ?: product.price) to cartItem.quantity
-        })
-        val ship = pricing.shipping(shippingMethod.price, shopCount)
-        var response = pricing.breakdown(sub, ship).let {
-            CheckoutSummaryResponse(
-                subTotal = it.subTotal.toPlainString(),
-                shippingCost = it.shippingTotal.toPlainString(),
-                taxAmount = it.taxAmount.toPlainString(),
-                total = it.total.toPlainString(),
-                itemCount = totalItems,
-            )
+            val shopCount = cartItems.mapNotNull { productsMap[it.productId.value]?.shopId?.value }.distinct().size
+            val pricing = com.piashcse.service.PricingService
+            val sub =
+                pricing.subtotal(
+                    cartItems.map { cartItem ->
+                        val product =
+                            productsMap[cartItem.productId.value]
+                                ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
+                        (product.discountPrice ?: product.price) to cartItem.quantity
+                    },
+                )
+            val ship = pricing.shipping(shippingMethod.price, shopCount)
+            var response =
+                pricing.breakdown(sub, ship).let {
+                    CheckoutSummaryResponse(
+                        subTotal = it.subTotal.toPlainString(),
+                        shippingCost = it.shippingTotal.toPlainString(),
+                        taxAmount = it.taxAmount.toPlainString(),
+                        total = it.total.toPlainString(),
+                        itemCount = totalItems,
+                    )
+                }
+
+            checkoutRequest.couponCode?.let {
+                val coupon = validateCoupon(it, sub, userId = userId)
+                val discount = calculateCouponDiscount(coupon, sub)
+                val withCoupon = pricing.breakdown(sub, ship, discount)
+                response = response.copy(discountAmount = withCoupon.discount.toPlainString(), total = withCoupon.total.toPlainString())
+            }
+            response
         }
-
-        checkoutRequest.couponCode?.let {
-            val coupon = validateCoupon(it, sub, userId = userId)
-            val discount = calculateCouponDiscount(coupon, sub)
-            val withCoupon = pricing.breakdown(sub, ship, discount)
-            response = response.copy(discountAmount = withCoupon.discount.toPlainString(), total = withCoupon.total.toPlainString())
-        }
-        response
-    }
 
     override suspend fun createOrder(
         userId: String,
         orderRequest: OrderRequest,
         idempotencyKey: String?,
-    ): List<OrderResponse> = retryQuery {
-        userId.requireNotBlank("User ID")
-        if (orderRequest.orderItems.isEmpty()) throw ValidationException(Message.Validation.EMPTY_ORDER_ITEMS)
+    ): List<OrderResponse> =
+        retryQuery {
+            userId.requireNotBlank("User ID")
+            if (orderRequest.orderItems.isEmpty()) throw ValidationException(Message.Validation.EMPTY_ORDER_ITEMS)
 
-        idempotencyKey?.let { key ->
-            OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.firstOrNull()
-                ?.let { order -> return@retryQuery listOf(order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())) }
-        }
-
-        val productsMap = ProductDAO.find {
-            ProductTable.id inList orderRequest.orderItems.map { it.productId }.distinct()
-        }.associateBy { it.id.value }
-
-        var calculatedSubtotal = BigDecimal.ZERO
-        orderRequest.orderItems.forEach { item ->
-            val product = productsMap[item.productId]
-                ?: throw ValidationException(Message.Validation.productNotFound(item.productId))
-            if (product.status != ProductStatus.ACTIVE)
-                throw ValidationException(Message.Products.OUT_OF_STOCK)
-            val available = product.effectiveStock(forUpdate = true)
-            if (available < item.quantity)
-                throw ValidationException(Message.Validation.insufficientStock(product.name, available))
-            if (product.shopId == null) throw ValidationException(Message.Orders.productDoesNotBelongToShop(product.name))
-
-            val unitPrice = product.discountPrice ?: product.price
-            calculatedSubtotal = calculatedSubtotal.add(unitPrice.multiply(BigDecimal(item.quantity)))
-        }
-
-        if (orderRequest.total.compareTo(calculatedSubtotal) != 0)
-            throw ValidationException(Message.Orders.TOTAL_MISMATCH)
-
-        val itemsByShop = orderRequest.orderItems.groupBy {
-            val product = productsMap[it.productId] ?: it.productId.throwNotFound("Product")
-            product.shopId?.value ?: throw ValidationException(Message.Orders.productDoesNotBelongToShop(product.name))
-        }
-        validateShopsApproved(itemsByShop.keys)
-
-        val createdOrders = mutableListOf<OrderDAO>()
-        val today = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-
-        itemsByShop.entries.forEachIndexed { index, (shopIdValue, items) ->
-            val orderNumber = generateOrderNumber(today, index + 1)
-            var shopSubTotal = BigDecimal.ZERO
-
-            val order = OrderDAO.new {
-                this.userId = userId.entityID(UserTable)
-                this.shopId = shopIdValue.entityID(ShopTable)
-                this.orderNumber = orderNumber
-                this.idempotencyKey = idempotencyKey
-                this.status = OrderStatus.PENDING
-                this.paymentStatus = PaymentStatus.PENDING
-                this.subTotal = BigDecimal.ZERO
-                this.total = BigDecimal.ZERO
-                this.shippingAddress = orderRequest.shippingAddress
+            idempotencyKey?.let { key ->
+                OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.firstOrNull()
+                    ?.let {
+                            order ->
+                        return@retryQuery listOf(order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses()))
+                    }
             }
 
-            items.forEach { itemRequest ->
-                val product = productsMap[itemRequest.productId]
-                    ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
-                val unitPrice = product.discountPrice ?: product.price
-                val itemTotal = unitPrice.multiply(BigDecimal(itemRequest.quantity))
+            val productsMap =
+                ProductDAO.find {
+                    ProductTable.id inList orderRequest.orderItems.map { it.productId }.distinct()
+                }.associateBy { it.id.value }
 
-                OrderItemDAO.new {
-                    orderId = order.id
-                    productId = product.id
-                    shopId = shopIdValue.entityID(ShopTable)
-                    quantity = itemRequest.quantity
-                    price = unitPrice
-                    total = itemTotal
-                    sku = product.sku
-                    productName = product.name
-                    taxAmount = BigDecimal.ZERO
-                    discountAmount = BigDecimal.ZERO
+            var calculatedSubtotal = BigDecimal.ZERO
+            orderRequest.orderItems.forEach { item ->
+                val product =
+                    productsMap[item.productId]
+                        ?: throw ValidationException(Message.Validation.productNotFound(item.productId))
+                if (product.status != ProductStatus.ACTIVE) {
+                    throw ValidationException(Message.Products.OUT_OF_STOCK)
+                }
+                val available = product.effectiveStock(forUpdate = true)
+                if (available < item.quantity) {
+                    throw ValidationException(Message.Validation.insufficientStock(product.name, available))
+                }
+                if (product.shopId == null) throw ValidationException(Message.Orders.productDoesNotBelongToShop(product.name))
+
+                val unitPrice = product.discountPrice ?: product.price
+                calculatedSubtotal = calculatedSubtotal.add(unitPrice.multiply(BigDecimal(item.quantity)))
+            }
+
+            if (orderRequest.total.compareTo(calculatedSubtotal) != 0) {
+                throw ValidationException(Message.Orders.TOTAL_MISMATCH)
+            }
+
+            val itemsByShop =
+                orderRequest.orderItems.groupBy {
+                    val product = productsMap[it.productId] ?: it.productId.throwNotFound("Product")
+                    product.shopId?.value ?: throw ValidationException(Message.Orders.productDoesNotBelongToShop(product.name))
+                }
+            validateShopsApproved(itemsByShop.keys)
+
+            val createdOrders = mutableListOf<OrderDAO>()
+            val today = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
+
+            itemsByShop.entries.forEachIndexed { index, (shopIdValue, items) ->
+                val orderNumber = generateOrderNumber(today, index + 1)
+                var shopSubTotal = BigDecimal.ZERO
+
+                val order =
+                    OrderDAO.new {
+                        this.userId = userId.entityID(UserTable)
+                        this.shopId = shopIdValue.entityID(ShopTable)
+                        this.orderNumber = orderNumber
+                        this.idempotencyKey = idempotencyKey
+                        this.status = OrderStatus.PENDING
+                        this.paymentStatus = PaymentStatus.PENDING
+                        this.subTotal = BigDecimal.ZERO
+                        this.total = BigDecimal.ZERO
+                        this.shippingAddress = orderRequest.shippingAddress
+                    }
+
+                items.forEach { itemRequest ->
+                    val product =
+                        productsMap[itemRequest.productId]
+                            ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
+                    val unitPrice = product.discountPrice ?: product.price
+                    val itemTotal = unitPrice.multiply(BigDecimal(itemRequest.quantity))
+
+                    OrderItemDAO.new {
+                        orderId = order.id
+                        productId = product.id
+                        shopId = shopIdValue.entityID(ShopTable)
+                        quantity = itemRequest.quantity
+                        price = unitPrice
+                        total = itemTotal
+                        sku = product.sku
+                        productName = product.name
+                        taxAmount = BigDecimal.ZERO
+                        discountAmount = BigDecimal.ZERO
+                    }
+
+                    product.decrementStock(itemRequest.quantity)
+                    product.addSales(itemRequest.quantity)
+                    shopSubTotal = shopSubTotal.add(itemTotal)
                 }
 
-                product.decrementStock(itemRequest.quantity)
-                product.addSales(itemRequest.quantity)
-                shopSubTotal = shopSubTotal.add(itemTotal)
+                order.subTotal = shopSubTotal
+                order.total = shopSubTotal
+                createdOrders.add(order)
             }
 
-            order.subTotal = shopSubTotal
-            order.total = shopSubTotal
-            createdOrders.add(order)
-        }
+            orderRequest.orderItems.forEach { orderItem ->
+                CartItemDAO.find {
+                    CartItemTable.userId eq userId and (CartItemTable.productId eq orderItem.productId)
+                }.firstOrNull()?.delete()
+            }
 
-        orderRequest.orderItems.forEach { orderItem ->
-            CartItemDAO.find {
-                CartItemTable.userId eq userId and (CartItemTable.productId eq orderItem.productId)
-            }.firstOrNull()?.delete()
+            val itemsMap = loadItemsForOrders(createdOrders)
+            createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
         }
-
-        val itemsMap = loadItemsForOrders(createdOrders)
-        createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
-    }
 
     override suspend fun getOrders(
         userId: String,
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<OrderResponse> = query {
-        OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
-            .orderBy(OrderTable.createdAt to SortOrder.DESC)
-            .toOrdersPaginated(limit, offset)
-    }
+    ): PaginatedResponse<OrderResponse> =
+        query {
+            OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
+                .orderBy(OrderTable.createdAt to SortOrder.DESC)
+                .toOrdersPaginated(limit, offset)
+        }
 
     override suspend fun updateOrderStatus(
         userId: String,
         orderId: String,
         status: OrderStatus,
-    ): OrderResponse = query {
-        userId.requireNotBlank("User ID")
-        orderId.requireNotBlank("Order ID")
+    ): OrderResponse =
+        query {
+            userId.requireNotBlank("User ID")
+            orderId.requireNotBlank("Order ID")
 
-        val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
-        val user = UserDAO.findById(userId) ?: throw ValidationException(Message.Errors.NOT_FOUND)
+            val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
+            val user = UserDAO.findById(userId) ?: throw ValidationException(Message.Errors.NOT_FOUND)
 
-        requireOrderAccess(order.userId.value, order.shopId?.value, userId, user.userType)
+            requireOrderAccess(order.userId.value, order.shopId?.value, userId, user.userType)
 
-        if (!OrderStatus.canTransitionTo(order.status, status))
-            throw ValidationException(Message.Orders.INVALID_STATUS)
-
-        if (status == OrderStatus.CANCELED) {
-            applyOrderCancellation(order, notes = "Status updated by user", changedBy = userId)
-        } else {
-            order.status = status
-            when (status) {
-                OrderStatus.DELIVERED -> {
-                    order.deliveredDate = LocalDateTime.now()
-                    if (order.shippingDate == null) order.shippingDate = order.deliveredDate
-                }
-                OrderStatus.RECEIVED -> order.completedDate = LocalDateTime.now()
-                OrderStatus.PAID -> order.paymentStatus = PaymentStatus.COMPLETED
-                else -> {}
+            if (!OrderStatus.canTransitionTo(order.status, status)) {
+                throw ValidationException(Message.Orders.INVALID_STATUS)
             }
-            logStatusChange(order.id.value, status, "Status updated by user", userId)
+
+            if (status == OrderStatus.CANCELED) {
+                applyOrderCancellation(order, notes = "Status updated by user", changedBy = userId)
+            } else {
+                order.status = status
+                when (status) {
+                    OrderStatus.DELIVERED -> {
+                        order.deliveredDate = LocalDateTime.now()
+                        if (order.shippingDate == null) order.shippingDate = order.deliveredDate
+                    }
+                    OrderStatus.RECEIVED -> order.completedDate = LocalDateTime.now()
+                    OrderStatus.PAID -> order.paymentStatus = PaymentStatus.COMPLETED
+                    else -> {}
+                }
+                logStatusChange(order.id.value, status, "Status updated by user", userId)
+            }
+            order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
         }
-        order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
-    }
 
     override suspend fun cancelOrder(
         orderId: String,
         userId: String,
         reason: String,
         userType: UserType,
-    ): OrderResponse = retryQuery {
-        orderId.requireNotBlank("Order ID")
-        if (reason.isBlank()) throw ValidationException(Message.Orders.CANCEL_REASON_REQUIRED)
+    ): OrderResponse =
+        retryQuery {
+            orderId.requireNotBlank("Order ID")
+            if (reason.isBlank()) throw ValidationException(Message.Orders.CANCEL_REASON_REQUIRED)
 
-        val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
+            val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
 
-        requireOrderAccess(order.userId.value, order.shopId?.value, userId, userType)
-        if (!OrderStatus.canBeCanceled(order.status)) throw ValidationException(Message.Orders.CANNOT_CANCEL)
+            requireOrderAccess(order.userId.value, order.shopId?.value, userId, userType)
+            if (!OrderStatus.canBeCanceled(order.status)) throw ValidationException(Message.Orders.CANNOT_CANCEL)
 
-        applyOrderCancellation(order, notes = reason, changedBy = userId)
-        order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
-    }
+            applyOrderCancellation(order, notes = reason, changedBy = userId)
+            order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
+        }
 
     private fun applyOrderCancellation(
         order: OrderDAO,
@@ -513,11 +576,12 @@ class OrderRepositoryImpl : OrderRepository {
 
         val orderItems = OrderItemDAO.find { OrderItemTable.orderId eq order.id }.toList()
         val productIds = orderItems.map { it.productId.value }
-        val productsMap = if (productIds.isNotEmpty()) {
-            ProductDAO.find { ProductTable.id inList productIds }.associateBy { it.id.value }
-        } else {
-            emptyMap()
-        }
+        val productsMap =
+            if (productIds.isNotEmpty()) {
+                ProductDAO.find { ProductTable.id inList productIds }.associateBy { it.id.value }
+            } else {
+                emptyMap()
+            }
         orderItems.forEach { orderItem ->
             productsMap[orderItem.productId.value]?.restoreStock(orderItem.quantity)
             productsMap[orderItem.productId.value]?.removeSales(orderItem.quantity)
@@ -532,14 +596,15 @@ class OrderRepositoryImpl : OrderRepository {
         limit: Int,
         offset: Int,
         status: String?,
-    ): PaginatedResponse<OrderResponse> = query {
-        val seller = findSellerByUserId(userId) ?: throw ValidationException(Message.Orders.SELLER_PROFILE_NOT_FOUND)
-        val shopId = seller.shopId ?: throw ValidationException(Message.Orders.NO_SHOP_ASSOCIATED)
+    ): PaginatedResponse<OrderResponse> =
+        query {
+            val seller = findSellerByUserId(userId) ?: throw ValidationException(Message.Orders.SELLER_PROFILE_NOT_FOUND)
+            val shopId = seller.shopId ?: throw ValidationException(Message.Orders.NO_SHOP_ASSOCIATED)
 
-        val query = OrderTable.selectAll().andWhere { OrderTable.shopId eq shopId }
-        status?.let { query.andWhere { OrderTable.status eq OrderStatus.valueOf(it.uppercase()) } }
-        query.orderBy(OrderTable.createdAt to SortOrder.DESC).toOrdersPaginated(limit, offset)
-    }
+            val query = OrderTable.selectAll().andWhere { OrderTable.shopId eq shopId }
+            status?.let { query.andWhere { OrderTable.status eq OrderStatus.valueOf(it.uppercase()) } }
+            query.orderBy(OrderTable.createdAt to SortOrder.DESC).toOrdersPaginated(limit, offset)
+        }
 
     override suspend fun getAdminOrders(
         limit: Int,
@@ -547,11 +612,12 @@ class OrderRepositoryImpl : OrderRepository {
         status: String?,
         startDate: Instant?,
         endDate: Instant?,
-    ): PaginatedResponse<OrderResponse> = query {
-        val query = OrderTable.selectAll()
-        status?.let { query.andWhere { OrderTable.status eq OrderStatus.valueOf(it.uppercase()) } }
-        startDate?.let { query.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
-        endDate?.let { query.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
-        query.orderBy(OrderTable.createdAt to SortOrder.DESC).toOrdersPaginated(limit, offset)
-    }
+    ): PaginatedResponse<OrderResponse> =
+        query {
+            val query = OrderTable.selectAll()
+            status?.let { query.andWhere { OrderTable.status eq OrderStatus.valueOf(it.uppercase()) } }
+            startDate?.let { query.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
+            endDate?.let { query.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
+            query.orderBy(OrderTable.createdAt to SortOrder.DESC).toOrdersPaginated(limit, offset)
+        }
 }

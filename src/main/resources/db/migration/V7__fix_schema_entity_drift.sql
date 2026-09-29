@@ -6,23 +6,39 @@
 -- 5) shipping_method.price DOUBLE PRECISION -> DECIMAL(10,2)
 -- 6) partial unique index preventing double COMPLETED payment per order
 
-ALTER TABLE order_status_history ALTER COLUMN status TYPE VARCHAR(30)
-    USING CASE status
-        WHEN 0 THEN 'PENDING'
-        WHEN 1 THEN 'CONFIRMED'
-        WHEN 2 THEN 'PAID'
-        WHEN 3 THEN 'DELIVERED'
-        WHEN 4 THEN 'CANCELED'
-        ELSE 'RECEIVED'
-    END;
+-- Only converts when the column is still INTEGER (upgraded DBs); fresh installs
+-- already have VARCHAR (a bare CASE ... WHEN 0 would crash on VARCHAR).
+DO $$ BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'order_status_history' AND column_name = 'status' AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE order_status_history ALTER COLUMN status TYPE VARCHAR(30)
+            USING CASE status
+                WHEN 0 THEN 'PENDING'
+                WHEN 1 THEN 'CONFIRMED'
+                WHEN 2 THEN 'PAID'
+                WHEN 3 THEN 'DELIVERED'
+                WHEN 4 THEN 'CANCELED'
+                ELSE 'RECEIVED'
+            END;
+    END IF;
+END $$;
 ALTER TABLE order_status_history ALTER COLUMN status SET NOT NULL;
 
-ALTER TABLE inventory ALTER COLUMN status TYPE VARCHAR(50)
-    USING CASE status
-        WHEN 0 THEN 'IN_STOCK'
-        WHEN 1 THEN 'LOW_STOCK'
-        ELSE 'OUT_OF_STOCK'
-    END;
+DO $$ BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'inventory' AND column_name = 'status' AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE inventory ALTER COLUMN status TYPE VARCHAR(50)
+            USING CASE status
+                WHEN 0 THEN 'IN_STOCK'
+                WHEN 1 THEN 'LOW_STOCK'
+                ELSE 'OUT_OF_STOCK'
+            END;
+    END IF;
+END $$;
 ALTER TABLE inventory ALTER COLUMN status SET DEFAULT 'IN_STOCK';
 ALTER TABLE inventory ALTER COLUMN status SET NOT NULL;
 

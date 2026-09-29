@@ -12,7 +12,7 @@ val X_REQUEST_ID = AttributeKey<String>("X-Request-ID")
 fun Application.installRequestTracing() {
     intercept(ApplicationCallPipeline.Setup) {
         val existingId = call.request.headers[HttpHeaders.XRequestId]
-        val requestId = existingId ?: UUID.randomUUID().toString().take(8)
+        val requestId = existingId ?: UUID.randomUUID().toString()
         call.attributes.put(X_REQUEST_ID, requestId)
         MDC.put("requestId", requestId)
     }

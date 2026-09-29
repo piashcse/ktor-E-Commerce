@@ -22,7 +22,6 @@ import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 class ReviewRatingRepositoryImpl : ReviewRatingRepository {
     private fun recalculateProductRating(productId: String) {
@@ -55,16 +54,18 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
         reviewRating: ReviewRatingRequest,
     ): ReviewRatingResponse =
         query {
-            if (reviewRating.rating < 1 || reviewRating.rating > 5)
+            if (reviewRating.rating < 1 || reviewRating.rating > 5) {
                 throw ValidationException(Message.Validation.RATING_OUT_OF_RANGE)
+            }
             ReviewRatingDAO.find { ReviewRatingTable.userId eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
                 .singleOrNull()?.let {
-                throw it.productId.value.throwConflict("Product")
-            } ?: run {
-                val verified = OrderItemDAO.find {
-                    (OrderItemTable.productId eq reviewRating.productId.entityID(ProductTable)) and
-                        (OrderItemTable.orderId inList OrderDAO.find { OrderTable.userId eq userId }.map { it.id })
-                }.firstOrNull() != null
+                    throw it.productId.value.throwConflict("Product")
+                } ?: run {
+                val verified =
+                    OrderItemDAO.find {
+                        (OrderItemTable.productId eq reviewRating.productId.entityID(ProductTable)) and
+                            (OrderItemTable.orderId inList OrderDAO.find { OrderTable.userId eq userId }.map { it.id })
+                    }.firstOrNull() != null
                 val review =
                     ReviewRatingDAO.new {
                         this.userId = userId.entityID(UserTable)
@@ -85,33 +86,41 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
         rating: Int,
     ): ReviewRatingResponse =
         query {
-            if (rating < 1 || rating > 5)
+            if (rating < 1 || rating > 5) {
                 throw ValidationException(Message.Validation.RATING_OUT_OF_RANGE)
+            }
             ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
                 .singleOrNull()?.let {
-                it.verifyOwnership(userId, "review") { r -> r.userId.value }
-                it.reviewText = review
-                it.rating = rating
-                recalculateProductRating(it.productId.value)
-                it.toReviewRatingResponse()
-            } ?: review.throwNotFound("Review")
+                    it.verifyOwnership(userId, "review") { r -> r.userId.value }
+                    it.reviewText = review
+                    it.rating = rating
+                    recalculateProductRating(it.productId.value)
+                    it.toReviewRatingResponse()
+                } ?: review.throwNotFound("Review")
         }
 
-    override suspend fun markHelpful(reviewId: String, helpful: Boolean): ReviewRatingResponse = query {
-        val r = ReviewRatingDAO.findById(reviewId) ?: reviewId.throwNotFound("Review")
-        if (helpful) r.helpfulCount++ else r.notHelpfulCount++
-        r.toReviewRatingResponse()
-    }
+    override suspend fun markHelpful(
+        reviewId: String,
+        helpful: Boolean,
+    ): ReviewRatingResponse =
+        query {
+            val r = ReviewRatingDAO.findById(reviewId) ?: reviewId.throwNotFound("Review")
+            if (helpful) r.helpfulCount++ else r.notHelpfulCount++
+            r.toReviewRatingResponse()
+        }
 
-    override suspend fun deleteReviewRating(userId: String, reviewId: String): String =
+    override suspend fun deleteReviewRating(
+        userId: String,
+        reviewId: String,
+    ): String =
         query {
             ReviewRatingDAO.find { ReviewRatingTable.id eq reviewId }
                 .singleOrNull()?.let {
-                it.verifyOwnership(userId, "review") { r -> r.userId.value }
-                val productId = it.productId.value
-                it.delete()
-                recalculateProductRating(productId)
-                reviewId
-            } ?: reviewId.throwNotFound("Review")
+                    it.verifyOwnership(userId, "review") { r -> r.userId.value }
+                    val productId = it.productId.value
+                    it.delete()
+                    recalculateProductRating(productId)
+                    reviewId
+                } ?: reviewId.throwNotFound("Review")
         }
 }

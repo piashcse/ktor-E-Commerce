@@ -8,8 +8,17 @@ import java.math.BigDecimal
  */
 interface PaymentGateway {
     val name: String
-    suspend fun charge(orderId: String, amount: BigDecimal, transactionId: String?): GatewayChargeResult
-    suspend fun verifyWebhook(payload: String, signature: String?): Boolean
+
+    suspend fun charge(
+        orderId: String,
+        amount: BigDecimal,
+        transactionId: String?,
+    ): GatewayChargeResult
+
+    suspend fun verifyWebhook(
+        payload: String,
+        signature: String?,
+    ): Boolean
 }
 
 data class GatewayChargeResult(
@@ -20,7 +29,15 @@ data class GatewayChargeResult(
 
 class ManualPaymentGateway : PaymentGateway {
     override val name: String = "CASH_ON_DELIVERY"
-    override suspend fun charge(orderId: String, amount: BigDecimal, transactionId: String?) =
-        GatewayChargeResult(success = true, gatewayTransactionId = transactionId, message = "Manual payment recorded")
-    override suspend fun verifyWebhook(payload: String, signature: String?) = true
+
+    override suspend fun charge(
+        orderId: String,
+        amount: BigDecimal,
+        transactionId: String?,
+    ) = GatewayChargeResult(success = true, gatewayTransactionId = transactionId, message = "Manual payment recorded")
+
+    override suspend fun verifyWebhook(
+        payload: String,
+        signature: String?,
+    ) = true
 }

@@ -30,5 +30,4 @@ class PolicyConsentDAO(id: EntityID<String>) : BaseEntity(id, PolicyConsentTable
     var consentDate by PolicyConsentTable.consentDate
     var ipAddress by PolicyConsentTable.ipAddress
     var userAgent by PolicyConsentTable.userAgent
-
 }

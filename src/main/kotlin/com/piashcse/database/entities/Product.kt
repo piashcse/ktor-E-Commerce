@@ -7,8 +7,8 @@ import com.piashcse.database.entities.base.BaseIdTable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.javatime.datetime
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -80,9 +80,10 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
     }
 
     val imageUrls: List<String>
-        get() = ProductImageDAO.find { ProductImageTable.productId eq id }
-            .orderBy(ProductImageTable.sortOrder to SortOrder.ASC)
-            .map { it.imageUrl }
+        get() =
+            ProductImageDAO.find { ProductImageTable.productId eq id }
+                .orderBy(ProductImageTable.sortOrder to SortOrder.ASC)
+                .map { it.imageUrl }
 
     fun setImages(urls: List<String>) {
         ProductImageTable.deleteWhere { ProductImageTable.productId eq id }
@@ -94,5 +95,4 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
             }
         }
     }
-
 }

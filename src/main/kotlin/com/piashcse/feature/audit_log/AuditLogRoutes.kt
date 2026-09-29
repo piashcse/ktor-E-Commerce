@@ -1,5 +1,6 @@
 package com.piashcse.feature.audit_log
 
+import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondOk
 import io.ktor.http.*
@@ -15,7 +16,17 @@ fun Route.auditLogAdminRoutes() {
      */
     get {
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(repo.getAuditLogs(limit, offset, call.queryParameters["actorId"], call.queryParameters["action"], call.queryParameters["resourceType"], call.queryParameters["resourceId"], call.queryParameters["outcome"]))
+        call.respondOk(
+            repo.getAuditLogs(
+                limit,
+                offset,
+                call.queryParameters["actorId"],
+                call.queryParameters["action"],
+                call.queryParameters["resourceType"],
+                call.queryParameters["resourceId"],
+                call.queryParameters["outcome"],
+            ),
+        )
     }
 
     /**
@@ -23,7 +34,12 @@ fun Route.auditLogAdminRoutes() {
      * @description Get a single audit log entry by ID
      */
     get("{id}") {
-        val id = call.pathParameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Missing id")
+        val id =
+            call.pathParameters["id"]
+                ?: return@get call.respond(
+                    HttpStatusCode.BadRequest,
+                    ApiError(message = "Missing id", code = "MISSING_PARAMETER"),
+                )
         call.respondOk(repo.getAuditLogById(id))
     }
 }

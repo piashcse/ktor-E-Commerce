@@ -40,12 +40,13 @@ object EventBus {
 
     private const val MAX_RETRIES = 3
 
-    fun metrics(): EventBusMetrics = EventBusMetrics(
-        published = publishedCount.get(),
-        consumed = consumedCount.get(),
-        failed = failedCount.get(),
-        deadLetterCount = deadLetterCounter.get(),
-    )
+    fun metrics(): EventBusMetrics =
+        EventBusMetrics(
+            published = publishedCount.get(),
+            consumed = consumedCount.get(),
+            failed = failedCount.get(),
+            deadLetterCount = deadLetterCounter.get(),
+        )
 
     fun subscribe(subscriber: Subscriber) {
         if (!subscribers.contains(subscriber)) subscribers.add(subscriber)
@@ -70,62 +71,64 @@ object EventBus {
         resourceType: String,
         resourceId: String?,
         details: String? = null,
-    ): Boolean = publish(
-        AdminActionEvent(
-            actorId = actor.first,
-            actorEmail = actor.second,
-            actorRole = actor.third,
-            action = action,
-            resourceType = resourceType,
-            resourceId = resourceId,
-            details = details,
-        ),
-    )
+    ): Boolean =
+        publish(
+            AdminActionEvent(
+                actorId = actor.first,
+                actorEmail = actor.second,
+                actorRole = actor.third,
+                action = action,
+                resourceType = resourceType,
+                resourceId = resourceId,
+                details = details,
+            ),
+        )
 
     fun start(scope: CoroutineScope) {
-        job = scope.launch {
-            events.collect { event ->
-                subscribers.forEach { subscriber ->
-                    var lastError: Throwable? = null
-                    var attempts = 0
-                    for (attempt in 1..MAX_RETRIES) {
-                        attempts = attempt
-                        try {
-                            subscriber.onEvent(event)
-                            lastError = null
-                            break
-                        } catch (e: Exception) {
-                            lastError = e
-                            log.warn(
-                                "${subscriber::class.simpleName} failed (attempt $attempt/$MAX_RETRIES) " +
-                                    "on ${event::class.simpleName}: ${e.message}",
-                            )
-                            if (attempt < MAX_RETRIES) {
-                                delay(100L * (1L shl (attempt - 1)))
+        job =
+            scope.launch {
+                events.collect { event ->
+                    subscribers.forEach { subscriber ->
+                        var lastError: Throwable? = null
+                        var attempts = 0
+                        for (attempt in 1..MAX_RETRIES) {
+                            attempts = attempt
+                            try {
+                                subscriber.onEvent(event)
+                                lastError = null
+                                break
+                            } catch (e: Exception) {
+                                lastError = e
+                                log.warn(
+                                    "${subscriber::class.simpleName} failed (attempt $attempt/$MAX_RETRIES) " +
+                                        "on ${event::class.simpleName}: ${e.message}",
+                                )
+                                if (attempt < MAX_RETRIES) {
+                                    delay(100L * (1L shl (attempt - 1)))
+                                }
                             }
                         }
+                        if (lastError != null) {
+                            failedCount.incrementAndGet()
+                            log.error(
+                                "${subscriber::class.simpleName} permanently failed on ${event::class.simpleName}" +
+                                    " after $MAX_RETRIES attempts",
+                                lastError,
+                            )
+                            _deadLetter.tryEmit(
+                                DeadLetterEvent(
+                                    event = event,
+                                    subscriberName = subscriber::class.simpleName ?: "unknown",
+                                    lastError = lastError,
+                                    attempts = attempts,
+                                ),
+                            )
+                            deadLetterCounter.incrementAndGet()
+                        }
                     }
-                    if (lastError != null) {
-                        failedCount.incrementAndGet()
-                        log.error(
-                            "${subscriber::class.simpleName} permanently failed on ${event::class.simpleName}" +
-                                " after $MAX_RETRIES attempts",
-                            lastError,
-                        )
-                        _deadLetter.tryEmit(
-                            DeadLetterEvent(
-                                event = event,
-                                subscriberName = subscriber::class.simpleName ?: "unknown",
-                                lastError = lastError,
-                                attempts = attempts,
-                            ),
-                        )
-                        deadLetterCounter.incrementAndGet()
-                    }
+                    consumedCount.incrementAndGet()
                 }
-                consumedCount.incrementAndGet()
             }
-        }
     }
 
     fun stop() {

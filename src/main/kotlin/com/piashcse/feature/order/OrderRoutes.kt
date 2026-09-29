@@ -43,7 +43,9 @@ fun Route.orderRoutes() {
 
                 if ((status in listOf(OrderStatus.CONFIRMED, OrderStatus.DELIVERED) && userType != UserType.SELLER) ||
                     (status in listOf(OrderStatus.CANCELED, OrderStatus.RECEIVED) && userType != UserType.CUSTOMER)
-                ) throw UnauthorizedException(Message.Orders.STATUS_NOT_ALLOWED)
+                ) {
+                    throw UnauthorizedException(Message.Orders.STATUS_NOT_ALLOWED)
+                }
 
                 call.respondOk(orderRepo.updateOrderStatus(call.currentUserId, id, status))
             }
@@ -53,7 +55,14 @@ fun Route.orderRoutes() {
              * @description Cancel an order
              */
             post("{id}/cancel") {
-                call.respondOk(orderRepo.cancelOrder(call.requirePathParameter("id"), call.currentUserId, call.receive<CancelOrderRequest>().reason, call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)))
+                call.respondOk(
+                    orderRepo.cancelOrder(
+                        call.requirePathParameter("id"),
+                        call.currentUserId,
+                        call.receive<CancelOrderRequest>().reason,
+                        call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
+                    ),
+                )
             }
         }
     }
@@ -96,7 +105,14 @@ fun Route.orderAdminRoutes() {
          * @description Admin: Cancel any order
          */
         post("{id}/cancel") {
-            call.respondOk(orderRepo.cancelOrder(call.requirePathParameter("id"), call.currentUserId, call.receive<CancelOrderRequest>().reason, UserType.ADMIN))
+            call.respondOk(
+                orderRepo.cancelOrder(
+                    call.requirePathParameter("id"),
+                    call.currentUserId,
+                    call.receive<CancelOrderRequest>().reason,
+                    UserType.ADMIN,
+                ),
+            )
         }
     }
 

@@ -8,7 +8,6 @@ import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.model.response.ProductSubCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
-import com.piashcse.utils.extension.*
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -18,10 +17,11 @@ class ProductSubCategoryRepositoryImpl : ProductSubCategoryRepository {
     override suspend fun addProductSubCategory(productSubCategory: ProductSubCategoryRequest): ProductSubCategoryResponse =
         query {
             ProductCategoryDAO.findById(productSubCategory.categoryId) ?: productSubCategory.categoryId.throwNotFound("Category")
-            val isSubCategoryExist = ProductSubCategoryDAO.find {
-                (ProductSubCategoryTable.categoryId eq productSubCategory.categoryId.entityID(ProductSubCategoryTable)) and
-                    (ProductSubCategoryTable.name eq productSubCategory.name)
-            }.firstOrNull()
+            val isSubCategoryExist =
+                ProductSubCategoryDAO.find {
+                    (ProductSubCategoryTable.categoryId eq productSubCategory.categoryId.entityID(ProductSubCategoryTable)) and
+                        (ProductSubCategoryTable.name eq productSubCategory.name)
+                }.firstOrNull()
             isSubCategoryExist?.let { throw productSubCategory.name.throwConflict("Subcategory") }
             ProductSubCategoryDAO.new {
                 categoryId = productSubCategory.categoryId.entityID(ProductSubCategoryTable)

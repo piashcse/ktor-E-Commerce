@@ -122,9 +122,10 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
     ): Boolean {
         val order = OrderDAO.findById(orderId) ?: return false
         val shopId = order.shopId?.value ?: return false
-        val seller = SellerDAO.find {
-            (SellerTable.userId eq userId) and (SellerTable.shopId eq shopId.entityID(ShopTable))
-        }.firstOrNull()
+        val seller =
+            SellerDAO.find {
+                (SellerTable.userId eq userId) and (SellerTable.shopId eq shopId.entityID(ShopTable))
+            }.firstOrNull()
         return seller != null
     }
 
@@ -198,7 +199,8 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             }
 
             OutboxPublisher.enqueueTx(
-                "REFUND", refundReq.id.value,
+                "REFUND",
+                refundReq.id.value,
                 RefundStatusChangedEvent(
                     refundId = refundReq.id.value,
                     orderId = refundReq.orderId.value,

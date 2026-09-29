@@ -19,5 +19,4 @@ class ShippingMethodDAO(id: EntityID<String>) : BaseEntity(id, ShippingMethodTab
     var type by ShippingMethodTable.type
     var price by ShippingMethodTable.price
     var deliveryTime by ShippingMethodTable.deliveryTime
-
 }

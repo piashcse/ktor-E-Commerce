@@ -76,7 +76,10 @@ object UploadService {
     /**
      * Checks if the magic bytes of the file match the given extension.
      */
-    private fun isValidMagicBytes(bytes: ByteArray, extension: String): Boolean {
+    private fun isValidMagicBytes(
+        bytes: ByteArray,
+        extension: String,
+    ): Boolean {
         if (bytes.size < 4) return false
         return when (extension) {
             "jpg", "jpeg" -> {
@@ -86,7 +89,7 @@ object UploadService {
                 bytes[0] == 0x89.toByte() && bytes[1] == 0x50.toByte() && bytes[2] == 0x4E.toByte() && bytes[3] == 0x47.toByte()
             }
             "webp" -> {
-                bytes[0] == 'R'.code.toByte() && bytes[1] == 'I'.code.toByte() && bytes[2] == 'F'.code.toByte() && bytes[3] == 'F'.code.toByte()
+                bytes.decodeToString(0, 4) == "RIFF"
             }
             "gif" -> {
                 bytes[0] == 'G'.code.toByte() && bytes[1] == 'I'.code.toByte() && bytes[2] == 'F'.code.toByte()
@@ -111,13 +114,14 @@ object UploadService {
                     ?: throw ValidationException(Message.Upload.fileNameRequired(purpose))
 
             // Sanitize filename: strip null bytes, path separators, control characters
-            val sanitizedName = originalName
-                .replace(INVALID_FILENAME_REGEX, "_")
-                .replace(Regex("""[\x00/\\:]"""), "_")
-                .replace(Regex("""\p{Cntrl}"""), "")
-                .trim()
-                .take(255)
-                .ifEmpty { throw ValidationException(Message.Upload.fileNameRequired(purpose)) }
+            val sanitizedName =
+                originalName
+                    .replace(INVALID_FILENAME_REGEX, "_")
+                    .replace(Regex("""[\x00/\\:]"""), "_")
+                    .replace(Regex("""\p{Cntrl}"""), "")
+                    .trim()
+                    .take(255)
+                    .ifEmpty { throw ValidationException(Message.Upload.fileNameRequired(purpose)) }
 
             // Extract and validate extension
             val extension = sanitizedName.substringAfterLast('.', "").lowercase()
@@ -172,6 +176,7 @@ object UploadService {
      * Deletes a file from the specified upload directory.
      */
     private val ALLOWED_DIRS = setOf(PROFILE_DIR, PRODUCT_DIR, SHOP_DIR, REFUND_DIR, CATEGORY_DIR)
+
     fun delete(
         directory: String,
         fileName: String?,

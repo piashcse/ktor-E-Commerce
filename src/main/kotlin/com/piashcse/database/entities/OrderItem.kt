@@ -25,6 +25,7 @@ object OrderItemTable : BaseIdTable("order_item") {
 class OrderItemDAO(id: EntityID<String>) : BaseEntity(id, OrderItemTable) {
     companion object : BaseEntityClass<OrderItemDAO>(OrderItemTable, OrderItemDAO::class.java) {
         fun itemsForOrder(orderId: EntityID<String>) = find { OrderItemTable.orderId eq orderId }.limit(50).toList()
+
         fun itemsForOrders(orderIds: List<EntityID<String>>): Map<String, List<OrderItemDAO>> =
             find { OrderItemTable.orderId inList orderIds }.groupBy { it.orderId.value }
     }
