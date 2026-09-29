@@ -31,7 +31,15 @@ val RoleAuthorizationPlugin =
 
             if (allowedRoles.isEmpty()) return@on
 
-            val hasAccess = allowedRoles.any { role -> principal.hasAccessTo(role) }
+            val exact = pluginConfig.exactMatch
+            val hasAccess =
+                allowedRoles.any { role ->
+                    if (exact) {
+                        principal.getUserType()?.hasExactRole(role) == true
+                    } else {
+                        principal.hasAccessTo(role)
+                    }
+                }
             if (!hasAccess) {
                 call.respond(
                     HttpStatusCode.Forbidden,
@@ -44,10 +52,33 @@ val RoleAuthorizationPlugin =
 
 class RoleAuthorizationConfig {
     var roles: List<UserType> = emptyList()
+
+    /** When true, roles must match exactly (no hierarchy): sellers/admins cannot pass a CUSTOMER gate. */
+    var exactMatch: Boolean = false
 }
 
 fun Route.requireRole(
     vararg roles: UserType,
+    build: Route.() -> Unit,
+) {
+    authorized(*roles, exactMatch = false, build = build)
+}
+
+/**
+ * Strict least-privilege gate: exact role match only.
+ * customerOnlyAuth blocks sellers/admins from customer self-service routes
+ * (customerAuth is hierarchical — every role passes a CUSTOMER check).
+ */
+fun Route.requireRoleExact(
+    vararg roles: UserType,
+    build: Route.() -> Unit,
+) {
+    authorized(*roles, exactMatch = true, build = build)
+}
+
+private fun Route.authorized(
+    vararg roles: UserType,
+    exactMatch: Boolean,
     build: Route.() -> Unit,
 ) {
     authenticate(JWT_AUTHENTICATOR) {
@@ -62,6 +93,7 @@ fun Route.requireRole(
             )
         routeWithAuth.install(RoleAuthorizationPlugin) {
             this.roles = roles.toList()
+            this.exactMatch = exactMatch
         }
         routeWithAuth.build()
     }
@@ -69,6 +101,9 @@ fun Route.requireRole(
 
 // Convenience Scope Functions for drastically cleaner routing semantics
 fun Route.customerAuth(build: Route.() -> Unit) = requireRole(UserType.CUSTOMER, build = build)
+
+/** Strict customer-only scope: CUSTOMER role exactly — sellers/admins are denied. */
+fun Route.customerOnlyAuth(build: Route.() -> Unit) = requireRoleExact(UserType.CUSTOMER, build = build)
 
 fun Route.sellerAuth(build: Route.() -> Unit) = requireRole(UserType.SELLER, build = build)
 
@@ -81,10 +116,44 @@ fun Route.writeRateLimit(build: Route.() -> Unit) {
     rateLimit(RateLimitName(RateLimitNames.WRITE)) { build() }
 }
 
+fun Route.generalRateLimit(build: Route.() -> Unit) {
+    rateLimit(RateLimitName(RateLimitNames.GENERAL)) { build() }
+}
+
+fun Route.searchRateLimit(build: Route.() -> Unit) {
+    rateLimit(RateLimitName(RateLimitNames.SEARCH)) { build() }
+}
+
+fun Route.authRateLimit(build: Route.() -> Unit) {
+    rateLimit(RateLimitName(RateLimitNames.AUTH)) { build() }
+}
+
+fun Route.otpRateLimit(build: Route.() -> Unit) {
+    rateLimit(RateLimitName(RateLimitNames.OTP)) { build() }
+}
+
+fun Route.refreshTokenRateLimit(build: Route.() -> Unit) {
+    rateLimit(RateLimitName(RateLimitNames.REFRESH_TOKEN)) { build() }
+}
+
 fun Route.sellerWriteRateLimit(build: Route.() -> Unit) {
     rateLimit(RateLimitName(RateLimitNames.SELLER_WRITE)) { build() }
 }
 
 fun Route.adminWriteRateLimit(build: Route.() -> Unit) {
     rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) { build() }
+}
+
+/**
+ * Combined auth + rate-limit scope: folds requireRole + rateLimit into one nest.
+ * Identical semantics to `requireRole(*roles) { rateLimit(limitName) { build() } }`.
+ */
+fun Route.authenticatedWrite(
+    vararg roles: UserType,
+    limitName: RateLimitName,
+    build: Route.() -> Unit,
+) {
+    requireRole(*roles) {
+        rateLimit(limitName) { build() }
+    }
 }

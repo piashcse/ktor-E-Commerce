@@ -2,6 +2,7 @@ package com.piashcse.mapper
 
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.model.response.ProductResponse
+import com.piashcse.utils.common.Money
 
 fun ProductDAO.toProductResponse(images: List<String>? = null) =
     ProductResponse(
@@ -18,8 +19,8 @@ fun ProductDAO.toProductResponse(images: List<String>? = null) =
         weight = weight?.toDouble(),
         dimensions = dimensions,
         minOrderQuantity = minOrderQuantity,
-        price = price.toPlainString(),
-        discountPrice = discountPrice?.toPlainString(),
+        price = Money.str(price),
+        discountPrice = discountPrice?.let { Money.str(it) },
         discountPercentage = discountPercentage?.toDouble(),
         videoLink = videoLink,
         hotDeal = hotDeal,

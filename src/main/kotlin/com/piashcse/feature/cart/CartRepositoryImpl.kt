@@ -8,10 +8,9 @@ import com.piashcse.mapper.toProductResponse
 import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.service.PricingService
+import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
-import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
@@ -19,7 +18,6 @@ import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import java.math.BigDecimal
 
 class CartRepositoryImpl : CartRepository {
     private fun requireCartParams(
@@ -40,9 +38,10 @@ class CartRepositoryImpl : CartRepository {
         query {
             requireCartParams(userId, productId, quantity)
 
-            val product = ProductDAO.findById(productId) ?: productId.throwNotFound("Product")
-            val stock = product.effectiveStock()
-            if (quantity > stock) throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
+            // Advisory stock check only: read-then-write here is inherently racy (TOCTOU).
+            // The authoritative check runs at order creation with a row-locked
+            // effectiveStock(forUpdate = true) read, which re-validates before decrementing.
+            val product = requireProductWithStock(productId, quantity)
 
             val existing =
                 CartItemDAO.find {
@@ -69,29 +68,28 @@ class CartRepositoryImpl : CartRepository {
         offset: Int,
     ): PaginatedResponse<Cart> =
         query {
-            val query = CartItemTable.selectAll().andWhere { CartItemTable.userId eq userId }
-            val (totalCount, rows) = query.toPaginatedList(limit, offset) { it }
-            val productIds = rows.map { it[CartItemTable.productId] }
-            val products =
-                if (productIds.isNotEmpty()) {
-                    ProductDAO.find { ProductTable.id inList productIds }.associateBy { it.id.value }
-                } else {
-                    emptyMap()
-                }
-            val imagesMap =
-                if (products.isNotEmpty()) {
-                    ProductImageDAO.imagesForProducts(products.keys.map { it.entityID(ProductTable) })
-                } else {
-                    emptyMap()
-                }
-            val data =
+            val base = CartItemTable.selectAll().andWhere { CartItemTable.userId eq userId }
+            base.paginateWithPreload(limit, offset, rowMapper = { it }) { rows ->
+                val productIds = rows.map { it[CartItemTable.productId] }
+                val products =
+                    if (productIds.isNotEmpty()) {
+                        ProductDAO.find { ProductTable.id inList productIds }.associateBy { it.id.value }
+                    } else {
+                        emptyMap()
+                    }
+                val imagesMap =
+                    if (products.isNotEmpty()) {
+                        ProductImageDAO.imagesForProducts(products.keys.map { it.entityID(ProductTable) })
+                    } else {
+                        emptyMap()
+                    }
                 rows.map { row ->
                     val product =
                         products[row[CartItemTable.productId].value]
                             ?: row[CartItemTable.productId].value.throwNotFound("Product")
                     CartItemDAO.wrapRow(row).toCartResponse(product.toProductResponse(imagesMap[product.id.value]))
                 }
-            PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
+            }
         }
 
     override suspend fun updateCartQuantity(
@@ -100,23 +98,22 @@ class CartRepositoryImpl : CartRepository {
         quantity: Int,
     ): Cart? =
         query {
-            requireCartParams(userId, productId, quantity)
+            userId.requireNotBlank("User ID")
+            productId.requireNotBlank("Product ID")
 
-            val cartItem =
-                CartItemDAO.find {
-                    CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
-                }.singleOrNull() ?: productId.throwNotFound("Product")
+            val cartItem = requireCartItem(userId, productId)
 
-            if (quantity == 0) {
+            // Single non-positive path: quantity <= 0 deletes the line item (no throw branch).
+            if (quantity <= 0) {
                 cartItem.delete()
                 return@query null
             }
 
-            val product =
-                ProductDAO.findById(cartItem.productId)
-                    ?: throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
-            val stock = product.effectiveStock()
-            if (quantity > stock) throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
+            // Advisory stock check only: read-then-write here is inherently racy (TOCTOU) —
+            // concurrent checkouts can oversell between this read and order placement.
+            // The authoritative check runs at order creation with a row-locked
+            // effectiveStock(forUpdate = true) read, which re-validates before decrementing.
+            val product = requireProductWithStock(cartItem.productId.value, quantity)
             cartItem.quantity = quantity
 
             cartItem.toCartResponse(product.toProductResponse())
@@ -129,14 +126,9 @@ class CartRepositoryImpl : CartRepository {
         query {
             requireCartParams(userId, productId)
 
-            val cartItem =
-                CartItemDAO.find {
-                    CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
-                }.singleOrNull() ?: productId.throwNotFound("Product")
+            val cartItem = requireCartItem(userId, productId)
 
-            val product =
-                ProductDAO.findById(cartItem.productId)
-                    ?: throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
+            val product = requireProduct(cartItem.productId.value)
             cartItem.delete()
             product.toProductResponse()
         }
@@ -190,7 +182,7 @@ class CartRepositoryImpl : CartRepository {
                     )
                 }
 
-            val lines = items.map { BigDecimal(it.price) to it.quantity }
+            val lines = items.map { Money.of(it.price) to it.quantity }
             val subtotal = PricingService.subtotal(lines)
             val tax = PricingService.tax(subtotal)
             CartSummaryResponse(items, subtotal.toPlainString(), tax.toPlainString(), items.size)

@@ -19,6 +19,14 @@ data class DeadLetterEvent(
     val attempts: Int,
 )
 
+data class PoisonEvent(
+    val outboxId: String,
+    val eventType: String,
+    val aggregateType: String,
+    val aggregateId: String,
+    val attempts: Int,
+)
+
 data class EventBusMetrics(
     val published: Long,
     val consumed: Long,
@@ -40,6 +48,12 @@ object EventBus {
 
     private val _deadLetter = MutableSharedFlow<DeadLetterEvent>(extraBufferCapacity = 64)
     val deadLetterEvents = _deadLetter.asSharedFlow()
+
+    private val _poisonEvents = MutableSharedFlow<PoisonEvent>(extraBufferCapacity = 64)
+    val poisonEvents = _poisonEvents.asSharedFlow()
+    private val poisonCounter = AtomicInteger(0)
+
+    fun poisonCount(): Int = poisonCounter.get()
 
     private const val MAX_RETRIES = 3
 
@@ -65,6 +79,21 @@ object EventBus {
             failedCount.incrementAndGet()
         }
         return accepted
+    }
+
+    /**
+     * Dead-letter channel for undecodable (poison) outbox rows. Emitted instead of dropping
+     * the row so operators can alert/audit on it; the outbox row itself stays unpublished
+     * for manual inspection.
+     */
+    fun reportPoison(record: PoisonEvent) {
+        log.error(
+            "Outbox poison event id=${record.outboxId} type=${record.eventType} " +
+                "aggregate=${record.aggregateType}:${record.aggregateId} (attempt ${record.attempts})",
+        )
+        poisonCounter.incrementAndGet()
+        failedCount.incrementAndGet()
+        _poisonEvents.tryEmit(record)
     }
 
     /** Shared admin-audit publisher: `actor` is `(id, email, role)`. */

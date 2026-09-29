@@ -5,11 +5,15 @@ import com.piashcse.model.response.CouponResponse
 import com.piashcse.utils.common.PaginatedResponse
 
 interface CouponRepository {
-    suspend fun createCoupon(request: CouponRequest): CouponResponse
+    suspend fun createCoupon(
+        request: CouponRequest,
+        actorId: String? = null,
+    ): CouponResponse
 
     suspend fun updateCoupon(
         couponId: String,
         request: CouponRequest,
+        actorId: String? = null,
     ): CouponResponse
 
     suspend fun getCoupons(

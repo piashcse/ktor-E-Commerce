@@ -2,13 +2,13 @@ package com.piashcse.feature.coupon
 
 import com.piashcse.constants.Message
 import com.piashcse.model.request.CouponRequest
-import com.piashcse.plugin.RateLimitNames
+import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.utils.common.ApiError
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.http.*
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -33,13 +33,13 @@ fun Route.couponRoutes() {
 
 fun Route.couponAdminRoutes() {
     val couponRepo: CouponRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+    adminWriteRateLimit {
         /**
          * @tag Coupon
          * @description Admin: Create a new discount coupon
          */
         post {
-            call.respondCreated(couponRepo.createCoupon(call.receive<CouponRequest>()))
+            call.respondCreated(couponRepo.createCoupon(call.receive<CouponRequest>(), call.currentUserId))
         }
 
         /**
@@ -48,7 +48,7 @@ fun Route.couponAdminRoutes() {
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(couponRepo.updateCoupon(id, call.receive<CouponRequest>()))
+            call.respondOk(couponRepo.updateCoupon(id, call.receive<CouponRequest>(), call.currentUserId))
         }
 
         /**

@@ -120,4 +120,15 @@ class InventoryRepositoryImpl : InventoryRepository {
             InventoryTable.selectAll().andWhere { InventoryTable.shopId eq shopId }
                 .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).toInventoryResponse() }
         }
+
+    override suspend fun getAllInventory(
+        limit: Int,
+        offset: Int,
+        shopId: String?,
+    ): PaginatedResponse<InventoryResponse> =
+        query {
+            val baseQuery = InventoryTable.selectAll()
+            shopId?.let { baseQuery.andWhere { InventoryTable.shopId eq it } }
+            baseQuery.toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).toInventoryResponse() }
+        }
 }

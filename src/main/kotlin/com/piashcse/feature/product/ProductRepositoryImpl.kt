@@ -30,7 +30,11 @@ import java.sql.Connection
 
 class ProductRepositoryImpl : ProductRepository {
     private fun requireSeller(userId: String): SellerDAO =
-        findSellerByUserId(userId) ?: throw NotFoundException(Message.Errors.SELLER_REQUIRED)
+        try {
+            requireSellerByUserId(userId)
+        } catch (e: ForbiddenException) {
+            throw NotFoundException(e.message ?: Message.Errors.SELLER_REQUIRED)
+        }
 
     private fun generateSKU(name: String) =
         name.replace(Regex("[^a-zA-Z0-9]"), "").take(6).uppercase() +
@@ -42,8 +46,8 @@ class ProductRepositoryImpl : ProductRepository {
     ): BigDecimal? =
         if (discountPrice != null && discountPrice < price) {
             Money.discountPercent(
-                BigDecimal(price.toString()),
-                BigDecimal(discountPrice.toString()),
+                Money.of(price),
+                Money.of(discountPrice),
             )
         } else {
             null
@@ -59,8 +63,8 @@ class ProductRepositoryImpl : ProductRepository {
         filter.categoryId?.let { andWhere { ProductTable.categoryId eq it.entityID(ProductCategoryTable) } }
         filter.subCategoryId?.let { andWhere { ProductTable.subCategoryId eq it.entityID(ProductSubCategoryTable) } }
         filter.brandId?.let { andWhere { ProductTable.brandId eq it.entityID(BrandTable) } }
-        filter.minPrice?.let { andWhere { ProductTable.price greaterEq BigDecimal(it.toString()) } }
-        filter.maxPrice?.let { andWhere { ProductTable.price lessEq BigDecimal(it.toString()) } }
+        filter.minPrice?.let { andWhere { ProductTable.price greaterEq Money.of(it) } }
+        filter.maxPrice?.let { andWhere { ProductTable.price lessEq Money.of(it) } }
         val sortOrder = if (filter.sortOrder?.lowercase() == "asc") SortOrder.ASC else SortOrder.DESC
         when (filter.sortBy?.lowercase()) {
             "price" -> orderBy(ProductTable.price to sortOrder)
@@ -123,8 +127,8 @@ class ProductRepositoryImpl : ProductRepository {
                 sku = generateSKU(productRequest.name)
                 name = productRequest.name
                 description = productRequest.description
-                price = BigDecimal(productRequest.price.toString())
-                discountPrice = productRequest.discountPrice?.let { BigDecimal(it.toString()) }
+                price = Money.of(productRequest.price)
+                discountPrice = productRequest.discountPrice?.let { Money.of(it) }
                 discountPercentage = calcDiscountPct(productRequest.price, productRequest.discountPrice)
                 videoLink = productRequest.videoLink
                 hotDeal = productRequest.hotDeal
@@ -165,8 +169,8 @@ class ProductRepositoryImpl : ProductRepository {
                 brandId = updateProduct.brandId?.let { it.entityID(BrandTable) } ?: brandId
                 name = updateProduct.name ?: name
                 description = updateProduct.description ?: description
-                price = updateProduct.price?.let { BigDecimal(it.toString()) } ?: price
-                discountPrice = updateProduct.discountPrice?.let { BigDecimal(it.toString()) } ?: discountPrice
+                price = updateProduct.price?.let { Money.of(it) } ?: price
+                discountPrice = updateProduct.discountPrice?.let { Money.of(it) } ?: discountPrice
                 discountPercentage = Money.discountPercent(price, discountPrice)
                 videoLink = updateProduct.videoLink ?: videoLink
                 hotDeal = updateProduct.hotDeal ?: hotDeal
@@ -489,6 +493,6 @@ class ProductRepositoryImpl : ProductRepository {
                     .toList()
             val imagesMap = if (products.isNotEmpty()) ProductImageDAO.imagesForProducts(products.map { it.id }) else emptyMap()
             val data = products.map { it.toProductResponse(imagesMap[it.id.value]) }
-            PaginatedResponse(data, PaginationMetadata(count, data.size, 0))
+            PaginatedResponse(data, PaginationMetadata(count, limit ?: data.size, 0))
         }
 }

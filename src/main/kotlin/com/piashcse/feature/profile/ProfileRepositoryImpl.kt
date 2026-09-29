@@ -1,7 +1,9 @@
 package com.piashcse.feature.profile
 
+import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserProfileDAO
 import com.piashcse.database.entities.UserProfileTable
+import com.piashcse.event.EventBus
 import com.piashcse.mapper.toUserProfileResponse
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.model.response.UserProfileResponse
@@ -36,6 +38,13 @@ class ProfileRepositoryImpl : ProfileRepository {
                 it.occupation = userProfile?.occupation ?: it.occupation
                 it.postCode = userProfile?.postCode ?: it.postCode
                 it.gender = userProfile?.gender ?: it.gender
+                val actor = runCatching { UserDAO.findById(userId) }.getOrNull()
+                EventBus.publishAdminAction(
+                    Triple(userId, actor?.email.orEmpty(), actor?.userType?.name ?: "CUSTOMER"),
+                    "PROFILE_UPDATED",
+                    "PROFILE",
+                    userId,
+                )
                 it.toUserProfileResponse()
             } ?: userId.throwNotFound("User")
         }

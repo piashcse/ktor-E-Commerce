@@ -103,7 +103,7 @@ class PayoutRoutesTest {
     @Test
     fun `admin mark-paid happy path returns 200`() =
         testApplication {
-            coEvery { repo.markPaid("po-1") } returns sample().copy(status = "PAID")
+            coEvery { repo.markPaid("po-1", any()) } returns sample().copy(status = "PAID")
             setup()
             val res =
                 client.post("/api/v1/admin/payouts/po-1/pay") {

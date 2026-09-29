@@ -1,6 +1,7 @@
 package com.piashcse.feature.payment
 
 import com.piashcse.constants.Message
+import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.*
 import com.piashcse.event.OutboxPublisher
@@ -18,6 +19,24 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 class PaymentRepositoryImpl : PaymentRepository {
+    private fun Throwable.isUniqueViolation(): Boolean =
+        generateSequence(this) { it.cause }.any { t ->
+            val msg = (t.message ?: "").lowercase()
+            "duplicate" in msg || "unique" in msg || "23505" in msg
+        }
+
+    private fun findPaymentByTxForCaller(
+        txId: String,
+        callerUserId: String,
+    ): PaymentDAO? {
+        val existing = PaymentDAO.find { PaymentTable.transactionId eq txId }.forUpdate().firstOrNull() ?: return null
+        val existingOrder = OrderDAO.findById(existing.orderId.value)
+        if (existingOrder == null || existingOrder.userId.value != callerUserId) {
+            throw ValidationException(Message.Errors.FORBIDDEN)
+        }
+        return existing
+    }
+
     override suspend fun createPayment(
         paymentRequest: PaymentRequest,
         callerUserId: String,
@@ -25,13 +44,8 @@ class PaymentRepositoryImpl : PaymentRepository {
         val (response, _) =
             retryQuery {
                 paymentRequest.transactionId?.let { txId ->
-                    PaymentDAO.find { PaymentTable.transactionId eq txId }.firstOrNull()
+                    findPaymentByTxForCaller(txId, callerUserId)
                         ?.let { existing ->
-                            // Idempotency: only return existing payment if caller owns the order.
-                            val existingOrder = OrderDAO.findById(existing.orderId.value)
-                            if (existingOrder == null || existingOrder.userId.value != callerUserId) {
-                                throw ValidationException(Message.Errors.FORBIDDEN)
-                            }
                             return@retryQuery Pair(existing.toPaymentResponse(), null)
                         }
                 }
@@ -56,7 +70,7 @@ class PaymentRepositoryImpl : PaymentRepository {
                     PaymentDAO.find {
                         (PaymentTable.orderId eq paymentRequest.orderId.entityID(OrderTable)) and
                             (PaymentTable.status eq PaymentStatus.COMPLETED)
-                    }.toList()
+                    }.forUpdate().toList()
 
                 val paidAmount = existingPayments.sumOf { it.amount }
                 if (paidAmount.compareTo(orderTotal) >= 0) {
@@ -64,17 +78,30 @@ class PaymentRepositoryImpl : PaymentRepository {
                 }
 
                 val payment =
-                    PaymentDAO.new {
-                        this.orderId = paymentRequest.orderId.entityID(OrderTable)
-                        this.userId = order.userId
-                        this.amount = paymentRequest.amount
-                        this.status = paymentRequest.status
-                        this.paymentMethod = paymentRequest.paymentMethod
-                        this.transactionId = paymentRequest.transactionId
+                    try {
+                        PaymentDAO.new {
+                            this.orderId = paymentRequest.orderId.entityID(OrderTable)
+                            this.userId = order.userId
+                            this.amount = paymentRequest.amount
+                            this.status = paymentRequest.status
+                            this.paymentMethod = paymentRequest.paymentMethod
+                            this.transactionId = paymentRequest.transactionId
+                        }
+                    } catch (e: Exception) {
+                        // Unique transaction_id race: concurrent insert won — return the winner idempotently.
+                        val txId = paymentRequest.transactionId
+                        if (txId != null && e.isUniqueViolation()) {
+                            findPaymentByTxForCaller(txId, callerUserId)
+                                ?.let { existing ->
+                                    return@retryQuery Pair(existing.toPaymentResponse(), null)
+                                }
+                        }
+                        throw e
                     }
 
                 if (paidAmount.add(paymentAmount).compareTo(orderTotal) >= 0) {
                     order.paymentStatus = PaymentStatus.COMPLETED
+                    order.status = OrderStatus.CONFIRMED
                     StockReservationDAO.find { StockReservationTable.orderId eq paymentRequest.orderId.entityID(OrderTable) }
                         .forEach { it.status = ReservationStatus.FINALIZED }
                     OutboxPublisher.enqueueTx(

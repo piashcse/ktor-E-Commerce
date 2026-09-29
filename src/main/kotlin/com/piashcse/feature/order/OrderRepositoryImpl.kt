@@ -11,18 +11,19 @@ import com.piashcse.model.request.OrderRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
 import com.piashcse.model.response.OrderItemResponse
 import com.piashcse.model.response.OrderResponse
+import com.piashcse.service.FxService
 import com.piashcse.service.PricingService
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -79,6 +80,14 @@ class OrderRepositoryImpl : OrderRepository {
             this.notes = notes
             this.changedBy = userId?.let { it.entityID(UserTable) }
         }
+    }
+
+    // PII minimization: never persist the full phone number in the denormalized
+    // shippingAddress snapshot — keep only the last 4 digits for support lookup.
+    private fun maskPhone(phoneNumber: String): String {
+        val digits = phoneNumber.filter { it.isDigit() }
+        if (digits.length <= 4) return "***"
+        return "***" + digits.takeLast(4)
     }
 
     private fun validateCoupon(
@@ -156,12 +165,19 @@ class OrderRepositoryImpl : OrderRepository {
     ): List<OrderResponse> {
         // Cached once: avoids N+1 UserDAO lookups per split order.
         val callerEmail = query { UserDAO.findById(userId)?.email.orEmpty() }
+        val currency = checkoutRequest.currency.uppercase()
+        // Fail closed: non-USD checkout requires a stored FX rate (no silent USD-under-foreign-label).
+        val fxRate = if (currency != "USD") FxService.rateTo(currency) else BigDecimal.ONE
         val responses =
             retryQuery {
                 val result: List<OrderResponse> =
                     run {
                         checkoutRequest.idempotencyKey?.let { key ->
-                            val existing = OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.toList()
+                            val existing =
+                                OrderDAO.find {
+                                    ((OrderTable.idempotencyKey eq key) or (OrderTable.idempotencyKey like "$key:%")) and
+                                        (OrderTable.userId eq userId)
+                                }.toList()
                             if (existing.isNotEmpty()) {
                                 val itemsMap = loadItemsForOrders(existing)
                                 return@run existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
@@ -181,7 +197,7 @@ class OrderRepositoryImpl : OrderRepository {
                                 append("${shippingAddress.firstName} ${shippingAddress.lastName}\n")
                                 append("${shippingAddress.streetAddress}, ${shippingAddress.city}, ${shippingAddress.state ?: ""}\n")
                                 append("${shippingAddress.country}, ${shippingAddress.zipCode}\n")
-                                append("Phone: ${shippingAddress.phoneNumber}")
+                                append("Phone: ${maskPhone(shippingAddress.phoneNumber)}")
                             }
 
                         val shippingMethod =
@@ -212,7 +228,7 @@ class OrderRepositoryImpl : OrderRepository {
                                     this.userId = userId.entityID(UserTable)
                                     this.shopId = shopIdValue.entityID(ShopTable)
                                     this.orderNumber = orderNumber
-                                    this.idempotencyKey = checkoutRequest.idempotencyKey
+                                    this.idempotencyKey = checkoutRequest.idempotencyKey?.let { "$it:$shopIdValue" }
                                     this.status = OrderStatus.PENDING
                                     this.paymentStatus = PaymentStatus.PENDING
                                     this.subTotal = BigDecimal.ZERO
@@ -222,7 +238,7 @@ class OrderRepositoryImpl : OrderRepository {
                                     this.shippingAddress = fullAddress
                                     this.paymentMethod = checkoutRequest.paymentMethod
                                     this.notes = checkoutRequest.notes
-                                    this.currency = checkoutRequest.currency.uppercase()
+                                    this.currency = currency
                                 }
 
                             items.forEach { cartItem ->
@@ -236,7 +252,7 @@ class OrderRepositoryImpl : OrderRepository {
                                 }
 
                                 val unitPrice = product.discountPrice ?: product.price
-                                val itemTotal = unitPrice.multiply(BigDecimal(cartItem.quantity))
+                                val itemTotal = Money.unitTotal(unitPrice, cartItem.quantity)
 
                                 val orderItem =
                                     OrderItemDAO.new {
@@ -268,10 +284,19 @@ class OrderRepositoryImpl : OrderRepository {
                                 shopSubTotal = shopSubTotal.add(itemTotal)
                             }
 
-                            val taxAmount = shopSubTotal.multiply(BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString()))
-                            order.subTotal = shopSubTotal
-                            order.taxAmount = taxAmount.setScale(2, RoundingMode.HALF_UP)
-                            order.total = shopSubTotal.add(order.shippingCost).add(order.taxAmount)
+                            val scaledSubTotal = Money.scale2(shopSubTotal)
+                            val taxUsd = Money.tax(scaledSubTotal, Money.of(AppConstants.DEFAULT_TAX_PERCENTAGE))
+                            val shipUsd = Money.scale2(shippingMethod.price)
+                            order.subTotal = scaledSubTotal
+                            order.shippingCost = shipUsd
+                            order.taxAmount = taxUsd
+                            order.total = Money.scale2(scaledSubTotal.add(shipUsd).add(taxUsd))
+                            if (currency != "USD") {
+                                order.subTotal = Money.scale2(scaledSubTotal.multiply(fxRate))
+                                order.shippingCost = Money.scale2(shipUsd.multiply(fxRate))
+                                order.taxAmount = Money.scale2(taxUsd.multiply(fxRate))
+                                order.total = Money.scale2(order.total.multiply(fxRate))
+                            }
                             createdOrders.add(order)
                         }
 
@@ -288,7 +313,7 @@ class OrderRepositoryImpl : OrderRepository {
                                     )
                                 order.discountAmount = orderDiscount
                                 order.couponCode = code
-                                order.total = order.total.subtract(orderDiscount)
+                                order.total = Money.scale2(order.total.subtract(orderDiscount))
                             }
                         }
 
@@ -396,11 +421,15 @@ class OrderRepositoryImpl : OrderRepository {
             if (orderRequest.orderItems.isEmpty()) throw ValidationException(Message.Validation.EMPTY_ORDER_ITEMS)
 
             idempotencyKey?.let { key ->
-                OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.firstOrNull()
-                    ?.let {
-                            order ->
-                        return@retryQuery listOf(order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses()))
-                    }
+                val existing =
+                    OrderDAO.find {
+                        ((OrderTable.idempotencyKey eq key) or (OrderTable.idempotencyKey like "$key:%")) and
+                            (OrderTable.userId eq userId)
+                    }.toList()
+                if (existing.isNotEmpty()) {
+                    val itemsMap = loadItemsForOrders(existing)
+                    return@retryQuery existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
+                }
             }
 
             val productsMap =
@@ -423,10 +452,13 @@ class OrderRepositoryImpl : OrderRepository {
                 if (product.shopId == null) throw ValidationException(Message.Orders.productDoesNotBelongToShop(product.name))
 
                 val unitPrice = product.discountPrice ?: product.price
-                calculatedSubtotal = calculatedSubtotal.add(unitPrice.multiply(BigDecimal(item.quantity)))
+                calculatedSubtotal = calculatedSubtotal.add(Money.unitTotal(unitPrice, item.quantity))
             }
 
-            if (orderRequest.total.compareTo(calculatedSubtotal) != 0) {
+            val scaledSubtotal = Money.scale2(calculatedSubtotal)
+            val scaledShipping = Money.scale2(orderRequest.shippingCharge)
+            val expectedTotal = PricingService.breakdown(scaledSubtotal, scaledShipping).total
+            if (Money.scale2(orderRequest.total).compareTo(expectedTotal) != 0) {
                 throw ValidationException(Message.Orders.TOTAL_MISMATCH)
             }
 
@@ -449,7 +481,7 @@ class OrderRepositoryImpl : OrderRepository {
                         this.userId = userId.entityID(UserTable)
                         this.shopId = shopIdValue.entityID(ShopTable)
                         this.orderNumber = orderNumber
-                        this.idempotencyKey = idempotencyKey
+                        this.idempotencyKey = idempotencyKey?.let { "$it:$shopIdValue" }
                         this.status = OrderStatus.PENDING
                         this.paymentStatus = PaymentStatus.PENDING
                         this.subTotal = BigDecimal.ZERO
@@ -462,7 +494,7 @@ class OrderRepositoryImpl : OrderRepository {
                         productsMap[itemRequest.productId]
                             ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
                     val unitPrice = product.discountPrice ?: product.price
-                    val itemTotal = unitPrice.multiply(BigDecimal(itemRequest.quantity))
+                    val itemTotal = Money.unitTotal(unitPrice, itemRequest.quantity)
 
                     OrderItemDAO.new {
                         orderId = order.id
@@ -482,8 +514,18 @@ class OrderRepositoryImpl : OrderRepository {
                     shopSubTotal = shopSubTotal.add(itemTotal)
                 }
 
-                order.subTotal = shopSubTotal
-                order.total = shopSubTotal
+                val scaledShopSubTotal = Money.scale2(shopSubTotal)
+                val shopTax = PricingService.tax(scaledShopSubTotal)
+                val shopShipping =
+                    Money.proportionalSplit(
+                        scaledShipping,
+                        scaledShopSubTotal,
+                        scaledSubtotal,
+                    )
+                order.subTotal = scaledShopSubTotal
+                order.shippingCost = shopShipping
+                order.taxAmount = shopTax
+                order.total = Money.scale2(scaledShopSubTotal.add(shopShipping).add(shopTax))
                 createdOrders.add(order)
             }
 
@@ -600,7 +642,12 @@ class OrderRepositoryImpl : OrderRepository {
         status: String?,
     ): PaginatedResponse<OrderResponse> =
         query {
-            val seller = findSellerByUserId(userId) ?: throw ValidationException(Message.Orders.SELLER_PROFILE_NOT_FOUND)
+            val seller =
+                try {
+                    requireSellerByUserId(userId)
+                } catch (_: ForbiddenException) {
+                    throw ValidationException(Message.Orders.SELLER_PROFILE_NOT_FOUND)
+                }
             val shopId = seller.shopId ?: throw ValidationException(Message.Orders.NO_SHOP_ASSOCIATED)
 
             val query = OrderTable.selectAll().andWhere { OrderTable.shopId eq shopId }

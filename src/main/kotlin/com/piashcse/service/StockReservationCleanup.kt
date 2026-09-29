@@ -1,6 +1,7 @@
 package com.piashcse.service
 
 import com.piashcse.constants.OrderStatus
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.*
 import com.piashcse.utils.extension.query
 import kotlinx.coroutines.*
@@ -45,6 +46,7 @@ object StockReservationCleanup {
 
             expired.map { it.orderId.value }.distinct().forEach { orderId ->
                 val order = OrderDAO.findById(orderId) ?: return@forEach
+                if (order.paymentStatus == PaymentStatus.COMPLETED) return@forEach
                 val cancellable = order.status == OrderStatus.PENDING || order.status == OrderStatus.CONFIRMED
                 if (!cancellable) return@forEach
 

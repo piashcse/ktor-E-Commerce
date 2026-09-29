@@ -9,6 +9,10 @@ object Money {
 
     fun of(double: Double): BigDecimal = scale2(BigDecimal(double.toString()))
 
+    fun of(value: String): BigDecimal = scale2(BigDecimal(value))
+
+    fun fromDouble(value: Double): BigDecimal = of(value)
+
     fun unitTotal(
         unitPrice: BigDecimal,
         quantity: Int,

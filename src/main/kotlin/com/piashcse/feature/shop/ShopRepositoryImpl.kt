@@ -13,6 +13,7 @@ import com.piashcse.model.response.ShopResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ConflictException
+import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.NotFoundException
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.SortOrder
@@ -29,8 +30,11 @@ class ShopRepositoryImpl : ShopRepository {
     ): ShopResponse =
         query {
             val seller =
-                findSellerByUserId(userId)
-                    ?: throw NotFoundException(Message.Errors.SELLER_REQUIRED)
+                try {
+                    requireSellerByUserId(userId)
+                } catch (e: ForbiddenException) {
+                    throw NotFoundException(e.message ?: Message.Errors.SELLER_REQUIRED)
+                }
 
             val existingShop =
                 ShopDAO.find {

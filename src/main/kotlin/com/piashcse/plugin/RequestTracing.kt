@@ -11,7 +11,14 @@ val X_REQUEST_ID = AttributeKey<String>("X-Request-ID")
 
 fun Application.installRequestTracing() {
     intercept(ApplicationCallPipeline.Setup) {
-        val existingId = call.request.headers[HttpHeaders.XRequestId]
+        // Fail-safe: blank or malformed inbound IDs are replaced, never propagated or thrown on.
+        val existingId =
+            call.request.headers[HttpHeaders.XRequestId]?.takeIf { it.isNotBlank() }?.let { raw ->
+                runCatching {
+                    UUID.fromString(raw)
+                    raw
+                }.getOrNull()
+            }
         val requestId = existingId ?: UUID.randomUUID().toString()
         call.attributes.put(X_REQUEST_ID, requestId)
         MDC.put("requestId", requestId)
@@ -35,4 +42,5 @@ fun Application.installRequestTracing() {
     }
 }
 
-fun ApplicationCall.requestId(): String = attributes[X_REQUEST_ID]
+fun ApplicationCall.requestId(): String =
+    attributes.getOrNull(X_REQUEST_ID) ?: UUID.randomUUID().toString().also { attributes.put(X_REQUEST_ID, it) }

@@ -78,7 +78,7 @@ class CouponRoutesTest {
     @Test
     fun `admin create happy path returns 201`() =
         testApplication {
-            coEvery { repo.createCoupon(any()) } returns sample()
+            coEvery { repo.createCoupon(any(), any()) } returns sample()
             setup()
             val res =
                 client.post("/api/v1/admin/coupons") {
@@ -131,7 +131,7 @@ class CouponRoutesTest {
     @Test
     fun `admin update happy path returns 200`() =
         testApplication {
-            coEvery { repo.updateCoupon("c-1", any()) } returns sample()
+            coEvery { repo.updateCoupon("c-1", any(), any()) } returns sample()
             setup()
             val res =
                 client.put("/api/v1/admin/coupons/c-1") {

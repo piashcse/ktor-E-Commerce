@@ -21,7 +21,11 @@ fun configureDatabase() {
             .dataSource(hikariDataSource)
             .locations("classpath:db/migration")
             .baselineOnMigrate(true)
+            // outOfOrder(false) is intentional: applied migrations are immutable; out-of-order
+            // runs stay disabled so a stray older migration fails fast instead of running late.
+            .validateOnMigrate(true)
             .load()
+    flyway.validate()
     flyway.migrate()
     Database.connect(hikariDataSource)
 }

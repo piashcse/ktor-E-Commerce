@@ -4,6 +4,7 @@ import com.piashcse.constants.*
 import com.piashcse.database.entities.*
 import com.piashcse.model.response.*
 import com.piashcse.utils.common.Money
+import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.select
@@ -213,44 +214,92 @@ class DashboardRepositoryImpl : DashboardRepository {
 
     override suspend fun getSellerStats(sellerUserId: String) =
         query {
-            val shopId =
-                SellerDAO.find { SellerTable.userId eq sellerUserId }.firstOrNull()?.shopId?.value
-                    ?: return@query DashboardStatsResponse(
-                        revenue = mapOf("total" to "0.00", "today" to "0.00"),
-                        orders = mapOf("total" to 0, "today" to 0, "pending" to 0, "canceled" to 0),
-                        users = mapOf("total" to 0, "today" to 0, "sellers" to 0),
-                        products = mapOf("total" to 0, "outOfStock" to 0, "lowStock" to 0),
-                        shops = mapOf("total" to 0, "pendingApproval" to 0),
-                    )
+            val shopIds =
+                SellerDAO.find { SellerTable.userId eq sellerUserId }
+                    .mapNotNull { it.shopId?.value }
+                    .distinct()
+            if (shopIds.isEmpty()) {
+                return@query DashboardStatsResponse(
+                    revenue = mapOf("total" to "0.00", "today" to "0.00"),
+                    orders = mapOf("total" to 0L, "today" to 0L, "pending" to 0L, "canceled" to 0L),
+                    users = mapOf("total" to 0L, "today" to 0L, "sellers" to 0L),
+                    products = mapOf("total" to 0L, "outOfStock" to 0L, "lowStock" to 0L),
+                    shops = mapOf("total" to 0L, "pendingApproval" to 0L),
+                )
+            }
             val today = LocalDateTime.now(ZoneOffset.UTC).toLocalDate().atStartOfDay()
-            val shopOrders = { OrderTable.selectAll().where { OrderTable.shopId eq shopId } }
-            val revenue =
+            val sellerShopIds = shopIds.map { it.entityID(ShopTable) }
+
+            val totalRevenue =
                 OrderTable.select(OrderTable.total.sum())
-                    .where { (OrderTable.shopId eq shopId) and (OrderTable.status neq OrderStatus.CANCELED) }
+                    .where { (OrderTable.shopId inList sellerShopIds) and (OrderTable.status neq OrderStatus.CANCELED) }
                     .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
+            val todayRevenue =
+                OrderTable.select(OrderTable.total.sum())
+                    .where {
+                        (OrderTable.shopId inList sellerShopIds) and
+                            (OrderTable.status neq OrderStatus.CANCELED) and
+                            (OrderTable.createdAt greaterEq today)
+                    }
+                    .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
+
+            val customers =
+                OrderTable.select(OrderTable.userId)
+                    .where { OrderTable.shopId inList sellerShopIds }
+                    .map { it[OrderTable.userId].value }
+                    .distinct()
+            val todayCustomers =
+                OrderTable.select(OrderTable.userId)
+                    .where { (OrderTable.shopId inList sellerShopIds) and (OrderTable.createdAt greaterEq today) }
+                    .map { it[OrderTable.userId].value }
+                    .distinct()
+
             DashboardStatsResponse(
-                revenue = mapOf("total" to Money.str(revenue), "today" to "0.00"),
+                revenue = mapOf("total" to Money.str(totalRevenue), "today" to Money.str(todayRevenue)),
                 orders =
                     mapOf(
-                        "total" to shopOrders().count(),
+                        "total" to OrderTable.selectAll().where { OrderTable.shopId inList sellerShopIds }.count(),
                         "today" to
-                            shopOrders().where {
-                                OrderTable.createdAt greaterEq today
+                            OrderTable.selectAll().where {
+                                (OrderTable.shopId inList sellerShopIds) and (OrderTable.createdAt greaterEq today)
                             }.count(),
                         "pending" to
-                            shopOrders().where {
-                                OrderTable.status eq OrderStatus.PENDING
+                            OrderTable.selectAll().where {
+                                (OrderTable.shopId inList sellerShopIds) and (OrderTable.status eq OrderStatus.PENDING)
                             }.count(),
-                        "canceled" to shopOrders().where { OrderTable.status eq OrderStatus.CANCELED }.count(),
+                        "canceled" to
+                            OrderTable.selectAll().where {
+                                (OrderTable.shopId inList sellerShopIds) and (OrderTable.status eq OrderStatus.CANCELED)
+                            }.count(),
                     ),
-                users = mapOf("total" to 0, "today" to 0, "sellers" to 0),
+                users =
+                    mapOf(
+                        "total" to customers.size.toLong(),
+                        "today" to todayCustomers.size.toLong(),
+                        "sellers" to SellerDAO.find { SellerTable.shopId inList sellerShopIds }.count(),
+                    ),
                 products =
                     mapOf(
-                        "total" to ProductTable.selectAll().where { ProductTable.shopId eq shopId }.count(),
-                        "outOfStock" to 0,
-                        "lowStock" to 0,
+                        "total" to ProductTable.selectAll().where { ProductTable.shopId inList sellerShopIds }.count(),
+                        "outOfStock" to
+                            ProductTable.selectAll().where {
+                                (ProductTable.shopId inList sellerShopIds) and
+                                    (ProductTable.status eq ProductStatus.OUT_OF_STOCK)
+                            }.count(),
+                        "lowStock" to
+                            InventoryTable.selectAll().where {
+                                (InventoryTable.shopId inList sellerShopIds) and
+                                    (InventoryTable.status eq InventoryStatus.LOW_STOCK)
+                            }.count(),
                     ),
-                shops = mapOf("total" to 1, "pendingApproval" to 0),
+                shops =
+                    mapOf(
+                        "total" to shopIds.size.toLong(),
+                        "pendingApproval" to
+                            ShopTable.selectAll().where {
+                                (ShopTable.id inList sellerShopIds) and (ShopTable.status eq ShopStatus.PENDING)
+                            }.count(),
+                    ),
             )
         }
 

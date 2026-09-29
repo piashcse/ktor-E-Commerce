@@ -23,6 +23,10 @@ object DotEnvConfig {
     val emailSslEnabled: Boolean get() = DotEnv.getBoolean("EMAIL_SSL", false)
     val uploadDir: String get() = DotEnv.get("UPLOAD_DIR", "uploads")
 
+    // Internal token guarding /metrics. Empty (dev/test default) allows loopback only;
+    // set METRICS_TOKEN in production to require the X-Metrics-Token header.
+    val metricsToken: String get() = DotEnv.get("METRICS_TOKEN", "")
+
     private fun requireEnv(key: String): String =
         DotEnv.get(key) ?: throw IllegalStateException("$key must be specified in the environment or .env file.")
 }

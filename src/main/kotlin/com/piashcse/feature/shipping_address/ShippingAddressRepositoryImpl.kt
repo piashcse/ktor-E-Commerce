@@ -5,9 +5,12 @@ import com.piashcse.database.entities.ShippingAddressTable
 import com.piashcse.mapper.toShippingAddressResponse
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.model.response.ShippingAddressResponse
+import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.andWhere
+import org.jetbrains.exposed.v1.jdbc.selectAll
 
 class ShippingAddressRepositoryImpl : ShippingAddressRepository {
     override suspend fun createShippingAddress(
@@ -36,9 +39,14 @@ class ShippingAddressRepositoryImpl : ShippingAddressRepository {
             }.toShippingAddressResponse()
         }
 
-    override suspend fun getShippingAddresses(userId: String): List<ShippingAddressResponse> =
+    override suspend fun getShippingAddresses(
+        userId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<ShippingAddressResponse> =
         query {
-            ShippingAddressDAO.find { ShippingAddressTable.userId eq userId }.map { it.toShippingAddressResponse() }
+            ShippingAddressTable.selectAll().andWhere { ShippingAddressTable.userId eq userId }
+                .toPaginatedResponse(limit, offset) { ShippingAddressDAO.wrapRow(it).toShippingAddressResponse() }
         }
 
     override suspend fun updateShippingAddress(

@@ -1,16 +1,19 @@
 package com.piashcse.feature.consent
 
+import com.piashcse.constants.Message
 import com.piashcse.constants.PolicyType
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.PolicyConsentRequest
-import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.extension.getCurrentUserType
+import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondOk
+import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.server.plugins.*
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
@@ -25,7 +28,7 @@ data class ConsentCheckResponse(val hasConsented: Boolean)
 fun Route.consentRoutes() {
     val consentRepo: ConsentRepository by inject()
     customerAuth {
-        rateLimit(RateLimitName(RateLimitNames.WRITE)) {
+        writeRateLimit {
             /**
              * @tag Privacy-Policy-Consent
              * @description Record user consent for a specific policy document
@@ -49,7 +52,8 @@ fun Route.consentRoutes() {
          * @description Retrieve all consent records for the authenticated user
          */
         get {
-            call.respondOk(consentRepo.getUserConsents(call.currentUserId))
+            val (limit, offset) = call.paginateQueryParams()
+            call.respondOk(consentRepo.getUserConsents(call.currentUserId, limit, offset))
         }
 
         /**
@@ -66,5 +70,35 @@ fun Route.consentRoutes() {
                 ),
             )
         }
+
+        /**
+         * @tag Privacy-Policy-Consent
+         * @description Revoke a consent record (owner or admin)
+         */
+        delete("{id}") {
+            call.respondOk(
+                consentRepo.revokeConsent(
+                    call.requirePathParameter("id"),
+                    call.currentUserId,
+                    call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
+                ),
+            )
+        }
+    }
+}
+
+/**
+ * Admin policy consent routes.
+ */
+fun Route.consentAdminRoutes() {
+    val consentRepo: ConsentRepository by inject()
+    /**
+     * @tag Privacy-Policy-Consent
+     * @description Admin: Retrieve consent records filtered by user and/or policy type
+     */
+    get {
+        val userId = call.request.queryParameters["userId"]
+        val policyType = call.request.queryParameters["policyType"]?.parseEnum<PolicyType>("policy type")
+        call.respondOk(consentRepo.listConsentsByUser(userId, policyType))
     }
 }

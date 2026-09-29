@@ -5,7 +5,7 @@ This documentation provides details for the Shipping Address API endpoints. The 
 **Base URL:** `http://localhost:8080/api/v1/checkout/shipping-address`
 
 > [!NOTE]
-> This module has been consolidated into the **Checkout** module. While the previous endpoints are maintained for backward compatibility, it is recommended to use the `/checkout/shipping-address` prefix for new integrations.
+> Shipping addresses are nested under the **Checkout** module. There is no standalone `/shipping-address` prefix — all endpoints below live under `/api/v1/checkout/shipping-address` (see `CheckoutRoutes.kt`).
 
 ## Authentication
 
@@ -19,10 +19,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/` | Retrieve all shipping addresses for the authenticated user | Yes |
-| `POST` | `/` | Add a new shipping address | Yes |
-| `PUT` | `/{id}` | Update an existing shipping address | Yes |
-| `DELETE` | `/{id}` | Delete a shipping address | Yes |
+| `GET` | `/api/v1/checkout/shipping-address` | Retrieve all shipping addresses for the authenticated user | Yes |
+| `POST` | `/api/v1/checkout/shipping-address` | Add a new shipping address | Yes |
+| `PUT` | `/api/v1/checkout/shipping-address/{id}` | Update an existing shipping address | Yes |
+| `DELETE` | `/api/v1/checkout/shipping-address/{id}` | Delete a shipping address | Yes |
 
 ---
 
@@ -30,7 +30,7 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Get All Shipping Addresses
 
-**`GET /`**
+**`GET /api/v1/checkout/shipping-address`**
 
 Retrieve all shipping addresses associated with the authenticated user.
 
@@ -59,7 +59,7 @@ Retrieve all shipping addresses associated with the authenticated user.
 
 ### 2. Add Shipping Address
 
-**`POST /`**
+**`POST /api/v1/checkout/shipping-address`**
 
 Add a new shipping address for the authenticated user.
 
@@ -99,7 +99,7 @@ Add a new shipping address for the authenticated user.
 
 ### 3. Update Shipping Address
 
-**`PUT /{id}`**
+**`PUT /api/v1/checkout/shipping-address/{id}`**
 
 Update an existing shipping address.
 
@@ -117,7 +117,7 @@ Same as **Add Shipping Address**.
 
 ### 4. Delete Shipping Address
 
-**`DELETE /{id}`**
+**`DELETE /api/v1/checkout/shipping-address/{id}`**
 
 Delete a shipping address by its ID.
 

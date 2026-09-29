@@ -40,6 +40,12 @@ object UploadService {
     private val ALLOWED_MIME_TYPES = setOf("image/jpeg", "image/png", "image/webp", "image/gif")
     private val ALLOWED_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp", "gif")
 
+    // Route-level pre-upload allowlist (ProductRoutes/ProfileRoutes): deliberately
+    // stricter than ALLOWED_MIME_TYPES above — GIF is rejected at the edge even
+    // though the service core would store it. Keep in sync with the 5 MB cap.
+    val ROUTE_IMAGE_MIME_ALLOWLIST = setOf("image/jpeg", "image/png", "image/webp")
+    const val ROUTE_IMAGE_MAX_BYTES = 5L * 1024 * 1024 // 5 MB
+
     private val INVALID_FILENAME_REGEX = Regex("""[^\w.\-]""")
 
     init {
@@ -51,12 +57,18 @@ object UploadService {
     /**
      * Uploads a profile image (5MB limit).
      */
-    suspend fun uploadProfileImage(file: PartData.FileItem): String = upload(file, PROFILE_DIR, MAX_FILE_SIZE, "profile image")
+    suspend fun uploadProfileImage(
+        file: PartData.FileItem,
+        preloadedBytes: ByteArray? = null,
+    ): String = upload(file, PROFILE_DIR, MAX_FILE_SIZE, "profile image", preloadedBytes)
 
     /**
      * Uploads a product image (5MB limit).
      */
-    suspend fun uploadProductImage(file: PartData.FileItem): String = upload(file, PRODUCT_DIR, MAX_FILE_SIZE, "product image")
+    suspend fun uploadProductImage(
+        file: PartData.FileItem,
+        preloadedBytes: ByteArray? = null,
+    ): String = upload(file, PRODUCT_DIR, MAX_FILE_SIZE, "product image", preloadedBytes)
 
     /**
      * Uploads a shop image (5MB limit).
@@ -99,6 +111,29 @@ object UploadService {
     }
 
     /**
+     * Route-level pre-validation for image uploads. Called by ProductRoutes /
+     * ProfileRoutes BEFORE the UploadService upload call: rejects disallowed MIME
+     * types and over-size payloads early with ValidationException (400). Returns
+     * the file bytes so the multipart stream is consumed exactly once — pass them
+     * to the matching upload* overload as [preloadedBytes].
+     */
+    suspend fun readAndValidateImagePart(
+        part: PartData.FileItem,
+        purpose: String,
+    ): ByteArray {
+        val mimeType = part.contentType?.toString()?.lowercase()
+        if (mimeType == null || mimeType !in ROUTE_IMAGE_MIME_ALLOWLIST) {
+            throw ValidationException(Message.Upload.invalidMimeType(purpose, mimeType ?: "unknown"))
+        }
+        val bytes = withContext(Dispatchers.IO) { part.streamProvider().readBytes() }
+        if (bytes.isEmpty()) throw ValidationException(Message.Upload.EMPTY_FILE)
+        if (bytes.size > ROUTE_IMAGE_MAX_BYTES) {
+            throw ValidationException(Message.Upload.fileTooLarge((ROUTE_IMAGE_MAX_BYTES / (1024 * 1024)).toInt(), purpose))
+        }
+        return bytes
+    }
+
+    /**
      * Core upload logic with validation and security.
      */
     private suspend fun upload(
@@ -106,6 +141,7 @@ object UploadService {
         directory: String,
         maxSize: Long,
         purpose: String,
+        preloadedBytes: ByteArray? = null,
     ): String =
         withContext(Dispatchers.IO) {
             // Validate filename
@@ -136,8 +172,9 @@ object UploadService {
                 }
             }
 
-            // Read file bytes
-            val bytes = file.streamProvider().readBytes()
+            // Read file bytes (reuse route pre-validated bytes when provided so the
+            // multipart stream is consumed exactly once).
+            val bytes = preloadedBytes ?: file.streamProvider().readBytes()
 
             // Validate file size
             if (bytes.isEmpty()) throw ValidationException(Message.Upload.EMPTY_FILE)

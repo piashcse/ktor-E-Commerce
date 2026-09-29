@@ -1,17 +1,16 @@
 package com.piashcse.feature.shipping_method
 
 import com.piashcse.model.request.ShippingMethodRequest
-import com.piashcse.plugin.RateLimitNames
+import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Route.shippingMethodAdminRoutes() {
     val shippingMethodRepo: ShippingMethodRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+    adminWriteRateLimit {
         /**
          * @tag Shipping-Method
          * @description Admin: Create a new shipping method
@@ -37,5 +36,13 @@ fun Route.shippingMethodAdminRoutes() {
             val id = call.requirePathParameter("id")
             call.respondOk(shippingMethodRepo.deleteShippingMethod(id))
         }
+    }
+
+    /**
+     * @tag Shipping-Method
+     * @description Admin: Retrieve all shipping methods
+     */
+    get {
+        call.respondOk(shippingMethodRepo.getShippingMethods())
     }
 }

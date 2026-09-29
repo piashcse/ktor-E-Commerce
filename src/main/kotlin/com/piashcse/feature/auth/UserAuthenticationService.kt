@@ -83,6 +83,13 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
 
         if (!BCrypt.verifyer().verify(loginRequest.password.toCharArray(), user.password).verified) {
             val attemptCount = authRepo.recordFailedAttempt(loginRequest.email, userTypeEnum, ipAddress)
+            EventBus.publishAdminAction(
+                Triple(user.id.value, user.email, user.userType.name),
+                "LOGIN_FAILED",
+                "USER",
+                user.id.value,
+                "Failed login attempt",
+            )
             if (attemptCount >= AppConstants.Authentication.MAX_LOGIN_ATTEMPTS) {
                 authRepo.lockAccount(loginRequest.email, userTypeEnum, AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES)
                 throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES))
@@ -102,25 +109,11 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
     suspend fun otpVerification(
         userId: String,
         otp: String,
-    ): Boolean {
-        if (authRepo.isOtpLocked(userId)) {
-            throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES))
-        }
-        if (authRepo.getOtpAttempt(userId) >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
-            authRepo.resetOtpAttempts(userId)
-        }
-        val isValid = authRepo.verifyOtp(userId, otp)
-        if (isValid) {
-            authRepo.resetOtpAttempts(userId)
-        } else {
-            val newCount = authRepo.recordFailedOtpAttempt(userId)
-            if (newCount >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
-                authRepo.lockOtpAttempts(userId)
-                authRepo.invalidateOtp(userId)
-            }
-        }
-        return isValid
-    }
+    ): Boolean =
+        // Single repository transaction (check + count + lock under row-level locks):
+        // splitting these into separate isLocked / count / verify / lock calls reopens
+        // the OTP TOCTOU race between concurrent verifiers.
+        authRepo.verifyOtp(userId, otp)
 
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest) {
         // Anti-enumeration: unknown email/role returns success without sending email.

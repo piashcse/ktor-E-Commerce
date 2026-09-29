@@ -4,13 +4,14 @@ import com.piashcse.constants.Message
 import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.UpdateProductRequest
-import com.piashcse.plugin.RateLimitNames
+import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.plugin.searchRateLimit
+import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.service.UploadService
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.content.*
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -22,7 +23,7 @@ fun Route.productRoutes() {
     val productCatalogService: ProductCatalogService by inject()
     val productRepo: ProductRepository by inject()
 
-    rateLimit(RateLimitName(RateLimitNames.SEARCH)) {
+    searchRateLimit {
         /**
          * @tag Product
          * @description Retrieve detailed information about a specific product
@@ -79,7 +80,7 @@ fun Route.productSellerRoutes() {
         call.respondOk(productRepo.getProductsByUser(call.currentUserId, call.productWithFilterRequest(defaultPerPage = 10)))
     }
 
-    rateLimit(RateLimitName(RateLimitNames.SELLER_WRITE)) {
+    sellerWriteRateLimit {
         /**
          * @tag Product
          * @description Seller: Add a new product listing
@@ -117,7 +118,9 @@ fun Route.productSellerRoutes() {
 
             multipart.forEachPart { part ->
                 if (part is PartData.FileItem) {
-                    val fileName = UploadService.uploadProductImage(part)
+                    // Size cap (5 MB) + MIME allowlist enforced before the upload call.
+                    val bytes = UploadService.readAndValidateImagePart(part, "product image")
+                    val fileName = UploadService.uploadProductImage(part, bytes)
                     imageUrl = UploadService.getProductImageUrl(fileName)
                 }
                 part.dispose()
@@ -133,7 +136,7 @@ fun Route.productSellerRoutes() {
  */
 fun Route.productAdminRoutes() {
     val productCrudService: ProductCrudService by inject()
-    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+    adminWriteRateLimit {
         /**
          * @tag Product
          * @description Admin: Permanently delete any product

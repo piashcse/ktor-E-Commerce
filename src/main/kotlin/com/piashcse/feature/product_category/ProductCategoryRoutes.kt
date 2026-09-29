@@ -1,10 +1,9 @@
 package com.piashcse.feature.product_category
 
-import com.piashcse.plugin.RateLimitNames
+import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -29,7 +28,7 @@ fun Route.productCategoryRoutes() {
  */
 fun Route.productCategoryAdminRoutes() {
     val productCategoryRepo: ProductCategoryRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+    adminWriteRateLimit {
         /**
          * @tag Product-Category
          * @description Admin: Create a new product category

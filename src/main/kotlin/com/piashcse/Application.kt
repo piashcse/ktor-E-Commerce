@@ -21,6 +21,10 @@ import org.koin.ktor.ext.get
 fun main() {
     val port = DotEnvConfig.serverPort
     val host = DotEnvConfig.serverHost
+    // Graceful shutdown: Ktor stops accepting connections on SIGTERM and drains in-flight
+    // requests (30s grace target). If the Netty engine factory in use exposes a
+    // shutdownTimeout/shutdownGracePeriod setting, wire 30s there; otherwise this relies on
+    // Engine.stop grace plus the ApplicationStopped hook below for resource cleanup.
     embeddedServer(Netty, port = port, host = host) {
         configureAll()
     }.start(wait = true)

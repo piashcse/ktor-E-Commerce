@@ -5,6 +5,8 @@ import com.piashcse.RouteTestHelper.installTestInfra
 import com.piashcse.feature.consent.ConsentRepository
 import com.piashcse.feature.consent.consentRoutes
 import com.piashcse.model.response.UserPolicyConsentResponse
+import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -80,7 +82,8 @@ class ConsentRoutesTest {
     @Test
     fun `list user consents happy path returns 200`() =
         testApplication {
-            coEvery { repo.getUserConsents(any()) } returns listOf(sample())
+            coEvery { repo.getUserConsents(any(), any(), any()) } returns
+                PaginatedResponse(listOf(sample()), PaginationMetadata(1, 20, 0))
             setup()
             val res =
                 client.get("/api/v1/policy-consents") {
