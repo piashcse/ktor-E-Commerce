@@ -14,10 +14,13 @@ import com.piashcse.feature.coupon.couponRoutes
 import com.piashcse.feature.dashboard.dashboardAdminRoutes
 import com.piashcse.feature.dashboard.dashboardSellerRoutes
 import com.piashcse.feature.inventory.inventorySellerRoutes
+import com.piashcse.feature.notification.notificationRoutes
 import com.piashcse.feature.order.orderAdminRoutes
 import com.piashcse.feature.order.orderRoutes
 import com.piashcse.feature.order.orderSellerRoutes
 import com.piashcse.feature.payment.paymentRoutes
+import com.piashcse.feature.payout.payoutAdminRoutes
+import com.piashcse.feature.payout.payoutSellerRoutes
 import com.piashcse.feature.policy.policyAdminRoutes
 import com.piashcse.feature.policy.policyRoutes
 import com.piashcse.feature.product.productAdminRoutes
@@ -37,15 +40,20 @@ import com.piashcse.feature.shop.shopAdminRoutes
 import com.piashcse.feature.shop.shopRoutes
 import com.piashcse.feature.shop.shopSellerRoutesV1
 import com.piashcse.feature.shop_category.shopCategoryAdminRoutes
-import com.piashcse.feature.notification.notificationRoutes
-import com.piashcse.feature.payout.payoutAdminRoutes
-import com.piashcse.feature.payout.payoutSellerRoutes
 import com.piashcse.feature.wishlist.wishListRoutes
+import com.piashcse.model.response.HealthResponse
+import com.piashcse.utils.common.ApiError
+import com.piashcse.utils.common.MessageResponse
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
 import io.ktor.utils.io.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import java.time.Instant
 
 @OptIn(ExperimentalKtorApi::class)
 fun Application.configureRoute() {
@@ -53,33 +61,34 @@ fun Application.configureRoute() {
         get("/") { call.respondRedirect("/swagger") }.hide()
         get("/health") {
             call.respond(
-                mapOf(
-                    "status" to "UP",
-                    "service" to "ktor-ecommerce",
-                    "version" to AppConstants.APP_VERSION,
-                    "timestamp" to java.time.Instant.now().toString(),
+                HealthResponse(
+                    status = "UP",
+                    service = "ktor-ecommerce",
+                    version = AppConstants.APP_VERSION,
+                    timestamp = Instant.now().toString(),
                 ),
             )
         }
         get("/health/live") {
             call.respond(
-                com.piashcse.utils.common.MessageResponse("UP"),
+                MessageResponse("UP"),
             )
         }
         get("/health/ready") {
-            val dbOk = runCatching {
-                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                    org.jetbrains.exposed.v1.jdbc.transactions.transaction {
-                        exec("SELECT 1")
+            val dbOk =
+                runCatching {
+                    withContext(Dispatchers.IO) {
+                        transaction {
+                            exec("SELECT 1")
+                        }
                     }
-                }
-            }.isSuccess
+                }.isSuccess
             if (dbOk) {
-                call.respond(com.piashcse.utils.common.MessageResponse("READY"))
+                call.respond(MessageResponse("READY"))
             } else {
                 call.respond(
-                    io.ktor.http.HttpStatusCode.ServiceUnavailable,
-                    com.piashcse.utils.common.ApiError("Database unreachable"),
+                    HttpStatusCode.ServiceUnavailable,
+                    ApiError("Database unreachable"),
                 )
             }
         }

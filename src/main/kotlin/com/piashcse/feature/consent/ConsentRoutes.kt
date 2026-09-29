@@ -9,8 +9,8 @@ import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondOk
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.plugins.*
+import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
@@ -31,9 +31,14 @@ fun Route.consentRoutes() {
              * @description Record user consent for a specific policy document
              */
             post("consent") {
-                call.respondOk(call.receive<PolicyConsentRequest>().let {
-                    consentRepo.recordConsent(call.currentUserId, it.copy(it.policyId, call.request.origin.remoteHost, call.request.headers["User-Agent"]))
-                })
+                call.respondOk(
+                    call.receive<PolicyConsentRequest>().let {
+                        consentRepo.recordConsent(
+                            call.currentUserId,
+                            it.copy(it.policyId, call.request.origin.remoteHost, call.request.headers["User-Agent"]),
+                        )
+                    },
+                )
             }
         }
     }
@@ -52,7 +57,14 @@ fun Route.consentRoutes() {
          * @description Check if the user has consented to a specific policy type
          */
         get("{policyType}") {
-            call.respondOk(ConsentCheckResponse(consentRepo.hasUserConsented(call.currentUserId, call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type"))))
+            call.respondOk(
+                ConsentCheckResponse(
+                    consentRepo.hasUserConsented(
+                        call.currentUserId,
+                        call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type"),
+                    ),
+                ),
+            )
         }
     }
 }

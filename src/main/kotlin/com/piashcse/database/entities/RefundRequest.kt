@@ -39,5 +39,4 @@ class RefundRequestDAO(id: EntityID<String>) : BaseEntity(id, RefundRequestTable
     var trackingNumber by RefundRequestTable.trackingNumber
     var requestedAt by RefundRequestTable.requestedAt
     var resolvedAt by RefundRequestTable.resolvedAt
-
 }

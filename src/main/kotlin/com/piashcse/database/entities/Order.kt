@@ -66,5 +66,4 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
     var deliveredDate by OrderTable.deliveredDate
     var canceledDate by OrderTable.canceledDate
     var completedDate by OrderTable.completedDate
-
 }

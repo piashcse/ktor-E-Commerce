@@ -14,15 +14,16 @@ object AsyncWorker {
     private var job: Job? = null
 
     fun start(scope: CoroutineScope) {
-        job = scope.launch(Dispatchers.IO) {
-            for (task in tasks) {
-                runCatching {
-                    when (task) {
-                        is BackgroundTask.ProcessImage -> ImageCompressor.compress(task.filePath)
-                    }
-                }.onFailure { log.error("Failed to process ${task::class.simpleName}", it) }
+        job =
+            scope.launch(Dispatchers.IO) {
+                for (task in tasks) {
+                    runCatching {
+                        when (task) {
+                            is BackgroundTask.ProcessImage -> ImageCompressor.compress(task.filePath)
+                        }
+                    }.onFailure { log.error("Failed to process ${task::class.simpleName}", it) }
+                }
             }
-        }
     }
 
     fun enqueue(task: BackgroundTask) {

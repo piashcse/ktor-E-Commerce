@@ -33,5 +33,4 @@ class ShippingAddressDAO(id: EntityID<String>) : BaseEntity(id, ShippingAddressT
     var country by ShippingAddressTable.country
     var zipCode by ShippingAddressTable.zipCode
     var isDefault by ShippingAddressTable.isDefault
-
 }

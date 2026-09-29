@@ -140,11 +140,15 @@ enum class InventoryStatus {
     val needsAttention get() = this in listOf(LOW_STOCK, OUT_OF_STOCK)
 
     companion object {
-        fun fromStockLevel(stock: Int, minLevel: Int): InventoryStatus = when {
-            stock <= 0 -> OUT_OF_STOCK
-            stock <= minLevel -> LOW_STOCK
-            else -> IN_STOCK
-        }
+        fun fromStockLevel(
+            stock: Int,
+            minLevel: Int,
+        ): InventoryStatus =
+            when {
+                stock <= 0 -> OUT_OF_STOCK
+                stock <= minLevel -> LOW_STOCK
+                else -> IN_STOCK
+            }
     }
 }
 

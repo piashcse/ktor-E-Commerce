@@ -50,7 +50,9 @@ class PolicyRepositoryImpl : PolicyRepository {
             updatePolicyRequest.title?.let { policyDocument.title = it }
             updatePolicyRequest.content?.let { policyDocument.content = it }
             updatePolicyRequest.version?.let { policyDocument.version = it }
-            updatePolicyRequest.effectiveDate?.let { policyDocument.effectiveDate = LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME) }
+            updatePolicyRequest.effectiveDate?.let {
+                policyDocument.effectiveDate = LocalDateTime.parse(it, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            }
             updatePolicyRequest.isActive?.let {
                 policyDocument.isActive = it
 

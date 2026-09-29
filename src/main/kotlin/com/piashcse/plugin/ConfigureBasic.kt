@@ -29,7 +29,10 @@ object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+    override fun serialize(
+        encoder: Encoder,
+        value: LocalDateTime,
+    ) {
         encoder.encodeString(value.format(formatter))
     }
 
@@ -42,7 +45,10 @@ object BigDecimalSerializer : KSerializer<BigDecimal> {
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("BigDecimal", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: BigDecimal) {
+    override fun serialize(
+        encoder: Encoder,
+        value: BigDecimal,
+    ) {
         encoder.encodeString(value.toPlainString())
     }
 
@@ -52,18 +58,21 @@ object BigDecimalSerializer : KSerializer<BigDecimal> {
 }
 
 fun Application.configureBasic() {
-    install(createApplicationPlugin(name = "SecurityHeaders") {
-        onCall { call ->
-            call.response.headers.append("X-Content-Type-Options", "nosniff", safeOnly = false)
-            call.response.headers.append("X-Frame-Options", "DENY", safeOnly = false)
-            call.response.headers.append("Referrer-Policy", "no-referrer", safeOnly = false)
-            call.response.headers.append("Permissions-Policy", "camera=(), microphone=(), geolocation=()", safeOnly = false)
-        }
-    })
+    install(
+        createApplicationPlugin(name = "SecurityHeaders") {
+            onCall { call ->
+                call.response.headers.append("X-Content-Type-Options", "nosniff", safeOnly = false)
+                call.response.headers.append("X-Frame-Options", "DENY", safeOnly = false)
+                call.response.headers.append("Referrer-Policy", "no-referrer", safeOnly = false)
+                call.response.headers.append("Permissions-Policy", "camera=(), microphone=(), geolocation=()", safeOnly = false)
+            }
+        },
+    )
     configureCORS()
     configureContentNegotiation()
     configureCallLogging()
 }
+
 private fun Application.configureCORS() {
     install(CORS) {
         val allowedOrigins = DotEnvConfig.allowedOrigins.split(",")
@@ -81,7 +90,8 @@ private fun Application.configureCORS() {
             }
         }
 
-        allowCredentials = true
+        // Browsers reject credentialed wildcard CORS: only send credentials for explicit origins.
+        allowCredentials = !allowedOrigins.any { it.trim() == "*" }
         allowNonSimpleContentTypes = true
         listOf(
             HttpMethod.Get,
@@ -102,15 +112,18 @@ private fun Application.configureCORS() {
 
 private fun Application.configureContentNegotiation() {
     install(ContentNegotiation) {
-        json(Json {
-            ignoreUnknownKeys = true
-            coerceInputValues = true
-            prettyPrint = true
-            serializersModule = SerializersModule {
-                contextual(LocalDateTimeSerializer)
-                contextual(BigDecimalSerializer)
-            }
-        })
+        json(
+            Json {
+                ignoreUnknownKeys = true
+                coerceInputValues = true
+                prettyPrint = true
+                serializersModule =
+                    SerializersModule {
+                        contextual(LocalDateTimeSerializer)
+                        contextual(BigDecimalSerializer)
+                    }
+            },
+        )
     }
 }
 
@@ -123,17 +136,18 @@ private fun Application.configureCallLogging() {
         level = Level.INFO
         filter { call ->
             val p = call.request.path()
-            p.startsWith("/") && !p.startsWith("/health") && !p.startsWith("/swagger") && p != "/"
+            p.startsWith("/") && !p.startsWith("/health") && !p.startsWith("/swagger") && !p.startsWith("/metrics") && p != "/"
         }
         format { call ->
             val status = call.response.status()
             val httpMethod = call.request.httpMethod.value
             val userAgent = call.request.headers["User-Agent"]
             val path = call.request.path()
-            val queryParams = call.request.queryParameters.entries()
-                .joinToString(", ") { (key, values) ->
-                    if (key.lowercase() in sensitiveKeys) "$key=[REDACTED]" else "$key=${values.joinToString()}"
-                }
+            val queryParams =
+                call.request.queryParameters.entries()
+                    .joinToString(", ") { (key, values) ->
+                        if (key.lowercase() in sensitiveKeys) "$key=[REDACTED]" else "$key=${values.joinToString()}"
+                    }
             val duration = call.processingTimeMillis()
             val remoteHost = call.request.origin.remoteHost
             val coloredStatus =

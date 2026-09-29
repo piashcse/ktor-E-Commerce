@@ -8,8 +8,8 @@ import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.customerAuth
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.idempotencyKey
+import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
@@ -35,7 +35,13 @@ fun Route.checkoutRoutes() {
              * @description Update an existing shipping address
              */
             put("shipping-address/{id}") {
-                call.respondOk(shippingAddressRepo.updateShippingAddress(call.currentUserId, call.requirePathParameter("id"), call.receive<ShippingAddressRequest>()))
+                call.respondOk(
+                    shippingAddressRepo.updateShippingAddress(
+                        call.currentUserId,
+                        call.requirePathParameter("id"),
+                        call.receive<ShippingAddressRequest>(),
+                    ),
+                )
             }
 
             /**

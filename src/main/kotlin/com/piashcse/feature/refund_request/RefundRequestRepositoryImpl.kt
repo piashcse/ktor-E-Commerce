@@ -20,6 +20,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -122,9 +123,10 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
     ): Boolean {
         val order = OrderDAO.findById(orderId) ?: return false
         val shopId = order.shopId?.value ?: return false
-        val seller = SellerDAO.find {
-            (SellerTable.userId eq userId) and (SellerTable.shopId eq shopId.entityID(ShopTable))
-        }.firstOrNull()
+        val seller =
+            SellerDAO.find {
+                (SellerTable.userId eq userId) and (SellerTable.shopId eq shopId.entityID(ShopTable))
+            }.firstOrNull()
         return seller != null
     }
 
@@ -170,7 +172,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
 
             val maxRefundAmount = orderItem.total
             request.refundAmount?.let { amount ->
-                if (amount <= java.math.BigDecimal.ZERO) {
+                if (amount <= BigDecimal.ZERO) {
                     throw ValidationException(Message.Refunds.AMOUNT_EXCEEDS_ITEM_TOTAL)
                 }
                 if (amount > maxRefundAmount) {
@@ -198,7 +200,8 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             }
 
             OutboxPublisher.enqueueTx(
-                "REFUND", refundReq.id.value,
+                "REFUND",
+                refundReq.id.value,
                 RefundStatusChangedEvent(
                     refundId = refundReq.id.value,
                     orderId = refundReq.orderId.value,

@@ -16,8 +16,9 @@ data class CouponRequest(
     @Contextual val discountValue: BigDecimal,
     @Contextual val minOrderAmount: BigDecimal = BigDecimal.ZERO,
     @Contextual val maxDiscountAmount: BigDecimal? = null,
-    val startDate: String, // ISO date string
-    val endDate: String, // ISO date string
+    // ISO date strings
+    val startDate: String,
+    val endDate: String,
     val usageLimit: Int? = null,
     val isActive: Boolean = true,
 ) {
@@ -30,7 +31,7 @@ data class CouponRequest(
             validate(CouponRequest::endDate).isNotNull().isNotEmpty()
         }
         require(code.isNotBlank()) { "Coupon code must not be blank" }
-        require(discountType != com.piashcse.constants.CouponDiscountType.PERCENTAGE || discountValue <= BigDecimal(100)) {
+        require(discountType != CouponDiscountType.PERCENTAGE || discountValue <= BigDecimal(100)) {
             "Percentage discount cannot exceed 100"
         }
         require(minOrderAmount >= BigDecimal.ZERO) { "Minimum order amount cannot be negative" }

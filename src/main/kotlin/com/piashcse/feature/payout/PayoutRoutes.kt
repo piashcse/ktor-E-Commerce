@@ -2,10 +2,11 @@ package com.piashcse.feature.payout
 
 import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.sellerAuth
-import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondOk
+import io.ktor.http.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
@@ -31,13 +32,26 @@ fun Route.payoutAdminRoutes() {
         }
         get("export") {
             val data = repo.allPayouts(10000, 0, call.request.queryParameters["status"])
-            val csv = buildString {
-                appendLine("id,seller_id,order_id,sub_total,commission,payout,status,created_at")
-                data.data.forEach {
-                    appendLine("${it.id},${it.sellerId},${it.orderId},${it.subTotal},${it.commissionAmount},${it.payoutAmount},${it.status},${it.createdAt}")
+            val csv =
+                buildString {
+                    appendLine("id,seller_id,order_id,sub_total,commission,payout,status,created_at")
+                    data.data.forEach {
+                        appendLine(
+                            listOf(
+                                it.id,
+                                it.sellerId,
+                                it.orderId,
+                                it.subTotal,
+                                it.commissionAmount,
+                                it.payoutAmount,
+                                it.status,
+                                it.createdAt,
+                            ).joinToString(","),
+                        )
+                    }
                 }
-            }
-            call.respondOk(MessageResponse(csv))
+            call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"payouts.csv\"")
+            call.respondText(csv, ContentType.parse("text/csv"))
         }
     }
 }

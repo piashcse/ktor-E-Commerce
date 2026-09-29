@@ -41,7 +41,6 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     var isVerified by UserTable.isVerified
     var isActive by UserTable.isActive
 
-
     /**
      * Get the seller information if the user is a seller
      */

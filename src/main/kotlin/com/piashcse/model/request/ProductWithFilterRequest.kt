@@ -13,8 +13,9 @@ data class ProductWithFilterRequest(
     val categoryId: String?,
     val subCategoryId: String?,
     val brandId: String?,
-    val sortBy: String? = null, // price, createdAt, name, best-selling, top-rated, relevance
-    val sortOrder: String? = "desc", // asc, desc
+    // sortBy: price, createdAt, name, best-selling, top-rated, relevance; sortOrder: asc, desc
+    val sortBy: String? = null,
+    val sortOrder: String? = "desc",
 ) {
     init {
         validate(this) {

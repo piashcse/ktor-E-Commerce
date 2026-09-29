@@ -72,5 +72,3 @@ fun Route.inventorySellerRoutes() {
         call.respondOk(inventoryRepo.getLowStockProducts(limit, offset))
     }
 }
-
-

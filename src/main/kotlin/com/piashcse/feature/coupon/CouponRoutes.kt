@@ -1,10 +1,11 @@
 package com.piashcse.feature.coupon
 
+import com.piashcse.constants.Message
 import com.piashcse.model.request.CouponRequest
 import com.piashcse.plugin.RateLimitNames
+import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
-import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.extension.respondOk
 import io.ktor.http.*
 import io.ktor.server.plugins.ratelimit.*
@@ -25,7 +26,7 @@ fun Route.couponRoutes() {
         if (coupon != null) {
             call.respondOk(coupon)
         } else {
-            call.respond(HttpStatusCode.NotFound, ApiError(message = com.piashcse.constants.Message.Coupons.NOT_FOUND, code = "NOT_FOUND"))
+            call.respond(HttpStatusCode.NotFound, ApiError(message = Message.Coupons.NOT_FOUND, code = "NOT_FOUND"))
         }
     }
 }

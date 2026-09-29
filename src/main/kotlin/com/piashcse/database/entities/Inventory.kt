@@ -1,37 +1,38 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.Message
-import com.piashcse.constants.AppConstants
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import com.piashcse.utils.common.Money
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 /** Finds the inventory record for a product in its shop, with optional for-update locking. */
 fun ProductDAO.findInventory(forUpdate: Boolean = false): InventoryDAO? {
     val productId = this.id
     val shopIdValue = this.shopId?.value ?: return null
-    val query = InventoryDAO.find {
-        (InventoryTable.productId eq productId) and (InventoryTable.shopId eq EntityID(shopIdValue, ShopTable))
-    }
+    val query =
+        InventoryDAO.find {
+            (InventoryTable.productId eq productId) and (InventoryTable.shopId eq EntityID(shopIdValue, ShopTable))
+        }
     return (if (forUpdate) query.forUpdate() else query).firstOrNull()
 }
 
 /** Returns effective stock from inventory (single source of truth). */
-fun ProductDAO.effectiveStock(forUpdate: Boolean = false): Int =
-    findInventory(forUpdate = forUpdate)?.stockQuantity ?: 0
+fun ProductDAO.effectiveStock(forUpdate: Boolean = false): Int = findInventory(forUpdate = forUpdate)?.stockQuantity ?: 0
 
 /** Decrements inventory stock and updates status. Throws if insufficient stock to prevent overselling. */
 fun ProductDAO.decrementStock(quantity: Int) {
-    val inv = findInventory(forUpdate = true)
-        ?: throw ValidationException(Message.Inventory.NOT_FOUND)
+    val inv =
+        findInventory(forUpdate = true)
+            ?: throw ValidationException(Message.Inventory.NOT_FOUND)
     if (inv.stockQuantity < quantity) {
         throw ValidationException(Message.Validation.insufficientStock(name, inv.stockQuantity))
     }
@@ -42,16 +43,16 @@ fun ProductDAO.decrementStock(quantity: Int) {
 
 /** Restores inventory stock after cancellation. */
 fun ProductDAO.restoreStock(quantity: Int) {
-    val inv = findInventory(forUpdate = true)
-        ?: throw ValidationException(Message.Inventory.NOT_FOUND)
+    val inv =
+        findInventory(forUpdate = true)
+            ?: throw ValidationException(Message.Inventory.NOT_FOUND)
     val newStock = inv.stockQuantity + quantity
     inv.stockQuantity = newStock
     inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
 }
 
 /** Calculates commission for an order subtotal. */
-fun SellerDAO.calcCommission(orderSubTotal: BigDecimal): BigDecimal =
-    com.piashcse.utils.common.Money.commission(orderSubTotal, commissionRate)
+fun SellerDAO.calcCommission(orderSubTotal: BigDecimal): BigDecimal = Money.commission(orderSubTotal, commissionRate)
 
 /** Records sales for a product and promotes it to best-seller once a threshold is crossed. */
 fun ProductDAO.addSales(quantity: Int) {
@@ -96,5 +97,4 @@ class InventoryDAO(id: EntityID<String>) : BaseEntity(id, InventoryTable) {
     var maximumStockLevel by InventoryTable.maximumStockLevel
     var status by InventoryTable.status
     var lastRestocked by InventoryTable.lastRestocked
-
 }

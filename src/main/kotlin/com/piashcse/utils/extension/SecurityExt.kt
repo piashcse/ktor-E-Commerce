@@ -12,7 +12,11 @@ import org.jetbrains.exposed.v1.core.eq
  * Verifies that the resource is owned by the specified user ID.
  * Throws ForbiddenException if the user is not the owner.
  */
-fun <T : BaseEntity> T.verifyOwnership(expectedUserId: String, resourceName: String, getUserId: (T) -> String): T {
+fun <T : BaseEntity> T.verifyOwnership(
+    expectedUserId: String,
+    resourceName: String,
+    getUserId: (T) -> String,
+): T {
     if (getUserId(this) != expectedUserId) {
         throw ForbiddenException(Message.Errors.notOwner(resourceName))
     }
@@ -20,19 +24,22 @@ fun <T : BaseEntity> T.verifyOwnership(expectedUserId: String, resourceName: Str
 }
 
 /** Finds the seller record for a given user ID. */
-fun findSellerByUserId(userId: String): SellerDAO? =
-    SellerDAO.find { SellerTable.userId eq userId }.firstOrNull()
+fun findSellerByUserId(userId: String): SellerDAO? = SellerDAO.find { SellerTable.userId eq userId }.firstOrNull()
 
 /** Finds the seller record for a given user ID or throws ForbiddenException. */
 fun requireSellerByUserId(userId: String): SellerDAO =
     findSellerByUserId(userId) ?: throw ForbiddenException(Message.Errors.SELLER_REQUIRED)
 
 /** Checks if a seller owns a specific shop. Uses the provided seller or looks it up. */
-fun sellerOwnsShop(userId: String, shopId: String): Boolean =
-    sellerOwnsShop(findSellerByUserId(userId), shopId)
+fun sellerOwnsShop(
+    userId: String,
+    shopId: String,
+): Boolean = sellerOwnsShop(findSellerByUserId(userId), shopId)
 
-fun sellerOwnsShop(seller: SellerDAO?, shopId: String): Boolean =
-    seller?.shopId?.value == shopId
+fun sellerOwnsShop(
+    seller: SellerDAO?,
+    shopId: String,
+): Boolean = seller?.shopId?.value == shopId
 
 /**
  * Shared order gate: customer owner, shop seller, or admin. Replaces the

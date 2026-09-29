@@ -5,10 +5,11 @@ import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
-import java.time.LocalDateTime
 
 enum class ReservationStatus {
-    ACTIVE, FINALIZED, RELEASED
+    ACTIVE,
+    FINALIZED,
+    RELEASED,
 }
 
 object StockReservationTable : BaseIdTable("stock_reservation") {

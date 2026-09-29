@@ -12,7 +12,10 @@ interface PaymentRepository {
      * @param callerUserId Authenticated caller — must own the order.
      * @return The created payment record.
      */
-    suspend fun createPayment(paymentRequest: PaymentRequest, callerUserId: String): PaymentResponse
+    suspend fun createPayment(
+        paymentRequest: PaymentRequest,
+        callerUserId: String,
+    ): PaymentResponse
 
     /**
      * Retrieves payment details by payment ID.
@@ -21,7 +24,10 @@ interface PaymentRepository {
      * @param callerUserId Authenticated caller — must own the payment's order.
      * @return The payment details.
      */
-    suspend fun getPaymentById(paymentId: String, callerUserId: String): PaymentResponse
+    suspend fun getPaymentById(
+        paymentId: String,
+        callerUserId: String,
+    ): PaymentResponse
 
     /**
      * Retrieves all payments for a specific order.

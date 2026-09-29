@@ -18,10 +18,10 @@ import com.piashcse.utils.validator.InvalidCredentialsException
 import com.piashcse.utils.validator.ValidationException
 
 class UserAuthenticationService(private val authRepo: AuthRepository) {
-
     suspend fun register(registerRequest: RegisterRequest): RegistrationResult {
-        val userType = UserType.fromString(registerRequest.userType)
-            ?: throw ValidationException(Message.Validation.INVALID_USER_TYPE)
+        val userType =
+            UserType.fromString(registerRequest.userType)
+                ?: throw ValidationException(Message.Validation.INVALID_USER_TYPE)
         if (userType == UserType.ADMIN || userType == UserType.SUPER_ADMIN) {
             throw ValidationException(Message.Auth.REGISTRATION_ROLE_FORBIDDEN)
         }
@@ -42,7 +42,10 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
         return result
     }
 
-    private suspend fun sendRegistrationOtp(userId: String, email: String) {
+    private suspend fun sendRegistrationOtp(
+        userId: String,
+        email: String,
+    ) {
         val otp = authRepo.getRegistrationOtp(userId)
         EventBus.publish(
             SendEmailEvent(
@@ -57,8 +60,9 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
         loginRequest: LoginRequest,
         ipAddress: String? = null,
     ): LoginResponse {
-        val userTypeEnum = UserType.fromString(loginRequest.userType)
-            ?: throw ValidationException(Message.Validation.INVALID_USER_TYPE)
+        val userTypeEnum =
+            UserType.fromString(loginRequest.userType)
+                ?: throw ValidationException(Message.Validation.INVALID_USER_TYPE)
 
         authRepo.getLoginAttempt(loginRequest.email, userTypeEnum)?.let {
             if (it.isLocked) throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES))
@@ -95,7 +99,10 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
         return LoginResponse(user.toUserResponse(), tokenPair.accessToken, tokenPair.refreshToken, tokenPair.expiresIn)
     }
 
-    suspend fun otpVerification(userId: String, otp: String): Boolean {
+    suspend fun otpVerification(
+        userId: String,
+        otp: String,
+    ): Boolean {
         if (authRepo.isOtpLocked(userId)) {
             throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES))
         }
@@ -118,9 +125,10 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest) {
         // Anti-enumeration: unknown email/role returns success without sending email.
         // Caller (route) always responds OTP_SENT, so attacker cannot oracle accounts.
-        val user = runCatching {
-            authRepo.findResetUserByEmail(forgotPasswordRequest.email, forgotPasswordRequest.userType)
-        }.getOrNull() ?: return
+        val user =
+            runCatching {
+                authRepo.findResetUserByEmail(forgotPasswordRequest.email, forgotPasswordRequest.userType)
+            }.getOrNull() ?: return
         val otp = authRepo.forgotPassword(forgotPasswordRequest)
         EventBus.publish(
             SendEmailEvent(

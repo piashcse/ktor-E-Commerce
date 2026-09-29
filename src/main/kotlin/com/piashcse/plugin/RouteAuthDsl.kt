@@ -18,21 +18,26 @@ val RoleAuthorizationPlugin =
     ) {
         val allowedRoles = pluginConfig.roles
 
-        onCall { call ->
-            if (call.response.isCommitted) return@onCall
+        // MUST run on AuthenticationChecked: route onCall fires before auth
+        // providers populate the principal (principal is always null there).
+        on(AuthenticationChecked) { call ->
+            if (call.response.isCommitted) return@on
 
             val principal = call.principal<JwtTokenRequest>()
             if (principal == null) {
-                call.respond(HttpStatusCode.Unauthorized, ApiError("Missing or invalid token"))
-                return@onCall
+                call.respond(HttpStatusCode.Unauthorized, ApiError("Missing or invalid token", code = "UNAUTHORIZED"))
+                return@on
             }
 
-            if (allowedRoles.isEmpty()) return@onCall
+            if (allowedRoles.isEmpty()) return@on
 
             val hasAccess = allowedRoles.any { role -> principal.hasAccessTo(role) }
             if (!hasAccess) {
-                call.respond(HttpStatusCode.Forbidden, ApiError("Permission Denied: Insufficient privileges"))
-                return@onCall
+                call.respond(
+                    HttpStatusCode.Forbidden,
+                    ApiError("Permission Denied: Insufficient privileges", code = "FORBIDDEN"),
+                )
+                return@on
             }
         }
     }

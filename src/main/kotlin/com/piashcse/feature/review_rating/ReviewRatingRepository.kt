@@ -23,7 +23,13 @@ interface ReviewRatingRepository {
         rating: Int,
     ): ReviewRatingResponse
 
-    suspend fun deleteReviewRating(userId: String, reviewId: String): String
+    suspend fun deleteReviewRating(
+        userId: String,
+        reviewId: String,
+    ): String
 
-    suspend fun markHelpful(reviewId: String, helpful: Boolean = true): com.piashcse.model.response.ReviewRatingResponse
+    suspend fun markHelpful(
+        reviewId: String,
+        helpful: Boolean = true,
+    ): ReviewRatingResponse
 }

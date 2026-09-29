@@ -29,7 +29,13 @@ fun Route.refundRequestRoutes() {
              * @description Create a refund request for an order item
              */
             post("{orderId}") {
-                call.respondCreated(refundRequestRepo.createRefundRequest(call.currentUserId, call.requirePathParameter("orderId"), call.receive<RefundRequestRequest>()))
+                call.respondCreated(
+                    refundRequestRepo.createRefundRequest(
+                        call.currentUserId,
+                        call.requirePathParameter("orderId"),
+                        call.receive<RefundRequestRequest>(),
+                    ),
+                )
             }
 
             /**
@@ -37,7 +43,9 @@ fun Route.refundRequestRoutes() {
              * @description Mark an approved refund as shipped
              */
             post("{id}/ship") {
-                call.respondOk(refundRequestRepo.shipRefund(call.requirePathParameter("id"), call.receive<ShipRefundRequest>(), call.currentUserId))
+                call.respondOk(
+                    refundRequestRepo.shipRefund(call.requirePathParameter("id"), call.receive<ShipRefundRequest>(), call.currentUserId),
+                )
             }
         }
     }
@@ -49,7 +57,15 @@ fun Route.refundRequestRoutes() {
          */
         get("order/{orderId}") {
             val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(refundRequestRepo.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED), limit, offset))
+            call.respondOk(
+                refundRequestRepo.getRefundsByOrderId(
+                    call.requirePathParameter("orderId"),
+                    call.currentUserId,
+                    call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
+                    limit,
+                    offset,
+                ),
+            )
         }
 
         /**
@@ -57,7 +73,12 @@ fun Route.refundRequestRoutes() {
          * @description Get refund request details
          */
         get("{id}") {
-            val refundRequest = refundRequestRepo.getRefundById(call.requirePathParameter("id"), call.currentUserId, call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED))
+            val refundRequest =
+                refundRequestRepo.getRefundById(
+                    call.requirePathParameter("id"),
+                    call.currentUserId,
+                    call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
+                )
             if (refundRequest != null) {
                 call.respondOk(refundRequest)
             } else {
@@ -78,7 +99,13 @@ fun Route.refundSellerRoutes() {
          * @description Seller: Update refund request status
          */
         put("{id}/status") {
-            call.respondOk(refundRequestRepo.updateRefundStatus(call.requirePathParameter("id"), call.receive<UpdateRefundStatusRequest>(), call.currentUserId))
+            call.respondOk(
+                refundRequestRepo.updateRefundStatus(
+                    call.requirePathParameter("id"),
+                    call.receive<UpdateRefundStatusRequest>(),
+                    call.currentUserId,
+                ),
+            )
         }
     }
 }
@@ -94,7 +121,13 @@ fun Route.refundAdminRoutes() {
          * @description Admin: Update refund status
          */
         put("{id}/status") {
-            call.respondOk(refundRequestRepo.updateRefundStatus(call.requirePathParameter("id"), call.receive<UpdateRefundStatusRequest>(), call.currentUserId))
+            call.respondOk(
+                refundRequestRepo.updateRefundStatus(
+                    call.requirePathParameter("id"),
+                    call.receive<UpdateRefundStatusRequest>(),
+                    call.currentUserId,
+                ),
+            )
         }
     }
 
@@ -104,6 +137,8 @@ fun Route.refundAdminRoutes() {
      */
     get("order/{orderId}") {
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(refundRequestRepo.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, UserType.ADMIN, limit, offset))
+        call.respondOk(
+            refundRequestRepo.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, UserType.ADMIN, limit, offset),
+        )
     }
 }

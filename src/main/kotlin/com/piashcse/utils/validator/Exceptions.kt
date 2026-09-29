@@ -17,7 +17,11 @@ open class AppException(
 
 // ─── 400 Bad Request ───────────────────────────────────────────────────────
 
-class ValidationException(message: String, override val errorCode: String = "VALIDATION_FAILED") : AppException(message, HttpStatusCode.BadRequest, errorCode)
+class ValidationException(message: String, override val errorCode: String = "VALIDATION_FAILED") : AppException(
+    message,
+    HttpStatusCode.BadRequest,
+    errorCode,
+)
 
 class InvalidEnumValueException(
     message: String,

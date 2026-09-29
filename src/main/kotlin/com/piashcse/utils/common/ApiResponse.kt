@@ -2,7 +2,6 @@ package com.piashcse.utils.common
 
 import com.piashcse.utils.validator.AppException
 import io.ktor.http.*
-
 import kotlinx.serialization.Serializable
 
 /**

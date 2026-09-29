@@ -26,5 +26,4 @@ class PaymentDAO(id: EntityID<String>) : BaseEntity(id, PaymentTable) {
     var status by PaymentTable.status
     var paymentMethod by PaymentTable.paymentMethod
     var transactionId by PaymentTable.transactionId
-
 }

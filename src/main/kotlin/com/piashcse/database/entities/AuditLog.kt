@@ -27,6 +27,7 @@ object AuditLogTable : BaseIdTable("audit_log") {
 
 class AuditLogDAO(id: EntityID<String>) : BaseEntity(id, AuditLogTable) {
     companion object : BaseEntityClass<AuditLogDAO>(AuditLogTable, AuditLogDAO::class.java)
+
     var actorId by AuditLogTable.actorId
     var actorEmail by AuditLogTable.actorEmail
     var actorRole by AuditLogTable.actorRole
@@ -38,5 +39,4 @@ class AuditLogDAO(id: EntityID<String>) : BaseEntity(id, AuditLogTable) {
     var userAgent by AuditLogTable.userAgent
     var outcome by AuditLogTable.outcome
     var executedAt by AuditLogTable.executedAt
-
 }

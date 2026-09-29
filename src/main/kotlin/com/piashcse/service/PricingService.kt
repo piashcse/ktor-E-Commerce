@@ -19,12 +19,18 @@ object PricingService {
     fun subtotal(lines: List<Pair<BigDecimal, Int>>): BigDecimal =
         Money.scale2(lines.fold(BigDecimal.ZERO) { acc, (price, qty) -> acc.add(price.multiply(BigDecimal(qty))) })
 
-    fun shipping(pricePerShop: BigDecimal, shopCount: Int): BigDecimal =
-        Money.scale2(pricePerShop.multiply(BigDecimal(shopCount.coerceAtLeast(0))))
+    fun shipping(
+        pricePerShop: BigDecimal,
+        shopCount: Int,
+    ): BigDecimal = Money.scale2(pricePerShop.multiply(BigDecimal(shopCount.coerceAtLeast(0))))
 
     fun tax(subTotal: BigDecimal): BigDecimal = Money.tax(subTotal, taxRate)
 
-    fun breakdown(subTotal: BigDecimal, shippingTotal: BigDecimal, discount: BigDecimal = BigDecimal.ZERO): PriceBreakdown {
+    fun breakdown(
+        subTotal: BigDecimal,
+        shippingTotal: BigDecimal,
+        discount: BigDecimal = BigDecimal.ZERO,
+    ): PriceBreakdown {
         val taxAmount = tax(subTotal)
         val total = Money.scale2(subTotal.add(shippingTotal).add(taxAmount).subtract(discount).max(BigDecimal.ZERO))
         return PriceBreakdown(

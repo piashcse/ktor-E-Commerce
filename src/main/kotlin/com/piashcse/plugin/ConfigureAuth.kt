@@ -43,13 +43,14 @@ fun Application.configureAuth() {
                     return@validate null
                 }
 
-                val (isBlacklisted, dbUser) = query {
-                    val blacklisted =
-                        token != null &&
-                            BlacklistedTokenDAO.find { BlacklistedTokenTable.token eq token }.firstOrNull() != null
-                    val user = UserDAO.findById(userId)
-                    blacklisted to user
-                }
+                val (isBlacklisted, dbUser) =
+                    query {
+                        val blacklisted =
+                            token != null &&
+                                BlacklistedTokenDAO.find { BlacklistedTokenTable.token eq token }.firstOrNull() != null
+                        val user = UserDAO.findById(userId)
+                        blacklisted to user
+                    }
                 if (isBlacklisted) {
                     authLog.warn("Blacklisted token rejected (from database)")
                     return@validate null

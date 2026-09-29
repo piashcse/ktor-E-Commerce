@@ -117,7 +117,12 @@ interface ShopRepository {
      * @param shopId The shop ID to approve.
      * @return The updated shop.
      */
-    suspend fun approveShop(shopId: String, actorId: String? = null, actorEmail: String? = null, actorRole: String? = null): ShopResponse
+    suspend fun approveShop(
+        shopId: String,
+        actorId: String? = null,
+        actorEmail: String? = null,
+        actorRole: String? = null,
+    ): ShopResponse
 
     /**
      * Rejects a shop application.
@@ -125,7 +130,12 @@ interface ShopRepository {
      * @param shopId The shop ID to reject.
      * @return The updated shop.
      */
-    suspend fun rejectShop(shopId: String, actorId: String? = null, actorEmail: String? = null, actorRole: String? = null): ShopResponse
+    suspend fun rejectShop(
+        shopId: String,
+        actorId: String? = null,
+        actorEmail: String? = null,
+        actorRole: String? = null,
+    ): ShopResponse
 
     /**
      * Suspends a shop.
@@ -133,7 +143,12 @@ interface ShopRepository {
      * @param shopId The shop ID to suspend.
      * @return The updated shop.
      */
-    suspend fun suspendShop(shopId: String, actorId: String? = null, actorEmail: String? = null, actorRole: String? = null): ShopResponse
+    suspend fun suspendShop(
+        shopId: String,
+        actorId: String? = null,
+        actorEmail: String? = null,
+        actorRole: String? = null,
+    ): ShopResponse
 
     /**
      * Activates a suspended shop.
@@ -141,5 +156,10 @@ interface ShopRepository {
      * @param shopId The shop ID to activate.
      * @return The updated shop.
      */
-    suspend fun activateShop(shopId: String, actorId: String? = null, actorEmail: String? = null, actorRole: String? = null): ShopResponse
+    suspend fun activateShop(
+        shopId: String,
+        actorId: String? = null,
+        actorEmail: String? = null,
+        actorRole: String? = null,
+    ): ShopResponse
 }

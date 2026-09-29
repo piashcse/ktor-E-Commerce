@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 object SellerTable : BaseIdTable("seller") {
     val userId = reference("user_id", UserTable.id)
@@ -48,7 +49,6 @@ class SellerDAO(id: EntityID<String>) : BaseEntity(id, SellerTable) {
     var suspendedAt by SellerTable.suspendedAt
     var terminatedAt by SellerTable.terminatedAt
 
-
     /**
      * Get the associated user information
      */
@@ -86,13 +86,13 @@ data class SellerResponse(
     val bankAccountNumber: String?,
     val bankName: String?,
     val bankRoutingNumber: String?,
-    val commissionRate: @Contextual java.math.BigDecimal,
+    val commissionRate: @Contextual BigDecimal,
     val status: ShopStatus,
-    val totalSales: @Contextual java.math.BigDecimal,
-    val totalCommission: @Contextual java.math.BigDecimal,
-    val approvedAt: @Contextual java.time.LocalDateTime?,
-    val suspendedAt: @Contextual java.time.LocalDateTime?,
-    val terminatedAt: @Contextual java.time.LocalDateTime?,
-    val createdAt: @Contextual java.time.LocalDateTime?,
-    val updatedAt: @Contextual java.time.LocalDateTime?,
+    val totalSales: @Contextual BigDecimal,
+    val totalCommission: @Contextual BigDecimal,
+    val approvedAt: @Contextual LocalDateTime?,
+    val suspendedAt: @Contextual LocalDateTime?,
+    val terminatedAt: @Contextual LocalDateTime?,
+    val createdAt: @Contextual LocalDateTime?,
+    val updatedAt: @Contextual LocalDateTime?,
 )

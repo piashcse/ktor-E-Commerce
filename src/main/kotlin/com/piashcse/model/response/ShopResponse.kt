@@ -3,6 +3,7 @@ package com.piashcse.model.response
 import com.piashcse.constants.ShopStatus
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Serializable
@@ -17,7 +18,7 @@ data class ShopResponse(
     val logo: String? = null,
     val coverImage: String? = null,
     val status: ShopStatus = ShopStatus.PENDING,
-    val rating: @Contextual java.math.BigDecimal = java.math.BigDecimal.ZERO,
+    val rating: @Contextual BigDecimal = BigDecimal.ZERO,
     val totalReviews: Int = 0,
     val createdAt: @Contextual LocalDateTime?,
     val updatedAt: @Contextual LocalDateTime?,

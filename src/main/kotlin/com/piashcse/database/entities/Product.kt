@@ -7,10 +7,11 @@ import com.piashcse.database.entities.base.BaseIdTable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.javatime.datetime
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 object ProductTable : BaseIdTable("product") {
     val userId = reference("user_id", UserTable.id).index()
@@ -76,13 +77,14 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
     /** Soft-delete: hide from catalog but preserve order history / reviews. */
     fun softDelete() {
         status = ProductStatus.OUT_OF_STOCK
-        deletedAt = LocalDateTime.now(java.time.ZoneOffset.UTC)
+        deletedAt = LocalDateTime.now(ZoneOffset.UTC)
     }
 
     val imageUrls: List<String>
-        get() = ProductImageDAO.find { ProductImageTable.productId eq id }
-            .orderBy(ProductImageTable.sortOrder to SortOrder.ASC)
-            .map { it.imageUrl }
+        get() =
+            ProductImageDAO.find { ProductImageTable.productId eq id }
+                .orderBy(ProductImageTable.sortOrder to SortOrder.ASC)
+                .map { it.imageUrl }
 
     fun setImages(urls: List<String>) {
         ProductImageTable.deleteWhere { ProductImageTable.productId eq id }
@@ -94,5 +96,4 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
             }
         }
     }
-
 }

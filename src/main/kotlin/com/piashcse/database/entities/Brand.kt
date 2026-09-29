@@ -15,5 +15,4 @@ class BrandDAO(id: EntityID<String>) : BaseEntity(id, BrandTable) {
 
     var name by BrandTable.name
     var logo by BrandTable.logo
-
 }

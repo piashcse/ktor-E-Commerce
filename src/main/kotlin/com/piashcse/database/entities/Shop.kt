@@ -38,5 +38,4 @@ class ShopDAO(id: EntityID<String>) : BaseEntity(id, ShopTable) {
     var status by ShopTable.status
     var rating by ShopTable.rating
     var totalReviews by ShopTable.totalReviews
-
 }

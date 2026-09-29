@@ -1,11 +1,11 @@
 package com.piashcse.feature.product_category
 
 import com.piashcse.database.entities.ProductCategoryDAO
-import com.piashcse.database.entities.ProductDAO
-import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ProductCategoryTable
+import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductSubCategoryDAO
 import com.piashcse.database.entities.ProductSubCategoryTable
+import com.piashcse.database.entities.ProductTable
 import com.piashcse.mapper.toProductCategoryResponse
 import com.piashcse.model.response.ProductCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -15,6 +15,7 @@ import com.piashcse.utils.extension.requireValidName
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedList
+import com.piashcse.utils.validator.ConflictException
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -37,19 +38,22 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
         offset: Int,
     ): PaginatedResponse<ProductCategoryResponse> =
         query {
-            val (totalCount, rows) = ProductCategoryTable.selectAll().toPaginatedList(limit, offset) {
-                ProductCategoryDAO.wrapRow(it)
-            }
+            val (totalCount, rows) =
+                ProductCategoryTable.selectAll().toPaginatedList(limit, offset) {
+                    ProductCategoryDAO.wrapRow(it)
+                }
             val categoryIds = rows.map { it.id }
-            val subCategoriesMap = if (categoryIds.isNotEmpty()) {
-                ProductSubCategoryDAO.find { ProductSubCategoryTable.categoryId inList categoryIds }
-                    .groupBy { it.categoryId.value }
-            } else {
-                emptyMap()
-            }
-            val data = rows.map { category ->
-                category.toProductCategoryResponse(subCategoriesMap[category.id.value] ?: emptyList())
-            }
+            val subCategoriesMap =
+                if (categoryIds.isNotEmpty()) {
+                    ProductSubCategoryDAO.find { ProductSubCategoryTable.categoryId inList categoryIds }
+                        .groupBy { it.categoryId.value }
+                } else {
+                    emptyMap()
+                }
+            val data =
+                rows.map { category ->
+                    category.toProductCategoryResponse(subCategoriesMap[category.id.value] ?: emptyList())
+                }
             PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
         }
 
@@ -71,10 +75,12 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
         query {
             val category = ProductCategoryDAO.findById(categoryId) ?: categoryId.throwNotFound("Category")
             if (!ProductSubCategoryDAO.find { ProductSubCategoryTable.categoryId eq categoryId }.empty()) {
-                throw com.piashcse.utils.validator.ConflictException("Cannot delete category: sub-categories still reference it.")
+                throw ConflictException("Cannot delete category: sub-categories still reference it.")
             }
             if (!ProductDAO.find { ProductTable.categoryId eq categoryId }.empty()) {
-                throw com.piashcse.utils.validator.ConflictException("Cannot delete category: products still reference it. Reassign or soft-delete products first.")
+                throw ConflictException(
+                    "Cannot delete category: products still reference it. Reassign or soft-delete products first.",
+                )
             }
             category.delete()
             categoryId

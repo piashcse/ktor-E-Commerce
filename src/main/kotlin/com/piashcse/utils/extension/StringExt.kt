@@ -5,8 +5,8 @@ import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.InvalidEnumValueException
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
-import org.jetbrains.exposed.v1.core.dao.id.IdTable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.dao.id.IdTable
 
 inline fun <reified T : Enum<T>> String.parseEnum(fieldName: String): T =
     runCatching { enumValueOf<T>(uppercase()) }
@@ -31,7 +31,10 @@ fun String.requireNotBlank(fieldName: String) {
 fun String.entityID(table: IdTable<String>) = EntityID(this, table)
 
 /** Shared catalog-name validation (Brand/Category/ShopCategory): blank + 255 backstop. */
-fun String.requireValidName(resourceName: String, maxLength: Int = 255) {
+fun String.requireValidName(
+    resourceName: String,
+    maxLength: Int = 255,
+) {
     if (isBlank()) throw ValidationException(Message.Validation.blankField(resourceName))
     if (length > maxLength) throw ValidationException(Message.Validation.blankField("$resourceName (max $maxLength chars)"))
 }

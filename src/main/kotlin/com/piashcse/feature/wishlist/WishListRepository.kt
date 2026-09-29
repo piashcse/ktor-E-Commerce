@@ -1,5 +1,6 @@
 package com.piashcse.feature.wishlist
 
+import com.piashcse.database.entities.Cart
 import com.piashcse.database.entities.WishList
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -54,7 +55,7 @@ interface WishListRepository {
         userId: String,
         productId: String,
         quantity: Int = 1,
-    ): com.piashcse.database.entities.Cart
+    ): Cart
 
     suspend fun isProductInWishList(
         userId: String,

@@ -72,7 +72,10 @@ class CouponRepositoryImpl : CouponRepository {
             true
         }
 
-    private fun parseDate(value: String, fieldName: String): LocalDateTime =
+    private fun parseDate(
+        value: String,
+        fieldName: String,
+    ): LocalDateTime =
         try {
             LocalDateTime.parse(value)
         } catch (e: DateTimeParseException) {
