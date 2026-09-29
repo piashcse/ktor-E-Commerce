@@ -12,7 +12,7 @@ object WishListTable : BaseIdTable("wishlist") {
     val productId = reference("product_id", ProductTable.id)
 
     init {
-        index(customIndexName = "wishlist_user_product_idx", isUnique = false, userId, productId)
+        index(customIndexName = "wishlist_user_product_idx", isUnique = true, userId, productId)
     }
 }
 

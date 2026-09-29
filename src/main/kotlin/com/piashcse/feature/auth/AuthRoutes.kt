@@ -8,6 +8,7 @@ import com.piashcse.model.request.*
 import com.piashcse.model.response.ResetResult
 import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.requireRole
+import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.parseEnum
@@ -50,7 +51,7 @@ fun Route.authRoutes() {
          */
         post("forgot-password") {
             userAuthService.forgotPassword(call.receive<ForgotPasswordRequest>())
-            call.respondOk(mapOf("message" to Message.Auth.OTP_SENT))
+            call.respondOk(MessageResponse(Message.Auth.OTP_SENT))
         }
 
         /**
@@ -60,17 +61,17 @@ fun Route.authRoutes() {
         post("reset-password") {
             when (authRepo.resetPassword(call.receive<ResetRequest>())) {
                 is ResetResult.Success -> {
-                    call.respond(HttpStatusCode.OK, mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
+                    call.respond(HttpStatusCode.OK, MessageResponse(Message.Auth.PASSWORD_CHANGE_SUCCESS))
                 }
 
                 is ResetResult.InvalidOrExpiredOtp -> {
-                    call.respondOk(mapOf("message" to Message.Auth.OTP_INVALID))
+                    call.respondOk(MessageResponse(Message.Auth.OTP_INVALID))
                 }
 
                 is ResetResult.Locked -> {
                     call.respond(
                         HttpStatusCode.TooManyRequests,
-                        mapOf("message" to Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES)),
+                        MessageResponse(Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES)),
                     )
                 }
             }
@@ -110,8 +111,10 @@ fun Route.authRoutes() {
                 authRepo.blacklistToken(authHeader.substring(7))
             }
 
-            authRepo.logout(call.currentUserId, call.receive<LogoutRequest>().refreshToken)
-            call.respondOk(mapOf("message" to "Logged out successfully"))
+            // Body is optional — access token is already blacklisted above even if refresh token missing.
+            val refreshToken = runCatching { call.receive<LogoutRequest>().refreshToken }.getOrNull()
+            authRepo.logout(call.currentUserId, refreshToken)
+            call.respondOk(MessageResponse("Logged out successfully"))
         }
 
         /**
@@ -120,9 +123,9 @@ fun Route.authRoutes() {
          */
         put("change-password") {
             if (authRepo.changePassword(call.currentUserId, call.receive<ChangePasswordRequest>().let { ChangePassword(it.oldPassword, it.newPassword) })) {
-                call.respondOk(mapOf("message" to Message.Auth.PASSWORD_CHANGE_SUCCESS))
+                call.respondOk(MessageResponse(Message.Auth.PASSWORD_CHANGE_SUCCESS))
             } else {
-                call.respond(HttpStatusCode.Unauthorized, mapOf("message" to Message.Auth.INVALID_CREDENTIALS))
+                call.respond(HttpStatusCode.Unauthorized, MessageResponse(Message.Auth.INVALID_CREDENTIALS))
             }
         }
     }
@@ -142,9 +145,9 @@ fun Route.authAdminRoutes() {
             val userId = call.requirePathParameter("userId")
 
             if (authRepo.changeUserType(call.currentUserId, userId, call.requireQueryParameter("userType").parseEnum<UserType>("userType"))) {
-                call.respondOk(mapOf("message" to "User type updated successfully"))
+                call.respondOk(MessageResponse("User type updated successfully"))
             } else {
-                call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to update user type"))
+                call.respond(HttpStatusCode.InternalServerError, MessageResponse("Failed to update user type"))
             }
         }
 
@@ -155,9 +158,9 @@ fun Route.authAdminRoutes() {
         put("/{userId}/deactivate") {
             val userId = call.requirePathParameter("userId")
             if (authRepo.deactivateUser(call.currentUserId, userId)) {
-                call.respondOk(mapOf("message" to "User deactivated successfully"))
+                call.respondOk(MessageResponse("User deactivated successfully"))
             } else {
-                call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to deactivate user"))
+                call.respond(HttpStatusCode.InternalServerError, MessageResponse("Failed to deactivate user"))
             }
         }
 
@@ -168,9 +171,9 @@ fun Route.authAdminRoutes() {
         put("/{userId}/activate") {
             val userId = call.requirePathParameter("userId")
             if (authRepo.activateUser(call.currentUserId, userId)) {
-                call.respondOk(mapOf("message" to Message.Auth.ACCOUNT_ACTIVATED))
+                call.respondOk(MessageResponse(Message.Auth.ACCOUNT_ACTIVATED))
             } else {
-                call.respond(HttpStatusCode.InternalServerError, mapOf("message" to "Failed to activate user"))
+                call.respond(HttpStatusCode.InternalServerError, MessageResponse("Failed to activate user"))
             }
         }
     }

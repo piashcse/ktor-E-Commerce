@@ -18,8 +18,20 @@ fun Application.installRequestTracing() {
     }
 
     intercept(ApplicationCallPipeline.Monitoring) {
-        val requestId = call.attributes[X_REQUEST_ID]
-        call.response.header(HttpHeaders.XRequestId, requestId)
+        try {
+            val requestId = call.attributes[X_REQUEST_ID]
+            call.response.header(HttpHeaders.XRequestId, requestId)
+        } finally {
+            MDC.remove("requestId")
+        }
+    }
+
+    intercept(ApplicationCallPipeline.Call) {
+        try {
+            proceed()
+        } finally {
+            MDC.remove("requestId")
+        }
     }
 }
 

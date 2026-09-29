@@ -5,6 +5,8 @@ import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
+import com.piashcse.event.OutboxPublisher
+import com.piashcse.event.RefundStatusChangedEvent
 import com.piashcse.mapper.toRefundRequestResponse
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
@@ -168,6 +170,9 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
 
             val maxRefundAmount = orderItem.total
             request.refundAmount?.let { amount ->
+                if (amount <= java.math.BigDecimal.ZERO) {
+                    throw ValidationException(Message.Refunds.AMOUNT_EXCEEDS_ITEM_TOTAL)
+                }
                 if (amount > maxRefundAmount) {
                     throw ValidationException(Message.Refunds.AMOUNT_EXCEEDS_ITEM_TOTAL)
                 }
@@ -177,6 +182,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                 throw ValidationException(Message.Refunds.REFUND_AMOUNT_REQUIRED)
             }
 
+            val fromStatus = refundReq.status
             refundReq.status = request.status
             refundReq.resolvedAt = LocalDateTime.now(ZoneOffset.UTC)
 
@@ -190,6 +196,18 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                         ?: throw ValidationException(Message.Orders.NOT_FOUND)
                 order.paymentStatus = PaymentStatus.REFUNDED
             }
+
+            OutboxPublisher.enqueueTx(
+                "REFUND", refundReq.id.value,
+                RefundStatusChangedEvent(
+                    refundId = refundReq.id.value,
+                    orderId = refundReq.orderId.value,
+                    userId = refundReq.userId.value,
+                    email = UserDAO.findById(refundReq.userId.value)?.email.orEmpty(),
+                    fromStatus = fromStatus.name,
+                    toStatus = request.status.name,
+                ),
+            )
 
             refundReq.toRefundRequestResponse()
         }
@@ -222,6 +240,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             if (refundReq.status != RefundStatus.APPROVED) {
                 throw ValidationException(Message.Refunds.MUST_BE_APPROVED)
             }
+            request.trackingNumber.requireNotBlank("Tracking number")
 
             refundReq.trackingNumber = request.trackingNumber
             refundReq.status = RefundStatus.SHIPPED

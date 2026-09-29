@@ -1,6 +1,5 @@
 package com.piashcse.feature.cart
 
-import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.mapper.toCartItemSummary
@@ -20,7 +19,6 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 class CartRepositoryImpl : CartRepository {
 
@@ -37,16 +35,26 @@ class CartRepositoryImpl : CartRepository {
     ): Cart = query {
         requireCartParams(userId, productId, quantity)
 
+        val product = ProductDAO.findById(productId) ?: productId.throwNotFound("Product")
+        val stock = product.effectiveStock()
+        if (quantity > stock) throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
+
         val existing = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
         }.singleOrNull()
         existing?.let { throw productId.throwConflict("Product") }
 
-        CartItemDAO.new {
-            this.userId = userId.entityID(UserTable)
-            this.productId = productId.entityID(ProductTable)
-            this.quantity = quantity
-        }.toCartResponse()
+        try {
+            CartItemDAO.new {
+                this.userId = userId.entityID(UserTable)
+                this.productId = productId.entityID(ProductTable)
+                this.quantity = quantity
+            }.toCartResponse()
+        } catch (e: Exception) {
+            // Unique constraint race: concurrent adds → 409 not 500.
+            if ((e.message ?: "").contains("duplicate", ignoreCase = true)) throw productId.throwConflict("Product")
+            throw e
+        }
     }
 
     override suspend fun getCartItems(
@@ -80,17 +88,20 @@ class CartRepositoryImpl : CartRepository {
         productId: String,
         quantity: Int,
     ): Cart? = query {
-        requireCartParams(userId, productId)
+        requireCartParams(userId, productId, quantity)
 
         val cartItem = CartItemDAO.find {
             CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
         }.singleOrNull() ?: productId.throwNotFound("Product")
 
         if (quantity == 0) { cartItem.delete(); return@query null }
-        cartItem.quantity = quantity
 
         val product = ProductDAO.findById(cartItem.productId)
             ?: throw NotFoundException(Message.Cart.PRODUCT_NOT_FOUND)
+        val stock = product.effectiveStock()
+        if (quantity > stock) throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
+        cartItem.quantity = quantity
+
         cartItem.toCartResponse(product.toProductResponse())
     }
 
@@ -153,8 +164,9 @@ class CartRepositoryImpl : CartRepository {
             )
         }
 
-        val subtotal = items.sumOf { BigDecimal(it.price) * BigDecimal(it.quantity) }.setScale(2, RoundingMode.HALF_UP)
-        val tax = subtotal.multiply(BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString())).setScale(2, RoundingMode.HALF_UP)
+        val lines = items.map { BigDecimal(it.price) to it.quantity }
+        val subtotal = com.piashcse.service.PricingService.subtotal(lines)
+        val tax = com.piashcse.service.PricingService.tax(subtotal)
         CartSummaryResponse(items, subtotal.toPlainString(), tax.toPlainString(), items.size)
     }
 }

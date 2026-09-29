@@ -116,7 +116,11 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
     }
 
     suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest) {
-        val user = authRepo.findResetUserByEmail(forgotPasswordRequest.email, forgotPasswordRequest.userType)
+        // Anti-enumeration: unknown email/role returns success without sending email.
+        // Caller (route) always responds OTP_SENT, so attacker cannot oracle accounts.
+        val user = runCatching {
+            authRepo.findResetUserByEmail(forgotPasswordRequest.email, forgotPasswordRequest.userType)
+        }.getOrNull() ?: return
         val otp = authRepo.forgotPassword(forgotPasswordRequest)
         EventBus.publish(
             SendEmailEvent(

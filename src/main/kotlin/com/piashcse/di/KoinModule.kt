@@ -13,12 +13,18 @@ import com.piashcse.feature.consent.ConsentRepository
 import com.piashcse.feature.consent.ConsentRepositoryImpl
 import com.piashcse.feature.coupon.CouponRepository
 import com.piashcse.feature.coupon.CouponRepositoryImpl
+import com.piashcse.feature.notification.NotificationRepository
+import com.piashcse.feature.notification.NotificationRepositoryImpl
+import com.piashcse.feature.payout.PayoutRepository
+import com.piashcse.feature.payout.PayoutRepositoryImpl
 import com.piashcse.feature.dashboard.DashboardRepository
 import com.piashcse.feature.dashboard.DashboardRepositoryImpl
 import com.piashcse.feature.inventory.InventoryRepository
 import com.piashcse.feature.inventory.InventoryRepositoryImpl
 import com.piashcse.feature.order.OrderRepository
 import com.piashcse.feature.order.OrderRepositoryImpl
+import com.piashcse.feature.payment.ManualPaymentGateway
+import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.payment.PaymentRepository
 import com.piashcse.feature.payment.PaymentRepositoryImpl
 import com.piashcse.feature.policy.PolicyRepository
@@ -59,11 +65,14 @@ val serviceModule =
         single<BrandRepository> { BrandRepositoryImpl() }
         single<CartRepository> { CartRepositoryImpl() }
         single<ConsentRepository> { ConsentRepositoryImpl() }
+        single<NotificationRepository> { NotificationRepositoryImpl() }
+        single<PayoutRepository> { PayoutRepositoryImpl() }
         single<CouponRepository> { CouponRepositoryImpl() }
         single<DashboardRepository> { DashboardRepositoryImpl() }
         single<InventoryRepository> { InventoryRepositoryImpl() }
         single<OrderRepository> { OrderRepositoryImpl() }
         single<PaymentRepository> { PaymentRepositoryImpl() }
+        single<PaymentGateway> { ManualPaymentGateway() }
         single<PolicyRepository> { PolicyRepositoryImpl() }
         single<ProductRepository> { ProductRepositoryImpl() }
         single<ProductCategoryRepository> { ProductCategoryRepositoryImpl() }

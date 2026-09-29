@@ -1,6 +1,7 @@
 package com.piashcse.feature.dashboard
 
 
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -53,5 +54,12 @@ fun Route.dashboardAdminRoutes() {
      */
     get("activity") {
         call.respondOk(repo.getRecentActivity(call.queryParameters["limit"]?.toIntOrNull()))
+    }
+}
+
+fun Route.dashboardSellerRoutes() {
+    val repo: DashboardRepository by inject()
+    get {
+        call.respondOk(repo.getSellerStats(call.currentUserId))
     }
 }

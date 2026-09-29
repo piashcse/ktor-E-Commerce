@@ -52,6 +52,14 @@ object BigDecimalSerializer : KSerializer<BigDecimal> {
 }
 
 fun Application.configureBasic() {
+    install(createApplicationPlugin(name = "SecurityHeaders") {
+        onCall { call ->
+            call.response.headers.append("X-Content-Type-Options", "nosniff", safeOnly = false)
+            call.response.headers.append("X-Frame-Options", "DENY", safeOnly = false)
+            call.response.headers.append("Referrer-Policy", "no-referrer", safeOnly = false)
+            call.response.headers.append("Permissions-Policy", "camera=(), microphone=(), geolocation=()", safeOnly = false)
+        }
+    })
     configureCORS()
     configureContentNegotiation()
     configureCallLogging()
@@ -76,12 +84,16 @@ private fun Application.configureCORS() {
         allowCredentials = true
         allowNonSimpleContentTypes = true
         listOf(
+            HttpMethod.Get,
+            HttpMethod.Head,
             HttpMethod.Put,
             HttpMethod.Post,
             HttpMethod.Delete,
             HttpMethod.Patch,
             HttpMethod.Options,
         ).forEach { allowMethod(it) }
+        exposeHeader(HttpHeaders.XRequestId)
+        maxAgeInSeconds = 3600
         allowHeader(HttpHeaders.ContentType)
         allowHeader(HttpHeaders.Authorization)
         allowHeader("X-Requested-With")
@@ -109,7 +121,10 @@ private fun Application.configureCallLogging() {
 
     install(CallLogging) {
         level = Level.INFO
-        filter { call -> call.request.path().startsWith("/") }
+        filter { call ->
+            val p = call.request.path()
+            p.startsWith("/") && !p.startsWith("/health") && !p.startsWith("/swagger") && p != "/"
+        }
         format { call ->
             val status = call.response.status()
             val httpMethod = call.request.httpMethod.value

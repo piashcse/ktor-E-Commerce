@@ -1,6 +1,8 @@
 package com.piashcse.feature.product_category
 
 import com.piashcse.database.entities.ProductCategoryDAO
+import com.piashcse.database.entities.ProductDAO
+import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ProductCategoryTable
 import com.piashcse.database.entities.ProductSubCategoryDAO
 import com.piashcse.database.entities.ProductSubCategoryTable
@@ -9,6 +11,7 @@ import com.piashcse.model.response.ProductCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.requireValidName
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedList
@@ -19,6 +22,7 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 class ProductCategoryRepositoryImpl : ProductCategoryRepository {
     override suspend fun createCategory(name: String): ProductCategoryResponse =
         query {
+            name.requireValidName("ProductCategory")
             val isCategoryExist =
                 ProductCategoryDAO.find { ProductCategoryTable.name eq name }.firstOrNull()
             isCategoryExist?.let {
@@ -54,6 +58,7 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
         name: String,
     ): ProductCategoryResponse =
         query {
+            name.requireValidName("ProductCategory")
             val isCategoryExist =
                 ProductCategoryDAO.findById(categoryId)
             isCategoryExist?.let {
@@ -64,11 +69,14 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
 
     override suspend fun deleteCategory(categoryId: String): String =
         query {
-            val isCategoryExist =
-                ProductCategoryDAO.findById(categoryId)
-            isCategoryExist?.let {
-                isCategoryExist.delete()
-                categoryId
-            } ?: categoryId.throwNotFound("Category")
+            val category = ProductCategoryDAO.findById(categoryId) ?: categoryId.throwNotFound("Category")
+            if (!ProductSubCategoryDAO.find { ProductSubCategoryTable.categoryId eq categoryId }.empty()) {
+                throw com.piashcse.utils.validator.ConflictException("Cannot delete category: sub-categories still reference it.")
+            }
+            if (!ProductDAO.find { ProductTable.categoryId eq categoryId }.empty()) {
+                throw com.piashcse.utils.validator.ConflictException("Cannot delete category: products still reference it. Reassign or soft-delete products first.")
+            }
+            category.delete()
+            categoryId
         }
 }

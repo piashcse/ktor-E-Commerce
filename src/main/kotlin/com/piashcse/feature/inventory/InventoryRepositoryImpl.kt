@@ -8,8 +8,6 @@ import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
-import com.piashcse.utils.extension.*
-import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
@@ -88,14 +86,9 @@ class InventoryRepositoryImpl : InventoryRepository {
             else -> throw ValidationException(Message.Inventory.invalidOperation(operation))
         }
 
-        InventoryTable.update({ InventoryTable.id eq inventory.id }) {
-            it[stockQuantity] = newStock
-        }
-
-        inventory.apply {
-            stockQuantity = newStock
-            status = InventoryStatus.fromStockLevel(newStock, minimumStockLevel)
-        }.toInventoryResponse()
+        inventory.stockQuantity = newStock
+        inventory.status = InventoryStatus.fromStockLevel(newStock, inventory.minimumStockLevel)
+        inventory.toInventoryResponse()
     }
 
     override suspend fun getLowStockProducts(

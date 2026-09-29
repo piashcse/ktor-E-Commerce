@@ -1,6 +1,7 @@
 package com.piashcse.utils.extension
 
 import com.piashcse.constants.Message
+import com.piashcse.constants.UserType
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.base.BaseEntity
@@ -32,3 +33,20 @@ fun sellerOwnsShop(userId: String, shopId: String): Boolean =
 
 fun sellerOwnsShop(seller: SellerDAO?, shopId: String): Boolean =
     seller?.shopId?.value == shopId
+
+/**
+ * Shared order gate: customer owner, shop seller, or admin. Replaces the
+ * copy-pasted isCustomer/isSeller/isAdmin triple.
+ */
+fun requireOrderAccess(
+    orderUserId: String,
+    orderShopId: String?,
+    callerUserId: String,
+    callerType: UserType,
+) {
+    // Cheap checks first — seller lookup hits the DB, so admins/owners skip it.
+    if (orderUserId == callerUserId) return
+    if (callerType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)) return
+    val isSeller = orderShopId?.let { sellerOwnsShop(callerUserId, it) } == true
+    if (!isSeller) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
+}

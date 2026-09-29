@@ -9,5 +9,7 @@ class EmailSubscriber : Subscriber {
         is UserRegisteredEvent -> EmailSender.send(event.email, "Welcome to Ktor E-Commerce", "Welcome! Your account has been created as ${event.userType}.")
         is OrderPlacedEvent -> EmailSender.send(event.email, "Order Confirmed", "Order ${event.orderNumber} placed. Total: \$${event.total}")
         is PaymentCompletedEvent -> EmailSender.send(event.email, "Payment Received", "Payment of \$${event.amount} for order ${event.orderId} confirmed.")
+        is AdminActionEvent -> Unit
+        is RefundStatusChangedEvent -> EmailSender.send(event.email, "Refund ${event.toStatus}", "Refund ${event.refundId} for order ${event.orderId}: ${event.fromStatus} -> ${event.toStatus}.")
     }
 }

@@ -29,5 +29,13 @@ data class CouponRequest(
             validate(CouponRequest::startDate).isNotNull().isNotEmpty()
             validate(CouponRequest::endDate).isNotNull().isNotEmpty()
         }
+        require(code.isNotBlank()) { "Coupon code must not be blank" }
+        require(discountType != com.piashcse.constants.CouponDiscountType.PERCENTAGE || discountValue <= BigDecimal(100)) {
+            "Percentage discount cannot exceed 100"
+        }
+        require(minOrderAmount >= BigDecimal.ZERO) { "Minimum order amount cannot be negative" }
+        maxDiscountAmount?.let { require(it > BigDecimal.ZERO) { "Max discount must be positive" } }
+        usageLimit?.let { require(it > 0) { "Usage limit must be positive" } }
+        require(startDate <= endDate) { "Coupon startDate must be before endDate (ISO strings)" }
     }
 }

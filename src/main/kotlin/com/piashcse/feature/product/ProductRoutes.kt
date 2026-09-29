@@ -6,6 +6,7 @@ import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.plugin.RateLimitNames
 import com.piashcse.service.UploadService
+import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.content.*
@@ -103,7 +104,7 @@ fun Route.productSellerRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             productCrudService.deleteProduct(call.currentUserId, id)
-            call.respondOk(mapOf("message" to "Product deleted successfully"))
+            call.respondOk(MessageResponse("Product deleted successfully"))
         }
 
         /**

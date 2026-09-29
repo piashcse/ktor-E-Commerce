@@ -12,6 +12,7 @@ import com.piashcse.feature.consent.consentRoutes
 import com.piashcse.feature.coupon.couponAdminRoutes
 import com.piashcse.feature.coupon.couponRoutes
 import com.piashcse.feature.dashboard.dashboardAdminRoutes
+import com.piashcse.feature.dashboard.dashboardSellerRoutes
 import com.piashcse.feature.inventory.inventorySellerRoutes
 import com.piashcse.feature.order.orderAdminRoutes
 import com.piashcse.feature.order.orderRoutes
@@ -36,6 +37,9 @@ import com.piashcse.feature.shop.shopAdminRoutes
 import com.piashcse.feature.shop.shopRoutes
 import com.piashcse.feature.shop.shopSellerRoutesV1
 import com.piashcse.feature.shop_category.shopCategoryAdminRoutes
+import com.piashcse.feature.notification.notificationRoutes
+import com.piashcse.feature.payout.payoutAdminRoutes
+import com.piashcse.feature.payout.payoutSellerRoutes
 import com.piashcse.feature.wishlist.wishListRoutes
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -56,6 +60,28 @@ fun Application.configureRoute() {
                     "timestamp" to java.time.Instant.now().toString(),
                 ),
             )
+        }
+        get("/health/live") {
+            call.respond(
+                com.piashcse.utils.common.MessageResponse("UP"),
+            )
+        }
+        get("/health/ready") {
+            val dbOk = runCatching {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    org.jetbrains.exposed.v1.jdbc.transactions.transaction {
+                        exec("SELECT 1")
+                    }
+                }
+            }.isSuccess
+            if (dbOk) {
+                call.respond(com.piashcse.utils.common.MessageResponse("READY"))
+            } else {
+                call.respond(
+                    io.ktor.http.HttpStatusCode.ServiceUnavailable,
+                    com.piashcse.utils.common.ApiError("Database unreachable"),
+                )
+            }
         }
 
         route("/api") {
@@ -86,6 +112,7 @@ private fun Route.customerRoutes() {
     route("policy-consents") { consentRoutes() }
     route("refund-requests") { refundRequestRoutes() }
     route("coupons") { couponRoutes() }
+    route("notifications") { notificationRoutes() }
 }
 
 private fun Route.sellerRoutes() {
@@ -96,6 +123,8 @@ private fun Route.sellerRoutes() {
             route("inventories") { inventorySellerRoutes() }
             route("orders") { orderSellerRoutes() }
             route("refund-requests") { refundSellerRoutes() }
+            route("dashboard") { dashboardSellerRoutes() }
+            route("payouts") { payoutSellerRoutes() }
         }
     }
 }
@@ -117,6 +146,7 @@ private fun Route.adminRoutes() {
             route("coupons") { couponAdminRoutes() }
             route("dashboard") { dashboardAdminRoutes() }
             route("audit-logs") { auditLogAdminRoutes() }
+            route("payouts") { payoutAdminRoutes() }
         }
     }
 }

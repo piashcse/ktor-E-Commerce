@@ -6,6 +6,7 @@ import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
@@ -33,7 +34,7 @@ fun Route.cartRoutes() {
              */
             put("update") {
                 val result = call.receive<CartRequest>().let { cartRepo.updateCartQuantity(call.currentUserId, it.productId, it.quantity) }
-                call.respondOk(result ?: mapOf("message" to "Item removed from cart"))
+                call.respondOk(result ?: MessageResponse("Item removed from cart"))
             }
 
             /**

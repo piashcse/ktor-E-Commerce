@@ -9,4 +9,5 @@ interface DashboardRepository {
     suspend fun getUserGrowth(days: Int?): UserGrowthResponse
     suspend fun getTopProducts(limit: Int?): List<TopProductResponse>
     suspend fun getRecentActivity(limit: Int?): List<RecentActivityResponse>
+    suspend fun getSellerStats(sellerUserId: String): DashboardStatsResponse
 }

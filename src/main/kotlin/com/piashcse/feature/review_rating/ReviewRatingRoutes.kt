@@ -56,6 +56,12 @@ fun Route.reviewRatingRoutes() {
                 val id = call.requirePathParameter("id")
                 call.respondOk(reviewRatingRepo.deleteReviewRating(call.currentUserId, id))
             }
+
+            post("{id}/helpful") {
+                val id = call.requirePathParameter("id")
+                val helpful = call.request.queryParameters["helpful"]?.toBoolean() ?: true
+                call.respondOk(reviewRatingRepo.markHelpful(id, helpful))
+            }
         }
     }
 }

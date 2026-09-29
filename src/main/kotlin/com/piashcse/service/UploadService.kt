@@ -112,9 +112,11 @@ object UploadService {
 
             // Sanitize filename: strip null bytes, path separators, control characters
             val sanitizedName = originalName
+                .replace(INVALID_FILENAME_REGEX, "_")
                 .replace(Regex("""[\x00/\\:]"""), "_")
                 .replace(Regex("""\p{Cntrl}"""), "")
                 .trim()
+                .take(255)
                 .ifEmpty { throw ValidationException(Message.Upload.fileNameRequired(purpose)) }
 
             // Extract and validate extension
@@ -169,11 +171,14 @@ object UploadService {
     /**
      * Deletes a file from the specified upload directory.
      */
+    private val ALLOWED_DIRS = setOf(PROFILE_DIR, PRODUCT_DIR, SHOP_DIR, REFUND_DIR, CATEGORY_DIR)
     fun delete(
         directory: String,
         fileName: String?,
     ): Boolean {
         if (fileName.isNullOrBlank()) return false
+        if (directory !in ALLOWED_DIRS) return false
+        if (fileName.contains("/") || fileName.contains("\\") || fileName.contains("..")) return false
 
         return try {
             val targetDir = getDirectory(directory)

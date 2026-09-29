@@ -6,6 +6,7 @@ import com.piashcse.mapper.toShopCategoryResponse
 import com.piashcse.model.response.ShopCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.requireValidName
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
@@ -15,6 +16,7 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 class ShopCategoryRepositoryImpl : ShopCategoryRepository {
     override suspend fun createCategory(name: String): ShopCategoryResponse =
         query {
+            name.requireValidName("ShopCategory")
             val isExistShopCategory =
                 ShopCategoryDAO.find { ShopCategoryTable.name eq name }.firstOrNull()
             isExistShopCategory?.let {
@@ -39,6 +41,7 @@ class ShopCategoryRepositoryImpl : ShopCategoryRepository {
         name: String,
     ): ShopCategoryResponse =
         query {
+            name.requireValidName("ShopCategory")
             val isShopCategoryExist =
                 ShopCategoryDAO.findById(categoryId)
             isShopCategoryExist?.let {

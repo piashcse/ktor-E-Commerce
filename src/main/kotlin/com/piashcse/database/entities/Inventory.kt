@@ -30,7 +30,8 @@ fun ProductDAO.effectiveStock(forUpdate: Boolean = false): Int =
 
 /** Decrements inventory stock and updates status. Throws if insufficient stock to prevent overselling. */
 fun ProductDAO.decrementStock(quantity: Int) {
-    val inv = findInventory(forUpdate = true) ?: return
+    val inv = findInventory(forUpdate = true)
+        ?: throw ValidationException(Message.Inventory.NOT_FOUND)
     if (inv.stockQuantity < quantity) {
         throw ValidationException(Message.Validation.insufficientStock(name, inv.stockQuantity))
     }
@@ -41,7 +42,8 @@ fun ProductDAO.decrementStock(quantity: Int) {
 
 /** Restores inventory stock after cancellation. */
 fun ProductDAO.restoreStock(quantity: Int) {
-    val inv = findInventory(forUpdate = true) ?: return
+    val inv = findInventory(forUpdate = true)
+        ?: throw ValidationException(Message.Inventory.NOT_FOUND)
     val newStock = inv.stockQuantity + quantity
     inv.stockQuantity = newStock
     inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
@@ -49,7 +51,7 @@ fun ProductDAO.restoreStock(quantity: Int) {
 
 /** Calculates commission for an order subtotal. */
 fun SellerDAO.calcCommission(orderSubTotal: BigDecimal): BigDecimal =
-    orderSubTotal.multiply(commissionRate).divide(BigDecimal("100"), 2, RoundingMode.HALF_UP)
+    com.piashcse.utils.common.Money.commission(orderSubTotal, commissionRate)
 
 /** Records sales for a product and promotes it to best-seller once a threshold is crossed. */
 fun ProductDAO.addSales(quantity: Int) {

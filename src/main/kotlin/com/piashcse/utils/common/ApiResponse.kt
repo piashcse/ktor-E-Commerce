@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ApiError(
     val message: String,
+    val code: String = "BAD_REQUEST",
     val errors: List<FieldError>? = null,
     val requestId: String? = null,
 )
@@ -29,4 +30,9 @@ data class FieldError(
 )
 
 /** Convert any AppException → (HttpStatusCode, ApiError) pair. */
-fun AppException.toErrorResponse(): Pair<HttpStatusCode, ApiError> = code to ApiError(message ?: "Unknown error")
+fun AppException.toErrorResponse(): Pair<HttpStatusCode, ApiError> =
+    code to ApiError(message = message ?: "Unknown error", code = errorCode)
+
+/** Standard success message envelope — replaces ad-hoc mapOf("message" to ...) for OpenAPI schema. */
+@Serializable
+data class MessageResponse(val message: String)

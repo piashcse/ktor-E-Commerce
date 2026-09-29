@@ -25,14 +25,15 @@ data class EventBusMetrics(
 
 object EventBus {
     private val log = LoggerFactory.getLogger(EventBus::class.java)
-    private val _events = MutableSharedFlow<DomainEvent>(extraBufferCapacity = 64)
+    private val _events = MutableSharedFlow<DomainEvent>(extraBufferCapacity = 256)
     val events = _events.asSharedFlow()
-    private val subscribers = mutableListOf<Subscriber>()
+    private val subscribers = java.util.concurrent.CopyOnWriteArrayList<Subscriber>()
     private var job: Job? = null
 
-    private var publishedCount = 0L
-    private var consumedCount = 0L
-    private var failedCount = 0L
+    private val publishedCount = java.util.concurrent.atomic.AtomicLong(0)
+    private val consumedCount = java.util.concurrent.atomic.AtomicLong(0)
+    private val failedCount = java.util.concurrent.atomic.AtomicLong(0)
+    private val deadLetterCounter = java.util.concurrent.atomic.AtomicInteger(0)
 
     private val _deadLetter = MutableSharedFlow<DeadLetterEvent>(extraBufferCapacity = 64)
     val deadLetterEvents = _deadLetter.asSharedFlow()
@@ -40,20 +41,46 @@ object EventBus {
     private const val MAX_RETRIES = 3
 
     fun metrics(): EventBusMetrics = EventBusMetrics(
-        published = publishedCount,
-        consumed = consumedCount,
-        failed = failedCount,
-        deadLetterCount = _deadLetter.replayCache.size,
+        published = publishedCount.get(),
+        consumed = consumedCount.get(),
+        failed = failedCount.get(),
+        deadLetterCount = deadLetterCounter.get(),
     )
 
     fun subscribe(subscriber: Subscriber) {
-        subscribers.add(subscriber)
+        if (!subscribers.contains(subscriber)) subscribers.add(subscriber)
     }
 
-    fun publish(event: DomainEvent) {
-        _events.tryEmit(event)
-        publishedCount++
+    /** Returns false when buffer is full so callers can log instead of silently dropping. */
+    fun publish(event: DomainEvent): Boolean {
+        val accepted = _events.tryEmit(event)
+        if (accepted) {
+            publishedCount.incrementAndGet()
+        } else {
+            log.error("EventBus buffer full — dropped ${event::class.simpleName}")
+            failedCount.incrementAndGet()
+        }
+        return accepted
     }
+
+    /** Shared admin-audit publisher: `actor` is `(id, email, role)`. */
+    fun publishAdminAction(
+        actor: Triple<String, String, String>,
+        action: String,
+        resourceType: String,
+        resourceId: String?,
+        details: String? = null,
+    ): Boolean = publish(
+        AdminActionEvent(
+            actorId = actor.first,
+            actorEmail = actor.second,
+            actorRole = actor.third,
+            action = action,
+            resourceType = resourceType,
+            resourceId = resourceId,
+            details = details,
+        ),
+    )
 
     fun start(scope: CoroutineScope) {
         job = scope.launch {
@@ -79,7 +106,7 @@ object EventBus {
                         }
                     }
                     if (lastError != null) {
-                        failedCount++
+                        failedCount.incrementAndGet()
                         log.error(
                             "${subscriber::class.simpleName} permanently failed on ${event::class.simpleName}" +
                                 " after $MAX_RETRIES attempts",
@@ -93,9 +120,10 @@ object EventBus {
                                 attempts = attempts,
                             ),
                         )
+                        deadLetterCounter.incrementAndGet()
                     }
                 }
-                consumedCount++
+                consumedCount.incrementAndGet()
             }
         }
     }

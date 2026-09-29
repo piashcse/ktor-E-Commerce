@@ -45,7 +45,7 @@ object CouponUsageTable : BaseIdTable("coupon_usage") {
     val usedAt = datetime("used_at").clientDefault { LocalDateTime.now(ZoneOffset.UTC) }
 
     init {
-        index(customIndexName = "coupon_usage_coupon_user_idx", isUnique = false, couponId, userId)
+        uniqueIndex(customIndexName = "coupon_usage_coupon_user_order_unique", couponId, userId, orderId)
     }
 }
 

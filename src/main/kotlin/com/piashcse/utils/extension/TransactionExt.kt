@@ -20,6 +20,7 @@ suspend fun <T> query(block: () -> T): T =
  * Execute a block within a database transaction with retry on failure.
  * Uses exponential backoff: 100ms, 200ms, 400ms between retries.
  * Suitable for write transactions with concurrent access (stock, inventory, coupons).
+ * Only transient DB errors are retried — validation / not-found / conflict errors fail fast.
  */
 suspend fun <T> retryQuery(
     maxRetries: Int = 3,
@@ -31,6 +32,13 @@ suspend fun <T> retryQuery(
         try {
             return query(block)
         } catch (e: Exception) {
+            // Fail fast for business errors — retrying hides bugs and amplifies coupon/stock races.
+            if (e is com.piashcse.utils.validator.AppException ||
+                e is org.valiktor.ConstraintViolationException ||
+                e is IllegalArgumentException
+            ) {
+                throw e
+            }
             lastError = e
             if (attempt < maxRetries - 1) {
                 delay((initialDelayMs * (1L shl attempt)).milliseconds)

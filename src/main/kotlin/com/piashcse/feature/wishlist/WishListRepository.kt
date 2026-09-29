@@ -50,6 +50,12 @@ interface WishListRepository {
      * @param productId The unique identifier of the product.
      * @return True if the product is in the wish list, false otherwise.
      */
+    suspend fun moveToCart(
+        userId: String,
+        productId: String,
+        quantity: Int = 1,
+    ): com.piashcse.database.entities.Cart
+
     suspend fun isProductInWishList(
         userId: String,
         productId: String,

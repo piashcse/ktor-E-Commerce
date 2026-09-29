@@ -2,8 +2,8 @@ package com.piashcse.feature.order
 
 import com.piashcse.constants.*
 import com.piashcse.database.entities.*
-import com.piashcse.event.EventBus
 import com.piashcse.event.OrderPlacedEvent
+import com.piashcse.event.OutboxPublisher
 import com.piashcse.mapper.toOrderItemResponse
 import com.piashcse.mapper.toOrderResponse
 import com.piashcse.model.request.CheckoutRequest
@@ -72,7 +72,7 @@ class OrderRepositoryImpl : OrderRepository {
         }
     }
 
-    private fun validateCoupon(code: String, orderAmount: BigDecimal, forUpdate: Boolean = false): CouponDAO {
+    private fun validateCoupon(code: String, orderAmount: BigDecimal, forUpdate: Boolean = false, userId: String? = null): CouponDAO {
         val query = CouponDAO.find { CouponTable.code eq code and (CouponTable.isActive eq true) }
         val coupon = (if (forUpdate) query.forUpdate() else query).firstOrNull()
             ?: throw ValidationException(Message.Orders.INVALID_COUPON)
@@ -87,19 +87,26 @@ class OrderRepositoryImpl : OrderRepository {
         if (coupon.usageLimit != null && coupon.usageCount >= coupon.usageLimit!!)
             throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
 
+        // Per-user reuse guard: coupon_usage is now read, not write-only.
+        if (userId != null) {
+            val alreadyUsed = CouponUsageDAO.find {
+                (CouponUsageTable.couponId eq coupon.id) and (CouponUsageTable.userId eq userId.entityID(UserTable))
+            }.firstOrNull() != null
+            if (alreadyUsed) throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
+        }
+
         return coupon
     }
 
     private fun calculateCouponDiscount(coupon: CouponDAO, orderAmount: BigDecimal): BigDecimal {
         val discount = when (coupon.discountType) {
             CouponDiscountType.PERCENTAGE -> {
-                val percentage = coupon.discountValue.divide(BigDecimal(100), 10, RoundingMode.HALF_UP)
-                val amount = orderAmount.multiply(percentage)
+                val amount = com.piashcse.utils.common.Money.percentOf(orderAmount, coupon.discountValue)
                 coupon.maxDiscountAmount?.let { amount.min(it) } ?: amount
             }
             CouponDiscountType.FIXED -> coupon.discountValue
         }
-        return discount.min(orderAmount).setScale(2, RoundingMode.HALF_UP)
+        return com.piashcse.utils.common.Money.scale2(discount.min(orderAmount))
     }
 
     private fun consumeCoupon(
@@ -123,14 +130,18 @@ class OrderRepositoryImpl : OrderRepository {
     override suspend fun placeOrder(
         userId: String,
         checkoutRequest: CheckoutRequest,
-    ): List<OrderResponse> = retryQuery {
-        checkoutRequest.idempotencyKey?.let { key ->
-            val existing = OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.toList()
-            if (existing.isNotEmpty()) {
-                val itemsMap = loadItemsForOrders(existing)
-                return@retryQuery existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
-            }
-        }
+    ): List<OrderResponse> {
+        // Cached once: avoids N+1 UserDAO lookups per split order.
+        val callerEmail = query { UserDAO.findById(userId)?.email.orEmpty() }
+        val responses = retryQuery {
+            val result: List<OrderResponse> = run {
+                checkoutRequest.idempotencyKey?.let { key ->
+                    val existing = OrderDAO.find { (OrderTable.idempotencyKey eq key) and (OrderTable.userId eq userId) }.toList()
+                    if (existing.isNotEmpty()) {
+                        val itemsMap = loadItemsForOrders(existing)
+                        return@run existing.map { it.toOrderResponse(itemsMap[it.id.value]) }
+                    }
+                }
 
         val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
         if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
@@ -180,6 +191,7 @@ class OrderRepositoryImpl : OrderRepository {
                 this.shippingAddress = fullAddress
                 this.paymentMethod = checkoutRequest.paymentMethod
                 this.notes = checkoutRequest.notes
+                this.currency = checkoutRequest.currency.uppercase()
             }
 
             items.forEach { cartItem ->
@@ -231,11 +243,10 @@ class OrderRepositoryImpl : OrderRepository {
 
         checkoutRequest.couponCode?.let { code ->
             val totalSubTotal = createdOrders.map { it.subTotal }.reduce(BigDecimal::add)
-            val coupon = validateCoupon(code, totalSubTotal, forUpdate = true)
+            val coupon = validateCoupon(code, totalSubTotal, forUpdate = true, userId = userId)
             val discount = consumeCoupon(coupon, totalSubTotal, userId, createdOrders)
             createdOrders.forEach { order ->
-                val proportion = order.subTotal.divide(totalSubTotal, 10, RoundingMode.HALF_UP)
-                val orderDiscount = discount.multiply(proportion).setScale(2, RoundingMode.HALF_UP)
+                val orderDiscount = com.piashcse.utils.common.Money.proportionalSplit(discount, order.subTotal, totalSubTotal)
                 order.discountAmount = orderDiscount
                 order.couponCode = code
                 order.total = order.total.subtract(orderDiscount)
@@ -261,11 +272,13 @@ class OrderRepositoryImpl : OrderRepository {
         cartItems.forEach { it.delete() }
         createdOrders.forEach {
             logStatusChange(it.id.value, it.status, "Order placed", userId)
-            EventBus.publish(
+            // Durable: outbox row commits atomically; OutboxPoller relays (no ghost on rollback/retry).
+            OutboxPublisher.enqueueTx(
+                "ORDER", it.id.value,
                 OrderPlacedEvent(
                     orderId = it.id.value,
                     userId = userId,
-                    email = UserDAO.findById(userId)?.email.orEmpty(),
+                    email = callerEmail,
                     shopId = it.shopId?.value,
                     orderNumber = it.orderNumber,
                     total = it.total,
@@ -274,7 +287,11 @@ class OrderRepositoryImpl : OrderRepository {
         }
         val itemsMap = loadItemsForOrders(createdOrders)
         createdOrders.map { it.toOrderResponse(itemsMap[it.id.value]) }
+        }
+        result
     }
+    return responses
+}
 
     override suspend fun getCheckoutSummary(
         userId: String,
@@ -290,33 +307,32 @@ class OrderRepositoryImpl : OrderRepository {
             ProductTable.id inList cartItems.map { it.productId.value }.distinct()
         }.associateBy { it.id.value }
 
-        var subTotal = BigDecimal.ZERO
         var totalItems = 0
-        cartItems.forEach { cartItem ->
-            val product = productsMap[cartItem.productId.value]!!
-            val unitPrice = product.discountPrice ?: product.price
-            subTotal = subTotal.add(unitPrice.multiply(BigDecimal(cartItem.quantity)))
-            totalItems += cartItem.quantity
-        }
+        cartItems.forEach { totalItems += it.quantity }
 
         val shopCount = cartItems.mapNotNull { productsMap[it.productId.value]?.shopId?.value }.distinct().size
-        val shippingTotal = shippingMethod.price.multiply(BigDecimal(shopCount))
-        val taxAmount = subTotal.multiply(BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString()))
-        val baseTotal = subTotal.add(shippingTotal).add(taxAmount)
-        val baseTotalStr = baseTotal.setScale(2, RoundingMode.HALF_UP).toPlainString()
-        var response = CheckoutSummaryResponse(
-            subTotal = subTotal.setScale(2, RoundingMode.HALF_UP).toPlainString(),
-            shippingCost = shippingTotal.setScale(2, RoundingMode.HALF_UP).toPlainString(),
-            taxAmount = taxAmount.setScale(2, RoundingMode.HALF_UP).toPlainString(),
-            total = baseTotalStr,
-            itemCount = totalItems,
-        )
+        val pricing = com.piashcse.service.PricingService
+        val sub = pricing.subtotal(cartItems.map { cartItem ->
+            val product = productsMap[cartItem.productId.value]
+                ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
+            (product.discountPrice ?: product.price) to cartItem.quantity
+        })
+        val ship = pricing.shipping(shippingMethod.price, shopCount)
+        var response = pricing.breakdown(sub, ship).let {
+            CheckoutSummaryResponse(
+                subTotal = it.subTotal.toPlainString(),
+                shippingCost = it.shippingTotal.toPlainString(),
+                taxAmount = it.taxAmount.toPlainString(),
+                total = it.total.toPlainString(),
+                itemCount = totalItems,
+            )
+        }
 
         checkoutRequest.couponCode?.let {
-            val coupon = validateCoupon(it, subTotal)
-            val discount = calculateCouponDiscount(coupon, subTotal)
-            val discountedTotal = baseTotal.subtract(discount).setScale(2, RoundingMode.HALF_UP)
-            response = response.copy(discountAmount = discount.setScale(2, RoundingMode.HALF_UP).toPlainString(), total = discountedTotal.toPlainString())
+            val coupon = validateCoupon(it, sub, userId = userId)
+            val discount = calculateCouponDiscount(coupon, sub)
+            val withCoupon = pricing.breakdown(sub, ship, discount)
+            response = response.copy(discountAmount = withCoupon.discount.toPlainString(), total = withCoupon.total.toPlainString())
         }
         response
     }
@@ -382,7 +398,8 @@ class OrderRepositoryImpl : OrderRepository {
             }
 
             items.forEach { itemRequest ->
-                val product = productsMap[itemRequest.productId]!!
+                val product = productsMap[itemRequest.productId]
+                    ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
                 val unitPrice = product.discountPrice ?: product.price
                 val itemTotal = unitPrice.multiply(BigDecimal(itemRequest.quantity))
 
@@ -440,11 +457,7 @@ class OrderRepositoryImpl : OrderRepository {
         val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
         val user = UserDAO.findById(userId) ?: throw ValidationException(Message.Errors.NOT_FOUND)
 
-        val isCustomer = order.userId.value == userId
-        val isSeller = order.shopId?.value?.let { sellerOwnsShop(userId, it) } == true
-        val isAdmin = user.userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
-
-        if (!isCustomer && !isSeller && !isAdmin) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
+        requireOrderAccess(order.userId.value, order.shopId?.value, userId, user.userType)
 
         if (!OrderStatus.canTransitionTo(order.status, status))
             throw ValidationException(Message.Orders.INVALID_STATUS)
@@ -478,11 +491,7 @@ class OrderRepositoryImpl : OrderRepository {
 
         val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
 
-        val isCustomer = order.userId.value == userId
-        val isSeller = order.shopId?.value?.let { sellerOwnsShop(userId, it) } == true
-        val isAdmin = userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
-
-        if (!isCustomer && !isSeller && !isAdmin) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
+        requireOrderAccess(order.userId.value, order.shopId?.value, userId, userType)
         if (!OrderStatus.canBeCanceled(order.status)) throw ValidationException(Message.Orders.CANNOT_CANCEL)
 
         applyOrderCancellation(order, notes = reason, changedBy = userId)

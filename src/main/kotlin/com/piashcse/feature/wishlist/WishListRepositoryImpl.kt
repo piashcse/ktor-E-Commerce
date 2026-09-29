@@ -2,6 +2,7 @@ package com.piashcse.feature.wishlist
 
 import com.piashcse.database.entities.*
 import com.piashcse.mapper.toProductResponse
+import com.piashcse.mapper.toCartResponse
 import com.piashcse.mapper.toWishListResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -59,6 +60,27 @@ class WishListRepositoryImpl : WishListRepository {
             wishListItem.delete()
             product
         }
+
+    override suspend fun moveToCart(userId: String, productId: String, quantity: Int): Cart = query {
+        val item = WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
+            .firstOrNull() ?: productId.throwNotFound("ProductResponse")
+        val product = ProductDAO.findById(productId) ?: productId.throwNotFound("ProductResponse")
+        val stock = product.effectiveStock()
+        if (quantity > stock) throw com.piashcse.utils.validator.ValidationException(com.piashcse.constants.Message.Validation.insufficientStock(product.name, stock))
+        val existing = CartItemDAO.find { CartItemTable.userId eq userId and (CartItemTable.productId eq productId) }.singleOrNull()
+        val cart = if (existing != null) {
+            existing.quantity = (existing.quantity + quantity).coerceAtMost(stock)
+            existing.toCartResponse()
+        } else {
+            CartItemDAO.new {
+                this.userId = userId.entityID(UserTable)
+                this.productId = productId.entityID(ProductTable)
+                this.quantity = quantity
+            }.toCartResponse()
+        }
+        item.delete()
+        cart
+    }
 
     override suspend fun isProductInWishList(
         userId: String,
