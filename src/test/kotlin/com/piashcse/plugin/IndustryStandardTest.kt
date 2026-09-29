@@ -9,6 +9,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.koin.dsl.module
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -18,7 +19,7 @@ class IndustryStandardTest {
     fun `metrics endpoint exposes prometheus scrape`() =
         testApplication {
             application {
-                installTestInfra(org.koin.dsl.module { })
+                installTestInfra(module { })
                 configureMetrics()
             }
             client.get("/metrics")

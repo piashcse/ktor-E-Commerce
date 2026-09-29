@@ -4,6 +4,8 @@ import com.piashcse.RouteTestHelper.authHeader
 import com.piashcse.RouteTestHelper.installTestInfra
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
+import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.RefundStatus
 import com.piashcse.feature.order.OrderRepository
 import com.piashcse.feature.order.orderAdminRoutes
 import com.piashcse.feature.order.orderSellerRoutes
@@ -18,6 +20,7 @@ import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
 import com.piashcse.model.response.OrderResponse
+import com.piashcse.model.response.RefundRequestResponse
 import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.sellerAuth
 import com.piashcse.utils.common.PaginatedResponse
@@ -28,6 +31,9 @@ import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
+import org.koin.dsl.module
+import org.valiktor.ConstraintViolationException
+import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -50,7 +56,7 @@ class SellerAdminOrderRoutesTest {
             coEvery { repo.getSellerOrders(any(), any(), any(), any()) } returns
                 PaginatedResponse(listOf(sampleOrder()), PaginationMetadata(1, 20, 0))
             application {
-                installTestInfra(org.koin.dsl.module { single<OrderRepository> { repo } })
+                installTestInfra(module { single<OrderRepository> { repo } })
                 routing { route("/api/v1/seller") { sellerAuth { route("orders") { orderSellerRoutes() } } } }
             }
             val res =
@@ -64,7 +70,7 @@ class SellerAdminOrderRoutesTest {
     fun `seller orders customer token returns 403`() =
         testApplication {
             application {
-                installTestInfra(org.koin.dsl.module { single<OrderRepository> { repo } })
+                installTestInfra(module { single<OrderRepository> { repo } })
                 routing { route("/api/v1/seller") { sellerAuth { route("orders") { orderSellerRoutes() } } } }
             }
             val res =
@@ -80,7 +86,7 @@ class SellerAdminOrderRoutesTest {
             coEvery { repo.getAdminOrders(any(), any(), any(), any(), any()) } returns
                 PaginatedResponse(listOf(sampleOrder()), PaginationMetadata(1, 20, 0))
             application {
-                installTestInfra(org.koin.dsl.module { single<OrderRepository> { repo } })
+                installTestInfra(module { single<OrderRepository> { repo } })
                 routing { route("/api/v1/admin") { adminAuth { route("orders") { orderAdminRoutes() } } } }
             }
             val res =
@@ -95,7 +101,7 @@ class SellerAdminOrderRoutesTest {
         testApplication {
             coEvery { repo.updateOrderStatus(any(), any(), any()) } returns sampleOrder()
             application {
-                installTestInfra(org.koin.dsl.module { single<OrderRepository> { repo } })
+                installTestInfra(module { single<OrderRepository> { repo } })
                 routing { route("/api/v1/admin") { adminAuth { route("orders") { orderAdminRoutes() } } } }
             }
             val res =
@@ -113,13 +119,13 @@ class SellerAdminRefundRoutesTest {
     fun `seller update refund happy path returns 200`() =
         testApplication {
             coEvery { repo.updateRefundStatus(any(), any(), any()) } returns
-                com.piashcse.model.response.RefundRequestResponse(
+                RefundRequestResponse(
                     "r-1", "oi-1", "o-1", "user-1", "damaged", null,
-                    com.piashcse.constants.RefundStatus.APPROVED, null, null, null,
+                    RefundStatus.APPROVED, null, null, null,
                     "2024-01-01T00:00:00", null, "2024-01-01T00:00:00", "2024-01-01T00:00:00",
                 )
             application {
-                installTestInfra(org.koin.dsl.module { single<RefundRequestRepository> { repo } })
+                installTestInfra(module { single<RefundRequestRepository> { repo } })
                 routing { route("/api/v1/seller") { sellerAuth { route("refund-requests") { refundSellerRoutes() } } } }
             }
             val res =
@@ -135,13 +141,13 @@ class SellerAdminRefundRoutesTest {
     fun `admin update refund happy path returns 200`() =
         testApplication {
             coEvery { repo.updateRefundStatus(any(), any(), any()) } returns
-                com.piashcse.model.response.RefundRequestResponse(
+                RefundRequestResponse(
                     "r-1", "oi-1", "o-1", "user-1", "damaged", null,
-                    com.piashcse.constants.RefundStatus.APPROVED, null, null, null,
+                    RefundStatus.APPROVED, null, null, null,
                     "2024-01-01T00:00:00", null, "2024-01-01T00:00:00", "2024-01-01T00:00:00",
                 )
             application {
-                installTestInfra(org.koin.dsl.module { single<RefundRequestRepository> { repo } })
+                installTestInfra(module { single<RefundRequestRepository> { repo } })
                 routing { route("/api/v1/admin") { adminAuth { route("refund-requests") { refundAdminRoutes() } } } }
             }
             val res =
@@ -157,7 +163,7 @@ class SellerAdminRefundRoutesTest {
 class CommerceValidationTest {
     @Test
     fun `cart request rejects blank product`() {
-        assertFailsWith<org.valiktor.ConstraintViolationException> {
+        assertFailsWith<ConstraintViolationException> {
             CartRequest("", 1)
         }
     }
@@ -169,7 +175,7 @@ class CommerceValidationTest {
 
     @Test
     fun `checkout request rejects blank ids`() {
-        assertFailsWith<org.valiktor.ConstraintViolationException> {
+        assertFailsWith<ConstraintViolationException> {
             CheckoutRequest("", "")
         }
     }
@@ -183,21 +189,21 @@ class CommerceValidationTest {
 
     @Test
     fun `payment request rejects zero amount`() {
-        assertFailsWith<org.valiktor.ConstraintViolationException> {
-            PaymentRequest("o-1", java.math.BigDecimal.ZERO, com.piashcse.constants.PaymentStatus.PENDING, PaymentMethod.COD, null)
+        assertFailsWith<ConstraintViolationException> {
+            PaymentRequest("o-1", BigDecimal.ZERO, PaymentStatus.PENDING, PaymentMethod.COD, null)
         }
     }
 
     @Test
     fun `cancel order rejects blank reason`() {
-        assertFailsWith<org.valiktor.ConstraintViolationException> {
+        assertFailsWith<ConstraintViolationException> {
             CancelOrderRequest("")
         }
     }
 
     @Test
     fun `refund request rejects blank reason`() {
-        assertFailsWith<org.valiktor.ConstraintViolationException> {
+        assertFailsWith<ConstraintViolationException> {
             RefundRequestRequest("oi-1", "")
         }
     }
@@ -209,6 +215,6 @@ class CommerceValidationTest {
 
     @Test
     fun `update refund status valid`() {
-        UpdateRefundStatusRequest(com.piashcse.constants.RefundStatus.APPROVED)
+        UpdateRefundStatusRequest(RefundStatus.APPROVED)
     }
 }

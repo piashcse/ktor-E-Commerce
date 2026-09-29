@@ -2,8 +2,10 @@ package com.piashcse.feature.auth
 
 import com.piashcse.RouteTestHelper.authHeader
 import com.piashcse.RouteTestHelper.installTestInfra
+import com.piashcse.constants.UserType
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
+import com.piashcse.model.request.TokenPair
 import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
 import io.ktor.client.request.*
@@ -15,6 +17,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.koin.dsl.module
 import java.time.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -28,7 +31,7 @@ class AuthRoutesTest {
         mockk<UserDAO> {
             every { id } returns EntityID("user-1", UserTable)
             every { email } returns "test@example.com"
-            every { userType } returns com.piashcse.constants.UserType.CUSTOMER
+            every { userType } returns UserType.CUSTOMER
             every { isVerified } returns true
             every { isActive } returns true
             every { createdAt } returns LocalDateTime.of(2024, 1, 1, 0, 0)
@@ -38,7 +41,7 @@ class AuthRoutesTest {
     private fun ApplicationTestBuilder.setup() {
         application {
             installTestInfra(
-                org.koin.dsl.module {
+                module {
                     single<AuthRepository> { authRepo }
                     single { userAuthService }
                 },
@@ -124,7 +127,7 @@ class AuthRoutesTest {
     fun `refresh-token happy path returns 200`() =
         testApplication {
             coEvery { authRepo.refreshAccessToken(any()) } returns
-                com.piashcse.model.request.TokenPair("access", "refresh", "Bearer", 900)
+                TokenPair("access", "refresh", "Bearer", 900)
             setup()
             val res =
                 client.post("/api/v1/auth/refresh-token") {

@@ -28,6 +28,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
+import org.koin.dsl.module
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -74,7 +75,7 @@ class CartRoutesTest {
 
     private fun ApplicationTestBuilder.setup() {
         application {
-            installTestInfra(org.koin.dsl.module { single<CartRepository> { repo } })
+            installTestInfra(module { single<CartRepository> { repo } })
             routing { route("/api/v1/carts") { cartRoutes() } }
         }
     }
@@ -95,7 +96,7 @@ class CartRoutesTest {
     fun `create cart happy path returns 201`() =
         testApplication {
             coEvery { repo.createCart(any(), any(), any()) } returns
-                com.piashcse.database.entities.Cart("p-1", 2, null)
+                Cart("p-1", 2, null)
             setup()
             val res =
                 client.post("/api/v1/carts") {
@@ -137,7 +138,7 @@ class WishlistRoutesTest {
 
     private fun ApplicationTestBuilder.setup() {
         application {
-            installTestInfra(org.koin.dsl.module { single<WishListRepository> { repo } })
+            installTestInfra(module { single<WishListRepository> { repo } })
             routing { route("/api/v1/wishlists") { wishListRoutes() } }
         }
     }
@@ -182,7 +183,7 @@ class PaymentRoutesTest {
 
     private fun ApplicationTestBuilder.setup() {
         application {
-            installTestInfra(org.koin.dsl.module { single<PaymentRepository> { repo } })
+            installTestInfra(module { single<PaymentRepository> { repo } })
             routing { route("/api/v1/payments") { paymentRoutes() } }
         }
     }
@@ -232,7 +233,7 @@ class RefundRoutesTest {
 
     private fun ApplicationTestBuilder.setup() {
         application {
-            installTestInfra(org.koin.dsl.module { single<RefundRequestRepository> { repo } })
+            installTestInfra(module { single<RefundRequestRepository> { repo } })
             routing { route("/api/v1/refund-requests") { refundRequestRoutes() } }
         }
     }

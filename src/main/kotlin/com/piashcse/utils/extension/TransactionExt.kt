@@ -1,9 +1,11 @@
 package com.piashcse.utils.extension
 
+import com.piashcse.utils.validator.AppException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.valiktor.ConstraintViolationException
 import kotlin.time.Duration.Companion.milliseconds
 
 // ============================================================================
@@ -33,8 +35,8 @@ suspend fun <T> retryQuery(
             return query(block)
         } catch (e: Exception) {
             // Fail fast for business errors — retrying hides bugs and amplifies coupon/stock races.
-            if (e is com.piashcse.utils.validator.AppException ||
-                e is org.valiktor.ConstraintViolationException ||
+            if (e is AppException ||
+                e is ConstraintViolationException ||
                 e is IllegalArgumentException
             ) {
                 throw e

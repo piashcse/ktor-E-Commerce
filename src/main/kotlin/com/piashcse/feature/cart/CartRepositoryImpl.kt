@@ -7,6 +7,7 @@ import com.piashcse.mapper.toCartResponse
 import com.piashcse.mapper.toProductResponse
 import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.ProductResponse
+import com.piashcse.service.PricingService
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
@@ -190,8 +191,8 @@ class CartRepositoryImpl : CartRepository {
                 }
 
             val lines = items.map { BigDecimal(it.price) to it.quantity }
-            val subtotal = com.piashcse.service.PricingService.subtotal(lines)
-            val tax = com.piashcse.service.PricingService.tax(subtotal)
+            val subtotal = PricingService.subtotal(lines)
+            val tax = PricingService.tax(subtotal)
             CartSummaryResponse(items, subtotal.toPlainString(), tax.toPlainString(), items.size)
         }
 }

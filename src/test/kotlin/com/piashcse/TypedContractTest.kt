@@ -1,11 +1,16 @@
 package com.piashcse
 
+import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.RouteTestHelper.authHeader
 import com.piashcse.RouteTestHelper.installTestInfra
 import com.piashcse.RouteTestHelper.jsonClient
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.RefundStatus
+import com.piashcse.constants.UserType
+import com.piashcse.database.entities.Cart
+import com.piashcse.database.entities.LoginResponse
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.feature.auth.AuthRepository
@@ -25,8 +30,11 @@ import com.piashcse.model.request.LoginRequest
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.RegisterRequest
+import com.piashcse.model.request.TokenPair
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.model.response.PaymentResponse
+import com.piashcse.model.response.RefundRequestResponse
+import com.piashcse.model.response.RegistrationResult
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -37,6 +45,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.koin.dsl.module
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import kotlin.test.Test
@@ -53,11 +62,11 @@ class TypedContractTest {
         testApplication {
             val authRepo: AuthRepository = mockk()
             coEvery { authRepo.register(any()) } returns
-                com.piashcse.model.response.RegistrationResult.Created("user-1", "test@example.com", "OTP sent")
+                RegistrationResult.Created("user-1", "test@example.com", "OTP sent")
             coEvery { authRepo.getRegistrationOtp(any()) } returns "123456"
             application {
                 installTestInfra(
-                    org.koin.dsl.module {
+                    module {
                         single<AuthRepository> { authRepo }
                         single { UserAuthenticationService(get()) }
                     },
@@ -71,8 +80,8 @@ class TypedContractTest {
                     setBody(RegisterRequest("test@example.com", "Password1!", "customer"))
                 }
             assertEquals(HttpStatusCode.Created, res.status)
-            val body = res.body<com.piashcse.model.response.RegistrationResult.Created>()
-            assertIs<com.piashcse.model.response.RegistrationResult.Created>(body)
+            val body = res.body<RegistrationResult.Created>()
+            assertIs<RegistrationResult.Created>(body)
             assertEquals("user-1", body.id)
             coVerify(exactly = 1) { authRepo.register(match { it.email == "test@example.com" }) }
         }
@@ -82,14 +91,14 @@ class TypedContractTest {
         testApplication {
             val authRepo: AuthRepository = mockk()
             val hash =
-                at.favre.lib.crypto.bcrypt.BCrypt.withDefaults()
+                BCrypt.withDefaults()
                     .hashToString(4, "Password1!".toCharArray())
             val user =
                 mockk<UserDAO> {
                     every { id } returns EntityID("user-1", UserTable)
                     every { email } returns "test@example.com"
                     every { password } returns hash
-                    every { userType } returns com.piashcse.constants.UserType.CUSTOMER
+                    every { userType } returns UserType.CUSTOMER
                     every { isVerified } returns true
                     every { isActive } returns true
                     every { createdAt } returns LocalDateTime.of(2024, 1, 1, 0, 0)
@@ -99,11 +108,11 @@ class TypedContractTest {
             coEvery { authRepo.findUserByEmailAndType(any(), any()) } returns user
             coEvery { authRepo.resetLoginAttempts(any(), any()) } returns Unit
             coEvery { authRepo.generateTokenPair(any(), any(), any()) } returns
-                com.piashcse.model.request.TokenPair("access-1", "refresh-1", "Bearer", 900)
+                TokenPair("access-1", "refresh-1", "Bearer", 900)
             coEvery { authRepo.storeRefreshToken(any(), any()) } returns Unit
             application {
                 installTestInfra(
-                    org.koin.dsl.module {
+                    module {
                         single<AuthRepository> { authRepo }
                         single { UserAuthenticationService(get()) }
                     },
@@ -117,7 +126,7 @@ class TypedContractTest {
                     setBody(LoginRequest("test@example.com", "Password1!", "customer"))
                 }
             assertEquals(HttpStatusCode.OK, res.status)
-            val body = res.body<com.piashcse.database.entities.LoginResponse>()
+            val body = res.body<LoginResponse>()
             assertEquals("access-1", body.accessToken)
             coVerify(exactly = 1) { authRepo.storeRefreshToken("user-1", "refresh-1") }
         }
@@ -129,7 +138,7 @@ class TypedContractTest {
             coEvery { repo.createPayment(any(), any()) } returns
                 PaymentResponse("pay-1", "o-1", "115.00", PaymentStatus.COMPLETED, PaymentMethod.COD, "tx-1")
             application {
-                installTestInfra(org.koin.dsl.module { single<PaymentRepository> { repo } })
+                installTestInfra(module { single<PaymentRepository> { repo } })
                 routing { route("/api/v1/payments") { paymentRoutes() } }
             }
             val client = jsonClient()
@@ -152,7 +161,7 @@ class TypedContractTest {
             coEvery { repo.cancelOrder(any(), any(), any(), any()) } returns
                 OrderResponse(orderId = "o-1", orderNumber = "ORD-1", subTotal = "100.00", total = "115.00", status = OrderStatus.CANCELED)
             application {
-                installTestInfra(org.koin.dsl.module { single<OrderRepository> { repo } })
+                installTestInfra(module { single<OrderRepository> { repo } })
                 routing { route("/api/v1/orders") { orderRoutes() } }
             }
             val client = jsonClient()
@@ -172,9 +181,9 @@ class TypedContractTest {
         testApplication {
             val repo: CartRepository = mockk()
             coEvery { repo.createCart(any(), any(), any()) } returns
-                com.piashcse.database.entities.Cart("p-1", 2, null)
+                Cart("p-1", 2, null)
             application {
-                installTestInfra(org.koin.dsl.module { single<CartRepository> { repo } })
+                installTestInfra(module { single<CartRepository> { repo } })
                 routing { route("/api/v1/carts") { cartRoutes() } }
             }
             val client = jsonClient()
@@ -185,7 +194,7 @@ class TypedContractTest {
                     setBody(CartRequest("p-1", 2))
                 }
             assertEquals(HttpStatusCode.Created, res.status)
-            assertEquals("p-1", res.body<com.piashcse.database.entities.Cart>().productId)
+            assertEquals("p-1", res.body<Cart>().productId)
             coVerify(exactly = 1) { repo.createCart("user-1", "p-1", 2) }
         }
 
@@ -195,7 +204,7 @@ class TypedContractTest {
             val repo: RefundRequestRepository = mockk()
             coEvery { repo.createRefundRequest(any(), any(), any()) } returns mockRefund()
             application {
-                installTestInfra(org.koin.dsl.module { single<RefundRequestRepository> { repo } })
+                installTestInfra(module { single<RefundRequestRepository> { repo } })
                 routing { route("/api/v1/refund-requests") { refundRequestRoutes() } }
             }
             val client = jsonClient()
@@ -210,9 +219,9 @@ class TypedContractTest {
         }
 
     private fun mockRefund() =
-        com.piashcse.model.response.RefundRequestResponse(
+        RefundRequestResponse(
             "r-1", "oi-1", "o-1", "user-1", "damaged", null,
-            com.piashcse.constants.RefundStatus.PENDING, null, null, null,
+            RefundStatus.PENDING, null, null, null,
             "2024-01-01T00:00:00", null, "2024-01-01T00:00:00", "2024-01-01T00:00:00",
         )
 }

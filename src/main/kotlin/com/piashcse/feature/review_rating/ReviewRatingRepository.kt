@@ -31,5 +31,5 @@ interface ReviewRatingRepository {
     suspend fun markHelpful(
         reviewId: String,
         helpful: Boolean = true,
-    ): com.piashcse.model.response.ReviewRatingResponse
+    ): ReviewRatingResponse
 }

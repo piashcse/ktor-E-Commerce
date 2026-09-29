@@ -1,5 +1,6 @@
 package com.piashcse.feature.wishlist
 
+import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.mapper.toCartResponse
 import com.piashcse.mapper.toProductResponse
@@ -7,6 +8,7 @@ import com.piashcse.mapper.toWishListResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -73,8 +75,8 @@ class WishListRepositoryImpl : WishListRepository {
             val product = ProductDAO.findById(productId) ?: productId.throwNotFound("ProductResponse")
             val stock = product.effectiveStock()
             if (quantity > stock) {
-                throw com.piashcse.utils.validator.ValidationException(
-                    com.piashcse.constants.Message.Validation.insufficientStock(product.name, stock),
+                throw ValidationException(
+                    Message.Validation.insufficientStock(product.name, stock),
                 )
             }
             val existing = CartItemDAO.find { CartItemTable.userId eq userId and (CartItemTable.productId eq productId) }.singleOrNull()

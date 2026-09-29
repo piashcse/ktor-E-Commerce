@@ -13,6 +13,7 @@ import com.piashcse.database.entities.UserTable
 import com.piashcse.mapper.toReviewRatingResponse
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.model.response.ReviewRatingResponse
+import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
@@ -32,7 +33,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
             product.totalReviews = 0
         } else {
             val total = reviews.map { it.rating.toBigDecimal() }.reduce(BigDecimal::add)
-            product.rating = com.piashcse.utils.common.Money.average(total, reviews.size.toLong())
+            product.rating = Money.average(total, reviews.size.toLong())
             product.totalReviews = reviews.size
         }
     }

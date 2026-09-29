@@ -1,10 +1,11 @@
 package com.piashcse.mapper
 
 import com.piashcse.database.entities.RefundRequestDAO
+import com.piashcse.model.response.RefundRequestResponse
 import java.time.format.DateTimeFormatter
 
 fun RefundRequestDAO.toRefundRequestResponse() =
-    com.piashcse.model.response.RefundRequestResponse(
+    RefundRequestResponse(
         id = id.value,
         orderItemId = orderItemId.value,
         orderId = orderId.value,

@@ -31,7 +31,7 @@ data class CouponRequest(
             validate(CouponRequest::endDate).isNotNull().isNotEmpty()
         }
         require(code.isNotBlank()) { "Coupon code must not be blank" }
-        require(discountType != com.piashcse.constants.CouponDiscountType.PERCENTAGE || discountValue <= BigDecimal(100)) {
+        require(discountType != CouponDiscountType.PERCENTAGE || discountValue <= BigDecimal(100)) {
             "Percentage discount cannot exceed 100"
         }
         require(minOrderAmount >= BigDecimal.ZERO) { "Minimum order amount cannot be negative" }

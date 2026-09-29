@@ -17,6 +17,7 @@ import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import java.security.MessageDigest
 import java.time.Instant
@@ -81,7 +82,7 @@ class AuthRepositoryImpl : AuthRepository {
     }
 
     private fun registrationAttempt(
-        userId: org.jetbrains.exposed.v1.core.dao.id.EntityID<String>,
+        userId: EntityID<String>,
         forUpdate: Boolean = false,
     ) = (
         if (forUpdate) {
@@ -93,7 +94,7 @@ class AuthRepositoryImpl : AuthRepository {
         }
     ).singleOrNull()
 
-    private fun resetAttempt(userId: org.jetbrains.exposed.v1.core.dao.id.EntityID<String>) =
+    private fun resetAttempt(userId: EntityID<String>) =
         OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId) and (OtpAttemptTable.purpose eq "RESET") }.singleOrNull()
 
     // ── Login attempt helpers ────────────────────────────────────────────

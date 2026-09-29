@@ -6,6 +6,7 @@ import com.piashcse.constants.Message
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import com.piashcse.utils.common.Money
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
@@ -51,8 +52,7 @@ fun ProductDAO.restoreStock(quantity: Int) {
 }
 
 /** Calculates commission for an order subtotal. */
-fun SellerDAO.calcCommission(orderSubTotal: BigDecimal): BigDecimal =
-    com.piashcse.utils.common.Money.commission(orderSubTotal, commissionRate)
+fun SellerDAO.calcCommission(orderSubTotal: BigDecimal): BigDecimal = Money.commission(orderSubTotal, commissionRate)
 
 /** Records sales for a product and promotes it to best-seller once a threshold is crossed. */
 fun ProductDAO.addSales(quantity: Int) {

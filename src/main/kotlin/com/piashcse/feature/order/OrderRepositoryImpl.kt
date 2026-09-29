@@ -11,6 +11,8 @@ import com.piashcse.model.request.OrderRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
 import com.piashcse.model.response.OrderItemResponse
 import com.piashcse.model.response.OrderResponse
+import com.piashcse.service.PricingService
+import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
@@ -122,12 +124,12 @@ class OrderRepositoryImpl : OrderRepository {
         val discount =
             when (coupon.discountType) {
                 CouponDiscountType.PERCENTAGE -> {
-                    val amount = com.piashcse.utils.common.Money.percentOf(orderAmount, coupon.discountValue)
+                    val amount = Money.percentOf(orderAmount, coupon.discountValue)
                     coupon.maxDiscountAmount?.let { amount.min(it) } ?: amount
                 }
                 CouponDiscountType.FIXED -> coupon.discountValue
             }
-        return com.piashcse.utils.common.Money.scale2(discount.min(orderAmount))
+        return Money.scale2(discount.min(orderAmount))
     }
 
     private fun consumeCoupon(
@@ -279,7 +281,7 @@ class OrderRepositoryImpl : OrderRepository {
                             val discount = consumeCoupon(coupon, totalSubTotal, userId, createdOrders)
                             createdOrders.forEach { order ->
                                 val orderDiscount =
-                                    com.piashcse.utils.common.Money.proportionalSplit(
+                                    Money.proportionalSplit(
                                         discount,
                                         order.subTotal,
                                         totalSubTotal,
@@ -353,7 +355,7 @@ class OrderRepositoryImpl : OrderRepository {
             cartItems.forEach { totalItems += it.quantity }
 
             val shopCount = cartItems.mapNotNull { productsMap[it.productId.value]?.shopId?.value }.distinct().size
-            val pricing = com.piashcse.service.PricingService
+            val pricing = PricingService
             val sub =
                 pricing.subtotal(
                     cartItems.map { cartItem ->

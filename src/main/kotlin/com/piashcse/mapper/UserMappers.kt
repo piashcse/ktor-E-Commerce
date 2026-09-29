@@ -1,5 +1,6 @@
 package com.piashcse.mapper
 
+import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
 import com.piashcse.model.response.UserProfileResponse
 import org.jetbrains.exposed.v1.core.eq
@@ -16,7 +17,7 @@ fun UserDAO.toUserResponse() =
     )
 
 fun UserDAO.toSellerInfo(): SellerResponse? {
-    if (userType != com.piashcse.constants.UserType.SELLER) return null
+    if (userType != UserType.SELLER) return null
     val seller = SellerDAO.find { SellerTable.userId eq id }.singleOrNull()
     return seller?.toSellerResponse()
 }

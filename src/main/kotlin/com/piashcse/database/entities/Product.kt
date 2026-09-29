@@ -11,6 +11,7 @@ import org.jetbrains.exposed.v1.javatime.datetime
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import java.math.BigDecimal
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 object ProductTable : BaseIdTable("product") {
     val userId = reference("user_id", UserTable.id).index()
@@ -76,7 +77,7 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
     /** Soft-delete: hide from catalog but preserve order history / reviews. */
     fun softDelete() {
         status = ProductStatus.OUT_OF_STOCK
-        deletedAt = LocalDateTime.now(java.time.ZoneOffset.UTC)
+        deletedAt = LocalDateTime.now(ZoneOffset.UTC)
     }
 
     val imageUrls: List<String>

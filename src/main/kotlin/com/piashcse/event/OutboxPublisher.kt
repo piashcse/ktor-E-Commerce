@@ -1,6 +1,8 @@
 package com.piashcse.event
 
 import com.piashcse.database.entities.OutboxDAO
+import com.piashcse.plugin.BigDecimalSerializer
+import com.piashcse.plugin.LocalDateTimeSerializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -11,8 +13,8 @@ private val outboxJson =
         ignoreUnknownKeys = true
         serializersModule =
             SerializersModule {
-                contextual(com.piashcse.plugin.BigDecimalSerializer)
-                contextual(com.piashcse.plugin.LocalDateTimeSerializer)
+                contextual(BigDecimalSerializer)
+                contextual(LocalDateTimeSerializer)
             }
     }
 

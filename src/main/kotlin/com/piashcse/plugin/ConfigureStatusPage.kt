@@ -5,10 +5,12 @@ import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.common.FieldError
 import com.piashcse.utils.validator.AppException
 import io.ktor.http.*
+import io.ktor.serialization.JsonConvertException
 import io.ktor.server.application.*
 import io.ktor.server.plugins.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
+import kotlinx.serialization.SerializationException
 import org.slf4j.LoggerFactory
 import org.valiktor.ConstraintViolationException
 import org.valiktor.i18n.mapToMessage
@@ -80,8 +82,8 @@ fun Application.configureStatusPage() {
                         ),
                     )
                 }
-                is io.ktor.serialization.JsonConvertException,
-                is kotlinx.serialization.SerializationException,
+                is JsonConvertException,
+                is SerializationException,
                 -> {
                     call.respond(
                         HttpStatusCode.BadRequest,

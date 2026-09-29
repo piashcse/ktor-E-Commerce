@@ -3,6 +3,7 @@ package com.piashcse.service
 import com.piashcse.database.entities.FxRateDAO
 import com.piashcse.database.entities.FxRateTable
 import com.piashcse.database.entities.SupportedCurrencies
+import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.eq
 import java.math.BigDecimal
@@ -22,6 +23,6 @@ object FxService {
         targetCurrency: String,
     ): BigDecimal {
         val rate = rateTo(targetCurrency)
-        return com.piashcse.utils.common.Money.scale2(amountUsd.multiply(rate))
+        return Money.scale2(amountUsd.multiply(rate))
     }
 }

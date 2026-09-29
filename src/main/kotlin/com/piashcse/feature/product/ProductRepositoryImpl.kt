@@ -13,6 +13,7 @@ import com.piashcse.model.response.FacetCount
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.model.response.SearchFacets
 import com.piashcse.model.response.SearchResponse
+import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.db.bindParams
@@ -40,7 +41,7 @@ class ProductRepositoryImpl : ProductRepository {
         discountPrice: Double?,
     ): BigDecimal? =
         if (discountPrice != null && discountPrice < price) {
-            com.piashcse.utils.common.Money.discountPercent(
+            Money.discountPercent(
                 BigDecimal(price.toString()),
                 BigDecimal(discountPrice.toString()),
             )
@@ -166,7 +167,7 @@ class ProductRepositoryImpl : ProductRepository {
                 description = updateProduct.description ?: description
                 price = updateProduct.price?.let { BigDecimal(it.toString()) } ?: price
                 discountPrice = updateProduct.discountPrice?.let { BigDecimal(it.toString()) } ?: discountPrice
-                discountPercentage = com.piashcse.utils.common.Money.discountPercent(price, discountPrice)
+                discountPercentage = Money.discountPercent(price, discountPrice)
                 videoLink = updateProduct.videoLink ?: videoLink
                 hotDeal = updateProduct.hotDeal ?: hotDeal
                 featured = updateProduct.featured ?: featured

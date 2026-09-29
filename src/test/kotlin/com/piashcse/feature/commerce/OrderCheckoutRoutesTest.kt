@@ -21,6 +21,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
 import io.mockk.mockk
+import org.koin.dsl.module
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -39,7 +40,7 @@ class OrderRoutesTest {
 
     private fun ApplicationTestBuilder.setup() {
         application {
-            installTestInfra(org.koin.dsl.module { single<OrderRepository> { repo } })
+            installTestInfra(module { single<OrderRepository> { repo } })
             routing { route("/api/v1/orders") { orderRoutes() } }
         }
     }
@@ -114,7 +115,7 @@ class CheckoutRoutesTest {
     private fun ApplicationTestBuilder.setup() {
         application {
             installTestInfra(
-                org.koin.dsl.module {
+                module {
                     single<OrderRepository> { orderRepo }
                     single<ShippingAddressRepository> { addressRepo }
                     single<ShippingMethodRepository> { methodRepo }

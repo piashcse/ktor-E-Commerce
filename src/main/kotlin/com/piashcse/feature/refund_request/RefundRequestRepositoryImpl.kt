@@ -20,6 +20,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -171,7 +172,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
 
             val maxRefundAmount = orderItem.total
             request.refundAmount?.let { amount ->
-                if (amount <= java.math.BigDecimal.ZERO) {
+                if (amount <= BigDecimal.ZERO) {
                     throw ValidationException(Message.Refunds.AMOUNT_EXCEEDS_ITEM_TOTAL)
                 }
                 if (amount > maxRefundAmount) {

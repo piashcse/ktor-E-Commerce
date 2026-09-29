@@ -4,6 +4,8 @@ import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerPayoutDAO
 import com.piashcse.database.entities.SellerPayoutTable
 import com.piashcse.database.entities.SellerTable
+import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
@@ -34,9 +36,9 @@ class PayoutRepositoryImpl : PayoutRepository {
     ) = query {
         val seller =
             SellerDAO.find { SellerTable.userId eq sellerUserId }.firstOrNull()
-                ?: return@query com.piashcse.utils.common.PaginatedResponse(
+                ?: return@query PaginatedResponse(
                     emptyList(),
-                    com.piashcse.utils.common.PaginationMetadata(0, limit, offset),
+                    PaginationMetadata(0, limit, offset),
                 )
         SellerPayoutTable.selectAll().andWhere { SellerPayoutTable.sellerId eq seller.id }
             .also { it.orderBy(SellerPayoutTable.createdAt to SortOrder.DESC) }

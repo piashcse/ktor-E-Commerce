@@ -25,6 +25,7 @@ import org.koin.core.module.Module
 import org.koin.ktor.ext.getKoin
 import org.koin.ktor.plugin.Koin
 import kotlin.time.Duration.Companion.minutes
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 /** Shared harness for DB-free route tests. Repos are MockK fakes; auth is a test HMAC JWT. */
 object RouteTestHelper {
@@ -49,7 +50,7 @@ object RouteTestHelper {
 
     fun Application.installTestInfra(koinModule: Module) {
         installRequestTracing()
-        install(io.ktor.server.plugins.contentnegotiation.ContentNegotiation) {
+        install(ContentNegotiation) {
             json(
                 Json {
                     ignoreUnknownKeys = true
@@ -113,7 +114,7 @@ object RouteTestHelper {
      */
     fun ApplicationTestBuilder.jsonClient(): HttpClient =
         createClient {
-            install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+            install(ClientContentNegotiation) {
                 json(
                     Json {
                         ignoreUnknownKeys = true

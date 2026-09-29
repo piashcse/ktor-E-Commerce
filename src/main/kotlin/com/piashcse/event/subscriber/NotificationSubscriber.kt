@@ -4,6 +4,7 @@ import com.piashcse.database.entities.NotificationDAO
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerPayoutDAO
+import com.piashcse.database.entities.SellerPayoutTable
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.UserTable
@@ -15,6 +16,7 @@ import com.piashcse.event.RefundStatusChangedEvent
 import com.piashcse.event.SendEmailEvent
 import com.piashcse.event.Subscriber
 import com.piashcse.event.UserRegisteredEvent
+import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
@@ -53,7 +55,7 @@ class NotificationSubscriber : Subscriber {
                             event.userId,
                             "ORDER_PLACED",
                             "Order ${event.orderNumber} placed",
-                            "Total ${com.piashcse.utils.common.Money.str(event.total)}",
+                            "Total ${Money.str(event.total)}",
                             "ORDER",
                             event.orderId,
                         )
@@ -65,7 +67,7 @@ class NotificationSubscriber : Subscriber {
                             event.userId,
                             "PAYMENT_COMPLETED",
                             "Payment received",
-                            "Amount ${com.piashcse.utils.common.Money.str(event.amount)} for order ${event.orderId}",
+                            "Amount ${Money.str(event.amount)} for order ${event.orderId}",
                             "PAYMENT",
                             event.paymentId,
                         )
@@ -81,11 +83,11 @@ class NotificationSubscriber : Subscriber {
                                     ?: return@query
                             val exists =
                                 SellerPayoutDAO.find {
-                                    (com.piashcse.database.entities.SellerPayoutTable.sellerId eq seller.id) and
-                                        (com.piashcse.database.entities.SellerPayoutTable.orderId eq order.id)
+                                    (SellerPayoutTable.sellerId eq seller.id) and
+                                        (SellerPayoutTable.orderId eq order.id)
                                 }.firstOrNull() != null
                             if (exists) return@query
-                            val commission = com.piashcse.utils.common.Money.commission(order.subTotal, seller.commissionRate)
+                            val commission = Money.commission(order.subTotal, seller.commissionRate)
                             SellerPayoutDAO.new {
                                 this.sellerId = seller.id
                                 this.orderId = order.id

@@ -13,6 +13,7 @@ import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WishListDAO
 import com.piashcse.database.entities.WishListTable
 import org.flywaydb.core.Flyway
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -50,8 +51,8 @@ class PostgresIntegrationTest {
             assertTrue(applied.migrations.size >= 15, "Expected V1..V15, got ${applied.migrations.size}")
 
             Database.connect(pg.jdbcUrl, user = pg.username, password = pg.password)
-            lateinit var sliceUserId: org.jetbrains.exposed.v1.core.dao.id.EntityID<String>
-            lateinit var sliceProductId: org.jetbrains.exposed.v1.core.dao.id.EntityID<String>
+            lateinit var sliceUserId: EntityID<String>
+            lateinit var sliceProductId: EntityID<String>
             transaction {
                 // R__ seeds loaded.
                 assertTrue(ShippingMethodDAO.all().count() >= 3, "Seed shipping methods missing")

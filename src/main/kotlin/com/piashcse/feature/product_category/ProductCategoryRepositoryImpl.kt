@@ -15,6 +15,7 @@ import com.piashcse.utils.extension.requireValidName
 import com.piashcse.utils.extension.throwConflict
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedList
+import com.piashcse.utils.validator.ConflictException
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -74,10 +75,10 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
         query {
             val category = ProductCategoryDAO.findById(categoryId) ?: categoryId.throwNotFound("Category")
             if (!ProductSubCategoryDAO.find { ProductSubCategoryTable.categoryId eq categoryId }.empty()) {
-                throw com.piashcse.utils.validator.ConflictException("Cannot delete category: sub-categories still reference it.")
+                throw ConflictException("Cannot delete category: sub-categories still reference it.")
             }
             if (!ProductDAO.find { ProductTable.categoryId eq categoryId }.empty()) {
-                throw com.piashcse.utils.validator.ConflictException(
+                throw ConflictException(
                     "Cannot delete category: products still reference it. Reassign or soft-delete products first.",
                 )
             }

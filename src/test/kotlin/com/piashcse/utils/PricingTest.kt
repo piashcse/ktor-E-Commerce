@@ -2,6 +2,7 @@ package com.piashcse.utils
 
 import com.piashcse.utils.common.Money
 import java.math.BigDecimal
+import java.math.RoundingMode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -10,9 +11,9 @@ class PricingTest {
     fun `percentage discount capped by max`() {
         val order = BigDecimal("200.00")
         val pct = BigDecimal("25")
-        val raw = order.multiply(pct).divide(BigDecimal(100), 10, java.math.RoundingMode.HALF_UP)
+        val raw = order.multiply(pct).divide(BigDecimal(100), 10, RoundingMode.HALF_UP)
         val capped = raw.min(BigDecimal("30.00"))
-        assertEquals(BigDecimal("30.00"), capped.setScale(2, java.math.RoundingMode.HALF_UP))
+        assertEquals(BigDecimal("30.00"), capped.setScale(2, RoundingMode.HALF_UP))
     }
 
     @Test

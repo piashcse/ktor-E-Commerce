@@ -1,6 +1,7 @@
 package com.piashcse.model.request
 
 import com.piashcse.constants.PaymentMethod
+import com.piashcse.database.entities.SupportedCurrencies
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
@@ -21,6 +22,6 @@ data class CheckoutRequest(
             validate(CheckoutRequest::shippingAddressId).isNotNull().isNotEmpty()
             validate(CheckoutRequest::shippingMethodId).isNotNull().isNotEmpty()
         }
-        com.piashcse.database.entities.SupportedCurrencies.requireValid(currency)
+        SupportedCurrencies.requireValid(currency)
     }
 }

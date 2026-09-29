@@ -4,6 +4,9 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import org.slf4j.LoggerFactory
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 interface Subscriber {
     suspend fun onEvent(event: DomainEvent)
@@ -27,13 +30,13 @@ object EventBus {
     private val log = LoggerFactory.getLogger(EventBus::class.java)
     private val _events = MutableSharedFlow<DomainEvent>(extraBufferCapacity = 256)
     val events = _events.asSharedFlow()
-    private val subscribers = java.util.concurrent.CopyOnWriteArrayList<Subscriber>()
+    private val subscribers = CopyOnWriteArrayList<Subscriber>()
     private var job: Job? = null
 
-    private val publishedCount = java.util.concurrent.atomic.AtomicLong(0)
-    private val consumedCount = java.util.concurrent.atomic.AtomicLong(0)
-    private val failedCount = java.util.concurrent.atomic.AtomicLong(0)
-    private val deadLetterCounter = java.util.concurrent.atomic.AtomicInteger(0)
+    private val publishedCount = AtomicLong(0)
+    private val consumedCount = AtomicLong(0)
+    private val failedCount = AtomicLong(0)
+    private val deadLetterCounter = AtomicInteger(0)
 
     private val _deadLetter = MutableSharedFlow<DeadLetterEvent>(extraBufferCapacity = 64)
     val deadLetterEvents = _deadLetter.asSharedFlow()
