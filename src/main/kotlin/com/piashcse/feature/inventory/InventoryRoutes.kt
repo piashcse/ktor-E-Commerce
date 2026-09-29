@@ -1,12 +1,11 @@
 package com.piashcse.feature.inventory
 
 import com.piashcse.model.request.InventoryRequest
-import com.piashcse.plugin.RateLimitNames
+import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.http.*
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -17,7 +16,7 @@ import org.koin.ktor.ext.inject
  */
 fun Route.inventorySellerRoutes() {
     val inventoryRepo: InventoryRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.SELLER_WRITE)) {
+    sellerWriteRateLimit {
         /**
          * @tag Inventory
          * @description Seller: Initialize or update inventory for a product
@@ -70,5 +69,20 @@ fun Route.inventorySellerRoutes() {
     get("/low-stock") {
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(inventoryRepo.getLowStockProducts(limit, offset))
+    }
+}
+
+/**
+ * Admin inventory routes.
+ */
+fun Route.inventoryAdminRoutes() {
+    val inventoryRepo: InventoryRepository by inject()
+    /**
+     * @tag Inventory
+     * @description Admin: Retrieve all inventory items across shops, optionally filtered by shop
+     */
+    get {
+        val (limit, offset) = call.paginateQueryParams()
+        call.respondOk(inventoryRepo.getAllInventory(limit, offset, call.request.queryParameters["shopId"]))
     }
 }

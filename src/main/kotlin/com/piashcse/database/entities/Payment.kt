@@ -13,7 +13,7 @@ object PaymentTable : BaseIdTable("payment") {
     val amount = decimal("amount", 10, 2)
     val status = enumerationByName("status", 30, PaymentStatus::class).clientDefault { PaymentStatus.PENDING }
     val paymentMethod = enumerationByName("payment_method", 50, PaymentMethod::class)
-    val transactionId = varchar("transaction_id", 100).nullable()
+    val transactionId = varchar("transaction_id", 100).nullable().uniqueIndex()
 }
 
 class PaymentDAO(id: EntityID<String>) : BaseEntity(id, PaymentTable) {

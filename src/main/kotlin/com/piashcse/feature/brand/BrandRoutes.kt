@@ -2,12 +2,11 @@ package com.piashcse.feature.brand
 
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.BrandRequest
-import com.piashcse.plugin.RateLimitNames
+import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -34,7 +33,7 @@ fun Route.brandRoutes() {
  */
 fun Route.brandAdminRoutes() {
     val brandRepo: BrandRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+    adminWriteRateLimit {
         /**
          * @tag Brand
          * @description Admin: Create a new brand

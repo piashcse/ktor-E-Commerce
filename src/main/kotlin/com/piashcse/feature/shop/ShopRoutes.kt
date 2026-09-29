@@ -5,11 +5,11 @@ import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
-import com.piashcse.plugin.RateLimitNames
+import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -67,7 +67,7 @@ fun Route.shopRoutes() {
  */
 fun Route.shopSellerRoutesV1() {
     val shopRepo: ShopRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.SELLER_WRITE)) {
+    sellerWriteRateLimit {
         /**
          * @tag Shop
          * @description Seller: Create a new shop
@@ -101,16 +101,15 @@ fun Route.shopSellerRoutesV1() {
  */
 fun Route.shopAdminRoutes() {
     val shopRepo: ShopRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+    adminWriteRateLimit {
         /**
          * @tag Shop
          * @description Admin: Approve a pending shop application
          */
         put("/approve/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(
-                shopRepo.approveShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType),
-            )
+            val (actorId, actorEmail, actorRole) = call.actor()
+            call.respondOk(shopRepo.approveShop(shopId, actorId, actorEmail, actorRole))
         }
 
         /**
@@ -119,9 +118,8 @@ fun Route.shopAdminRoutes() {
          */
         put("/reject/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(
-                shopRepo.rejectShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType),
-            )
+            val (actorId, actorEmail, actorRole) = call.actor()
+            call.respondOk(shopRepo.rejectShop(shopId, actorId, actorEmail, actorRole))
         }
 
         /**
@@ -130,9 +128,8 @@ fun Route.shopAdminRoutes() {
          */
         put("/suspend/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(
-                shopRepo.suspendShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType),
-            )
+            val (actorId, actorEmail, actorRole) = call.actor()
+            call.respondOk(shopRepo.suspendShop(shopId, actorId, actorEmail, actorRole))
         }
 
         /**
@@ -141,9 +138,8 @@ fun Route.shopAdminRoutes() {
          */
         put("/activate/{id}") {
             val shopId = call.requirePathParameter("id")
-            call.respondOk(
-                shopRepo.activateShop(shopId, call.currentUserId, call.currentUserOrNull()?.email, call.currentUserOrNull()?.userType),
-            )
+            val (actorId, actorEmail, actorRole) = call.actor()
+            call.respondOk(shopRepo.activateShop(shopId, actorId, actorEmail, actorRole))
         }
     }
 

@@ -1,14 +1,15 @@
 package com.piashcse.feature.wishlist
 
-import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
+import com.piashcse.feature.cart.requireProduct
+import com.piashcse.feature.cart.requireProductWithStock
+import com.piashcse.feature.cart.requireWishlistItem
 import com.piashcse.mapper.toCartResponse
 import com.piashcse.mapper.toProductResponse
 import com.piashcse.mapper.toWishListResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
-import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -20,7 +21,7 @@ class WishListRepositoryImpl : WishListRepository {
         productId: String,
     ): WishList =
         query {
-            val product = ProductDAO.findById(productId) ?: productId.throwNotFound("ProductResponse")
+            val product = requireProduct(productId, "ProductResponse")
 
             val existing =
                 WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
@@ -55,10 +56,8 @@ class WishListRepositoryImpl : WishListRepository {
         productId: String,
     ): ProductResponse =
         query {
-            val wishListItem =
-                WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
-                    .firstOrNull() ?: productId.throwNotFound("ProductResponse")
-            val product = ProductDAO.findById(productId)?.toProductResponse() ?: productId.throwNotFound("ProductResponse")
+            val wishListItem = requireWishlistItem(userId, productId)
+            val product = requireProduct(productId, "ProductResponse").toProductResponse()
             wishListItem.delete()
             product
         }
@@ -69,16 +68,9 @@ class WishListRepositoryImpl : WishListRepository {
         quantity: Int,
     ): Cart =
         query {
-            val item =
-                WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
-                    .firstOrNull() ?: productId.throwNotFound("ProductResponse")
-            val product = ProductDAO.findById(productId) ?: productId.throwNotFound("ProductResponse")
+            val item = requireWishlistItem(userId, productId)
+            val product = requireProductWithStock(productId, quantity, "ProductResponse")
             val stock = product.effectiveStock()
-            if (quantity > stock) {
-                throw ValidationException(
-                    Message.Validation.insufficientStock(product.name, stock),
-                )
-            }
             val existing = CartItemDAO.find { CartItemTable.userId eq userId and (CartItemTable.productId eq productId) }.singleOrNull()
             val cart =
                 if (existing != null) {

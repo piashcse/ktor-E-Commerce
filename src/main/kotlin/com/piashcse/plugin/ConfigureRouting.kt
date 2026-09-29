@@ -8,11 +8,13 @@ import com.piashcse.feature.brand.brandAdminRoutes
 import com.piashcse.feature.brand.brandRoutes
 import com.piashcse.feature.cart.cartRoutes
 import com.piashcse.feature.checkout.checkoutRoutes
+import com.piashcse.feature.consent.consentAdminRoutes
 import com.piashcse.feature.consent.consentRoutes
 import com.piashcse.feature.coupon.couponAdminRoutes
 import com.piashcse.feature.coupon.couponRoutes
 import com.piashcse.feature.dashboard.dashboardAdminRoutes
 import com.piashcse.feature.dashboard.dashboardSellerRoutes
+import com.piashcse.feature.inventory.inventoryAdminRoutes
 import com.piashcse.feature.inventory.inventorySellerRoutes
 import com.piashcse.feature.notification.notificationRoutes
 import com.piashcse.feature.order.orderAdminRoutes
@@ -40,33 +42,43 @@ import com.piashcse.feature.shop.shopAdminRoutes
 import com.piashcse.feature.shop.shopRoutes
 import com.piashcse.feature.shop.shopSellerRoutesV1
 import com.piashcse.feature.shop_category.shopCategoryAdminRoutes
+import com.piashcse.feature.shop_category.shopCategoryRoutes
 import com.piashcse.feature.wishlist.wishListRoutes
-import com.piashcse.model.response.HealthResponse
 import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.common.MessageResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import java.time.Instant
+
+/** Minimal liveness payload — service/infra detail stays out of the public contract. */
+@Serializable
+private data class HealthStatusResponse(val status: String, val version: String)
 
 @OptIn(ExperimentalKtorApi::class)
 fun Application.configureRoute() {
+    install(
+        createApplicationPlugin(name = "ApiSunsetHeaders") {
+            onCall { call ->
+                if (call.request.path().startsWith("/api/v1")) {
+                    call.response.headers.append("Deprecation", "true", safeOnly = false)
+                    call.response.headers.append("Sunset", "Thu, 31 Dec 2026 23:59:59 GMT", safeOnly = false)
+                }
+            }
+        },
+    )
     routing {
         get("/") { call.respondRedirect("/swagger") }.hide()
         get("/health") {
             call.respond(
-                HealthResponse(
-                    status = "UP",
-                    service = "ktor-ecommerce",
-                    version = AppConstants.APP_VERSION,
-                    timestamp = Instant.now().toString(),
-                ),
+                HealthStatusResponse(status = "UP", version = AppConstants.APP_VERSION),
             )
         }
         get("/health/live") {
@@ -88,7 +100,11 @@ fun Application.configureRoute() {
             } else {
                 call.respond(
                     HttpStatusCode.ServiceUnavailable,
-                    ApiError("Database unreachable"),
+                    ApiError(
+                        message = "Database unreachable",
+                        code = "SERVICE_UNAVAILABLE",
+                        requestId = runCatching { call.requestId() }.getOrNull(),
+                    ),
                 )
             }
         }
@@ -110,6 +126,7 @@ private fun Route.customerRoutes() {
     route("brands") { brandRoutes() }
     route("product-categories") { productCategoryRoutes() }
     route("product-subcategories") { productSubCategoryRoutes() }
+    route("shop-categories") { shopCategoryRoutes() }
     route("products") { productRoutes() }
     route("reviews") { reviewRatingRoutes() }
     route("carts") { cartRoutes() }
@@ -148,9 +165,11 @@ private fun Route.adminRoutes() {
             route("shop-categories") { shopCategoryAdminRoutes() }
             route("shops") { shopAdminRoutes() }
             route("products") { productAdminRoutes() }
+            route("inventories") { inventoryAdminRoutes() }
             route("orders") { orderAdminRoutes() }
             route("refund-requests") { refundAdminRoutes() }
             route("policies") { policyAdminRoutes() }
+            route("policy-consents") { consentAdminRoutes() }
             route("shipping-methods") { shippingMethodAdminRoutes() }
             route("coupons") { couponAdminRoutes() }
             route("dashboard") { dashboardAdminRoutes() }

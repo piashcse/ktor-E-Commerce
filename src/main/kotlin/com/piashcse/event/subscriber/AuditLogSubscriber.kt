@@ -42,6 +42,9 @@ class AuditLogSubscriber(
                         details = "Payment for order ${event.orderId}, amount ${event.amount.toPlainString()}",
                     )
                 is AdminActionEvent ->
+                    // Covers LOGIN_FAILED, PAYOUT_MARKED_PAID, COUPON_CREATED/UPDATED,
+                    // CONSENT_GRANTED/UPDATED/REVOKED, PROFILE_UPDATED — publishers use
+                    // EventBus.publishAdminAction so no new event types are needed.
                     auditLogRepository.log(
                         actorId = event.actorId,
                         actorEmail = event.actorEmail,
@@ -50,6 +53,7 @@ class AuditLogSubscriber(
                         resourceType = event.resourceType,
                         resourceId = event.resourceId,
                         details = event.details,
+                        outcome = if (event.action == "LOGIN_FAILED") "FAILURE" else "SUCCESS",
                     )
                 is RefundStatusChangedEvent ->
                     auditLogRepository.log(

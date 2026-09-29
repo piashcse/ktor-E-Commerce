@@ -1,13 +1,12 @@
 package com.piashcse.feature.review_rating
 
 import com.piashcse.model.request.ReviewRatingRequest
-import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.customerAuth
+import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -28,7 +27,7 @@ fun Route.reviewRatingRoutes() {
     }
 
     customerAuth {
-        rateLimit(RateLimitName(RateLimitNames.WRITE)) {
+        writeRateLimit {
             /**
              * @tag Review-Rating
              * @description Submit a new review and rating for a product

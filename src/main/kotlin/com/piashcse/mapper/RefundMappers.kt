@@ -2,6 +2,7 @@ package com.piashcse.mapper
 
 import com.piashcse.database.entities.RefundRequestDAO
 import com.piashcse.model.response.RefundRequestResponse
+import com.piashcse.utils.common.Money
 import java.time.format.DateTimeFormatter
 
 fun RefundRequestDAO.toRefundRequestResponse() =
@@ -13,7 +14,7 @@ fun RefundRequestDAO.toRefundRequestResponse() =
         reason = reason,
         images = images,
         status = status,
-        refundAmount = refundAmount?.toPlainString(),
+        refundAmount = refundAmount?.let { Money.str(it) },
         refundMethod = refundMethod,
         trackingNumber = trackingNumber,
         requestedAt = requestedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),

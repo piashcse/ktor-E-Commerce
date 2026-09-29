@@ -5,13 +5,13 @@ import com.piashcse.feature.shipping_address.ShippingAddressRepository
 import com.piashcse.feature.shipping_method.ShippingMethodRepository
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.ShippingAddressRequest
-import com.piashcse.plugin.RateLimitNames
-import com.piashcse.plugin.customerAuth
+import com.piashcse.plugin.customerOnlyAuth
+import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey
+import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -20,8 +20,8 @@ fun Route.checkoutRoutes() {
     val shippingAddressRepo: ShippingAddressRepository by inject()
     val shippingMethodRepo: ShippingMethodRepository by inject()
     val orderRepo: OrderRepository by inject()
-    customerAuth {
-        rateLimit(RateLimitName(RateLimitNames.WRITE)) {
+    customerOnlyAuth {
+        writeRateLimit {
             /**
              * @tag Checkout
              * @description Add a new shipping address for the authenticated user
@@ -77,7 +77,8 @@ fun Route.checkoutRoutes() {
          * @description Retrieve all shipping addresses for the authenticated user
          */
         get("shipping-address") {
-            call.respondOk(shippingAddressRepo.getShippingAddresses(call.currentUserId))
+            val (limit, offset) = call.paginateQueryParams()
+            call.respondOk(shippingAddressRepo.getShippingAddresses(call.currentUserId, limit, offset))
         }
 
         /**

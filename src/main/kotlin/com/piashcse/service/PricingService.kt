@@ -14,7 +14,7 @@ data class PriceBreakdown(
 
 /** Single place for cart/checkout/order totals — replaces 4x duplicated math. */
 object PricingService {
-    private val taxRate: BigDecimal get() = BigDecimal(AppConstants.DEFAULT_TAX_PERCENTAGE.toString())
+    private val taxRate: BigDecimal get() = Money.of(AppConstants.DEFAULT_TAX_PERCENTAGE)
 
     fun subtotal(lines: List<Pair<BigDecimal, Int>>): BigDecimal =
         Money.scale2(lines.fold(BigDecimal.ZERO) { acc, (price, qty) -> acc.add(price.multiply(BigDecimal(qty))) })

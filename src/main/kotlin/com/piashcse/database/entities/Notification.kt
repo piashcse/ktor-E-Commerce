@@ -7,7 +7,13 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
 object NotificationTable : BaseIdTable("notification") {
     val userId = reference("user_id", UserTable.id).index()
-    val channel = varchar("channel", 20).default("EMAIL")
+
+    // EMAIL default mismatch fix: V9 created this column with DB default 'EMAIL' but
+    // every writer (NotificationSubscriber, send endpoint) stores 'IN_APP'. The
+    // entity default is now 'IN_APP' to match; there is deliberately no migration
+    // touching the old default, so all inserts must keep setting channel explicitly
+    // and must never rely on the DB-level default.
+    val channel = varchar("channel", 20).default("IN_APP")
     val type = varchar("type", 50).index()
     val title = varchar("title", 255)
     val body = text("body").nullable()

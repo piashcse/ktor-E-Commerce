@@ -1,11 +1,10 @@
 package com.piashcse.feature.product_sub_category
 
 import com.piashcse.model.request.ProductSubCategoryRequest
-import com.piashcse.plugin.RateLimitNames
+import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -31,7 +30,7 @@ fun Route.productSubCategoryRoutes() {
  */
 fun Route.productSubCategoryAdminRoutes() {
     val subCategoryRepo: ProductSubCategoryRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+    adminWriteRateLimit {
         /**
          * @tag Product-Sub-Category
          * @description Admin: Create a new product subcategory

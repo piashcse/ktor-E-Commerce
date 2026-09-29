@@ -1,5 +1,6 @@
 package com.piashcse.event.subscriber
 
+import com.piashcse.database.entities.AuditLogDAO
 import com.piashcse.database.entities.NotificationDAO
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.SellerDAO
@@ -23,7 +24,8 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.slf4j.LoggerFactory
 
-/** Writes in-app notifications + seller payout rows. Failures are non-fatal. */
+/** Writes in-app notifications + seller payout rows. Notification writes are non-fatal;
+ * payout capture failures are audit-logged and propagated (EventBus retries + dead-letters). */
 class NotificationSubscriber : Subscriber {
     private val log = LoggerFactory.getLogger(NotificationSubscriber::class.java)
 
@@ -47,6 +49,27 @@ class NotificationSubscriber : Subscriber {
     }
 
     override suspend fun onEvent(event: DomainEvent) {
+        // Payout capture must propagate (see captureSellerPayout), so it runs outside
+        // the non-fatal notification try/catch below.
+        if (event is PaymentCompletedEvent) {
+            try {
+                query {
+                    notify(
+                        event.userId,
+                        "PAYMENT_COMPLETED",
+                        "Payment received",
+                        "Amount ${Money.str(event.amount)} for order ${event.orderId}",
+                        "PAYMENT",
+                        event.paymentId,
+                    )
+                    Unit
+                }
+            } catch (e: Exception) {
+                log.error("Notification write failed for ${event::class.simpleName}", e)
+            }
+            captureSellerPayout(event)
+            return
+        }
         try {
             when (event) {
                 is OrderPlacedEvent ->
@@ -61,45 +84,6 @@ class NotificationSubscriber : Subscriber {
                         )
                         Unit
                     }
-                is PaymentCompletedEvent -> {
-                    query {
-                        notify(
-                            event.userId,
-                            "PAYMENT_COMPLETED",
-                            "Payment received",
-                            "Amount ${Money.str(event.amount)} for order ${event.orderId}",
-                            "PAYMENT",
-                            event.paymentId,
-                        )
-                        Unit
-                    }
-                    // Seller payout capture — best effort.
-                    runCatching {
-                        query {
-                            val order = OrderDAO.findById(event.orderId) ?: return@query
-                            val shopId = order.shopId?.value ?: return@query
-                            val seller =
-                                SellerDAO.find { SellerTable.shopId eq shopId.entityID(ShopTable) }.firstOrNull()
-                                    ?: return@query
-                            val exists =
-                                SellerPayoutDAO.find {
-                                    (SellerPayoutTable.sellerId eq seller.id) and
-                                        (SellerPayoutTable.orderId eq order.id)
-                                }.firstOrNull() != null
-                            if (exists) return@query
-                            val commission = Money.commission(order.subTotal, seller.commissionRate)
-                            SellerPayoutDAO.new {
-                                this.sellerId = seller.id
-                                this.orderId = order.id
-                                subTotal = order.subTotal
-                                commissionAmount = commission
-                                payoutAmount = order.subTotal.subtract(commission)
-                                status = "PENDING"
-                            }
-                            Unit
-                        }
-                    }.onFailure { log.warn("Payout capture failed for order ${event.orderId}: ${it.message}") }
-                }
                 is RefundStatusChangedEvent ->
                     query {
                         notify(
@@ -112,10 +96,65 @@ class NotificationSubscriber : Subscriber {
                         )
                         Unit
                     }
-                is UserRegisteredEvent, is SendEmailEvent, is AdminActionEvent -> Unit
+                is PaymentCompletedEvent,
+                is UserRegisteredEvent,
+                is SendEmailEvent,
+                is AdminActionEvent,
+                -> Unit
             }
         } catch (e: Exception) {
             log.error("Notification write failed for ${event::class.simpleName}", e)
+        }
+    }
+
+    private suspend fun captureSellerPayout(event: PaymentCompletedEvent) {
+        try {
+            query {
+                val order = OrderDAO.findById(event.orderId) ?: return@query
+                val shopId = order.shopId?.value ?: return@query
+                val seller =
+                    SellerDAO.find { SellerTable.shopId eq shopId.entityID(ShopTable) }.firstOrNull()
+                        ?: return@query
+                val exists =
+                    SellerPayoutDAO.find {
+                        (SellerPayoutTable.sellerId eq seller.id) and
+                            (SellerPayoutTable.orderId eq order.id)
+                    }.firstOrNull() != null
+                if (exists) return@query
+                val commission = Money.commission(order.subTotal, seller.commissionRate)
+                SellerPayoutDAO.new {
+                    this.sellerId = seller.id
+                    this.orderId = order.id
+                    subTotal = order.subTotal
+                    commissionAmount = commission
+                    payoutAmount = order.subTotal.subtract(commission)
+                    status = "PENDING"
+                }
+                Unit
+            }
+        } catch (e: Exception) {
+            // The payout insert already rolled back with its transaction; leave a
+            // durable audit trail, then rethrow so EventBus retries + dead-letters
+            // instead of silently dropping seller earnings.
+            runCatching {
+                query {
+                    AuditLogDAO.new {
+                        actorId = event.userId.entityID(UserTable)
+                        actorEmail = event.email
+                        actorRole = "SYSTEM"
+                        action = "PAYOUT_CAPTURE_FAILED"
+                        resourceType = "ORDER"
+                        resourceId = event.orderId
+                        details = "Payout capture failed for payment ${event.paymentId}: ${e.message}"
+                        outcome = "FAILURE"
+                    }
+                    Unit
+                }
+            }.onFailure { auditError ->
+                log.warn("Payout failure audit write failed for order ${event.orderId}: ${auditError.message}")
+            }
+            log.error("Payout capture failed for order ${event.orderId}", e)
+            throw e
         }
     }
 }

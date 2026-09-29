@@ -4,6 +4,7 @@ import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.model.response.OrderItemResponse
 import com.piashcse.model.response.OrderResponse
+import com.piashcse.utils.common.Money
 
 fun OrderDAO.toOrderResponse(items: List<OrderItemResponse>? = null) =
     OrderResponse(
@@ -11,11 +12,11 @@ fun OrderDAO.toOrderResponse(items: List<OrderItemResponse>? = null) =
         orderNumber = orderNumber,
         userId = userId.value,
         shopId = shopId?.value,
-        subTotal = subTotal.toPlainString(),
-        shippingCost = shippingCost.toPlainString(),
-        taxAmount = taxAmount.toPlainString(),
-        discountAmount = discountAmount.toPlainString(),
-        total = total.toPlainString(),
+        subTotal = Money.str(subTotal),
+        shippingCost = Money.str(shippingCost),
+        taxAmount = Money.str(taxAmount),
+        discountAmount = Money.str(discountAmount),
+        total = Money.str(total),
         currency = currency,
         status = status,
         paymentStatus = paymentStatus,
@@ -39,9 +40,9 @@ fun OrderItemDAO.toOrderItemResponse() =
         productId = productId.value,
         productName = productName,
         quantity = quantity,
-        price = price.toPlainString(),
-        discountAmount = discountAmount.toPlainString(),
-        taxAmount = taxAmount.toPlainString(),
-        total = total.toPlainString(),
+        price = Money.str(price),
+        discountAmount = Money.str(discountAmount),
+        taxAmount = Money.str(taxAmount),
+        total = Money.str(total),
         sku = sku,
     )

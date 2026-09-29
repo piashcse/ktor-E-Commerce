@@ -6,15 +6,12 @@ import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductSubCategoryDAO
 import com.piashcse.database.entities.ProductSubCategoryTable
 import com.piashcse.database.entities.ProductTable
+import com.piashcse.feature.common.CatalogCrud
 import com.piashcse.mapper.toProductCategoryResponse
 import com.piashcse.model.response.ProductCategoryResponse
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.common.PaginationMetadata
+import com.piashcse.utils.extension.paginateWithPreload
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.requireValidName
-import com.piashcse.utils.extension.throwConflict
-import com.piashcse.utils.extension.throwNotFound
-import com.piashcse.utils.extension.toPaginatedList
 import com.piashcse.utils.validator.ConflictException
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
@@ -23,14 +20,18 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 class ProductCategoryRepositoryImpl : ProductCategoryRepository {
     override suspend fun createCategory(name: String): ProductCategoryResponse =
         query {
-            name.requireValidName("ProductCategory")
-            val isCategoryExist =
-                ProductCategoryDAO.find { ProductCategoryTable.name eq name }.firstOrNull()
-            isCategoryExist?.let {
-                throw name.throwConflict("Category")
-            } ?: ProductCategoryDAO.new {
-                this.name = name
-            }.toProductCategoryResponse()
+            CatalogCrud.createUniqueByName(
+                name = name,
+                validationLabel = "ProductCategory",
+                conflictLabel = "Category",
+                findExisting = { ProductCategoryDAO.find { ProductCategoryTable.name eq name }.firstOrNull() },
+                create = {
+                    ProductCategoryDAO.new {
+                        this.name = name
+                    }
+                },
+                toResponse = { it.toProductCategoryResponse() },
+            )
         }
 
     override suspend fun getCategories(
@@ -38,23 +39,23 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
         offset: Int,
     ): PaginatedResponse<ProductCategoryResponse> =
         query {
-            val (totalCount, rows) =
-                ProductCategoryTable.selectAll().toPaginatedList(limit, offset) {
-                    ProductCategoryDAO.wrapRow(it)
-                }
-            val categoryIds = rows.map { it.id }
-            val subCategoriesMap =
-                if (categoryIds.isNotEmpty()) {
-                    ProductSubCategoryDAO.find { ProductSubCategoryTable.categoryId inList categoryIds }
-                        .groupBy { it.categoryId.value }
-                } else {
-                    emptyMap()
-                }
-            val data =
+            ProductCategoryTable.selectAll().paginateWithPreload(
+                limit,
+                offset,
+                rowMapper = { ProductCategoryDAO.wrapRow(it) },
+            ) { rows ->
+                val categoryIds = rows.map { it.id }
+                val subCategoriesMap =
+                    if (categoryIds.isNotEmpty()) {
+                        ProductSubCategoryDAO.find { ProductSubCategoryTable.categoryId inList categoryIds }
+                            .groupBy { it.categoryId.value }
+                    } else {
+                        emptyMap()
+                    }
                 rows.map { category ->
                     category.toProductCategoryResponse(subCategoriesMap[category.id.value] ?: emptyList())
                 }
-            PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
+            }
         }
 
     override suspend fun updateCategory(
@@ -62,27 +63,34 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
         name: String,
     ): ProductCategoryResponse =
         query {
-            name.requireValidName("ProductCategory")
-            val isCategoryExist =
-                ProductCategoryDAO.findById(categoryId)
-            isCategoryExist?.let {
-                it.name = name
-                it.toProductCategoryResponse()
-            } ?: categoryId.throwNotFound("Category")
+            CatalogCrud.renameById(
+                id = categoryId,
+                name = name,
+                validationLabel = "ProductCategory",
+                notFoundLabel = "Category",
+                findById = { ProductCategoryDAO.findById(it) },
+                rename = { category, newName -> category.name = newName },
+                toResponse = { it.toProductCategoryResponse() },
+            )
         }
 
     override suspend fun deleteCategory(categoryId: String): String =
         query {
-            val category = ProductCategoryDAO.findById(categoryId) ?: categoryId.throwNotFound("Category")
-            if (!ProductSubCategoryDAO.find { ProductSubCategoryTable.categoryId eq categoryId }.empty()) {
-                throw ConflictException("Cannot delete category: sub-categories still reference it.")
-            }
-            if (!ProductDAO.find { ProductTable.categoryId eq categoryId }.empty()) {
-                throw ConflictException(
-                    "Cannot delete category: products still reference it. Reassign or soft-delete products first.",
-                )
-            }
-            category.delete()
-            categoryId
+            CatalogCrud.deleteById(
+                id = categoryId,
+                notFoundLabel = "Category",
+                findById = { ProductCategoryDAO.findById(it) },
+                guard = {
+                    if (!ProductSubCategoryDAO.find { ProductSubCategoryTable.categoryId eq categoryId }.empty()) {
+                        throw ConflictException("Cannot delete category: sub-categories still reference it.")
+                    }
+                    if (!ProductDAO.find { ProductTable.categoryId eq categoryId }.empty()) {
+                        throw ConflictException(
+                            "Cannot delete category: products still reference it. Reassign or soft-delete products first.",
+                        )
+                    }
+                },
+                delete = { it.delete() },
+            )
         }
 }

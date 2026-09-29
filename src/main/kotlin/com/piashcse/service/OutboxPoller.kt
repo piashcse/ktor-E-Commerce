@@ -4,6 +4,7 @@ import com.piashcse.database.entities.OutboxDAO
 import com.piashcse.database.entities.OutboxTable
 import com.piashcse.event.EventBus
 import com.piashcse.event.OutboxPublisher
+import com.piashcse.event.PoisonEvent
 import com.piashcse.utils.extension.query
 import io.ktor.server.application.*
 import kotlinx.coroutines.*
@@ -39,16 +40,38 @@ object OutboxPoller {
 
     suspend fun drain(batchSize: Int = 50): Int =
         query {
+            // Claim the next batch under FOR UPDATE in id order so redeliveries are FIFO.
+            // Exposed 1.5's DAO finder exposes plain FOR UPDATE only (no SKIP LOCKED), so
+            // concurrent pollers would contend on the same head rows: run a single poller
+            // instance; do not scale horizontally without an external claim mechanism.
             val pending =
                 OutboxDAO.find { OutboxTable.publishedAt.isNull() }
+                    .forUpdate()
                     .limit(batchSize).toList()
+                    .sortedBy { it.id.value }
             var delivered = 0
             pending.forEach { row ->
                 val event = OutboxPublisher.decode(row.eventType, row.payload)
                 if (event == null) {
-                    row.publishedAt = LocalDateTime.now(ZoneOffset.UTC) // poison — skip
+                    // Poison record: undecodable payload. Never mark published-and-dropped —
+                    // keep the row unpublished for operator inspection, bump attempts, and
+                    // surface it on the dead-letter channel.
+                    row.attempts = row.attempts + 1
+                    EventBus.reportPoison(
+                        PoisonEvent(
+                            outboxId = row.id.value,
+                            eventType = row.eventType,
+                            aggregateType = row.aggregateType,
+                            aggregateId = row.aggregateId,
+                            attempts = row.attempts,
+                        ),
+                    )
                     return@forEach
                 }
+                // At-least-once relay: the row is marked published only after the bus accepts
+                // the event. True exactly-once is not possible here — the in-memory bus has no
+                // transactional consume, so a crash between publish and commit can redeliver;
+                // downstream subscribers must stay idempotent.
                 if (EventBus.publish(event)) {
                     row.publishedAt = LocalDateTime.now(ZoneOffset.UTC)
                     delivered++

@@ -3,6 +3,7 @@ package com.piashcse.mapper
 import com.piashcse.database.entities.*
 import com.piashcse.model.response.CartItemSummary
 import com.piashcse.model.response.ProductResponse
+import com.piashcse.utils.common.Money
 import java.math.BigDecimal
 
 fun CartItemDAO.toCartResponse(product: ProductResponse? = null) = Cart(productId.value, quantity, product)
@@ -16,7 +17,7 @@ fun CartItemDAO.toCartItemSummary(
 ) = CartItemSummary(
     productId = product.id.value,
     productName = product.name,
-    price = unitPrice.toPlainString(),
+    price = Money.str(unitPrice),
     quantity = quantity,
     image = image,
     stockQuantity = stockQuantity,

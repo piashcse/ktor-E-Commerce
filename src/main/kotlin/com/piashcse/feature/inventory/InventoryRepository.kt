@@ -57,4 +57,18 @@ interface InventoryRepository {
         limit: Int = 20,
         offset: Int = 0,
     ): PaginatedResponse<InventoryResponse>
+
+    /**
+     * Gets all inventory records across shops, optionally filtered by shop ID.
+     *
+     * @param limit The maximum number of records to return.
+     * @param offset The number of records to skip.
+     * @param shopId Optional shop ID to filter by.
+     * @return A paginated list of inventory records.
+     */
+    suspend fun getAllInventory(
+        limit: Int = 20,
+        offset: Int = 0,
+        shopId: String? = null,
+    ): PaginatedResponse<InventoryResponse>
 }

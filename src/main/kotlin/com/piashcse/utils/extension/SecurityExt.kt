@@ -6,6 +6,7 @@ import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.utils.validator.ForbiddenException
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.eq
 
 /**
@@ -56,4 +57,22 @@ fun requireOrderAccess(
     if (callerType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)) return
     val isSeller = orderShopId?.let { sellerOwnsShop(callerUserId, it) } == true
     if (!isSeller) throw ForbiddenException(Message.Orders.UNAUTHORIZED)
+}
+
+/**
+ * Refund access = order access (customer owner, shop seller, or admin).
+ * Converts ForbiddenException to ValidationException to preserve the
+ * historic refund-repository guard type (400, same message).
+ */
+fun requireRefundAccess(
+    orderUserId: String,
+    orderShopId: String?,
+    callerUserId: String,
+    callerType: UserType,
+) {
+    try {
+        requireOrderAccess(orderUserId, orderShopId, callerUserId, callerType)
+    } catch (e: ForbiddenException) {
+        throw ValidationException(e.message ?: Message.Orders.UNAUTHORIZED)
+    }
 }

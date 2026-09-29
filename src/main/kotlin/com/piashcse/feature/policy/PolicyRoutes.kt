@@ -2,11 +2,11 @@ package com.piashcse.feature.policy
 
 import com.piashcse.constants.PolicyType
 import com.piashcse.model.request.CreatePolicyRequest
-import com.piashcse.plugin.RateLimitNames
+import com.piashcse.model.request.UpdatePolicyRequest
+import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -31,7 +31,7 @@ fun Route.policyRoutes() {
  */
 fun Route.policyAdminRoutes() {
     val policyRepo: PolicyRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+    adminWriteRateLimit {
         /**
          * @tag Privacy-Policy
          * @description Admin: Create a new policy document or new version
@@ -39,6 +39,33 @@ fun Route.policyAdminRoutes() {
         post {
             call.respondCreated(policyRepo.createPolicy(call.receive<CreatePolicyRequest>()))
         }
+
+        /**
+         * @tag Privacy-Policy
+         * @description Admin: Update an existing policy document
+         */
+        put("{id}") {
+            val id = call.requirePathParameter("id")
+            call.respondOk(policyRepo.updatePolicy(id, call.receive<UpdatePolicyRequest>()))
+        }
+
+        /**
+         * @tag Privacy-Policy
+         * @description Admin: Deactivate a policy document
+         */
+        post("deactivate/{id}") {
+            val id = call.requirePathParameter("id")
+            call.respondOk(policyRepo.deactivatePolicy(id))
+        }
+    }
+
+    /**
+     * @tag Privacy-Policy
+     * @description Admin: Retrieve a policy document by ID
+     */
+    get("by-id/{id}") {
+        val id = call.requirePathParameter("id")
+        call.respondOk(policyRepo.getPolicyById(id))
     }
 
     /**

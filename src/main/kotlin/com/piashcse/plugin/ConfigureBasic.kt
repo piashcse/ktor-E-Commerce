@@ -65,6 +65,10 @@ fun Application.configureBasic() {
                 call.response.headers.append("X-Frame-Options", "DENY", safeOnly = false)
                 call.response.headers.append("Referrer-Policy", "no-referrer", safeOnly = false)
                 call.response.headers.append("Permissions-Policy", "camera=(), microphone=(), geolocation=()", safeOnly = false)
+                call.response.headers.append("Strict-Transport-Security", "max-age=31536000; includeSubDomains", safeOnly = false)
+                call.response.headers.append("Content-Security-Policy", "default-src 'self'; frame-ancestors 'none'", safeOnly = false)
+                call.response.headers.append("Cross-Origin-Resource-Policy", "same-origin", safeOnly = false)
+                call.response.headers.append("Cross-Origin-Opener-Policy", "same-origin", safeOnly = false)
             }
         },
     )
@@ -103,9 +107,12 @@ private fun Application.configureCORS() {
             HttpMethod.Options,
         ).forEach { allowMethod(it) }
         exposeHeader(HttpHeaders.XRequestId)
+        exposeHeader("Idempotency-Key")
         maxAgeInSeconds = 3600
         allowHeader(HttpHeaders.ContentType)
         allowHeader(HttpHeaders.Authorization)
+        allowHeader(HttpHeaders.XRequestId)
+        allowHeader("Idempotency-Key")
         allowHeader("X-Requested-With")
     }
 }
@@ -130,7 +137,19 @@ private fun Application.configureContentNegotiation() {
 private fun Application.configureCallLogging() {
     val httpStatusSuccess = 300
     val httpStatusRedirect = 400
-    val sensitiveKeys = setOf("password", "token", "otp", "secret", "authorization")
+    val sensitiveKeys =
+        setOf(
+            "password",
+            "token",
+            "access_token",
+            "refresh_token",
+            "otp",
+            "secret",
+            "authorization",
+            "email",
+            "phone",
+            "mobile",
+        )
 
     install(CallLogging) {
         level = Level.INFO

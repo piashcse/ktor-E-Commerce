@@ -45,11 +45,17 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                         (OrderItemTable.orderId eq orderId.entityID(OrderTable))
                 }.firstOrNull() ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
 
+            // Duplicate guard: any live or completed refund for this item blocks a new one.
+            // Only REJECTED leaves the item eligible again. forUpdate() serializes concurrent
+            // creates against an existing row (first-writer wins inside one transaction).
             val existingRefund =
                 RefundRequestDAO.find {
                     (RefundRequestTable.orderItemId eq orderItem.id) and
-                        (RefundRequestTable.status inList listOf(RefundStatus.PENDING, RefundStatus.APPROVED, RefundStatus.SHIPPED))
-                }.firstOrNull()
+                        (
+                            RefundRequestTable.status inList
+                                listOf(RefundStatus.PENDING, RefundStatus.APPROVED, RefundStatus.SHIPPED, RefundStatus.REFUNDED)
+                        )
+                }.forUpdate().firstOrNull()
 
             if (existingRefund != null) {
                 throw ValidationException(Message.Refunds.ALREADY_EXISTS)
@@ -80,16 +86,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                 OrderDAO.findById(orderId)
                     ?: throw ValidationException(Message.Orders.NOT_FOUND)
 
-            val isCustomer = order.userId.value == userId
-            val isSeller =
-                order.shopId?.value?.let { shopId ->
-                    sellerOwnsShop(userId, shopId)
-                } == true
-            val isAdmin = userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
-
-            if (!isCustomer && !isSeller && !isAdmin) {
-                throw ValidationException(Message.Orders.UNAUTHORIZED)
-            }
+            requireRefundAccess(order.userId.value, order.shopId?.value, userId, userType)
 
             RefundRequestTable.selectAll()
                 .andWhere { RefundRequestTable.orderId eq orderId.entityID(OrderTable) }
@@ -106,29 +103,16 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
         query {
             val refundRequest = RefundRequestDAO.findById(refundId) ?: return@query null
 
-            val isCustomer = refundRequest.userId.value == userId
-            val isAdmin = userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
-            val isSeller = orderBelongsToUserShop(refundRequest.orderId.value, userId)
-
-            if (!isCustomer && !isSeller && !isAdmin) {
-                throw ValidationException(Message.Orders.UNAUTHORIZED)
-            }
+            val order = OrderDAO.findById(refundRequest.orderId.value)
+            requireRefundAccess(
+                order?.userId?.value ?: refundRequest.userId.value,
+                order?.shopId?.value,
+                userId,
+                userType,
+            )
 
             refundRequest.toRefundRequestResponse()
         }
-
-    private fun orderBelongsToUserShop(
-        orderId: String,
-        userId: String,
-    ): Boolean {
-        val order = OrderDAO.findById(orderId) ?: return false
-        val shopId = order.shopId?.value ?: return false
-        val seller =
-            SellerDAO.find {
-                (SellerTable.userId eq userId) and (SellerTable.shopId eq shopId.entityID(ShopTable))
-            }.firstOrNull()
-        return seller != null
-    }
 
     override suspend fun updateRefundStatus(
         refundId: String,
@@ -196,7 +180,18 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                 val order =
                     OrderDAO.findById(refundReq.orderId.value)
                         ?: throw ValidationException(Message.Orders.NOT_FOUND)
-                order.paymentStatus = PaymentStatus.REFUNDED
+                // Full-vs-partial refund: only flip the order-level paymentStatus when the
+                // sum of REFUNDED amounts covers the order total, and only when a completed
+                // payment exists (ledger check). Partial refunds leave it as-is.
+                // Cancel-after-paid must go through a refund record — never set CANCELED here.
+                val refundedTotal =
+                    RefundRequestDAO.find {
+                        (RefundRequestTable.orderId eq refundReq.orderId) and
+                            (RefundRequestTable.status eq RefundStatus.REFUNDED)
+                    }.fold(BigDecimal.ZERO) { acc, row -> acc + (row.refundAmount ?: BigDecimal.ZERO) }
+                if (order.paymentStatus == PaymentStatus.COMPLETED && refundedTotal >= order.total) {
+                    order.paymentStatus = PaymentStatus.REFUNDED
+                }
             }
 
             OutboxPublisher.enqueueTx(

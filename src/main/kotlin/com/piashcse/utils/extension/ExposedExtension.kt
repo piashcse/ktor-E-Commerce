@@ -26,3 +26,17 @@ fun <T> Query.toPaginatedResponse(
     val (totalCount, data) = toPaginatedList(limit, offset, mapper)
     return PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
 }
+
+/**
+ * Paginate a query then preload related data before mapping.
+ * Keeps results identical to manual toPaginatedList + preload + PaginatedResponse.
+ */
+fun <R, D> Query.paginateWithPreload(
+    limit: Int,
+    offset: Int,
+    rowMapper: (ResultRow) -> R,
+    preloadAndMap: (List<R>) -> List<D>,
+): PaginatedResponse<D> {
+    val (totalCount, rows) = toPaginatedList(limit, offset, rowMapper)
+    return PaginatedResponse(preloadAndMap(rows), PaginationMetadata(totalCount, limit, offset))
+}

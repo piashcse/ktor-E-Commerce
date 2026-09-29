@@ -3,6 +3,7 @@ package com.piashcse.feature.product_sub_category
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductSubCategoryDAO
 import com.piashcse.database.entities.ProductSubCategoryTable
+import com.piashcse.feature.common.CatalogCrud
 import com.piashcse.mapper.toProductSubCategoryResponse
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.model.response.ProductSubCategoryResponse
@@ -17,16 +18,24 @@ class ProductSubCategoryRepositoryImpl : ProductSubCategoryRepository {
     override suspend fun addProductSubCategory(productSubCategory: ProductSubCategoryRequest): ProductSubCategoryResponse =
         query {
             ProductCategoryDAO.findById(productSubCategory.categoryId) ?: productSubCategory.categoryId.throwNotFound("Category")
-            val isSubCategoryExist =
-                ProductSubCategoryDAO.find {
-                    (ProductSubCategoryTable.categoryId eq productSubCategory.categoryId.entityID(ProductSubCategoryTable)) and
-                        (ProductSubCategoryTable.name eq productSubCategory.name)
-                }.firstOrNull()
-            isSubCategoryExist?.let { throw productSubCategory.name.throwConflict("Subcategory") }
-            ProductSubCategoryDAO.new {
-                categoryId = productSubCategory.categoryId.entityID(ProductSubCategoryTable)
-                name = productSubCategory.name
-            }.toProductSubCategoryResponse()
+            CatalogCrud.createUniqueByName(
+                name = productSubCategory.name,
+                validationLabel = null,
+                conflictLabel = "Subcategory",
+                findExisting = {
+                    ProductSubCategoryDAO.find {
+                        (ProductSubCategoryTable.categoryId eq productSubCategory.categoryId.entityID(ProductSubCategoryTable)) and
+                            (ProductSubCategoryTable.name eq productSubCategory.name)
+                    }.firstOrNull()
+                },
+                create = {
+                    ProductSubCategoryDAO.new {
+                        categoryId = productSubCategory.categoryId.entityID(ProductSubCategoryTable)
+                        name = productSubCategory.name
+                    }
+                },
+                toResponse = { it.toProductSubCategoryResponse() },
+            )
         }
 
     override suspend fun getProductSubCategory(
@@ -46,15 +55,24 @@ class ProductSubCategoryRepositoryImpl : ProductSubCategoryRepository {
         name: String,
     ): ProductSubCategoryResponse =
         query {
-            val subCategory = ProductSubCategoryDAO.findById(id) ?: id.throwNotFound("Subcategory")
-            subCategory.name = name
-            subCategory.toProductSubCategoryResponse()
+            CatalogCrud.renameById(
+                id = id,
+                name = name,
+                validationLabel = null,
+                notFoundLabel = "Subcategory",
+                findById = { ProductSubCategoryDAO.findById(it) },
+                rename = { subCategory, newName -> subCategory.name = newName },
+                toResponse = { it.toProductSubCategoryResponse() },
+            )
         }
 
     override suspend fun deleteProductSubCategory(subCategoryId: String): String =
         query {
-            val subCategory = ProductSubCategoryDAO.findById(subCategoryId) ?: subCategoryId.throwNotFound("Subcategory")
-            subCategory.delete()
-            subCategoryId
+            CatalogCrud.deleteById(
+                id = subCategoryId,
+                notFoundLabel = "Subcategory",
+                findById = { ProductSubCategoryDAO.findById(it) },
+                delete = { it.delete() },
+            )
         }
 }

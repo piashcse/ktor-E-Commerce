@@ -1,7 +1,9 @@
 package com.piashcse.utils.extension
 
+import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.JwtTokenRequest
+import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -41,6 +43,19 @@ fun ApplicationCall.hasRole(role: UserType): Boolean = currentUserOrNull()?.hasR
 fun ApplicationCall.hasAccessTo(role: UserType): Boolean = currentUserOrNull()?.hasAccessTo(role) ?: false
 
 fun ApplicationCall.getCurrentUserType(): UserType? = currentUserOrNull()?.getUserType()
+
+/**
+ * Returns (userId, email, userType-string) for audit/status calls.
+ * Same exceptions as manual currentUserId/currentUserOrNull extraction.
+ */
+fun ApplicationCall.actor(): Triple<String, String?, String?> =
+    Triple(currentUserId, currentUserOrNull()?.email, currentUserOrNull()?.userType)
+
+/**
+ * Returns the caller's UserType or throws 401 — replaces the
+ * copy-pasted getCurrentUserType() ?: throw UnauthorizedException triple.
+ */
+fun ApplicationCall.requireUserType(): UserType = getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
 
 suspend fun ApplicationCall.requireRole(
     role: UserType,

@@ -1,14 +1,14 @@
 package com.piashcse.feature.cart
 
 import com.piashcse.model.request.CartRequest
-import com.piashcse.plugin.RateLimitNames
-import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.customerOnlyAuth
+import com.piashcse.plugin.generalRateLimit
+import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -18,8 +18,8 @@ import org.koin.ktor.ext.inject
  */
 fun Route.cartRoutes() {
     val cartRepo: CartRepository by inject()
-    requireRole {
-        rateLimit(RateLimitName(RateLimitNames.WRITE)) {
+    customerOnlyAuth {
+        writeRateLimit {
             /**
              * @tag Cart
              * @description Add an item to the authenticated user's cart
@@ -59,17 +59,19 @@ fun Route.cartRoutes() {
          * @tag Cart
          * @description Retrieve all items in the authenticated user's cart
          */
-        get {
-            val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(cartRepo.getCartItems(call.currentUserId, limit, offset))
-        }
+        generalRateLimit {
+            get {
+                val (limit, offset) = call.paginateQueryParams()
+                call.respondOk(cartRepo.getCartItems(call.currentUserId, limit, offset))
+            }
 
-        /**
-         * @tag Cart
-         * @description Retrieve a summary of the cart (totals, counts)
-         */
-        get("summary") {
-            call.respondOk(cartRepo.getCartSummary(call.currentUserId))
+            /**
+             * @tag Cart
+             * @description Retrieve a summary of the cart (totals, counts)
+             */
+            get("summary") {
+                call.respondOk(cartRepo.getCartSummary(call.currentUserId))
+            }
         }
     }
 }

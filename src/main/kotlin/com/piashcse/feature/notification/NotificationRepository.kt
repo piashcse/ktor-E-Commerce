@@ -19,6 +19,12 @@ data class NotificationResponse(
 @Serializable
 data class UnreadCountResponse(val unreadCount: Long)
 
+@Serializable
+data class NotificationPreferencesResponse(
+    val userId: String,
+    val channel: String,
+)
+
 interface NotificationRepository {
     suspend fun list(
         userId: String,
@@ -35,4 +41,19 @@ interface NotificationRepository {
     ): NotificationResponse
 
     suspend fun markAllRead(userId: String): Long
+
+    suspend fun send(
+        userId: String,
+        title: String,
+        body: String,
+        channel: String?,
+        type: String?,
+    ): NotificationResponse
+
+    suspend fun getPreferences(userId: String): NotificationPreferencesResponse
+
+    suspend fun updatePreferences(
+        userId: String,
+        channel: String,
+    ): NotificationPreferencesResponse
 }

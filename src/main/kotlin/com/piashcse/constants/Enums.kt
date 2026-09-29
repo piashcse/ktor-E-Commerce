@@ -74,12 +74,15 @@ enum class OrderStatus {
             when (current) {
                 PENDING -> target in listOf(CONFIRMED, CANCELED)
                 CONFIRMED -> target in listOf(PAID, CANCELED)
-                PAID -> target in listOf(DELIVERED, CANCELED)
+                // PAID orders cannot be canceled outright: cancel-after-paid must go through
+                // a refund record (see RefundRequest flow), so CANCELED is not a legal target here.
+                PAID -> target in listOf(DELIVERED)
                 DELIVERED -> target in listOf(RECEIVED) // Completed order can be marked as received
                 CANCELED -> false // Canceled orders cannot transition to other statuses
                 RECEIVED -> false // Completed orders remain in received status
             }
 
+        // Only unpaid orders may be canceled directly; PAID/DELIVERED must use the refund flow.
         fun canBeCanceled(current: OrderStatus): Boolean = current in listOf(PENDING, CONFIRMED)
     }
 }
@@ -183,6 +186,9 @@ enum class UserType {
             SELLER -> this.isSellerOrHigher
             CUSTOMER -> this.isCustomerOrHigher
         }
+
+    /** Strict least-privilege check: exact role match, no hierarchy. Used by customerOnlyAuth. */
+    fun hasExactRole(role: UserType): Boolean = this == role
 
     companion object {
         fun fromString(role: String): UserType? = values().find { it.name.equals(role, ignoreCase = true) }

@@ -94,8 +94,16 @@ class AuthRepositoryImpl : AuthRepository {
         }
     ).singleOrNull()
 
-    private fun resetAttempt(userId: EntityID<String>) =
-        OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId) and (OtpAttemptTable.purpose eq "RESET") }.singleOrNull()
+    private fun resetAttempt(
+        userId: EntityID<String>,
+        forUpdate: Boolean = false,
+    ) = (
+        if (forUpdate) {
+            OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId) and (OtpAttemptTable.purpose eq "RESET") }.forUpdate()
+        } else {
+            OtpAttemptDAO.find { (OtpAttemptTable.userId eq userId) and (OtpAttemptTable.purpose eq "RESET") }
+        }
+    ).singleOrNull()
 
     // ── Login attempt helpers ────────────────────────────────────────────
 
@@ -280,7 +288,7 @@ class AuthRepositoryImpl : AuthRepository {
                 entities.find { it.userType == type }
                     ?: throw NotFoundException(Message.Auth.userNotFoundForRole(resetPasswordRequest.userType))
 
-            val otpAttempt = resetAttempt(user.id)
+            val otpAttempt = resetAttempt(user.id, forUpdate = true)
             if (otpAttempt?.isLocked == true) return@query ResetResult.Locked
 
             if (user.resetOtpExpiry?.isBefore(LocalDateTime.now()) != false) {
@@ -311,7 +319,12 @@ class AuthRepositoryImpl : AuthRepository {
                 throw ValidationException(Message.Auth.PASSWORD_SAME)
             }
 
-            otpAttempt?.delete()
+            // Update the attempt row in place: never delete a row that may carry a live lock,
+            // otherwise a concurrent locker would be silently no-op'd.
+            otpAttempt?.let {
+                it.attemptCount = 0
+                it.lockedUntil = null
+            }
             user.resetOtpCode = null
             user.resetOtpExpiry = null
             user.password = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, resetPasswordRequest.newPassword.toCharArray())
@@ -325,19 +338,54 @@ class AuthRepositoryImpl : AuthRepository {
         otp: String,
     ): Boolean =
         query {
-            registrationAttempt(userId.entityID(UserTable))?.let {
-                if (it.isLocked) throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES))
+            // Single-transaction check + count + lock under row-level locks. The attempt row
+            // and the user row are both locked here, closing the TOCTOU window that separate
+            // isLocked / count / verify / lock transactions left open to concurrent verifiers.
+            val userEntity =
+                UserDAO.find { UserTable.id eq userId.entityID(UserTable) }.forUpdate().singleOrNull()
+                    ?: throw NotFoundException(Message.Errors.NOT_FOUND)
+            val attempt = registrationAttempt(userEntity.id, forUpdate = true)
+            if (attempt?.isLocked == true) {
+                throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES))
             }
-            val userEntity = UserDAO.findById(userId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
-            if (userEntity.otpExpiry?.isBefore(LocalDateTime.now()) != false) return@query false
-            val isValid = constantTimeEquals(userEntity.otpCode.orEmpty(), otp)
-            if (isValid) {
-                userEntity.isVerified = true
-                userEntity.otpCode = null
-                userEntity.otpExpiry = null
+            if (attempt != null && (attempt.isLockExpired || attempt.attemptCount >= AppConstants.Authentication.MAX_OTP_ATTEMPTS)) {
+                // Time-based lockout: an expired (or stale saturated) counter decays instead of locking forever.
+                attempt.attemptCount = 0
+                attempt.lockedUntil = null
             }
-            isValid
+            if (userEntity.otpExpiry?.isBefore(LocalDateTime.now()) != false ||
+                !constantTimeEquals(userEntity.otpCode.orEmpty(), otp)
+            ) {
+                recordLockedOtpFailure(userEntity, attempt)
+                return@query false
+            }
+            userEntity.isVerified = true
+            userEntity.otpCode = null
+            userEntity.otpExpiry = null
+            attempt?.let {
+                it.attemptCount = 0
+                it.lockedUntil = null
+            }
+            true
         }
+
+    private fun recordLockedOtpFailure(
+        user: UserDAO,
+        attempt: OtpAttemptDAO?,
+    ) {
+        val record =
+            attempt ?: OtpAttemptDAO.new {
+                this.userId = user.id
+                this.purpose = "GENERAL"
+                this.attemptCount = 0
+            }
+        record.attemptCount = record.attemptCount + 1
+        if (record.attemptCount >= AppConstants.Authentication.MAX_OTP_ATTEMPTS) {
+            record.lockedUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
+            user.otpCode = null
+            user.otpExpiry = null
+        }
+    }
 
     override suspend fun invalidateOtp(userId: String) =
         query {
@@ -376,14 +424,32 @@ class AuthRepositoryImpl : AuthRepository {
 
     override suspend fun resetOtpAttempts(userId: String) {
         query {
-            registrationAttempt(userId.entityID(UserTable))?.delete()
+            // Locked read + locked-aware reset: never delete a row carrying a live lock,
+            // otherwise a concurrent lockOtpAttempts would be silently no-op'd.
+            val existing = registrationAttempt(userId.entityID(UserTable), forUpdate = true)
+            if (existing?.isLocked == true) return@query
+            existing?.let {
+                it.attemptCount = 0
+                it.lockedUntil = null
+            }
         }
     }
 
     override suspend fun lockOtpAttempts(userId: String) {
         query {
-            registrationAttempt(userId.entityID(UserTable))?.apply {
-                lockedUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
+            val id = userId.entityID(UserTable)
+            val lockUntil = Instant.now().plusSeconds(AppConstants.Authentication.OTP_LOCKOUT_MINUTES * 60)
+            val existing = registrationAttempt(id, forUpdate = true)
+            if (existing != null) {
+                existing.lockedUntil = lockUntil
+            } else {
+                // Create the locked row so a concurrent reset cannot no-op this lock.
+                OtpAttemptDAO.new {
+                    this.userId = id
+                    this.purpose = "GENERAL"
+                    this.attemptCount = AppConstants.Authentication.MAX_OTP_ATTEMPTS
+                    this.lockedUntil = lockUntil
+                }
             }
         }
     }

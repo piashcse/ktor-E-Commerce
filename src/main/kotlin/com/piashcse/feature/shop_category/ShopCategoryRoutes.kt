@@ -1,20 +1,35 @@
 package com.piashcse.feature.shop_category
 
 import com.piashcse.model.request.ShopCategoryRequest
-import com.piashcse.plugin.RateLimitNames
+import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
+
+/**
+ * Public shop category routes.
+ */
+fun Route.shopCategoryRoutes() {
+    val shopCategoryRepo: ShopCategoryRepository by inject()
+    /**
+     * @tag Shop-Category
+     * @description Retrieve a paginated list of all shop categories
+     */
+    get {
+        val (limit, offset) = call.paginateQueryParams()
+        call.respondOk(shopCategoryRepo.getCategories(limit, offset))
+    }
+}
 
 /**
  * Admin shop category management routes.
  */
 fun Route.shopCategoryAdminRoutes() {
     val shopCategoryRepo: ShopCategoryRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+    adminWriteRateLimit {
         /**
          * @tag Shop-Category
          * @description Admin: Create a new shop category

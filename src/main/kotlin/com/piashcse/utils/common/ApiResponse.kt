@@ -17,6 +17,10 @@ data class ApiError(
     val code: String = "BAD_REQUEST",
     val errors: List<FieldError>? = null,
     val requestId: String? = null,
+    // RFC 9457 / Spring-Boot compat aliases — additive only, message/code stay canonical.
+    val type: String? = null,
+    val title: String? = null,
+    val status: Int? = null,
 )
 
 /**
@@ -28,9 +32,17 @@ data class FieldError(
     val message: String,
 )
 
-/** Convert any AppException → (HttpStatusCode, ApiError) pair. */
-fun AppException.toErrorResponse(): Pair<HttpStatusCode, ApiError> =
-    code to ApiError(message = message ?: "Unknown error", code = errorCode)
+/** Convert any AppException → (HttpStatusCode, ApiError) pair. Pass call.requestId() to correlate. */
+fun AppException.toErrorResponse(requestId: String? = null): Pair<HttpStatusCode, ApiError> =
+    code to
+        ApiError(
+            message = message ?: "Unknown error",
+            code = errorCode,
+            requestId = requestId,
+            type = errorCode,
+            title = message,
+            status = code.value,
+        )
 
 /** Standard success message envelope — replaces ad-hoc mapOf("message" to ...) for OpenAPI schema. */
 @Serializable

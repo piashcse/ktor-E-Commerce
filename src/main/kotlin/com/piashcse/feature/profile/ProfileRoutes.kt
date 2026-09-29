@@ -2,14 +2,13 @@ package com.piashcse.feature.profile
 
 import com.piashcse.constants.Message
 import com.piashcse.model.request.UserProfileRequest
-import com.piashcse.plugin.RateLimitNames
-import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.customerOnlyAuth
+import com.piashcse.plugin.writeRateLimit
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.content.*
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -19,7 +18,7 @@ import org.koin.ktor.ext.inject
  */
 fun Route.profileRoutes() {
     val userProfileService: ProfileService by inject()
-    requireRole {
+    customerOnlyAuth {
         /**
          * @tag Profile
          * @description Retrieve the authenticated user's profile information
@@ -28,7 +27,7 @@ fun Route.profileRoutes() {
             call.respondOk(userProfileService.getProfile(call.currentUserId))
         }
 
-        rateLimit(RateLimitName(RateLimitNames.WRITE)) {
+        writeRateLimit {
             /**
              * @tag Profile
              * @description Update the authenticated user's profile information
@@ -61,7 +60,9 @@ fun Route.profileRoutes() {
 
                 multipart.forEachPart { part ->
                     if (part is PartData.FileItem) {
-                        val fileName = UploadService.uploadProfileImage(part)
+                        // Size cap (5 MB) + MIME allowlist enforced before the upload call.
+                        val bytes = UploadService.readAndValidateImagePart(part, "profile image")
+                        val fileName = UploadService.uploadProfileImage(part, bytes)
                         imageUrl = UploadService.getProfileImageUrl(fileName)
                         userProfileService.updateProfileImage(call.currentUserId, imageUrl)
                     }

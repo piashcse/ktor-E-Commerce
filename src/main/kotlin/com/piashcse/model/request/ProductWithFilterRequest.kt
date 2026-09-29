@@ -1,5 +1,6 @@
 package com.piashcse.model.request
 
+import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
@@ -21,6 +22,14 @@ data class ProductWithFilterRequest(
         validate(this) {
             validate(ProductWithFilterRequest::limit).isNotNull()
             validate(ProductWithFilterRequest::offset).isNotNull()
+        }
+        // Query-param builders already clamp, but direct constructions must not
+        // slip unbounded limits/offsets into OFFSET scans.
+        if (limit !in 1..100) {
+            throw ValidationException("limit must be between 1 and 100")
+        }
+        if (offset < 0) {
+            throw ValidationException("offset cannot be negative")
         }
     }
 }

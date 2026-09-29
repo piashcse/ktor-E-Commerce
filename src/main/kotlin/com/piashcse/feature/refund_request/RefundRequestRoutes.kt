@@ -5,13 +5,14 @@ import com.piashcse.constants.UserType
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
-import com.piashcse.plugin.RateLimitNames
+import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.sellerWriteRateLimit
+import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.http.*
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -23,7 +24,7 @@ import org.koin.ktor.ext.inject
 fun Route.refundRequestRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
     customerAuth {
-        rateLimit(RateLimitName(RateLimitNames.WRITE)) {
+        writeRateLimit {
             /**
              * @tag Refund-Request
              * @description Create a refund request for an order item
@@ -93,7 +94,7 @@ fun Route.refundRequestRoutes() {
  */
 fun Route.refundSellerRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.SELLER_WRITE)) {
+    sellerWriteRateLimit {
         /**
          * @tag Refund
          * @description Seller: Update refund request status
@@ -115,7 +116,7 @@ fun Route.refundSellerRoutes() {
  */
 fun Route.refundAdminRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+    adminWriteRateLimit {
         /**
          * @tag Refund
          * @description Admin: Update refund status

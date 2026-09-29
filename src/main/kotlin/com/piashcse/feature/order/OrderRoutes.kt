@@ -3,12 +3,13 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.CancelOrderRequest
-import com.piashcse.plugin.RateLimitNames
-import com.piashcse.plugin.customerAuth
+import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.plugin.customerOnlyAuth
+import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.UnauthorizedException
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -19,19 +20,21 @@ import java.time.Instant
  */
 fun Route.orderRoutes() {
     val orderRepo: OrderRepository by inject()
-    customerAuth {
-        /**
-         * @tag Order
-         * @description Retrieve all orders for the authenticated customer
-         */
-        get {
-            val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(orderRepo.getOrders(call.currentUserId, limit, offset))
+    customerOnlyAuth {
+        generalRateLimit {
+            /**
+             * @tag Order
+             * @description Retrieve all orders for the authenticated customer
+             */
+            get {
+                val (limit, offset) = call.paginateQueryParams()
+                call.respondOk(orderRepo.getOrders(call.currentUserId, limit, offset))
+            }
         }
     }
 
     requireRole(UserType.CUSTOMER, UserType.SELLER) {
-        rateLimit(RateLimitName(RateLimitNames.WRITE)) {
+        writeRateLimit {
             /**
              * @tag Order
              * @description Update order status (Customer: CANCELED/RECEIVED, Seller: CONFIRMED/DELIVERED)
@@ -77,10 +80,12 @@ fun Route.orderSellerRoutes() {
      * @tag Order
      * @description Seller: Retrieve orders for the seller's shop
      */
-    get {
-        val (limit, offset) = call.paginateQueryParams()
-        val status = call.request.queryParameters["status"]
-        call.respondOk(orderRepo.getSellerOrders(call.currentUserId, limit, offset, status))
+    generalRateLimit {
+        get {
+            val (limit, offset) = call.paginateQueryParams()
+            val status = call.request.queryParameters["status"]
+            call.respondOk(orderRepo.getSellerOrders(call.currentUserId, limit, offset, status))
+        }
     }
 }
 
@@ -89,7 +94,7 @@ fun Route.orderSellerRoutes() {
  */
 fun Route.orderAdminRoutes() {
     val orderRepo: OrderRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+    adminWriteRateLimit {
         /**
          * @tag Order
          * @description Admin: Update the status of any order
@@ -120,18 +125,20 @@ fun Route.orderAdminRoutes() {
      * @tag Order
      * @description Admin: Retrieve all orders with advanced filtering
      */
-    get {
-        val (limit, offset) = call.paginateQueryParams()
-        val status = call.request.queryParameters["status"]
-        val startDate =
-            call.request.queryParameters["startDate"]?.let {
-                runCatching { Instant.parse(it) }.getOrNull()
-            }
-        val endDate =
-            call.request.queryParameters["endDate"]?.let {
-                runCatching { Instant.parse(it) }.getOrNull()
-            }
+    generalRateLimit {
+        get {
+            val (limit, offset) = call.paginateQueryParams()
+            val status = call.request.queryParameters["status"]
+            val startDate =
+                call.request.queryParameters["startDate"]?.let {
+                    runCatching { Instant.parse(it) }.getOrNull()
+                }
+            val endDate =
+                call.request.queryParameters["endDate"]?.let {
+                    runCatching { Instant.parse(it) }.getOrNull()
+                }
 
-        call.respondOk(orderRepo.getAdminOrders(limit, offset, status, startDate, endDate))
+            call.respondOk(orderRepo.getAdminOrders(limit, offset, status, startDate, endDate))
+        }
     }
 }

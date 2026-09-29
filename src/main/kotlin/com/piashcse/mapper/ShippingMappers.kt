@@ -4,6 +4,7 @@ import com.piashcse.database.entities.ShippingAddressDAO
 import com.piashcse.database.entities.ShippingMethodDAO
 import com.piashcse.model.response.ShippingAddressResponse
 import com.piashcse.model.response.ShippingMethodResponse
+import com.piashcse.utils.common.Money
 
 fun ShippingAddressDAO.toShippingAddressResponse() =
     ShippingAddressResponse(
@@ -26,6 +27,6 @@ fun ShippingMethodDAO.toShippingMethodResponse() =
         id = id.value,
         name = name,
         type = type,
-        price = price.toPlainString(),
+        price = Money.str(price),
         deliveryTime = deliveryTime,
     )

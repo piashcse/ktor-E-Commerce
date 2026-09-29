@@ -3,9 +3,12 @@ package com.piashcse.feature.payout
 import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.sellerAuth
 import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.extension.idempotencyKey
 import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.http.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -17,6 +20,10 @@ fun Route.payoutSellerRoutes() {
             val (limit, offset) = call.paginateQueryParams()
             call.respondOk(repo.sellerPayouts(call.currentUserId, limit, offset))
         }
+        post("request") {
+            val body = call.receive<PayoutRequest>()
+            call.respondCreated(repo.requestPayout(call.currentUserId, body.amount, call.idempotencyKey()))
+        }
     }
 }
 
@@ -27,8 +34,19 @@ fun Route.payoutAdminRoutes() {
             val (limit, offset) = call.paginateQueryParams()
             call.respondOk(repo.allPayouts(limit, offset, call.request.queryParameters["status"]))
         }
+        post("{id}/approve") {
+            call.respondOk(repo.approvePayout(call.parameters["id"] ?: throw IllegalArgumentException("id required")))
+        }
+        post("{id}/reject") {
+            call.respondOk(repo.rejectPayout(call.parameters["id"] ?: throw IllegalArgumentException("id required")))
+        }
         post("{id}/pay") {
-            call.respondOk(repo.markPaid(call.parameters["id"] ?: throw IllegalArgumentException("id required")))
+            call.respondOk(
+                repo.markPaid(
+                    call.parameters["id"] ?: throw IllegalArgumentException("id required"),
+                    call.currentUserId,
+                ),
+            )
         }
         get("export") {
             val data = repo.allPayouts(10000, 0, call.request.queryParameters["status"])

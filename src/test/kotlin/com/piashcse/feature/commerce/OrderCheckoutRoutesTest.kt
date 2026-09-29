@@ -170,12 +170,15 @@ class CheckoutRoutesTest {
     @Test
     fun `list shipping addresses happy path returns 200`() =
         testApplication {
-            coEvery { addressRepo.getShippingAddresses(any()) } returns
-                listOf(
-                    ShippingAddressResponse(
-                        "a-1", "user-1", "John", "Doe", "t@t.com", "123",
-                        "1 Main St", "Dhaka", null, "BD", "1000", true,
+            coEvery { addressRepo.getShippingAddresses(any(), any(), any()) } returns
+                PaginatedResponse(
+                    listOf(
+                        ShippingAddressResponse(
+                            "a-1", "user-1", "John", "Doe", "t@t.com", "123",
+                            "1 Main St", "Dhaka", null, "BD", "1000", true,
+                        ),
                     ),
+                    PaginationMetadata(1, 20, 0),
                 )
             setup()
             val res =

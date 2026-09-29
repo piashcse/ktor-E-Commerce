@@ -6,7 +6,10 @@ import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.model.request.*
 import com.piashcse.model.response.ResetResult
-import com.piashcse.plugin.RateLimitNames
+import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.plugin.authRateLimit
+import com.piashcse.plugin.otpRateLimit
+import com.piashcse.plugin.refreshTokenRateLimit
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.clientIp
@@ -15,7 +18,6 @@ import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.http.*
-import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -28,7 +30,7 @@ fun Route.authRoutes() {
     val userAuthService: UserAuthenticationService by inject()
     val authRepo: AuthRepository by inject()
     // Rate-limited endpoints (brute-force protection)
-    rateLimit(RateLimitName(RateLimitNames.AUTH)) {
+    authRateLimit {
         /**
          * @tag Auth
          * @description Authenticate user with email, password and user type
@@ -82,7 +84,7 @@ fun Route.authRoutes() {
      * @tag Auth
      * @description Verify user account with OTP
      */
-    rateLimit(RateLimitName(RateLimitNames.OTP)) {
+    otpRateLimit {
         post("otp-verification") {
             val userId = call.requireQueryParameter("userId")
             val otp = call.requireQueryParameter("otp")
@@ -94,7 +96,7 @@ fun Route.authRoutes() {
      * @tag Auth
      * @description Refresh access token using refresh token
      */
-    rateLimit(RateLimitName(RateLimitNames.REFRESH_TOKEN)) {
+    refreshTokenRateLimit {
         post("refresh-token") {
             call.respondOk(authRepo.refreshAccessToken(call.receive<RefreshTokenRequest>()))
         }
@@ -142,7 +144,7 @@ fun Route.authRoutes() {
  */
 fun Route.authAdminRoutes() {
     val authRepo: AuthRepository by inject()
-    rateLimit(RateLimitName(RateLimitNames.ADMIN_WRITE)) {
+    adminWriteRateLimit {
         /**
          * @tag Auth
          * @description Admin: Change user type
