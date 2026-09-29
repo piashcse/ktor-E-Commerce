@@ -31,6 +31,12 @@ fun Route.wishListRoutes() {
              * @tag Wishlist
              * @description Remove a specific product from the wishlist
              */
+            post("move-to-cart") {
+                val productId = call.requireQueryParameter("productId")
+                val quantity = call.request.queryParameters["quantity"]?.toIntOrNull() ?: 1
+                call.respondCreated(wishlistRepo.moveToCart(call.currentUserId, productId, quantity))
+            }
+
             delete("remove") {
                 val productId = call.requireQueryParameter("productId")
                 call.respondOk(wishlistRepo.removeFromWishList(call.currentUserId, productId))

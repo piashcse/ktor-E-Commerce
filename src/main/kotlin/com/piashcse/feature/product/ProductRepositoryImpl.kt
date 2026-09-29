@@ -39,15 +39,18 @@ class ProductRepositoryImpl : ProductRepository {
 
     private fun calcDiscountPct(price: Double, discountPrice: Double?): BigDecimal? =
         if (discountPrice != null && discountPrice < price)
-            BigDecimal.valueOf((price - discountPrice) / price * 100).setScale(2, RoundingMode.HALF_UP)
+            com.piashcse.utils.common.Money.discountPercent(
+                BigDecimal(price.toString()),
+                BigDecimal(discountPrice.toString()),
+            )
         else null
 
     private fun Query.applyProductFilters(filter: ProductWithFilterRequest): Query {
         filter.categoryId?.let { andWhere { ProductTable.categoryId eq it.entityID(ProductCategoryTable) } }
         filter.subCategoryId?.let { andWhere { ProductTable.subCategoryId eq it.entityID(ProductSubCategoryTable) } }
         filter.brandId?.let { andWhere { ProductTable.brandId eq it.entityID(BrandTable) } }
-        filter.minPrice?.let { andWhere { ProductTable.price greaterEq BigDecimal.valueOf(it) } }
-        filter.maxPrice?.let { andWhere { ProductTable.price lessEq BigDecimal.valueOf(it) } }
+        filter.minPrice?.let { andWhere { ProductTable.price greaterEq BigDecimal(it.toString()) } }
+        filter.maxPrice?.let { andWhere { ProductTable.price lessEq BigDecimal(it.toString()) } }
         val sortOrder = if (filter.sortOrder?.lowercase() == "asc") SortOrder.ASC else SortOrder.DESC
         when (filter.sortBy?.lowercase()) {
             "price" -> orderBy(ProductTable.price to sortOrder)
@@ -104,8 +107,8 @@ class ProductRepositoryImpl : ProductRepository {
             sku = generateSKU(productRequest.name)
             name = productRequest.name
             description = productRequest.description
-            price = BigDecimal.valueOf(productRequest.price)
-            discountPrice = productRequest.discountPrice?.let { BigDecimal.valueOf(it) }
+            price = BigDecimal(productRequest.price.toString())
+            discountPrice = productRequest.discountPrice?.let { BigDecimal(it.toString()) }
             discountPercentage = calcDiscountPct(productRequest.price, productRequest.discountPrice)
             videoLink = productRequest.videoLink
             hotDeal = productRequest.hotDeal
@@ -145,9 +148,9 @@ class ProductRepositoryImpl : ProductRepository {
             brandId = updateProduct.brandId?.let { it.entityID(BrandTable) } ?: brandId
             name = updateProduct.name ?: name
             description = updateProduct.description ?: description
-            price = updateProduct.price?.let { BigDecimal.valueOf(it) } ?: price
-            discountPrice = updateProduct.discountPrice?.let { BigDecimal.valueOf(it) } ?: discountPrice
-            discountPercentage = calcDiscountPct(price.toDouble(), discountPrice?.toDouble())
+            price = updateProduct.price?.let { BigDecimal(it.toString()) } ?: price
+            discountPrice = updateProduct.discountPrice?.let { BigDecimal(it.toString()) } ?: discountPrice
+            discountPercentage = com.piashcse.utils.common.Money.discountPercent(price, discountPrice)
             videoLink = updateProduct.videoLink ?: videoLink
             hotDeal = updateProduct.hotDeal ?: hotDeal
             featured = updateProduct.featured ?: featured
@@ -173,7 +176,9 @@ class ProductRepositoryImpl : ProductRepository {
     }
 
     override suspend fun getProductDetail(productId: String): ProductResponse = query {
-        ProductDAO.findById(productId)?.toProductResponse() ?: productId.throwNotFound("ProductResponse")
+        val product = ProductDAO.findById(productId) ?: productId.throwNotFound("ProductResponse")
+        if (product.deletedAt != null) productId.throwNotFound("ProductResponse")
+        product.toProductResponse()
     }
 
     override suspend fun incrementViewCount(productId: String) = query {
@@ -185,13 +190,13 @@ class ProductRepositoryImpl : ProductRepository {
         requireSeller(userId)
         val product = ProductDAO.findById(productId) ?: productId.throwNotFound("Product")
         product.verifyOwnership(userId, "product") { it.userId.value }
-        product.delete()
+        product.softDelete()
         productId
     }
 
     override suspend fun deleteProductAsAdmin(productId: String): String = query {
         val product = ProductDAO.findById(productId) ?: productId.throwNotFound("ProductResponse")
-        product.delete()
+        product.softDelete()
         productId
     }
 
@@ -235,11 +240,14 @@ class ProductRepositoryImpl : ProductRepository {
         val whereParams = mutableListOf<Any>(ProductStatus.ACTIVE.name)
 
         if (useTrigram) {
-            whereClauses.add("similarity(p.name, ?) > ?")
+            whereClauses.add("(similarity(p.name, ?) > ? OR similarity(COALESCE(p.description, ''), ?) > ?)")
+            whereParams.add(request.name)
+            whereParams.add(threshold)
             whereParams.add(request.name)
             whereParams.add(threshold)
         } else {
-            whereClauses.add("p.name ILIKE ?")
+            whereClauses.add("(p.name ILIKE ? OR p.description ILIKE ?)")
+            whereParams.add("%${request.name}%")
             whereParams.add("%${request.name}%")
         }
 
@@ -270,10 +278,10 @@ class ProductRepositoryImpl : ProductRepository {
             "top-rated" -> "p.rating $dir"
             else -> {
                 val composite = "((COALESCE(p.total_sales, 0) * 0.4) + (COALESCE(p.view_count, 0) * 0.3) + (COALESCE(p.discount_percentage, 0) * 0.3)) $dir"
-                if (useTrigram) "similarity(p.name, ?) DESC, $composite" else composite
+                if (useTrigram) "GREATEST(similarity(p.name, ?), similarity(COALESCE(p.description, ''), ?)) DESC, $composite" else composite
             }
         }
-        val orderParams = if (useTrigram && isRelevance) listOf<Any>(request.name) else emptyList<Any>()
+        val orderParams = if (useTrigram && isRelevance) listOf<Any>(request.name, request.name) else emptyList<Any>()
 
         val countSql = "SELECT COUNT(*) FROM product p WHERE $whereSql"
         val dataSql = "SELECT p.id FROM product p WHERE $whereSql ORDER BY $orderClause LIMIT ? OFFSET ?"
@@ -287,7 +295,8 @@ class ProductRepositoryImpl : ProductRepository {
                 when (p) {
                     is Int -> stmt.setInt(idx++, p)
                     is String -> stmt.setString(idx++, p)
-                    is Double -> stmt.setDouble(idx++, p)
+                    is Double -> stmt.setBigDecimal(idx++, java.math.BigDecimal(p.toString()))
+                    is java.math.BigDecimal -> stmt.setBigDecimal(idx++, p)
                 }
             }
         }
@@ -319,14 +328,14 @@ class ProductRepositoryImpl : ProductRepository {
         val statusName = ProductStatus.ACTIVE.name
 
         val matchClause = if (useTrigram && term.length >= 3) {
-            "similarity(p.name, ?) > ?"
+            "(similarity(p.name, ?) > ? OR similarity(COALESCE(p.description, ''), ?) > ?)"
         } else {
-            "p.name LIKE ?"
+            "(p.name LIKE ? OR p.description LIKE ?)"
         }
         val matchParams = if (useTrigram && term.length >= 3) {
-            listOf<Any>(term, 0.15)
+            listOf<Any>(term, 0.15, term, 0.15)
         } else {
-            listOf<Any>("%${term.replace("'", "''")}%")
+            listOf<Any>("%${term.replace("'", "''")}%", "%${term.replace("'", "''")}%")
         }
 
         val extraClauses = mutableListOf<String>()
@@ -383,7 +392,8 @@ class ProductRepositoryImpl : ProductRepository {
                     when (p) {
                         is Int -> stmt.setInt(idx++, p)
                         is String -> stmt.setString(idx++, p)
-                        is Double -> stmt.setDouble(idx++, p)
+                        is Double -> stmt.setBigDecimal(idx++, java.math.BigDecimal(p.toString()))
+                        is java.math.BigDecimal -> stmt.setBigDecimal(idx++, p)
                     }
                 }
                 stmt.executeQuery().use { rs ->

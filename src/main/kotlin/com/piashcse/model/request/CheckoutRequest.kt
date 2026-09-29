@@ -14,11 +14,13 @@ data class CheckoutRequest(
     val notes: String? = null,
     val idempotencyKey: String? = null,
     val couponCode: String? = null,
+    val currency: String = "USD",
 ) {
     init {
         validate(this) {
             validate(CheckoutRequest::shippingAddressId).isNotNull().isNotEmpty()
             validate(CheckoutRequest::shippingMethodId).isNotNull().isNotEmpty()
         }
+        com.piashcse.database.entities.SupportedCurrencies.requireValid(currency)
     }
 }

@@ -47,11 +47,17 @@ fun Application.configureStatusPage() {
                     statusPageLog.warn("${error::class.simpleName}: ${error.message}")
                     call.respond(error.code, call.errorResponse(error.message ?: Message.Errors.INTERNAL))
                 }
+                // MissingRequestParameterException extends BadRequestException — must come first.
+                is MissingRequestParameterException -> {
+                    call.respond(HttpStatusCode.BadRequest, call.errorResponse("Missing parameter: ${error.parameterName}"))
+                }
                 is BadRequestException -> {
                     call.respond(HttpStatusCode.BadRequest, call.errorResponse(error.message ?: Message.Errors.VALIDATION_FAILED))
                 }
-                is MissingRequestParameterException -> {
-                    call.respond(HttpStatusCode.BadRequest, call.errorResponse("Missing parameter: ${error.parameterName}"))
+                is io.ktor.serialization.JsonConvertException,
+                is kotlinx.serialization.SerializationException,
+                -> {
+                    call.respond(HttpStatusCode.BadRequest, call.errorResponse(Message.Errors.VALIDATION_FAILED))
                 }
                 is NumberFormatException -> {
                     call.respond(HttpStatusCode.BadRequest, call.errorResponse(Message.Validation.invalidFormat("number")))
@@ -74,6 +80,9 @@ fun Application.configureStatusPage() {
         }
         status(HttpStatusCode.MethodNotAllowed) { call, _ ->
             call.respond(HttpStatusCode.MethodNotAllowed, call.errorResponse("Method not allowed"))
+        }
+        status(HttpStatusCode.TooManyRequests) { call, _ ->
+            call.respond(HttpStatusCode.TooManyRequests, call.errorResponse("Rate limit exceeded. Please try again later."))
         }
     }
 }

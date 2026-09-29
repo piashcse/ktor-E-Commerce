@@ -5,6 +5,7 @@ import com.piashcse.database.configureDatabase
 import com.piashcse.event.EventBus
 import com.piashcse.event.subscriber.AuditLogSubscriber
 import com.piashcse.event.subscriber.EmailSubscriber
+import com.piashcse.event.subscriber.NotificationSubscriber
 import com.piashcse.feature.audit_log.AuditLogRepository
 import com.piashcse.plugin.*
 import com.piashcse.service.AsyncWorker
@@ -35,6 +36,7 @@ fun Application.configureAll() {
     configureRoute()
     EventBus.subscribe(EmailSubscriber())
     EventBus.subscribe(AuditLogSubscriber(get<AuditLogRepository>()))
+    EventBus.subscribe(NotificationSubscriber())
     EventBus.start(this)
     AsyncWorker.start(this)
     StockReservationCleanup.start(this)

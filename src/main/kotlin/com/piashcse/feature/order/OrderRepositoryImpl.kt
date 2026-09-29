@@ -72,7 +72,7 @@ class OrderRepositoryImpl : OrderRepository {
         }
     }
 
-    private fun validateCoupon(code: String, orderAmount: BigDecimal, forUpdate: Boolean = false): CouponDAO {
+    private fun validateCoupon(code: String, orderAmount: BigDecimal, forUpdate: Boolean = false, userId: String? = null): CouponDAO {
         val query = CouponDAO.find { CouponTable.code eq code and (CouponTable.isActive eq true) }
         val coupon = (if (forUpdate) query.forUpdate() else query).firstOrNull()
             ?: throw ValidationException(Message.Orders.INVALID_COUPON)
@@ -86,6 +86,14 @@ class OrderRepositoryImpl : OrderRepository {
 
         if (coupon.usageLimit != null && coupon.usageCount >= coupon.usageLimit!!)
             throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
+
+        // Per-user reuse guard: coupon_usage is now read, not write-only.
+        if (userId != null) {
+            val alreadyUsed = CouponUsageDAO.find {
+                (CouponUsageTable.couponId eq coupon.id) and (CouponUsageTable.userId eq userId.entityID(UserTable))
+            }.firstOrNull() != null
+            if (alreadyUsed) throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
+        }
 
         return coupon
     }
@@ -231,7 +239,7 @@ class OrderRepositoryImpl : OrderRepository {
 
         checkoutRequest.couponCode?.let { code ->
             val totalSubTotal = createdOrders.map { it.subTotal }.reduce(BigDecimal::add)
-            val coupon = validateCoupon(code, totalSubTotal, forUpdate = true)
+            val coupon = validateCoupon(code, totalSubTotal, forUpdate = true, userId = userId)
             val discount = consumeCoupon(coupon, totalSubTotal, userId, createdOrders)
             createdOrders.forEach { order ->
                 val proportion = order.subTotal.divide(totalSubTotal, 10, RoundingMode.HALF_UP)
@@ -293,7 +301,8 @@ class OrderRepositoryImpl : OrderRepository {
         var subTotal = BigDecimal.ZERO
         var totalItems = 0
         cartItems.forEach { cartItem ->
-            val product = productsMap[cartItem.productId.value]!!
+            val product = productsMap[cartItem.productId.value]
+                ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
             val unitPrice = product.discountPrice ?: product.price
             subTotal = subTotal.add(unitPrice.multiply(BigDecimal(cartItem.quantity)))
             totalItems += cartItem.quantity
@@ -313,7 +322,7 @@ class OrderRepositoryImpl : OrderRepository {
         )
 
         checkoutRequest.couponCode?.let {
-            val coupon = validateCoupon(it, subTotal)
+            val coupon = validateCoupon(it, subTotal, userId = userId)
             val discount = calculateCouponDiscount(coupon, subTotal)
             val discountedTotal = baseTotal.subtract(discount).setScale(2, RoundingMode.HALF_UP)
             response = response.copy(discountAmount = discount.setScale(2, RoundingMode.HALF_UP).toPlainString(), total = discountedTotal.toPlainString())
@@ -382,7 +391,8 @@ class OrderRepositoryImpl : OrderRepository {
             }
 
             items.forEach { itemRequest ->
-                val product = productsMap[itemRequest.productId]!!
+                val product = productsMap[itemRequest.productId]
+                    ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
                 val unitPrice = product.discountPrice ?: product.price
                 val itemTotal = unitPrice.multiply(BigDecimal(itemRequest.quantity))
 

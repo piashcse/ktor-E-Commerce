@@ -13,7 +13,11 @@ import io.ktor.server.plugins.ratelimit.*
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
+
+@Serializable
+data class ConsentCheckResponse(val hasConsented: Boolean)
 
 /**
  * Routes for managing user policy consents.
@@ -48,7 +52,7 @@ fun Route.consentRoutes() {
          * @description Check if the user has consented to a specific policy type
          */
         get("{policyType}") {
-            call.respondOk(mapOf("hasConsented" to consentRepo.hasUserConsented(call.currentUserId, call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type"))))
+            call.respondOk(ConsentCheckResponse(consentRepo.hasUserConsented(call.currentUserId, call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type"))))
         }
     }
 }

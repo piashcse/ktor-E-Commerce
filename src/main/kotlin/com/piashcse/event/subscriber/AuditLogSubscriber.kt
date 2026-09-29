@@ -38,6 +38,24 @@ class AuditLogSubscriber(
                     resourceId = event.paymentId,
                     details = "Payment for order ${event.orderId}, amount ${event.amount.toPlainString()}",
                 )
+                is AdminActionEvent -> auditLogRepository.log(
+                    actorId = event.actorId,
+                    actorEmail = event.actorEmail,
+                    actorRole = event.actorRole,
+                    action = event.action,
+                    resourceType = event.resourceType,
+                    resourceId = event.resourceId,
+                    details = event.details,
+                )
+                is RefundStatusChangedEvent -> auditLogRepository.log(
+                    actorId = event.userId,
+                    actorEmail = event.email,
+                    actorRole = "SELLER",
+                    action = "REFUND_${event.toStatus}",
+                    resourceType = "REFUND",
+                    resourceId = event.refundId,
+                    details = "Refund for order ${event.orderId}: ${event.fromStatus} -> ${event.toStatus}",
+                )
                 is SendEmailEvent -> Unit
             }
         } catch (e: Exception) {

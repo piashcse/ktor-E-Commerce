@@ -30,3 +30,7 @@ data class FieldError(
 
 /** Convert any AppException → (HttpStatusCode, ApiError) pair. */
 fun AppException.toErrorResponse(): Pair<HttpStatusCode, ApiError> = code to ApiError(message ?: "Unknown error")
+
+/** Standard success message envelope — replaces ad-hoc mapOf("message" to ...) for OpenAPI schema. */
+@Serializable
+data class MessageResponse(val message: String)

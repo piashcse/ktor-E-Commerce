@@ -6,6 +6,8 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
+import com.piashcse.event.AdminActionEvent
+import com.piashcse.event.EventBus
 import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
@@ -74,7 +76,7 @@ class AuthRepositoryImpl : AuthRepository {
         (LoginAttemptTable.email eq email) and (LoginAttemptTable.userType eq userType)
 
     override suspend fun recordFailedAttempt(email: String, userType: UserType, ipAddress: String?): Int = query {
-        val existing = LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.singleOrNull()
+        val existing = LoginAttemptDAO.find { loginAttemptPredicate(email, userType) }.forUpdate().singleOrNull()
         if (existing != null) {
             existing.attemptCount++
             existing.ipAddress = ipAddress
@@ -238,6 +240,9 @@ class AuthRepositoryImpl : AuthRepository {
     // ── OTP ───────────────────────────────────────────────────────────────
 
     override suspend fun verifyOtp(userId: String, otp: String): Boolean = query {
+        OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }.singleOrNull()?.let {
+            if (it.isLocked) throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES))
+        }
         val userEntity = UserDAO.findById(userId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
         if (userEntity.otpExpiry?.isBefore(LocalDateTime.now()) != false) return@query false
         val isValid = constantTimeEquals(userEntity.otpCode.orEmpty(), otp)
@@ -269,7 +274,7 @@ class AuthRepositoryImpl : AuthRepository {
 
     override suspend fun recordFailedOtpAttempt(userId: String): Int = query {
         val existing = OtpAttemptDAO.find { OtpAttemptTable.userId eq userId.entityID(UserTable) }
-            .singleOrNull()
+            .forUpdate().singleOrNull()
         if (existing != null) {
             existing.attemptCount++
             existing.attemptCount
@@ -302,22 +307,28 @@ class AuthRepositoryImpl : AuthRepository {
 
     override suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair {
         val tokenHash = hashRefreshToken(request.refreshToken)
-        val storedToken = getRefreshTokenByHash(tokenHash)
-            ?: throw NotFoundException(Message.Auth.INVALID_REFRESH_TOKEN)
+        // Single transaction with row-level lock to prevent concurrent reuse.
+        val userSnapshot = query {
+            val storedToken =
+                RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.forUpdate().singleOrNull()
+                    ?: throw NotFoundException(Message.Auth.INVALID_REFRESH_TOKEN)
 
-        if (!storedToken.isValid) {
-            revokeRefreshToken(tokenHash)
-            throw NotFoundException(Message.Auth.TOKEN_EXPIRED)
+            if (!storedToken.isValid) {
+                storedToken.revokedAt = Instant.now()
+                throw NotFoundException(Message.Auth.TOKEN_EXPIRED)
+            }
+
+            val user = UserDAO.findById(storedToken.userId.value) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
+
+            if (!user.isActive) throw ValidationException(Message.Auth.ACCOUNT_DEACTIVATED)
+            if (!user.isVerified) throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)
+
+            storedToken.revokedAt = Instant.now()
+            Triple(user.id.value, user.email, user.userType.name)
         }
 
-        val user = query { UserDAO.findById(storedToken.userId.value) ?: throw NotFoundException(Message.Errors.NOT_FOUND) }
-
-        if (!user.isActive) throw ValidationException(Message.Auth.ACCOUNT_DEACTIVATED)
-        if (!user.isVerified) throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)
-
-        revokeRefreshToken(tokenHash)
-        val newTokenPair = generateTokenPair(user.id.value, user.email, user.userType.name)
-        storeRefreshToken(user.id.value, newTokenPair.refreshToken)
+        val newTokenPair = generateTokenPair(userSnapshot.first, userSnapshot.second, userSnapshot.third)
+        storeRefreshToken(userSnapshot.first, newTokenPair.refreshToken)
         return newTokenPair
     }
 
@@ -363,8 +374,8 @@ class AuthRepositoryImpl : AuthRepository {
         block(currentUser, targetUser)
     }
 
-    override suspend fun changeUserType(currentUserId: String, targetUserId: String, newUserType: UserType): Boolean =
-        withUsers(currentUserId, targetUserId, "change user type to $newUserType") { currentUser, targetUser ->
+    override suspend fun changeUserType(currentUserId: String, targetUserId: String, newUserType: UserType): Boolean {
+        val actor = withUsers(currentUserId, targetUserId, "change user type to $newUserType") { currentUser, targetUser ->
             if (currentUser.id == targetUser.id) {
                 throw ValidationException(Message.Auth.insufficientPermissions("change your own user type"))
             }
@@ -375,19 +386,28 @@ class AuthRepositoryImpl : AuthRepository {
             if (newUserType == UserType.SELLER && SellerDAO.find { SellerTable.userId eq targetUser.id }.firstOrNull() == null) {
                 SellerDAO.new { userId = targetUser.id; status = ShopStatus.PENDING }
             }
-            true
+            Triple(currentUser.id.value, currentUser.email, currentUser.userType.name)
         }
+        EventBus.publish(AdminActionEvent(actor.first, actor.second, actor.third, "USER_CHANGE_TYPE", "USER", targetUserId, "Changed to $newUserType"))
+        return true
+    }
 
-    override suspend fun deactivateUser(currentUserId: String, targetUserId: String): Boolean =
-        withUsers(currentUserId, targetUserId, "deactivate user") { _, targetUser ->
+    override suspend fun deactivateUser(currentUserId: String, targetUserId: String): Boolean {
+        val actor = withUsers(currentUserId, targetUserId, "deactivate user") { currentUser, targetUser ->
             targetUser.isActive = false
             revokeAllUserTokensTx(targetUser.id.value)
-            true
+            Triple(currentUser.id.value, currentUser.email, currentUser.userType.name)
         }
+        EventBus.publish(AdminActionEvent(actor.first, actor.second, actor.third, "USER_DEACTIVATE", "USER", targetUserId, null))
+        return true
+    }
 
-    override suspend fun activateUser(currentUserId: String, targetUserId: String): Boolean =
-        withUsers(currentUserId, targetUserId, "activate user") { _, targetUser ->
+    override suspend fun activateUser(currentUserId: String, targetUserId: String): Boolean {
+        val actor = withUsers(currentUserId, targetUserId, "activate user") { currentUser, targetUser ->
             targetUser.isActive = true
-            true
+            Triple(currentUser.id.value, currentUser.email, currentUser.userType.name)
         }
+        EventBus.publish(AdminActionEvent(actor.first, actor.second, actor.third, "USER_ACTIVATE", "USER", targetUserId, null))
+        return true
+    }
 }

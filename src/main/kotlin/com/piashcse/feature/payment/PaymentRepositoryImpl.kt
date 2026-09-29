@@ -18,16 +18,27 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 class PaymentRepositoryImpl : PaymentRepository {
-    override suspend fun createPayment(paymentRequest: PaymentRequest): PaymentResponse =
+    override suspend fun createPayment(paymentRequest: PaymentRequest, callerUserId: String): PaymentResponse =
         retryQuery {
             paymentRequest.transactionId?.let { txId ->
                 PaymentDAO.find { PaymentTable.transactionId eq txId }.firstOrNull()
-                    ?.let { return@retryQuery it.toPaymentResponse() }
+                    ?.let { existing ->
+                        // Idempotency: only return existing payment if caller owns the order.
+                        val existingOrder = OrderDAO.findById(existing.orderId.value)
+                        if (existingOrder == null || existingOrder.userId.value != callerUserId) {
+                            throw ValidationException(Message.Errors.FORBIDDEN)
+                        }
+                        return@retryQuery existing.toPaymentResponse()
+                    }
             }
 
             val order =
                 OrderDAO.find { OrderTable.id eq paymentRequest.orderId.entityID(OrderTable) }.forUpdate().firstOrNull()
                     ?: paymentRequest.orderId.throwNotFound("Order")
+
+            if (order.userId.value != callerUserId) {
+                throw ValidationException(Message.Errors.FORBIDDEN)
+            }
 
             val orderTotal = order.total
             val paymentAmount = paymentRequest.amount
@@ -74,18 +85,29 @@ class PaymentRepositoryImpl : PaymentRepository {
             payment.toPaymentResponse()
         }
 
-    override suspend fun getPaymentById(paymentId: String): PaymentResponse =
+    override suspend fun getPaymentById(paymentId: String, callerUserId: String): PaymentResponse =
         query {
-            val isOrderExist = PaymentDAO.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
-            isOrderExist?.toPaymentResponse() ?: paymentId.throwNotFound("PaymentResponse")
+            val payment = PaymentDAO.find { PaymentTable.id eq paymentId }.toList().firstOrNull()
+                ?: paymentId.throwNotFound("PaymentResponse")
+            val order = OrderDAO.findById(payment.orderId.value)
+            if (order == null || order.userId.value != callerUserId) {
+                throw ValidationException(Message.Errors.FORBIDDEN)
+            }
+            payment.toPaymentResponse()
         }
 
     override suspend fun getPaymentsByOrderId(
         orderId: String,
+        callerUserId: String,
         limit: Int,
         offset: Int,
     ): PaginatedResponse<PaymentResponse> =
         query {
+            val order = OrderDAO.findById(orderId)
+                ?: orderId.throwNotFound("Order")
+            if (order.userId.value != callerUserId) {
+                throw ValidationException(Message.Errors.FORBIDDEN)
+            }
             PaymentTable.selectAll().andWhere { PaymentTable.orderId eq orderId.entityID(OrderTable) }
                 .orderBy(PaymentTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) {

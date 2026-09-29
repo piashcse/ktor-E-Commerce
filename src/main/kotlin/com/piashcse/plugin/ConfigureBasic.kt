@@ -109,7 +109,10 @@ private fun Application.configureCallLogging() {
 
     install(CallLogging) {
         level = Level.INFO
-        filter { call -> call.request.path().startsWith("/") }
+        filter { call ->
+            val p = call.request.path()
+            p.startsWith("/") && !p.startsWith("/health") && !p.startsWith("/swagger") && p != "/"
+        }
         format { call ->
             val status = call.response.status()
             val httpMethod = call.request.httpMethod.value

@@ -8,7 +8,9 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 object ProductTable : BaseIdTable("product") {
     val userId = reference("user_id", UserTable.id).index()
@@ -37,6 +39,7 @@ object ProductTable : BaseIdTable("product") {
     val rating = decimal("rating", 3, 2).default(BigDecimal("0.00"))
     val totalReviews = integer("total_reviews").default(0)
     val totalSales = integer("total_sales").default(0)
+    val deletedAt = datetime("deleted_at").nullable()
 }
 
 class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
@@ -68,6 +71,13 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
     var rating by ProductTable.rating
     var totalReviews by ProductTable.totalReviews
     var totalSales by ProductTable.totalSales
+    var deletedAt by ProductTable.deletedAt
+
+    /** Soft-delete: hide from catalog but preserve order history / reviews. */
+    fun softDelete() {
+        status = ProductStatus.OUT_OF_STOCK
+        deletedAt = LocalDateTime.now(java.time.ZoneOffset.UTC)
+    }
 
     val imageUrls: List<String>
         get() = ProductImageDAO.find { ProductImageTable.productId eq id }

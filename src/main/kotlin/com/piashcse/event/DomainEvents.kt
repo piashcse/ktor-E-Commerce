@@ -36,3 +36,22 @@ data class SendEmailEvent(
     val subject: String,
     val body: String,
 ) : DomainEvent()
+
+data class AdminActionEvent(
+    val actorId: String,
+    val actorEmail: String,
+    val actorRole: String,
+    val action: String,
+    val resourceType: String,
+    val resourceId: String?,
+    val details: String? = null,
+) : DomainEvent()
+
+data class RefundStatusChangedEvent(
+    val refundId: String,
+    val orderId: String,
+    val userId: String,
+    val email: String,
+    val fromStatus: String,
+    val toStatus: String,
+) : DomainEvent()

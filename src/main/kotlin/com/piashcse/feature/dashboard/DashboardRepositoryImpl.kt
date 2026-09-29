@@ -38,6 +38,7 @@ class DashboardRepositoryImpl : DashboardRepository {
             orders = mapOf(
                 "total" to OrderTable.selectAll().count(), "today" to OrderTable.selectAll().where { OrderTable.createdAt greaterEq today }.count(),
                 "pending" to OrderTable.selectAll().where { OrderTable.status eq OrderStatus.PENDING }.count(),
+                "canceled" to OrderTable.selectAll().where { OrderTable.status eq OrderStatus.CANCELED }.count(),
             ),
             users = mapOf(
                 "total" to UserTable.selectAll().count(), "today" to UserTable.selectAll().where { UserTable.createdAt greaterEq today }.count(),
@@ -67,14 +68,15 @@ class DashboardRepositoryImpl : DashboardRepository {
         }.count()
         val avg = if (orderCount > 0) totalRevenue.divide(BigDecimal(orderCount), 2, RoundingMode.HALF_UP) else BigDecimal.ZERO
 
+        // Single range query grouped in Kotlin (was 1 query/day = N+1).
+        val rangeRows = OrderTable.selectAll().where {
+            (OrderTable.status neq OrderStatus.CANCELED) and (OrderTable.createdAt greaterEq start) and (OrderTable.createdAt lessEq end)
+        }.toList()
+        val byDay = rangeRows.groupBy { it[OrderTable.createdAt].toLocalDate() }
         val daily = generateSequence(start.toLocalDate()) { it.plusDays(1) }
             .takeWhile { it <= end.toLocalDate() }
             .map { date ->
-                val dayStart = date.atStartOfDay()
-                val dayEnd = date.atTime(LocalTime.MAX)
-                val dayTotal = OrderTable.select(OrderTable.total.sum())
-                    .where { (OrderTable.status neq OrderStatus.CANCELED) and (OrderTable.createdAt greaterEq dayStart) and (OrderTable.createdAt lessEq dayEnd) }
-                    .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
+                val dayTotal = (byDay[date] ?: emptyList()).fold(BigDecimal.ZERO) { acc, row -> acc.add(row[OrderTable.total]) }
                 mapOf("date" to date.format(DFMT), "revenue" to dayTotal.setScale(2, RoundingMode.HALF_UP).toPlainString())
             }.toList()
 
@@ -107,14 +109,13 @@ class DashboardRepositoryImpl : DashboardRepository {
         val since = LocalDateTime.now(ZoneOffset.UTC).minusDays(period.toLong())
 
         val byUserType = UserType.values().associate { it.name.lowercase() to UserTable.selectAll().where { UserTable.userType eq it }.count() }
+        // Single range query grouped in Kotlin (was 1 query/day).
+        val rangeUsers = UserTable.selectAll().where { UserTable.createdAt greaterEq since }.toList()
+        val usersByDay = rangeUsers.groupBy { it[UserTable.createdAt].toLocalDate() }
         val dailySignups = generateSequence(since.toLocalDate()) { it.plusDays(1) }
             .takeWhile { it <= LocalDate.now(ZoneOffset.UTC) }
             .map { date ->
-                val dayStart = date.atStartOfDay()
-                val dayEnd = date.atTime(LocalTime.MAX)
-                DailySignupEntry(date.format(DFMT), UserTable.selectAll().where {
-                    (UserTable.createdAt greaterEq dayStart) and (UserTable.createdAt lessEq dayEnd)
-                }.count())
+                DailySignupEntry(date.format(DFMT), (usersByDay[date]?.size ?: 0).toLong())
             }.toList()
 
         UserGrowthResponse(
@@ -141,12 +142,40 @@ class DashboardRepositoryImpl : DashboardRepository {
             .toList()
             .associate { row -> row[OrderItemTable.productId].value to (row[OrderItemTable.total.sum()] ?: BigDecimal.ZERO) }
 
+        val inventoryMap = if (productIds.isNotEmpty()) {
+            InventoryDAO.find { InventoryTable.productId inList productIds }
+                .associate { it.productId.value to it.stockQuantity }
+        } else emptyMap()
+
         topProducts.map { p ->
-            val topStock = p.findInventory()?.stockQuantity ?: 0
+            val topStock = inventoryMap[p.id.value] ?: 0
             TopProductResponse(p.id.value, p.name, p.sku, p.totalSales,
                 (revenueByProduct[p.id.value] ?: BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP).toPlainString(),
                 topStock, p.rating.setScale(2, RoundingMode.HALF_UP).toPlainString(), p.status.name.lowercase())
         }
+    }
+
+    override suspend fun getSellerStats(sellerUserId: String) = query {
+        val shopId = SellerDAO.find { SellerTable.userId eq sellerUserId }.firstOrNull()?.shopId?.value
+            ?: return@query DashboardStatsResponse(
+                revenue = mapOf("total" to "0.00", "today" to "0.00"),
+                orders = mapOf("total" to 0, "today" to 0, "pending" to 0, "canceled" to 0),
+                users = mapOf("total" to 0, "today" to 0, "sellers" to 0),
+                products = mapOf("total" to 0, "outOfStock" to 0, "lowStock" to 0),
+                shops = mapOf("total" to 0, "pendingApproval" to 0),
+            )
+        val today = LocalDateTime.now(ZoneOffset.UTC).toLocalDate().atStartOfDay()
+        val shopOrders = { OrderTable.selectAll().where { OrderTable.shopId eq shopId } }
+        val revenue = OrderTable.select(OrderTable.total.sum())
+            .where { (OrderTable.shopId eq shopId) and (OrderTable.status neq OrderStatus.CANCELED) }
+            .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
+        DashboardStatsResponse(
+            revenue = mapOf("total" to revenue.setScale(2, RoundingMode.HALF_UP).toPlainString(), "today" to "0.00"),
+            orders = mapOf("total" to shopOrders().count(), "today" to shopOrders().where { OrderTable.createdAt greaterEq today }.count(), "pending" to shopOrders().where { OrderTable.status eq OrderStatus.PENDING }.count(), "canceled" to shopOrders().where { OrderTable.status eq OrderStatus.CANCELED }.count()),
+            users = mapOf("total" to 0, "today" to 0, "sellers" to 0),
+            products = mapOf("total" to ProductTable.selectAll().where { ProductTable.shopId eq shopId }.count(), "outOfStock" to 0, "lowStock" to 0),
+            shops = mapOf("total" to 1, "pendingApproval" to 0),
+        )
     }
 
     override suspend fun getRecentActivity(limit: Int?) = query {

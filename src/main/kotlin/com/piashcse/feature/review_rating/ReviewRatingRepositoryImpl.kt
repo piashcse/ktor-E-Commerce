@@ -1,6 +1,10 @@
 package com.piashcse.feature.review_rating
 
 import com.piashcse.constants.Message
+import com.piashcse.database.entities.OrderDAO
+import com.piashcse.database.entities.OrderItemDAO
+import com.piashcse.database.entities.OrderItemTable
+import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ReviewRatingDAO
@@ -14,6 +18,7 @@ import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
@@ -56,12 +61,17 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                 .singleOrNull()?.let {
                 throw it.productId.value.throwConflict("Product")
             } ?: run {
+                val verified = OrderItemDAO.find {
+                    (OrderItemTable.productId eq reviewRating.productId.entityID(ProductTable)) and
+                        (OrderItemTable.orderId inList OrderDAO.find { OrderTable.userId eq userId }.map { it.id })
+                }.firstOrNull() != null
                 val review =
                     ReviewRatingDAO.new {
                         this.userId = userId.entityID(UserTable)
                         productId = reviewRating.productId.entityID(ProductTable)
                         reviewText = reviewRating.reviewText
                         rating = reviewRating.rating
+                        isVerifiedPurchase = verified
                     }
                 recalculateProductRating(reviewRating.productId)
                 review.toReviewRatingResponse()
@@ -86,6 +96,12 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                 it.toReviewRatingResponse()
             } ?: review.throwNotFound("Review")
         }
+
+    override suspend fun markHelpful(reviewId: String, helpful: Boolean): ReviewRatingResponse = query {
+        val r = ReviewRatingDAO.findById(reviewId) ?: reviewId.throwNotFound("Review")
+        if (helpful) r.helpfulCount++ else r.notHelpfulCount++
+        r.toReviewRatingResponse()
+    }
 
     override suspend fun deleteReviewRating(userId: String, reviewId: String): String =
         query {

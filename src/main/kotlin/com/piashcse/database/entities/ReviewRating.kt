@@ -17,6 +17,10 @@ object ReviewRatingTable : BaseIdTable("review_rating") {
     val helpfulCount = integer("helpful_count").default(0)
     val notHelpfulCount = integer("not_helpful_count").default(0)
     val status = enumerationByName("status", 20, ReviewStatus::class).default(ReviewStatus.ACTIVE)
+
+    init {
+        uniqueIndex(customIndexName = "review_rating_user_product_unique", userId, productId)
+    }
     // createdAt and updatedAt are inherited from BaseIdTable
 }
 

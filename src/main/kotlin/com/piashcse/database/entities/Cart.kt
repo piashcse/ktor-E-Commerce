@@ -13,7 +13,7 @@ object CartItemTable : BaseIdTable("cart_item") {
     val quantity = integer("quantity").default(1)
 
     init {
-        index(customIndexName = "cart_item_user_product_idx", isUnique = false, userId, productId)
+        index(customIndexName = "cart_item_user_product_idx", isUnique = true, userId, productId)
     }
 }
 

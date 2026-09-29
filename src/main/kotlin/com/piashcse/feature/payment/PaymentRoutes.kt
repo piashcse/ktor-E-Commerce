@@ -3,6 +3,7 @@ package com.piashcse.feature.payment
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.customerAuth
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -23,7 +24,7 @@ fun Route.paymentRoutes() {
              * @description Create a new payment record for an order
              */
             post {
-                call.respondCreated(paymentRepo.createPayment(call.receive<PaymentRequest>()))
+                call.respondCreated(paymentRepo.createPayment(call.receive<PaymentRequest>(), call.currentUserId))
             }
         }
 
@@ -33,7 +34,7 @@ fun Route.paymentRoutes() {
          */
         get("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(paymentRepo.getPaymentById(id))
+            call.respondOk(paymentRepo.getPaymentById(id, call.currentUserId))
         }
 
         /**
@@ -43,7 +44,7 @@ fun Route.paymentRoutes() {
         get("order/{orderId}") {
             val orderId = call.requirePathParameter("orderId")
             val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(paymentRepo.getPaymentsByOrderId(orderId, limit, offset))
+            call.respondOk(paymentRepo.getPaymentsByOrderId(orderId, call.currentUserId, limit, offset))
         }
     }
 }

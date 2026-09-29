@@ -12,17 +12,17 @@ object DotEnv {
             ignoreIfMalformed = true
         }
 
-    fun get(key: String): String? = dotenv[key]
+    fun get(key: String): String? = dotenv[key] ?: System.getenv(key)
 
     fun get(
         key: String,
         defaultValue: String,
-    ): String = dotenv[key] ?: defaultValue
+    ): String = dotenv[key] ?: System.getenv(key) ?: defaultValue
 
     fun getInt(
         key: String,
         defaultValue: Int,
-    ): Int = dotenv[key]?.toIntOrNull() ?: defaultValue
+    ): Int = (dotenv[key] ?: System.getenv(key))?.toIntOrNull() ?: defaultValue
 
     data class RateLimitConfig(val limit: Int, val refillMinutes: Long)
 
@@ -31,7 +31,7 @@ object DotEnv {
         defaultLimit: Int,
         defaultPeriodMinutes: Long,
     ): RateLimitConfig {
-        val value = dotenv[key]
+        val value = dotenv[key] ?: System.getenv(key)
         if (value != null) {
             val parts = value.split(":")
             if (parts.size == 2) {
@@ -48,5 +48,5 @@ object DotEnv {
     fun getBoolean(
         key: String,
         defaultValue: Boolean,
-    ): Boolean = dotenv[key]?.toBoolean() ?: defaultValue
+    ): Boolean = (dotenv[key] ?: System.getenv(key))?.toBoolean() ?: defaultValue
 }

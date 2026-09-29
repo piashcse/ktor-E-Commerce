@@ -88,14 +88,9 @@ class InventoryRepositoryImpl : InventoryRepository {
             else -> throw ValidationException(Message.Inventory.invalidOperation(operation))
         }
 
-        InventoryTable.update({ InventoryTable.id eq inventory.id }) {
-            it[stockQuantity] = newStock
-        }
-
-        inventory.apply {
-            stockQuantity = newStock
-            status = InventoryStatus.fromStockLevel(newStock, minimumStockLevel)
-        }.toInventoryResponse()
+        inventory.stockQuantity = newStock
+        inventory.status = InventoryStatus.fromStockLevel(newStock, inventory.minimumStockLevel)
+        inventory.toInventoryResponse()
     }
 
     override suspend fun getLowStockProducts(
