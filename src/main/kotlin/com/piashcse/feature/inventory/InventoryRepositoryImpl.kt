@@ -8,6 +8,7 @@ import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
@@ -22,57 +23,91 @@ class InventoryRepositoryImpl : InventoryRepository {
         private const val DEFAULT_MAX_STOCK = 1000
     }
 
-    override suspend fun createOrUpdateInventory(request: InventoryRequest): InventoryResponse =
+    private fun requireSellerShopId(actorUserId: String): String =
+        requireSellerByUserId(actorUserId).shopId?.value
+            ?: throw ForbiddenException(Message.Orders.NO_SHOP_ASSOCIATED)
+
+    private fun requireOwnedProduct(
+        actorUserId: String,
+        productId: String,
+    ): ProductDAO {
+        val shopId = requireSellerShopId(actorUserId)
+        val product = ProductDAO.findById(productId) ?: productId.throwNotFound("Product")
+        if (product.shopId?.value != shopId) throw ForbiddenException(Message.Errors.FORBIDDEN)
+        return product
+    }
+
+    override suspend fun createOrUpdateInventory(
+        inventoryRequest: InventoryRequest,
+        actorUserId: String,
+    ): InventoryResponse =
         query {
-            request.productId.requireNotBlank("Product ID")
-            request.shopId.requireNotBlank("Shop ID")
-            if (request.stockQuantity < 0) throw ValidationException(Message.Inventory.NEGATIVE_STOCK)
-            if (request.minimumStockLevel != null && request.minimumStockLevel < 0) {
+            inventoryRequest.productId.requireNotBlank("Product ID")
+            inventoryRequest.shopId.requireNotBlank("Shop ID")
+            if (inventoryRequest.stockQuantity < 0) throw ValidationException(Message.Inventory.NEGATIVE_STOCK)
+            if (inventoryRequest.minimumStockLevel != null && inventoryRequest.minimumStockLevel < 0) {
                 throw ValidationException(Message.Validation.negativeValue("Minimum stock level"))
             }
-            if (request.maximumStockLevel != null && request.maximumStockLevel < 0) {
+            if (inventoryRequest.maximumStockLevel != null && inventoryRequest.maximumStockLevel < 0) {
                 throw ValidationException(Message.Validation.negativeValue("Maximum stock level"))
             }
+            if (inventoryRequest.maximumStockLevel != null &&
+                inventoryRequest.maximumStockLevel < inventoryRequest.stockQuantity
+            ) {
+                throw ValidationException("Maximum stock level cannot be below the current stock quantity")
+            }
 
-            ProductDAO.findById(request.productId) ?: request.productId.throwNotFound("Product")
-            ShopDAO.findById(request.shopId) ?: request.shopId.throwNotFound("Shop")
+            val sellerShopId = requireSellerShopId(actorUserId)
+            if (inventoryRequest.shopId != sellerShopId) throw ForbiddenException(Message.Errors.FORBIDDEN)
+
+            val product = ProductDAO.findById(inventoryRequest.productId) ?: inventoryRequest.productId.throwNotFound("Product")
+            if (product.shopId?.value != sellerShopId) throw ForbiddenException(Message.Errors.FORBIDDEN)
 
             val existing =
                 InventoryDAO.find {
-                    (InventoryTable.productId eq request.productId) and
-                        (InventoryTable.shopId eq request.shopId)
+                    (InventoryTable.productId eq inventoryRequest.productId) and
+                        (InventoryTable.shopId eq inventoryRequest.shopId)
                 }.firstOrNull()
 
             val inventory =
                 existing?.apply {
-                    stockQuantity = request.stockQuantity
-                    minimumStockLevel = request.minimumStockLevel ?: minimumStockLevel
-                    maximumStockLevel = request.maximumStockLevel ?: maximumStockLevel
+                    stockQuantity = inventoryRequest.stockQuantity
+                    minimumStockLevel = inventoryRequest.minimumStockLevel ?: minimumStockLevel
+                    maximumStockLevel = inventoryRequest.maximumStockLevel ?: maximumStockLevel
                     status = InventoryStatus.fromStockLevel(stockQuantity, minimumStockLevel)
                 } ?: InventoryDAO.new {
-                    productId = request.productId.entityID(ProductTable)
-                    shopId = request.shopId.entityID(ShopTable)
-                    stockQuantity = request.stockQuantity
-                    minimumStockLevel = request.minimumStockLevel ?: DEFAULT_MIN_STOCK
-                    maximumStockLevel = request.maximumStockLevel ?: DEFAULT_MAX_STOCK
-                    status = InventoryStatus.fromStockLevel(request.stockQuantity, minimumStockLevel)
+                    productId = inventoryRequest.productId.entityID(ProductTable)
+                    shopId = inventoryRequest.shopId.entityID(ShopTable)
+                    stockQuantity = inventoryRequest.stockQuantity
+                    minimumStockLevel = inventoryRequest.minimumStockLevel ?: DEFAULT_MIN_STOCK
+                    maximumStockLevel = inventoryRequest.maximumStockLevel ?: DEFAULT_MAX_STOCK
+                    status = InventoryStatus.fromStockLevel(inventoryRequest.stockQuantity, minimumStockLevel)
                 }
             inventory.toInventoryResponse()
         }
 
-    override suspend fun getInventoryByProduct(productId: String): InventoryResponse? =
+    override suspend fun getInventoryByProduct(
+        productId: String,
+        actorUserId: String,
+    ): InventoryResponse? =
         query {
+            requireOwnedProduct(actorUserId, productId)
             InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()?.toInventoryResponse()
         }
 
     override suspend fun updateStock(
+        actorUserId: String,
         productId: String,
         quantity: Int,
         operation: String,
     ): InventoryResponse =
         retryQuery {
+            val product = requireOwnedProduct(actorUserId, productId)
             val inventory =
-                InventoryDAO.find { InventoryTable.productId eq productId }.forUpdate().firstOrNull()
+                InventoryDAO.find {
+                    (InventoryTable.productId eq product.id) and
+                        (InventoryTable.shopId eq product.shopId!!)
+                }.forUpdate().firstOrNull()
                     ?: productId.throwNotFound("Inventory")
 
             if (quantity <= 0) throw ValidationException(Message.Inventory.quantityNotPositive(operation))
@@ -89,12 +124,13 @@ class InventoryRepositoryImpl : InventoryRepository {
                         }
                         inventory.stockQuantity - quantity
                     }
-                    "set" -> {
-                        if (quantity < 0) throw ValidationException(Message.Inventory.NEGATIVE_QUANTITY)
-                        quantity
-                    }
+                    "set" -> quantity
                     else -> throw ValidationException(Message.Inventory.invalidOperation(operation))
                 }
+
+            if (newStock > inventory.maximumStockLevel) {
+                throw ValidationException("Stock cannot exceed the maximum level ${inventory.maximumStockLevel}")
+            }
 
             inventory.stockQuantity = newStock
             inventory.status = InventoryStatus.fromStockLevel(newStock, inventory.minimumStockLevel)
@@ -102,21 +138,27 @@ class InventoryRepositoryImpl : InventoryRepository {
         }
 
     override suspend fun getLowStockProducts(
+        actorUserId: String,
         limit: Int,
         offset: Int,
     ): PaginatedResponse<InventoryResponse> =
         query {
-            InventoryTable.selectAll().andWhere { InventoryTable.stockQuantity lessEq InventoryTable.minimumStockLevel }
+            val shopId = requireSellerShopId(actorUserId)
+            InventoryTable.selectAll()
+                .andWhere { InventoryTable.shopId eq shopId }
+                .andWhere { InventoryTable.stockQuantity lessEq InventoryTable.minimumStockLevel }
                 .orderBy(InventoryTable.stockQuantity to SortOrder.ASC)
                 .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).toInventoryResponse() }
         }
 
     override suspend fun getInventoryByShop(
+        actorUserId: String,
         shopId: String,
         limit: Int,
         offset: Int,
     ): PaginatedResponse<InventoryResponse> =
         query {
+            if (requireSellerShopId(actorUserId) != shopId) throw ForbiddenException(Message.Errors.FORBIDDEN)
             InventoryTable.selectAll().andWhere { InventoryTable.shopId eq shopId }
                 .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).toInventoryResponse() }
         }

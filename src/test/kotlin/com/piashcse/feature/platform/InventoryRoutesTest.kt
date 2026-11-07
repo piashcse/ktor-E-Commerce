@@ -52,7 +52,7 @@ class InventoryRoutesTest {
     @Test
     fun `create-or-update happy path returns 201`() =
         testApplication {
-            coEvery { repo.createOrUpdateInventory(any()) } returns sample()
+            coEvery { repo.createOrUpdateInventory(any(), any()) } returns sample()
             setup()
             val res =
                 client.post("/api/v1/seller/inventories") {
@@ -92,7 +92,7 @@ class InventoryRoutesTest {
     @Test
     fun `update-stock happy path returns 200`() =
         testApplication {
-            coEvery { repo.updateStock("p-1", 5, "add") } returns sample().copy(stockQuantity = 55)
+            coEvery { repo.updateStock("user-1", "p-1", 5, "add") } returns sample().copy(stockQuantity = 55)
             setup()
             val res =
                 client.put("/api/v1/seller/inventories/stock/p-1?quantity=5&operation=add") {
@@ -135,7 +135,7 @@ class InventoryRoutesTest {
     @Test
     fun `get by product happy path returns 200`() =
         testApplication {
-            coEvery { repo.getInventoryByProduct("p-1") } returns sample()
+            coEvery { repo.getInventoryByProduct("p-1", "user-1") } returns sample()
             setup()
             val res =
                 client.get("/api/v1/seller/inventories/product/p-1") {
@@ -148,7 +148,7 @@ class InventoryRoutesTest {
     @Test
     fun `get by product missing returns 404`() =
         testApplication {
-            coEvery { repo.getInventoryByProduct("missing") } returns null
+            coEvery { repo.getInventoryByProduct("missing", "user-1") } returns null
             setup()
             val res =
                 client.get("/api/v1/seller/inventories/product/missing") {

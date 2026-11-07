@@ -6,7 +6,9 @@ import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.content.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.InputStream
 import java.util.*
 
 /**
@@ -31,6 +33,7 @@ object UploadService {
     private const val SHOP_DIR = "shop-images"
     private const val REFUND_DIR = "refund-images"
     private const val CATEGORY_DIR = "category-images"
+    private const val BRAND_DIR = "brand-images"
 
     // File size limit (applies to all image types)
     private const val MAX_FILE_SIZE = 5L * 1024 * 1024 // 5 MB
@@ -50,7 +53,7 @@ object UploadService {
 
     init {
         // Create all upload directories on startup
-        listOf(PROFILE_DIR, PRODUCT_DIR, SHOP_DIR, REFUND_DIR, CATEGORY_DIR)
+        listOf(PROFILE_DIR, PRODUCT_DIR, SHOP_DIR, REFUND_DIR, CATEGORY_DIR, BRAND_DIR)
             .forEach { ensureDirectoryExists(it) }
     }
 
@@ -73,7 +76,10 @@ object UploadService {
     /**
      * Uploads a shop image (5MB limit).
      */
-    suspend fun uploadShopImage(file: PartData.FileItem): String = upload(file, SHOP_DIR, MAX_FILE_SIZE, "shop image")
+    suspend fun uploadShopImage(
+        file: PartData.FileItem,
+        preloadedBytes: ByteArray? = null,
+    ): String = upload(file, SHOP_DIR, MAX_FILE_SIZE, "shop image", preloadedBytes)
 
     /**
      * Uploads a refund evidence image (5MB limit).
@@ -83,7 +89,15 @@ object UploadService {
     /**
      * Uploads a category image (5MB limit).
      */
-    suspend fun uploadCategoryImage(file: PartData.FileItem): String = upload(file, CATEGORY_DIR, MAX_FILE_SIZE, "category image")
+    suspend fun uploadCategoryImage(
+        file: PartData.FileItem,
+        preloadedBytes: ByteArray? = null,
+    ): String = upload(file, CATEGORY_DIR, MAX_FILE_SIZE, "category image", preloadedBytes)
+
+    suspend fun uploadBrandImage(
+        file: PartData.FileItem,
+        preloadedBytes: ByteArray? = null,
+    ): String = upload(file, BRAND_DIR, MAX_FILE_SIZE, "brand image", preloadedBytes)
 
     /**
      * Checks if the magic bytes of the file match the given extension.
@@ -101,7 +115,9 @@ object UploadService {
                 bytes[0] == 0x89.toByte() && bytes[1] == 0x50.toByte() && bytes[2] == 0x4E.toByte() && bytes[3] == 0x47.toByte()
             }
             "webp" -> {
-                bytes.decodeToString(0, 4) == "RIFF"
+                bytes.size >= 12 &&
+                    bytes.decodeToString(0, 4) == "RIFF" &&
+                    bytes.decodeToString(8, 12) == "WEBP"
             }
             "gif" -> {
                 bytes[0] == 'G'.code.toByte() && bytes[1] == 'I'.code.toByte() && bytes[2] == 'F'.code.toByte()
@@ -125,12 +141,37 @@ object UploadService {
         if (mimeType == null || mimeType !in ROUTE_IMAGE_MIME_ALLOWLIST) {
             throw ValidationException(Message.Upload.invalidMimeType(purpose, mimeType ?: "unknown"))
         }
-        val bytes = withContext(Dispatchers.IO) { part.streamProvider().readBytes() }
+        val bytes =
+            withContext(Dispatchers.IO) {
+                part.streamProvider().use { input ->
+                    readBounded(input, ROUTE_IMAGE_MAX_BYTES, purpose)
+                }
+            }
         if (bytes.isEmpty()) throw ValidationException(Message.Upload.EMPTY_FILE)
-        if (bytes.size > ROUTE_IMAGE_MAX_BYTES) {
-            throw ValidationException(Message.Upload.fileTooLarge((ROUTE_IMAGE_MAX_BYTES / (1024 * 1024)).toInt(), purpose))
-        }
         return bytes
+    }
+
+    /** Reads at most [maxBytes] and aborts before allocating more than the limit. */
+    private fun readBounded(
+        input: InputStream,
+        maxBytes: Long,
+        purpose: String,
+    ): ByteArray {
+        val out = ByteArrayOutputStream()
+        val buffer = ByteArray(8 * 1024)
+        var total = 0L
+        while (true) {
+            val read = input.read(buffer)
+            if (read < 0) break
+            total += read
+            if (total > maxBytes) {
+                throw ValidationException(
+                    Message.Upload.fileTooLarge((maxBytes / (1024 * 1024)).toInt(), purpose),
+                )
+            }
+            out.write(buffer, 0, read)
+        }
+        return out.toByteArray()
     }
 
     /**
@@ -173,10 +214,13 @@ object UploadService {
             }
 
             // Read file bytes (reuse route pre-validated bytes when provided so the
-            // multipart stream is consumed exactly once).
-            val bytes = preloadedBytes ?: file.streamProvider().readBytes()
+            // multipart stream is consumed exactly once). Always enforce the limit
+            // while streaming, never after buffering the whole body.
+            val bytes =
+                preloadedBytes ?: file.streamProvider().use { input ->
+                    readBounded(input, maxSize, purpose)
+                }
 
-            // Validate file size
             if (bytes.isEmpty()) throw ValidationException(Message.Upload.EMPTY_FILE)
             if (bytes.size > maxSize) {
                 val maxSizeMB = maxSize / (1024 * 1024)
@@ -212,7 +256,7 @@ object UploadService {
     /**
      * Deletes a file from the specified upload directory.
      */
-    private val ALLOWED_DIRS = setOf(PROFILE_DIR, PRODUCT_DIR, SHOP_DIR, REFUND_DIR, CATEGORY_DIR)
+    private val ALLOWED_DIRS = setOf(PROFILE_DIR, PRODUCT_DIR, SHOP_DIR, REFUND_DIR, CATEGORY_DIR, BRAND_DIR)
 
     fun delete(
         directory: String,
@@ -257,6 +301,8 @@ object UploadService {
      */
     fun deleteCategoryImage(fileName: String?): Boolean = delete(CATEGORY_DIR, fileName)
 
+    fun deleteBrandImage(fileName: String?): Boolean = delete(BRAND_DIR, fileName)
+
     /**
      * Deletes a refund image.
      */
@@ -282,6 +328,8 @@ object UploadService {
     fun getRefundImageUrl(fileName: String) = getPublicUrl(REFUND_DIR, fileName)
 
     fun getCategoryImageUrl(fileName: String) = getPublicUrl(CATEGORY_DIR, fileName)
+
+    fun getBrandImageUrl(fileName: String) = getPublicUrl(BRAND_DIR, fileName)
 
     /**
      * Gets the upload directory with path traversal prevention.

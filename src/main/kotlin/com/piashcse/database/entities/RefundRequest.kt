@@ -17,6 +17,7 @@ object RefundRequestTable : BaseIdTable("refund_request") {
     val reason = text("reason")
     val images = varchar("images", 2000).nullable()
     val status = enumerationByName("status", 20, RefundStatus::class).default(RefundStatus.PENDING)
+    val currency = varchar("currency", 3).default("USD")
     val refundAmount = decimal("refund_amount", 10, 2).nullable()
     val refundMethod = enumerationByName("refund_method", 50, RefundMethod::class).nullable()
     val trackingNumber = varchar("tracking_number", 100).nullable()
@@ -34,6 +35,7 @@ class RefundRequestDAO(id: EntityID<String>) : BaseEntity(id, RefundRequestTable
     var reason by RefundRequestTable.reason
     var images by RefundRequestTable.images
     var status by RefundRequestTable.status
+    var currency by RefundRequestTable.currency
     var refundAmount by RefundRequestTable.refundAmount
     var refundMethod by RefundRequestTable.refundMethod
     var trackingNumber by RefundRequestTable.trackingNumber

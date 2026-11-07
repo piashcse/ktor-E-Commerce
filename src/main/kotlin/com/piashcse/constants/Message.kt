@@ -149,11 +149,19 @@ object Message {
     // ─── Payments ───────────────────────────────────────────────────────────
     object Payments {
         const val ALREADY_PAID = "Order already fully paid"
+        const val CANNOT_PAY_CANCELED = "Cannot pay a canceled or completed order"
+        const val GATEWAY_FAILED = "Payment could not be processed"
+        const val CANNOT_CONFIRM = "Payment cannot be confirmed from its current status: %s"
 
         fun amountMismatch(
             paid: String,
             total: String,
         ) = "Payment amount ($paid) does not match order total ($total)"
+
+        fun amountExceedsRemaining(
+            amount: String,
+            remaining: String,
+        ) = "Payment amount ($amount) exceeds the remaining balance ($remaining)"
     }
 
     // ─── Refunds ────────────────────────────────────────────────────────────

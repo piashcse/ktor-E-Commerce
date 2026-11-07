@@ -9,7 +9,9 @@ fun PaymentDAO.toPaymentResponse() =
         id = paymentId.value,
         orderId = orderId.value,
         amount = Money.str(amount),
+        currency = currency,
         status = status,
         paymentMethod = paymentMethod,
         transactionId = transactionId,
+        createdAt = createdAt.toString(),
     )

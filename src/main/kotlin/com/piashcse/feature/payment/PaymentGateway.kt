@@ -1,10 +1,13 @@
 package com.piashcse.feature.payment
 
+import com.piashcse.constants.PaymentMethod
 import java.math.BigDecimal
 
 /**
- * Payment gateway abstraction — current manual ledger is CASH_ON_DELIVERY.
- * Real providers (Stripe/SSLCommerz/bKash) implement this; routes stay unchanged.
+ * Payment gateway abstraction. Real providers (Stripe/SSLCommerz/bKash) implement
+ * this interface. Until a provider is configured only CASH_ON_DELIVERY is allowed:
+ * the charge is recorded as PENDING and must be confirmed by an admin when cash is
+ * collected. This prevents a client from self-declaring a successful payment.
  */
 interface PaymentGateway {
     val name: String
@@ -12,6 +15,7 @@ interface PaymentGateway {
     suspend fun charge(
         orderId: String,
         amount: BigDecimal,
+        paymentMethod: PaymentMethod,
         transactionId: String?,
     ): GatewayChargeResult
 
@@ -23,7 +27,9 @@ interface PaymentGateway {
 
 data class GatewayChargeResult(
     val success: Boolean,
-    val gatewayTransactionId: String?,
+    /** True when the provider captured money immediately (card/wallet), false for COD/manual. */
+    val captured: Boolean = false,
+    val gatewayTransactionId: String? = null,
     val message: String? = null,
 )
 
@@ -33,11 +39,27 @@ class ManualPaymentGateway : PaymentGateway {
     override suspend fun charge(
         orderId: String,
         amount: BigDecimal,
+        paymentMethod: PaymentMethod,
         transactionId: String?,
-    ) = GatewayChargeResult(success = true, gatewayTransactionId = transactionId, message = "Manual payment recorded")
+    ): GatewayChargeResult =
+        when (paymentMethod) {
+            PaymentMethod.COD ->
+                GatewayChargeResult(
+                    success = true,
+                    captured = false,
+                    gatewayTransactionId = transactionId,
+                    message = "Cash on delivery recorded; payment will be confirmed on collection",
+                )
+            else ->
+                GatewayChargeResult(
+                    success = false,
+                    captured = false,
+                    message = "No payment provider is configured for $paymentMethod. Use CASH_ON_DELIVERY or configure a gateway.",
+                )
+        }
 
     override suspend fun verifyWebhook(
         payload: String,
         signature: String?,
-    ) = true
+    ): Boolean = false
 }

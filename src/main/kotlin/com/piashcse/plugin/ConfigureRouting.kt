@@ -20,6 +20,7 @@ import com.piashcse.feature.notification.notificationRoutes
 import com.piashcse.feature.order.orderAdminRoutes
 import com.piashcse.feature.order.orderRoutes
 import com.piashcse.feature.order.orderSellerRoutes
+import com.piashcse.feature.payment.paymentAdminRoutes
 import com.piashcse.feature.payment.paymentRoutes
 import com.piashcse.feature.payout.payoutAdminRoutes
 import com.piashcse.feature.payout.payoutSellerRoutes
@@ -167,6 +168,7 @@ private fun Route.adminRoutes() {
             route("products") { productAdminRoutes() }
             route("inventories") { inventoryAdminRoutes() }
             route("orders") { orderAdminRoutes() }
+            route("payments") { paymentAdminRoutes() }
             route("refund-requests") { refundAdminRoutes() }
             route("policies") { policyAdminRoutes() }
             route("policy-consents") { consentAdminRoutes() }

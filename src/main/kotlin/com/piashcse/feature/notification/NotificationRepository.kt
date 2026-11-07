@@ -1,5 +1,6 @@
 package com.piashcse.feature.notification
 
+import com.piashcse.constants.UserType
 import com.piashcse.utils.common.PaginatedResponse
 import kotlinx.serialization.Serializable
 
@@ -42,7 +43,14 @@ interface NotificationRepository {
 
     suspend fun markAllRead(userId: String): Long
 
+    /**
+     * Sends a notification. Sellers may only target users who have ordered from
+     * their shop; admins may target anyone. The reserved preference type is
+     * rejected so it cannot be forged through this endpoint.
+     */
     suspend fun send(
+        actorUserId: String,
+        actorType: UserType?,
         userId: String,
         title: String,
         body: String,

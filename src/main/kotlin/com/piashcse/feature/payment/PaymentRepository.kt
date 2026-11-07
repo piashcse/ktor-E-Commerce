@@ -6,11 +6,9 @@ import com.piashcse.utils.common.PaginatedResponse
 
 interface PaymentRepository {
     /**
-     * Processes a new payment.
-     *
-     * @param paymentRequest The payment details.
-     * @param callerUserId Authenticated caller — must own the order.
-     * @return The created payment record.
+     * Creates a payment intent. The server owns the resulting status: COD stays
+     * PENDING until an admin confirms collection; a configured gateway may capture
+     * immediately. The client can never submit a status.
      */
     suspend fun createPayment(
         paymentRequest: PaymentRequest,
@@ -18,11 +16,16 @@ interface PaymentRepository {
     ): PaymentResponse
 
     /**
+     * Explicitly confirms a pending payment (admin / provider webhook). Completes
+     * the order and finalizes stock reservations when the order is fully paid.
+     */
+    suspend fun confirmPayment(
+        paymentId: String,
+        actorUserId: String?,
+    ): PaymentResponse
+
+    /**
      * Retrieves payment details by payment ID.
-     *
-     * @param paymentId The unique identifier of the payment.
-     * @param callerUserId Authenticated caller — must own the payment's order.
-     * @return The payment details.
      */
     suspend fun getPaymentById(
         paymentId: String,
@@ -31,10 +34,6 @@ interface PaymentRepository {
 
     /**
      * Retrieves all payments for a specific order.
-     *
-     * @param orderId The unique identifier of the order.
-     * @param callerUserId Authenticated caller — must own the order.
-     * @return A list of payments for the order.
      */
     suspend fun getPaymentsByOrderId(
         orderId: String,
