@@ -109,7 +109,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
   - `.github/workflows/ci.yml`, `Dockerfile`, `docker-compose.yml`
 - [x] **P2-12. Docs/OpenAPI sync.** Remove false `/openapi`, v2, public-shop claims; document payout/notification; add Bearer security; remove global deprecation header.
   - `README.md`, `docs/**`, `ConfigureSwagger.kt`, `ConfigureRouting.kt:68-75`
-- [~] **P2-13. Tests.** Real Postgres test now runs against the CI `DB_*` service (V1..V20 + slice), serialization contract tests exist; dedicated concurrency tests for payment/refund/payout/coupon still pending.
+- [x] **P2-13. Tests.** Real Postgres test runs against the CI `DB_*` service (V1..V21 + slice), serialization contract tests exist, and DB-backed concurrency tests cover stock, order idempotency, payment transaction IDs, payout keys and coupon usage.
   - `PostgresIntegrationTest.kt:39-51`, `RouteTestHelper.kt:30`
 
 ---
@@ -181,6 +181,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 5 | `fix/05-search-observability` | `fix/04-remaining-hardening` | Full-text search adoption + outbox/payment/refund/payout metrics + GDPR export/erasure |
 | 6 | `fix/06-resilience` | `fix/05-search-observability` | Circuit breakers, jittered retry, DLQ summary/replay API |
 | 7 | `fix/07-tax-rules` | `fix/06-resilience` | Country/category tax rules, admin API, per-item tax in checkout/orders |
+| 8 | `test/concurrency-guards` | `fix/07-tax-rules` | DB-backed concurrency tests for stock, order/payment/payout/coupon guards |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 
