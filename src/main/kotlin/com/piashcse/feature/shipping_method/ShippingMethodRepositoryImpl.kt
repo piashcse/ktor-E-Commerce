@@ -1,11 +1,16 @@
 package com.piashcse.feature.shipping_method
 
 import com.piashcse.database.entities.ShippingMethodDAO
+import com.piashcse.database.entities.ShippingMethodTable
 import com.piashcse.mapper.toShippingMethodResponse
 import com.piashcse.model.request.ShippingMethodRequest
 import com.piashcse.model.response.ShippingMethodResponse
+import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.toPaginatedResponse
+import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.jdbc.selectAll
 
 class ShippingMethodRepositoryImpl : ShippingMethodRepository {
     override suspend fun createShippingMethod(request: ShippingMethodRequest): ShippingMethodResponse =
@@ -18,9 +23,14 @@ class ShippingMethodRepositoryImpl : ShippingMethodRepository {
             }.toShippingMethodResponse()
         }
 
-    override suspend fun getShippingMethods(): List<ShippingMethodResponse> =
+    override suspend fun getShippingMethods(
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<ShippingMethodResponse> =
         query {
-            ShippingMethodDAO.all().map { it.toShippingMethodResponse() }
+            ShippingMethodTable.selectAll()
+                .orderBy(ShippingMethodTable.createdAt to SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) { ShippingMethodDAO.wrapRow(it).toShippingMethodResponse() }
         }
 
     override suspend fun updateShippingMethod(

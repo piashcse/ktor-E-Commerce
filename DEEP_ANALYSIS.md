@@ -109,7 +109,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
   - `.github/workflows/ci.yml`, `Dockerfile`, `docker-compose.yml`
 - [x] **P2-12. Docs/OpenAPI sync.** Remove false `/openapi`, v2, public-shop claims; document payout/notification; add Bearer security; remove global deprecation header.
   - `README.md`, `docs/**`, `ConfigureSwagger.kt`, `ConfigureRouting.kt:68-75`
-- [~] **P2-13. Tests.** Non-skipping Testcontainers DB test, serialization contract tests, concurrency tests for payment/refund/payout/coupon.
+- [~] **P2-13. Tests.** Real Postgres test now runs against the CI `DB_*` service (V1..V20 + slice), serialization contract tests exist; dedicated concurrency tests for payment/refund/payout/coupon still pending.
   - `PostgresIntegrationTest.kt:39-51`, `RouteTestHelper.kt:30`
 
 ---
@@ -136,7 +136,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 - [x] **I-1. Response envelope:** code returns raw DTOs; README says raw but examples wrap.
 - [x] **I-2. Money representation:** string vs numeric vs `Double`; docs numeric.
 - [x] **I-3. Date/time:** mixed timezone and string/object output.
-- [~] **I-4. Pagination params:** `limit/offset` vs `page/perPage`; some raw lists.
+- [x] **I-4. Pagination params:** `limit/offset` vs `page/perPage`; some raw lists.
 - [x] **I-5. Catalog input style:** body vs query for create/update.
 - [x] **I-6. Auth docs:** OTP body vs query; admin registration; README passwords.
 - [x] **I-7. Public vs private routes:** `/shops/public` authenticated; brand vs category inconsistency.

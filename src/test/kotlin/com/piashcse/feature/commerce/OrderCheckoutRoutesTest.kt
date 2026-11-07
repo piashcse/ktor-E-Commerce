@@ -207,8 +207,11 @@ class CheckoutRoutesTest {
     @Test
     fun `list shipping methods happy path returns 200`() =
         testApplication {
-            coEvery { methodRepo.getShippingMethods() } returns
-                listOf(ShippingMethodResponse("m-1", "Standard", null, "10.00", null))
+            coEvery { methodRepo.getShippingMethods(any(), any()) } returns
+                PaginatedResponse(
+                    listOf(ShippingMethodResponse("m-1", "Standard", null, "10.00", null)),
+                    PaginationMetadata(1, 20, 0),
+                )
             setup()
             val res =
                 client.get("/api/v1/checkout/shipping-method") {

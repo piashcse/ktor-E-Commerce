@@ -4,6 +4,7 @@ import com.piashcse.constants.PolicyType
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.model.response.PolicyDocumentResponse
+import com.piashcse.utils.common.PaginatedResponse
 
 interface PolicyRepository {
     /**
@@ -32,7 +33,11 @@ interface PolicyRepository {
     /**
      * Gets all policy documents, optionally filtered by type
      */
-    suspend fun getAllPolicies(type: PolicyType? = null): List<PolicyDocumentResponse>
+    suspend fun getAllPolicies(
+        type: PolicyType? = null,
+        limit: Int = 20,
+        offset: Int = 0,
+    ): PaginatedResponse<PolicyDocumentResponse>
 
     /**
      * Deactivates a policy document (doesn't delete, just marks as inactive)
