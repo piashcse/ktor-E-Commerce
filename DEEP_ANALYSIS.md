@@ -164,7 +164,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 - [x] **E-10. GDPR export/erasure, consent history UI, audit export.**
 - [ ] **E-11. Admin RBAC granular permissions, feature flags, API keys.**
 - [ ] **E-12. Cursor pagination, read replicas, query plan/index review.**
-- [ ] **E-13. Circuit breakers, retries with jitter, DLQ admin UI.**
+- [x] **E-13. Circuit breakers, retries with jitter, DLQ admin UI.**
 - [x] **E-14. Observability SLOs: outbox lag, payment/refund/payout failure metrics.**
 - [x] **E-15. Full-text search adoption (`search_vector` trigger exists but unused).**
 
@@ -178,7 +178,8 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 2 | `fix/02-commerce-correctness` | `fix/01-security-payment-hardening` | Fulfillment, FX/currency, coupons, refunds, payouts, reviews, V19 |
 | 3 | `fix/03-platform-observability-docs` | `fix/02-commerce-correctness` | Outbox, cache/queue, cleanup jobs, config, Docker/CI, docs |
 | 4 | `fix/04-remaining-hardening` | `fix/03-platform-observability-docs` | DLQ visibility, tracking number, quantity/shipping/tax refunds, UTC timestamps, public catalog, BigDecimal product prices, paginated lists, V20 |
-| 5 | `fix/05-search-observability` | `fix/04-remaining-hardening` | Full-text search adoption + outbox/payment/refund/payout metrics |
+| 5 | `fix/05-search-observability` | `fix/04-remaining-hardening` | Full-text search adoption + outbox/payment/refund/payout metrics + GDPR export/erasure |
+| 6 | `fix/06-resilience` | `fix/05-search-observability` | Circuit breakers, jittered retry, DLQ summary/replay API |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 

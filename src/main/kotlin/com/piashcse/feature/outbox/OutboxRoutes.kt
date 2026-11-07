@@ -1,14 +1,19 @@
 package com.piashcse.feature.outbox
 
+import com.piashcse.database.entities.OutboxDAO
 import com.piashcse.database.entities.OutboxDeadLetterDAO
 import com.piashcse.database.entities.OutboxDeadLetterTable
+import com.piashcse.database.entities.OutboxTable
 import com.piashcse.utils.common.DateTimes.toUtcString
+import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondOk
+import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 @Serializable
@@ -23,8 +28,42 @@ data class OutboxDeadLetterResponse(
     val createdAt: String,
 )
 
+@Serializable
+data class OutboxSummaryResponse(
+    val pending: Long,
+    val deadLetters: Long,
+)
+
 /** Admin visibility into outbox rows retired after max delivery attempts. */
 fun Route.outboxAdminRoutes() {
+    get("summary") {
+        val summary =
+            com.piashcse.utils.extension.query {
+                OutboxSummaryResponse(
+                    pending = OutboxTable.selectAll().where { OutboxTable.publishedAt.isNull() }.count(),
+                    deadLetters = OutboxDeadLetterTable.selectAll().count(),
+                )
+            }
+        call.respondOk(summary)
+    }
+
+    post("dead-letters/{id}/requeue") {
+        val id =
+            call.parameters["id"]?.takeIf { it.isNotBlank() }
+                ?: throw com.piashcse.utils.validator.ValidationException("id is required")
+        com.piashcse.utils.extension.query {
+            val deadLetter = OutboxDeadLetterDAO.findById(id) ?: id.throwNotFound("Dead letter")
+            OutboxDAO.new {
+                aggregateType = deadLetter.aggregateType
+                aggregateId = deadLetter.aggregateId
+                eventType = deadLetter.eventType
+                payload = deadLetter.payload
+            }
+            deadLetter.delete()
+        }
+        call.respondOk(MessageResponse("Dead letter requeued"))
+    }
+
     get("dead-letters") {
         val (limit, offset) = call.paginateQueryParams()
         val page =

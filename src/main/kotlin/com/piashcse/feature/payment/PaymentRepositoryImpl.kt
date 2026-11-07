@@ -13,6 +13,7 @@ import com.piashcse.model.response.PaymentResponse
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.resilience.CircuitBreaker
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
@@ -35,6 +36,8 @@ import java.math.BigDecimal
 class PaymentRepositoryImpl(
     private val gateway: PaymentGateway,
 ) : PaymentRepository {
+    private val gatewayBreaker = CircuitBreaker("payment-gateway", failureThreshold = 5, cooldownMs = 30_000)
+
     private fun Throwable.isUniqueViolation(): Boolean =
         generateSequence(this) { it.cause }.any { t ->
             val msg = (t.message ?: "").lowercase()
@@ -176,12 +179,14 @@ class PaymentRepositoryImpl(
 
         // Network call happens outside the DB transaction.
         val charge =
-            gateway.charge(
-                orderId = paymentRequest.orderId,
-                amount = paymentRequest.amount,
-                paymentMethod = paymentRequest.paymentMethod,
-                transactionId = paymentRequest.transactionId,
-            )
+            gatewayBreaker.execute {
+                gateway.charge(
+                    orderId = paymentRequest.orderId,
+                    amount = paymentRequest.amount,
+                    paymentMethod = paymentRequest.paymentMethod,
+                    transactionId = paymentRequest.transactionId,
+                )
+            }
         if (!charge.success) {
             throw ValidationException(charge.message ?: Message.Payments.GATEWAY_FAILED)
         }
