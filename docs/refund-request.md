@@ -12,7 +12,7 @@ All Refund Request endpoints require Bearer token authentication.
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/refund-requests/{orderId}` | Create a refund request | Yes (Customer) |
+| `POST` | `/api/v1/refund-requests/{orderId}` | Create a refund request (supports `quantity`, shipping/tax refund fields) | Yes (Customer) |
 | `GET` | `/api/v1/refund-requests/{id}` | Get refund request details | Yes |
 | `GET` | `/api/v1/seller/refund-requests/order/{orderId}` | Get refunds for an order (Seller) | Yes (Seller) |
 | `PUT` | `/api/v1/seller/refund-requests/{id}/status` | Update refund status (Seller) | Yes (Seller) |
@@ -40,6 +40,8 @@ curl -X 'PUT' \
   -d '{
   "status": "APPROVED",
   "refundAmount": 50.0,
+  "refundShippingAmount": 5.0,
+  "refundTaxAmount": 2.5,
   "refundMethod": "ORIGINAL"
 }'
 ```

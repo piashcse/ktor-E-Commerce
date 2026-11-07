@@ -1,10 +1,8 @@
 package com.piashcse.feature.brand
 
-import com.piashcse.constants.UserType
-import com.piashcse.model.request.BrandRequest
 import com.piashcse.plugin.adminWriteRateLimit
-import com.piashcse.plugin.requireRole
 import com.piashcse.service.UploadService
+import com.piashcse.utils.extension.nameFromBodyOrQuery
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -19,15 +17,13 @@ import org.koin.ktor.ext.inject
  */
 fun Route.brandRoutes() {
     val brandRepo: BrandRepository by inject()
-    requireRole(UserType.CUSTOMER, UserType.SELLER, UserType.ADMIN) {
-        /**
-         * @tag Brand
-         * @description Retrieve a paginated list of all brands
-         */
-        get {
-            val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(brandRepo.getBrands(limit, offset))
-        }
+    /**
+     * @tag Brand
+     * @description Retrieve a paginated list of all brands (public)
+     */
+    get {
+        val (limit, offset) = call.paginateQueryParams()
+        call.respondOk(brandRepo.getBrands(limit, offset))
     }
 }
 
@@ -42,7 +38,7 @@ fun Route.brandAdminRoutes() {
          * @description Admin: Create a new brand
          */
         post {
-            call.respondCreated(brandRepo.createBrand(call.receive<BrandRequest>().name))
+            call.respondCreated(brandRepo.createBrand(call.nameFromBodyOrQuery()))
         }
 
         /**
@@ -51,8 +47,7 @@ fun Route.brandAdminRoutes() {
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
-            val name = call.requireQueryParameter("name")
-            call.respondOk(brandRepo.updateBrand(id, name))
+            call.respondOk(brandRepo.updateBrand(id, call.nameFromBodyOrQuery()))
         }
 
         /**

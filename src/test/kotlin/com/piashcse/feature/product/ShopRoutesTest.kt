@@ -83,11 +83,12 @@ class ShopRoutesTest {
         }
 
     @Test
-    fun `public shops without token returns 401`() =
+    fun `public shops is public returns 200`() =
         testApplication {
+            coEvery { shopRepo.getShops(any(), any(), any(), any()) } returns pageOfShops()
             setup()
             val res = client.get("/api/v1/shops/public")
-            assertEquals(HttpStatusCode.Unauthorized, res.status)
+            assertEquals(HttpStatusCode.OK, res.status)
         }
 
     @Test

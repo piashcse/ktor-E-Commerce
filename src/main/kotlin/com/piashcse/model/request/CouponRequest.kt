@@ -21,6 +21,8 @@ data class CouponRequest(
     val endDate: String,
     val usageLimit: Int? = null,
     val perUserLimit: Int = 1,
+    val shopId: String? = null,
+    val categoryId: String? = null,
     val isActive: Boolean = true,
 ) {
     init {

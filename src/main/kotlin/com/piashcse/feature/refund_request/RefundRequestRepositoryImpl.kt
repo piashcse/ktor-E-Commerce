@@ -76,6 +76,10 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                         (OrderItemTable.orderId eq orderId.entityID(OrderTable))
                 }.forUpdate().firstOrNull() ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
 
+            if (request.quantity > orderItem.quantity) {
+                throw ValidationException("Refund quantity cannot exceed the ordered quantity (${orderItem.quantity})")
+            }
+
             val existingRefund =
                 RefundRequestDAO.find {
                     (RefundRequestTable.orderItemId eq orderItem.id) and
@@ -93,6 +97,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                     this.reason = request.reason
                     this.images = request.images
                     this.currency = order.currency
+                    this.quantity = request.quantity
                     this.status = RefundStatus.PENDING
                 }
             eventFor(refundRequest, "NONE", RefundStatus.PENDING.name)
@@ -143,6 +148,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
     private fun maxRefundableAmount(
         order: OrderDAO,
         orderItem: OrderItemDAO,
+        quantity: Int,
     ): BigDecimal {
         val discountShare =
             if (order.subTotal > BigDecimal.ZERO) {
@@ -150,18 +156,23 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             } else {
                 BigDecimal.ZERO.setScale(2)
             }
-        return orderItem.total.subtract(discountShare).max(BigDecimal.ZERO).setScale(2)
+        val netItemTotal = orderItem.total.subtract(discountShare).max(BigDecimal.ZERO)
+        val unitNet = netItemTotal.divide(BigDecimal(orderItem.quantity), 4, java.math.RoundingMode.HALF_UP)
+        return unitNet.multiply(BigDecimal(quantity)).setScale(2, java.math.RoundingMode.HALF_UP)
     }
 
     private fun restoreRefundEffects(
         order: OrderDAO,
         orderItem: OrderItemDAO,
         refundAmount: BigDecimal,
+        quantity: Int,
+        shippingRefund: BigDecimal,
+        taxRefund: BigDecimal,
     ) {
         // Stock and sales counters.
         ProductDAO.findById(orderItem.productId.value)?.let { product ->
-            product.restoreStock(orderItem.quantity)
-            product.removeSales(orderItem.quantity)
+            product.restoreStock(quantity)
+            product.removeSales(quantity)
         }
 
         // Seller totals and payout ledger.
@@ -179,14 +190,15 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
         }
 
         // Refund ledger entry so the original payment is no longer the last word.
+        val ledgerAmount = refundAmount.add(shippingRefund).add(taxRefund).setScale(2)
         PaymentDAO.new {
             this.orderId = order.id
             this.userId = order.userId
-            this.amount = refundAmount
+            this.amount = ledgerAmount
             this.currency = order.currency
             this.status = PaymentStatus.REFUNDED
             this.paymentMethod = order.paymentMethod ?: PaymentMethod.COD
-            this.transactionId = "refund:${order.id.value}:${orderItem.id.value}:${refundAmount.toPlainString()}"
+            this.transactionId = "refund:${order.id.value}:${orderItem.id.value}:${ledgerAmount.toPlainString()}"
         }
     }
 
@@ -235,7 +247,17 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                 OrderItemDAO.findById(refundReq.orderItemId.value)
                     ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
 
-            val maxRefundAmount = maxRefundableAmount(order, orderItem)
+            val maxRefundAmount = maxRefundableAmount(order, orderItem, refundReq.quantity)
+            request.refundShippingAmount?.let { amount ->
+                if (amount < BigDecimal.ZERO || amount > order.shippingCost) {
+                    throw ValidationException("Shipping refund cannot exceed the order shipping cost")
+                }
+            }
+            request.refundTaxAmount?.let { amount ->
+                if (amount < BigDecimal.ZERO || amount > order.taxAmount) {
+                    throw ValidationException("Tax refund cannot exceed the order tax amount")
+                }
+            }
             request.refundAmount?.let { amount ->
                 if (amount <= BigDecimal.ZERO || amount.stripTrailingZeros().scale() > 2) {
                     throw ValidationException(Message.Refunds.AMOUNT_EXCEEDS_ITEM_TOTAL)
@@ -259,6 +281,8 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             }
 
             request.refundAmount?.let { refundReq.refundAmount = it }
+            request.refundShippingAmount?.let { refundReq.shippingRefund = it }
+            request.refundTaxAmount?.let { refundReq.taxRefund = it }
             request.refundMethod?.let { refundReq.refundMethod = it }
 
             if (request.status == RefundStatus.REFUNDED) {
@@ -267,16 +291,26 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                 }
                 val amount = refundReq.refundAmount ?: maxRefundAmount
                 refundReq.refundAmount = amount
-                restoreRefundEffects(order, orderItem, amount)
+                restoreRefundEffects(
+                    order,
+                    orderItem,
+                    amount,
+                    refundReq.quantity,
+                    refundReq.shippingRefund,
+                    refundReq.taxRefund,
+                )
 
-                // Full refund = every item's net amount has been refunded.
-                val netProductTotal = order.subTotal.subtract(order.discountAmount).max(BigDecimal.ZERO)
+                // Full refund = item refunds + shipping/tax cover the whole order total.
                 val refundedTotal =
                     RefundRequestDAO.find {
                         (RefundRequestTable.orderId eq refundReq.orderId) and
                             (RefundRequestTable.status eq RefundStatus.REFUNDED)
-                    }.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.refundAmount ?: BigDecimal.ZERO) }
-                if (order.paymentStatus == PaymentStatus.COMPLETED && refundedTotal >= netProductTotal) {
+                    }.fold(BigDecimal.ZERO) { acc, row ->
+                        acc.add(row.refundAmount ?: BigDecimal.ZERO)
+                            .add(row.shippingRefund)
+                            .add(row.taxRefund)
+                    }
+                if (order.paymentStatus == PaymentStatus.COMPLETED && refundedTotal >= order.total) {
                     order.paymentStatus = PaymentStatus.REFUNDED
                     OrderCancellation.reverseCouponUsageForOrder(order.id.value)
                 }

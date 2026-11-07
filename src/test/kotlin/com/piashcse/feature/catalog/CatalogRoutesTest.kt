@@ -74,11 +74,12 @@ class CatalogRoutesTest {
     // ─── Brand (GET requires CUSTOMER+; writes are admin-only) ───
 
     @Test
-    fun `brand list without token returns 401`() =
+    fun `brand list is public returns 200`() =
         testApplication {
+            coEvery { brandRepo.getBrands(any(), any()) } returns pageOf(sampleBrand())
             setup()
             val res = client.get("/api/v1/brands")
-            assertEquals(HttpStatusCode.Unauthorized, res.status)
+            assertEquals(HttpStatusCode.OK, res.status)
         }
 
     @Test

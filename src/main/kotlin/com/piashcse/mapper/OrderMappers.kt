@@ -26,6 +26,7 @@ fun OrderDAO.toOrderResponse(items: List<OrderItemResponse>? = null) =
         shippingAddress = shippingAddress,
         billingAddress = billingAddress,
         shippingMethod = shippingMethod,
+        trackingNumber = trackingNumber,
         shippingDate = shippingDate,
         deliveredDate = deliveredDate,
         canceledDate = canceledDate,

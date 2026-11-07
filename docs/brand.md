@@ -6,7 +6,7 @@ This documentation provides comprehensive details for the Brand API endpoints. T
 
 ## Authentication
 
-All Brand endpoints require Bearer token authentication. Include the access token in the Authorization header:
+Brand listing (`GET /api/v1/brands`) is public. Brand management endpoints require Bearer token authentication.
 
 ```
 Authorization: Bearer <your_access_token>

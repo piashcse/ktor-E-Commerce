@@ -119,9 +119,12 @@ class SellerAdminRefundRoutesTest {
         testApplication {
             coEvery { repo.updateRefundStatus(any(), any(), any()) } returns
                 RefundRequestResponse(
-                    "r-1", "oi-1", "o-1", "user-1", "damaged", null,
-                    RefundStatus.APPROVED, "USD", null, null, null,
-                    "2024-01-01T00:00:00", null, "2024-01-01T00:00:00", "2024-01-01T00:00:00",
+                    id = "r-1", orderItemId = "oi-1", orderId = "o-1", userId = "user-1",
+                    reason = "damaged", images = null, status = RefundStatus.APPROVED, currency = "USD",
+                    quantity = 1, refundAmount = null, shippingRefund = "0.00", taxRefund = "0.00",
+                    refundMethod = null, trackingNumber = null,
+                    requestedAt = "2024-01-01T00:00:00", resolvedAt = null,
+                    createdAt = "2024-01-01T00:00:00", updatedAt = "2024-01-01T00:00:00",
                 )
             application {
                 installTestInfra(module { single<RefundRequestRepository> { repo } })
@@ -141,9 +144,12 @@ class SellerAdminRefundRoutesTest {
         testApplication {
             coEvery { repo.updateRefundStatus(any(), any(), any()) } returns
                 RefundRequestResponse(
-                    "r-1", "oi-1", "o-1", "user-1", "damaged", null,
-                    RefundStatus.APPROVED, "USD", null, null, null,
-                    "2024-01-01T00:00:00", null, "2024-01-01T00:00:00", "2024-01-01T00:00:00",
+                    id = "r-1", orderItemId = "oi-1", orderId = "o-1", userId = "user-1",
+                    reason = "damaged", images = null, status = RefundStatus.APPROVED, currency = "USD",
+                    quantity = 1, refundAmount = null, shippingRefund = "0.00", taxRefund = "0.00",
+                    refundMethod = null, trackingNumber = null,
+                    requestedAt = "2024-01-01T00:00:00", resolvedAt = null,
+                    createdAt = "2024-01-01T00:00:00", updatedAt = "2024-01-01T00:00:00",
                 )
             application {
                 installTestInfra(module { single<RefundRequestRepository> { repo } })

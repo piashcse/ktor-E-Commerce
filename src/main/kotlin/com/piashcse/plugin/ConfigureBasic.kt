@@ -27,7 +27,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
-    private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+    private val outputFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("LocalDateTime", PrimitiveKind.STRING)
@@ -36,11 +36,15 @@ object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
         encoder: Encoder,
         value: LocalDateTime,
     ) {
-        encoder.encodeString(value.format(formatter))
+        // Timestamps are stored as UTC; always emit an explicit offset so clients
+        // cannot misinterpret them as server-local time.
+        encoder.encodeString(value.atOffset(java.time.ZoneOffset.UTC).format(outputFormatter))
     }
 
     override fun deserialize(decoder: Decoder): LocalDateTime {
-        return LocalDateTime.parse(decoder.decodeString(), formatter)
+        val text = decoder.decodeString()
+        return runCatching { java.time.OffsetDateTime.parse(text).toLocalDateTime() }
+            .getOrElse { LocalDateTime.parse(text) }
     }
 }
 

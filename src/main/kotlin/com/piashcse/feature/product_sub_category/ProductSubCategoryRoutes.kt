@@ -2,6 +2,7 @@ package com.piashcse.feature.product_sub_category
 
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.utils.extension.nameFromBodyOrQuery
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -45,8 +46,7 @@ fun Route.productSubCategoryAdminRoutes() {
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
-            val name = call.requireQueryParameter("name")
-            call.respondOk(subCategoryRepo.updateProductSubCategory(id, name))
+            call.respondOk(subCategoryRepo.updateProductSubCategory(id, call.nameFromBodyOrQuery()))
         }
 
         /**

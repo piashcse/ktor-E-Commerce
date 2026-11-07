@@ -3,10 +3,12 @@ package com.piashcse.utils.extension
 import com.piashcse.config.DotEnv
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
+import com.piashcse.model.request.NameRequest
 import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.request.receive
 import io.ktor.server.response.*
 
 suspend inline fun <reified T : Any> ApplicationCall.respondOk(data: T) = respond(HttpStatusCode.OK, data)
@@ -75,6 +77,15 @@ fun ApplicationCall.paginateQueryParams(
  */
 fun ApplicationCall.idempotencyKey(bodyKey: String? = null): String? =
     request.headers["Idempotency-Key"]?.takeIf { it.isNotBlank() } ?: bodyKey?.takeIf { it.isNotBlank() }
+
+/**
+ * Catalog create/update compatibility: `?name=` wins, otherwise read the JSON
+ * body. Keeps the old query API working while the docs/examples use JSON.
+ */
+suspend fun ApplicationCall.nameFromBodyOrQuery(): String =
+    request.queryParameters["name"]?.takeIf { it.isNotBlank() }
+        ?: runCatching { receive<NameRequest>().name }.getOrNull()?.takeIf { it.isNotBlank() }
+        ?: throw ValidationException("name is required")
 
 fun ApplicationCall.productWithFilterRequest(defaultPerPage: Int = AppConstants.Pagination.DEFAULT_LIMIT): ProductWithFilterRequest {
     val (perPage, offset) = paginateQueryParams(defaultPerPage)

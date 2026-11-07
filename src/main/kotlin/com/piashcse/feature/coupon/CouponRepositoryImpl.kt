@@ -11,6 +11,7 @@ import com.piashcse.event.EventBus
 import com.piashcse.model.request.CouponRequest
 import com.piashcse.model.response.CouponResponse
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.validator.NotFoundException
@@ -19,6 +20,7 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -60,6 +62,8 @@ class CouponRepositoryImpl : CouponRepository {
                 this.endDate = endDate
                 usageLimit = request.usageLimit
                 perUserLimit = request.perUserLimit
+                shopId = request.shopId?.let { it.entityID(com.piashcse.database.entities.ShopTable) }
+                categoryId = request.categoryId?.let { it.entityID(com.piashcse.database.entities.ProductCategoryTable) }
                 isActive = request.isActive
             }.toResponse().also { auditCoupon(actorId, "COUPON_CREATED", it.id) }
         }
@@ -87,6 +91,8 @@ class CouponRepositoryImpl : CouponRepository {
                 this.endDate = endDate
                 usageLimit = request.usageLimit
                 perUserLimit = request.perUserLimit
+                shopId = request.shopId?.let { it.entityID(com.piashcse.database.entities.ShopTable) }
+                categoryId = request.categoryId?.let { it.entityID(com.piashcse.database.entities.ProductCategoryTable) }
                 isActive = request.isActive
             }.toResponse().also { auditCoupon(actorId, "COUPON_UPDATED", it.id) }
         }
@@ -94,11 +100,21 @@ class CouponRepositoryImpl : CouponRepository {
     override suspend fun getCoupons(
         limit: Int,
         offset: Int,
+        code: String?,
+        active: Boolean?,
     ): PaginatedResponse<CouponResponse> =
         query {
-            CouponTable.selectAll().toPaginatedResponse(limit, offset) {
-                CouponDAO.wrapRow(it).toResponse()
+            val query = CouponTable.selectAll()
+            code?.takeIf { it.isNotBlank() }?.let { value ->
+                query.andWhere { CouponTable.code eq normalizeCode(value) }
             }
+            active?.let { enabled ->
+                query.andWhere { CouponTable.isActive eq enabled }
+            }
+            query.orderBy(CouponTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) {
+                    CouponDAO.wrapRow(it).toResponse()
+                }
         }
 
     override suspend fun getCouponByCode(code: String): CouponResponse? =
@@ -190,6 +206,8 @@ class CouponRepositoryImpl : CouponRepository {
             usageLimit = usageLimit,
             usageCount = usageCount,
             perUserLimit = perUserLimit,
+            shopId = shopId?.value,
+            categoryId = categoryId?.value,
             isActive = isActive,
         )
 }

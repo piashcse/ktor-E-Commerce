@@ -41,14 +41,11 @@ class ProductRepositoryImpl : ProductRepository {
             System.currentTimeMillis().toString().takeLast(6)
 
     private fun calcDiscountPct(
-        price: Double,
-        discountPrice: Double?,
+        price: BigDecimal,
+        discountPrice: BigDecimal?,
     ): BigDecimal? =
         if (discountPrice != null && discountPrice < price) {
-            Money.discountPercent(
-                Money.of(price),
-                Money.of(discountPrice),
-            )
+            Money.discountPercent(price, discountPrice)
         } else {
             null
         }
@@ -132,8 +129,8 @@ class ProductRepositoryImpl : ProductRepository {
                 sku = productRequest.productCode?.takeIf { it.isNotBlank() } ?: generateSKU(productRequest.name)
                 name = productRequest.name
                 description = productRequest.description
-                price = Money.of(productRequest.price)
-                discountPrice = productRequest.discountPrice?.let { Money.of(it) }
+                price = Money.scale2(productRequest.price)
+                discountPrice = productRequest.discountPrice?.let { Money.scale2(it) }
                 discountPercentage = calcDiscountPct(productRequest.price, productRequest.discountPrice)
                 videoLink = productRequest.videoLink
                 hotDeal = productRequest.hotDeal
@@ -172,11 +169,11 @@ class ProductRepositoryImpl : ProductRepository {
                 brandId = updateProduct.brandId?.let { it.entityID(BrandTable) } ?: brandId
                 name = updateProduct.name ?: name
                 description = updateProduct.description ?: description
-                price = updateProduct.price?.let { Money.of(it) } ?: price
+                price = updateProduct.price?.let { Money.scale2(it) } ?: price
                 discountPrice =
                     when {
                         updateProduct.clearDiscountPrice -> null
-                        updateProduct.discountPrice != null -> Money.of(updateProduct.discountPrice)
+                        updateProduct.discountPrice != null -> Money.scale2(updateProduct.discountPrice)
                         else -> discountPrice
                     }
                 status = updateProduct.status ?: status

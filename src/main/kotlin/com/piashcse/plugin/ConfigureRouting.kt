@@ -21,6 +21,7 @@ import com.piashcse.feature.notification.notificationRoutes
 import com.piashcse.feature.order.orderAdminRoutes
 import com.piashcse.feature.order.orderRoutes
 import com.piashcse.feature.order.orderSellerRoutes
+import com.piashcse.feature.outbox.outboxAdminRoutes
 import com.piashcse.feature.payment.paymentAdminRoutes
 import com.piashcse.feature.payment.paymentRoutes
 import com.piashcse.feature.payout.payoutAdminRoutes
@@ -172,6 +173,7 @@ private fun Route.adminRoutes() {
             route("audit-logs") { auditLogAdminRoutes() }
             route("payouts") { payoutAdminRoutes() }
             route("fx-rates") { fxAdminRoutes() }
+            route("outbox") { outboxAdminRoutes() }
         }
     }
 }

@@ -95,6 +95,8 @@ class OrderRepositoryImpl : OrderRepository {
         orderAmount: BigDecimal,
         forUpdate: Boolean = false,
         userId: String? = null,
+        shopIds: Set<String> = emptySet(),
+        categoryIds: Set<String> = emptySet(),
     ): CouponDAO {
         val normalizedCode = code.trim().uppercase()
         val query = CouponDAO.find { CouponTable.code eq normalizedCode and (CouponTable.isActive eq true) }
@@ -122,6 +124,17 @@ class OrderRepositoryImpl : OrderRepository {
                     (CouponUsageTable.couponId eq coupon.id) and (CouponUsageTable.userId eq userId.entityID(UserTable))
                 }.count()
             if (usedByUser >= coupon.perUserLimit) throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
+        }
+
+        coupon.shopId?.value?.let { couponShop ->
+            if (shopIds.isNotEmpty() && couponShop !in shopIds) {
+                throw ValidationException("Coupon is not valid for the products in this order")
+            }
+        }
+        coupon.categoryId?.value?.let { couponCategory ->
+            if (categoryIds.isNotEmpty() && couponCategory !in categoryIds) {
+                throw ValidationException("Coupon is not valid for the product categories in this order")
+            }
         }
 
         return coupon
@@ -308,7 +321,15 @@ class OrderRepositoryImpl : OrderRepository {
                         checkoutRequest.couponCode?.let { code ->
                             // Coupon thresholds/value are USD-denominated; discounts are
                             // converted to the order currency before being applied.
-                            val coupon = validateCoupon(code, totalUsdSubTotal, forUpdate = true, userId = userId)
+                            val coupon =
+                                validateCoupon(
+                                    code,
+                                    totalUsdSubTotal,
+                                    forUpdate = true,
+                                    userId = userId,
+                                    shopIds = itemsByShop.keys,
+                                    categoryIds = productsMap.values.map { it.categoryId.value }.toSet(),
+                                )
                             val discountUsd = calculateCouponDiscount(coupon, totalUsdSubTotal)
                             consumeCoupon(coupon, userId, createdOrders)
                             val totalSubTotal = createdOrders.fold(BigDecimal.ZERO) { acc, order -> acc.add(order.subTotal) }
@@ -418,7 +439,14 @@ class OrderRepositoryImpl : OrderRepository {
                 }
 
             checkoutRequest.couponCode?.let {
-                val coupon = validateCoupon(it, subUsd, userId = userId)
+                val coupon =
+                    validateCoupon(
+                        it,
+                        subUsd,
+                        userId = userId,
+                        shopIds = productsMap.values.mapNotNull { product -> product.shopId?.value }.toSet(),
+                        categoryIds = productsMap.values.map { product -> product.categoryId.value }.toSet(),
+                    )
                 val discountUsd = calculateCouponDiscount(coupon, subUsd)
                 val discount = Money.scale2(discountUsd.multiply(fxRate))
                 val withCoupon = PricingService.breakdown(sub, ship, discount)
@@ -503,6 +531,30 @@ class OrderRepositoryImpl : OrderRepository {
                 if (!OrderStatus.canBeCanceled(order.status)) throw ValidationException(Message.Orders.CANNOT_CANCEL)
 
                 applyOrderCancellation(order, notes = reason, changedBy = userId)
+                order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
+            }
+        CacheService.cache.invalidatePattern("products:.*")
+        return result
+    }
+
+    override suspend fun shipOrder(
+        orderId: String,
+        userId: String,
+        trackingNumber: String,
+    ): OrderResponse {
+        trackingNumber.requireNotBlank("Tracking number")
+        val result =
+            query {
+                val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
+                val user = UserDAO.findById(userId) ?: throw ValidationException(Message.Errors.NOT_FOUND)
+                requireOrderAccess(order.userId.value, order.shopId?.value, userId, user.userType)
+                if (!OrderStatus.canTransitionTo(order.status, OrderStatus.SHIPPED)) {
+                    throw ValidationException(Message.Orders.INVALID_STATUS)
+                }
+                order.status = OrderStatus.SHIPPED
+                order.shippingDate = LocalDateTime.now(ZoneOffset.UTC)
+                order.trackingNumber = trackingNumber
+                logStatusChange(order.id.value, OrderStatus.SHIPPED, "Shipped via $trackingNumber", userId)
                 order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
             }
         CacheService.cache.invalidatePattern("products:.*")

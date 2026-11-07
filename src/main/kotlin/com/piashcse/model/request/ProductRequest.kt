@@ -1,11 +1,13 @@
 package com.piashcse.model.request
 
 import com.piashcse.constants.ProductStatus
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.isGreaterThan
 import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
+import java.math.BigDecimal
 
 @Serializable
 data class ProductRequest(
@@ -16,8 +18,8 @@ data class ProductRequest(
     val description: String,
     val productCode: String? = null,
     val stockQuantity: Int = 0,
-    val price: Double,
-    val discountPrice: Double? = null,
+    @Contextual val price: BigDecimal,
+    @Contextual val discountPrice: BigDecimal? = null,
     val status: ProductStatus? = null,
     val videoLink: String? = null,
     val hotDeal: Boolean = false,
@@ -30,11 +32,11 @@ data class ProductRequest(
             validate(ProductRequest::categoryId).isNotNull().isNotEmpty()
             validate(ProductRequest::name).isNotNull().isNotEmpty()
             validate(ProductRequest::description).isNotNull().isNotEmpty()
-            validate(ProductRequest::price).isNotNull().isGreaterThan(0.0)
+            validate(ProductRequest::price).isNotNull().isGreaterThan(BigDecimal.ZERO)
             validate(ProductRequest::stockQuantity).isGreaterThan(-1)
         }
         discountPrice?.let {
-            require(it > 0) { "Discount price must be positive" }
+            require(it > BigDecimal.ZERO) { "Discount price must be positive" }
             require(it < price) { "Discount price must be lower than the regular price" }
         }
     }

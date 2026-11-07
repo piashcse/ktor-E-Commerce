@@ -12,8 +12,12 @@ import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 import java.time.Instant
+
+@Serializable
+data class ShipOrderRequest(val trackingNumber: String)
 
 /**
  * Order-related routes for customers and sellers.
@@ -54,6 +58,19 @@ fun Route.orderRoutes() {
                 }
 
                 call.respondOk(orderRepo.updateOrderStatus(call.currentUserId, id, status))
+            }
+
+            /**
+             * @tag Order
+             * @description Seller: mark a paid order as shipped with a tracking number
+             */
+            post("{id}/shipping") {
+                val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
+                if (userType != UserType.SELLER) {
+                    throw com.piashcse.utils.validator.ForbiddenException(Message.Orders.STATUS_NOT_ALLOWED)
+                }
+                val body = call.receive<ShipOrderRequest>()
+                call.respondOk(orderRepo.shipOrder(call.requirePathParameter("id"), call.currentUserId, body.trackingNumber))
             }
 
             /**
@@ -106,6 +123,15 @@ fun Route.orderAdminRoutes() {
             val id = call.requirePathParameter("id")
             val status = call.requireQueryParameter("status").parseEnum<OrderStatus>("status")
             call.respondOk(orderRepo.updateOrderStatus(call.currentUserId, id, status))
+        }
+
+        /**
+         * @tag Order
+         * @description Admin: Mark a paid order as shipped
+         */
+        post("{id}/shipping") {
+            val body = call.receive<ShipOrderRequest>()
+            call.respondOk(orderRepo.shipOrder(call.requirePathParameter("id"), call.currentUserId, body.trackingNumber))
         }
 
         /**
