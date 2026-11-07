@@ -1,4 +1,6 @@
-# Product API
+# Product
+
+> Note: `status` is a string enum (`ACTIVE`, `OUT_OF_STOCK`). Optional fields have defaults; partial updates are supported. API
 
 This documentation provides comprehensive details for the Product API endpoints. The API supports managing products within the platform, including creating, retrieving, updating, and deleting products. Products are associated with categories and can be managed by authorized sellers or administrators.
 
@@ -12,7 +14,9 @@ Most Product API endpoints require Bearer token authentication. Include the acce
 Authorization: Bearer <your_access_token>
 ```
 
-### Product Endpoints
+### Product
+
+> Note: `status` is a string enum (`ACTIVE`, `OUT_OF_STOCK`). Optional fields have defaults; partial updates are supported. Endpoints
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|

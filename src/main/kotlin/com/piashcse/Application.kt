@@ -10,6 +10,7 @@ import com.piashcse.event.subscriber.NotificationSubscriber
 import com.piashcse.feature.audit_log.AuditLogRepository
 import com.piashcse.plugin.*
 import com.piashcse.service.AsyncWorker
+import com.piashcse.service.MaintenanceCleanup
 import com.piashcse.service.OutboxPoller
 import com.piashcse.service.StockReservationCleanup
 import com.piashcse.service.configureOutboxPoller
@@ -49,12 +50,18 @@ fun Application.configureAll() {
     configureOutboxPoller()
     AsyncWorker.start(this)
     StockReservationCleanup.start(this)
+    MaintenanceCleanup.start(this)
     @Suppress("DEPRECATION")
-    environment.monitor.subscribe(ApplicationStopped) {
+    environment.monitor.subscribe(ApplicationStopping) {
+        // Stop producers and consumers before tearing down the datasource.
         OutboxPoller.stop()
-        closeDataSource()
         AsyncWorker.stop()
         StockReservationCleanup.stop()
+        MaintenanceCleanup.stop()
         EventBus.stop()
+    }
+    @Suppress("DEPRECATION")
+    environment.monitor.subscribe(ApplicationStopped) {
+        closeDataSource()
     }
 }

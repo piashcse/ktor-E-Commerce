@@ -42,7 +42,7 @@ curl -X 'GET' \
 ```json
 {
   "revenue": { "total": "15420.50", "today": "1250.00" },
-  "orders": { "total": 342, "today": 15, "pending": 8 },
+  "orders": { "total": 342, "today": 15, "PENDING": 8 },
   "users": { "total": 1250, "today": 5, "sellers": 45 },
   "products": { "total": 3200, "outOfStock": 12, "lowStock": 28 },
   "shops": { "total": 89, "pendingApproval": 3 }
@@ -114,13 +114,13 @@ curl -X 'GET' \
 ```json
 {
   "statusDistribution": {
-    "pending": 8, "confirmed": 15, "paid": 120,
-    "delivered": 180, "canceled": 10, "received": 9
+    "PENDING": 8, "CONFIRMED": 15, "paid": 120,
+    "delivered": 180, "CANCELED": 10, "received": 9
   },
   "recentOrders": [
     {
       "orderNumber": "ORD-20240707-0001-ABC123",
-      "status": "pending",
+      "status": "PENDING",
       "total": "99.99",
       "createdAt": "2024-07-07T10:30:00"
     }
@@ -234,7 +234,7 @@ curl -X 'GET' \
     "id": "uuid",
     "type": "order",
     "summary": "Order ORD-20240707-0001-ABC123 created - $99.99",
-    "status": "pending",
+    "status": "PENDING",
     "createdAt": "2024-07-07T10:30:00"
   },
   {

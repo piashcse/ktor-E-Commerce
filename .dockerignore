@@ -1,0 +1,13 @@
+.git
+.gitignore
+.idea
+.gradle
+build
+out
+bin
+screenshots
+docs
+*.iml
+.DS_Store
+.env
+uploads

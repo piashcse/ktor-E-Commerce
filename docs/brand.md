@@ -30,10 +30,10 @@ Authorization: Bearer <your_access_token>
 
 Create a new brand with a specified name.
 
-#### Query Parameters
+#### Request Body
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
 | `name` | string | Yes | Name of the brand |
 
 #### Headers
@@ -46,7 +46,7 @@ Create a new brand with a specified name.
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/brands?name=Nike' \
+  'http://localhost:8080/api/v1/admin/brands' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -d ''

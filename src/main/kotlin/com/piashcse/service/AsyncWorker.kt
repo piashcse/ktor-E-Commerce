@@ -10,10 +10,12 @@ sealed class BackgroundTask {
 
 object AsyncWorker {
     private val log = LoggerFactory.getLogger(AsyncWorker::class.java)
-    private val tasks = Channel<BackgroundTask>(Channel.UNLIMITED)
+    private const val QUEUE_CAPACITY = 1_000
+    private val tasks = Channel<BackgroundTask>(QUEUE_CAPACITY)
     private var job: Job? = null
 
     fun start(scope: CoroutineScope) {
+        if (job != null) return
         job =
             scope.launch(Dispatchers.IO) {
                 for (task in tasks) {
@@ -26,13 +28,16 @@ object AsyncWorker {
             }
     }
 
-    fun enqueue(task: BackgroundTask) {
-        tasks.trySend(task)
+    fun enqueue(task: BackgroundTask): Boolean {
+        val result = tasks.trySend(task)
+        if (result.isFailure) {
+            log.warn("AsyncWorker queue is full or stopped; dropping ${task::class.simpleName}")
+        }
+        return result.isSuccess
     }
 
     fun stop() {
         job?.cancel()
         job = null
-        tasks.close()
     }
 }

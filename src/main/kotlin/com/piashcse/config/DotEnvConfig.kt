@@ -3,7 +3,7 @@ package com.piashcse.config
 object DotEnvConfig {
     val dbHost: String get() = DotEnv.get("DB_HOST", "localhost")
     val dbPort: Int get() = DotEnv.getInt("DB_PORT", 5432)
-    val dbName: String get() = DotEnv.get("DB_NAME", "ktor-1.0.0")
+    val dbName: String get() = DotEnv.get("DB_NAME", "ktor-ecommerce")
     val dbUser: String get() = DotEnv.get("DB_USER", "postgres")
     val dbPassword: String get() = requireEnv("DB_PASSWORD")
     val serverPort: Int get() = DotEnv.getInt("PORT", 8080)
@@ -22,6 +22,9 @@ object DotEnvConfig {
     val emailPassword: String get() = requireEnv("EMAIL_PASSWORD")
     val emailSslEnabled: Boolean get() = DotEnv.getBoolean("EMAIL_SSL", false)
     val uploadDir: String get() = DotEnv.get("UPLOAD_DIR", "uploads")
+    val dbPoolSize: Int get() = DotEnv.getInt("DB_POOL_SIZE", 10)
+    val dbMinIdle: Int get() = DotEnv.getInt("DB_MIN_IDLE", 2)
+    val dbConnectionTimeoutMs: Long get() = DotEnv.getInt("DB_CONNECTION_TIMEOUT_MS", 30_000).toLong()
 
     // Internal token guarding /metrics. Empty (dev/test default) allows loopback only;
     // set METRICS_TOKEN in production to require the X-Metrics-Token header.

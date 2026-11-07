@@ -1,12 +1,13 @@
 services:
   postgres:
     image: postgres:16
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ktor-ecommerce
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-p123}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -17,6 +18,7 @@ services:
 
   app:
     build: .
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
@@ -25,14 +27,25 @@ services:
       DB_PORT: 5432
       DB_NAME: ktor-ecommerce
       DB_USER: postgres
-      DB_PASSWORD: ${DB_PASSWORD:-p123}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
       PORT: 8080
       HOST: 0.0.0.0
-      JWT_SECRET: ${JWT_SECRET:-change-me-to-at-least-32-characters-long}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be at least 32 characters}
       EMAIL_USERNAME: ${EMAIL_USERNAME:-test@example.com}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD:-test}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8080}
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
     ports:
       - "8080:8080"
+    volumes:
+      - uploads:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/health/live || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
   pgdata:
+  uploads:

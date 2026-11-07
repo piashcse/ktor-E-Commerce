@@ -35,7 +35,7 @@ Create a new product category with a specified name. The category will be create
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `categoryName` | string | Yes | Name of the product category |
+| `name` | string | Yes | Name of the product category |
 
 #### Headers
 
@@ -47,7 +47,7 @@ Create a new product category with a specified name. The category will be create
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/product-categories?categoryName=Kids' \
+  'http://localhost:8080/api/v1/admin/product-categories?name=Kids' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -d ''

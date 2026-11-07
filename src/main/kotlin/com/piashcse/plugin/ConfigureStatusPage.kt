@@ -26,6 +26,12 @@ private fun Throwable.isDuplicateKey(): Boolean =
             t::class.simpleName?.contains("ConstraintViolation", ignoreCase = true) == true
     }
 
+private fun Throwable.isForeignKeyViolation(): Boolean =
+    generateSequence(this) { it.cause }.any { t ->
+        val msg = (t.message ?: "").lowercase()
+        "foreign key" in msg || "23503" in msg
+    }
+
 private suspend fun ApplicationCall.respondValidationError(exception: ConstraintViolationException) {
     val fieldErrors =
         exception.constraintViolations
@@ -57,6 +63,15 @@ fun Application.configureStatusPage() {
             if (error.isDuplicateKey()) {
                 statusPageLog.warn("Duplicate key: ${error.message}")
                 call.respond(HttpStatusCode.Conflict, call.errorResponse("Resource already exists", HttpStatusCode.Conflict, "CONFLICT"))
+                return@exception
+            }
+
+            if (error.isForeignKeyViolation()) {
+                statusPageLog.warn("Foreign-key violation: ${error.message}")
+                call.respond(
+                    HttpStatusCode.Conflict,
+                    call.errorResponse("Resource is still referenced by other records", HttpStatusCode.Conflict, "CONFLICT"),
+                )
                 return@exception
             }
 
