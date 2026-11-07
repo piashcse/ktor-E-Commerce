@@ -4,7 +4,7 @@
 > `[~]` means the in-repo scaffold/guard is implemented but a third-party provider or deployment config is still required.
 > `[ ]` means still open.
 
-**Scope:** full `src/main/kotlin` tree (~15.6k LOC), Flyway migrations `V1..V17`, tests, docs, CI, Docker.
+**Scope:** full `src/main/kotlin` tree (~15.6k LOC), Flyway migrations `V1..V20`, tests, docs, CI, Docker.
 **Baseline:** `./gradlew compileKotlin` passes on commit `c5b4401` (`feature-improvement`).
 
 ---
@@ -161,12 +161,12 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 - [ ] **E-7. RMA/return portal, exchanges, partial refunds by quantity.**
 - [ ] **E-8. Guest checkout, saved payment methods, order tracking page.**
 - [ ] **E-9. Notification templates, email/SMS/push providers, preferences.**
-- [ ] **E-10. GDPR export/erasure, consent history UI, audit export.**
+- [x] **E-10. GDPR export/erasure, consent history UI, audit export.**
 - [ ] **E-11. Admin RBAC granular permissions, feature flags, API keys.**
 - [ ] **E-12. Cursor pagination, read replicas, query plan/index review.**
 - [ ] **E-13. Circuit breakers, retries with jitter, DLQ admin UI.**
-- [ ] **E-14. Observability SLOs: outbox lag, payment/refund/payout failure metrics.**
-- [ ] **E-15. Full-text search adoption (`search_vector` trigger exists but unused).**
+- [x] **E-14. Observability SLOs: outbox lag, payment/refund/payout failure metrics.**
+- [x] **E-15. Full-text search adoption (`search_vector` trigger exists but unused).**
 
 ---
 
@@ -177,7 +177,8 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 1 | `fix/01-security-payment-hardening` | `master` | Payments, auth, inventory/notification authorization, upload/static, V18 |
 | 2 | `fix/02-commerce-correctness` | `fix/01-security-payment-hardening` | Fulfillment, FX/currency, coupons, refunds, payouts, reviews, V19 |
 | 3 | `fix/03-platform-observability-docs` | `fix/02-commerce-correctness` | Outbox, cache/queue, cleanup jobs, config, Docker/CI, docs |
-| 4 | `fix/04-remaining-hardening` | `fix/03-platform-observability-docs` | DLQ visibility, tracking number, quantity/shipping/tax refunds, UTC timestamps, public catalog, BigDecimal product prices, V20 |
+| 4 | `fix/04-remaining-hardening` | `fix/03-platform-observability-docs` | DLQ visibility, tracking number, quantity/shipping/tax refunds, UTC timestamps, public catalog, BigDecimal product prices, paginated lists, V20 |
+| 5 | `fix/05-search-observability` | `fix/04-remaining-hardening` | Full-text search adoption + outbox/payment/refund/payout metrics |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 
@@ -200,9 +201,9 @@ Stacked PRs are intentional. Merge in order, then retarget the next PR to `maste
 | 1 | security/payment | ✅ | ✅ |
 | 2 | commerce | ✅ | ✅ |
 | 3 | contracts/outbox/cache | ✅ | ✅ |
-| 4 | migrations/config/CI/docs | ✅ | ✅ 298 tests (1 skipped Testcontainers) |
+| 4 | migrations/config/CI/docs | ✅ | ✅ 299 tests (Postgres test runs in CI when DB_* is set) |
 
-**Final verification:** `./gradlew compileKotlin compileTestKotlin test ktlintCheck detekt` all pass (298 tests, 1 skipped Testcontainers test).
+**Final verification:** `./gradlew build` passes on all branches (299 tests locally; the Postgres test runs against the CI `DB_*` service or Testcontainers).
 
 **Implemented in this pass (highlights):**
 - PR 4 also adds outbox dead-letter visibility, shipment tracking, quantity/shipping/tax refunds, UTC timestamps, public catalog discovery, BigDecimal product prices, coupon scoping/admin filters and V20.
@@ -217,4 +218,4 @@ Stacked PRs are intentional. Merge in order, then retarget the next PR to `maste
 - Shared cancellation routine used by cancel/cleanup/refund; UTC timestamps.
 - Consumer-acknowledged outbox, attempts cap, safe shutdown, bounded cache/queue, product-status sync, review vote dedupe.
 - V18/V19 migrations for OTP index, payment/order currency, payout requests, consent revocation, review votes, indexes, constraints.
-- Docker non-root/healthcheck/volume, CI build, docs corrections, 298 tests.
+- Docker non-root/healthcheck/volume, CI build, docs corrections, 299 tests, full-text search, money-path metrics and GDPR endpoints.

@@ -28,6 +28,7 @@ import com.piashcse.feature.payout.payoutAdminRoutes
 import com.piashcse.feature.payout.payoutSellerRoutes
 import com.piashcse.feature.policy.policyAdminRoutes
 import com.piashcse.feature.policy.policyRoutes
+import com.piashcse.feature.privacy.privacyRoutes
 import com.piashcse.feature.product.productAdminRoutes
 import com.piashcse.feature.product.productRoutes
 import com.piashcse.feature.product.productSellerRoutes
@@ -135,6 +136,7 @@ private fun Route.customerRoutes() {
     route("refund-requests") { refundRequestRoutes() }
     route("coupons") { couponRoutes() }
     route("notifications") { notificationRoutes() }
+    route("privacy") { privacyRoutes() }
 }
 
 private fun Route.sellerRoutes() {

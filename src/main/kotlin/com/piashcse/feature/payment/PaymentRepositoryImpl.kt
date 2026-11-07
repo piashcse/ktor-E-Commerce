@@ -10,6 +10,7 @@ import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.mapper.toPaymentResponse
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
+import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ForbiddenException
@@ -217,6 +218,7 @@ class PaymentRepositoryImpl(
                     throw e
                 }
 
+            AppMetrics.paymentsCreated.increment()
             if (payment.status == PaymentStatus.COMPLETED) {
                 completeOrderIfFullyPaid(order, payment)
             }
@@ -251,6 +253,7 @@ class PaymentRepositoryImpl(
             }
 
             payment.status = PaymentStatus.COMPLETED
+            AppMetrics.paymentsConfirmed.increment()
             completeOrderIfFullyPaid(order, payment)
 
             if (actorUserId != null) {
