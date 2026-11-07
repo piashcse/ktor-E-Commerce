@@ -14,4 +14,6 @@ data class PolicyDocumentResponse(
     val version: String,
     val effectiveDate: String,
     val isActive: Boolean,
+    val createdAt: String? = null,
+    val updatedAt: String? = null,
 )

@@ -166,7 +166,7 @@ class ReviewRoutesTest {
     @Test
     fun `mark helpful happy path returns 200`() =
         testApplication {
-            coEvery { reviewRepo.markHelpful(any(), any()) } returns sampleReview()
+            coEvery { reviewRepo.markHelpful(any(), any(), any()) } returns sampleReview()
             setup()
             val res =
                 client.post("/api/v1/reviews/rev-1/helpful?helpful=true") {

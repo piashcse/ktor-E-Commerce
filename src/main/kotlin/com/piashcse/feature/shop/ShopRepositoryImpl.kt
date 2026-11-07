@@ -2,9 +2,13 @@ package com.piashcse.feature.shop
 
 import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
+import com.piashcse.database.entities.SellerDAO
+import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopCategoryTable
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.ShopTable
+import com.piashcse.database.entities.UserTable
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
 import com.piashcse.mapper.toShopResponse
 import com.piashcse.model.request.ShopRequest
@@ -18,7 +22,6 @@ import com.piashcse.utils.validator.NotFoundException
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -45,9 +48,12 @@ class ShopRepositoryImpl : ShopRepository {
                 throw ConflictException(Message.Shops.ALREADY_EXISTS)
             }
 
+            ShopCategoryTable.selectAll().andWhere { ShopCategoryTable.id eq shopRequest.categoryId.entityID(ShopCategoryTable) }
+                .firstOrNull() ?: throw NotFoundException("Shop category not found")
+
             val shop =
                 ShopDAO.new {
-                    this.userId = userId.entityID(ShopTable)
+                    this.userId = userId.entityID(UserTable)
                     categoryId = shopRequest.categoryId.entityID(ShopCategoryTable)
                     name = shopRequest.name
                     description = shopRequest.description
@@ -107,16 +113,19 @@ class ShopRepositoryImpl : ShopRepository {
         limit: Int,
         offset: Int,
     ) = shopPaginatedQuery(limit, offset, ShopTable.createdAt to SortOrder.DESC) {
-        andWhere { ShopTable.status neq ShopStatus.REJECTED }
-        andWhere { ShopTable.status neq ShopStatus.SUSPENDED }
+        // Public discovery only exposes approved shops. Admin status listings use
+        // getShopsByStatus instead.
+        andWhere { ShopTable.status eq ShopStatus.APPROVED }
         status?.let {
             val statusEnum =
                 try {
                     ShopStatus.valueOf(it.uppercase())
                 } catch (e: IllegalArgumentException) {
-                    throw NotFoundException(Message.Shops.invalidStatus(it))
+                    throw com.piashcse.utils.validator.ValidationException(Message.Shops.invalidStatus(it))
                 }
-            andWhere { ShopTable.status eq statusEnum }
+            if (statusEnum != ShopStatus.APPROVED) {
+                throw com.piashcse.utils.validator.ValidationException("Public shop discovery only supports APPROVED")
+            }
         }
         category?.let { andWhere { ShopTable.categoryId eq it.entityID(ShopCategoryTable) } }
     }
@@ -127,8 +136,7 @@ class ShopRepositoryImpl : ShopRepository {
         offset: Int,
     ) = shopPaginatedQuery(limit, offset) {
         andWhere { ShopTable.categoryId eq categoryId }
-        andWhere { ShopTable.status neq ShopStatus.REJECTED }
-        andWhere { ShopTable.status neq ShopStatus.SUSPENDED }
+        andWhere { ShopTable.status eq ShopStatus.APPROVED }
     }
 
     override suspend fun getFeaturedShops(
@@ -163,12 +171,22 @@ class ShopRepositoryImpl : ShopRepository {
         actorId: String?,
         actorEmail: String?,
         actorRole: String?,
-        update: ShopDAO.() -> Unit,
+        requiredCurrent: Set<ShopStatus>,
+        target: ShopStatus,
+        sellerUpdate: ((SellerDAO) -> Unit)? = null,
     ): ShopResponse {
         val response =
             query {
-                val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("ShopResponse")
-                shop.update()
+                val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
+                if (shop.status !in requiredCurrent) {
+                    throw com.piashcse.utils.validator.ValidationException(
+                        "Cannot $action a shop in ${shop.status} status",
+                    )
+                }
+                shop.status = target
+                if (sellerUpdate != null) {
+                    SellerDAO.find { SellerTable.shopId eq shop.id }.firstOrNull()?.let(sellerUpdate)
+                }
                 shop.toShopResponse()
             }
         if (actorId != null) {
@@ -182,21 +200,51 @@ class ShopRepositoryImpl : ShopRepository {
         actorId: String?,
         actorEmail: String?,
         actorRole: String?,
-    ) = setShopStatus(shopId, "SHOP_APPROVE", actorId, actorEmail, actorRole) { status = ShopStatus.APPROVED }
+    ) = setShopStatus(
+        shopId,
+        "SHOP_APPROVE",
+        actorId,
+        actorEmail,
+        actorRole,
+        requiredCurrent = setOf(ShopStatus.PENDING, ShopStatus.REJECTED),
+        target = ShopStatus.APPROVED,
+    ) { seller ->
+        seller.status = ShopStatus.APPROVED
+        seller.approvedAt = currentUtc()
+    }
 
     override suspend fun rejectShop(
         shopId: String,
         actorId: String?,
         actorEmail: String?,
         actorRole: String?,
-    ) = setShopStatus(shopId, "SHOP_REJECT", actorId, actorEmail, actorRole) { status = ShopStatus.REJECTED }
+    ) = setShopStatus(
+        shopId,
+        "SHOP_REJECT",
+        actorId,
+        actorEmail,
+        actorRole,
+        requiredCurrent = setOf(ShopStatus.PENDING),
+        target = ShopStatus.REJECTED,
+    ) { seller -> seller.status = ShopStatus.REJECTED }
 
     override suspend fun suspendShop(
         shopId: String,
         actorId: String?,
         actorEmail: String?,
         actorRole: String?,
-    ) = setShopStatus(shopId, "SHOP_SUSPEND", actorId, actorEmail, actorRole) { status = ShopStatus.SUSPENDED }
+    ) = setShopStatus(
+        shopId,
+        "SHOP_SUSPEND",
+        actorId,
+        actorEmail,
+        actorRole,
+        requiredCurrent = setOf(ShopStatus.APPROVED),
+        target = ShopStatus.SUSPENDED,
+    ) { seller ->
+        seller.status = ShopStatus.SUSPENDED
+        seller.suspendedAt = currentUtc()
+    }
 
     override suspend fun activateShop(
         shopId: String,
@@ -209,5 +257,10 @@ class ShopRepositoryImpl : ShopRepository {
         actorId,
         actorEmail,
         actorRole,
-    ) { if (status == ShopStatus.SUSPENDED) status = ShopStatus.APPROVED }
+        requiredCurrent = setOf(ShopStatus.SUSPENDED),
+        target = ShopStatus.APPROVED,
+    ) { seller ->
+        seller.status = ShopStatus.APPROVED
+        seller.suspendedAt = null
+    }
 }

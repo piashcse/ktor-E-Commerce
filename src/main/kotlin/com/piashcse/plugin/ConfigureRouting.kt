@@ -14,6 +14,7 @@ import com.piashcse.feature.coupon.couponAdminRoutes
 import com.piashcse.feature.coupon.couponRoutes
 import com.piashcse.feature.dashboard.dashboardAdminRoutes
 import com.piashcse.feature.dashboard.dashboardSellerRoutes
+import com.piashcse.feature.fx.fxAdminRoutes
 import com.piashcse.feature.inventory.inventoryAdminRoutes
 import com.piashcse.feature.inventory.inventorySellerRoutes
 import com.piashcse.feature.notification.notificationRoutes
@@ -56,6 +57,7 @@ import io.ktor.server.routing.openapi.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
@@ -65,16 +67,6 @@ private data class HealthStatusResponse(val status: String, val version: String)
 
 @OptIn(ExperimentalKtorApi::class)
 fun Application.configureRoute() {
-    install(
-        createApplicationPlugin(name = "ApiSunsetHeaders") {
-            onCall { call ->
-                if (call.request.path().startsWith("/api/v1")) {
-                    call.response.headers.append("Deprecation", "true", safeOnly = false)
-                    call.response.headers.append("Sunset", "Thu, 31 Dec 2026 23:59:59 GMT", safeOnly = false)
-                }
-            }
-        },
-    )
     routing {
         get("/") { call.respondRedirect("/swagger") }.hide()
         get("/health") {
@@ -90,9 +82,11 @@ fun Application.configureRoute() {
         get("/health/ready") {
             val dbOk =
                 runCatching {
-                    withContext(Dispatchers.IO) {
-                        transaction {
-                            exec("SELECT 1")
+                    withTimeout(3_000) {
+                        withContext(Dispatchers.IO) {
+                            transaction {
+                                exec("SELECT 1")
+                            }
                         }
                     }
                 }.isSuccess
@@ -177,6 +171,7 @@ private fun Route.adminRoutes() {
             route("dashboard") { dashboardAdminRoutes() }
             route("audit-logs") { auditLogAdminRoutes() }
             route("payouts") { payoutAdminRoutes() }
+            route("fx-rates") { fxAdminRoutes() }
         }
     }
 }

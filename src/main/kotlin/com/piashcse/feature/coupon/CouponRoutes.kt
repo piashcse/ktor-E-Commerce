@@ -57,7 +57,10 @@ fun Route.couponAdminRoutes() {
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(couponRepo.deleteCoupon(id))
+            if (!couponRepo.deleteCoupon(id)) {
+                throw com.piashcse.utils.validator.NotFoundException(Message.Coupons.NOT_FOUND)
+            }
+            call.respondOk(com.piashcse.utils.common.MessageResponse("Coupon deleted successfully"))
         }
     }
 

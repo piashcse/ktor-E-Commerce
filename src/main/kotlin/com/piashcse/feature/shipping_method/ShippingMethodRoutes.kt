@@ -34,7 +34,8 @@ fun Route.shippingMethodAdminRoutes() {
          */
         delete("/{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(shippingMethodRepo.deleteShippingMethod(id))
+            shippingMethodRepo.deleteShippingMethod(id)
+            call.respondOk(com.piashcse.utils.common.MessageResponse("Shipping method deleted successfully"))
         }
     }
 

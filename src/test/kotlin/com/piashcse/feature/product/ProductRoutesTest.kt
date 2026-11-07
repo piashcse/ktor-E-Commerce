@@ -52,7 +52,7 @@ class ProductRoutesTest {
         """
         {"categoryId":"cat-1","subCategoryId":"sub-1","brandId":"brand-1","name":"Phone",
         "description":"Nice phone","productCode":"P1","stockQuantity":10,"price":99.99,
-        "discountPrice":79.99,"status":1,"videoLink":null,"hotDeal":false,"featured":false,
+        "discountPrice":79.99,"status":"ACTIVE","videoLink":null,"hotDeal":false,"featured":false,
         "freeShipping":true,"images":["img1.jpg"]}
         """.trimIndent()
 
@@ -218,8 +218,9 @@ class ProductRoutesTest {
         }
 
     @Test
-    fun `seller update product empty body returns 400`() =
+    fun `seller update product empty body is a valid partial update`() =
         testApplication {
+            coEvery { productRepo.updateProduct(any(), any(), any()) } returns sampleProduct()
             setup()
             val res =
                 client.put("/api/v1/seller/products/prod-1") {
@@ -227,7 +228,7 @@ class ProductRoutesTest {
                     contentType(ContentType.Application.Json)
                     setBody("""{}""")
                 }
-            assertEquals(HttpStatusCode.BadRequest, res.status)
+            assertEquals(HttpStatusCode.OK, res.status)
         }
 
     @Test
@@ -286,7 +287,7 @@ class ProductRoutesTest {
                     header(HttpHeaders.Authorization, authHeader(userType = "ADMIN"))
                 }
             assertEquals(HttpStatusCode.OK, res.status)
-            assertContains(res.bodyAsText(), "prod-1")
+            assertContains(res.bodyAsText(), "deleted")
         }
 
     @Test

@@ -112,19 +112,24 @@ class ProductRepositoryImpl : ProductRepository {
     ): ProductResponse =
         query {
             val seller = requireSeller(userId)
-            val resolvedShopId = shopId ?: seller.shopId?.value
-            if (resolvedShopId != null) {
-                val shop = ShopDAO.findById(resolvedShopId) ?: resolvedShopId.throwNotFound("Shop")
-                if (shop.userId.value != userId) throw ForbiddenException(Message.Products.NOT_SHOP_OWNER)
+            val resolvedShopId =
+                shopId ?: seller.shopId?.value
+                    ?: throw com.piashcse.utils.validator.ValidationException(
+                        "Create or get a shop approved before listing products",
+                    )
+            val shop = ShopDAO.findById(resolvedShopId) ?: resolvedShopId.throwNotFound("Shop")
+            if (shop.userId.value != userId) throw ForbiddenException(Message.Products.NOT_SHOP_OWNER)
+            if (shop.status != com.piashcse.constants.ShopStatus.APPROVED) {
+                throw com.piashcse.utils.validator.ValidationException("Shop must be approved before listing products")
             }
 
             ProductDAO.new {
                 this.userId = userId.entityID(UserTable)
-                this.shopId = resolvedShopId?.let { it.entityID(ShopTable) }
+                this.shopId = resolvedShopId.entityID(ShopTable)
                 categoryId = productRequest.categoryId.entityID(ProductCategoryTable)
                 subCategoryId = productRequest.subCategoryId?.let { it.entityID(ProductSubCategoryTable) }
                 brandId = productRequest.brandId?.let { it.entityID(BrandTable) }
-                sku = generateSKU(productRequest.name)
+                sku = productRequest.productCode?.takeIf { it.isNotBlank() } ?: generateSKU(productRequest.name)
                 name = productRequest.name
                 description = productRequest.description
                 price = Money.of(productRequest.price)
@@ -135,19 +140,17 @@ class ProductRepositoryImpl : ProductRepository {
                 featured = productRequest.featured
                 bestSeller = false
                 newProduct = true
-                freeShipping = productRequest.freeShipping ?: false
-                status = ProductStatus.ACTIVE
+                freeShipping = productRequest.freeShipping
+                status = productRequest.status ?: ProductStatus.ACTIVE
             }.let { product ->
                 product.setImages(productRequest.images)
-                if (resolvedShopId != null) {
-                    InventoryDAO.new {
-                        productId = product.id
-                        this.shopId = resolvedShopId.entityID(ShopTable)
-                        stockQuantity = productRequest.stockQuantity
-                        minimumStockLevel = 10
-                        maximumStockLevel = 1000
-                        status = InventoryStatus.fromStockLevel(productRequest.stockQuantity, 10)
-                    }
+                InventoryDAO.new {
+                    productId = product.id
+                    this.shopId = resolvedShopId.entityID(ShopTable)
+                    stockQuantity = productRequest.stockQuantity
+                    minimumStockLevel = 10
+                    maximumStockLevel = 1000
+                    status = InventoryStatus.fromStockLevel(productRequest.stockQuantity, 10)
                 }
                 product.toProductResponse()
             }
@@ -170,7 +173,13 @@ class ProductRepositoryImpl : ProductRepository {
                 name = updateProduct.name ?: name
                 description = updateProduct.description ?: description
                 price = updateProduct.price?.let { Money.of(it) } ?: price
-                discountPrice = updateProduct.discountPrice?.let { Money.of(it) } ?: discountPrice
+                discountPrice =
+                    when {
+                        updateProduct.clearDiscountPrice -> null
+                        updateProduct.discountPrice != null -> Money.of(updateProduct.discountPrice)
+                        else -> discountPrice
+                    }
+                status = updateProduct.status ?: status
                 discountPercentage = Money.discountPercent(price, discountPrice)
                 videoLink = updateProduct.videoLink ?: videoLink
                 hotDeal = updateProduct.hotDeal ?: hotDeal
@@ -182,20 +191,33 @@ class ProductRepositoryImpl : ProductRepository {
 
     override suspend fun getProducts(filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> =
         query {
+            val approvedShops = approvedShopIds()
+            if (approvedShops.isEmpty()) {
+                return@query PaginatedResponse(emptyList(), PaginationMetadata(0, filter.limit, filter.offset))
+            }
             toProductPaginatedResponse(
                 ProductTable.selectAll().andWhere {
-                    ProductTable.status eq ProductStatus.ACTIVE
+                    (ProductTable.status eq ProductStatus.ACTIVE) and
+                        (ProductTable.shopId inList approvedShops)
                 }.applyProductFilters(filter),
                 filter.limit,
                 filter.offset,
             )
         }
 
+    private fun approvedShopIds(): List<String> =
+        ShopDAO.find { ShopTable.status eq com.piashcse.constants.ShopStatus.APPROVED }
+            .map { it.id.value }
+
     override suspend fun getProductsByShop(
         shopId: String,
         filter: ProductWithFilterRequest,
     ): PaginatedResponse<ProductResponse> =
         query {
+            val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
+            if (shop.status != com.piashcse.constants.ShopStatus.APPROVED) {
+                return@query PaginatedResponse(emptyList(), PaginationMetadata(0, filter.limit, filter.offset))
+            }
             toProductPaginatedResponse(
                 ProductTable.selectAll().andWhere {
                     (ProductTable.shopId eq shopId) and (ProductTable.status eq ProductStatus.ACTIVE)
@@ -223,6 +245,12 @@ class ProductRepositoryImpl : ProductRepository {
         query {
             val product = ProductDAO.findById(productId) ?: productId.throwNotFound("ProductResponse")
             if (product.deletedAt != null) productId.throwNotFound("ProductResponse")
+            product.shopId?.value?.let { shopId ->
+                val shop = ShopDAO.findById(shopId) ?: productId.throwNotFound("ProductResponse")
+                if (shop.status != com.piashcse.constants.ShopStatus.APPROVED) {
+                    productId.throwNotFound("ProductResponse")
+                }
+            }
             product.toProductResponse()
         }
 
@@ -294,6 +322,7 @@ class ProductRepositoryImpl : ProductRepository {
 
         val whereClauses = mutableListOf("p.status = ?")
         val whereParams = mutableListOf<Any>(ProductStatus.ACTIVE.name)
+        whereClauses.add("p.shop_id IN (SELECT id FROM shop WHERE status = 'APPROVED')")
 
         if (useTrigram) {
             whereClauses.add("(similarity(p.name, ?) > ? OR similarity(COALESCE(p.description, ''), ?) > ?)")

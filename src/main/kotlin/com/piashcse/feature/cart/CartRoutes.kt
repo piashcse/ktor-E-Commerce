@@ -51,7 +51,8 @@ fun Route.cartRoutes() {
              * @description Remove all items from the authenticated user's cart
              */
             delete("all") {
-                call.respondOk(cartRepo.clearCart(call.currentUserId))
+                cartRepo.clearCart(call.currentUserId)
+                call.respondOk(com.piashcse.utils.common.MessageResponse("Cart cleared successfully"))
             }
         }
 

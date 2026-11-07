@@ -7,6 +7,7 @@ import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.searchRateLimit
 import com.piashcse.plugin.sellerWriteRateLimit
+import com.piashcse.service.CacheService
 import com.piashcse.service.UploadService
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.*
@@ -31,6 +32,7 @@ fun Route.productRoutes() {
         get("{id}") {
             val productId = call.requirePathParameter("id")
             productRepo.incrementViewCount(productId)
+            CacheService.cache.invalidate("products:detail:$productId")
             call.respondOk(productCatalogService.getProductDetail(productId))
         }
 
@@ -143,7 +145,8 @@ fun Route.productAdminRoutes() {
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(productCrudService.deleteProductAsAdmin(id))
+            productCrudService.deleteProductAsAdmin(id)
+            call.respondOk(MessageResponse("Product deleted successfully"))
         }
     }
 }

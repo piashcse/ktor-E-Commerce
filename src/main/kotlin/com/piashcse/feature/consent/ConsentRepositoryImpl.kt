@@ -3,6 +3,7 @@ package com.piashcse.feature.consent
 import com.piashcse.constants.PolicyType
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
 import com.piashcse.mapper.toPolicyConsentResponse
 import com.piashcse.model.request.PolicyConsentRequest
@@ -17,10 +18,11 @@ import com.piashcse.utils.extension.verifyOwnership
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.isNull
+import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.security.MessageDigest
-import java.time.LocalDateTime
 
 class ConsentRepositoryImpl : ConsentRepository {
     // PII minimization: store only a sha256 prefix of the IP and a truncated UA.
@@ -44,28 +46,30 @@ class ConsentRepositoryImpl : ConsentRepository {
             val policy =
                 PolicyDocumentDAO.findById(consentRequest.policyId)
                     ?: consentRequest.policyId.throwNotFound("Policy")
+            if (!policy.isActive || policy.effectiveDate.isAfter(currentUtc())) {
+                throw com.piashcse.utils.validator.ValidationException("Policy is not active yet")
+            }
 
-            val existingConsent =
-                PolicyConsentDAO.find {
-                    PolicyConsentTable.userId eq user.id and (PolicyConsentTable.policyId eq policy.id)
-                }.firstOrNull()
+            // Supersede any active consent for the same policy instead of overwriting
+            // the audit row. History is preserved for compliance evidence.
+            PolicyConsentDAO.find {
+                (PolicyConsentTable.userId eq user.id) and
+                    (PolicyConsentTable.policyId eq policy.id) and
+                    (PolicyConsentTable.revokedAt.isNull())
+            }.forEach { it.revokedAt = currentUtc() }
 
             val consent =
-                existingConsent?.apply {
-                    consentDate = LocalDateTime.now()
-                    ipAddress = hashIp(consentRequest.ipAddress)
-                    userAgent = truncateUserAgent(consentRequest.userAgent)
-                } ?: PolicyConsentDAO.new {
+                PolicyConsentDAO.new {
                     this.userId = user.id
                     policyId = policy
-                    consentDate = LocalDateTime.now()
+                    consentDate = currentUtc()
                     ipAddress = hashIp(consentRequest.ipAddress)
                     userAgent = truncateUserAgent(consentRequest.userAgent)
                 }
 
             EventBus.publishAdminAction(
                 Triple(userId, user.email, user.userType.name),
-                if (existingConsent == null) "CONSENT_GRANTED" else "CONSENT_UPDATED",
+                "CONSENT_GRANTED",
                 "CONSENT",
                 consent.id.value,
             )
@@ -93,11 +97,16 @@ class ConsentRepositoryImpl : ConsentRepository {
 
             val activePolicy =
                 PolicyDocumentDAO.find {
-                    PolicyDocumentTable.type eq policyType and (PolicyDocumentTable.isActive eq true)
-                }.firstOrNull() ?: return@query false
+                    (PolicyDocumentTable.type eq policyType) and
+                        (PolicyDocumentTable.isActive eq true) and
+                        (PolicyDocumentTable.effectiveDate lessEq currentUtc())
+                }.orderBy(PolicyDocumentTable.effectiveDate to org.jetbrains.exposed.v1.core.SortOrder.DESC)
+                    .firstOrNull() ?: return@query false
 
             PolicyConsentDAO.find {
-                PolicyConsentTable.userId eq user.id and (PolicyConsentTable.policyId eq activePolicy.id)
+                (PolicyConsentTable.userId eq user.id) and
+                    (PolicyConsentTable.policyId eq activePolicy.id) and
+                    (PolicyConsentTable.revokedAt.isNull())
             }.firstOrNull() != null
         }
 
@@ -111,7 +120,7 @@ class ConsentRepositoryImpl : ConsentRepository {
             if (userType != UserType.ADMIN && userType != UserType.SUPER_ADMIN) {
                 consent.verifyOwnership(userId, "Consent") { it.userId.value }
             }
-            consent.delete()
+            if (consent.revokedAt == null) consent.revokedAt = currentUtc()
             val actor = runCatching { UserDAO.findById(userId) }.getOrNull()
             EventBus.publishAdminAction(
                 Triple(userId, actor?.email.orEmpty(), actor?.userType?.name ?: userType.name),

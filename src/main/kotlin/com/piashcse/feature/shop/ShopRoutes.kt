@@ -8,8 +8,11 @@ import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.sellerWriteRateLimit
+import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.validator.ValidationException
+import io.ktor.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -26,6 +29,7 @@ fun Route.shopRoutes() {
     get("/{id}") {
         val shopId = call.requirePathParameter("id")
         val shop = shopRepo.getShopById(shopId) ?: throw NotFoundException(Message.Shops.NOT_FOUND)
+        if (shop.status != ShopStatus.APPROVED) throw NotFoundException(Message.Shops.NOT_FOUND)
         call.respondOk(shop)
     }
 
@@ -83,6 +87,26 @@ fun Route.shopSellerRoutesV1() {
         put("/{id}") {
             val shopId = call.requirePathParameter("id")
             call.respondOk(shopRepo.updateShop(call.currentUserId, shopId, call.receive<UpdateShopRequest>()))
+        }
+
+        /**
+         * @tag Shop
+         * @description Seller: Upload a shop logo
+         */
+        post("/{id}/image") {
+            val shopId = call.requirePathParameter("id")
+            val multipart = call.receiveMultipart()
+            var imageUrl: String? = null
+            multipart.forEachPart { part ->
+                if (part is PartData.FileItem) {
+                    val bytes = UploadService.readAndValidateImagePart(part, "shop image")
+                    val fileName = UploadService.uploadShopImage(part, bytes)
+                    imageUrl = UploadService.getShopImageUrl(fileName)
+                }
+                part.dispose()
+            }
+            val url = imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED)
+            call.respondOk(shopRepo.updateShop(call.currentUserId, shopId, UpdateShopRequest(logo = url)))
         }
     }
 

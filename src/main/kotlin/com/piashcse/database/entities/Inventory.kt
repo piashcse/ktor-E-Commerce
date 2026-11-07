@@ -3,6 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.Message
+import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
@@ -39,6 +40,12 @@ fun ProductDAO.decrementStock(quantity: Int) {
     val newStock = inv.stockQuantity - quantity
     inv.stockQuantity = newStock
     inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
+    syncProductStatus(newStock)
+}
+
+private fun ProductDAO.syncProductStatus(stock: Int) {
+    if (deletedAt != null) return
+    status = if (stock <= 0) ProductStatus.OUT_OF_STOCK else ProductStatus.ACTIVE
 }
 
 /** Restores inventory stock after cancellation. */
@@ -49,6 +56,7 @@ fun ProductDAO.restoreStock(quantity: Int) {
     val newStock = inv.stockQuantity + quantity
     inv.stockQuantity = newStock
     inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
+    syncProductStatus(newStock)
 }
 
 /** Calculates commission for an order subtotal. */

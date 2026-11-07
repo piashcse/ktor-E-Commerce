@@ -47,7 +47,14 @@ class CartRepositoryImpl : CartRepository {
                 CartItemDAO.find {
                     CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
                 }.singleOrNull()
-            existing?.let { throw productId.throwConflict("Product") }
+            existing?.let { item ->
+                // Merge duplicate adds instead of rejecting them, then re-check stock
+                // against the combined quantity.
+                val merged = item.quantity + quantity
+                requireProductWithStock(productId, merged)
+                item.quantity = merged
+                return@query item.toCartResponse()
+            }
 
             try {
                 CartItemDAO.new {
@@ -56,9 +63,17 @@ class CartRepositoryImpl : CartRepository {
                     this.quantity = quantity
                 }.toCartResponse()
             } catch (e: Exception) {
-                // Unique constraint race: concurrent adds → 409 not 500.
-                if ((e.message ?: "").contains("duplicate", ignoreCase = true)) throw productId.throwConflict("Product")
-                throw e
+                // Unique constraint race: concurrent adds → merge into the winner.
+                if ((e.message ?: "").contains("duplicate", ignoreCase = true)) {
+                    val winner =
+                        CartItemDAO.find {
+                            CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
+                        }.singleOrNull() ?: throw e
+                    winner.quantity += quantity
+                    winner.toCartResponse()
+                } else {
+                    throw e
+                }
             }
         }
 
@@ -185,6 +200,13 @@ class CartRepositoryImpl : CartRepository {
             val lines = items.map { Money.of(it.price) to it.quantity }
             val subtotal = PricingService.subtotal(lines)
             val tax = PricingService.tax(subtotal)
-            CartSummaryResponse(items, subtotal.toPlainString(), tax.toPlainString(), items.size)
+            val total = Money.scale2(subtotal.add(tax))
+            CartSummaryResponse(
+                items = items,
+                subtotal = subtotal.toPlainString(),
+                estimatedTax = tax.toPlainString(),
+                itemCount = cartItems.sumOf { it.quantity },
+                total = total.toPlainString(),
+            )
         }
 }

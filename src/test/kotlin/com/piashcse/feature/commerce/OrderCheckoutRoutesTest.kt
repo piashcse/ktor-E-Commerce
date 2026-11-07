@@ -68,15 +68,15 @@ class OrderRoutesTest {
         }
 
     @Test
-    fun `customer cannot confirm order returns 403 or 401`() =
+    fun `customer cannot confirm order returns 403`() =
         testApplication {
             setup()
             val res =
                 client.patch("/api/v1/orders/status/o-1?status=CONFIRMED") {
                     header(HttpHeaders.Authorization, authHeader())
                 }
-            // Route-level role gate rejects before repo is touched.
-            assertEquals(HttpStatusCode.Unauthorized, res.status)
+            // Customer is authenticated but not allowed to set a seller-only status.
+            assertEquals(HttpStatusCode.Forbidden, res.status)
         }
 
     @Test

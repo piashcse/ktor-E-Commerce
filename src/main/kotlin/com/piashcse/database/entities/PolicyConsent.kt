@@ -15,6 +15,7 @@ object PolicyConsentTable : BaseIdTable("policy_consents") {
     val consentDate = datetime("consent_date").nullable()
     val ipAddress = varchar("ip_address", 50).nullable()
     val userAgent = varchar("user_agent", 255).nullable()
+    val revokedAt = datetime("revoked_at").nullable()
 
     override val primaryKey = PrimaryKey(id)
 }
@@ -30,4 +31,5 @@ class PolicyConsentDAO(id: EntityID<String>) : BaseEntity(id, PolicyConsentTable
     var consentDate by PolicyConsentTable.consentDate
     var ipAddress by PolicyConsentTable.ipAddress
     var userAgent by PolicyConsentTable.userAgent
+    var revokedAt by PolicyConsentTable.revokedAt
 }

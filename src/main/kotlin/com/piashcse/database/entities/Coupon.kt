@@ -20,6 +20,7 @@ object CouponTable : BaseIdTable("coupon") {
     val endDate = datetime("end_date")
     val usageLimit = integer("usage_limit").nullable()
     val usageCount = integer("usage_count").default(0)
+    val perUserLimit = integer("per_user_limit").default(1)
     val isActive = bool("is_active").default(true)
 }
 
@@ -35,6 +36,7 @@ class CouponDAO(id: EntityID<String>) : BaseEntity(id, CouponTable) {
     var endDate by CouponTable.endDate
     var usageLimit by CouponTable.usageLimit
     var usageCount by CouponTable.usageCount
+    var perUserLimit by CouponTable.perUserLimit
     var isActive by CouponTable.isActive
 }
 

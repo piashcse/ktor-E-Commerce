@@ -10,4 +10,5 @@ data class CheckoutSummaryResponse(
     val discountAmount: String = "0.00",
     val total: String,
     val itemCount: Int,
+    val currency: String = "USD",
 )

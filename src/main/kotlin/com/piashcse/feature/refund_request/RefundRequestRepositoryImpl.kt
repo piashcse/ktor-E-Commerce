@@ -1,30 +1,54 @@
 package com.piashcse.feature.refund_request
 
 import com.piashcse.constants.Message
+import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.RefundStatusChangedEvent
+import com.piashcse.feature.order.OrderCancellation
 import com.piashcse.mapper.toRefundRequestResponse
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
 import com.piashcse.model.response.RefundRequestResponse
+import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
+import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 class RefundRequestRepositoryImpl : RefundRequestRepository {
+    private fun liveStatuses() = listOf(RefundStatus.PENDING, RefundStatus.APPROVED, RefundStatus.SHIPPED, RefundStatus.REFUNDED)
+
+    private fun eventFor(
+        refund: RefundRequestDAO,
+        fromStatus: String,
+        toStatus: String,
+    ) {
+        OutboxPublisher.enqueueTx(
+            "REFUND",
+            refund.id.value,
+            RefundStatusChangedEvent(
+                refundId = refund.id.value,
+                orderId = refund.orderId.value,
+                userId = refund.userId.value,
+                email = UserDAO.findById(refund.userId.value)?.email.orEmpty(),
+                fromStatus = fromStatus,
+                toStatus = toStatus,
+            ),
+        )
+    }
+
     override suspend fun createRefundRequest(
         userId: String,
         orderId: String,
@@ -38,25 +62,25 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             if (order.userId.value != userId) {
                 throw ValidationException(Message.Orders.UNAUTHORIZED)
             }
+            if (order.status !in listOf(com.piashcse.constants.OrderStatus.DELIVERED, com.piashcse.constants.OrderStatus.RECEIVED)) {
+                throw ValidationException("Refunds can only be requested after delivery")
+            }
+            if (order.paymentStatus != PaymentStatus.COMPLETED) {
+                throw ValidationException("Refunds can only be requested for paid orders")
+            }
 
+            // Lock the item row so two concurrent creates cannot both pass the guard.
             val orderItem =
                 OrderItemDAO.find {
                     (OrderItemTable.id eq request.orderItemId.entityID(OrderItemTable)) and
                         (OrderItemTable.orderId eq orderId.entityID(OrderTable))
-                }.firstOrNull() ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
+                }.forUpdate().firstOrNull() ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
 
-            // Duplicate guard: any live or completed refund for this item blocks a new one.
-            // Only REJECTED leaves the item eligible again. forUpdate() serializes concurrent
-            // creates against an existing row (first-writer wins inside one transaction).
             val existingRefund =
                 RefundRequestDAO.find {
                     (RefundRequestTable.orderItemId eq orderItem.id) and
-                        (
-                            RefundRequestTable.status inList
-                                listOf(RefundStatus.PENDING, RefundStatus.APPROVED, RefundStatus.SHIPPED, RefundStatus.REFUNDED)
-                        )
-                }.forUpdate().firstOrNull()
-
+                        (RefundRequestTable.status inList liveStatuses())
+                }.firstOrNull()
             if (existingRefund != null) {
                 throw ValidationException(Message.Refunds.ALREADY_EXISTS)
             }
@@ -68,9 +92,10 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                     this.orderId = orderId.entityID(OrderTable)
                     this.reason = request.reason
                     this.images = request.images
+                    this.currency = order.currency
                     this.status = RefundStatus.PENDING
                 }
-
+            eventFor(refundRequest, "NONE", RefundStatus.PENDING.name)
             refundRequest.toRefundRequestResponse()
         }
 
@@ -90,6 +115,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
 
             RefundRequestTable.selectAll()
                 .andWhere { RefundRequestTable.orderId eq orderId.entityID(OrderTable) }
+                .orderBy(RefundRequestTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) {
                     RefundRequestDAO.wrapRow(it).toRefundRequestResponse()
                 }
@@ -114,6 +140,56 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             refundRequest.toRefundRequestResponse()
         }
 
+    private fun maxRefundableAmount(
+        order: OrderDAO,
+        orderItem: OrderItemDAO,
+    ): BigDecimal {
+        val discountShare =
+            if (order.subTotal > BigDecimal.ZERO) {
+                Money.proportionalSplit(order.discountAmount, orderItem.total, order.subTotal)
+            } else {
+                BigDecimal.ZERO.setScale(2)
+            }
+        return orderItem.total.subtract(discountShare).max(BigDecimal.ZERO).setScale(2)
+    }
+
+    private fun restoreRefundEffects(
+        order: OrderDAO,
+        orderItem: OrderItemDAO,
+        refundAmount: BigDecimal,
+    ) {
+        // Stock and sales counters.
+        ProductDAO.findById(orderItem.productId.value)?.let { product ->
+            product.restoreStock(orderItem.quantity)
+            product.removeSales(orderItem.quantity)
+        }
+
+        // Seller totals and payout ledger.
+        SellerDAO.find { SellerTable.shopId eq order.shopId }.firstOrNull()?.let { seller ->
+            val commissionShare = Money.commission(refundAmount, seller.commissionRate)
+            seller.totalSales = seller.totalSales.subtract(refundAmount).max(BigDecimal.ZERO)
+            seller.totalCommission = seller.totalCommission.subtract(commissionShare).max(BigDecimal.ZERO)
+            SellerPayoutDAO.find { SellerPayoutTable.orderId eq order.id }.forEach { payout ->
+                payout.payoutAmount = payout.payoutAmount.subtract(refundAmount).max(BigDecimal.ZERO)
+                payout.commissionAmount = payout.commissionAmount.subtract(commissionShare).max(BigDecimal.ZERO)
+                if (payout.payoutAmount.compareTo(BigDecimal.ZERO) == 0) {
+                    payout.status = "REFUNDED"
+                }
+            }
+        }
+
+        // Refund ledger entry so the original payment is no longer the last word.
+        PaymentDAO.new {
+            this.orderId = order.id
+            this.userId = order.userId
+            this.amount = refundAmount
+            this.currency = order.currency
+            this.status = PaymentStatus.REFUNDED
+            this.paymentMethod = order.paymentMethod ?: PaymentMethod.COD
+            this.transactionId = "refund:${order.id.value}:${orderItem.id.value}:${refundAmount.toPlainString()}"
+        }
+    }
+
     override suspend fun updateRefundStatus(
         refundId: String,
         request: UpdateRefundStatusRequest,
@@ -121,7 +197,9 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
     ): RefundRequestResponse =
         query {
             val refundReq =
-                RefundRequestDAO.findById(refundId)
+                RefundRequestDAO.find { RefundRequestTable.id eq refundId.entityID(RefundRequestTable) }
+                    .forUpdate()
+                    .firstOrNull()
                     ?: throw ValidationException(Message.Refunds.NOT_FOUND)
 
             val user =
@@ -133,7 +211,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             val isSeller = seller != null
 
             if (!isAdmin && !isSeller) {
-                throw ValidationException(Message.Errors.FORBIDDEN)
+                throw com.piashcse.utils.validator.ForbiddenException(Message.Errors.FORBIDDEN)
             }
 
             if (isSeller) {
@@ -142,7 +220,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                         ?: throw ValidationException(Message.Orders.NOT_FOUND)
                 val orderShopId = order.shopId?.value
                 if (orderShopId == null || !sellerOwnsShop(seller, orderShopId)) {
-                    throw ValidationException(Message.Errors.FORBIDDEN)
+                    throw com.piashcse.utils.validator.ForbiddenException(Message.Errors.FORBIDDEN)
                 }
             }
 
@@ -150,14 +228,20 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                 throw ValidationException(Message.Refunds.invalidTransition(refundReq.status.name, request.status.name))
             }
 
+            val order =
+                OrderDAO.findById(refundReq.orderId.value)
+                    ?: throw ValidationException(Message.Orders.NOT_FOUND)
             val orderItem =
                 OrderItemDAO.findById(refundReq.orderItemId.value)
                     ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
 
-            val maxRefundAmount = orderItem.total
+            val maxRefundAmount = maxRefundableAmount(order, orderItem)
             request.refundAmount?.let { amount ->
-                if (amount <= BigDecimal.ZERO) {
+                if (amount <= BigDecimal.ZERO || amount.stripTrailingZeros().scale() > 2) {
                     throw ValidationException(Message.Refunds.AMOUNT_EXCEEDS_ITEM_TOTAL)
+                }
+                if (amount < BigDecimal("0.01")) {
+                    throw ValidationException("Refund amount must be at least 0.01")
                 }
                 if (amount > maxRefundAmount) {
                     throw ValidationException(Message.Refunds.AMOUNT_EXCEEDS_ITEM_TOTAL)
@@ -170,43 +254,35 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
 
             val fromStatus = refundReq.status
             refundReq.status = request.status
-            refundReq.resolvedAt = LocalDateTime.now(ZoneOffset.UTC)
+            if (request.status in listOf(RefundStatus.REFUNDED, RefundStatus.REJECTED)) {
+                refundReq.resolvedAt = currentUtc()
+            }
 
             request.refundAmount?.let { refundReq.refundAmount = it }
             request.refundMethod?.let { refundReq.refundMethod = it }
 
             if (request.status == RefundStatus.REFUNDED) {
-                refundReq.refundAmount = refundReq.refundAmount ?: maxRefundAmount
-                val order =
-                    OrderDAO.findById(refundReq.orderId.value)
-                        ?: throw ValidationException(Message.Orders.NOT_FOUND)
-                // Full-vs-partial refund: only flip the order-level paymentStatus when the
-                // sum of REFUNDED amounts covers the order total, and only when a completed
-                // payment exists (ledger check). Partial refunds leave it as-is.
-                // Cancel-after-paid must go through a refund record — never set CANCELED here.
+                if (refundReq.refundMethod == null) {
+                    throw ValidationException("Refund method is required when marking a refund as REFUNDED")
+                }
+                val amount = refundReq.refundAmount ?: maxRefundAmount
+                refundReq.refundAmount = amount
+                restoreRefundEffects(order, orderItem, amount)
+
+                // Full refund = every item's net amount has been refunded.
+                val netProductTotal = order.subTotal.subtract(order.discountAmount).max(BigDecimal.ZERO)
                 val refundedTotal =
                     RefundRequestDAO.find {
                         (RefundRequestTable.orderId eq refundReq.orderId) and
                             (RefundRequestTable.status eq RefundStatus.REFUNDED)
-                    }.fold(BigDecimal.ZERO) { acc, row -> acc + (row.refundAmount ?: BigDecimal.ZERO) }
-                if (order.paymentStatus == PaymentStatus.COMPLETED && refundedTotal >= order.total) {
+                    }.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.refundAmount ?: BigDecimal.ZERO) }
+                if (order.paymentStatus == PaymentStatus.COMPLETED && refundedTotal >= netProductTotal) {
                     order.paymentStatus = PaymentStatus.REFUNDED
+                    OrderCancellation.reverseCouponUsageForOrder(order.id.value)
                 }
             }
 
-            OutboxPublisher.enqueueTx(
-                "REFUND",
-                refundReq.id.value,
-                RefundStatusChangedEvent(
-                    refundId = refundReq.id.value,
-                    orderId = refundReq.orderId.value,
-                    userId = refundReq.userId.value,
-                    email = UserDAO.findById(refundReq.userId.value)?.email.orEmpty(),
-                    fromStatus = fromStatus.name,
-                    toStatus = request.status.name,
-                ),
-            )
-
+            eventFor(refundReq, fromStatus.name, request.status.name)
             refundReq.toRefundRequestResponse()
         }
 
@@ -216,8 +292,8 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
     ): Boolean =
         when (current) {
             RefundStatus.PENDING -> target in listOf(RefundStatus.APPROVED, RefundStatus.REJECTED)
-            RefundStatus.APPROVED -> target in listOf(RefundStatus.REFUNDED, RefundStatus.REJECTED)
-            RefundStatus.SHIPPED -> target in listOf(RefundStatus.REFUNDED, RefundStatus.REJECTED)
+            RefundStatus.APPROVED -> target in listOf(RefundStatus.SHIPPED, RefundStatus.REFUNDED, RefundStatus.REJECTED)
+            RefundStatus.SHIPPED -> target == RefundStatus.REFUNDED
             RefundStatus.REJECTED, RefundStatus.REFUNDED -> false
         }
 
@@ -228,7 +304,9 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
     ): RefundRequestResponse =
         query {
             val refundReq =
-                RefundRequestDAO.findById(refundId)
+                RefundRequestDAO.find { RefundRequestTable.id eq refundId.entityID(RefundRequestTable) }
+                    .forUpdate()
+                    .firstOrNull()
                     ?: throw ValidationException(Message.Refunds.NOT_FOUND)
 
             if (refundReq.userId.value != userId) {
@@ -242,7 +320,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
 
             refundReq.trackingNumber = request.trackingNumber
             refundReq.status = RefundStatus.SHIPPED
-
+            eventFor(refundReq, RefundStatus.APPROVED.name, RefundStatus.SHIPPED.name)
             refundReq.toRefundRequestResponse()
         }
 }

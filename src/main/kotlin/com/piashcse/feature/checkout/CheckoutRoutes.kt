@@ -1,5 +1,8 @@
 package com.piashcse.feature.checkout
 
+import com.piashcse.config.DotEnv
+import com.piashcse.constants.PolicyType
+import com.piashcse.feature.consent.ConsentRepository
 import com.piashcse.feature.order.OrderRepository
 import com.piashcse.feature.shipping_address.ShippingAddressRepository
 import com.piashcse.feature.shipping_method.ShippingMethodRepository
@@ -20,6 +23,16 @@ fun Route.checkoutRoutes() {
     val shippingAddressRepo: ShippingAddressRepository by inject()
     val shippingMethodRepo: ShippingMethodRepository by inject()
     val orderRepo: OrderRepository by inject()
+    val consentRepo: ConsentRepository by inject()
+
+    suspend fun requireConfiguredConsents(userId: String) {
+        if (!DotEnv.getBoolean("REQUIRE_POLICY_CONSENT", false)) return
+        PolicyType.values().filter { it.requiresConsent }.forEach { type ->
+            if (!consentRepo.hasUserConsented(userId, type)) {
+                throw com.piashcse.utils.validator.ValidationException("Consent required for policy: ${type.name}")
+            }
+        }
+    }
     customerOnlyAuth {
         writeRateLimit {
             /**
@@ -50,7 +63,8 @@ fun Route.checkoutRoutes() {
              */
             delete("shipping-address/{id}") {
                 val id = call.requirePathParameter("id")
-                call.respondOk(shippingAddressRepo.deleteShippingAddress(call.currentUserId, id))
+                shippingAddressRepo.deleteShippingAddress(call.currentUserId, id)
+                call.respondOk(com.piashcse.utils.common.MessageResponse("Shipping address deleted successfully"))
             }
 
             /**
@@ -68,6 +82,7 @@ fun Route.checkoutRoutes() {
             post("place-order") {
                 val body = call.receive<CheckoutRequest>()
                 val key = call.idempotencyKey(body.idempotencyKey)
+                requireConfiguredConsents(call.currentUserId)
                 call.respondCreated(orderRepo.placeOrder(call.currentUserId, body.copy(idempotencyKey = key)))
             }
         }

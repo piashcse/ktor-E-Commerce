@@ -9,11 +9,13 @@ import org.jetbrains.exposed.v1.javatime.datetime
 object SellerPayoutTable : BaseIdTable("seller_payout") {
     val sellerId = reference("seller_id", SellerTable.id).index()
     val orderId = reference("order_id", OrderTable.id).index()
-    val subTotal = decimal("sub_total", 10, 2)
-    val commissionAmount = decimal("commission_amount", 10, 2)
-    val payoutAmount = decimal("payout_amount", 10, 2)
+    val subTotal = decimal("sub_total", 12, 2)
+    val commissionAmount = decimal("commission_amount", 12, 2)
+    val payoutAmount = decimal("payout_amount", 12, 2)
+    val currency = varchar("currency", 3).default("USD")
     val status = varchar("status", 20).default("PENDING").index()
     val paidAt = datetime("paid_at").nullable()
+    val payoutRequestId = reference("payout_request_id", PayoutRequestTable.id).nullable().index()
 
     // Payout request lifecycle (V17): there is no status enum, so the REQUESTED /
     // APPROVED states reuse PENDING plus timestamps — requestedAt set = REQUESTED,
@@ -41,8 +43,10 @@ class SellerPayoutDAO(id: EntityID<String>) : BaseEntity(id, SellerPayoutTable) 
     var subTotal by SellerPayoutTable.subTotal
     var commissionAmount by SellerPayoutTable.commissionAmount
     var payoutAmount by SellerPayoutTable.payoutAmount
+    var currency by SellerPayoutTable.currency
     var status by SellerPayoutTable.status
     var paidAt by SellerPayoutTable.paidAt
+    var payoutRequestId by SellerPayoutTable.payoutRequestId
     var requestedAt by SellerPayoutTable.requestedAt
     var approvedAt by SellerPayoutTable.approvedAt
     var rejectedAt by SellerPayoutTable.rejectedAt

@@ -74,6 +74,18 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
             )
         }
 
+    override suspend fun updateCategoryImage(
+        categoryId: String,
+        image: String,
+    ): ProductCategoryResponse =
+        query {
+            val category =
+                ProductCategoryDAO.findById(categoryId)
+                    ?: throw com.piashcse.utils.validator.NotFoundException("Category not found")
+            category.image = image
+            category.toProductCategoryResponse()
+        }
+
     override suspend fun deleteCategory(categoryId: String): String =
         query {
             CatalogCrud.deleteById(

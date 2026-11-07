@@ -4,6 +4,8 @@ import com.piashcse.constants.CouponDiscountType
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.CouponDAO
 import com.piashcse.database.entities.CouponTable
+import com.piashcse.database.entities.CouponUsageDAO
+import com.piashcse.database.entities.CouponUsageTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.event.EventBus
 import com.piashcse.model.request.CouponRequest
@@ -13,11 +15,16 @@ import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.greaterEq
+import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.format.DateTimeParseException
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class CouponRepositoryImpl : CouponRepository {
     private fun auditCoupon(
@@ -44,7 +51,7 @@ class CouponRepositoryImpl : CouponRepository {
             val endDate = parseDate(request.endDate, "endDate")
             validateCouponRequest(request, startDate, endDate)
             CouponDAO.new {
-                code = request.code
+                code = normalizeCode(request.code)
                 discountType = request.discountType
                 discountValue = request.discountValue
                 minOrderAmount = request.minOrderAmount
@@ -52,6 +59,7 @@ class CouponRepositoryImpl : CouponRepository {
                 this.startDate = startDate
                 this.endDate = endDate
                 usageLimit = request.usageLimit
+                perUserLimit = request.perUserLimit
                 isActive = request.isActive
             }.toResponse().also { auditCoupon(actorId, "COUPON_CREATED", it.id) }
         }
@@ -66,8 +74,11 @@ class CouponRepositoryImpl : CouponRepository {
             val startDate = parseDate(request.startDate, "startDate")
             val endDate = parseDate(request.endDate, "endDate")
             validateCouponRequest(request, startDate, endDate)
+            if (request.usageLimit != null && request.usageLimit < coupon.usageCount) {
+                throw ValidationException("Usage limit cannot be lower than the current usage count (${coupon.usageCount})")
+            }
             coupon.apply {
-                code = request.code
+                code = normalizeCode(request.code)
                 discountType = request.discountType
                 discountValue = request.discountValue
                 minOrderAmount = request.minOrderAmount
@@ -75,6 +86,7 @@ class CouponRepositoryImpl : CouponRepository {
                 this.startDate = startDate
                 this.endDate = endDate
                 usageLimit = request.usageLimit
+                perUserLimit = request.perUserLimit
                 isActive = request.isActive
             }.toResponse().also { auditCoupon(actorId, "COUPON_UPDATED", it.id) }
         }
@@ -91,15 +103,29 @@ class CouponRepositoryImpl : CouponRepository {
 
     override suspend fun getCouponByCode(code: String): CouponResponse? =
         query {
-            CouponDAO.find { CouponTable.code eq code }.firstOrNull()?.toResponse()
+            val now = LocalDateTime.now(ZoneOffset.UTC)
+            CouponDAO.find {
+                (CouponTable.code eq normalizeCode(code)) and
+                    (CouponTable.isActive eq true) and
+                    (CouponTable.startDate lessEq now) and
+                    (CouponTable.endDate greaterEq now)
+            }.firstOrNull()?.toResponse()
         }
 
     override suspend fun deleteCoupon(couponId: String): Boolean =
         query {
             val coupon = CouponDAO.findById(couponId) ?: return@query false
-            coupon.delete()
+            val used = CouponUsageDAO.find { CouponUsageTable.couponId eq coupon.id }.count()
+            if (used > 0) {
+                // Preserve redemption history; retire the coupon instead of hard-deleting.
+                coupon.isActive = false
+            } else {
+                coupon.delete()
+            }
             true
         }
+
+    private fun normalizeCode(code: String): String = code.trim().uppercase()
 
     private fun parseDate(
         value: String,
@@ -107,8 +133,16 @@ class CouponRepositoryImpl : CouponRepository {
     ): LocalDateTime =
         try {
             LocalDateTime.parse(value)
-        } catch (e: DateTimeParseException) {
-            throw ValidationException(Message.Validation.invalidFormat("$fieldName: $value"))
+        } catch (_: Exception) {
+            try {
+                LocalDate.parse(value).atStartOfDay()
+            } catch (_: Exception) {
+                try {
+                    OffsetDateTime.parse(value).toLocalDateTime()
+                } catch (_: Exception) {
+                    throw ValidationException(Message.Validation.invalidFormat("$fieldName: $value"))
+                }
+            }
         }
 
     private fun validateCouponRequest(
@@ -138,6 +172,9 @@ class CouponRepositoryImpl : CouponRepository {
         if (request.usageLimit != null && request.usageLimit < 1) {
             throw ValidationException("Usage limit must be at least 1")
         }
+        if (request.perUserLimit < 1) {
+            throw ValidationException("Per-user limit must be at least 1")
+        }
     }
 
     private fun CouponDAO.toResponse() =
@@ -152,6 +189,7 @@ class CouponRepositoryImpl : CouponRepository {
             endDate = endDate.toString(),
             usageLimit = usageLimit,
             usageCount = usageCount,
+            perUserLimit = perUserLimit,
             isActive = isActive,
         )
 }

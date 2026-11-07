@@ -76,13 +76,12 @@ fun Route.consentRoutes() {
          * @description Revoke a consent record (owner or admin)
          */
         delete("{id}") {
-            call.respondOk(
-                consentRepo.revokeConsent(
-                    call.requirePathParameter("id"),
-                    call.currentUserId,
-                    call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
-                ),
+            consentRepo.revokeConsent(
+                call.requirePathParameter("id"),
+                call.currentUserId,
+                call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
             )
+            call.respondOk(com.piashcse.utils.common.MessageResponse("Consent revoked successfully"))
         }
     }
 }

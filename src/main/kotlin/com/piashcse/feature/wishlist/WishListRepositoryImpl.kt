@@ -29,7 +29,7 @@ class WishListRepositoryImpl : WishListRepository {
 
             if (existing == null) {
                 WishListDAO.new {
-                    this.userId = userId.entityID(WishListTable)
+                    this.userId = userId.entityID(UserTable)
                     this.productId = productId.entityID(ProductTable)
                 }.toWishListResponse(product.toProductResponse())
             } else {
@@ -68,19 +68,25 @@ class WishListRepositoryImpl : WishListRepository {
         quantity: Int,
     ): Cart =
         query {
+            if (quantity <= 0) {
+                throw com.piashcse.utils.validator.ValidationException(
+                    com.piashcse.constants.Message.Validation.notPositive("Quantity"),
+                )
+            }
             val item = requireWishlistItem(userId, productId)
-            val product = requireProductWithStock(productId, quantity, "ProductResponse")
-            val stock = product.effectiveStock()
             val existing = CartItemDAO.find { CartItemTable.userId eq userId and (CartItemTable.productId eq productId) }.singleOrNull()
+            val requestedQuantity = (existing?.quantity ?: 0) + quantity
+            requireProductWithStock(productId, requestedQuantity, "ProductResponse")
+
             val cart =
                 if (existing != null) {
-                    existing.quantity = (existing.quantity + quantity).coerceAtMost(stock)
+                    existing.quantity = requestedQuantity
                     existing.toCartResponse()
                 } else {
                     CartItemDAO.new {
                         this.userId = userId.entityID(UserTable)
                         this.productId = productId.entityID(ProductTable)
-                        this.quantity = quantity
+                        this.quantity = requestedQuantity
                     }.toCartResponse()
                 }
             item.delete()

@@ -4,7 +4,6 @@ import com.piashcse.database.entities.PolicyConsentDAO
 import com.piashcse.database.entities.PolicyDocumentDAO
 import com.piashcse.model.response.PolicyDocumentResponse
 import com.piashcse.model.response.UserPolicyConsentResponse
-import java.time.LocalDateTime
 
 fun PolicyDocumentDAO.toPolicyDocumentResponse() =
     PolicyDocumentResponse(
@@ -15,6 +14,8 @@ fun PolicyDocumentDAO.toPolicyDocumentResponse() =
         version,
         effectiveDate.toString(),
         isActive,
+        createdAt.toString(),
+        updatedAt?.toString(),
     )
 
 fun PolicyConsentDAO.toPolicyConsentResponse() =
@@ -22,7 +23,8 @@ fun PolicyConsentDAO.toPolicyConsentResponse() =
         id.value,
         userId.value,
         policyId.id.value,
-        consentDate?.toString() ?: LocalDateTime.now().toString(),
+        consentDate?.toString(),
         ipAddress,
         userAgent,
+        revokedAt?.toString(),
     )

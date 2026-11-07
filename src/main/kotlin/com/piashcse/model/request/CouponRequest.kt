@@ -20,6 +20,7 @@ data class CouponRequest(
     val startDate: String,
     val endDate: String,
     val usageLimit: Int? = null,
+    val perUserLimit: Int = 1,
     val isActive: Boolean = true,
 ) {
     init {
@@ -37,6 +38,7 @@ data class CouponRequest(
         require(minOrderAmount >= BigDecimal.ZERO) { "Minimum order amount cannot be negative" }
         maxDiscountAmount?.let { require(it > BigDecimal.ZERO) { "Max discount must be positive" } }
         usageLimit?.let { require(it > 0) { "Usage limit must be positive" } }
+        require(perUserLimit > 0) { "Per-user limit must be positive" }
         require(startDate <= endDate) { "Coupon startDate must be before endDate (ISO strings)" }
     }
 }

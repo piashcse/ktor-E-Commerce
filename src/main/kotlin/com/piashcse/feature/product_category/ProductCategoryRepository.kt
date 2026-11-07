@@ -35,6 +35,12 @@ interface ProductCategoryRepository {
         name: String,
     ): ProductCategoryResponse
 
+    /** Sets the category image URL (admin image upload). */
+    suspend fun updateCategoryImage(
+        categoryId: String,
+        image: String,
+    ): ProductCategoryResponse
+
     /**
      * Deletes a product category.
      *

@@ -16,11 +16,26 @@ data class PayoutResponse(
     val subTotal: String,
     val commissionAmount: String,
     val payoutAmount: String,
+    val currency: String = "USD",
     val status: String,
+    val payoutRequestId: String? = null,
+    val requestedAt: String? = null,
+    val approvedAt: String? = null,
+    val rejectedAt: String? = null,
+    val paidAt: String? = null,
     val createdAt: String,
 )
 
+@Serializable
+data class PayoutBalanceResponse(
+    val available: String,
+    val currency: String = "USD",
+    val pendingRequestAmount: String = "0.00",
+)
+
 interface PayoutRepository {
+    suspend fun availableBalance(sellerUserId: String): PayoutBalanceResponse
+
     suspend fun sellerPayouts(
         sellerUserId: String,
         limit: Int,
