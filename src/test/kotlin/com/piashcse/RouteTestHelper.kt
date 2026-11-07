@@ -67,6 +67,10 @@ object RouteTestHelper {
             )
         }
         install(Authentication) {
+            bearer(AppConstants.Authentication.API_KEY_AUTHENTICATOR) {
+                realm = "test"
+                authenticate { null }
+            }
             jwt(AppConstants.Authentication.JWT_AUTHENTICATOR) {
                 verifier(JWT.require(algorithm).withIssuer(ISSUER).withAudience(AUDIENCE).build())
                 validate { credential ->

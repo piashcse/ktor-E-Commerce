@@ -602,3 +602,16 @@ All passwords must meet the following criteria:
 - Changing user types should be done carefully to maintain system security
 - Deactivation should be used for temporary account suspension
 - Regular monitoring of user type changes helps maintain security
+
+
+## API Keys
+
+API keys are scoped to a subset of the role's permissions and are shown once at creation. Send them as `Authorization: Bearer ek_...`.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/api-keys` | List your API keys (metadata only) |
+| `POST` | `/api/v1/api-keys` | Create a key (`name`, optional `scopes`, `expiresAt`) |
+| `DELETE` | `/api/v1/api-keys/{id}` | Revoke a key |
+
+Feature flags are managed by super admins via `GET/PUT /api/v1/admin/feature-flags`.

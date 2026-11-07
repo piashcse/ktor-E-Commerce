@@ -162,7 +162,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 - [ ] **E-8. Guest checkout, saved payment methods, order tracking page.**
 - [ ] **E-9. Notification templates, email/SMS/push providers, preferences.**
 - [x] **E-10. GDPR export/erasure, consent history UI, audit export.**
-- [ ] **E-11. Admin RBAC granular permissions, feature flags, API keys.**
+- [x] **E-11. Admin RBAC granular permissions, feature flags, API keys.**
 - [ ] **E-12. Cursor pagination, read replicas, query plan/index review.**
 - [x] **E-13. Circuit breakers, retries with jitter, DLQ admin UI.**
 - [x] **E-14. Observability SLOs: outbox lag, payment/refund/payout failure metrics.**
@@ -182,6 +182,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 6 | `fix/06-resilience` | `fix/05-search-observability` | Circuit breakers, jittered retry, DLQ summary/replay API |
 | 7 | `fix/07-tax-rules` | `fix/06-resilience` | Country/category tax rules, admin API, per-item tax in checkout/orders |
 | 8 | `test/concurrency-guards` | `fix/07-tax-rules` | DB-backed concurrency tests for stock, order/payment/payout/coupon guards |
+| 9 | `fix/08-rbac-api-keys` | `test/concurrency-guards` | Permission scopes, API keys, feature flags, V22 |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 

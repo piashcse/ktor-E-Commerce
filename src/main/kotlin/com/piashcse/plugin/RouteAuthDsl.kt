@@ -1,6 +1,8 @@
 package com.piashcse.plugin
 
+import com.piashcse.constants.AppConstants.Authentication.API_KEY_AUTHENTICATOR
 import com.piashcse.constants.AppConstants.Authentication.JWT_AUTHENTICATOR
+import com.piashcse.constants.Permission
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.utils.common.ApiError
@@ -57,6 +59,54 @@ class RoleAuthorizationConfig {
     var exactMatch: Boolean = false
 }
 
+val PermissionAuthorizationPlugin =
+    createRouteScopedPlugin(
+        name = "PermissionAuthorizationPlugin",
+        createConfiguration = ::PermissionAuthorizationConfig,
+    ) {
+        val required = pluginConfig.permissions
+        on(AuthenticationChecked) { call ->
+            if (call.response.isCommitted) return@on
+            val principal = call.principal<JwtTokenRequest>()
+            if (principal == null) {
+                call.respond(HttpStatusCode.Unauthorized, ApiError("Missing or invalid token", code = "UNAUTHORIZED"))
+                return@on
+            }
+            if (required.isNotEmpty() && required.none { principal.hasPermission(it) }) {
+                call.respond(
+                    HttpStatusCode.Forbidden,
+                    ApiError("Permission Denied: missing ${required.joinToString { it.name }}", code = "FORBIDDEN"),
+                )
+            }
+        }
+    }
+
+class PermissionAuthorizationConfig {
+    var permissions: List<Permission> = emptyList()
+}
+
+/** Authenticates with JWT or API key, then requires at least one permission. */
+fun Route.requirePermission(
+    vararg permissions: Permission,
+    build: Route.() -> Unit,
+) {
+    authenticate(JWT_AUTHENTICATOR, API_KEY_AUTHENTICATOR) {
+        val routeWithAuth =
+            createChild(
+                object : RouteSelector() {
+                    override suspend fun evaluate(
+                        context: RoutingResolveContext,
+                        segmentIndex: Int,
+                    ) = RouteSelectorEvaluation.Constant
+                },
+            )
+        routeWithAuth.install(PermissionAuthorizationPlugin) {
+            this.permissions = permissions.toList()
+        }
+        routeWithAuth.build()
+    }
+}
+
 fun Route.requireRole(
     vararg roles: UserType,
     build: Route.() -> Unit,
@@ -81,7 +131,7 @@ private fun Route.authorized(
     exactMatch: Boolean,
     build: Route.() -> Unit,
 ) {
-    authenticate(JWT_AUTHENTICATOR) {
+    authenticate(JWT_AUTHENTICATOR, API_KEY_AUTHENTICATOR) {
         val routeWithAuth =
             createChild(
                 object : RouteSelector() {

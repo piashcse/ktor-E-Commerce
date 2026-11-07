@@ -1,5 +1,6 @@
 package com.piashcse.di
 
+import com.piashcse.feature.apikey.ApiKeyService
 import com.piashcse.feature.audit_log.AuditLogRepository
 import com.piashcse.feature.audit_log.AuditLogRepositoryImpl
 import com.piashcse.feature.auth.AuthRepository
@@ -90,6 +91,7 @@ val serviceModule =
         // Services with business logic
         single { ProfileService(get()) }
         single { PrivacyService() }
+        single { ApiKeyService() }
 
         // Split auth services
         single { UserAuthenticationService(get()) }
