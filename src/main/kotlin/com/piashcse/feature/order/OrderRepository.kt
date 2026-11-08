@@ -5,6 +5,7 @@ import com.piashcse.constants.UserType
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
 import com.piashcse.model.response.OrderResponse
+import com.piashcse.utils.common.CursorPage
 import com.piashcse.utils.common.PaginatedResponse
 import java.time.Instant
 
@@ -45,6 +46,13 @@ interface OrderRepository {
         limit: Int,
         offset: Int,
     ): PaginatedResponse<OrderResponse>
+
+    /** Keyset-paginated customer orders; preferred for large histories. */
+    suspend fun getOrdersCursor(
+        userId: String,
+        limit: Int,
+        cursor: String?,
+    ): CursorPage<OrderResponse>
 
     /**
      * Updates the status of an order.

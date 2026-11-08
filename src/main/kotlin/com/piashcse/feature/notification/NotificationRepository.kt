@@ -1,6 +1,7 @@
 package com.piashcse.feature.notification
 
 import com.piashcse.constants.UserType
+import com.piashcse.utils.common.CursorPage
 import com.piashcse.utils.common.PaginatedResponse
 import kotlinx.serialization.Serializable
 
@@ -33,6 +34,13 @@ interface NotificationRepository {
         offset: Int,
         unreadOnly: Boolean = false,
     ): PaginatedResponse<NotificationResponse>
+
+    suspend fun listCursor(
+        userId: String,
+        limit: Int,
+        cursor: String?,
+        unreadOnly: Boolean = false,
+    ): CursorPage<NotificationResponse>
 
     suspend fun unreadCount(userId: String): Long
 

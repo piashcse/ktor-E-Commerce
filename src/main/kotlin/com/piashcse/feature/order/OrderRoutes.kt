@@ -34,6 +34,21 @@ fun Route.orderRoutes() {
                 val (limit, offset) = call.paginateQueryParams()
                 call.respondOk(orderRepo.getOrders(call.currentUserId, limit, offset))
             }
+
+            /**
+             * @tag Order
+             * @description Keyset-paginated order history (`cursor` + `limit`)
+             */
+            get("cursor") {
+                val (limit, _) = call.paginateQueryParams()
+                call.respondOk(
+                    orderRepo.getOrdersCursor(
+                        call.currentUserId,
+                        limit,
+                        call.request.queryParameters["cursor"],
+                    ),
+                )
+            }
         }
     }
 

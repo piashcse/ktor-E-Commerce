@@ -14,9 +14,11 @@ import com.piashcse.model.response.OrderResponse
 import com.piashcse.service.CacheService
 import com.piashcse.service.FxService
 import com.piashcse.service.PricingService
+import com.piashcse.utils.common.CursorPage
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
+import com.piashcse.utils.common.cursorPage
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
@@ -495,6 +497,26 @@ class OrderRepositoryImpl : OrderRepository {
             OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
                 .orderBy(OrderTable.createdAt to SortOrder.DESC)
                 .toOrdersPaginated(limit, offset)
+        }
+
+    override suspend fun getOrdersCursor(
+        userId: String,
+        limit: Int,
+        cursor: String?,
+    ): CursorPage<OrderResponse> =
+        query {
+            val page =
+                OrderTable.selectAll()
+                    .andWhere { OrderTable.userId eq userId }
+                    .cursorPage(limit, cursor, OrderTable.createdAt, OrderTable.id) { it }
+            val orders = page.data.map { OrderDAO.wrapRow(it) }
+            val itemsMap = loadItemsForOrders(orders)
+            CursorPage(
+                data = orders.map { it.toOrderResponse(itemsMap[it.id.value]) },
+                nextCursor = page.nextCursor,
+                hasMore = page.hasMore,
+                limit = page.limit,
+            )
         }
 
     override suspend fun updateOrderStatus(

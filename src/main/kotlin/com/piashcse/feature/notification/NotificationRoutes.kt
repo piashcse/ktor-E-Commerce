@@ -59,6 +59,18 @@ fun Route.notificationRoutes() {
         get("unread-count") {
             call.respondOk(UnreadCountResponse(repo.unreadCount(call.currentUserId)))
         }
+        get("cursor") {
+            val (limit, _) = call.paginateQueryParams()
+            val unreadOnly = call.request.queryParameters["unreadOnly"]?.toBoolean() ?: false
+            call.respondOk(
+                repo.listCursor(
+                    call.currentUserId,
+                    limit,
+                    call.request.queryParameters["cursor"],
+                    unreadOnly,
+                ),
+            )
+        }
         post("{id}/read") {
             call.respondOk(repo.markRead(call.currentUserId, call.parameters["id"] ?: throw IllegalArgumentException("id required")))
         }
