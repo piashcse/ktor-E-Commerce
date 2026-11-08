@@ -33,8 +33,42 @@ data class PayoutBalanceResponse(
     val pendingRequestAmount: String = "0.00",
 )
 
+@Serializable
+data class SellerStatementRow(
+    val payoutId: String,
+    val orderId: String,
+    val subTotal: String,
+    val commissionAmount: String,
+    val payoutAmount: String,
+    val currency: String,
+    val status: String,
+    val createdAt: String,
+)
+
+@Serializable
+data class SellerStatementResponse(
+    val from: String?,
+    val to: String?,
+    val currency: String,
+    val grossSales: String,
+    val commission: String,
+    val netPayout: String,
+    val paid: String,
+    val pending: String,
+    val available: String,
+    val taxCollected: String,
+    val rowCount: Int,
+    val rows: List<SellerStatementRow>,
+)
+
 interface PayoutRepository {
     suspend fun availableBalance(sellerUserId: String): PayoutBalanceResponse
+
+    suspend fun statement(
+        sellerUserId: String,
+        from: String?,
+        to: String?,
+    ): SellerStatementResponse
 
     suspend fun sellerPayouts(
         sellerUserId: String,

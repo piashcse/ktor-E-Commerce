@@ -42,6 +42,11 @@ fun SellerDAO.toSellerResponse() =
         terminatedAt = terminatedAt,
         createdAt = createdAt,
         updatedAt = updatedAt,
+        kycStatus = kycStatus,
+        kycDocumentUrl = kycDocumentUrl,
+        kycSubmittedAt = kycSubmittedAt,
+        kycVerifiedAt = kycVerifiedAt,
+        kycRejectionReason = kycRejectionReason,
     )
 
 fun UserProfileDAO.toUserProfileResponse() =

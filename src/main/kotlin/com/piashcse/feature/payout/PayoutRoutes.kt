@@ -23,6 +23,43 @@ fun Route.payoutSellerRoutes() {
         get("balance") {
             call.respondOk(repo.availableBalance(call.currentUserId))
         }
+        get("statement") {
+            call.respondOk(
+                repo.statement(
+                    call.currentUserId,
+                    call.request.queryParameters["from"],
+                    call.request.queryParameters["to"],
+                ),
+            )
+        }
+        get("statement/export") {
+            val statement =
+                repo.statement(
+                    call.currentUserId,
+                    call.request.queryParameters["from"],
+                    call.request.queryParameters["to"],
+                )
+            val csv =
+                buildString {
+                    appendLine("payout_id,order_id,sub_total,commission,payout,currency,status,created_at")
+                    statement.rows.forEach {
+                        appendLine(
+                            listOf(
+                                it.payoutId,
+                                it.orderId,
+                                it.subTotal,
+                                it.commissionAmount,
+                                it.payoutAmount,
+                                it.currency,
+                                it.status,
+                                it.createdAt,
+                            ).joinToString(","),
+                        )
+                    }
+                }
+            call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"statement.csv\"")
+            call.respondText(csv, ContentType.parse("text/csv"))
+        }
         post("request") {
             val body = call.receive<PayoutRequest>()
             call.respondCreated(repo.requestPayout(call.currentUserId, body.amount, call.idempotencyKey()))

@@ -1,5 +1,6 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.KycStatus
 import com.piashcse.constants.ShopStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
@@ -27,6 +28,11 @@ object SellerTable : BaseIdTable("seller") {
     val approvedAt = datetime("approved_at").nullable()
     val suspendedAt = datetime("suspended_at").nullable()
     val terminatedAt = datetime("terminated_at").nullable()
+    val kycStatus = enumerationByName("kyc_status", 20, KycStatus::class).default(KycStatus.NOT_SUBMITTED)
+    val kycDocumentUrl = varchar("kyc_document_url", 500).nullable()
+    val kycSubmittedAt = datetime("kyc_submitted_at").nullable()
+    val kycVerifiedAt = datetime("kyc_verified_at").nullable()
+    val kycRejectionReason = text("kyc_rejection_reason").nullable()
     // createdAt and updatedAt are inherited from BaseIdTable
 }
 
@@ -48,6 +54,11 @@ class SellerDAO(id: EntityID<String>) : BaseEntity(id, SellerTable) {
     var approvedAt by SellerTable.approvedAt
     var suspendedAt by SellerTable.suspendedAt
     var terminatedAt by SellerTable.terminatedAt
+    var kycStatus by SellerTable.kycStatus
+    var kycDocumentUrl by SellerTable.kycDocumentUrl
+    var kycSubmittedAt by SellerTable.kycSubmittedAt
+    var kycVerifiedAt by SellerTable.kycVerifiedAt
+    var kycRejectionReason by SellerTable.kycRejectionReason
 
     /**
      * Get the associated user information
@@ -95,4 +106,9 @@ data class SellerResponse(
     val terminatedAt: @Contextual LocalDateTime?,
     val createdAt: @Contextual LocalDateTime?,
     val updatedAt: @Contextual LocalDateTime?,
+    val kycStatus: KycStatus = KycStatus.NOT_SUBMITTED,
+    val kycDocumentUrl: String? = null,
+    val kycSubmittedAt: @Contextual LocalDateTime? = null,
+    val kycVerifiedAt: @Contextual LocalDateTime? = null,
+    val kycRejectionReason: String? = null,
 )
