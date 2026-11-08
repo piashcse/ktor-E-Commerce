@@ -101,7 +101,8 @@ fun Route.checkoutRoutes() {
          * @description Retrieve all available shipping methods
          */
         get("shipping-method") {
-            call.respondOk(shippingMethodRepo.getShippingMethods())
+            val (limit, offset) = call.paginateQueryParams()
+            call.respondOk(shippingMethodRepo.getShippingMethods(limit, offset))
         }
     }
 }

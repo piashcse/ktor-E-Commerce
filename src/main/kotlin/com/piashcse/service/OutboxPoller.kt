@@ -1,6 +1,7 @@
 package com.piashcse.service
 
 import com.piashcse.database.entities.OutboxDAO
+import com.piashcse.database.entities.OutboxDeadLetterDAO
 import com.piashcse.database.entities.OutboxTable
 import com.piashcse.event.EventBus
 import com.piashcse.event.OutboxPublisher
@@ -51,6 +52,20 @@ object OutboxPoller {
         val attempts: Int,
     )
 
+    private fun deadLetter(
+        row: OutboxDAO,
+        error: String,
+    ) {
+        OutboxDeadLetterDAO.new {
+            eventType = row.eventType
+            aggregateType = row.aggregateType
+            aggregateId = row.aggregateId
+            payload = row.payload
+            this.error = error
+            attempts = row.attempts
+        }
+    }
+
     suspend fun drain(batchSize: Int = 50): Int {
         // Read the batch in one short transaction. Delivery happens outside the
         // transaction because it waits for subscribers; the row is acknowledged
@@ -82,6 +97,7 @@ object OutboxPoller {
                     OutboxDAO.findById(pendingRow.id)?.let { row ->
                         row.attempts = row.attempts + 1
                         if (row.attempts >= MAX_ATTEMPTS) {
+                            deadLetter(row, "Undecodable event payload after ${row.attempts} attempts")
                             row.publishedAt = LocalDateTime.now(ZoneOffset.UTC)
                             log.error("Outbox row ${row.id.value} retired after ${row.attempts} undecodable attempts")
                         }
@@ -108,6 +124,7 @@ object OutboxPoller {
                     } else {
                         row.attempts = row.attempts + 1
                         if (row.attempts >= MAX_ATTEMPTS) {
+                            deadLetter(row, "Subscriber delivery failed after ${row.attempts} attempts")
                             row.publishedAt = LocalDateTime.now(ZoneOffset.UTC)
                             log.error("Outbox row ${row.id.value} retired after ${row.attempts} delivery failures")
                         }

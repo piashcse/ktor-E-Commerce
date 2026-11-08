@@ -27,6 +27,7 @@ data class OrderResponse(
     val shippingAddress: String? = null,
     val billingAddress: String? = null,
     val shippingMethod: String? = null,
+    val trackingNumber: String? = null,
     val shippingDate: @Contextual LocalDateTime? = null,
     val deliveredDate: @Contextual LocalDateTime? = null,
     val canceledDate: @Contextual LocalDateTime? = null,

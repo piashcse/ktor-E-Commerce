@@ -48,5 +48,7 @@ interface ConsentRepository {
     suspend fun listConsentsByUser(
         userId: String?,
         policyType: PolicyType?,
-    ): List<UserPolicyConsentResponse>
+        limit: Int = 20,
+        offset: Int = 0,
+    ): PaginatedResponse<UserPolicyConsentResponse>
 }

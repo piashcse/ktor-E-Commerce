@@ -2,6 +2,7 @@ package com.piashcse.mapper
 
 import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.model.response.PaymentResponse
+import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 
 fun PaymentDAO.toPaymentResponse() =
@@ -13,5 +14,5 @@ fun PaymentDAO.toPaymentResponse() =
         status = status,
         paymentMethod = paymentMethod,
         transactionId = transactionId,
-        createdAt = createdAt.toString(),
+        createdAt = createdAt.toUtcString(),
     )

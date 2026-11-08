@@ -77,6 +77,15 @@ interface OrderRepository {
     ): OrderResponse
 
     /**
+     * Marks a paid order as shipped and stores the carrier tracking number.
+     */
+    suspend fun shipOrder(
+        orderId: String,
+        userId: String,
+        trackingNumber: String,
+    ): OrderResponse
+
+    /**
      * Retrieves orders for a seller's shop.
      *
      * @param userId The unique identifier of the seller.

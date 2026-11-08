@@ -2,6 +2,7 @@ package com.piashcse.feature.product_category
 
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.service.UploadService
+import com.piashcse.utils.extension.nameFromBodyOrQuery
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -37,8 +38,7 @@ fun Route.productCategoryAdminRoutes() {
          * @description Admin: Create a new product category
          */
         post {
-            val name = call.requireQueryParameter("name")
-            call.respondCreated(productCategoryRepo.createCategory(name))
+            call.respondCreated(productCategoryRepo.createCategory(call.nameFromBodyOrQuery()))
         }
 
         /**
@@ -47,8 +47,7 @@ fun Route.productCategoryAdminRoutes() {
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
-            val name = call.requireQueryParameter("name")
-            call.respondOk(productCategoryRepo.updateCategory(id, name))
+            call.respondOk(productCategoryRepo.updateCategory(id, call.nameFromBodyOrQuery()))
         }
 
         /**

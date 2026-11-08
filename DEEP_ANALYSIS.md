@@ -102,14 +102,14 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
   - `logback.xml:4,12`, `RequestTracing.kt`
 - [x] **P2-8. DB integrity.** Missing indexes/unique constraints/checks; seller status default; coupon usage cascade; per-user limits.
   - New `V18__security_payment_hardening.sql` + `V19__commerce_hardening.sql`
-- [~] **P2-9. Outbox lifecycle.** `attempts` cap, dead-letter table/endpoint, cleanup job.
+- [x] **P2-9. Outbox lifecycle.** `attempts` cap, dead-letter table/endpoint, cleanup job.
 - [x] **P2-10. Async/image safety.** Bounded queue, restart guard, temp-file atomic image rewrite, WebP signature, dimension guard.
   - `AsyncWorker.kt`, `UploadService.kt`, `ImageCompressor.kt`
 - [x] **P2-11. CI/Docker.** Build artifact in CI, non-root image, healthcheck, uploads volume, `.dockerignore`, no weak defaults.
   - `.github/workflows/ci.yml`, `Dockerfile`, `docker-compose.yml`
 - [x] **P2-12. Docs/OpenAPI sync.** Remove false `/openapi`, v2, public-shop claims; document payout/notification; add Bearer security; remove global deprecation header.
   - `README.md`, `docs/**`, `ConfigureSwagger.kt`, `ConfigureRouting.kt:68-75`
-- [~] **P2-13. Tests.** Non-skipping Testcontainers DB test, serialization contract tests, concurrency tests for payment/refund/payout/coupon.
+- [~] **P2-13. Tests.** Real Postgres test now runs against the CI `DB_*` service (V1..V20 + slice), serialization contract tests exist; dedicated concurrency tests for payment/refund/payout/coupon still pending.
   - `PostgresIntegrationTest.kt:39-51`, `RouteTestHelper.kt:30`
 
 ---
@@ -118,9 +118,9 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 
 - [x] **F-1. Payment provider framework.** Gateway interface, COD flow, explicit admin confirmation/webhook, refund transaction linkage.
 - [~] **F-2. Real payment provider integration** (Stripe/bKash/SSLCommerz) — adapter interface ready; credentials/webhook secret required.
-- [~] **F-3. Shipment state + tracking.** `SHIPPED` status, shipping date, tracking number endpoint.
-- [~] **F-4. Partial/quantity refunds + shipping/tax refund fields.**
-- [~] **F-5. Coupon per-user limit, scoping, usage reversal, admin filters.**
+- [x] **F-3. Shipment state + tracking.** `SHIPPED` status, shipping date, tracking number endpoint.
+- [x] **F-4. Partial/quantity refunds + shipping/tax refund fields.**
+- [x] **F-5. Coupon per-user limit, scoping, usage reversal, admin filters.**
 - [x] **F-6. Payout request aggregate/status/balance endpoint.**
 - [ ] **F-7. Product variants/attributes** — documented as out of scope for this pass (schema addition).
 - [x] **F-8. Category/brand/shop image write path** — currently columns exist but unused.
@@ -134,12 +134,12 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 ## 5. Feature Inconsistency
 
 - [x] **I-1. Response envelope:** code returns raw DTOs; README says raw but examples wrap.
-- [~] **I-2. Money representation:** string vs numeric vs `Double`; docs numeric.
-- [~] **I-3. Date/time:** mixed timezone and string/object output.
-- [~] **I-4. Pagination params:** `limit/offset` vs `page/perPage`; some raw lists.
-- [~] **I-5. Catalog input style:** body vs query for create/update.
+- [x] **I-2. Money representation:** string vs numeric vs `Double`; docs numeric.
+- [x] **I-3. Date/time:** mixed timezone and string/object output.
+- [x] **I-4. Pagination params:** `limit/offset` vs `page/perPage`; some raw lists.
+- [x] **I-5. Catalog input style:** body vs query for create/update.
 - [x] **I-6. Auth docs:** OTP body vs query; admin registration; README passwords.
-- [~] **I-7. Public vs private routes:** `/shops/public` authenticated; brand vs category inconsistency.
+- [x] **I-7. Public vs private routes:** `/shops/public` authenticated; brand vs category inconsistency.
 - [x] **I-8. Order status docs vs `OrderStatus` (no `SHIPPED`).**
 - [x] **I-9. Currency units across summary/order/refund/payout/dashboard.**
 - [x] **I-10. Inventory/product status not synchronized.**
@@ -170,6 +170,19 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 
 ---
 
+## 9. Branch / PR Plan
+
+| PR | Branch | Base | Scope |
+|---|---|---|---|
+| 1 | `fix/01-security-payment-hardening` | `master` | Payments, auth, inventory/notification authorization, upload/static, V18 |
+| 2 | `fix/02-commerce-correctness` | `fix/01-security-payment-hardening` | Fulfillment, FX/currency, coupons, refunds, payouts, reviews, V19 |
+| 3 | `fix/03-platform-observability-docs` | `fix/02-commerce-correctness` | Outbox, cache/queue, cleanup jobs, config, Docker/CI, docs |
+| 4 | `fix/04-remaining-hardening` | `fix/03-platform-observability-docs` | DLQ visibility, tracking number, quantity/shipping/tax refunds, UTC timestamps, public catalog, BigDecimal product prices, V20 |
+
+Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
+
+---
+
 ## 7. Remediation Order (executed)
 
 1. P0 security/money.
@@ -192,6 +205,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 **Final verification:** `./gradlew compileKotlin compileTestKotlin test ktlintCheck detekt` all pass (298 tests, 1 skipped Testcontainers test).
 
 **Implemented in this pass (highlights):**
+- PR 4 also adds outbox dead-letter visibility, shipment tracking, quantity/shipping/tax refunds, UTC timestamps, public catalog discovery, BigDecimal product prices, coupon scoping/admin filters and V20.
 - Server-owned payment status, COD flow + admin confirm endpoint.
 - Registration pre-hijack fix; session revocation on password change/reset; OTP body support; anti-enumeration reset.
 - Seller ownership checks for inventory/notifications; private refund evidence route.

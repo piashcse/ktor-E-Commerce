@@ -3,6 +3,7 @@ package com.piashcse.feature.dashboard
 import com.piashcse.constants.*
 import com.piashcse.database.entities.*
 import com.piashcse.model.response.*
+import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
@@ -16,7 +17,6 @@ import java.time.LocalTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-private val FMT = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 private val DFMT = DateTimeFormatter.ISO_DATE
 
 class DashboardRepositoryImpl : DashboardRepository {
@@ -156,7 +156,7 @@ class DashboardRepositoryImpl : DashboardRepository {
                         "orderNumber" to dao.orderNumber,
                         "status" to dao.status.name.lowercase(),
                         "total" to Money.str(dao.total),
-                        "createdAt" to dao.createdAt.format(FMT),
+                        "createdAt" to dao.createdAt.toUtcString(),
                     )
                 }
             OrderStatsResponse(statusDistribution, recentOrders)
@@ -341,7 +341,7 @@ class DashboardRepositoryImpl : DashboardRepository {
                         "order",
                         "Order ${dao.orderNumber} created - \$${Money.str(dao.total)}",
                         dao.status.name.lowercase(),
-                        dao.createdAt.format(FMT),
+                        dao.createdAt.toUtcString(),
                     )
                 }
             val users =
@@ -352,7 +352,7 @@ class DashboardRepositoryImpl : DashboardRepository {
                         "user",
                         "New ${dao.userType.name.lowercase()} registered: ${dao.email}",
                         if (dao.isVerified) "verified" else "unverified",
-                        dao.createdAt.format(FMT),
+                        dao.createdAt.toUtcString(),
                     )
                 }
             (orders + users).sortedByDescending { it.createdAt }.take(max)

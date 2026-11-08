@@ -11,6 +11,7 @@ import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.model.request.UpdateShopRequest
 import org.valiktor.ConstraintViolationException
+import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -114,7 +115,12 @@ class CatalogValidationTest {
         ProductRequest(
             categoryId = "cat-1", subCategoryId = "sub-1", brandId = "brand-1",
             name = "Phone", description = "Nice phone", productCode = "P1",
-            stockQuantity = 5, price = 99.99, discountPrice = 79.99, status = com.piashcse.constants.ProductStatus.ACTIVE,
+            stockQuantity = 5,
+            price =
+                BigDecimal(
+                    "99.99",
+                ),
+            discountPrice = BigDecimal("79.99"), status = com.piashcse.constants.ProductStatus.ACTIVE,
             videoLink = null, hotDeal = false, featured = true, freeShipping = true,
             images = listOf("img1.jpg"),
         )
@@ -141,8 +147,8 @@ class CatalogValidationTest {
 
     @Test
     fun `ProductRequest rejects non-positive price`() {
-        assertFailsWith<ConstraintViolationException> { validProductRequest().copy(price = 0.0) }
-        assertFailsWith<ConstraintViolationException> { validProductRequest().copy(price = -5.0) }
+        assertFailsWith<ConstraintViolationException> { validProductRequest().copy(price = BigDecimal.ZERO) }
+        assertFailsWith<ConstraintViolationException> { validProductRequest().copy(price = BigDecimal("-5.00")) }
     }
 
     @Test
@@ -150,7 +156,7 @@ class CatalogValidationTest {
         val req =
             UpdateProductRequest(
                 categoryId = null, subCategoryId = null, brandId = null, name = "Phone Pro",
-                description = null, price = 109.99, discountPrice = null, status = null,
+                description = null, price = BigDecimal("109.99"), discountPrice = null, status = null,
                 videoLink = null, hotDeal = null, featured = null, freeShipping = null,
                 images = emptyList(),
             )

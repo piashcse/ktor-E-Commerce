@@ -4,6 +4,7 @@ import com.piashcse.constants.PolicyType
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -74,6 +75,7 @@ fun Route.policyAdminRoutes() {
      */
     get("{policyType}/history") {
         val policyType = call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type")
-        call.respondOk(policyRepo.getAllPolicies(policyType))
+        val (limit, offset) = call.paginateQueryParams()
+        call.respondOk(policyRepo.getAllPolicies(policyType, limit, offset))
     }
 }

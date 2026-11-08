@@ -21,6 +21,8 @@ object CouponTable : BaseIdTable("coupon") {
     val usageLimit = integer("usage_limit").nullable()
     val usageCount = integer("usage_count").default(0)
     val perUserLimit = integer("per_user_limit").default(1)
+    val shopId = reference("shop_id", ShopTable.id).nullable()
+    val categoryId = reference("category_id", ProductCategoryTable.id).nullable()
     val isActive = bool("is_active").default(true)
 }
 
@@ -37,6 +39,8 @@ class CouponDAO(id: EntityID<String>) : BaseEntity(id, CouponTable) {
     var usageLimit by CouponTable.usageLimit
     var usageCount by CouponTable.usageCount
     var perUserLimit by CouponTable.perUserLimit
+    var shopId by CouponTable.shopId
+    var categoryId by CouponTable.categoryId
     var isActive by CouponTable.isActive
 }
 

@@ -2,6 +2,7 @@ package com.piashcse.feature.shipping_method
 
 import com.piashcse.model.request.ShippingMethodRequest
 import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
@@ -44,6 +45,7 @@ fun Route.shippingMethodAdminRoutes() {
      * @description Admin: Retrieve all shipping methods
      */
     get {
-        call.respondOk(shippingMethodRepo.getShippingMethods())
+        val (limit, offset) = call.paginateQueryParams()
+        call.respondOk(shippingMethodRepo.getShippingMethods(limit, offset))
     }
 }

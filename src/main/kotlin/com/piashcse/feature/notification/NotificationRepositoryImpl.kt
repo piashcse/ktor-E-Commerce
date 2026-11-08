@@ -8,6 +8,7 @@ import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
+import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.requireSellerByUserId
@@ -33,7 +34,7 @@ class NotificationRepositoryImpl : NotificationRepository {
             resourceType = resourceType,
             resourceId = resourceId,
             isRead = isRead,
-            createdAt = createdAt.toString(),
+            createdAt = createdAt.toUtcString(),
         )
 
     companion object {

@@ -2,6 +2,7 @@ package com.piashcse.feature.shop_category
 
 import com.piashcse.model.request.ShopCategoryRequest
 import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.utils.extension.nameFromBodyOrQuery
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -44,8 +45,7 @@ fun Route.shopCategoryAdminRoutes() {
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
-            val name = call.requireQueryParameter("name")
-            call.respondOk(shopCategoryRepo.updateCategory(id, name))
+            call.respondOk(shopCategoryRepo.updateCategory(id, call.nameFromBodyOrQuery()))
         }
 
         /**

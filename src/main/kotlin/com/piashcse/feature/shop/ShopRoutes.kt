@@ -2,11 +2,9 @@ package com.piashcse.feature.shop
 
 import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
-import com.piashcse.constants.UserType
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.plugin.adminWriteRateLimit
-import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.*
@@ -33,36 +31,34 @@ fun Route.shopRoutes() {
         call.respondOk(shop)
     }
 
-    requireRole(UserType.CUSTOMER, UserType.SELLER) {
-        /**
-         * @tag Shop
-         * @description Retrieve public shops with filters
-         */
-        get("/public") {
-            val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(
-                shopRepo.getShops(call.request.queryParameters["status"], call.request.queryParameters["category"], limit, offset),
-            )
-        }
+    /**
+     * @tag Shop
+     * @description Retrieve public shops with filters (public)
+     */
+    get("/public") {
+        val (limit, offset) = call.paginateQueryParams()
+        call.respondOk(
+            shopRepo.getShops(call.request.queryParameters["status"], call.request.queryParameters["category"], limit, offset),
+        )
+    }
 
-        /**
-         * @tag Shop
-         * @description Retrieve shops by category
-         */
-        get("/category/{categoryId}") {
-            val categoryId = call.requirePathParameter("categoryId")
-            val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(shopRepo.getShopsByCategory(categoryId, limit, offset))
-        }
+    /**
+     * @tag Shop
+     * @description Retrieve shops by category (public)
+     */
+    get("/category/{categoryId}") {
+        val categoryId = call.requirePathParameter("categoryId")
+        val (limit, offset) = call.paginateQueryParams()
+        call.respondOk(shopRepo.getShopsByCategory(categoryId, limit, offset))
+    }
 
-        /**
-         * @tag Shop
-         * @description Retrieve featured shops
-         */
-        get("/featured") {
-            val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(shopRepo.getFeaturedShops(limit, offset))
-        }
+    /**
+     * @tag Shop
+     * @description Retrieve featured shops (public)
+     */
+    get("/featured") {
+        val (limit, offset) = call.paginateQueryParams()
+        call.respondOk(shopRepo.getFeaturedShops(limit, offset))
     }
 }
 

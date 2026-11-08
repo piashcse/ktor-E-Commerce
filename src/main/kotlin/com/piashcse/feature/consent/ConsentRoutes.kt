@@ -98,6 +98,7 @@ fun Route.consentAdminRoutes() {
     get {
         val userId = call.request.queryParameters["userId"]
         val policyType = call.request.queryParameters["policyType"]?.parseEnum<PolicyType>("policy type")
-        call.respondOk(consentRepo.listConsentsByUser(userId, policyType))
+        val (limit, offset) = call.paginateQueryParams()
+        call.respondOk(consentRepo.listConsentsByUser(userId, policyType, limit, offset))
     }
 }

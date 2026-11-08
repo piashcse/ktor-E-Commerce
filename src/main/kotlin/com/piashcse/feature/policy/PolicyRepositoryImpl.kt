@@ -9,14 +9,18 @@ import com.piashcse.mapper.toPolicyDocumentResponse
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.model.response.PolicyDocumentResponse
+import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.core.neq
+import org.jetbrains.exposed.v1.jdbc.andWhere
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
@@ -114,17 +118,16 @@ class PolicyRepositoryImpl : PolicyRepository {
             policyDocument.toPolicyDocumentResponse()
         }
 
-    override suspend fun getAllPolicies(type: PolicyType?): List<PolicyDocumentResponse> =
+    override suspend fun getAllPolicies(
+        type: PolicyType?,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<PolicyDocumentResponse> =
         query {
-            val query =
-                if (type != null) {
-                    PolicyDocumentDAO.find { PolicyDocumentTable.type eq type }
-                } else {
-                    PolicyDocumentDAO.all()
-                }
-
+            val query = PolicyDocumentTable.selectAll()
+            type?.let { query.andWhere { PolicyDocumentTable.type eq it } }
             query.orderBy(PolicyDocumentTable.effectiveDate to SortOrder.DESC)
-                .map { it.toPolicyDocumentResponse() }
+                .toPaginatedResponse(limit, offset) { PolicyDocumentDAO.wrapRow(it).toPolicyDocumentResponse() }
         }
 
     override suspend fun deactivatePolicy(id: String): Boolean =

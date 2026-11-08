@@ -70,6 +70,14 @@ fun Route.couponAdminRoutes() {
      */
     get {
         val (limit, offset) = call.paginateQueryParams(defaultPerPage = 10)
-        call.respondOk(couponRepo.getCoupons(limit, offset))
+        val active = call.request.queryParameters["active"]?.toBooleanStrictOrNull()
+        call.respondOk(
+            couponRepo.getCoupons(
+                limit = limit,
+                offset = offset,
+                code = call.request.queryParameters["code"],
+                active = active,
+            ),
+        )
     }
 }

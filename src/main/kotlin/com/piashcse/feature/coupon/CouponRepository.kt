@@ -19,6 +19,8 @@ interface CouponRepository {
     suspend fun getCoupons(
         limit: Int,
         offset: Int,
+        code: String? = null,
+        active: Boolean? = null,
     ): PaginatedResponse<CouponResponse>
 
     suspend fun getCouponByCode(code: String): CouponResponse?

@@ -16,5 +16,7 @@ data class CouponResponse(
     val usageLimit: Int?,
     val usageCount: Int,
     val perUserLimit: Int = 1,
+    val shopId: String? = null,
+    val categoryId: String? = null,
     val isActive: Boolean,
 )

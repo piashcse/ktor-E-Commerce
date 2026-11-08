@@ -7,6 +7,8 @@ import com.piashcse.feature.policy.policyAdminRoutes
 import com.piashcse.feature.policy.policyRoutes
 import com.piashcse.model.response.PolicyDocumentResponse
 import com.piashcse.plugin.adminAuth
+import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -107,7 +109,7 @@ class PolicyRoutesTest {
     @Test
     fun `admin history happy path returns 200`() =
         testApplication {
-            coEvery { repo.getAllPolicies(any()) } returns listOf(sample())
+            coEvery { repo.getAllPolicies(any(), any(), any()) } returns PaginatedResponse(listOf(sample()), PaginationMetadata(1, 20, 0))
             setup()
             val res =
                 client.get("/api/v1/admin/policies/PRIVACY_POLICY/history") {

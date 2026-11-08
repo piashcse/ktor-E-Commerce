@@ -10,6 +10,7 @@ import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
+import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
@@ -42,11 +43,11 @@ class PayoutRepositoryImpl : PayoutRepository {
             currency = currency,
             status = status,
             payoutRequestId = payoutRequestId?.value,
-            requestedAt = requestedAt?.toString(),
-            approvedAt = approvedAt?.toString(),
-            rejectedAt = rejectedAt?.toString(),
-            paidAt = paidAt?.toString(),
-            createdAt = createdAt.toString(),
+            requestedAt = requestedAt?.toUtcString(),
+            approvedAt = approvedAt?.toUtcString(),
+            rejectedAt = rejectedAt?.toUtcString(),
+            paidAt = paidAt?.toUtcString(),
+            createdAt = createdAt.toUtcString(),
         )
 
     private fun sellerIdsFor(sellerUserId: String): List<EntityID<String>> =

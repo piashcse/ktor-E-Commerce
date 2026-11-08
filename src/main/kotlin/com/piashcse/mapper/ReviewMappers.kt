@@ -2,6 +2,7 @@ package com.piashcse.mapper
 
 import com.piashcse.database.entities.ReviewRatingDAO
 import com.piashcse.model.response.ReviewRatingResponse
+import com.piashcse.utils.common.DateTimes.toUtcString
 
 fun ReviewRatingDAO.toReviewRatingResponse() =
     ReviewRatingResponse(
@@ -15,5 +16,5 @@ fun ReviewRatingDAO.toReviewRatingResponse() =
         helpfulCount = helpfulCount,
         notHelpfulCount = notHelpfulCount,
         status = status,
-        createdAt = createdAt.toString(),
+        createdAt = createdAt.toUtcString(),
     )

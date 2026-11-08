@@ -134,25 +134,20 @@ class ConsentRepositoryImpl : ConsentRepository {
     override suspend fun listConsentsByUser(
         userId: String?,
         policyType: PolicyType?,
-    ): List<UserPolicyConsentResponse> =
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<UserPolicyConsentResponse> =
         query {
             val policyIds =
                 policyType?.let {
                     PolicyDocumentDAO.find { PolicyDocumentTable.type eq it }.map { policy -> policy.id }
                 }
-            val consents =
-                when {
-                    userId != null && policyIds != null ->
-                        PolicyConsentDAO.find {
-                            (PolicyConsentTable.userId eq userId.entityID(UserTable)) and
-                                (PolicyConsentTable.policyId inList policyIds)
-                        }
-                    userId != null ->
-                        PolicyConsentDAO.find { PolicyConsentTable.userId eq userId.entityID(UserTable) }
-                    policyIds != null ->
-                        PolicyConsentDAO.find { PolicyConsentTable.policyId inList policyIds }
-                    else -> PolicyConsentDAO.all()
+            val base = PolicyConsentTable.selectAll()
+            userId?.let { base.andWhere { PolicyConsentTable.userId eq it.entityID(UserTable) } }
+            policyIds?.let { base.andWhere { PolicyConsentTable.policyId inList it } }
+            base.orderBy(PolicyConsentTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) {
+                    PolicyConsentDAO.wrapRow(it).toPolicyConsentResponse()
                 }
-            consents.map { it.toPolicyConsentResponse() }
         }
 }

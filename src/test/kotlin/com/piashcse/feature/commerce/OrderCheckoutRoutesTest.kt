@@ -94,6 +94,22 @@ class OrderRoutesTest {
         }
 
     @Test
+    fun `seller ships order with tracking number`() =
+        testApplication {
+            coEvery { repo.shipOrder("o-1", "user-1", "TRK-1") } returns
+                sampleOrder().copy(status = OrderStatus.SHIPPED, trackingNumber = "TRK-1")
+            setup()
+            val res =
+                client.post("/api/v1/orders/o-1/shipping") {
+                    header(HttpHeaders.Authorization, authHeader(userType = "SELLER"))
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"trackingNumber":"TRK-1"}""")
+                }
+            assertEquals(HttpStatusCode.OK, res.status)
+            assertContains(res.bodyAsText(), "TRK-1")
+        }
+
+    @Test
     fun `cancel order blank reason returns 400`() =
         testApplication {
             setup()
@@ -191,8 +207,11 @@ class CheckoutRoutesTest {
     @Test
     fun `list shipping methods happy path returns 200`() =
         testApplication {
-            coEvery { methodRepo.getShippingMethods() } returns
-                listOf(ShippingMethodResponse("m-1", "Standard", null, "10.00", null))
+            coEvery { methodRepo.getShippingMethods(any(), any()) } returns
+                PaginatedResponse(
+                    listOf(ShippingMethodResponse("m-1", "Standard", null, "10.00", null)),
+                    PaginationMetadata(1, 20, 0),
+                )
             setup()
             val res =
                 client.get("/api/v1/checkout/shipping-method") {
