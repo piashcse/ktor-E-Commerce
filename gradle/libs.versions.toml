@@ -1,11 +1,11 @@
 [versions]
-ktor-version = "3.6.0"
-kotlin-version = "2.4.20"
-logback-version = "1.6.4"
-exposed-version = "1.5.0"
-flyway-version = "13.8.0"
+ktor-version = "3.6.1"
+kotlin-version = "2.4.21"
+logback-version = "1.6.6"
+exposed-version = "1.6.1"
+flyway-version = "13.12.1"
 
-postgre-sql-version = "42.7.13"
+postgre-sql-version = "42.7.14"
 hikari-version = "7.1.0"
 bcrypt-version = "0.10.2"
 commons-email-version = "1.6.0"
@@ -16,9 +16,9 @@ koin-version = "4.2.2"
 dotenv-version = "6.5.1"
 ktlint-version = "12.3.0"
 detekt-version = "1.23.8"
-mockk-version = "1.14.11"
+mockk-version = "1.14.12"
 testcontainers-version = "1.21.4"
-micrometer-version = "1.17.1"
+micrometer-version = "1.17.2"
 
 [libraries]
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor-version" }
@@ -54,6 +54,7 @@ commons-email = { module = "org.apache.commons:commons-email", version.ref = "co
 valiktor-core = { module = "org.valiktor:valiktor-core", version.ref = "valiktor-core-version" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons-io-version" }
 ktor-swagger-ui = { module = "io.ktor:ktor-server-swagger", version.ref = "ktor-version" }
+swagger-ui-webjar = { module = "org.webjars:swagger-ui", version = "5.34.1" }
 ktor-open-api = { module = "io.ktor:ktor-server-openapi", version.ref = "ktor-version" }
 koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin-version" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-version" }

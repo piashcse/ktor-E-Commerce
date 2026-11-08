@@ -60,6 +60,7 @@ dependencies {
     // Swagger / OpenAPI
     implementation(libs.ktor.swagger.ui)
     implementation(libs.ktor.open.api)
+    implementation(libs.swagger.ui.webjar)
 
     // Observability
     implementation(libs.micrometer.core)

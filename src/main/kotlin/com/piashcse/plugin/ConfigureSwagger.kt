@@ -1,11 +1,18 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.plugin
 
 import com.piashcse.constants.AppConstants
 import io.ktor.openapi.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.swagger.*
+import io.ktor.server.response.respondResource
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.hide
 import io.ktor.server.routing.openapi.registerBearerAuthSecurityScheme
+
+private const val SWAGGER_UI_VERSION = "5.34.1"
+private const val SWAGGER_UI_RESOURCES = "META-INF/resources/webjars/swagger-ui"
 
 fun Application.configureSwagger() {
     // Make the two bearer providers explicit and human-readable in Swagger UI.
@@ -21,7 +28,16 @@ fun Application.configureSwagger() {
     )
 
     routing {
+        // Self-host Swagger UI assets so the docs work without CDN/network access.
+        get("/swagger-assets/@$SWAGGER_UI_VERSION/{file...}") {
+            val file = call.parameters.getAll("file")?.joinToString("/") ?: ""
+            call.respondResource("$SWAGGER_UI_RESOURCES/$SWAGGER_UI_VERSION/$file")
+        }.hide()
+
         swaggerUI(path = "swagger") {
+            packageLocation = "/swagger-assets/"
+            version = SWAGGER_UI_VERSION
+            faviconLocation = "/swagger-assets/@$SWAGGER_UI_VERSION/favicon-32x32.png"
             info =
                 OpenApiInfo(
                     title = "Ktor E-Commerce API",
