@@ -10,7 +10,8 @@ data class UserPolicyConsentResponse(
     val id: String,
     val userId: String,
     val policyId: String,
-    val consentDate: String,
+    val consentDate: String?,
     val ipAddress: String?,
     val userAgent: String?,
+    val revokedAt: String? = null,
 )

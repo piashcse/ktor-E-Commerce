@@ -54,7 +54,8 @@ fun Route.shopCategoryAdminRoutes() {
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(shopCategoryRepo.deleteCategory(id))
+            shopCategoryRepo.deleteCategory(id)
+            call.respondOk(com.piashcse.utils.common.MessageResponse("Shop category deleted successfully"))
         }
     }
 }

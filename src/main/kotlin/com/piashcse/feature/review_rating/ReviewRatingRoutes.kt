@@ -3,6 +3,7 @@ package com.piashcse.feature.review_rating
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.writeRateLimit
+import com.piashcse.service.CacheService
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
@@ -33,7 +34,9 @@ fun Route.reviewRatingRoutes() {
              * @description Submit a new review and rating for a product
              */
             post {
-                call.respondCreated(reviewRatingRepo.addReviewRating(call.currentUserId, call.receive<ReviewRatingRequest>()))
+                val result = reviewRatingRepo.addReviewRating(call.currentUserId, call.receive<ReviewRatingRequest>())
+                CacheService.cache.invalidatePattern("products:.*")
+                call.respondCreated(result)
             }
 
             /**
@@ -44,7 +47,9 @@ fun Route.reviewRatingRoutes() {
                 val id = call.requirePathParameter("id")
                 val review = call.requireQueryParameter("review")
                 val rating = call.requireQueryParameter("rating")
-                call.respondOk(reviewRatingRepo.updateReviewRating(call.currentUserId, id, review, rating.toInt()))
+                val result = reviewRatingRepo.updateReviewRating(call.currentUserId, id, review, rating.toInt())
+                CacheService.cache.invalidatePattern("products:.*")
+                call.respondOk(result)
             }
 
             /**
@@ -53,13 +58,15 @@ fun Route.reviewRatingRoutes() {
              */
             delete("{id}") {
                 val id = call.requirePathParameter("id")
-                call.respondOk(reviewRatingRepo.deleteReviewRating(call.currentUserId, id))
+                reviewRatingRepo.deleteReviewRating(call.currentUserId, id)
+                CacheService.cache.invalidatePattern("products:.*")
+                call.respondOk(com.piashcse.utils.common.MessageResponse("Review deleted successfully"))
             }
 
             post("{id}/helpful") {
                 val id = call.requirePathParameter("id")
                 val helpful = call.request.queryParameters["helpful"]?.toBoolean() ?: true
-                call.respondOk(reviewRatingRepo.markHelpful(id, helpful))
+                call.respondOk(reviewRatingRepo.markHelpful(call.currentUserId, id, helpful))
             }
         }
     }

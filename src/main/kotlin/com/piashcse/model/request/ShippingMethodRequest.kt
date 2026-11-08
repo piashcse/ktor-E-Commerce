@@ -11,9 +11,9 @@ import java.math.BigDecimal
 @Serializable
 data class ShippingMethodRequest(
     val name: String,
-    val type: String?,
+    val type: String? = null,
     @Contextual val price: BigDecimal,
-    val deliveryTime: String?,
+    val deliveryTime: String? = null,
 ) {
     init {
         validate(this) {

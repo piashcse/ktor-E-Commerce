@@ -29,6 +29,7 @@ interface ReviewRatingRepository {
     ): String
 
     suspend fun markHelpful(
+        userId: String,
         reviewId: String,
         helpful: Boolean = true,
     ): ReviewRatingResponse

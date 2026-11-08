@@ -3,7 +3,6 @@ package com.piashcse.feature.order
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.CheckoutRequest
-import com.piashcse.model.request.OrderRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -33,20 +32,6 @@ interface OrderRepository {
         userId: String,
         checkoutRequest: CheckoutRequest,
     ): CheckoutSummaryResponse
-
-    /**
-     * Creates a new order for a user.
-     *
-     * @param userId The unique identifier of the user placing the order.
-     * @param request The order details.
-     * @param idempotencyKey Optional key to prevent duplicate order creation.
-     * @return The created order.
-     */
-    suspend fun createOrder(
-        userId: String,
-        orderRequest: OrderRequest,
-        idempotencyKey: String? = null,
-    ): List<OrderResponse>
 
     /**
      * Retrieves a list of orders for a user.

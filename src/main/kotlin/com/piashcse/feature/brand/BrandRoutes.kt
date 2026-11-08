@@ -4,9 +4,12 @@ import com.piashcse.constants.UserType
 import com.piashcse.model.request.BrandRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.requireRole
+import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
+import com.piashcse.utils.validator.ValidationException
+import io.ktor.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -54,11 +57,32 @@ fun Route.brandAdminRoutes() {
 
         /**
          * @tag Brand
+         * @description Admin: Upload a brand logo
+         */
+        post("{id}/image") {
+            val id = call.requirePathParameter("id")
+            val multipart = call.receiveMultipart()
+            var imageUrl: String? = null
+            multipart.forEachPart { part ->
+                if (part is PartData.FileItem) {
+                    val bytes = UploadService.readAndValidateImagePart(part, "brand image")
+                    val fileName = UploadService.uploadBrandImage(part, bytes)
+                    imageUrl = UploadService.getBrandImageUrl(fileName)
+                }
+                part.dispose()
+            }
+            val url = imageUrl ?: throw ValidationException(com.piashcse.constants.Message.Validation.FILE_REQUIRED)
+            call.respondOk(brandRepo.updateBrandLogo(id, url))
+        }
+
+        /**
+         * @tag Brand
          * @description Admin: Delete a brand
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(brandRepo.deleteBrand(id))
+            brandRepo.deleteBrand(id)
+            call.respondOk(com.piashcse.utils.common.MessageResponse("Brand deleted successfully"))
         }
     }
 }

@@ -44,10 +44,13 @@ fun Route.orderRoutes() {
                 val status = call.requireQueryParameter("status").parseEnum<OrderStatus>("status")
                 val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
 
-                if ((status in listOf(OrderStatus.CONFIRMED, OrderStatus.DELIVERED) && userType != UserType.SELLER) ||
+                if ((
+                        status in listOf(OrderStatus.CONFIRMED, OrderStatus.SHIPPED, OrderStatus.DELIVERED) &&
+                            userType != UserType.SELLER
+                    ) ||
                     (status in listOf(OrderStatus.CANCELED, OrderStatus.RECEIVED) && userType != UserType.CUSTOMER)
                 ) {
-                    throw UnauthorizedException(Message.Orders.STATUS_NOT_ALLOWED)
+                    throw com.piashcse.utils.validator.ForbiddenException(Message.Orders.STATUS_NOT_ALLOWED)
                 }
 
                 call.respondOk(orderRepo.updateOrderStatus(call.currentUserId, id, status))

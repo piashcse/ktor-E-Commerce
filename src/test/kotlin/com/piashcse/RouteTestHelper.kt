@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.piashcse.constants.AppConstants
 import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.plugin.BigDecimalSerializer
+import com.piashcse.plugin.LocalDateSerializer
 import com.piashcse.plugin.LocalDateTimeSerializer
 import com.piashcse.plugin.RateLimitNames
 import com.piashcse.plugin.configureStatusPage
@@ -54,12 +55,13 @@ object RouteTestHelper {
             json(
                 Json {
                     ignoreUnknownKeys = true
-                    coerceInputValues = true
+                    coerceInputValues = false
                     prettyPrint = true
                     serializersModule =
                         SerializersModule {
                             contextual(LocalDateTimeSerializer)
                             contextual(BigDecimalSerializer)
+                            contextual(LocalDateSerializer)
                         }
                 },
             )
@@ -118,11 +120,12 @@ object RouteTestHelper {
                 json(
                     Json {
                         ignoreUnknownKeys = true
-                        coerceInputValues = true
+                        coerceInputValues = false
                         serializersModule =
                             SerializersModule {
                                 contextual(LocalDateTimeSerializer)
                                 contextual(BigDecimalSerializer)
+                                contextual(LocalDateSerializer)
                             }
                     },
                 )

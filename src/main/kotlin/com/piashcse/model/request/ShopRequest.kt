@@ -9,12 +9,12 @@ import org.valiktor.validate
 data class ShopRequest(
     val name: String,
     val categoryId: String,
-    val description: String?,
-    val address: String?,
-    val phone: String?,
-    val email: String?,
-    val logo: String?,
-    val coverImage: String?,
+    val description: String? = null,
+    val address: String? = null,
+    val phone: String? = null,
+    val email: String? = null,
+    val logo: String? = null,
+    val coverImage: String? = null,
 ) {
     init {
         validate(this) {

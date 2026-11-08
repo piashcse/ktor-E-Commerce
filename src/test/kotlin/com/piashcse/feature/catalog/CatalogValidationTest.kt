@@ -114,7 +114,7 @@ class CatalogValidationTest {
         ProductRequest(
             categoryId = "cat-1", subCategoryId = "sub-1", brandId = "brand-1",
             name = "Phone", description = "Nice phone", productCode = "P1",
-            stockQuantity = 5, price = 99.99, discountPrice = 79.99, status = 1,
+            stockQuantity = 5, price = 99.99, discountPrice = 79.99, status = com.piashcse.constants.ProductStatus.ACTIVE,
             videoLink = null, hotDeal = false, featured = true, freeShipping = true,
             images = listOf("img1.jpg"),
         )

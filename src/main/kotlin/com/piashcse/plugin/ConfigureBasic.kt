@@ -10,12 +10,15 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.request.*
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
 import org.slf4j.event.Level
@@ -53,8 +56,29 @@ object BigDecimalSerializer : KSerializer<BigDecimal> {
     }
 
     override fun deserialize(decoder: Decoder): BigDecimal {
+        // Accept both strings ("19.99") and JSON numbers (19.99). This keeps the
+        // documented curl examples working while still serializing as a string.
+        val jsonDecoder = decoder as? JsonDecoder
+        if (jsonDecoder != null) {
+            val element = jsonDecoder.decodeJsonElement()
+            if (element is JsonPrimitive) return BigDecimal(element.content)
+            throw SerializationException("Expected a numeric or string money value")
+        }
         return BigDecimal(decoder.decodeString())
     }
+}
+
+/** Serializer for kotlinx.datetime.LocalDate used by profile birth dates. */
+object LocalDateSerializer : KSerializer<kotlinx.datetime.LocalDate> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("LocalDate", PrimitiveKind.STRING)
+
+    override fun serialize(
+        encoder: Encoder,
+        value: kotlinx.datetime.LocalDate,
+    ) = encoder.encodeString(value.toString())
+
+    override fun deserialize(decoder: Decoder): kotlinx.datetime.LocalDate = kotlinx.datetime.LocalDate.parse(decoder.decodeString())
 }
 
 fun Application.configureBasic() {
@@ -122,17 +146,21 @@ private fun Application.configureContentNegotiation() {
         json(
             Json {
                 ignoreUnknownKeys = true
-                coerceInputValues = true
+                // Do not silently coerce invalid enums/currencies to defaults.
+                coerceInputValues = false
                 prettyPrint = true
                 serializersModule =
                     SerializersModule {
                         contextual(LocalDateTimeSerializer)
                         contextual(BigDecimalSerializer)
+                        contextual(LocalDateSerializer)
                     }
             },
         )
     }
 }
+
+private fun String.logSafe(): String = replace(Regex("[\\r\\n\\t]"), " ").take(2_000)
 
 private fun Application.configureCallLogging() {
     val httpStatusSuccess = 300
@@ -160,15 +188,15 @@ private fun Application.configureCallLogging() {
         format { call ->
             val status = call.response.status()
             val httpMethod = call.request.httpMethod.value
-            val userAgent = call.request.headers["User-Agent"]
-            val path = call.request.path()
+            val userAgent = call.request.headers["User-Agent"]?.logSafe()
+            val path = call.request.path().logSafe()
             val queryParams =
                 call.request.queryParameters.entries()
                     .joinToString(", ") { (key, values) ->
                         if (key.lowercase() in sensitiveKeys) "$key=[REDACTED]" else "$key=${values.joinToString()}"
                     }
             val duration = call.processingTimeMillis()
-            val remoteHost = call.request.origin.remoteHost
+            val remoteHost = call.request.origin.remoteHost.logSafe()
             val coloredStatus =
                 when {
                     status == null -> "\u001B[33mUNKNOWN\u001B[0m"

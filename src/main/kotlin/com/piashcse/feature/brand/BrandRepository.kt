@@ -35,6 +35,12 @@ interface BrandRepository {
         name: String,
     ): BrandResponse
 
+    /** Sets the brand logo URL (admin image upload). */
+    suspend fun updateBrandLogo(
+        brandId: String,
+        logo: String,
+    ): BrandResponse
+
     /**
      * Deletes a brand by its ID.
      *

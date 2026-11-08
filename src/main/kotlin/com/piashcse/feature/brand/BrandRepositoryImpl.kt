@@ -57,6 +57,16 @@ class BrandRepositoryImpl : BrandRepository {
             )
         }
 
+    override suspend fun updateBrandLogo(
+        brandId: String,
+        logo: String,
+    ): BrandResponse =
+        query {
+            val brand = BrandDAO.findById(brandId) ?: throw com.piashcse.utils.validator.NotFoundException("Brand not found")
+            brand.logo = logo
+            brand.toBrandResponse()
+        }
+
     override suspend fun deleteBrand(brandId: String): String =
         query {
             CatalogCrud.deleteById(

@@ -61,6 +61,7 @@ enum class OrderStatus {
     PENDING,
     CONFIRMED,
     PAID,
+    SHIPPED,
     DELIVERED,
     CANCELED,
     RECEIVED,
@@ -76,8 +77,9 @@ enum class OrderStatus {
                 CONFIRMED -> target in listOf(PAID, CANCELED)
                 // PAID orders cannot be canceled outright: cancel-after-paid must go through
                 // a refund record (see RefundRequest flow), so CANCELED is not a legal target here.
-                PAID -> target in listOf(DELIVERED)
-                DELIVERED -> target in listOf(RECEIVED) // Completed order can be marked as received
+                PAID -> target == SHIPPED
+                SHIPPED -> target == DELIVERED
+                DELIVERED -> target == RECEIVED // Delivered order can be marked as received
                 CANCELED -> false // Canceled orders cannot transition to other statuses
                 RECEIVED -> false // Completed orders remain in received status
             }

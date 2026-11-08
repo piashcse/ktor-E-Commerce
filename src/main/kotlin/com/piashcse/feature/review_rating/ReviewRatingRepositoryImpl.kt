@@ -1,12 +1,17 @@
 package com.piashcse.feature.review_rating
 
 import com.piashcse.constants.Message
+import com.piashcse.constants.OrderStatus
+import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.ReviewStatus
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.database.entities.OrderItemTable
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
+import com.piashcse.database.entities.ReviewHelpfulVoteDAO
+import com.piashcse.database.entities.ReviewHelpfulVoteTable
 import com.piashcse.database.entities.ReviewRatingDAO
 import com.piashcse.database.entities.ReviewRatingTable
 import com.piashcse.database.entities.UserTable
@@ -26,7 +31,10 @@ import java.math.BigDecimal
 
 class ReviewRatingRepositoryImpl : ReviewRatingRepository {
     private fun recalculateProductRating(productId: String) {
-        val reviews = ReviewRatingDAO.find { ReviewRatingTable.productId eq productId }.toList()
+        val reviews =
+            ReviewRatingDAO.find {
+                (ReviewRatingTable.productId eq productId) and (ReviewRatingTable.status eq ReviewStatus.ACTIVE)
+            }.toList()
         val product = ProductDAO.findById(productId) ?: return
         if (reviews.isEmpty()) {
             product.rating = BigDecimal.ZERO
@@ -44,7 +52,9 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
         offset: Int,
     ): PaginatedResponse<ReviewRatingResponse> =
         query {
-            ReviewRatingTable.selectAll().andWhere { ReviewRatingTable.productId eq productId }
+            ReviewRatingTable.selectAll()
+                .andWhere { ReviewRatingTable.productId eq productId }
+                .andWhere { ReviewRatingTable.status eq ReviewStatus.ACTIVE }
                 .toPaginatedResponse(limit, offset) {
                     ReviewRatingDAO.wrapRow(it).toReviewRatingResponse()
                 }
@@ -58,15 +68,28 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
             if (reviewRating.rating < 1 || reviewRating.rating > 5) {
                 throw ValidationException(Message.Validation.RATING_OUT_OF_RANGE)
             }
+            val product =
+                ProductDAO.findById(reviewRating.productId)
+                    ?: reviewRating.productId.throwNotFound("Product")
+            if (product.deletedAt != null || product.status != com.piashcse.constants.ProductStatus.ACTIVE) {
+                throw ValidationException("Cannot review an inactive product")
+            }
             ReviewRatingDAO.find { ReviewRatingTable.userId eq userId and (ReviewRatingTable.productId eq reviewRating.productId) }
                 .singleOrNull()?.let {
-                    throw it.productId.value.throwConflict("Product")
+                    throw it.productId.value.throwConflict("Review")
                 } ?: run {
+                val paidDeliveredOrderIds =
+                    OrderDAO.find {
+                        (OrderTable.userId eq userId) and
+                            (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
+                            (OrderTable.status inList listOf(OrderStatus.DELIVERED, OrderStatus.RECEIVED))
+                    }.map { it.id }
                 val verified =
-                    OrderItemDAO.find {
-                        (OrderItemTable.productId eq reviewRating.productId.entityID(ProductTable)) and
-                            (OrderItemTable.orderId inList OrderDAO.find { OrderTable.userId eq userId }.map { it.id })
-                    }.firstOrNull() != null
+                    paidDeliveredOrderIds.isNotEmpty() &&
+                        OrderItemDAO.find {
+                            (OrderItemTable.productId eq reviewRating.productId.entityID(ProductTable)) and
+                                (OrderItemTable.orderId inList paidDeliveredOrderIds)
+                        }.firstOrNull() != null
                 val review =
                     ReviewRatingDAO.new {
                         this.userId = userId.entityID(UserTable)
@@ -74,6 +97,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                         reviewText = reviewRating.reviewText
                         rating = reviewRating.rating
                         isVerifiedPurchase = verified
+                        status = ReviewStatus.ACTIVE
                     }
                 recalculateProductRating(reviewRating.productId)
                 review.toReviewRatingResponse()
@@ -101,12 +125,34 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
         }
 
     override suspend fun markHelpful(
+        userId: String,
         reviewId: String,
         helpful: Boolean,
     ): ReviewRatingResponse =
         query {
             val r = ReviewRatingDAO.findById(reviewId) ?: reviewId.throwNotFound("Review")
-            if (helpful) r.helpfulCount++ else r.notHelpfulCount++
+            val existingVote =
+                ReviewHelpfulVoteDAO.find {
+                    (ReviewHelpfulVoteTable.reviewId eq r.id) and (ReviewHelpfulVoteTable.userId eq userId.entityID(UserTable))
+                }.firstOrNull()
+
+            if (existingVote == null) {
+                ReviewHelpfulVoteDAO.new {
+                    this.reviewId = r.id
+                    this.userId = userId.entityID(UserTable)
+                    this.helpful = helpful
+                }
+                if (helpful) r.helpfulCount++ else r.notHelpfulCount++
+            } else if (existingVote.helpful != helpful) {
+                if (existingVote.helpful) {
+                    r.helpfulCount = (r.helpfulCount - 1).coerceAtLeast(0)
+                    r.notHelpfulCount++
+                } else {
+                    r.notHelpfulCount = (r.notHelpfulCount - 1).coerceAtLeast(0)
+                    r.helpfulCount++
+                }
+                existingVote.helpful = helpful
+            }
             r.toReviewRatingResponse()
         }
 
@@ -119,6 +165,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                 .singleOrNull()?.let {
                     it.verifyOwnership(userId, "review") { r -> r.userId.value }
                     val productId = it.productId.value
+                    ReviewHelpfulVoteDAO.find { ReviewHelpfulVoteTable.reviewId eq it.id }.forEach { vote -> vote.delete() }
                     it.delete()
                     recalculateProductRating(productId)
                     reviewId

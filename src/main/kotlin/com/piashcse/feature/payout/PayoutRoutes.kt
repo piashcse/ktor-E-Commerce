@@ -20,6 +20,9 @@ fun Route.payoutSellerRoutes() {
             val (limit, offset) = call.paginateQueryParams()
             call.respondOk(repo.sellerPayouts(call.currentUserId, limit, offset))
         }
+        get("balance") {
+            call.respondOk(repo.availableBalance(call.currentUserId))
+        }
         post("request") {
             val body = call.receive<PayoutRequest>()
             call.respondCreated(repo.requestPayout(call.currentUserId, body.amount, call.idempotencyKey()))

@@ -55,7 +55,8 @@ fun Route.productSubCategoryAdminRoutes() {
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            call.respondOk(subCategoryRepo.deleteProductSubCategory(id))
+            subCategoryRepo.deleteProductSubCategory(id)
+            call.respondOk(com.piashcse.utils.common.MessageResponse("Subcategory deleted successfully"))
         }
     }
 }

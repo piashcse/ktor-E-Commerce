@@ -2,6 +2,7 @@ package com.piashcse.event.subscriber
 
 import com.piashcse.database.entities.AuditLogDAO
 import com.piashcse.database.entities.NotificationDAO
+import com.piashcse.database.entities.NotificationTable
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerPayoutDAO
@@ -20,6 +21,7 @@ import com.piashcse.event.UserRegisteredEvent
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
+import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.slf4j.LoggerFactory
@@ -37,9 +39,14 @@ class NotificationSubscriber : Subscriber {
         resourceType: String,
         resourceId: String,
     ) {
+        val preferredChannel =
+            NotificationDAO.find {
+                (NotificationTable.userId eq userId.entityID(UserTable)) and
+                    (NotificationTable.type eq "NOTIFICATION_PREFS")
+            }.orderBy(NotificationTable.createdAt to SortOrder.DESC).firstOrNull()?.channel ?: "IN_APP"
         NotificationDAO.new {
             this.userId = userId.entityID(UserTable)
-            channel = "IN_APP"
+            channel = preferredChannel
             this.type = type
             this.title = title
             this.body = body
@@ -121,13 +128,16 @@ class NotificationSubscriber : Subscriber {
                             (SellerPayoutTable.orderId eq order.id)
                     }.firstOrNull() != null
                 if (exists) return@query
-                val commission = Money.commission(order.subTotal, seller.commissionRate)
+                // Seller is paid on the net product amount after coupon discounts.
+                val netSubTotal = order.subTotal.subtract(order.discountAmount).max(java.math.BigDecimal.ZERO)
+                val commission = Money.commission(netSubTotal, seller.commissionRate)
                 SellerPayoutDAO.new {
                     this.sellerId = seller.id
                     this.orderId = order.id
-                    subTotal = order.subTotal
+                    subTotal = netSubTotal
                     commissionAmount = commission
-                    payoutAmount = order.subTotal.subtract(commission)
+                    payoutAmount = netSubTotal.subtract(commission)
+                    currency = order.currency
                     status = "PENDING"
                 }
                 Unit

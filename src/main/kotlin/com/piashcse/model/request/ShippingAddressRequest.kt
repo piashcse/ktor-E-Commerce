@@ -14,7 +14,7 @@ data class ShippingAddressRequest(
     val phoneNumber: String,
     val streetAddress: String,
     val city: String,
-    val state: String?,
+    val state: String? = null,
     val country: String,
     val zipCode: String,
     val isDefault: Boolean = false,

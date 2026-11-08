@@ -20,18 +20,35 @@ private val FMT = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 private val DFMT = DateTimeFormatter.ISO_DATE
 
 class DashboardRepositoryImpl : DashboardRepository {
+    private fun toUsd(
+        amount: BigDecimal,
+        fxRate: BigDecimal,
+    ): BigDecimal =
+        if (fxRate <= BigDecimal.ZERO) {
+            BigDecimal.ZERO.setScale(2)
+        } else {
+            amount.divide(fxRate, 2, java.math.RoundingMode.HALF_UP)
+        }
+
     override suspend fun getDashboardStats() =
         query {
             val today = LocalDateTime.now(ZoneOffset.UTC).toLocalDate().atStartOfDay()
 
+            val paidOrders =
+                OrderTable.selectAll()
+                    .where {
+                        (OrderTable.status neq OrderStatus.CANCELED) and
+                            (OrderTable.paymentStatus eq PaymentStatus.COMPLETED)
+                    }.toList()
             val totalRevenue =
-                OrderTable.select(OrderTable.total.sum())
-                    .where { OrderTable.status neq OrderStatus.CANCELED }
-                    .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
+                paidOrders.fold(BigDecimal.ZERO) { acc, row ->
+                    acc.add(toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
+                }
             val todayRevenue =
-                OrderTable.select(OrderTable.total.sum())
-                    .where { (OrderTable.status neq OrderStatus.CANCELED) and (OrderTable.createdAt greaterEq today) }
-                    .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
+                paidOrders.filter { it[OrderTable.createdAt] >= today }
+                    .fold(BigDecimal.ZERO) { acc, row ->
+                        acc.add(toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
+                    }
 
             DashboardStatsResponse(
                 revenue =
@@ -48,16 +65,23 @@ class DashboardRepositoryImpl : DashboardRepository {
                     ),
                 users =
                     mapOf(
-                        "total" to UserTable.selectAll().count(),
-                        "today" to UserTable.selectAll().where { UserTable.createdAt greaterEq today }.count(),
-                        "sellers" to UserTable.selectAll().where { UserTable.userType eq UserType.SELLER }.count(),
+                        "total" to UserTable.selectAll().where { UserTable.isActive eq true }.count(),
+                        "today" to
+                            UserTable.selectAll().where {
+                                (UserTable.isActive eq true) and (UserTable.createdAt greaterEq today)
+                            }.count(),
+                        "sellers" to
+                            UserTable.selectAll().where {
+                                (UserTable.isActive eq true) and (UserTable.userType eq UserType.SELLER)
+                            }.count(),
                     ),
                 products =
                     mapOf(
-                        "total" to ProductTable.selectAll().count(),
+                        "total" to ProductTable.selectAll().where { ProductTable.deletedAt.isNull() }.count(),
                         "outOfStock" to
                             ProductTable.selectAll().where {
-                                ProductTable.status eq ProductStatus.OUT_OF_STOCK
+                                (ProductTable.deletedAt.isNull()) and
+                                    (ProductTable.status eq ProductStatus.OUT_OF_STOCK)
                             }.count(),
                         "lowStock" to InventoryTable.selectAll().where { InventoryTable.status eq InventoryStatus.LOW_STOCK }.count(),
                     ),
@@ -82,35 +106,30 @@ class DashboardRepositoryImpl : DashboardRepository {
                 ?: now.withDayOfMonth(1).toLocalDate().atStartOfDay()
         val end = endDate?.let { LocalDate.parse(it, DFMT).atTime(LocalTime.MAX) } ?: now
 
-        val totalRevenue =
-            OrderTable.select(OrderTable.total.sum())
-                .where {
-                    (OrderTable.status neq OrderStatus.CANCELED) and
-                        (OrderTable.createdAt greaterEq start) and
-                        (OrderTable.createdAt lessEq end)
-                }
-                .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
-        val orderCount =
-            OrderTable.selectAll().where {
-                (OrderTable.status neq OrderStatus.CANCELED) and
-                    (OrderTable.createdAt greaterEq start) and
-                    (OrderTable.createdAt lessEq end)
-            }.count()
-        val avg = Money.average(totalRevenue, orderCount)
-
-        // Single range query grouped in Kotlin (was 1 query/day = N+1).
         val rangeRows =
             OrderTable.selectAll().where {
                 (OrderTable.status neq OrderStatus.CANCELED) and
+                    (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
                     (OrderTable.createdAt greaterEq start) and
                     (OrderTable.createdAt lessEq end)
             }.toList()
+        val totalRevenue =
+            rangeRows.fold(BigDecimal.ZERO) { acc, row ->
+                acc.add(toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
+            }
+        val orderCount = rangeRows.size.toLong()
+        val avg = Money.average(totalRevenue, orderCount)
+
+        // Single range query grouped in Kotlin (was 1 query/day = N+1).
         val byDay = rangeRows.groupBy { it[OrderTable.createdAt].toLocalDate() }
         val daily =
             generateSequence(start.toLocalDate()) { it.plusDays(1) }
                 .takeWhile { it <= end.toLocalDate() }
                 .map { date ->
-                    val dayTotal = (byDay[date] ?: emptyList()).fold(BigDecimal.ZERO) { acc, row -> acc.add(row[OrderTable.total]) }
+                    val dayTotal =
+                        (byDay[date] ?: emptyList()).fold(BigDecimal.ZERO) { acc, row ->
+                            acc.add(toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
+                        }
                     mapOf("date" to date.format(DFMT), "revenue" to Money.str(dayTotal))
                 }.toList()
 
@@ -145,7 +164,7 @@ class DashboardRepositoryImpl : DashboardRepository {
 
     override suspend fun getUserGrowth(days: Int?) =
         query {
-            val period = days ?: 30
+            val period = (days ?: 30).coerceIn(1, 365)
             val since = LocalDateTime.now(ZoneOffset.UTC).minusDays(period.toLong())
 
             val byUserType =
@@ -173,9 +192,9 @@ class DashboardRepositoryImpl : DashboardRepository {
 
     override suspend fun getTopProducts(limit: Int?) =
         query {
-            val maxResults = (limit ?: 10).coerceAtMost(50)
+            val maxResults = (limit ?: 10).coerceIn(1, 50)
             val topProducts =
-                ProductDAO.find { ProductTable.status eq ProductStatus.ACTIVE }
+                ProductDAO.find { (ProductTable.status eq ProductStatus.ACTIVE) and (ProductTable.deletedAt.isNull()) }
                     .orderBy(ProductTable.totalSales to SortOrder.DESC)
                     .limit(maxResults)
                     .toList()
@@ -183,8 +202,13 @@ class DashboardRepositoryImpl : DashboardRepository {
 
             val productIds = topProducts.map { it.id }
             val revenueByProduct =
-                OrderItemTable.select(OrderItemTable.productId, OrderItemTable.total.sum())
-                    .where { OrderItemTable.productId inList productIds }
+                (OrderItemTable innerJoin OrderTable)
+                    .select(OrderItemTable.productId, OrderItemTable.total.sum())
+                    .where {
+                        (OrderItemTable.productId inList productIds) and
+                            (OrderTable.status neq OrderStatus.CANCELED) and
+                            (OrderTable.paymentStatus eq PaymentStatus.COMPLETED)
+                    }
                     .groupBy(OrderItemTable.productId)
                     .toList()
                     .associate { row -> row[OrderItemTable.productId].value to (row[OrderItemTable.total.sum()] ?: BigDecimal.ZERO) }
@@ -230,18 +254,21 @@ class DashboardRepositoryImpl : DashboardRepository {
             val today = LocalDateTime.now(ZoneOffset.UTC).toLocalDate().atStartOfDay()
             val sellerShopIds = shopIds.map { it.entityID(ShopTable) }
 
+            val sellerPaidOrders =
+                OrderTable.selectAll().where {
+                    (OrderTable.shopId inList sellerShopIds) and
+                        (OrderTable.status neq OrderStatus.CANCELED) and
+                        (OrderTable.paymentStatus eq PaymentStatus.COMPLETED)
+                }.toList()
             val totalRevenue =
-                OrderTable.select(OrderTable.total.sum())
-                    .where { (OrderTable.shopId inList sellerShopIds) and (OrderTable.status neq OrderStatus.CANCELED) }
-                    .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
+                sellerPaidOrders.fold(BigDecimal.ZERO) { acc, row ->
+                    acc.add(toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
+                }
             val todayRevenue =
-                OrderTable.select(OrderTable.total.sum())
-                    .where {
-                        (OrderTable.shopId inList sellerShopIds) and
-                            (OrderTable.status neq OrderStatus.CANCELED) and
-                            (OrderTable.createdAt greaterEq today)
+                sellerPaidOrders.filter { it[OrderTable.createdAt] >= today }
+                    .fold(BigDecimal.ZERO) { acc, row ->
+                        acc.add(toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
                     }
-                    .firstOrNull()?.get(OrderTable.total.sum()) ?: BigDecimal.ZERO
 
             val customers =
                 OrderTable.select(OrderTable.userId)
@@ -305,7 +332,7 @@ class DashboardRepositoryImpl : DashboardRepository {
 
     override suspend fun getRecentActivity(limit: Int?) =
         query {
-            val max = (limit ?: 20).coerceAtMost(50)
+            val max = (limit ?: 20).coerceIn(1, 50)
             val orders =
                 OrderTable.selectAll().orderBy(OrderTable.createdAt to SortOrder.DESC).limit(max).map {
                     val dao = OrderDAO.wrapRow(it)

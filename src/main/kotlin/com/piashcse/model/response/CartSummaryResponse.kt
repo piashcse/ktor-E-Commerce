@@ -8,6 +8,8 @@ data class CartSummaryResponse(
     val subtotal: String,
     val estimatedTax: String,
     val itemCount: Int,
+    val total: String = subtotal,
+    val currency: String = "USD",
 )
 
 @Serializable

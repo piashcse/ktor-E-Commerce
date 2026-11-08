@@ -10,4 +10,10 @@ fun ReviewRatingDAO.toReviewRatingResponse() =
         productId = productId.value,
         reviewText = reviewText,
         rating = rating,
+        title = title,
+        isVerifiedPurchase = isVerifiedPurchase,
+        helpfulCount = helpfulCount,
+        notHelpfulCount = notHelpfulCount,
+        status = status,
+        createdAt = createdAt.toString(),
     )

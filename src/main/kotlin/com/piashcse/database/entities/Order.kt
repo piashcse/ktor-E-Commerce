@@ -14,14 +14,17 @@ object OrderTable : BaseIdTable("order") {
     val userId = reference("user_id", UserTable.id).index()
     val shopId = reference("shop_id", ShopTable.id).nullable().index()
     val orderNumber = varchar("order_number", 50).uniqueIndex() // Unique order number for tracking
-    val idempotencyKey = varchar("idempotency_key", 100).uniqueIndex().nullable() // Idempotency key to prevent duplicate orders
+    val idempotencyKey = varchar("idempotency_key", 100).nullable() // Per-user idempotency key (partial unique index in SQL)
     val subTotal = decimal("sub_total", 10, 2)
     val shippingCost = decimal("shipping_cost", 10, 2).default(BigDecimal("0.00"))
     val taxAmount = decimal("tax_amount", 10, 2).default(BigDecimal("0.00"))
     val discountAmount = decimal("discount_amount", 10, 2).default(BigDecimal("0.00"))
     val couponCode = varchar("coupon_code", 50).nullable()
-    val total = decimal("total", 10, 2)
+    val total = decimal("total", 12, 2)
     val currency = varchar("currency", 3).default("USD") // Currency of the order
+
+    // USD → order-currency rate applied to all monetary fields in this order.
+    val fxRate = decimal("fx_rate", 18, 6).default(BigDecimal.ONE)
     val paymentMethod = enumerationByName("payment_method", 50, PaymentMethod::class).nullable()
     val paymentStatus = enumerationByName<PaymentStatus>("payment_status", 30).default(PaymentStatus.PENDING)
     val status = enumerationByName<OrderStatus>("status", 30).default(OrderStatus.PENDING)
@@ -38,6 +41,7 @@ object OrderTable : BaseIdTable("order") {
     init {
         index(customIndexName = "order_status_idx", isUnique = false, status)
         index(customIndexName = "order_created_at_idx", isUnique = false, createdAt)
+        uniqueIndex(customIndexName = "order_user_idempotency_unique", userId, idempotencyKey)
     }
 }
 
@@ -55,6 +59,7 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
     var couponCode by OrderTable.couponCode
     var total by OrderTable.total
     var currency by OrderTable.currency
+    var fxRate by OrderTable.fxRate
     var paymentMethod by OrderTable.paymentMethod
     var paymentStatus by OrderTable.paymentStatus
     var status by OrderTable.status
