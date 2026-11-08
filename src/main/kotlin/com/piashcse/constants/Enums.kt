@@ -31,6 +31,44 @@ enum class RefundMethod {
 }
 
 @Serializable
+enum class RmaType {
+    RETURN,
+    EXCHANGE,
+}
+
+@Serializable
+enum class RmaStatus {
+    REQUESTED,
+    APPROVED,
+    REJECTED,
+    IN_TRANSIT,
+    RECEIVED,
+    COMPLETED,
+    CANCELLED,
+    ;
+
+    companion object {
+        fun canTransitionTo(
+            current: RmaStatus,
+            target: RmaStatus,
+        ): Boolean =
+            when (current) {
+                REQUESTED -> target in listOf(APPROVED, REJECTED, CANCELLED)
+                APPROVED -> target in listOf(IN_TRANSIT, CANCELLED)
+                IN_TRANSIT -> target in listOf(RECEIVED)
+                RECEIVED -> target in listOf(COMPLETED)
+                REJECTED, COMPLETED, CANCELLED -> false
+            }
+    }
+}
+
+@Serializable
+enum class RmaResolution {
+    REFUND,
+    REPLACEMENT,
+}
+
+@Serializable
 enum class PaymentMethod {
     CREDIT_CARD,
     PAYPAL,

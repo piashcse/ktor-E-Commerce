@@ -47,6 +47,7 @@ import com.piashcse.feature.refund_request.RefundRequestRepository
 import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
 import com.piashcse.feature.review_rating.ReviewRatingRepository
 import com.piashcse.feature.review_rating.ReviewRatingRepositoryImpl
+import com.piashcse.feature.rma.RmaService
 import com.piashcse.feature.shipping_address.ShippingAddressRepository
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
 import com.piashcse.feature.shipping_method.ShippingMethodRepository
@@ -96,6 +97,7 @@ val serviceModule =
         single { PrivacyService() }
         single { ApiKeyService() }
         single { GuestCheckoutService(get()) }
+        single { RmaService() }
 
         // Split auth services
         single { UserAuthenticationService(get()) }
