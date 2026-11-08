@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.product
 
 import com.piashcse.constants.Message
@@ -13,7 +15,6 @@ import com.piashcse.model.response.ProductResponse
 import com.piashcse.model.response.ProductVariantResponse
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.created
-import com.piashcse.plugin.docs
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.searchRateLimit
@@ -26,6 +27,7 @@ import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 /**
@@ -40,36 +42,31 @@ fun Route.productRoutes() {
     searchRateLimit {
         /**
          * Public best-seller recommendations (guest-safe fallback)
-         *
-         * @tag Product
-         * @description Public best-seller recommendations (guest-safe fallback)
          */
         get("recommendations") {
             call.respondOk(recommendationService.bestSellers(call.recommendationLimit()))
-        }.docs("Best-seller recommendations", "Public, guest-safe fallback ranked by sales and rating") {
+        }.describe {
+            summary = "Best-seller recommendations"
+            description = "Public, guest-safe fallback ranked by sales and rating"
             responses { ok<RecommendationResponse>("Ranked products") }
         }
 
         /**
          * Retrieve detailed information about a specific product
-         *
-         * @tag Product
-         * @description Retrieve detailed information about a specific product
          */
         get("{id}") {
             val productId = call.requirePathParameter("id")
             productRepo.incrementViewCount(productId)
             CacheService.cache.invalidate("products:detail:$productId")
             call.respondOk(productCatalogService.getProductDetail(productId))
-        }.docs("Get product detail", "Includes images and purchasable variants") {
+        }.describe {
+            summary = "Get product detail"
+            description = "Includes images and purchasable variants"
             responses { ok<ProductResponse>("Product detail") }
         }
 
         /**
          * Related products from the same category/subcategory
-         *
-         * @tag Product
-         * @description Related products from the same category/subcategory
          */
         get("{id}/related") {
             call.respondOk(
@@ -78,15 +75,14 @@ fun Route.productRoutes() {
                     call.recommendationLimit(),
                 ),
             )
-        }.docs("Related products", "Same category, subcategory boosted, ranked by sales and rating") {
+        }.describe {
+            summary = "Related products"
+            description = "Same category, subcategory boosted, ranked by sales and rating"
             responses { ok<RecommendationResponse>("Related products") }
         }
 
         /**
          * Products frequently purchased with this product
-         *
-         * @tag Product
-         * @description Products frequently purchased with this product
          */
         get("{id}/also-bought") {
             call.respondOk(
@@ -95,15 +91,14 @@ fun Route.productRoutes() {
                     call.recommendationLimit(),
                 ),
             )
-        }.docs("Frequently bought together", "Co-purchase counts from paid, non-canceled orders") {
+        }.describe {
+            summary = "Frequently bought together"
+            description = "Co-purchase counts from paid, non-canceled orders"
             responses { ok<RecommendationResponse>("Co-purchased products") }
         }
 
         /**
          * Retrieve a paginated list of products with optional filters
-         *
-         * @tag Product
-         * @description Retrieve a paginated list of products with optional filters
          */
         get {
             call.respondOk(productRepo.getProducts(call.productWithFilterRequest(defaultPerPage = 10)))
@@ -111,33 +106,28 @@ fun Route.productRoutes() {
 
         /**
          * List purchasable variants for a product
-         *
-         * @tag Product
-         * @description List purchasable variants for a product
          */
         get("{id}/variants") {
             call.respondOk(variantService.listVariants(call.requirePathParameter("id")))
-        }.docs("List product variants", "Purchasable variants with option values") {
+        }.describe {
+            summary = "List product variants"
+            description = "Purchasable variants with option values"
             responses { ok<List<ProductVariantResponse>>("Variants") }
         }
 
         /**
          * List option dimensions and allowed values for a product
-         *
-         * @tag Product
-         * @description List option dimensions and allowed values for a product
          */
         get("{id}/options") {
             call.respondOk(variantService.listOptions(call.requirePathParameter("id")))
-        }.docs("List product options", "Option dimensions (for example Size, Color) and allowed values") {
+        }.describe {
+            summary = "List product options"
+            description = "Option dimensions (for example Size, Color) and allowed values"
             responses { ok<List<ProductOptionResponse>>("Options") }
         }
 
         /**
          * Search for products by name with fuzzy matching, faceted aggregation, and ranking
-         *
-         * @tag Product
-         * @description Search for products by name with fuzzy matching, faceted aggregation, and ranking
          */
         get("search") {
             val (limit, offset) = call.paginateQueryParams(defaultPerPage = 10)
@@ -167,10 +157,8 @@ fun Route.productSellerRoutes() {
     val productCrudService: ProductCrudService by inject()
     val variantService: ProductVariantService by inject()
     /**
-     * Seller: Retrieve seller products
+     * Seller - Retrieve seller products
      *
-     * @tag Product
-     * @description Seller: Retrieve seller products
      */
     get {
         call.respondOk(productRepo.getProductsByUser(call.currentUserId, call.productWithFilterRequest(defaultPerPage = 10)))
@@ -178,49 +166,46 @@ fun Route.productSellerRoutes() {
 
     sellerWriteRateLimit {
         /**
-         * Seller: Add a new product listing
+         * Seller - Add a new product listing
          *
-         * @tag Product
-         * @description Seller: Add a new product listing
          */
         post {
             call.respondCreated(productCrudService.createProduct(call.currentUserId, null, call.receive<ProductRequest>()))
-        }.docs("Create product") {
+        }.describe {
+            summary = "Create product"
             requestBody { jsonBody<ProductRequest>() }
             responses { created<ProductResponse>("Product created") }
         }
 
         /**
-         * Seller: Update an existing product listing
+         * Seller - Update an existing product listing
          *
-         * @tag Product
-         * @description Seller: Update an existing product listing
          */
         put("{id}") {
             val productId = call.requirePathParameter("id")
             call.respondOk(productCrudService.updateProduct(call.currentUserId, productId, call.receive<UpdateProductRequest>()))
-        }.docs("Update product") {
+        }.describe {
+            summary = "Update product"
             requestBody { jsonBody<UpdateProductRequest>() }
             responses { ok<ProductResponse>("Product updated") }
         }
 
         /**
-         * Seller: Permanently delete a product listing
+         * Seller - Permanently delete a product listing
          *
-         * @tag Product
-         * @description Seller: Permanently delete a product listing
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
             productCrudService.deleteProduct(call.currentUserId, id)
             call.respondOk(MessageResponse("Product deleted successfully"))
-        }.docs("Delete product", "Soft-deletes the listing and preserves order history")
+        }.describe {
+            summary = "Delete product"
+            description = "Soft-deletes the listing and preserves order history"
+        }
 
         /**
-         * Seller: Upload a product image
+         * Seller - Upload a product image
          *
-         * @tag Product
-         * @description Seller: Upload a product image
          */
         post("image-upload") {
             val multipart = call.receiveMultipart()
@@ -240,26 +225,23 @@ fun Route.productSellerRoutes() {
         }
 
         /**
-         * Seller: Create a product variant
+         * Seller - Create a product variant
          *
-         * @tag Product
-         * @description Seller: Create a product variant
          */
         post("{id}/variants") {
             val productId = call.requirePathParameter("id")
             call.respondCreated(
                 variantService.createVariant(call.currentUserId, productId, call.receive<ProductVariantRequest>()),
             )
-        }.docs("Create product variant") {
+        }.describe {
+            summary = "Create product variant"
             requestBody { jsonBody<ProductVariantRequest>() }
             responses { created<ProductVariantResponse>("Variant created") }
         }
 
         /**
-         * Seller: Update a product variant
+         * Seller - Update a product variant
          *
-         * @tag Product
-         * @description Seller: Update a product variant
          */
         put("{id}/variants/{variantId}") {
             val productId = call.requirePathParameter("id")
@@ -272,16 +254,15 @@ fun Route.productSellerRoutes() {
                     call.receive<ProductVariantRequest>(),
                 ),
             )
-        }.docs("Update product variant") {
+        }.describe {
+            summary = "Update product variant"
             requestBody { jsonBody<ProductVariantRequest>() }
             responses { ok<ProductVariantResponse>("Variant updated") }
         }
 
         /**
-         * Seller: Delete a product variant
+         * Seller - Delete a product variant
          *
-         * @tag Product
-         * @description Seller: Delete a product variant
          */
         delete("{id}/variants/{variantId}") {
             variantService.deleteVariant(
@@ -290,13 +271,14 @@ fun Route.productSellerRoutes() {
                 call.requirePathParameter("variantId"),
             )
             call.respondOk(MessageResponse("Variant deleted successfully"))
-        }.docs("Delete product variant", "Promotes another variant as default when needed")
+        }.describe {
+            summary = "Delete product variant"
+            description = "Promotes another variant as default when needed"
+        }
 
         /**
-         * Seller: Replace the option values attached to a variant
+         * Seller - Replace the option values attached to a variant
          *
-         * @tag Product
-         * @description Seller: Replace the option values attached to a variant
          */
         put("{id}/variants/{variantId}/options") {
             val productId = call.requirePathParameter("id")
@@ -309,32 +291,31 @@ fun Route.productSellerRoutes() {
                     call.receive<SetVariantOptionsRequest>(),
                 ),
             )
-        }.docs("Attach option values to a variant", "One value per option") {
+        }.describe {
+            summary = "Attach option values to a variant"
+            description = "One value per option"
             requestBody { jsonBody<SetVariantOptionsRequest>() }
             responses { ok<ProductVariantResponse>("Variant options replaced") }
         }
 
         /**
-         * Seller: Create an option dimension (e.g. Size)
+         * Seller - Create an option dimension (e.g. Size)
          *
-         * @tag Product
-         * @description Seller: Create an option dimension (e.g. Size)
          */
         post("{id}/options") {
             val productId = call.requirePathParameter("id")
             call.respondCreated(
                 variantService.createOption(call.currentUserId, productId, call.receive<ProductOptionRequest>()),
             )
-        }.docs("Create option dimension") {
+        }.describe {
+            summary = "Create option dimension"
             requestBody { jsonBody<ProductOptionRequest>() }
             responses { created<ProductOptionResponse>("Option created") }
         }
 
         /**
-         * Seller: Delete an option dimension and its values
+         * Seller - Delete an option dimension and its values
          *
-         * @tag Product
-         * @description Seller: Delete an option dimension and its values
          */
         delete("{id}/options/{optionId}") {
             variantService.deleteOption(
@@ -343,13 +324,14 @@ fun Route.productSellerRoutes() {
                 call.requirePathParameter("optionId"),
             )
             call.respondOk(MessageResponse("Option deleted successfully"))
-        }.docs("Delete option dimension", "Also removes its values and variant links")
+        }.describe {
+            summary = "Delete option dimension"
+            description = "Also removes its values and variant links"
+        }
 
         /**
-         * Seller: Add a value to an option (e.g. M)
+         * Seller - Add a value to an option (e.g. M)
          *
-         * @tag Product
-         * @description Seller: Add a value to an option (e.g. M)
          */
         post("{id}/options/{optionId}/values") {
             val productId = call.requirePathParameter("id")
@@ -362,16 +344,15 @@ fun Route.productSellerRoutes() {
                     call.receive<ProductOptionValueRequest>(),
                 ),
             )
-        }.docs("Add option value") {
+        }.describe {
+            summary = "Add option value"
             requestBody { jsonBody<ProductOptionValueRequest>() }
             responses { created<ProductOptionValueResponse>("Option value created") }
         }
 
         /**
-         * Seller: Delete an option value
+         * Seller - Delete an option value
          *
-         * @tag Product
-         * @description Seller: Delete an option value
          */
         delete("{id}/options/{optionId}/values/{valueId}") {
             variantService.deleteOptionValue(
@@ -381,7 +362,7 @@ fun Route.productSellerRoutes() {
                 call.requirePathParameter("valueId"),
             )
             call.respondOk(MessageResponse("Option value deleted successfully"))
-        }.docs("Delete option value")
+        }.describe { summary = "Delete option value" }
     }
 }
 
@@ -392,10 +373,8 @@ fun Route.productAdminRoutes() {
     val productCrudService: ProductCrudService by inject()
     adminWriteRateLimit {
         /**
-         * Admin: Permanently delete any product
+         * Admin - Permanently delete any product
          *
-         * @tag Product
-         * @description Admin: Permanently delete any product
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")

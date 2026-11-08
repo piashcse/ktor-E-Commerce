@@ -13,20 +13,16 @@ fun Route.shippingMethodAdminRoutes() {
     val shippingMethodRepo: ShippingMethodRepository by inject()
     adminWriteRateLimit {
         /**
-         * Admin: Create a new shipping method
+         * Admin - Create a new shipping method
          *
-         * @tag Shipping Method
-         * @description Admin: Create a new shipping method
          */
         post {
             call.respondCreated(shippingMethodRepo.createShippingMethod(call.receive<ShippingMethodRequest>()))
         }
 
         /**
-         * Admin: Update an existing shipping method
+         * Admin - Update an existing shipping method
          *
-         * @tag Shipping Method
-         * @description Admin: Update an existing shipping method
          */
         put("/{id}") {
             val id = call.requirePathParameter("id")
@@ -34,10 +30,8 @@ fun Route.shippingMethodAdminRoutes() {
         }
 
         /**
-         * Admin: Delete a shipping method
+         * Admin - Delete a shipping method
          *
-         * @tag Shipping Method
-         * @description Admin: Delete a shipping method
          */
         delete("/{id}") {
             val id = call.requirePathParameter("id")
@@ -47,10 +41,8 @@ fun Route.shippingMethodAdminRoutes() {
     }
 
     /**
-     * Admin: Retrieve all shipping methods
+     * Admin - Retrieve all shipping methods
      *
-     * @tag Shipping Method
-     * @description Admin: Retrieve all shipping methods
      */
     get {
         val (limit, offset) = call.paginateQueryParams()

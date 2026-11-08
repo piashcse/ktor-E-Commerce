@@ -1,8 +1,9 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.wishlist
 
 import com.piashcse.model.request.WishListRequest
 import com.piashcse.plugin.customerOnlyAuth
-import com.piashcse.plugin.docs
 import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
@@ -11,6 +12,7 @@ import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 /**
@@ -22,9 +24,6 @@ fun Route.wishListRoutes() {
         writeRateLimit {
             /**
              * Add a product to the authenticated user's wishlist
-             *
-             * @tag Wishlist
-             * @description Add a product to the authenticated user's wishlist
              */
             post {
                 call.respondCreated(wishlistRepo.addToWishList(call.currentUserId, call.receive<WishListRequest>().productId))
@@ -32,9 +31,6 @@ fun Route.wishListRoutes() {
 
             /**
              * Remove a specific product from the wishlist
-             *
-             * @tag Wishlist
-             * @description Remove a specific product from the wishlist
              */
             post("move-to-cart") {
                 val productId = call.requireQueryParameter("productId")
@@ -45,26 +41,23 @@ fun Route.wishListRoutes() {
             delete("remove") {
                 val productId = call.requireQueryParameter("productId")
                 call.respondOk(wishlistRepo.removeFromWishList(call.currentUserId, productId))
-            }.docs("Remove from wishlist")
+            }.describe { summary = "Remove from wishlist" }
         }
 
         /**
          * Retrieve all items in the user's wishlist
-         *
-         * @tag Wishlist
-         * @description Retrieve all items in the user's wishlist
          */
         generalRateLimit {
             get {
                 val (limit, offset) = call.paginateQueryParams()
                 call.respondOk(wishlistRepo.getWishList(call.currentUserId, limit, offset))
-            }.docs("List wishlist", "Products with preloaded images")
+            }.describe {
+                summary = "List wishlist"
+                description = "Products with preloaded images"
+            }
 
             /**
              * Check if a specific product is in the user's wishlist
-             *
-             * @tag Wishlist
-             * @description Check if a specific product is in the user's wishlist
              */
             get("check") {
                 val productId = call.requireQueryParameter("productId")

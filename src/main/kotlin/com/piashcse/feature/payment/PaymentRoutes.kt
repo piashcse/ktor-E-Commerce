@@ -22,9 +22,6 @@ fun Route.paymentRoutes() {
         writeRateLimit {
             /**
              * Create a payment intent for an order. Status is server-owned.
-             *
-             * @tag Payment
-             * @description Create a payment intent for an order. Status is server-owned.
              */
             post {
                 val body = call.receive<PaymentRequest>()
@@ -35,9 +32,6 @@ fun Route.paymentRoutes() {
 
         /**
          * Retrieve payment details by ID
-         *
-         * @tag Payment
-         * @description Retrieve payment details by ID
          */
         get("{id}") {
             val id = call.requirePathParameter("id")
@@ -46,9 +40,6 @@ fun Route.paymentRoutes() {
 
         /**
          * Retrieve all payments for a specific order
-         *
-         * @tag Payment
-         * @description Retrieve all payments for a specific order
          */
         get("order/{orderId}") {
             val orderId = call.requirePathParameter("orderId")
@@ -66,10 +57,8 @@ fun Route.paymentAdminRoutes() {
     val paymentRepo: PaymentRepository by inject()
     adminWriteRateLimit {
         /**
-         * Admin: confirm a pending payment as completed
+         * Admin - confirm a pending payment as completed
          *
-         * @tag Payment
-         * @description Admin: confirm a pending payment as completed
          */
         post("{id}/confirm") {
             val id = call.requirePathParameter("id")

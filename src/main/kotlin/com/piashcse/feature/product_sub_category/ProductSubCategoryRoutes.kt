@@ -17,9 +17,6 @@ fun Route.productSubCategoryRoutes() {
     val subCategoryRepo: ProductSubCategoryRepository by inject()
     /**
      * Retrieve subcategories for a specific category
-     *
-     * @tag Product Sub Category
-     * @description Retrieve subcategories for a specific category
      */
     get {
         val categoryId = call.requireQueryParameter("categoryId")
@@ -35,20 +32,16 @@ fun Route.productSubCategoryAdminRoutes() {
     val subCategoryRepo: ProductSubCategoryRepository by inject()
     adminWriteRateLimit {
         /**
-         * Admin: Create a new product subcategory
+         * Admin - Create a new product subcategory
          *
-         * @tag Product Sub Category
-         * @description Admin: Create a new product subcategory
          */
         post {
             call.respondCreated(subCategoryRepo.addProductSubCategory(call.receive<ProductSubCategoryRequest>()))
         }
 
         /**
-         * Admin: Update an existing product subcategory name
+         * Admin - Update an existing product subcategory name
          *
-         * @tag Product Sub Category
-         * @description Admin: Update an existing product subcategory name
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
@@ -56,10 +49,8 @@ fun Route.productSubCategoryAdminRoutes() {
         }
 
         /**
-         * Admin: Permanently delete a product subcategory
+         * Admin - Permanently delete a product subcategory
          *
-         * @tag Product Sub Category
-         * @description Admin: Permanently delete a product subcategory
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")

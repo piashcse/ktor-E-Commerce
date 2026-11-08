@@ -21,9 +21,6 @@ fun Route.profileRoutes() {
     customerOnlyAuth {
         /**
          * Retrieve the authenticated user's profile information
-         *
-         * @tag Profile
-         * @description Retrieve the authenticated user's profile information
          */
         get {
             call.respondOk(userProfileService.getProfile(call.currentUserId))
@@ -32,9 +29,6 @@ fun Route.profileRoutes() {
         writeRateLimit {
             /**
              * Update the authenticated user's profile information
-             *
-             * @tag Profile
-             * @description Update the authenticated user's profile information
              */
             put {
                 val params =
@@ -56,9 +50,6 @@ fun Route.profileRoutes() {
 
             /**
              * Upload a profile image
-             *
-             * @tag Profile
-             * @description Upload a profile image
              */
             post("image-upload") {
                 val multipart = call.receiveMultipart()

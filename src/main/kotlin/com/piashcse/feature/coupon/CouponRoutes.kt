@@ -19,9 +19,6 @@ fun Route.couponRoutes() {
     val couponRepo: CouponRepository by inject()
     /**
      * Retrieve detailed information about a coupon by its code
-     *
-     * @tag Coupon
-     * @description Retrieve detailed information about a coupon by its code
      */
     get("{code}") {
         val code = call.requirePathParameter("code")
@@ -38,20 +35,16 @@ fun Route.couponAdminRoutes() {
     val couponRepo: CouponRepository by inject()
     adminWriteRateLimit {
         /**
-         * Admin: Create a new discount coupon
+         * Admin - Create a new discount coupon
          *
-         * @tag Coupon
-         * @description Admin: Create a new discount coupon
          */
         post {
             call.respondCreated(couponRepo.createCoupon(call.receive<CouponRequest>(), call.currentUserId))
         }
 
         /**
-         * Admin: Update an existing coupon
+         * Admin - Update an existing coupon
          *
-         * @tag Coupon
-         * @description Admin: Update an existing coupon
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
@@ -59,10 +52,8 @@ fun Route.couponAdminRoutes() {
         }
 
         /**
-         * Admin: Delete a coupon
+         * Admin - Delete a coupon
          *
-         * @tag Coupon
-         * @description Admin: Delete a coupon
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
@@ -74,10 +65,8 @@ fun Route.couponAdminRoutes() {
     }
 
     /**
-     * Admin: Retrieve a list of all coupons
+     * Admin - Retrieve a list of all coupons
      *
-     * @tag Coupon
-     * @description Admin: Retrieve a list of all coupons
      */
     get {
         val (limit, offset) = call.paginateQueryParams(defaultPerPage = 10)

@@ -20,9 +20,6 @@ fun Route.brandRoutes() {
     val brandRepo: BrandRepository by inject()
     /**
      * Retrieve a paginated list of all brands (public)
-     *
-     * @tag Brand
-     * @description Retrieve a paginated list of all brands (public)
      */
     get {
         val (limit, offset) = call.paginateQueryParams()
@@ -37,20 +34,16 @@ fun Route.brandAdminRoutes() {
     val brandRepo: BrandRepository by inject()
     adminWriteRateLimit {
         /**
-         * Admin: Create a new brand
+         * Admin - Create a new brand
          *
-         * @tag Brand
-         * @description Admin: Create a new brand
          */
         post {
             call.respondCreated(brandRepo.createBrand(call.nameFromBodyOrQuery()))
         }
 
         /**
-         * Admin: Update an existing brand
+         * Admin - Update an existing brand
          *
-         * @tag Brand
-         * @description Admin: Update an existing brand
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
@@ -58,10 +51,8 @@ fun Route.brandAdminRoutes() {
         }
 
         /**
-         * Admin: Upload a brand logo
+         * Admin - Upload a brand logo
          *
-         * @tag Brand
-         * @description Admin: Upload a brand logo
          */
         post("{id}/image") {
             val id = call.requirePathParameter("id")
@@ -80,10 +71,8 @@ fun Route.brandAdminRoutes() {
         }
 
         /**
-         * Admin: Delete a brand
+         * Admin - Delete a brand
          *
-         * @tag Brand
-         * @description Admin: Delete a brand
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")

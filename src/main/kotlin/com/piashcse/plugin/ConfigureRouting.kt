@@ -68,6 +68,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
+import io.ktor.server.routing.openapi.describe
 import io.ktor.utils.io.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -87,12 +88,19 @@ fun Application.configureRoute() {
             call.respond(
                 HealthStatusResponse(status = "UP", version = AppConstants.APP_VERSION),
             )
-        }.docs("Service health", "Version and overall status")
+        }.describe {
+            summary = "Service health"
+            description = "Version and overall status"
+            tag("Health")
+        }
         get("/health/live") {
             call.respond(
                 MessageResponse("UP"),
             )
-        }.docs("Liveness probe")
+        }.describe {
+            summary = "Liveness probe"
+            tag("Health")
+        }
         get("/health/ready") {
             val dbOk =
                 runCatching {
@@ -116,7 +124,11 @@ fun Application.configureRoute() {
                     ),
                 )
             }
-        }.docs("Readiness probe", "Checks database connectivity")
+        }.describe {
+            summary = "Readiness probe"
+            description = "Checks database connectivity"
+            tag("Health")
+        }
 
         route("/api") {
             route("v1") {

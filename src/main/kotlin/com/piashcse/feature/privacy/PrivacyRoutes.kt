@@ -14,9 +14,6 @@ fun Route.privacyRoutes() {
     customerOnlyAuth {
         /**
          * Export all personal data held for the authenticated user
-         *
-         * @tag Privacy
-         * @description Export all personal data held for the authenticated user
          */
         get("export") {
             call.respondOk(privacyService.export(call.currentUserId))
@@ -24,9 +21,6 @@ fun Route.privacyRoutes() {
 
         /**
          * Erase/anonymize the authenticated account (password required)
-         *
-         * @tag Privacy
-         * @description Erase/anonymize the authenticated account (password required)
          */
         post("erase") {
             val body = call.receive<EraseAccountRequest>()

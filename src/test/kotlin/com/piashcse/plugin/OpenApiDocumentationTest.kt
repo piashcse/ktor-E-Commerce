@@ -9,6 +9,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
+import io.ktor.server.routing.openapi.describe
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 import org.koin.dsl.module
@@ -26,7 +27,9 @@ class OpenApiDocumentationTest {
                     authenticate(AppConstants.Authentication.JWT_AUTHENTICATOR) {
                         get("sample") {
                             call.respond(MessageResponse("ok"))
-                        }.docs("Sample operation", "A described sample") {
+                        }.describe {
+                            summary = "Sample operation"
+                            description = "A described sample"
                             responses { ok<MessageResponse>("OK") }
                         }
                     }

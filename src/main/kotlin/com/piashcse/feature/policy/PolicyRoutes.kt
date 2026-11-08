@@ -19,9 +19,6 @@ fun Route.policyRoutes() {
     val policyRepo: PolicyRepository by inject()
     /**
      * Retrieve the latest active version of a policy by type
-     *
-     * @tag Privacy
-     * @description Retrieve the latest active version of a policy by type
      */
     get("{policyType}") {
         val policyType = call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type")
@@ -36,20 +33,16 @@ fun Route.policyAdminRoutes() {
     val policyRepo: PolicyRepository by inject()
     adminWriteRateLimit {
         /**
-         * Admin: Create a new policy document or new version
+         * Admin - Create a new policy document or new version
          *
-         * @tag Privacy
-         * @description Admin: Create a new policy document or new version
          */
         post {
             call.respondCreated(policyRepo.createPolicy(call.receive<CreatePolicyRequest>()))
         }
 
         /**
-         * Admin: Update an existing policy document
+         * Admin - Update an existing policy document
          *
-         * @tag Privacy
-         * @description Admin: Update an existing policy document
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
@@ -57,10 +50,8 @@ fun Route.policyAdminRoutes() {
         }
 
         /**
-         * Admin: Deactivate a policy document
+         * Admin - Deactivate a policy document
          *
-         * @tag Privacy
-         * @description Admin: Deactivate a policy document
          */
         post("deactivate/{id}") {
             val id = call.requirePathParameter("id")
@@ -69,10 +60,8 @@ fun Route.policyAdminRoutes() {
     }
 
     /**
-     * Admin: Retrieve a policy document by ID
+     * Admin - Retrieve a policy document by ID
      *
-     * @tag Privacy
-     * @description Admin: Retrieve a policy document by ID
      */
     get("by-id/{id}") {
         val id = call.requirePathParameter("id")
@@ -80,10 +69,8 @@ fun Route.policyAdminRoutes() {
     }
 
     /**
-     * Admin: Retrieve all versions of a specific policy type
+     * Admin - Retrieve all versions of a specific policy type
      *
-     * @tag Privacy
-     * @description Admin: Retrieve all versions of a specific policy type
      */
     get("{policyType}/history") {
         val policyType = call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type")

@@ -22,9 +22,6 @@ fun Route.shopRoutes() {
     val shopRepo: ShopRepository by inject()
     /**
      * Retrieve detailed information about a specific shop
-     *
-     * @tag Shop
-     * @description Retrieve detailed information about a specific shop
      */
     get("/{id}") {
         val shopId = call.requirePathParameter("id")
@@ -35,9 +32,6 @@ fun Route.shopRoutes() {
 
     /**
      * Retrieve public shops with filters (public)
-     *
-     * @tag Shop
-     * @description Retrieve public shops with filters (public)
      */
     get("/public") {
         val (limit, offset) = call.paginateQueryParams()
@@ -48,9 +42,6 @@ fun Route.shopRoutes() {
 
     /**
      * Retrieve shops by category (public)
-     *
-     * @tag Shop
-     * @description Retrieve shops by category (public)
      */
     get("/category/{categoryId}") {
         val categoryId = call.requirePathParameter("categoryId")
@@ -60,9 +51,6 @@ fun Route.shopRoutes() {
 
     /**
      * Retrieve featured shops (public)
-     *
-     * @tag Shop
-     * @description Retrieve featured shops (public)
      */
     get("/featured") {
         val (limit, offset) = call.paginateQueryParams()
@@ -77,20 +65,16 @@ fun Route.shopSellerRoutesV1() {
     val shopRepo: ShopRepository by inject()
     sellerWriteRateLimit {
         /**
-         * Seller: Create a new shop
+         * Seller - Create a new shop
          *
-         * @tag Shop
-         * @description Seller: Create a new shop
          */
         post {
             call.respondCreated(shopRepo.createShop(call.currentUserId, call.receive<ShopRequest>()))
         }
 
         /**
-         * Seller: Update shop details
+         * Seller - Update shop details
          *
-         * @tag Shop
-         * @description Seller: Update shop details
          */
         put("/{id}") {
             val shopId = call.requirePathParameter("id")
@@ -98,10 +82,8 @@ fun Route.shopSellerRoutesV1() {
         }
 
         /**
-         * Seller: Upload a shop logo
+         * Seller - Upload a shop logo
          *
-         * @tag Shop
-         * @description Seller: Upload a shop logo
          */
         post("/{id}/image") {
             val shopId = call.requirePathParameter("id")
@@ -121,10 +103,8 @@ fun Route.shopSellerRoutesV1() {
     }
 
     /**
-     * Seller: Retrieve owned shops
+     * Seller - Retrieve owned shops
      *
-     * @tag Shop
-     * @description Seller: Retrieve owned shops
      */
     get {
         val (limit, offset) = call.paginateQueryParams()
@@ -139,10 +119,8 @@ fun Route.shopAdminRoutes() {
     val shopRepo: ShopRepository by inject()
     adminWriteRateLimit {
         /**
-         * Admin: Approve a pending shop application
+         * Admin - Approve a pending shop application
          *
-         * @tag Shop
-         * @description Admin: Approve a pending shop application
          */
         put("/approve/{id}") {
             val shopId = call.requirePathParameter("id")
@@ -151,10 +129,8 @@ fun Route.shopAdminRoutes() {
         }
 
         /**
-         * Admin: Reject a shop application
+         * Admin - Reject a shop application
          *
-         * @tag Shop
-         * @description Admin: Reject a shop application
          */
         put("/reject/{id}") {
             val shopId = call.requirePathParameter("id")
@@ -163,10 +139,8 @@ fun Route.shopAdminRoutes() {
         }
 
         /**
-         * Admin: Suspend an active shop
+         * Admin - Suspend an active shop
          *
-         * @tag Shop
-         * @description Admin: Suspend an active shop
          */
         put("/suspend/{id}") {
             val shopId = call.requirePathParameter("id")
@@ -175,10 +149,8 @@ fun Route.shopAdminRoutes() {
         }
 
         /**
-         * Admin: Activate a suspended shop
+         * Admin - Activate a suspended shop
          *
-         * @tag Shop
-         * @description Admin: Activate a suspended shop
          */
         put("/activate/{id}") {
             val shopId = call.requirePathParameter("id")
@@ -188,10 +160,8 @@ fun Route.shopAdminRoutes() {
     }
 
     /**
-     * Admin: Retrieve shops filtered by status
+     * Admin - Retrieve shops filtered by status
      *
-     * @tag Shop
-     * @description Admin: Retrieve shops filtered by status
      */
     get("/status") {
         val (limit, offset) = call.paginateQueryParams()

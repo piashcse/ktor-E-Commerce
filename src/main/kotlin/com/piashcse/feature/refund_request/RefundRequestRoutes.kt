@@ -31,9 +31,6 @@ fun Route.refundRequestRoutes() {
         writeRateLimit {
             /**
              * Create a refund request for an order item
-             *
-             * @tag Refund
-             * @description Create a refund request for an order item
              */
             post("{orderId}") {
                 call.respondCreated(
@@ -47,9 +44,6 @@ fun Route.refundRequestRoutes() {
 
             /**
              * Mark an approved refund as shipped
-             *
-             * @tag Refund
-             * @description Mark an approved refund as shipped
              */
             post("{id}/ship") {
                 call.respondOk(
@@ -62,9 +56,6 @@ fun Route.refundRequestRoutes() {
     requireRole(UserType.CUSTOMER, UserType.SELLER, UserType.ADMIN, UserType.SUPER_ADMIN) {
         /**
          * Get private refund evidence for an authorized refund request
-         *
-         * @tag Refund
-         * @description Get private refund evidence for an authorized refund request
          */
         get("{id}/evidence/{fileName}") {
             val refundId = call.requirePathParameter("id")
@@ -91,9 +82,6 @@ fun Route.refundRequestRoutes() {
 
         /**
          * Get refund requests for an order
-         *
-         * @tag Refund
-         * @description Get refund requests for an order
          */
         get("order/{orderId}") {
             val (limit, offset) = call.paginateQueryParams()
@@ -110,9 +98,6 @@ fun Route.refundRequestRoutes() {
 
         /**
          * Get refund request details
-         *
-         * @tag Refund
-         * @description Get refund request details
          */
         get("{id}") {
             val refundRequest =
@@ -137,10 +122,8 @@ fun Route.refundSellerRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
     sellerWriteRateLimit {
         /**
-         * Seller: Update refund request status
+         * Seller - Update refund request status
          *
-         * @tag Refund
-         * @description Seller: Update refund request status
          */
         put("{id}/status") {
             call.respondOk(
@@ -161,10 +144,8 @@ fun Route.refundAdminRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
     adminWriteRateLimit {
         /**
-         * Admin: Update refund status
+         * Admin - Update refund status
          *
-         * @tag Refund
-         * @description Admin: Update refund status
          */
         put("{id}/status") {
             call.respondOk(
@@ -178,10 +159,8 @@ fun Route.refundAdminRoutes() {
     }
 
     /**
-     * Admin: Get all refund requests for an order
+     * Admin - Get all refund requests for an order
      *
-     * @tag Refund
-     * @description Admin: Get all refund requests for an order
      */
     get("order/{orderId}") {
         val (limit, offset) = call.paginateQueryParams()

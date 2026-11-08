@@ -12,9 +12,6 @@ fun Route.auditLogAdminRoutes() {
     val repo: AuditLogRepository by inject()
     /**
      * Get paginated audit logs with optional filters
-     *
-     * @tag Audit Log
-     * @description Get paginated audit logs with optional filters
      */
     get {
         val (limit, offset) = call.paginateQueryParams()
@@ -33,9 +30,6 @@ fun Route.auditLogAdminRoutes() {
 
     /**
      * Get a single audit log entry by ID
-     *
-     * @tag Audit Log
-     * @description Get a single audit log entry by ID
      */
     get("{id}") {
         val id =

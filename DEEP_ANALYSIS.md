@@ -240,10 +240,15 @@ Scope: full `src/main` review for conciseness, reuse, centralization and query e
 **Swagger**
 - Verified the generated spec against a real Postgres instance (`/swagger/documentation.yaml`):
   **178 paths / 206 operations / 0 missing summaries / 83 schemas / 35 tags**.
-- Route groups now carry tags via `.describe` in `ConfigureRouting`, so every
-  operation is grouped consistently (Product, Cart, Order, RMA, KYC, Payout,
-  Recommendation, Tax, FX, API Keys, Feature Flags, Outbox, …).
-- KDoc `@tag`/`@description` are now normalized and paired with prose summaries.
+- Tags are applied **once per route group** with the runtime `.describe { tag(...) }`
+  DSL in `ConfigureRouting`; every operation is grouped consistently
+  (Product, Cart, Order, RMA, KYC, Payout, Recommendation, Tax, FX, API Keys,
+  Feature Flags, Outbox, …).
+- Per-operation metadata uses the official `.describe {}` DSL; the ad-hoc
+  `.docs` helper was removed. KDoc keeps human-readable prose and official
+  `Description:` comment fields.
+- Follows Ktor's documented precedence: runtime annotations override comment
+  metadata, which overrides compiler/code inference.
 - Added `jwt-auth` and `api-key` bearer scheme descriptions; route-level security
   is inferred from `authenticate`/`requireRole` selectors.
 - Added request/response schemas for auth, product/variant, cart, checkout,

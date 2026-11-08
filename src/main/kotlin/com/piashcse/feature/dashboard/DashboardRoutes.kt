@@ -1,18 +1,17 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.dashboard
 
-import com.piashcse.plugin.docs
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 fun Route.dashboardAdminRoutes() {
     val repo: DashboardRepository by inject()
     /**
      * Get summary dashboard stats (revenue, orders, users, products, shops)
-     *
-     * @tag Dashboard
-     * @description Get summary dashboard stats (revenue, orders, users, products, shops)
      */
     get {
         call.respondOk(repo.getDashboardStats())
@@ -20,9 +19,6 @@ fun Route.dashboardAdminRoutes() {
 
     /**
      * Get detailed revenue stats with optional date range and daily breakdown
-     *
-     * @tag Dashboard
-     * @description Get detailed revenue stats with optional date range and daily breakdown
      */
     get("revenue") {
         call.respondOk(repo.getRevenueStats(call.queryParameters["startDate"], call.queryParameters["endDate"]))
@@ -30,9 +26,6 @@ fun Route.dashboardAdminRoutes() {
 
     /**
      * Get order statistics with status distribution
-     *
-     * @tag Dashboard
-     * @description Get order statistics with status distribution
      */
     get("orders") {
         call.respondOk(repo.getOrderStats(call.queryParameters["status"]))
@@ -40,9 +33,6 @@ fun Route.dashboardAdminRoutes() {
 
     /**
      * Get user growth analytics over a period
-     *
-     * @tag Dashboard
-     * @description Get user growth analytics over a period
      */
     get("users") {
         call.respondOk(repo.getUserGrowth(call.queryParameters["days"]?.toIntOrNull()))
@@ -50,9 +40,6 @@ fun Route.dashboardAdminRoutes() {
 
     /**
      * Get top-selling products sorted by sales volume
-     *
-     * @tag Dashboard
-     * @description Get top-selling products sorted by sales volume
      */
     get("top-products") {
         call.respondOk(repo.getTopProducts(call.queryParameters["limit"]?.toIntOrNull()))
@@ -60,9 +47,6 @@ fun Route.dashboardAdminRoutes() {
 
     /**
      * Get recent activity feed (orders + user registrations)
-     *
-     * @tag Dashboard
-     * @description Get recent activity feed (orders + user registrations)
      */
     get("activity") {
         call.respondOk(repo.getRecentActivity(call.queryParameters["limit"]?.toIntOrNull()))
@@ -73,5 +57,8 @@ fun Route.dashboardSellerRoutes() {
     val repo: DashboardRepository by inject()
     get {
         call.respondOk(repo.getSellerStats(call.currentUserId))
-    }.docs("Seller dashboard", "Sales, orders, stock and top products")
+    }.describe {
+        summary = "Seller dashboard"
+        description = "Sales, orders, stock and top products"
+    }
 }

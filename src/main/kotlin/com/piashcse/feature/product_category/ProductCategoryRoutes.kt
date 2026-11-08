@@ -20,9 +20,6 @@ fun Route.productCategoryRoutes() {
     val productCategoryRepo: ProductCategoryRepository by inject()
     /**
      * Retrieve a paginated list of all product categories
-     *
-     * @tag Product Category
-     * @description Retrieve a paginated list of all product categories
      */
     get {
         val (limit, offset) = call.paginateQueryParams()
@@ -37,20 +34,16 @@ fun Route.productCategoryAdminRoutes() {
     val productCategoryRepo: ProductCategoryRepository by inject()
     adminWriteRateLimit {
         /**
-         * Admin: Create a new product category
+         * Admin - Create a new product category
          *
-         * @tag Product Category
-         * @description Admin: Create a new product category
          */
         post {
             call.respondCreated(productCategoryRepo.createCategory(call.nameFromBodyOrQuery()))
         }
 
         /**
-         * Admin: Update an existing product category name
+         * Admin - Update an existing product category name
          *
-         * @tag Product Category
-         * @description Admin: Update an existing product category name
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
@@ -58,10 +51,8 @@ fun Route.productCategoryAdminRoutes() {
         }
 
         /**
-         * Admin: Upload a category image
+         * Admin - Upload a category image
          *
-         * @tag Product Category
-         * @description Admin: Upload a category image
          */
         post("{id}/image") {
             val id = call.requirePathParameter("id")
@@ -80,10 +71,8 @@ fun Route.productCategoryAdminRoutes() {
         }
 
         /**
-         * Admin: Permanently delete a product category
+         * Admin - Permanently delete a product category
          *
-         * @tag Product Category
-         * @description Admin: Permanently delete a product category
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")

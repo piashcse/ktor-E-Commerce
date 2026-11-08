@@ -17,9 +17,6 @@ fun Route.shopCategoryRoutes() {
     val shopCategoryRepo: ShopCategoryRepository by inject()
     /**
      * Retrieve a paginated list of all shop categories
-     *
-     * @tag Shop Category
-     * @description Retrieve a paginated list of all shop categories
      */
     get {
         val (limit, offset) = call.paginateQueryParams()
@@ -34,20 +31,16 @@ fun Route.shopCategoryAdminRoutes() {
     val shopCategoryRepo: ShopCategoryRepository by inject()
     adminWriteRateLimit {
         /**
-         * Admin: Create a new shop category
+         * Admin - Create a new shop category
          *
-         * @tag Shop Category
-         * @description Admin: Create a new shop category
          */
         post {
             call.respondCreated(shopCategoryRepo.createCategory(call.receive<ShopCategoryRequest>().name))
         }
 
         /**
-         * Admin: Update an existing shop category name
+         * Admin - Update an existing shop category name
          *
-         * @tag Shop Category
-         * @description Admin: Update an existing shop category name
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
@@ -55,10 +48,8 @@ fun Route.shopCategoryAdminRoutes() {
         }
 
         /**
-         * Admin: Permanently delete a shop category
+         * Admin - Permanently delete a shop category
          *
-         * @tag Shop Category
-         * @description Admin: Permanently delete a shop category
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
