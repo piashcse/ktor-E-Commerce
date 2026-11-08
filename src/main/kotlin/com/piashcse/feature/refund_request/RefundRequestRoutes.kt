@@ -1,5 +1,6 @@
 package com.piashcse.feature.refund_request
 
+import com.piashcse.config.DotEnvConfig
 import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.RefundRequestRequest
@@ -17,6 +18,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
+import java.io.File
 
 /**
  * Public/User/Seller refund request routes.
@@ -51,7 +53,34 @@ fun Route.refundRequestRoutes() {
         }
     }
 
-    requireRole(UserType.CUSTOMER, UserType.SELLER) {
+    requireRole(UserType.CUSTOMER, UserType.SELLER, UserType.ADMIN, UserType.SUPER_ADMIN) {
+        /**
+         * @tag Refund-Request
+         * @description Get private refund evidence for an authorized refund request
+         */
+        get("{id}/evidence/{fileName}") {
+            val refundId = call.requirePathParameter("id")
+            val fileName = call.requirePathParameter("fileName")
+            if (fileName.contains('/') || fileName.contains('\\') || fileName.contains("..")) {
+                throw com.piashcse.utils.validator.ValidationException("Invalid file name")
+            }
+            val refund =
+                refundRequestRepo.getRefundById(
+                    refundId,
+                    call.currentUserId,
+                    call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
+                ) ?: throw com.piashcse.utils.validator.NotFoundException(Message.Refunds.NOT_FOUND)
+            // Touch the record so authorization above is the gate, then serve the file.
+            check(refund.id == refundId)
+            val root = File(DotEnvConfig.uploadDir, "refund-images").canonicalFile
+            val file = File(root, fileName).canonicalFile
+            if (!file.canonicalPath.startsWith(root.canonicalPath) || !file.isFile) {
+                throw com.piashcse.utils.validator.NotFoundException("Evidence file not found")
+            }
+            call.response.header(HttpHeaders.CacheControl, "private, no-store")
+            call.respondFile(file)
+        }
+
         /**
          * @tag Refund-Request
          * @description Get refund requests for an order
@@ -83,7 +112,7 @@ fun Route.refundRequestRoutes() {
             if (refundRequest != null) {
                 call.respondOk(refundRequest)
             } else {
-                call.respond(HttpStatusCode.NotFound, "Refund request not found")
+                throw com.piashcse.utils.validator.NotFoundException(Message.Refunds.NOT_FOUND)
             }
         }
     }

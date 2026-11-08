@@ -10,43 +10,33 @@ import io.ktor.utils.io.*
 import java.io.File
 
 /**
- * Configures static file serving for uploaded content.
- *
- * This plugin serves uploaded files (profile images, product images, etc.)
- * from the upload directory at the `/uploads` path.
- *
- * Uploaded files are accessible at:
- * - /uploads/profile-images/{filename}
- * - /uploads/product-images/{filename}
- * - /uploads/shop-images/{filename}
- * - /uploads/refund-images/{filename}
- * - /uploads/category-images/{filename}
+ * Serves public catalog/profile imagery. Refund evidence is deliberately NOT
+ * mounted here: it is private and served through an authorization-checked route
+ * in the refund module.
  */
 fun Application.configureStaticContent() {
-    // Get the upload base directory
     val uploadBaseDir = DotEnvConfig.uploadDir
     val uploadDir = File(uploadBaseDir).canonicalFile
+    if (!uploadDir.exists()) uploadDir.mkdirs()
 
-    if (!uploadDir.exists()) {
-        uploadDir.mkdirs()
-    }
+    val publicDirectories = listOf("profile-images", "product-images", "shop-images", "category-images", "brand-images")
 
     routing {
-        @OptIn(ExperimentalKtorApi::class)
-        staticFiles("/uploads", uploadDir) {
-            cacheControl { _ ->
-                listOf(
-                    CacheControl.MaxAge(
-                        maxAgeSeconds = CacheMaxAge.ONE_HOUR,
-                        visibility = CacheControl.Visibility.Public,
-                        mustRevalidate = true,
-                    ),
-                )
-            }
-        }.hide()
+        publicDirectories.forEach { directory ->
+            val dir = File(uploadDir, directory).canonicalFile
+            if (!dir.exists()) dir.mkdirs()
+            @OptIn(ExperimentalKtorApi::class)
+            staticFiles("/uploads/$directory", dir) {
+                cacheControl { _ ->
+                    listOf(
+                        CacheControl.MaxAge(
+                            maxAgeSeconds = 3600,
+                            visibility = CacheControl.Visibility.Public,
+                            mustRevalidate = true,
+                        ),
+                    )
+                }
+            }.hide()
+        }
     }
-}
-
-private object CacheMaxAge {
-    const val ONE_HOUR = 3600
 }

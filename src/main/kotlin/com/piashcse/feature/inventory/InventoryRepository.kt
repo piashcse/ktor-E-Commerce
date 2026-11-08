@@ -6,65 +6,54 @@ import com.piashcse.utils.common.PaginatedResponse
 
 interface InventoryRepository {
     /**
-     * Creates or updates inventory for a product.
+     * Creates or updates inventory for a product owned by the seller's shop.
      *
-     * @param inventoryRequest The inventory details to create or update.
-     * @return The created/updated inventory record.
+     * @param actorUserId Authenticated seller; must own the product/shop.
      */
-    suspend fun createOrUpdateInventory(inventoryRequest: InventoryRequest): InventoryResponse
+    suspend fun createOrUpdateInventory(
+        inventoryRequest: InventoryRequest,
+        actorUserId: String,
+    ): InventoryResponse
 
     /**
-     * Gets inventory by product ID.
-     *
-     * @param productId The product ID to get inventory for.
-     * @return The inventory record for the product.
+     * Gets inventory by product ID, scoped to the seller's shop.
      */
-    suspend fun getInventoryByProduct(productId: String): InventoryResponse?
+    suspend fun getInventoryByProduct(
+        productId: String,
+        actorUserId: String,
+    ): InventoryResponse?
 
     /**
-     * Updates inventory stock for a product.
-     *
-     * @param productId The product ID to update.
-     * @param quantity The quantity to update by.
-     * @param operation The operation to perform: "add", "subtract", or "set".
-     * @return The updated inventory record.
+     * Updates inventory stock for a product owned by the seller's shop.
      */
     suspend fun updateStock(
+        actorUserId: String,
         productId: String,
         quantity: Int,
         operation: String = "add",
     ): InventoryResponse
 
     /**
-     * Gets low stock products.
-     *
-     * @param limit The maximum number of products to return.
-     * @return A list of products with low stock.
+     * Gets low-stock products for the seller's shop.
      */
     suspend fun getLowStockProducts(
+        actorUserId: String,
         limit: Int = 10,
         offset: Int = 0,
     ): PaginatedResponse<InventoryResponse>
 
     /**
-     * Gets inventory by shop ID.
-     *
-     * @param shopId The shop ID to get inventory for.
-     * @return A list of inventory records for the shop.
+     * Gets inventory for a shop; the caller must own that shop.
      */
     suspend fun getInventoryByShop(
+        actorUserId: String,
         shopId: String,
         limit: Int = 20,
         offset: Int = 0,
     ): PaginatedResponse<InventoryResponse>
 
     /**
-     * Gets all inventory records across shops, optionally filtered by shop ID.
-     *
-     * @param limit The maximum number of records to return.
-     * @param offset The number of records to skip.
-     * @param shopId Optional shop ID to filter by.
-     * @return A paginated list of inventory records.
+     * Gets all inventory records across shops (admin only).
      */
     suspend fun getAllInventory(
         limit: Int = 20,

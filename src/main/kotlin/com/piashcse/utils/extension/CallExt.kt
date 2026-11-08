@@ -1,5 +1,6 @@
 package com.piashcse.utils.extension
 
+import com.piashcse.config.DotEnv
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.model.request.ProductWithFilterRequest
@@ -13,20 +14,25 @@ suspend inline fun <reified T : Any> ApplicationCall.respondOk(data: T) = respon
 suspend inline fun <reified T : Any> ApplicationCall.respondCreated(data: T) = respond(HttpStatusCode.Created, data)
 
 /**
- * Best-effort client IP. X-Forwarded-For is attacker-controlled unless the app
- * runs behind a trusted proxy (TRUST_PROXY=true). By default only X-Real-IP
- * from infra + socket host are used; enable TRUST_PROXY only behind LB/CDN
- * that sanitizes XFF.
+ * Best-effort client IP.
+ *
+ * Proxy headers are attacker-controlled unless the app actually runs behind a
+ * trusted proxy. Only when `TRUST_PROXY=true` (read through DotEnv so process
+ * env and .env agree) do we honor `X-Forwarded-For` / `X-Real-IP`. Otherwise the
+ * socket address is used, which prevents rate-limit bypass by header spoofing.
  */
 val ApplicationCall.clientIp: String
     get() {
-        val trustProxy = System.getenv("TRUST_PROXY")?.equals("true", ignoreCase = true) == true
+        val trustProxy = runCatching { DotEnv.getBoolean("TRUST_PROXY", false) }.getOrDefault(false)
         if (trustProxy) {
-            request.headers[HttpHeaders.XForwardedFor]?.substringBefore(',')?.trim()?.takeIf { it.isNotEmpty() }
+            request.headers[HttpHeaders.XForwardedFor]
+                ?.substringBefore(',')
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
                 ?.let { return it }
+            request.headers["X-Real-IP"]?.takeIf { it.isNotEmpty() }?.let { return it }
         }
-        return request.headers["X-Real-IP"]?.takeIf { it.isNotEmpty() }
-            ?: request.local.remoteHost
+        return request.local.remoteHost
     }
 
 fun ApplicationCall.paginateQueryParams(

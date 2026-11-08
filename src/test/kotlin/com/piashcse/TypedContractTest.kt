@@ -136,7 +136,7 @@ class TypedContractTest {
         testApplication {
             val repo: PaymentRepository = mockk()
             coEvery { repo.createPayment(any(), any()) } returns
-                PaymentResponse("pay-1", "o-1", "115.00", PaymentStatus.COMPLETED, PaymentMethod.COD, "tx-1")
+                PaymentResponse("pay-1", "o-1", "115.00", "USD", PaymentStatus.COMPLETED, PaymentMethod.COD, "tx-1")
             application {
                 installTestInfra(module { single<PaymentRepository> { repo } })
                 routing { route("/api/v1/payments") { paymentRoutes() } }
@@ -146,7 +146,7 @@ class TypedContractTest {
                 client.post("/api/v1/payments") {
                     header(HttpHeaders.Authorization, authHeader())
                     contentType(ContentType.Application.Json)
-                    setBody(PaymentRequest("o-1", BigDecimal("115.00"), PaymentStatus.PENDING, PaymentMethod.COD, "tx-1"))
+                    setBody(PaymentRequest("o-1", BigDecimal("115.00"), PaymentMethod.COD, "tx-1"))
                 }
             assertEquals(HttpStatusCode.Created, res.status)
             assertEquals("pay-1", res.body<PaymentResponse>().id)
@@ -221,7 +221,7 @@ class TypedContractTest {
     private fun mockRefund() =
         RefundRequestResponse(
             "r-1", "oi-1", "o-1", "user-1", "damaged", null,
-            RefundStatus.PENDING, null, null, null,
+            RefundStatus.PENDING, "USD", null, null, null,
             "2024-01-01T00:00:00", null, "2024-01-01T00:00:00", "2024-01-01T00:00:00",
         )
 }

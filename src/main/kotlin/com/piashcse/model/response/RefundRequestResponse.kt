@@ -13,11 +13,12 @@ data class RefundRequestResponse(
     val reason: String,
     val images: String?,
     val status: RefundStatus,
+    val currency: String = "USD",
     val refundAmount: String?,
     val refundMethod: RefundMethod?,
     val trackingNumber: String?,
     val requestedAt: String,
     val resolvedAt: String?,
     val createdAt: String,
-    val updatedAt: String,
+    val updatedAt: String?,
 )

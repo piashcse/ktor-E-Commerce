@@ -17,11 +17,18 @@ import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
+import com.piashcse.utils.validator.RateLimitExceededException
+import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
+import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
+
+@Serializable
+data class OtpVerificationRequest(val userId: String, val otp: String)
 
 /**
  * Authentication and registration routes.
@@ -67,13 +74,12 @@ fun Route.authRoutes() {
                 }
 
                 is ResetResult.InvalidOrExpiredOtp -> {
-                    call.respondOk(MessageResponse(Message.Auth.OTP_INVALID))
+                    throw ValidationException(Message.Auth.OTP_INVALID)
                 }
 
                 is ResetResult.Locked -> {
-                    call.respond(
-                        HttpStatusCode.TooManyRequests,
-                        MessageResponse(Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES)),
+                    throw RateLimitExceededException(
+                        Message.Auth.accountLocked(AppConstants.Authentication.OTP_LOCKOUT_MINUTES),
                     )
                 }
             }
@@ -86,9 +92,23 @@ fun Route.authRoutes() {
      */
     otpRateLimit {
         post("otp-verification") {
-            val userId = call.requireQueryParameter("userId")
-            val otp = call.requireQueryParameter("otp")
-            call.respondOk(userAuthService.otpVerification(userId, otp))
+            // Prefer the documented JSON body; keep query params as a legacy fallback.
+            val body =
+                if (call.request.queryParameters["userId"] == null) {
+                    runCatching { call.receive<OtpVerificationRequest>() }.getOrNull()
+                } else {
+                    null
+                }
+            val userId =
+                call.request.queryParameters["userId"] ?: body?.userId
+                    ?: throw ValidationException("userId is required")
+            val otp =
+                call.request.queryParameters["otp"] ?: body?.otp
+                    ?: throw ValidationException("otp is required")
+            if (!userAuthService.otpVerification(userId, otp)) {
+                throw ValidationException(Message.Auth.OTP_INVALID)
+            }
+            call.respondOk(MessageResponse("OTP verified successfully"))
         }
     }
 
@@ -131,6 +151,11 @@ fun Route.authRoutes() {
                     },
                 )
             ) {
+                // Invalidate the access token used for this request as well.
+                call.request.headers[HttpHeaders.Authorization]
+                    ?.takeIf { it.startsWith("Bearer ") }
+                    ?.substring(7)
+                    ?.let { authRepo.blacklistToken(it) }
                 call.respondOk(MessageResponse(Message.Auth.PASSWORD_CHANGE_SUCCESS))
             } else {
                 call.respond(HttpStatusCode.Unauthorized, MessageResponse(Message.Auth.INVALID_CREDENTIALS))

@@ -2,6 +2,8 @@ package com.piashcse.feature.inventory
 
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.plugin.sellerWriteRateLimit
+import com.piashcse.service.CacheService
+import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -22,7 +24,9 @@ fun Route.inventorySellerRoutes() {
          * @description Seller: Initialize or update inventory for a product
          */
         post {
-            call.respondCreated(inventoryRepo.createOrUpdateInventory(call.receive<InventoryRequest>()))
+            val result = inventoryRepo.createOrUpdateInventory(call.receive<InventoryRequest>(), call.currentUserId)
+            CacheService.cache.invalidatePattern("products:.*")
+            call.respondCreated(result)
         }
 
         /**
@@ -34,7 +38,9 @@ fun Route.inventorySellerRoutes() {
             val quantityStr = call.requireQueryParameter("quantity")
             val quantity = quantityStr.toIntOrNull() ?: throw IllegalArgumentException("quantity must be an integer")
             val operation = call.parameters["operation"] ?: "set"
-            call.respondOk(inventoryRepo.updateStock(productId, quantity, operation))
+            val result = inventoryRepo.updateStock(call.currentUserId, productId, quantity, operation)
+            CacheService.cache.invalidatePattern("products:.*")
+            call.respondOk(result)
         }
     }
 
@@ -44,11 +50,11 @@ fun Route.inventorySellerRoutes() {
      */
     get("/product/{productId}") {
         val productId = call.requirePathParameter("productId")
-        val inventory = inventoryRepo.getInventoryByProduct(productId)
+        val inventory = inventoryRepo.getInventoryByProduct(productId, call.currentUserId)
         if (inventory != null) {
             call.respondOk(inventory)
         } else {
-            call.respond(HttpStatusCode.NotFound, "Inventory not found for product")
+            throw com.piashcse.utils.validator.NotFoundException("Inventory not found for product")
         }
     }
 
@@ -59,7 +65,7 @@ fun Route.inventorySellerRoutes() {
     get("/shop/{shopId}") {
         val shopId = call.requirePathParameter("shopId")
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(inventoryRepo.getInventoryByShop(shopId, limit, offset))
+        call.respondOk(inventoryRepo.getInventoryByShop(call.currentUserId, shopId, limit, offset))
     }
 
     /**
@@ -68,7 +74,7 @@ fun Route.inventorySellerRoutes() {
      */
     get("/low-stock") {
         val (limit, offset) = call.paginateQueryParams()
-        call.respondOk(inventoryRepo.getLowStockProducts(limit, offset))
+        call.respondOk(inventoryRepo.getLowStockProducts(call.currentUserId, limit, offset))
     }
 }
 

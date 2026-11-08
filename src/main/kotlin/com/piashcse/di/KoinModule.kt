@@ -71,8 +71,8 @@ val serviceModule =
         single<DashboardRepository> { DashboardRepositoryImpl() }
         single<InventoryRepository> { InventoryRepositoryImpl() }
         single<OrderRepository> { OrderRepositoryImpl() }
-        single<PaymentRepository> { PaymentRepositoryImpl() }
         single<PaymentGateway> { ManualPaymentGateway() }
+        single<PaymentRepository> { PaymentRepositoryImpl(get()) }
         single<PolicyRepository> { PolicyRepositoryImpl() }
         single<ProductRepository> { ProductRepositoryImpl() }
         single<ProductCategoryRepository> { ProductCategoryRepositoryImpl() }

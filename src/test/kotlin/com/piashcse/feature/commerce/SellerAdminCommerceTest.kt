@@ -4,7 +4,6 @@ import com.piashcse.RouteTestHelper.authHeader
 import com.piashcse.RouteTestHelper.installTestInfra
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
-import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.RefundStatus
 import com.piashcse.feature.order.OrderRepository
 import com.piashcse.feature.order.orderAdminRoutes
@@ -121,7 +120,7 @@ class SellerAdminRefundRoutesTest {
             coEvery { repo.updateRefundStatus(any(), any(), any()) } returns
                 RefundRequestResponse(
                     "r-1", "oi-1", "o-1", "user-1", "damaged", null,
-                    RefundStatus.APPROVED, null, null, null,
+                    RefundStatus.APPROVED, "USD", null, null, null,
                     "2024-01-01T00:00:00", null, "2024-01-01T00:00:00", "2024-01-01T00:00:00",
                 )
             application {
@@ -143,7 +142,7 @@ class SellerAdminRefundRoutesTest {
             coEvery { repo.updateRefundStatus(any(), any(), any()) } returns
                 RefundRequestResponse(
                     "r-1", "oi-1", "o-1", "user-1", "damaged", null,
-                    RefundStatus.APPROVED, null, null, null,
+                    RefundStatus.APPROVED, "USD", null, null, null,
                     "2024-01-01T00:00:00", null, "2024-01-01T00:00:00", "2024-01-01T00:00:00",
                 )
             application {
@@ -190,7 +189,7 @@ class CommerceValidationTest {
     @Test
     fun `payment request rejects zero amount`() {
         assertFailsWith<ConstraintViolationException> {
-            PaymentRequest("o-1", BigDecimal.ZERO, PaymentStatus.PENDING, PaymentMethod.COD, null)
+            PaymentRequest("o-1", BigDecimal.ZERO, PaymentMethod.COD, null)
         }
     }
 

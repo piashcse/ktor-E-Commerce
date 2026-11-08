@@ -1,0 +1,206 @@
+# Ktor E-Commerce — Deep Analysis & Remediation Tracker
+
+> Living document. Each item is marked `[x]` when the fix is implemented and the project compiles/tests pass.
+> `[~]` means the in-repo scaffold/guard is implemented but a third-party provider or deployment config is still required.
+> `[ ]` means still open.
+
+**Scope:** full `src/main/kotlin` tree (~15.6k LOC), Flyway migrations `V1..V17`, tests, docs, CI, Docker.
+**Baseline:** `./gradlew compileKotlin` passes on commit `c5b4401` (`feature-improvement`).
+
+---
+
+## 0. Executive Summary
+
+The project has a solid skeleton (clean package layout, BigDecimal money, JWT, Flyway, an outbox attempt, 293 tests), but the money and fulfillment paths are not production-safe. The highest-risk areas are:
+
+1. Client-controlled payment status (free orders).
+2. Seller broken access control on inventory and notifications.
+3. Registration account pre-hijacking.
+4. Half-implemented multi-currency.
+5. Coupon/refund/payout lifecycle leaks and races.
+6. Outbox that marks events published before consumers process them.
+7. Broken OTP migration (`V12`).
+8. API contract drift (numeric vs string money, optional fields, docs).
+
+---
+
+## 1. P0 — Security & Money (must fix)
+
+- [x] **P0-1. Remove client-controlled payment completion.** `PaymentRequest.status` is trusted; matching amount completes the order. Payment gateway is never called.
+  - `feature/payment/PaymentRepositoryImpl.kt:80-118`, `model/request/PaymentRequest.kt:14-19`, `PaymentGateway.kt:30-42`
+  - Fix: server-owned status, call gateway, explicit confirmation/admin webhook.
+- [x] **P0-2. Reject payment on non-payable orders.** Canceled/refunded/delivered orders can be paid and reset to `CONFIRMED`.
+  - `PaymentRepositoryImpl.kt:53-118`
+- [x] **P0-3. Fix registration account pre-hijacking.** Re-registering an unverified email keeps the attacker's password.
+  - `AuthRepositoryImpl.kt:176-211`
+- [x] **P0-4. Inventory IDOR.** Any seller can read/change any product's stock.
+  - `InventoryRoutes.kt:17-63`, `InventoryRepositoryImpl.kt:25-122`
+- [x] **P0-5. Notification IDOR / preference overwrite.** Any seller can notify any user and write `NOTIFICATION_PREFS`.
+  - `NotificationRoutes.kt:67-71`, `NotificationRepositoryImpl.kt:96-145`
+- [x] **P0-6. Rate-limit bypass via spoofed IP.** `X-Real-IP` trusted unconditionally; `TRUST_PROXY` ignores `.env`.
+  - `utils/extension/CallExt.kt:21-30`, `ConfigureRateLimit.kt:54-61`
+- [x] **P0-7. Make refund evidence private.** Static `/uploads` serves `refund-images` publicly.
+  - `StaticContent.kt:34-46`, `UploadService.kt:29-33`
+- [x] **P0-8. Fix OTP migration.** `V12` drops a non-existent index; the old `otp_attempt(user_id)` unique index survives.
+  - `V4__create_otp_attempt_table.sql:11`, `V12__otp_attempt_purpose.sql:4-11`
+- [x] **P0-9. Bound upload reads.** Full multipart body is read into memory before the size check.
+  - `UploadService.kt:120-133,177-184`
+- [x] **P0-10. Harden OTP/reset endpoints.** OTP in query string; reset-password leaks unknown emails; password change/reset does not revoke sessions.
+  - `AuthRoutes.kt:63-92`, `AuthRepositoryImpl.kt:252-332`
+
+---
+
+## 2. P1 — Commerce Correctness
+
+- [x] **P1-1. Fix order state machine.** Add `SHIPPED`; payment should set `PAID`; seller can progress `PAID → SHIPPED → DELIVERED`.
+  - `constants/Enums.kt:60-87`, `PaymentRepositoryImpl.kt:104`, `OrderRoutes.kt:47-51`
+- [x] **P1-2. Complete multi-currency consistently.** Store order FX rate; convert items; summary applies currency; coupons/refunds/payouts carry currency; dashboard converts to USD.
+  - `V11__fx_rates.sql`, `OrderRepositoryImpl.kt:254-299,384-409`, `RefundRequestRepositoryImpl.kt:157-192`, `NotificationSubscriber.kt:124-131`, `DashboardRepositoryImpl.kt:27-34`
+- [x] **P1-3. Fix coupon lifecycle.** Reverse usage on cancel/cleanup/refund; normalize codes; per-user limit; cascade on delete; cap both discount types; reject `usageLimit < usageCount`.
+  - `OrderRepositoryImpl.kt:144-160,303-318,608-636`, `CouponRepositoryImpl.kt:46-56,97-141`, `V8`
+- [x] **P1-4. Fix refund math and reversal.** Net-of-discount cap, currency, inventory/sales/payout/payment reversal, state machine holes, eligibility, duplicate race.
+  - `RefundRequestRepositoryImpl.kt:48-75,149-247`
+- [x] **P1-5. Fix payout lifecycle.** Per-seller idempotency, partial claims, locking, status enum, reject releases funds, require approval before payment, block suspended sellers, currency, net commission.
+  - `PayoutRepositoryImpl.kt:100-177`, `V17`
+- [x] **P1-6. Make reservation cleanup safe.** Row locks, shared cancellation routine, UTC, only release canceled rows, reverse sales/seller/coupon.
+  - `StockReservationCleanup.kt:35-69`
+- [x] **P1-7. Make outbox consumer-acknowledged.** Ack after subscribers, attempts cap, ordered claim, idempotent start, safe shutdown, no publish without subscribers.
+  - `OutboxPoller.kt:41-83`, `EventBus.kt:39-169`, `Application.kt:52-59`
+- [x] **P1-8. Stop non-approved shops leaking into catalog.** Public shop filters + product/shop join + guarded status transitions + seller status sync.
+  - `ShopRepositoryImpl.kt:92-212`, `ProductRepositoryImpl.kt:183-206`
+- [x] **P1-9. Fix dashboard analytics.** Paid-only revenue, USD normalization, exclude canceled items, exclude soft-deleted/deactivated, bound limits.
+  - `DashboardRepositoryImpl.kt:27-34,185-190,306-331`
+- [x] **P1-10. Fix review integrity.** Verified purchase by paid/delivered order, product existence, status filtering, helpful dedupe, SQL aggregation.
+  - `ReviewRatingRepositoryImpl.kt:28-111`
+- [x] **P1-11. Fix cache.** Bound memory cache, use default TTL, invalidate product cache on order/review/inventory changes.
+  - `CacheService.kt:33-63`, `ProductCatalogService.kt:14-23`
+- [x] **P1-12. Fix idempotency key scoping.** Per-user order keys, length validation, separate payment idempotency key from `transactionId`.
+  - `Order.kt:17`, `V9`, `OrderRepositoryImpl.kt:175-184`, `PaymentRoutes.kt:26-30`
+- [x] **P1-13. Remove `itemsForOrder` 50-item truncation.**
+  - `OrderItem.kt:27`
+- [x] **P1-14. Fix product write validation.** Non-negative stock, discount < price, honor/clear status, don't allow unsellable null-shop products.
+  - `ProductRepositoryImpl.kt:108-181`, `ProductRequest.kt`, `UpdateProductRequest.kt`
+- [x] **P1-15. Fix wishlist/cart correctness.** Reject `quantity <= 0`, don't lose wishlist row, merge duplicates, consistent `itemCount`.
+  - `WishListRepositoryImpl.kt:65-88`, `CartRepositoryImpl.kt:143-189`
+
+---
+
+## 3. P2 — Data, Contract & Operations
+
+- [x] **P2-1. Serialization contract.** Accept numeric and string `BigDecimal`; register `LocalDate` serializer; default optional nullable fields; reject silent enum/currency coercion.
+  - `ConfigureBasic.kt:44-58,120-134`, request DTOs, `UserProfileResponse.kt:24`
+- [x] **P2-2. Standardize HTTP statuses/errors.** 403 for authorization, 400/422 for validation, 404 JSON, no 200 for failed OTP.
+  - `PaymentRepositoryImpl.kt`, `RefundRequestRepositoryImpl.kt`, `OrderRoutes.kt`, `AuthRoutes.kt`, `CouponRoutes.kt`
+- [x] **P2-3. Standardize delete responses/pagination.** One delete convention; consistent pagination metadata.
+- [x] **P2-4. Consent history.** Append instead of overwrite; unique `(user_id, policy_id)`; UTC; only active/effective policies.
+  - `ConsentRepositoryImpl.kt:35-123`
+- [x] **P2-5. Policy lifecycle.** Respect `effectiveDate`, only one active policy per type, flexible date parsing, ordered latest.
+  - `PolicyRepositoryImpl.kt:21-78`
+- [x] **P2-6. Config hardening.** `DB_NAME` default, process env precedence, configurable Hikari, fail-fast.
+  - `DotEnvConfig.kt:6`, `DotEnv.kt:15-25`, `ConfigureDataBase.kt`
+- [x] **P2-7. Logging/tracing.** `yyyy` not `YYYY`, INFO in prod, MDC propagation, no log injection, structured output.
+  - `logback.xml:4,12`, `RequestTracing.kt`
+- [x] **P2-8. DB integrity.** Missing indexes/unique constraints/checks; seller status default; coupon usage cascade; per-user limits.
+  - New `V18__security_payment_hardening.sql` + `V19__commerce_hardening.sql`
+- [~] **P2-9. Outbox lifecycle.** `attempts` cap, dead-letter table/endpoint, cleanup job.
+- [x] **P2-10. Async/image safety.** Bounded queue, restart guard, temp-file atomic image rewrite, WebP signature, dimension guard.
+  - `AsyncWorker.kt`, `UploadService.kt`, `ImageCompressor.kt`
+- [x] **P2-11. CI/Docker.** Build artifact in CI, non-root image, healthcheck, uploads volume, `.dockerignore`, no weak defaults.
+  - `.github/workflows/ci.yml`, `Dockerfile`, `docker-compose.yml`
+- [x] **P2-12. Docs/OpenAPI sync.** Remove false `/openapi`, v2, public-shop claims; document payout/notification; add Bearer security; remove global deprecation header.
+  - `README.md`, `docs/**`, `ConfigureSwagger.kt`, `ConfigureRouting.kt:68-75`
+- [~] **P2-13. Tests.** Non-skipping Testcontainers DB test, serialization contract tests, concurrency tests for payment/refund/payout/coupon.
+  - `PostgresIntegrationTest.kt:39-51`, `RouteTestHelper.kt:30`
+
+---
+
+## 4. Feature Incompleteness (implemented as safe scaffolding where external providers are required)
+
+- [x] **F-1. Payment provider framework.** Gateway interface, COD flow, explicit admin confirmation/webhook, refund transaction linkage.
+- [~] **F-2. Real payment provider integration** (Stripe/bKash/SSLCommerz) — adapter interface ready; credentials/webhook secret required.
+- [~] **F-3. Shipment state + tracking.** `SHIPPED` status, shipping date, tracking number endpoint.
+- [~] **F-4. Partial/quantity refunds + shipping/tax refund fields.**
+- [~] **F-5. Coupon per-user limit, scoping, usage reversal, admin filters.**
+- [x] **F-6. Payout request aggregate/status/balance endpoint.**
+- [ ] **F-7. Product variants/attributes** — documented as out of scope for this pass (schema addition).
+- [x] **F-8. Category/brand/shop image write path** — currently columns exist but unused.
+- [x] **F-9. Notification preferences honored by subscriber.**
+- [x] **F-10. Cleanup jobs** for outbox, tokens, attempts, notifications.
+- [x] **F-11. FX rate admin API + staleness check.**
+- [x] **F-12. Consent enforcement** before checkout/registration for required policies.
+
+---
+
+## 5. Feature Inconsistency
+
+- [x] **I-1. Response envelope:** code returns raw DTOs; README says raw but examples wrap.
+- [~] **I-2. Money representation:** string vs numeric vs `Double`; docs numeric.
+- [~] **I-3. Date/time:** mixed timezone and string/object output.
+- [~] **I-4. Pagination params:** `limit/offset` vs `page/perPage`; some raw lists.
+- [~] **I-5. Catalog input style:** body vs query for create/update.
+- [x] **I-6. Auth docs:** OTP body vs query; admin registration; README passwords.
+- [~] **I-7. Public vs private routes:** `/shops/public` authenticated; brand vs category inconsistency.
+- [x] **I-8. Order status docs vs `OrderStatus` (no `SHIPPED`).**
+- [x] **I-9. Currency units across summary/order/refund/payout/dashboard.**
+- [x] **I-10. Inventory/product status not synchronized.**
+- [x] **I-11. Seller/shop status divergence.**
+- [x] **I-12. Delete response shapes (Boolean/String/Message/object).**
+- [x] **I-13. Error body shapes (ApiError/MessageResponse/plain text).**
+- [x] **I-14. Global `Deprecation` header on the only API version.**
+
+---
+
+## 6. Enhancements (post-fix roadmap)
+
+- [ ] **E-1. Real gateway webhooks + signature verification + 3-D Secure.**
+- [ ] **E-2. Carrier integration, labels, tracking webhooks, delivery slots.**
+- [ ] **E-3. Product variants/options, attributes, bundles, recommendations.**
+- [ ] **E-4. Multi-warehouse inventory, backorders, supplier POs, stock audit.**
+- [ ] **E-5. Tax rules by region/category; promotions engine (stacking/scopes).**
+- [ ] **E-6. Seller KYC, commission tiers, statements, tax exports.**
+- [ ] **E-7. RMA/return portal, exchanges, partial refunds by quantity.**
+- [ ] **E-8. Guest checkout, saved payment methods, order tracking page.**
+- [ ] **E-9. Notification templates, email/SMS/push providers, preferences.**
+- [ ] **E-10. GDPR export/erasure, consent history UI, audit export.**
+- [ ] **E-11. Admin RBAC granular permissions, feature flags, API keys.**
+- [ ] **E-12. Cursor pagination, read replicas, query plan/index review.**
+- [ ] **E-13. Circuit breakers, retries with jitter, DLQ admin UI.**
+- [ ] **E-14. Observability SLOs: outbox lag, payment/refund/payout failure metrics.**
+- [ ] **E-15. Full-text search adoption (`search_vector` trigger exists but unused).**
+
+---
+
+## 7. Remediation Order (executed)
+
+1. P0 security/money.
+2. P1 fulfillment/currency/coupon/refund/payout/cleanup/outbox.
+3. P2 contract/DB/config/logging/CI.
+4. Feature scaffolds + docs.
+
+---
+
+## 8. Verification Log
+
+| Batch | Change | Compile | Tests |
+|---|---|---|---|
+| 0 | baseline | ✅ | ✅ 293 tests |
+| 1 | security/payment | ✅ | ✅ |
+| 2 | commerce | ✅ | ✅ |
+| 3 | contracts/outbox/cache | ✅ | ✅ |
+| 4 | migrations/config/CI/docs | ✅ | ✅ 298 tests (1 skipped Testcontainers) |
+
+**Final verification:** `./gradlew compileKotlin compileTestKotlin test ktlintCheck detekt` all pass (298 tests, 1 skipped Testcontainers test).
+
+**Implemented in this pass (highlights):**
+- Server-owned payment status, COD flow + admin confirm endpoint.
+- Registration pre-hijack fix; session revocation on password change/reset; OTP body support; anti-enumeration reset.
+- Seller ownership checks for inventory/notifications; private refund evidence route.
+- Order state machine with `SHIPPED`, payment sets `PAID`.
+- FX rate persisted on orders, item/refund/payout currency, dashboard USD normalization, FX admin API + staleness.
+- Coupon per-user limits, usage reversal, code normalization, soft-retire used coupons.
+- Net-of-discount refund caps + stock/sales/payout/payment reversal.
+- Payout request aggregate, per-seller idempotency, locking, lifecycle statuses, balance endpoint.
+- Shared cancellation routine used by cancel/cleanup/refund; UTC timestamps.
+- Consumer-acknowledged outbox, attempts cap, safe shutdown, bounded cache/queue, product-status sync, review vote dedupe.
+- V18/V19 migrations for OTP index, payment/order currency, payout requests, consent revocation, review votes, indexes, constraints.
+- Docker non-root/healthcheck/volume, CI build, docs corrections, 298 tests.

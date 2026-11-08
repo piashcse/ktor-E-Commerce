@@ -9,7 +9,9 @@ data class PaymentResponse(
     val id: String,
     val orderId: String,
     val amount: String,
+    val currency: String = "USD",
     val status: PaymentStatus,
     val paymentMethod: PaymentMethod,
     val transactionId: String?,
+    val createdAt: String? = null,
 )

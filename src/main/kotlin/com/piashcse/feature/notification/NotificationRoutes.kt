@@ -3,7 +3,9 @@ package com.piashcse.feature.notification
 import com.piashcse.constants.UserType
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.extension.getCurrentUserType
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -65,9 +67,21 @@ fun Route.notificationRoutes() {
         }
     }
     requireRole(UserType.ADMIN, UserType.SUPER_ADMIN, UserType.SELLER) {
-        post("send") {
-            val body = call.receive<SendNotificationRequest>()
-            call.respondCreated(repo.send(body.userId, body.title, body.body, body.channel, body.type))
+        writeRateLimit {
+            post("send") {
+                val body = call.receive<SendNotificationRequest>()
+                call.respondCreated(
+                    repo.send(
+                        actorUserId = call.currentUserId,
+                        actorType = call.getCurrentUserType(),
+                        userId = body.userId,
+                        title = body.title,
+                        body = body.body,
+                        channel = body.channel,
+                        type = body.type,
+                    ),
+                )
+            }
         }
     }
     requireRole {

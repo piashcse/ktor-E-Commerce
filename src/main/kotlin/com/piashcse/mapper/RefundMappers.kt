@@ -14,11 +14,12 @@ fun RefundRequestDAO.toRefundRequestResponse() =
         reason = reason,
         images = images,
         status = status,
+        currency = currency,
         refundAmount = refundAmount?.let { Money.str(it) },
         refundMethod = refundMethod,
         trackingNumber = trackingNumber,
         requestedAt = requestedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
         resolvedAt = resolvedAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
         createdAt = createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-        updatedAt = updatedAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) ?: "",
+        updatedAt = updatedAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
     )

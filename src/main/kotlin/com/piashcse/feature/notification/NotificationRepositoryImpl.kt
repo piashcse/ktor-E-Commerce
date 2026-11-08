@@ -1,13 +1,19 @@
 package com.piashcse.feature.notification
 
+import com.piashcse.constants.UserType
 import com.piashcse.database.entities.NotificationDAO
 import com.piashcse.database.entities.NotificationTable
+import com.piashcse.database.entities.OrderDAO
+import com.piashcse.database.entities.OrderTable
+import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.requireSellerByUserId
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
@@ -94,6 +100,8 @@ class NotificationRepositoryImpl : NotificationRepository {
         }
 
     override suspend fun send(
+        actorUserId: String,
+        actorType: UserType?,
         userId: String,
         title: String,
         body: String,
@@ -103,11 +111,35 @@ class NotificationRepositoryImpl : NotificationRepository {
         UserDAO.findById(userId) ?: userId.throwNotFound("User")
         if (title.isBlank()) throw ValidationException("Notification title cannot be blank")
         if (body.isBlank()) throw ValidationException("Notification body cannot be blank")
+
+        val normalizedType = type?.takeIf { it.isNotBlank() }?.uppercase() ?: DEFAULT_SEND_TYPE
+        if (normalizedType == PREFS_TYPE) {
+            throw ValidationException("Reserved notification type")
+        }
+
+        when (actorType) {
+            UserType.SELLER -> {
+                val shopId =
+                    requireSellerByUserId(actorUserId).shopId?.value
+                        ?: throw ForbiddenException("Seller has no shop")
+                val orderedFromShop =
+                    OrderDAO.find {
+                        (OrderTable.userId eq userId.entityID(UserTable)) and
+                            (OrderTable.shopId eq shopId.entityID(ShopTable))
+                    }.firstOrNull() != null
+                if (!orderedFromShop) {
+                    throw ForbiddenException("Seller may only notify customers of their own shop")
+                }
+            }
+            UserType.ADMIN, UserType.SUPER_ADMIN -> Unit
+            else -> throw ForbiddenException("Insufficient permissions to send notifications")
+        }
+
         val resolvedChannel = channel?.let { requireChannel(it) } ?: storedChannel(userId)
         NotificationDAO.new {
             this.userId = userId.entityID(UserTable)
             this.channel = resolvedChannel
-            this.type = type?.takeIf { it.isNotBlank() }?.uppercase() ?: DEFAULT_SEND_TYPE
+            this.type = normalizedType
             this.title = title
             this.body = body
         }.toResponse()
