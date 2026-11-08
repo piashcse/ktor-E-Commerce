@@ -15,6 +15,7 @@ import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
 import com.piashcse.model.response.RefundRequestResponse
+import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
@@ -286,6 +287,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             request.refundMethod?.let { refundReq.refundMethod = it }
 
             if (request.status == RefundStatus.REFUNDED) {
+                AppMetrics.refundsCompleted.increment()
                 if (refundReq.refundMethod == null) {
                     throw ValidationException("Refund method is required when marking a refund as REFUNDED")
                 }
@@ -316,6 +318,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                 }
             }
 
+            if (request.status == RefundStatus.REJECTED) AppMetrics.refundsRejected.increment()
             eventFor(refundReq, fromStatus.name, request.status.name)
             refundReq.toRefundRequestResponse()
         }

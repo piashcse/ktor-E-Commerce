@@ -56,6 +56,7 @@ object OutboxPoller {
         row: OutboxDAO,
         error: String,
     ) {
+        AppMetrics.outboxDeadLettered.increment()
         OutboxDeadLetterDAO.new {
             eventType = row.eventType
             aggregateType = row.aggregateType
@@ -120,8 +121,10 @@ object OutboxPoller {
                 OutboxDAO.findById(pendingRow.id)?.let { row ->
                     if (processed) {
                         row.publishedAt = LocalDateTime.now(ZoneOffset.UTC)
+                        AppMetrics.outboxDelivered.increment()
                         delivered++
                     } else {
+                        AppMetrics.outboxFailed.increment()
                         row.attempts = row.attempts + 1
                         if (row.attempts >= MAX_ATTEMPTS) {
                             deadLetter(row, "Subscriber delivery failed after ${row.attempts} attempts")

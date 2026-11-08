@@ -322,15 +322,20 @@ class ProductRepositoryImpl : ProductRepository {
         whereClauses.add("p.shop_id IN (SELECT id FROM shop WHERE status = 'APPROVED')")
 
         if (useTrigram) {
-            whereClauses.add("(similarity(p.name, ?) > ? OR similarity(COALESCE(p.description, ''), ?) > ?)")
+            whereClauses.add(
+                "(similarity(p.name, ?) > ? OR similarity(COALESCE(p.description, ''), ?) > ? " +
+                    "OR p.search_vector @@ websearch_to_tsquery('english', ?))",
+            )
             whereParams.add(request.name)
             whereParams.add(threshold)
             whereParams.add(request.name)
             whereParams.add(threshold)
+            whereParams.add(request.name)
         } else {
-            whereClauses.add("(p.name ILIKE ? OR p.description ILIKE ?)")
+            whereClauses.add("(p.name ILIKE ? OR p.description ILIKE ? OR p.search_vector @@ websearch_to_tsquery('english', ?))")
             whereParams.add("%${request.name}%")
             whereParams.add("%${request.name}%")
+            whereParams.add(request.name)
         }
 
         if (!request.categoryId.isNullOrEmpty()) {
@@ -369,13 +374,21 @@ class ProductRepositoryImpl : ProductRepository {
                 else -> {
                     val composite = RELEVANCE_FORMULA.format(dir)
                     if (useTrigram) {
-                        "GREATEST(similarity(p.name, ?), similarity(COALESCE(p.description, ''), ?)) DESC, $composite"
+                        "ts_rank_cd(p.search_vector, websearch_to_tsquery('english', ?)) DESC, " +
+                            "GREATEST(similarity(p.name, ?), similarity(COALESCE(p.description, ''), ?)) DESC, $composite"
                     } else {
-                        composite
+                        "ts_rank_cd(p.search_vector, websearch_to_tsquery('english', ?)) DESC, $composite"
                     }
                 }
             }
-        val orderParams = if (useTrigram && isRelevance) listOf<Any>(request.name, request.name) else emptyList<Any>()
+        val orderParams =
+            if (!isRelevance) {
+                emptyList<Any>()
+            } else if (useTrigram) {
+                listOf<Any>(request.name, request.name, request.name)
+            } else {
+                listOf<Any>(request.name)
+            }
 
         val countSql = "SELECT COUNT(*) FROM product p WHERE $whereSql"
         val dataSql = "SELECT p.id FROM product p WHERE $whereSql ORDER BY $orderClause LIMIT ? OFFSET ?"
@@ -411,15 +424,16 @@ class ProductRepositoryImpl : ProductRepository {
 
         val matchClause =
             if (useTrigram && term.length >= 3) {
-                "(similarity(p.name, ?) > ? OR similarity(COALESCE(p.description, ''), ?) > ?)"
+                "(similarity(p.name, ?) > ? OR similarity(COALESCE(p.description, ''), ?) > ? " +
+                    "OR p.search_vector @@ websearch_to_tsquery('english', ?))"
             } else {
-                "(p.name LIKE ? OR p.description LIKE ?)"
+                "(p.name LIKE ? OR p.description LIKE ? OR p.search_vector @@ websearch_to_tsquery('english', ?))"
             }
         val matchParams =
             if (useTrigram && term.length >= 3) {
-                listOf<Any>(term, 0.15, term, 0.15)
+                listOf<Any>(term, 0.15, term, 0.15, term)
             } else {
-                listOf<Any>("%${term.replace("'", "''")}%", "%${term.replace("'", "''")}%")
+                listOf<Any>("%${term.replace("'", "''")}%", "%${term.replace("'", "''")}%", term)
             }
 
         val extraClauses = mutableListOf<String>()

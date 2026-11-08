@@ -10,6 +10,7 @@ import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
+import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
@@ -121,6 +122,7 @@ class PayoutRepositoryImpl : PayoutRepository {
         }
         payout.status = "PAID"
         payout.paidAt = currentUtc()
+        AppMetrics.payoutsPaid.increment()
         payout.payoutRequestId?.let { requestId ->
             val remaining =
                 SellerPayoutDAO.find {
@@ -226,6 +228,7 @@ class PayoutRepositoryImpl : PayoutRepository {
                 claimed.add(row)
                 covered = covered.add(row.payoutAmount)
             }
+            AppMetrics.payoutsRequested.increment()
             claimed.map { it.toResponse() }
         }
 

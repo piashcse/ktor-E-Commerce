@@ -417,3 +417,12 @@ Common policy types supported by the system:
 | `TERMS_OF_SERVICE` | Terms of service agreement |
 | `COOKIE_POLICY` | Cookie usage consent |
 | `MARKETING_CONSENT` | Marketing communication consent |
+
+## GDPR Data-Subject Requests
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/privacy/export` | Export the authenticated user's personal data |
+| `POST` | `/api/v1/privacy/erase` | Erase/anonymize the account (body: `{"password":"..."}`) |
+
+Orders and payments are retained in pseudonymous form for financial/legal obligations; direct identifiers, addresses, carts, wishlists, reviews, consents and notifications are removed or anonymized.

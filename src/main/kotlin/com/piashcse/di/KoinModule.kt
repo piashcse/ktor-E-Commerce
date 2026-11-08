@@ -29,6 +29,7 @@ import com.piashcse.feature.payout.PayoutRepository
 import com.piashcse.feature.payout.PayoutRepositoryImpl
 import com.piashcse.feature.policy.PolicyRepository
 import com.piashcse.feature.policy.PolicyRepositoryImpl
+import com.piashcse.feature.privacy.PrivacyService
 import com.piashcse.feature.product.ProductCatalogService
 import com.piashcse.feature.product.ProductCrudService
 import com.piashcse.feature.product.ProductRepository
@@ -88,6 +89,7 @@ val serviceModule =
 
         // Services with business logic
         single { ProfileService(get()) }
+        single { PrivacyService() }
 
         // Split auth services
         single { UserAuthenticationService(get()) }
