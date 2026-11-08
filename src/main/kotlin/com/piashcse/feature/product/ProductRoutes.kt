@@ -155,7 +155,6 @@ fun Route.productRoutes() {
 fun Route.productSellerRoutes() {
     val productRepo: ProductRepository by inject()
     val productCrudService: ProductCrudService by inject()
-    val variantService: ProductVariantService by inject()
     /**
      * Seller - Retrieve seller products
      *
@@ -224,145 +223,7 @@ fun Route.productSellerRoutes() {
             call.respondOk(imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED))
         }
 
-        /**
-         * Seller - Create a product variant
-         *
-         */
-        post("{id}/variants") {
-            val productId = call.requirePathParameter("id")
-            call.respondCreated(
-                variantService.createVariant(call.currentUserId, productId, call.receive<ProductVariantRequest>()),
-            )
-        }.describe {
-            summary = "Create product variant"
-            requestBody { jsonBody<ProductVariantRequest>() }
-            responses { created<ProductVariantResponse>("Variant created") }
-        }
-
-        /**
-         * Seller - Update a product variant
-         *
-         */
-        put("{id}/variants/{variantId}") {
-            val productId = call.requirePathParameter("id")
-            val variantId = call.requirePathParameter("variantId")
-            call.respondOk(
-                variantService.updateVariant(
-                    call.currentUserId,
-                    productId,
-                    variantId,
-                    call.receive<ProductVariantRequest>(),
-                ),
-            )
-        }.describe {
-            summary = "Update product variant"
-            requestBody { jsonBody<ProductVariantRequest>() }
-            responses { ok<ProductVariantResponse>("Variant updated") }
-        }
-
-        /**
-         * Seller - Delete a product variant
-         *
-         */
-        delete("{id}/variants/{variantId}") {
-            variantService.deleteVariant(
-                call.currentUserId,
-                call.requirePathParameter("id"),
-                call.requirePathParameter("variantId"),
-            )
-            call.respondOk(MessageResponse("Variant deleted successfully"))
-        }.describe {
-            summary = "Delete product variant"
-            description = "Promotes another variant as default when needed"
-        }
-
-        /**
-         * Seller - Replace the option values attached to a variant
-         *
-         */
-        put("{id}/variants/{variantId}/options") {
-            val productId = call.requirePathParameter("id")
-            val variantId = call.requirePathParameter("variantId")
-            call.respondOk(
-                variantService.setVariantOptions(
-                    call.currentUserId,
-                    productId,
-                    variantId,
-                    call.receive<SetVariantOptionsRequest>(),
-                ),
-            )
-        }.describe {
-            summary = "Attach option values to a variant"
-            description = "One value per option"
-            requestBody { jsonBody<SetVariantOptionsRequest>() }
-            responses { ok<ProductVariantResponse>("Variant options replaced") }
-        }
-
-        /**
-         * Seller - Create an option dimension (e.g. Size)
-         *
-         */
-        post("{id}/options") {
-            val productId = call.requirePathParameter("id")
-            call.respondCreated(
-                variantService.createOption(call.currentUserId, productId, call.receive<ProductOptionRequest>()),
-            )
-        }.describe {
-            summary = "Create option dimension"
-            requestBody { jsonBody<ProductOptionRequest>() }
-            responses { created<ProductOptionResponse>("Option created") }
-        }
-
-        /**
-         * Seller - Delete an option dimension and its values
-         *
-         */
-        delete("{id}/options/{optionId}") {
-            variantService.deleteOption(
-                call.currentUserId,
-                call.requirePathParameter("id"),
-                call.requirePathParameter("optionId"),
-            )
-            call.respondOk(MessageResponse("Option deleted successfully"))
-        }.describe {
-            summary = "Delete option dimension"
-            description = "Also removes its values and variant links"
-        }
-
-        /**
-         * Seller - Add a value to an option (e.g. M)
-         *
-         */
-        post("{id}/options/{optionId}/values") {
-            val productId = call.requirePathParameter("id")
-            val optionId = call.requirePathParameter("optionId")
-            call.respondCreated(
-                variantService.addOptionValue(
-                    call.currentUserId,
-                    productId,
-                    optionId,
-                    call.receive<ProductOptionValueRequest>(),
-                ),
-            )
-        }.describe {
-            summary = "Add option value"
-            requestBody { jsonBody<ProductOptionValueRequest>() }
-            responses { created<ProductOptionValueResponse>("Option value created") }
-        }
-
-        /**
-         * Seller - Delete an option value
-         *
-         */
-        delete("{id}/options/{optionId}/values/{valueId}") {
-            variantService.deleteOptionValue(
-                call.currentUserId,
-                call.requirePathParameter("id"),
-                call.requirePathParameter("optionId"),
-                call.requirePathParameter("valueId"),
-            )
-            call.respondOk(MessageResponse("Option value deleted successfully"))
-        }.describe { summary = "Delete option value" }
+        variantSellerRoutes()
     }
 }
 
@@ -382,4 +243,148 @@ fun Route.productAdminRoutes() {
             call.respondOk(MessageResponse("Product deleted successfully"))
         }
     }
+}
+
+/** Seller variant/option management, mounted inside the product write rate limit. */
+private fun Route.variantSellerRoutes() {
+    val variantService: ProductVariantService by inject()
+    /**
+     * Seller - Create a product variant
+     *
+     */
+    post("{id}/variants") {
+        val productId = call.requirePathParameter("id")
+        call.respondCreated(
+            variantService.createVariant(call.currentUserId, productId, call.receive<ProductVariantRequest>()),
+        )
+    }.describe {
+        summary = "Create product variant"
+        requestBody { jsonBody<ProductVariantRequest>() }
+        responses { created<ProductVariantResponse>("Variant created") }
+    }
+
+    /**
+     * Seller - Update a product variant
+     *
+     */
+    put("{id}/variants/{variantId}") {
+        val productId = call.requirePathParameter("id")
+        val variantId = call.requirePathParameter("variantId")
+        call.respondOk(
+            variantService.updateVariant(
+                call.currentUserId,
+                productId,
+                variantId,
+                call.receive<ProductVariantRequest>(),
+            ),
+        )
+    }.describe {
+        summary = "Update product variant"
+        requestBody { jsonBody<ProductVariantRequest>() }
+        responses { ok<ProductVariantResponse>("Variant updated") }
+    }
+
+    /**
+     * Seller - Delete a product variant
+     *
+     */
+    delete("{id}/variants/{variantId}") {
+        variantService.deleteVariant(
+            call.currentUserId,
+            call.requirePathParameter("id"),
+            call.requirePathParameter("variantId"),
+        )
+        call.respondOk(MessageResponse("Variant deleted successfully"))
+    }.describe {
+        summary = "Delete product variant"
+        description = "Promotes another variant as default when needed"
+    }
+
+    /**
+     * Seller - Replace the option values attached to a variant
+     *
+     */
+    put("{id}/variants/{variantId}/options") {
+        val productId = call.requirePathParameter("id")
+        val variantId = call.requirePathParameter("variantId")
+        call.respondOk(
+            variantService.setVariantOptions(
+                call.currentUserId,
+                productId,
+                variantId,
+                call.receive<SetVariantOptionsRequest>(),
+            ),
+        )
+    }.describe {
+        summary = "Attach option values to a variant"
+        description = "One value per option"
+        requestBody { jsonBody<SetVariantOptionsRequest>() }
+        responses { ok<ProductVariantResponse>("Variant options replaced") }
+    }
+
+    /**
+     * Seller - Create an option dimension (e.g. Size)
+     *
+     */
+    post("{id}/options") {
+        val productId = call.requirePathParameter("id")
+        call.respondCreated(
+            variantService.createOption(call.currentUserId, productId, call.receive<ProductOptionRequest>()),
+        )
+    }.describe {
+        summary = "Create option dimension"
+        requestBody { jsonBody<ProductOptionRequest>() }
+        responses { created<ProductOptionResponse>("Option created") }
+    }
+
+    /**
+     * Seller - Delete an option dimension and its values
+     *
+     */
+    delete("{id}/options/{optionId}") {
+        variantService.deleteOption(
+            call.currentUserId,
+            call.requirePathParameter("id"),
+            call.requirePathParameter("optionId"),
+        )
+        call.respondOk(MessageResponse("Option deleted successfully"))
+    }.describe {
+        summary = "Delete option dimension"
+        description = "Also removes its values and variant links"
+    }
+
+    /**
+     * Seller - Add a value to an option (e.g. M)
+     *
+     */
+    post("{id}/options/{optionId}/values") {
+        val productId = call.requirePathParameter("id")
+        val optionId = call.requirePathParameter("optionId")
+        call.respondCreated(
+            variantService.addOptionValue(
+                call.currentUserId,
+                productId,
+                optionId,
+                call.receive<ProductOptionValueRequest>(),
+            ),
+        )
+    }.describe {
+        summary = "Add option value"
+        requestBody { jsonBody<ProductOptionValueRequest>() }
+        responses { created<ProductOptionValueResponse>("Option value created") }
+    }
+
+    /**
+     * Seller - Delete an option value
+     *
+     */
+    delete("{id}/options/{optionId}/values/{valueId}") {
+        variantService.deleteOptionValue(
+            call.currentUserId,
+            call.requirePathParameter("id"),
+            call.requirePathParameter("optionId"),
+            call.requirePathParameter("valueId"),
+        )
+        call.respondOk(MessageResponse("Option value deleted successfully"))
+    }.describe { summary = "Delete option value" }
 }
