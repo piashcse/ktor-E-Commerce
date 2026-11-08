@@ -12,8 +12,8 @@ import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.NotFoundException
-import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.request.receive
+import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
@@ -39,9 +39,7 @@ fun Route.apiKeyRoutes() {
         }
 
         delete("{id}") {
-            val id =
-                call.parameters["id"]?.takeIf { it.isNotBlank() }
-                    ?: throw ValidationException("id is required")
+            val id = call.requirePathParameter("id")
             if (!service.revoke(call.currentUserId, id)) throw NotFoundException("API key not found")
             call.respondOk(MessageResponse("API key revoked"))
         }.describe { summary = "Revoke API key" }

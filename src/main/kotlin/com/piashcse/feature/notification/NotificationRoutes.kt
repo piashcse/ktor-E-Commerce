@@ -16,6 +16,7 @@ import com.piashcse.utils.extension.queryBoolean
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
+import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import kotlinx.serialization.Serializable
@@ -137,9 +138,7 @@ fun Route.notificationRoutes() {
             responses { ok<NotificationPreferencesResponse>("Updated channel") }
         }
         get("preferences/{eventType}") {
-            val eventType =
-                call.parameters["eventType"]
-                    ?: throw IllegalArgumentException("eventType required")
+            val eventType = call.requirePathParameter("eventType")
             call.respondOk(prefService.get(call.currentUserId, eventType))
         }.describe {
             summary = "Get per-event channel"
@@ -147,9 +146,7 @@ fun Route.notificationRoutes() {
             responses { ok<NotificationPreferenceResponse>("Resolved channel") }
         }
         put("preferences/{eventType}") {
-            val eventType =
-                call.parameters["eventType"]
-                    ?: throw IllegalArgumentException("eventType required")
+            val eventType = call.requirePathParameter("eventType")
             val body = call.receive<UpdateNotificationPreferencesRequest>()
             call.respondOk(prefService.set(call.currentUserId, eventType, body.channel))
         }.describe {

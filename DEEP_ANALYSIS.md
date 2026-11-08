@@ -193,6 +193,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 17 | `fix/16-recommendations` | `fix/15-product-variants` | Related, co-purchase, personalized and best-seller recommendations |
 | 18 | `refactor/17-conciseness-performance` | `fix/16-recommendations` | Detekt clean, decomposition of order/refund flows, bulk loaders, cache/query centralization |
 | 19 | `docs/18-swagger-docs` | `refactor/17-conciseness-performance` | Swagger tags/summaries/DTO schemas/bearer auth, missing docs pages, fresh-DB Flyway fix |
+| 20 | `refactor/19-industry-standards` | `docs/18-swagger-docs` | UTC time centralization, path-param helper consistency, version-catalog naming, repo hygiene |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 
@@ -264,6 +265,11 @@ Scope: full `src/main` review for conciseness, reuse, centralization and query e
 - Libraries refreshed to current stable releases: Ktor 3.6.1, Kotlin 2.4.21,
   Exposed 1.6.1, Flyway 13.12.1, PostgreSQL 42.7.14, Logback 1.6.6 and
   Micrometer 1.17.2.
+- OpenAPI tag names live in `ApiTags`, shared by document metadata and route
+  groups; no free-form tag strings.
+- All business timestamps use `currentUtc()`; no server-local `LocalDateTime.now()`.
+- Path parameters use Ktor's `requirePathParameter`; version-catalog aliases
+  follow kebab-case; `/bin/` is ignored.
 
 **Docs**
 - Added `api-keys.md`, `feature-flags.md`, `tax.md`, `warehouse.md`, `outbox.md`,

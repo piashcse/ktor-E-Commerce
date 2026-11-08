@@ -2,6 +2,7 @@ package com.piashcse.feature.order
 
 import com.piashcse.constants.*
 import com.piashcse.database.entities.*
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.OrderPlacedEvent
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.feature.tax.TaxService
@@ -107,7 +108,7 @@ class OrderRepositoryImpl : OrderRepository {
             (if (forUpdate) query.forUpdate() else query).firstOrNull()
                 ?: throw ValidationException(Message.Orders.INVALID_COUPON)
 
-        val now = LocalDateTime.now(ZoneOffset.UTC)
+        val now = currentUtc()
         if (now.isBefore(coupon.startDate) || now.isAfter(coupon.endDate)) {
             throw ValidationException(Message.Orders.COUPON_EXPIRED)
         }
@@ -168,7 +169,7 @@ class OrderRepositoryImpl : OrderRepository {
                 this.couponId = coupon.id
                 this.userId = userId.entityID(UserTable)
                 this.orderId = order.id
-                this.usedAt = LocalDateTime.now(ZoneOffset.UTC)
+                this.usedAt = currentUtc()
             }
         }
     }
@@ -303,7 +304,7 @@ class OrderRepositoryImpl : OrderRepository {
         currency: String,
         fxRate: BigDecimal,
     ): CheckoutQuote {
-        val today = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)
+        val today = LocalDate.now(ZoneOffset.UTC).format(DateTimeFormatter.BASIC_ISO_DATE)
         var totalUsdSubTotal = BigDecimal.ZERO
         val orders = mutableListOf<OrderDAO>()
         context.itemsByShop.entries.forEachIndexed { index, (shopId, items) ->
@@ -415,7 +416,7 @@ class OrderRepositoryImpl : OrderRepository {
                 this.shopId = shopIdValue.entityID(ShopTable)
                 this.quantity = cartItem.quantity
                 this.status = ReservationStatus.ACTIVE
-                this.expiresAt = LocalDateTime.now(ZoneOffset.UTC).plusHours(24)
+                this.expiresAt = currentUtc().plusHours(24)
             }
 
             shopSubTotal = shopSubTotal.add(itemTotal)
@@ -690,13 +691,13 @@ class OrderRepositoryImpl : OrderRepository {
                     order.status = status
                     when (status) {
                         OrderStatus.SHIPPED -> {
-                            order.shippingDate = LocalDateTime.now(ZoneOffset.UTC)
+                            order.shippingDate = currentUtc()
                         }
                         OrderStatus.DELIVERED -> {
-                            order.deliveredDate = LocalDateTime.now(ZoneOffset.UTC)
+                            order.deliveredDate = currentUtc()
                             if (order.shippingDate == null) order.shippingDate = order.deliveredDate
                         }
-                        OrderStatus.RECEIVED -> order.completedDate = LocalDateTime.now(ZoneOffset.UTC)
+                        OrderStatus.RECEIVED -> order.completedDate = currentUtc()
                         OrderStatus.PAID -> order.paymentStatus = PaymentStatus.COMPLETED
                         else -> {}
                     }
@@ -746,7 +747,7 @@ class OrderRepositoryImpl : OrderRepository {
                     throw ValidationException(Message.Orders.INVALID_STATUS)
                 }
                 order.status = OrderStatus.SHIPPED
-                order.shippingDate = LocalDateTime.now(ZoneOffset.UTC)
+                order.shippingDate = currentUtc()
                 order.trackingNumber = trackingNumber
                 logStatusChange(order.id.value, OrderStatus.SHIPPED, "Shipped via $trackingNumber", userId)
                 order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())

@@ -4,11 +4,10 @@ import com.piashcse.constants.CouponDiscountType
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import com.piashcse.database.entities.base.currentUtc
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 object CouponTable : BaseIdTable("coupon") {
     val code = varchar("code", 50).uniqueIndex()
@@ -48,7 +47,7 @@ object CouponUsageTable : BaseIdTable("coupon_usage") {
     val couponId = reference("coupon_id", CouponTable.id).index()
     val userId = reference("user_id", UserTable.id).index()
     val orderId = reference("order_id", OrderTable.id).nullable()
-    val usedAt = datetime("used_at").clientDefault { LocalDateTime.now(ZoneOffset.UTC) }
+    val usedAt = datetime("used_at").clientDefault { currentUtc() }
 
     init {
         uniqueIndex(customIndexName = "coupon_usage_coupon_user_order_unique", couponId, userId, orderId)

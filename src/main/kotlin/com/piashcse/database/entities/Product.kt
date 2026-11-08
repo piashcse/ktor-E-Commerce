@@ -4,14 +4,13 @@ import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import com.piashcse.database.entities.base.currentUtc
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.datetime
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import java.math.BigDecimal
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 object ProductTable : BaseIdTable("product") {
     val userId = reference("user_id", UserTable.id).index()
@@ -77,7 +76,7 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
     /** Soft-delete: hide from catalog but preserve order history / reviews. */
     fun softDelete() {
         status = ProductStatus.OUT_OF_STOCK
-        deletedAt = LocalDateTime.now(ZoneOffset.UTC)
+        deletedAt = currentUtc()
     }
 
     val imageUrls: List<String>

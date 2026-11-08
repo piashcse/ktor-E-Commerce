@@ -17,7 +17,6 @@ import org.jetbrains.exposed.v1.core.eq
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 @Serializable
 data class ApiKeyCreateRequest(
@@ -128,7 +127,7 @@ class ApiKeyService {
                 ApiKeyDAO.find {
                     (ApiKeyTable.keyHash eq sha256(rawKey)) and (ApiKeyTable.isActive eq true)
                 }.firstOrNull() ?: return@query null
-            if (key.expiresAt?.isBefore(LocalDateTime.now(ZoneOffset.UTC)) == true) return@query null
+            if (key.expiresAt?.isBefore(currentUtc()) == true) return@query null
             val user = UserDAO.findById(key.userId.value) ?: return@query null
             if (!user.isActiveAndVerified()) return@query null
             key.lastUsedAt = currentUtc()

@@ -2,6 +2,7 @@ package com.piashcse.feature.dashboard
 
 import com.piashcse.constants.*
 import com.piashcse.database.entities.*
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.model.response.*
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
@@ -12,7 +13,6 @@ import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -32,7 +32,7 @@ class DashboardRepositoryImpl : DashboardRepository {
 
     override suspend fun getDashboardStats() =
         query {
-            val today = LocalDateTime.now(ZoneOffset.UTC).toLocalDate().atStartOfDay()
+            val today = currentUtc().toLocalDate().atStartOfDay()
 
             val paidOrders =
                 OrderTable.selectAll()
@@ -100,7 +100,7 @@ class DashboardRepositoryImpl : DashboardRepository {
         startDate: String?,
         endDate: String?,
     ) = query {
-        val now = LocalDateTime.now(ZoneOffset.UTC)
+        val now = currentUtc()
         val start =
             startDate?.let { LocalDate.parse(it, DFMT).atStartOfDay() }
                 ?: now.withDayOfMonth(1).toLocalDate().atStartOfDay()
@@ -165,7 +165,7 @@ class DashboardRepositoryImpl : DashboardRepository {
     override suspend fun getUserGrowth(days: Int?) =
         query {
             val period = (days ?: 30).coerceIn(1, 365)
-            val since = LocalDateTime.now(ZoneOffset.UTC).minusDays(period.toLong())
+            val since = currentUtc().minusDays(period.toLong())
 
             val byUserType =
                 UserType.values().associate { type ->
@@ -252,7 +252,7 @@ class DashboardRepositoryImpl : DashboardRepository {
                     shops = mapOf("total" to 0L, "pendingApproval" to 0L),
                 )
             }
-            val today = LocalDateTime.now(ZoneOffset.UTC).toLocalDate().atStartOfDay()
+            val today = currentUtc().toLocalDate().atStartOfDay()
             val sellerShopIds = shopIds.map { it.entityID(ShopTable) }
 
             val sellerPaidOrders =

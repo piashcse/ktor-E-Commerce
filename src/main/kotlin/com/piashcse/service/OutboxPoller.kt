@@ -3,6 +3,7 @@ package com.piashcse.service
 import com.piashcse.database.entities.OutboxDAO
 import com.piashcse.database.entities.OutboxDeadLetterDAO
 import com.piashcse.database.entities.OutboxTable
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PoisonEvent
@@ -14,8 +15,6 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.less
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 /** Polls `outbox` for unpublished rows and relays them to the in-memory bus. At-least-once. */
 object OutboxPoller {
@@ -99,7 +98,7 @@ object OutboxPoller {
                         row.attempts = row.attempts + 1
                         if (row.attempts >= MAX_ATTEMPTS) {
                             deadLetter(row, "Undecodable event payload after ${row.attempts} attempts")
-                            row.publishedAt = LocalDateTime.now(ZoneOffset.UTC)
+                            row.publishedAt = currentUtc()
                             log.error("Outbox row ${row.id.value} retired after ${row.attempts} undecodable attempts")
                         }
                     }
@@ -120,7 +119,7 @@ object OutboxPoller {
             query {
                 OutboxDAO.findById(pendingRow.id)?.let { row ->
                     if (processed) {
-                        row.publishedAt = LocalDateTime.now(ZoneOffset.UTC)
+                        row.publishedAt = currentUtc()
                         AppMetrics.outboxDelivered.increment()
                         delivered++
                     } else {
@@ -128,7 +127,7 @@ object OutboxPoller {
                         row.attempts = row.attempts + 1
                         if (row.attempts >= MAX_ATTEMPTS) {
                             deadLetter(row, "Subscriber delivery failed after ${row.attempts} attempts")
-                            row.publishedAt = LocalDateTime.now(ZoneOffset.UTC)
+                            row.publishedAt = currentUtc()
                             log.error("Outbox row ${row.id.value} retired after ${row.attempts} delivery failures")
                         }
                     }

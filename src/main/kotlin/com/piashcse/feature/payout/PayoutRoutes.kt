@@ -12,6 +12,7 @@ import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.http.*
 import io.ktor.server.request.*
+import io.ktor.server.request.requirePathParameter
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
@@ -94,7 +95,7 @@ fun Route.payoutAdminRoutes() {
         post("{id}/pay") {
             call.respondOk(
                 repo.markPaid(
-                    call.parameters["id"] ?: throw IllegalArgumentException("id required"),
+                    call.requirePathParameter("id"),
                     call.currentUserId,
                 ),
             )

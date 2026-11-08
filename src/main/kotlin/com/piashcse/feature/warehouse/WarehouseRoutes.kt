@@ -10,8 +10,8 @@ import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
-import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.request.receive
+import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
@@ -36,9 +36,7 @@ fun Route.warehouseSellerRoutes() {
         }
 
         put("{id}") {
-            val id =
-                call.parameters["id"]?.takeIf { it.isNotBlank() }
-                    ?: throw ValidationException("id is required")
+            val id = call.requirePathParameter("id")
             call.respondOk(repo.update(call.currentUserId, id, call.receive<WarehouseRequest>()))
         }.describe {
             summary = "Update warehouse"
@@ -47,9 +45,7 @@ fun Route.warehouseSellerRoutes() {
         }
 
         delete("{id}") {
-            val id =
-                call.parameters["id"]?.takeIf { it.isNotBlank() }
-                    ?: throw ValidationException("id is required")
+            val id = call.requirePathParameter("id")
             repo.deactivate(call.currentUserId, id)
             call.respondOk(MessageResponse("Warehouse deactivated"))
         }.describe { summary = "Deactivate warehouse" }

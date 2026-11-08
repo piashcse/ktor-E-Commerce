@@ -6,6 +6,7 @@ import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.ReservationStatus
 import com.piashcse.database.entities.StockReservationDAO
 import com.piashcse.database.entities.StockReservationTable
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.feature.order.OrderCancellation
 import com.piashcse.utils.extension.query
 import kotlinx.coroutines.*
@@ -13,8 +14,6 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.less
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 object StockReservationCleanup {
     private val log = LoggerFactory.getLogger(StockReservationCleanup::class.java)
@@ -44,7 +43,7 @@ object StockReservationCleanup {
             val expired =
                 StockReservationDAO.find {
                     (StockReservationTable.status eq ReservationStatus.ACTIVE) and
-                        (StockReservationTable.expiresAt less LocalDateTime.now(ZoneOffset.UTC))
+                        (StockReservationTable.expiresAt less currentUtc())
                 }.forUpdate().toList()
 
             if (expired.isEmpty()) return@query
