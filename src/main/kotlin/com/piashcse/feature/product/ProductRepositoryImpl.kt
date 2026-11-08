@@ -187,10 +187,10 @@ class ProductRepositoryImpl : ProductRepository {
         }
 
     override suspend fun getProducts(filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> =
-        query {
+        readQuery {
             val approvedShops = approvedShopIds()
             if (approvedShops.isEmpty()) {
-                return@query PaginatedResponse(emptyList(), PaginationMetadata(0, filter.limit, filter.offset))
+                return@readQuery PaginatedResponse(emptyList(), PaginationMetadata(0, filter.limit, filter.offset))
             }
             toProductPaginatedResponse(
                 ProductTable.selectAll().andWhere {

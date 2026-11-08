@@ -7,11 +7,17 @@ import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
 
 private lateinit var hikariDataSource: HikariDataSource
+private var readHikariDataSource: HikariDataSource? = null
+private var readDatabase: Database? = null
 
 internal fun getHikariDataSource(): HikariDataSource = hikariDataSource
 
+/** Optional read-only Exposed database for replica routing. */
+internal fun getReadDatabase(): Database? = readDatabase
+
 fun closeDataSource() {
     if (::hikariDataSource.isInitialized && !hikariDataSource.isClosed) hikariDataSource.close()
+    readHikariDataSource?.takeIf { !it.isClosed }?.close()
 }
 
 fun configureDatabase() {
@@ -28,6 +34,27 @@ fun configureDatabase() {
     flyway.validate()
     flyway.migrate()
     Database.connect(hikariDataSource)
+
+    DotEnvConfig.dbReadUrl?.takeIf { it.isNotBlank() }?.let { readUrl ->
+        val readDs =
+            HikariDataSource(
+                HikariConfig().apply {
+                    driverClassName = "org.postgresql.Driver"
+                    jdbcUrl = readUrl
+                    username = DotEnvConfig.dbUser
+                    password = DotEnvConfig.dbPassword
+                    maximumPoolSize = DotEnvConfig.dbPoolSize
+                    minimumIdle = DotEnvConfig.dbMinIdle
+                    idleTimeout = 30_000
+                    maxLifetime = 600_000
+                    connectionTimeout = DotEnvConfig.dbConnectionTimeoutMs
+                    isReadOnly = true
+                    validate()
+                },
+            )
+        readHikariDataSource = readDs
+        readDatabase = Database.connect(readDs)
+    }
 }
 
 private fun createDataSource() =

@@ -1,5 +1,6 @@
 package com.piashcse.utils.extension
 
+import com.piashcse.database.getReadDatabase
 import com.piashcse.utils.validator.AppException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -16,6 +17,16 @@ import kotlin.time.Duration.Companion.milliseconds
 suspend fun <T> query(block: () -> T): T =
     withContext(Dispatchers.IO) {
         transaction { block() }
+    }
+
+/**
+ * Read-only query. Uses the configured replica when `DB_READ_URL` is set,
+ * otherwise falls back to the primary database. Callers must not write here.
+ */
+suspend fun <T> readQuery(block: () -> T): T =
+    withContext(Dispatchers.IO) {
+        val replica = getReadDatabase()
+        if (replica != null) transaction(replica) { block() } else transaction { block() }
     }
 
 /**

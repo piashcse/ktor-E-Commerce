@@ -22,6 +22,9 @@ object DotEnvConfig {
     val emailPassword: String get() = requireEnv("EMAIL_PASSWORD")
     val emailSslEnabled: Boolean get() = DotEnv.getBoolean("EMAIL_SSL", false)
     val uploadDir: String get() = DotEnv.get("UPLOAD_DIR", "uploads")
+
+    /** Optional read-replica JDBC URL; when absent reads use the primary. */
+    val dbReadUrl: String? get() = DotEnv.get("DB_READ_URL")
     val dbPoolSize: Int get() = DotEnv.getInt("DB_POOL_SIZE", 10)
     val dbMinIdle: Int get() = DotEnv.getInt("DB_MIN_IDLE", 2)
     val dbConnectionTimeoutMs: Long get() = DotEnv.getInt("DB_CONNECTION_TIMEOUT_MS", 30_000).toLong()

@@ -12,7 +12,8 @@ All Order endpoints require Bearer token authentication.
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/api/v1/orders` | Retrieve customer orders | Yes (Customer) |
+| `GET` | `/api/v1/orders` | Retrieve customer orders (offset pagination) | Yes (Customer) |
+| `GET` | `/api/v1/orders/cursor` | Retrieve customer orders with keyset pagination (`cursor` + `limit`) | Yes (Customer) |
 | `PATCH` | `/api/v1/orders/status/{id}` | Update status (Customer: RECEIVED/CANCELED; Seller: CONFIRMED/SHIPPED/DELIVERED) | Yes |
 | `POST` | `/api/v1/orders/{id}/cancel` | Cancel an order with reason | Yes (Customer) |
 | `POST` | `/api/v1/orders/{id}/shipping` | Seller: mark a paid order SHIPPED with tracking | Yes (Seller) |

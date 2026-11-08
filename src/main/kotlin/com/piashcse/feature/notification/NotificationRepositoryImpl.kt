@@ -8,7 +8,9 @@ import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
+import com.piashcse.utils.common.CursorPage
 import com.piashcse.utils.common.DateTimes.toUtcString
+import com.piashcse.utils.common.cursorPage
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.requireSellerByUserId
@@ -68,6 +70,23 @@ class NotificationRepositoryImpl : NotificationRepository {
             .also { q -> q.orderBy(NotificationTable.createdAt to SortOrder.DESC) }
             .toPaginatedResponse(limit, offset) { NotificationDAO.wrapRow(it).toResponse() }
     }
+
+    override suspend fun listCursor(
+        userId: String,
+        limit: Int,
+        cursor: String?,
+        unreadOnly: Boolean,
+    ): CursorPage<NotificationResponse> =
+        query {
+            val query =
+                NotificationTable.selectAll().andWhere {
+                    (NotificationTable.userId eq userId) and (NotificationTable.type neq PREFS_TYPE)
+                }
+            if (unreadOnly) query.andWhere { NotificationTable.isRead eq false }
+            query.cursorPage(limit, cursor, NotificationTable.createdAt, NotificationTable.id) {
+                NotificationDAO.wrapRow(it).toResponse()
+            }
+        }
 
     override suspend fun unreadCount(userId: String): Long =
         query {

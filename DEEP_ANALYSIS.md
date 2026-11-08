@@ -163,7 +163,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 - [ ] **E-9. Notification templates, email/SMS/push providers, preferences.**
 - [x] **E-10. GDPR export/erasure, consent history UI, audit export.**
 - [x] **E-11. Admin RBAC granular permissions, feature flags, API keys.**
-- [ ] **E-12. Cursor pagination, read replicas, query plan/index review.**
+- [x] **E-12. Cursor pagination, read replicas, query plan/index review.**
 - [x] **E-13. Circuit breakers, retries with jitter, DLQ admin UI.**
 - [x] **E-14. Observability SLOs: outbox lag, payment/refund/payout failure metrics.**
 - [x] **E-15. Full-text search adoption (`search_vector` trigger exists but unused).**
@@ -183,6 +183,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 7 | `fix/07-tax-rules` | `fix/06-resilience` | Country/category tax rules, admin API, per-item tax in checkout/orders |
 | 8 | `test/concurrency-guards` | `fix/07-tax-rules` | DB-backed concurrency tests for stock, order/payment/payout/coupon guards |
 | 9 | `fix/08-rbac-api-keys` | `test/concurrency-guards` | Permission scopes, API keys, feature flags, V22 |
+| 10 | `fix/09-cursor-pagination` | `fix/08-rbac-api-keys` | Keyset pagination for orders/notifications, optional read-replica routing |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 
@@ -223,3 +224,4 @@ Stacked PRs are intentional. Merge in order, then retarget the next PR to `maste
 - Consumer-acknowledged outbox, attempts cap, safe shutdown, bounded cache/queue, product-status sync, review vote dedupe.
 - V18/V19 migrations for OTP index, payment/order currency, payout requests, consent revocation, review votes, indexes, constraints.
 - Docker non-root/healthcheck/volume, CI build, docs corrections, 299 tests, full-text search, money-path metrics and GDPR endpoints.
+3
