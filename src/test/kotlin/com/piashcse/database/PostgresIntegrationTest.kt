@@ -29,7 +29,7 @@ import kotlin.test.assertTrue
  *
  * Prefers an externally provided database (`DB_HOST`/`DB_PORT`/`DB_NAME`/
  * `DB_USER`/`DB_PASSWORD`, as configured by the CI Postgres service) and falls
- * back to Testcontainers locally. It validates every Flyway migration V1..V22,
+ * back to Testcontainers locally. It validates every Flyway migration V1..V23,
  * the seed data, the new hardening columns, and a vertical slice
  * user → shop → product → inventory → wishlist.
  */
@@ -87,7 +87,7 @@ class PostgresIntegrationTest {
                 .locations("classpath:db/migration")
                 .load()
         val applied = flyway.migrate()
-        assertTrue(applied.migrations.size >= 22, "Expected V1..V22, got ${applied.migrations.size}")
+        assertTrue(applied.migrations.size >= 23, "Expected V1..V23, got ${applied.migrations.size}")
 
         Database.connect(jdbcUrl, user = user, password = dbPassword)
         lateinit var sliceUserId: EntityID<String>
@@ -104,6 +104,8 @@ class PostgresIntegrationTest {
             assertTrue(columnExists("tax_rule", "rate"), "tax_rule missing")
             assertTrue(columnExists("api_key", "key_hash"), "api_key missing")
             assertTrue(columnExists("feature_flag", "enabled"), "feature_flag missing")
+            assertTrue(columnExists("user", "is_guest"), "user.is_guest missing")
+            assertTrue(columnExists("order", "contact_email"), "order.contact_email missing")
 
             // R__ seeds loaded.
             assertTrue(ShippingMethodDAO.all().count() >= 3, "Seed shipping methods missing")

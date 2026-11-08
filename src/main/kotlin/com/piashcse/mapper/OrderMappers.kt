@@ -23,6 +23,7 @@ fun OrderDAO.toOrderResponse(items: List<OrderItemResponse>? = null) =
         couponCode = couponCode,
         paymentMethod = paymentMethod,
         notes = notes,
+        contactEmail = contactEmail,
         shippingAddress = shippingAddress,
         billingAddress = billingAddress,
         shippingMethod = shippingMethod,

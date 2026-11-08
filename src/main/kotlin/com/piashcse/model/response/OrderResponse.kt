@@ -24,6 +24,7 @@ data class OrderResponse(
     val couponCode: String? = null,
     val paymentMethod: PaymentMethod? = null,
     val notes: String? = null,
+    val contactEmail: String? = null,
     val shippingAddress: String? = null,
     val billingAddress: String? = null,
     val shippingMethod: String? = null,

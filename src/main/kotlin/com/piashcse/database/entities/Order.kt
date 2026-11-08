@@ -31,6 +31,7 @@ object OrderTable : BaseIdTable("order") {
     val notes = text("notes").nullable() // Additional notes from customer
     val shippingMethod = varchar("shipping_method", 50).nullable() // Name of the shipping method
     val trackingNumber = varchar("tracking_number", 100).nullable()
+    val contactEmail = varchar("contact_email", 255).nullable()
     val shippingAddress = text("shipping_address").nullable() // Complete shipping address
     val billingAddress = text("billing_address").nullable() // Complete billing address
     val shippingDate = datetime("shipping_date").nullable() // When the order was shipped
@@ -67,6 +68,7 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
     var notes by OrderTable.notes
     var shippingMethod by OrderTable.shippingMethod
     var trackingNumber by OrderTable.trackingNumber
+    var contactEmail by OrderTable.contactEmail
     var shippingAddress by OrderTable.shippingAddress
     var billingAddress by OrderTable.billingAddress
     var shippingDate by OrderTable.shippingDate
