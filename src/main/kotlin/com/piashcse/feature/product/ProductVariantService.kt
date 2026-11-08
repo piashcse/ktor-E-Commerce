@@ -10,11 +10,14 @@ import com.piashcse.database.entities.ProductVariantDAO
 import com.piashcse.database.entities.ProductVariantOptionDAO
 import com.piashcse.database.entities.ProductVariantOptionTable
 import com.piashcse.database.entities.ProductVariantTable
+import com.piashcse.database.entities.optionResponses
+import com.piashcse.database.entities.variantResponses
 import com.piashcse.model.response.ProductOptionResponse
 import com.piashcse.model.response.ProductOptionValueResponse
 import com.piashcse.model.response.ProductVariantResponse
 import com.piashcse.service.Cache
 import com.piashcse.service.CacheService
+import com.piashcse.service.CatalogCache
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
@@ -80,22 +83,26 @@ data class SetVariantOptionsRequest(val valueIds: List<String> = emptyList())
 class ProductVariantService(
     private val cache: Cache = CacheService.cache,
 ) {
-    private suspend fun invalidateCatalog() = cache.invalidatePattern("products:.*")
+    private suspend fun invalidateCatalog() = CatalogCache.invalidate(cache)
 
     suspend fun listVariants(productId: String): List<ProductVariantResponse> =
         query {
             requireProduct(productId)
-            ProductVariantDAO.find { ProductVariantTable.productId eq productId.entityID(ProductTable) }
-                .orderBy(ProductVariantTable.sortOrder to SortOrder.ASC)
-                .map { it.toResponse() }
+            variantResponses(
+                ProductVariantDAO.find { ProductVariantTable.productId eq productId.entityID(ProductTable) }
+                    .orderBy(ProductVariantTable.sortOrder to SortOrder.ASC)
+                    .toList(),
+            )
         }
 
     suspend fun listOptions(productId: String): List<ProductOptionResponse> =
         query {
             requireProduct(productId)
-            ProductOptionDAO.find { ProductOptionTable.productId eq productId.entityID(ProductTable) }
-                .orderBy(ProductOptionTable.sortOrder to SortOrder.ASC)
-                .map { it.toResponse() }
+            optionResponses(
+                ProductOptionDAO.find { ProductOptionTable.productId eq productId.entityID(ProductTable) }
+                    .orderBy(ProductOptionTable.sortOrder to SortOrder.ASC)
+                    .toList(),
+            )
         }
 
     suspend fun createVariant(
@@ -110,18 +117,8 @@ class ProductVariantService(
                 ProductVariantDAO.find { ProductVariantTable.productId eq product.id }.firstOrNull() != null
             ProductVariantDAO.new {
                 this.productId = product.id
-                sku = request.sku
-                name = request.name
-                price = request.price
-                discountPrice = request.discountPrice
-                discountPercentage = discountPercentage(request.price, request.discountPrice)
-                barcode = request.barcode
-                weight = request.weight
-                dimensions = request.dimensions
-                imageUrl = request.imageUrl
-                status = request.status
+                applyRequest(request)
                 isDefault = request.isDefault || !hasVariants
-                sortOrder = request.sortOrder
             }.toResponse()
         }.also { invalidateCatalog() }
 
@@ -135,18 +132,7 @@ class ProductVariantService(
             val product = requireOwnedProduct(actorUserId, productId)
             val variant = requireVariant(product.id.value, variantId)
             if (request.isDefault && !variant.isDefault) clearDefault(product.id.value)
-            variant.sku = request.sku
-            variant.name = request.name
-            variant.price = request.price
-            variant.discountPrice = request.discountPrice
-            variant.discountPercentage = discountPercentage(request.price, request.discountPrice)
-            variant.barcode = request.barcode
-            variant.weight = request.weight
-            variant.dimensions = request.dimensions
-            variant.imageUrl = request.imageUrl
-            variant.status = request.status
-            variant.isDefault = request.isDefault
-            variant.sortOrder = request.sortOrder
+            variant.applyRequest(request)
             variant.toResponse()
         }.also { invalidateCatalog() }
 
@@ -215,7 +201,9 @@ class ProductVariantService(
                 this.productId = product.id
                 name = request.name
                 sortOrder = request.sortOrder
-            }.toResponse()
+            }.let {
+                ProductOptionResponse(it.id.value, it.productId.value, it.name, it.sortOrder)
+            }
         }.also { invalidateCatalog() }
 
     suspend fun deleteOption(
@@ -284,6 +272,21 @@ class ProductVariantService(
         val variant = ProductVariantDAO.findById(variantId) ?: variantId.throwNotFound("Variant")
         if (variant.productId.value != productId) throw ValidationException("Variant does not belong to this product")
         return variant
+    }
+
+    private fun ProductVariantDAO.applyRequest(request: ProductVariantRequest) {
+        sku = request.sku
+        name = request.name
+        price = request.price
+        discountPrice = request.discountPrice
+        discountPercentage = discountPercentage(request.price, request.discountPrice)
+        barcode = request.barcode
+        weight = request.weight
+        dimensions = request.dimensions
+        imageUrl = request.imageUrl
+        status = request.status
+        isDefault = request.isDefault
+        sortOrder = request.sortOrder
     }
 
     private fun clearDefault(productId: String) {

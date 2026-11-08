@@ -4,17 +4,19 @@ import com.piashcse.constants.KycStatus
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.extension.paginateWithPreload
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.requireSellerByUserId
 import com.piashcse.utils.extension.throwNotFound
-import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
@@ -87,7 +89,12 @@ class KycService {
             val query = SellerTable.selectAll()
             status?.let { query.andWhere { SellerTable.kycStatus eq it } }
             query.orderBy(SellerTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) { SellerDAO.wrapRow(it).toResponse() }
+                .paginateWithPreload(limit, offset, rowMapper = { SellerDAO.wrapRow(it) }) { sellers ->
+                    val emails =
+                        UserDAO.find { UserTable.id inList sellers.map { it.userId } }
+                            .associate { it.id.value to it.email }
+                    sellers.map { it.toResponse(emails[it.userId.value]) }
+                }
         }
 
     suspend fun verify(sellerId: String): SellerKycResponse =
@@ -118,11 +125,11 @@ class KycService {
             seller.toResponse()
         }
 
-    private fun SellerDAO.toResponse() =
+    private fun SellerDAO.toResponse(email: String? = UserDAO.findById(userId.value)?.email) =
         SellerKycResponse(
             sellerId = id.value,
             userId = userId.value,
-            email = UserDAO.findById(userId.value)?.email,
+            email = email,
             businessName = businessName,
             businessRegistrationNumber = businessRegistrationNumber,
             taxId = taxId,

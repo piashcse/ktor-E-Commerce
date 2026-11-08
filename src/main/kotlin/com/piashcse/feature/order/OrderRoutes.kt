@@ -1,3 +1,5 @@
+@file:Suppress("MatchingDeclarationName")
+
 package com.piashcse.feature.order
 import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
@@ -9,6 +11,8 @@ import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.validator.ForbiddenException
+import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
@@ -35,7 +39,7 @@ fun Route.orderRoutes() {
             val email = call.requireQueryParameter("email")
             val order =
                 orderRepo.getOrderForGuest(orderNumber, email)
-                    ?: throw com.piashcse.utils.validator.NotFoundException(Message.Orders.NOT_FOUND)
+                    ?: throw NotFoundException(Message.Orders.NOT_FOUND)
             call.respondOk(order)
         }
     }
@@ -85,7 +89,7 @@ fun Route.orderRoutes() {
                     ) ||
                     (status in listOf(OrderStatus.CANCELED, OrderStatus.RECEIVED) && userType != UserType.CUSTOMER)
                 ) {
-                    throw com.piashcse.utils.validator.ForbiddenException(Message.Orders.STATUS_NOT_ALLOWED)
+                    throw ForbiddenException(Message.Orders.STATUS_NOT_ALLOWED)
                 }
 
                 call.respondOk(orderRepo.updateOrderStatus(call.currentUserId, id, status))
@@ -98,7 +102,7 @@ fun Route.orderRoutes() {
             post("{id}/shipping") {
                 val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
                 if (userType != UserType.SELLER) {
-                    throw com.piashcse.utils.validator.ForbiddenException(Message.Orders.STATUS_NOT_ALLOWED)
+                    throw ForbiddenException(Message.Orders.STATUS_NOT_ALLOWED)
                 }
                 val body = call.receive<ShipOrderRequest>()
                 call.respondOk(orderRepo.shipOrder(call.requirePathParameter("id"), call.currentUserId, body.trackingNumber))

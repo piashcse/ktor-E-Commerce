@@ -1,3 +1,5 @@
+@file:Suppress("MatchingDeclarationName")
+
 package com.piashcse.feature.auth
 
 import com.piashcse.constants.AppConstants

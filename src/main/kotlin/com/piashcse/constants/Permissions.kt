@@ -1,3 +1,5 @@
+@file:Suppress("MatchingDeclarationName")
+
 package com.piashcse.constants
 
 import kotlinx.serialization.Serializable

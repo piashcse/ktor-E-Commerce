@@ -7,6 +7,7 @@ import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.getCurrentUserType
 import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.queryBoolean
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
@@ -54,7 +55,7 @@ fun Route.notificationRoutes() {
     customerAuth {
         get {
             val (limit, offset) = call.paginateQueryParams()
-            val unreadOnly = call.request.queryParameters["unreadOnly"]?.toBoolean() ?: false
+            val unreadOnly = call.queryBoolean("unreadOnly")
             call.respondOk(repo.list(call.currentUserId, limit, offset, unreadOnly))
         }
         get("unread-count") {
@@ -62,7 +63,7 @@ fun Route.notificationRoutes() {
         }
         get("cursor") {
             val (limit, _) = call.paginateQueryParams()
-            val unreadOnly = call.request.queryParameters["unreadOnly"]?.toBoolean() ?: false
+            val unreadOnly = call.queryBoolean("unreadOnly")
             call.respondOk(
                 repo.listCursor(
                     call.currentUserId,

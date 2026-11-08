@@ -1,3 +1,5 @@
+@file:Suppress("MatchingDeclarationName")
+
 package com.piashcse.plugin
 
 import com.piashcse.config.DotEnv

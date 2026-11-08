@@ -11,6 +11,7 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.validator.ConflictException
+import com.piashcse.utils.validator.NotFoundException
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
@@ -62,7 +63,7 @@ class BrandRepositoryImpl : BrandRepository {
         logo: String,
     ): BrandResponse =
         query {
-            val brand = BrandDAO.findById(brandId) ?: throw com.piashcse.utils.validator.NotFoundException("Brand not found")
+            val brand = BrandDAO.findById(brandId) ?: throw NotFoundException("Brand not found")
             brand.logo = logo
             brand.toBrandResponse()
         }

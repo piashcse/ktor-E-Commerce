@@ -1,3 +1,5 @@
+@file:Suppress("MatchingDeclarationName")
+
 package com.piashcse.feature.consent
 
 import com.piashcse.constants.Message

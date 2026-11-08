@@ -19,6 +19,7 @@ import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
@@ -126,10 +127,10 @@ class ShopRepositoryImpl : ShopRepository {
                 try {
                     ShopStatus.valueOf(it.uppercase())
                 } catch (e: IllegalArgumentException) {
-                    throw com.piashcse.utils.validator.ValidationException(Message.Shops.invalidStatus(it))
+                    throw ValidationException(Message.Shops.invalidStatus(it))
                 }
             if (statusEnum != ShopStatus.APPROVED) {
-                throw com.piashcse.utils.validator.ValidationException("Public shop discovery only supports APPROVED")
+                throw ValidationException("Public shop discovery only supports APPROVED")
             }
         }
         category?.let { andWhere { ShopTable.categoryId eq it.entityID(ShopCategoryTable) } }
@@ -184,7 +185,7 @@ class ShopRepositoryImpl : ShopRepository {
             query {
                 val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
                 if (shop.status !in requiredCurrent) {
-                    throw com.piashcse.utils.validator.ValidationException(
+                    throw ValidationException(
                         "Cannot $action a shop in ${shop.status} status",
                     )
                 }

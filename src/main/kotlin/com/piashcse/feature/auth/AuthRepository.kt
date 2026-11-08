@@ -9,6 +9,8 @@ import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
 
+/** Aggregate auth facade; splitting it would fragment session/OTP invariants. */
+@Suppress("TooManyFunctions")
 interface AuthRepository {
     // Registration
     suspend fun register(registerRequest: RegisterRequest): RegistrationResult

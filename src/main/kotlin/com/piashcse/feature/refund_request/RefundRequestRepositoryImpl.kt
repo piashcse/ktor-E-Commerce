@@ -19,6 +19,7 @@ import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
@@ -215,28 +216,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
                     .firstOrNull()
                     ?: throw ValidationException(Message.Refunds.NOT_FOUND)
 
-            val user =
-                UserDAO.findById(userId)
-                    ?: throw ValidationException(Message.Errors.NOT_FOUND)
-
-            val isAdmin = user.userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
-            val seller = findSellerByUserId(userId)
-            val isSeller = seller != null
-
-            if (!isAdmin && !isSeller) {
-                throw com.piashcse.utils.validator.ForbiddenException(Message.Errors.FORBIDDEN)
-            }
-
-            if (isSeller) {
-                val order =
-                    OrderDAO.findById(refundReq.orderId.value)
-                        ?: throw ValidationException(Message.Orders.NOT_FOUND)
-                val orderShopId = order.shopId?.value
-                if (orderShopId == null || !sellerOwnsShop(seller, orderShopId)) {
-                    throw com.piashcse.utils.validator.ForbiddenException(Message.Errors.FORBIDDEN)
-                }
-            }
-
+            requireRefundActor(refundReq, userId)
             if (!canTransitionTo(refundReq.status, request.status)) {
                 throw ValidationException(Message.Refunds.invalidTransition(refundReq.status.name, request.status.name))
             }
@@ -247,30 +227,8 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             val orderItem =
                 OrderItemDAO.findById(refundReq.orderItemId.value)
                     ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
-
             val maxRefundAmount = maxRefundableAmount(order, orderItem, refundReq.quantity)
-            request.refundShippingAmount?.let { amount ->
-                if (amount < BigDecimal.ZERO || amount > order.shippingCost) {
-                    throw ValidationException("Shipping refund cannot exceed the order shipping cost")
-                }
-            }
-            request.refundTaxAmount?.let { amount ->
-                if (amount < BigDecimal.ZERO || amount > order.taxAmount) {
-                    throw ValidationException("Tax refund cannot exceed the order tax amount")
-                }
-            }
-            request.refundAmount?.let { amount ->
-                if (amount <= BigDecimal.ZERO || amount.stripTrailingZeros().scale() > 2) {
-                    throw ValidationException(Message.Refunds.AMOUNT_EXCEEDS_ITEM_TOTAL)
-                }
-                if (amount < BigDecimal("0.01")) {
-                    throw ValidationException("Refund amount must be at least 0.01")
-                }
-                if (amount > maxRefundAmount) {
-                    throw ValidationException(Message.Refunds.AMOUNT_EXCEEDS_ITEM_TOTAL)
-                }
-            }
-
+            validateRefundAmounts(order, request, maxRefundAmount)
             if (request.status == RefundStatus.REFUNDED && request.refundAmount == null && refundReq.refundAmount == null) {
                 throw ValidationException(Message.Refunds.REFUND_AMOUNT_REQUIRED)
             }
@@ -280,48 +238,104 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             if (request.status in listOf(RefundStatus.REFUNDED, RefundStatus.REJECTED)) {
                 refundReq.resolvedAt = currentUtc()
             }
-
             request.refundAmount?.let { refundReq.refundAmount = it }
             request.refundShippingAmount?.let { refundReq.shippingRefund = it }
             request.refundTaxAmount?.let { refundReq.taxRefund = it }
             request.refundMethod?.let { refundReq.refundMethod = it }
 
             if (request.status == RefundStatus.REFUNDED) {
-                AppMetrics.refundsCompleted.increment()
-                if (refundReq.refundMethod == null) {
-                    throw ValidationException("Refund method is required when marking a refund as REFUNDED")
-                }
-                val amount = refundReq.refundAmount ?: maxRefundAmount
-                refundReq.refundAmount = amount
-                restoreRefundEffects(
-                    order,
-                    orderItem,
-                    amount,
-                    refundReq.quantity,
-                    refundReq.shippingRefund,
-                    refundReq.taxRefund,
-                )
-
-                // Full refund = item refunds + shipping/tax cover the whole order total.
-                val refundedTotal =
-                    RefundRequestDAO.find {
-                        (RefundRequestTable.orderId eq refundReq.orderId) and
-                            (RefundRequestTable.status eq RefundStatus.REFUNDED)
-                    }.fold(BigDecimal.ZERO) { acc, row ->
-                        acc.add(row.refundAmount ?: BigDecimal.ZERO)
-                            .add(row.shippingRefund)
-                            .add(row.taxRefund)
-                    }
-                if (order.paymentStatus == PaymentStatus.COMPLETED && refundedTotal >= order.total) {
-                    order.paymentStatus = PaymentStatus.REFUNDED
-                    OrderCancellation.reverseCouponUsageForOrder(order.id.value)
-                }
+                applyRefunded(refundReq, order, orderItem, maxRefundAmount)
             }
-
             if (request.status == RefundStatus.REJECTED) AppMetrics.refundsRejected.increment()
             eventFor(refundReq, fromStatus.name, request.status.name)
             refundReq.toRefundRequestResponse()
         }
+
+    private fun requireRefundActor(
+        refund: RefundRequestDAO,
+        userId: String,
+    ) {
+        val user = UserDAO.findById(userId) ?: throw ValidationException(Message.Errors.NOT_FOUND)
+        val isAdmin = user.userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
+        val seller = findSellerByUserId(userId)
+        if (!isAdmin && seller == null) {
+            throw ForbiddenException(Message.Errors.FORBIDDEN)
+        }
+        if (seller != null) {
+            val order =
+                OrderDAO.findById(refund.orderId.value)
+                    ?: throw ValidationException(Message.Orders.NOT_FOUND)
+            val orderShopId = order.shopId?.value
+            if (orderShopId == null || !sellerOwnsShop(seller, orderShopId)) {
+                throw ForbiddenException(Message.Errors.FORBIDDEN)
+            }
+        }
+    }
+
+    private fun validateRefundAmounts(
+        order: OrderDAO,
+        request: UpdateRefundStatusRequest,
+        maxRefundAmount: BigDecimal,
+    ) {
+        request.refundShippingAmount?.let { amount ->
+            if (amount < BigDecimal.ZERO || amount > order.shippingCost) {
+                throw ValidationException("Shipping refund cannot exceed the order shipping cost")
+            }
+        }
+        request.refundTaxAmount?.let { amount ->
+            if (amount < BigDecimal.ZERO || amount > order.taxAmount) {
+                throw ValidationException("Tax refund cannot exceed the order tax amount")
+            }
+        }
+        request.refundAmount?.let { amount ->
+            if (amount <= BigDecimal.ZERO || amount.stripTrailingZeros().scale() > 2) {
+                throw ValidationException(Message.Refunds.AMOUNT_EXCEEDS_ITEM_TOTAL)
+            }
+            if (amount < BigDecimal("0.01")) {
+                throw ValidationException("Refund amount must be at least 0.01")
+            }
+            if (amount > maxRefundAmount) {
+                throw ValidationException(Message.Refunds.AMOUNT_EXCEEDS_ITEM_TOTAL)
+            }
+        }
+    }
+
+    private fun applyRefunded(
+        refund: RefundRequestDAO,
+        order: OrderDAO,
+        orderItem: OrderItemDAO,
+        maxRefundAmount: BigDecimal,
+    ) {
+        AppMetrics.refundsCompleted.increment()
+        if (refund.refundMethod == null) {
+            throw ValidationException("Refund method is required when marking a refund as REFUNDED")
+        }
+        val amount = refund.refundAmount ?: maxRefundAmount
+        refund.refundAmount = amount
+        restoreRefundEffects(
+            order,
+            orderItem,
+            amount,
+            refund.quantity,
+            refund.shippingRefund,
+            refund.taxRefund,
+        )
+
+        // Full refund = item refunds + shipping/tax cover the whole order total.
+        val refundedTotal =
+            RefundRequestDAO.find {
+                (RefundRequestTable.orderId eq refund.orderId) and
+                    (RefundRequestTable.status eq RefundStatus.REFUNDED)
+            }.fold(BigDecimal.ZERO) { acc, row ->
+                acc.add(row.refundAmount ?: BigDecimal.ZERO)
+                    .add(row.shippingRefund)
+                    .add(row.taxRefund)
+            }
+        if (order.paymentStatus == PaymentStatus.COMPLETED && refundedTotal >= order.total) {
+            order.paymentStatus = PaymentStatus.REFUNDED
+            OrderCancellation.reverseCouponUsageForOrder(order.id.value)
+        }
+    }
 
     private fun canTransitionTo(
         current: RefundStatus,

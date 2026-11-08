@@ -2,11 +2,13 @@ package com.piashcse.feature.inventory
 
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.plugin.sellerWriteRateLimit
-import com.piashcse.service.CacheService
+import com.piashcse.service.CatalogCache
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.queryInt
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
+import com.piashcse.utils.validator.NotFoundException
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -25,7 +27,7 @@ fun Route.inventorySellerRoutes() {
          */
         post {
             val result = inventoryRepo.createOrUpdateInventory(call.receive<InventoryRequest>(), call.currentUserId)
-            CacheService.cache.invalidatePattern("products:.*")
+            CatalogCache.invalidate()
             call.respondCreated(result)
         }
 
@@ -35,13 +37,14 @@ fun Route.inventorySellerRoutes() {
          */
         put("/stock/{productId}") {
             val productId = call.requirePathParameter("productId")
-            val quantityStr = call.requireQueryParameter("quantity")
-            val quantity = quantityStr.toIntOrNull() ?: throw IllegalArgumentException("quantity must be an integer")
+            val quantity =
+                call.queryInt("quantity")
+                    ?: throw IllegalArgumentException("quantity must be an integer")
             val operation = call.parameters["operation"] ?: "set"
             val warehouseId = call.request.queryParameters["warehouseId"]
             val variantId = call.request.queryParameters["variantId"]
             val result = inventoryRepo.updateStock(call.currentUserId, productId, quantity, operation, warehouseId, variantId)
-            CacheService.cache.invalidatePattern("products:.*")
+            CatalogCache.invalidate()
             call.respondOk(result)
         }
     }
@@ -57,7 +60,7 @@ fun Route.inventorySellerRoutes() {
         if (inventory != null) {
             call.respondOk(inventory)
         } else {
-            throw com.piashcse.utils.validator.NotFoundException("Inventory not found for product")
+            throw NotFoundException("Inventory not found for product")
         }
     }
 

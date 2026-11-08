@@ -3,7 +3,7 @@ package com.piashcse.feature.review_rating
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.writeRateLimit
-import com.piashcse.service.CacheService
+import com.piashcse.service.CatalogCache
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
@@ -35,7 +35,7 @@ fun Route.reviewRatingRoutes() {
              */
             post {
                 val result = reviewRatingRepo.addReviewRating(call.currentUserId, call.receive<ReviewRatingRequest>())
-                CacheService.cache.invalidatePattern("products:.*")
+                CatalogCache.invalidate()
                 call.respondCreated(result)
             }
 
@@ -48,7 +48,7 @@ fun Route.reviewRatingRoutes() {
                 val review = call.requireQueryParameter("review")
                 val rating = call.requireQueryParameter("rating")
                 val result = reviewRatingRepo.updateReviewRating(call.currentUserId, id, review, rating.toInt())
-                CacheService.cache.invalidatePattern("products:.*")
+                CatalogCache.invalidate()
                 call.respondOk(result)
             }
 
@@ -59,7 +59,7 @@ fun Route.reviewRatingRoutes() {
             delete("{id}") {
                 val id = call.requirePathParameter("id")
                 reviewRatingRepo.deleteReviewRating(call.currentUserId, id)
-                CacheService.cache.invalidatePattern("products:.*")
+                CatalogCache.invalidate()
                 call.respondOk(com.piashcse.utils.common.MessageResponse("Review deleted successfully"))
             }
 

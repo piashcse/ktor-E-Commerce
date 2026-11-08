@@ -12,7 +12,9 @@ import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.UnauthorizedException
+import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -62,20 +64,20 @@ fun Route.refundRequestRoutes() {
             val refundId = call.requirePathParameter("id")
             val fileName = call.requirePathParameter("fileName")
             if (fileName.contains('/') || fileName.contains('\\') || fileName.contains("..")) {
-                throw com.piashcse.utils.validator.ValidationException("Invalid file name")
+                throw ValidationException("Invalid file name")
             }
             val refund =
                 refundRequestRepo.getRefundById(
                     refundId,
                     call.currentUserId,
                     call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
-                ) ?: throw com.piashcse.utils.validator.NotFoundException(Message.Refunds.NOT_FOUND)
+                ) ?: throw NotFoundException(Message.Refunds.NOT_FOUND)
             // Touch the record so authorization above is the gate, then serve the file.
             check(refund.id == refundId)
             val root = File(DotEnvConfig.uploadDir, "refund-images").canonicalFile
             val file = File(root, fileName).canonicalFile
             if (!file.canonicalPath.startsWith(root.canonicalPath) || !file.isFile) {
-                throw com.piashcse.utils.validator.NotFoundException("Evidence file not found")
+                throw NotFoundException("Evidence file not found")
             }
             call.response.header(HttpHeaders.CacheControl, "private, no-store")
             call.respondFile(file)
@@ -112,7 +114,7 @@ fun Route.refundRequestRoutes() {
             if (refundRequest != null) {
                 call.respondOk(refundRequest)
             } else {
-                throw com.piashcse.utils.validator.NotFoundException(Message.Refunds.NOT_FOUND)
+                throw NotFoundException(Message.Refunds.NOT_FOUND)
             }
         }
     }

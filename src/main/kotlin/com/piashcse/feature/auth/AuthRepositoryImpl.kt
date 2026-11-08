@@ -24,7 +24,17 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
 
+@Suppress("TooManyFunctions")
 class AuthRepositoryImpl : AuthRepository {
+    private fun hashPassword(password: String) = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, password.toCharArray())
+
+    private fun verifyPassword(
+        raw: String,
+        hash: String,
+    ) = BCrypt.verifyer().verify(raw.toCharArray(), hash).verified
+
+    private fun userTypeOrNull(raw: String): UserType? = runCatching { UserType.valueOf(raw.uppercase()) }.getOrNull()
+
     // ── Token helpers ─────────────────────────────────────────────────────
 
     override fun generateTokenPair(
@@ -167,9 +177,7 @@ class AuthRepositoryImpl : AuthRepository {
     // ── Registration ──────────────────────────────────────────────────────
 
     override suspend fun register(registerRequest: RegisterRequest): RegistrationResult {
-        val userTypeEnum =
-            runCatching { UserType.valueOf(registerRequest.userType.uppercase()) }
-                .getOrDefault(UserType.CUSTOMER)
+        val userTypeEnum = userTypeOrNull(registerRequest.userType) ?: UserType.CUSTOMER
 
         val (email, otp, result) =
             query {
@@ -190,11 +198,7 @@ class AuthRepositoryImpl : AuthRepository {
                     // Security: the unverified row may have been created by an attacker
                     // with their own password (account pre-hijacking). Always replace it
                     // with the password supplied by the person who can receive the OTP.
-                    existingUser.password =
-                        BCrypt.withDefaults().hashToString(
-                            AppConstants.BCRYPT_COST,
-                            registerRequest.password.toCharArray(),
-                        )
+                    existingUser.password = hashPassword(registerRequest.password)
                     Triple(
                         existingUser.email,
                         otp,
@@ -206,7 +210,7 @@ class AuthRepositoryImpl : AuthRepository {
                             email = registerRequest.email
                             otpCode = otp
                             otpExpiry = otpExpiryTime
-                            password = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, registerRequest.password.toCharArray())
+                            password = hashPassword(registerRequest.password)
                             userType = userTypeEnum
                         }
                     UserProfileDAO.new { userId = inserted.id }
@@ -249,8 +253,8 @@ class AuthRepositoryImpl : AuthRepository {
         val entities = UserDAO.find { UserTable.email eq email }.toList()
         if (entities.isEmpty()) email.throwNotFound("User")
         val type =
-            runCatching { UserType.valueOf(userTypeStr.uppercase()) }
-                .getOrElse { throw NotFoundException(Message.Auth.userNotFoundForRole(userTypeStr)) }
+            userTypeOrNull(userTypeStr)
+                ?: throw NotFoundException(Message.Auth.userNotFoundForRole(userTypeStr))
         return entities.find { it.userType == type }
             ?: throw NotFoundException(Message.Auth.userNotFoundForRole(userTypeStr))
     }
@@ -263,9 +267,9 @@ class AuthRepositoryImpl : AuthRepository {
     ): Boolean =
         query {
             val userEntity = UserDAO.findById(userId) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
-            if (!BCrypt.verifyer().verify(changePassword.oldPassword.toCharArray(), userEntity.password).verified) return@query false
+            if (!verifyPassword(changePassword.oldPassword, userEntity.password)) return@query false
             if (changePassword.oldPassword == changePassword.newPassword) throw ValidationException(Message.Auth.PASSWORD_SAME)
-            userEntity.password = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, changePassword.newPassword.toCharArray())
+            userEntity.password = hashPassword(changePassword.newPassword)
             // A password change must invalidate every existing session.
             revokeAllUserTokensTx(userId)
             true
@@ -276,8 +280,8 @@ class AuthRepositoryImpl : AuthRepository {
             val entities = UserDAO.find { UserTable.email eq forgotPasswordRequest.email }.toList()
             if (entities.isEmpty()) forgotPasswordRequest.email.throwNotFound("User")
             val type =
-                runCatching { UserType.valueOf(forgotPasswordRequest.userType.uppercase()) }
-                    .getOrElse { throw NotFoundException(Message.Auth.userNotFoundForRole(forgotPasswordRequest.userType)) }
+                userTypeOrNull(forgotPasswordRequest.userType)
+                    ?: throw NotFoundException(Message.Auth.userNotFoundForRole(forgotPasswordRequest.userType))
             val user =
                 entities.find { it.userType == type }
                     ?: throw NotFoundException(Message.Auth.userNotFoundForRole(forgotPasswordRequest.userType))
@@ -292,9 +296,7 @@ class AuthRepositoryImpl : AuthRepository {
             // Anti-enumeration: unknown email/role behaves exactly like a bad OTP.
             val entities = UserDAO.find { UserTable.email eq resetPasswordRequest.email }.toList()
             if (entities.isEmpty()) return@query ResetResult.InvalidOrExpiredOtp
-            val type =
-                runCatching { UserType.valueOf(resetPasswordRequest.userType.uppercase()) }
-                    .getOrNull() ?: return@query ResetResult.InvalidOrExpiredOtp
+            val type = userTypeOrNull(resetPasswordRequest.userType) ?: return@query ResetResult.InvalidOrExpiredOtp
             val user =
                 entities.find { it.userType == type } ?: return@query ResetResult.InvalidOrExpiredOtp
 
@@ -325,7 +327,7 @@ class AuthRepositoryImpl : AuthRepository {
                 return@query ResetResult.InvalidOrExpiredOtp
             }
 
-            if (BCrypt.verifyer().verify(resetPasswordRequest.newPassword.toCharArray(), user.password).verified) {
+            if (verifyPassword(resetPasswordRequest.newPassword, user.password)) {
                 throw ValidationException(Message.Auth.PASSWORD_SAME)
             }
 
@@ -337,7 +339,7 @@ class AuthRepositoryImpl : AuthRepository {
             }
             user.resetOtpCode = null
             user.resetOtpExpiry = null
-            user.password = BCrypt.withDefaults().hashToString(AppConstants.BCRYPT_COST, resetPasswordRequest.newPassword.toCharArray())
+            user.password = hashPassword(resetPasswordRequest.newPassword)
             // Password reset must invalidate every existing session.
             revokeAllUserTokensTx(user.id.value)
             ResetResult.Success

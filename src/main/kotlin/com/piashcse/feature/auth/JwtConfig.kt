@@ -12,7 +12,7 @@ object JwtConfig {
     private val issuer = DotEnvConfig.jwtIssuer
     private val audience = DotEnvConfig.jwtAudience
     private val algorithm = Algorithm.HMAC512(secret)
-    private val validityMs = 15 * 60 * 1000L
+    private const val VALIDITY_MS = 15 * 60 * 1000L
 
     val verifier: JWTVerifier =
         JWT.require(algorithm).withIssuer(issuer).withAudience(audience).build()
@@ -25,6 +25,6 @@ object JwtConfig {
             .withClaim("email", jwtTokenBody.email)
             .withClaim("userId", jwtTokenBody.userId)
             .withClaim("userType", jwtTokenBody.userType)
-            .withExpiresAt(Date(System.currentTimeMillis() + validityMs))
+            .withExpiresAt(Date(System.currentTimeMillis() + VALIDITY_MS))
             .sign(algorithm)
 }
