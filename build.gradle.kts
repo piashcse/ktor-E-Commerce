@@ -117,6 +117,10 @@ ktlint {
 }
 
 tasks.register("installGitHooks", Copy::class) {
+    // In a linked worktree `.git` is a file, not a directory; hooks are shared
+    // from the main repository, so skip installation there. CI runs ktlint and
+    // detekt explicitly anyway.
+    onlyIf { file("$projectDir/.git").isDirectory }
     from(file("$projectDir/scripts/pre-commit"))
     into(file("$projectDir/.git/hooks"))
     fileMode = 493

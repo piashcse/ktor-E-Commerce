@@ -104,7 +104,7 @@ Retrieve a list of product sub categories with optional filtering and pagination
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/product-subcategories?id=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10' \
+  'http://localhost:8080/api/v1/product-subcategories?categoryId=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```

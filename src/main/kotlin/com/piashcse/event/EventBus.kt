@@ -36,8 +36,14 @@ data class EventBusMetrics(
 
 object EventBus {
     private val log = LoggerFactory.getLogger(EventBus::class.java)
-    private val _events = MutableSharedFlow<DomainEvent>(extraBufferCapacity = 256)
-    val events = _events.asSharedFlow()
+
+    private data class Envelope(
+        val event: DomainEvent,
+        val ack: CompletableDeferred<Boolean>? = null,
+    )
+
+    private val _events = MutableSharedFlow<Envelope>(extraBufferCapacity = 256)
+    private val events = _events.asSharedFlow()
     private val subscribers = CopyOnWriteArrayList<Subscriber>()
     private var job: Job? = null
 
@@ -69,9 +75,14 @@ object EventBus {
         if (!subscribers.contains(subscriber)) subscribers.add(subscriber)
     }
 
-    /** Returns false when buffer is full so callers can log instead of silently dropping. */
+    /** Returns false when the bus is not running or the buffer is full. */
     fun publish(event: DomainEvent): Boolean {
-        val accepted = _events.tryEmit(event)
+        if (job == null || subscribers.isEmpty()) {
+            log.error("EventBus not ready — dropped ${event::class.simpleName}")
+            failedCount.incrementAndGet()
+            return false
+        }
+        val accepted = _events.tryEmit(Envelope(event))
         if (accepted) {
             publishedCount.incrementAndGet()
         } else {
@@ -82,10 +93,21 @@ object EventBus {
     }
 
     /**
-     * Dead-letter channel for undecodable (poison) outbox rows. Emitted instead of dropping
-     * the row so operators can alert/audit on it; the outbox row itself stays unpublished
-     * for manual inspection.
+     * Publishes and waits until every subscriber has processed the event. The
+     * outbox poller uses this so `published_at` is only written after consumers
+     * succeed (at-least-once delivery, no early ack).
      */
+    suspend fun publishAndAwait(
+        event: DomainEvent,
+        timeoutMs: Long = 10_000L,
+    ): Boolean {
+        if (job == null || subscribers.isEmpty()) return false
+        val ack = CompletableDeferred<Boolean>()
+        if (!_events.tryEmit(Envelope(event, ack))) return false
+        publishedCount.incrementAndGet()
+        return withTimeoutOrNull(timeoutMs) { ack.await() } ?: false
+    }
+
     fun reportPoison(record: PoisonEvent) {
         log.error(
             "Outbox poison event id=${record.outboxId} type=${record.eventType} " +
@@ -96,7 +118,6 @@ object EventBus {
         _poisonEvents.tryEmit(record)
     }
 
-    /** Shared admin-audit publisher: `actor` is `(id, email, role)`. */
     fun publishAdminAction(
         actor: Triple<String, String, String>,
         action: String,
@@ -117,23 +138,26 @@ object EventBus {
         )
 
     fun start(scope: CoroutineScope) {
+        if (job != null) return
         job =
             scope.launch {
-                events.collect { event ->
+                events.collect { envelope ->
+                    var allSucceeded = true
                     subscribers.forEach { subscriber ->
                         var lastError: Throwable? = null
                         var attempts = 0
                         for (attempt in 1..MAX_RETRIES) {
                             attempts = attempt
                             try {
-                                subscriber.onEvent(event)
+                                subscriber.onEvent(envelope.event)
                                 lastError = null
                                 break
-                            } catch (e: Exception) {
+                            } catch (e: Throwable) {
+                                if (e is CancellationException) throw e
                                 lastError = e
                                 log.warn(
                                     "${subscriber::class.simpleName} failed (attempt $attempt/$MAX_RETRIES) " +
-                                        "on ${event::class.simpleName}: ${e.message}",
+                                        "on ${envelope.event::class.simpleName}: ${e.message}",
                                 )
                                 if (attempt < MAX_RETRIES) {
                                     delay(100L * (1L shl (attempt - 1)))
@@ -141,15 +165,16 @@ object EventBus {
                             }
                         }
                         if (lastError != null) {
+                            allSucceeded = false
                             failedCount.incrementAndGet()
                             log.error(
-                                "${subscriber::class.simpleName} permanently failed on ${event::class.simpleName}" +
+                                "${subscriber::class.simpleName} permanently failed on ${envelope.event::class.simpleName}" +
                                     " after $MAX_RETRIES attempts",
                                 lastError,
                             )
                             _deadLetter.tryEmit(
                                 DeadLetterEvent(
-                                    event = event,
+                                    event = envelope.event,
                                     subscriberName = subscriber::class.simpleName ?: "unknown",
                                     lastError = lastError,
                                     attempts = attempts,
@@ -159,6 +184,7 @@ object EventBus {
                         }
                     }
                     consumedCount.incrementAndGet()
+                    envelope.ack?.complete(allSucceeded)
                 }
             }
     }

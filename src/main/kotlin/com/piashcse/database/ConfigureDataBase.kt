@@ -37,11 +37,12 @@ private fun createDataSource() =
             jdbcUrl = "jdbc:postgresql://${DotEnvConfig.dbHost}:${DotEnvConfig.dbPort}/${DotEnvConfig.dbName}"
             username = DotEnvConfig.dbUser
             password = DotEnvConfig.dbPassword
-            maximumPoolSize = 10
-            minimumIdle = 2
-            idleTimeout = 30000
-            maxLifetime = 600000
-            connectionTimeout = 30000
+            maximumPoolSize = DotEnvConfig.dbPoolSize
+            minimumIdle = DotEnvConfig.dbMinIdle
+            idleTimeout = 30_000
+            maxLifetime = 600_000
+            connectionTimeout = DotEnvConfig.dbConnectionTimeoutMs
+            leakDetectionThreshold = 60_000
             validate()
         },
     )

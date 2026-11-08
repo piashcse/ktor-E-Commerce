@@ -270,21 +270,11 @@ The application includes built-in API documentation and OpenAPI specification ge
 ### Accessing API Documentation
 
 - **Swagger UI**: Access interactive API documentation at the root `/` or `/swagger` endpoint when the application is running. The root URL automatically redirects to Swagger for easy API discovery.
-- **Raw OpenAPI Specification**: Get the OpenAPI JSON specification at `/openapi` endpoint.
+- **Raw OpenAPI Specification**: Generated at runtime by Ktor's OpenAPI plugin and served through Swagger UI.
 
 ### Generating OpenAPI Specification
 
-The static OpenAPI specification file is located at `src/main/resources/openapi/openapi.json` and includes documentation for all the main API endpoints.
-
-To generate an updated OpenAPI specification file based on the current code:
-
-```bash
-./gradlew transformOpenApiJson
-```
-
-This will generate an updated OpenAPI specification and save it to `src/main/resources/openapi/openapi.json`.
-
-**Note**: The OpenAPI generation feature is experimental in Ktor 3.x. The static specification file in resources provides stable documentation for all endpoints.
+OpenAPI is generated at runtime from the route documentation annotations. There is no static `openapi.json` file and no `transformOpenApiJson` Gradle task. Use Swagger UI at `/swagger` for the live specification.
 
 ## Run the project
 
@@ -302,6 +292,8 @@ This API follows industry-standard patterns (Stripe, GitHub, OpenAI) for clean, 
 
 - **HTTP status code indicates success** (200, 201, 204)
 - **Response body contains data directly** - no wrapper objects
+
+> The historical examples below sometimes show an older `{ "data": ..., "message": ... }` envelope. The current API returns the raw DTO (or a paginated `{data, metadata}` object); error responses use `ApiError`.
 - No `isSuccess` or `statusCode` fields needed
 
 **Example (200 OK):**
@@ -443,7 +435,7 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "email": "customer@gmail.com",
-  "password": "p123",
+  "password": "Password123!",
   "userType": "customer"
 }'
 ```
@@ -490,7 +482,7 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "email": "customer@gmail.com",
-  "password": "p123",
+  "password": "Password123!",
   "userType": "customer"
 }'
 ```
@@ -692,7 +684,7 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "oldPassword": "p123",
+  "oldPassword": "Password123!",
   "newPassword": "newPassword123!"
 }'
 ```
@@ -1067,7 +1059,7 @@ http://localhost:8080/api/v1/shops/{id}
 <summary> <code>GET</code> <code>/api/v1/shops/public</code></summary>
 
 ### Description
-Retrieve public shops with filters (status, category).
+Retrieve public shops with filters (status, category). Requires an authenticated CUSTOMER or SELLER token.
 
 ### Curl
 ```bash
@@ -1291,44 +1283,6 @@ http://localhost:8080/api/v1/seller/shops/{id}
     "name": "Updated Shop Name"
   },
   "message": "Shop updated successfully"
-}
-```
-</details>
-
-<details>
-<summary> <code>PUT</code> <code>/api/v2/seller/shops/{shopId}</code></summary>
-
-### Description
-Seller: Update shop details with optimized response.
-
-### Curl
-```bash
-curl -X 'PUT' \
-  'http://localhost:8080/api/v2/seller/shops/ce563774-d3d5-442e-ad1a-b884bb0a53f0?source=mobile' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer <seller-token>' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "name": "V2 Updated Name"
-}'
-```
-
-### Request URL
-```text
-http://localhost:8080/api/v2/seller/shops/{shopId}?source={source}
-```
-
-### Response
-```json
-{
-  "data": {
-    "v2_data": {
-      "id": "ce563774-d3d5-442e-ad1a-b884bb0a53f0",
-      "name": "V2 Updated Name"
-    },
-    "source": "mobile"
-  },
-  "message": "Shop updated (V2)"
 }
 ```
 </details>

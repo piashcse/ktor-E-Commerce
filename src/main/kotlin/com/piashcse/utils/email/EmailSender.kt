@@ -31,7 +31,6 @@ object EmailSender {
             log.warn("Rate limit exceeded for $toEmail (subject: $subject)")
             return
         }
-        CacheService.cache.set(rateLimitKey, recentSends + 1, EMAIL_WINDOW_SECONDS)
 
         withContext(Dispatchers.IO) {
             try {
@@ -48,9 +47,13 @@ object EmailSender {
                     addTo(toEmail)
                     send()
                 }
+                // Only successful sends consume the rate-limit slot.
+                CacheService.cache.set(rateLimitKey, recentSends + 1, EMAIL_WINDOW_SECONDS)
                 log.info("Email sent successfully to $toEmail (subject: $subject)")
             } catch (e: EmailException) {
+                // Propagate so the EventBus retries/dead-letters instead of silently dropping.
                 log.error("Failed to send email to $toEmail: ${e.message}", e)
+                throw e
             }
         }
     }

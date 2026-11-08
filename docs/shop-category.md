@@ -78,7 +78,7 @@ curl -X 'POST' \
 
 ### 2. Get Shop Categories
 
-**`GET /api/v1/admin/shop-categories`**
+**`GET /api/v1/shop-categories`**
 
 Retrieve a list of shop categories with optional pagination support.
 

@@ -8,7 +8,7 @@ interface Cache {
     suspend fun <T> set(
         key: String,
         value: T,
-        ttlSeconds: Long = 300,
+        ttlSeconds: Long = -1,
     )
 
     suspend fun invalidate(key: String)
@@ -30,7 +30,10 @@ object NoOpCache : Cache {
     override suspend fun invalidatePattern(pattern: String) = Unit
 }
 
-class MemoryCache(private val defaultTtlSeconds: Long = 300) : Cache {
+class MemoryCache(
+    private val defaultTtlSeconds: Long = 300,
+    private val maxEntries: Int = 10_000,
+) : Cache {
     private data class CacheEntry(val value: Any?, val expiresAt: Long)
 
     private val store = ConcurrentHashMap<String, CacheEntry>()
@@ -50,7 +53,20 @@ class MemoryCache(private val defaultTtlSeconds: Long = 300) : Cache {
         value: T,
         ttlSeconds: Long,
     ) {
-        store[key] = CacheEntry(value, System.currentTimeMillis() + ttlSeconds * 1000)
+        val ttl = if (ttlSeconds > 0) ttlSeconds else defaultTtlSeconds
+        store[key] = CacheEntry(value, System.currentTimeMillis() + ttl * 1000)
+        if (store.size > maxEntries) evict()
+    }
+
+    private fun evict() {
+        val now = System.currentTimeMillis()
+        store.entries.removeIf { it.value.expiresAt < now }
+        if (store.size <= maxEntries) return
+        // Still over the cap: drop arbitrary entries until under the limit.
+        val iterator = store.keys.iterator()
+        while (store.size > maxEntries && iterator.hasNext()) {
+            store.remove(iterator.next())
+        }
     }
 
     override suspend fun invalidate(key: String) {

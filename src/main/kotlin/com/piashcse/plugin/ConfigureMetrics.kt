@@ -38,7 +38,12 @@ fun Application.configureMetrics() {
             val expected = DotEnvConfig.metricsToken
             val provided = call.request.headers["X-Metrics-Token"]
             val loopback = call.request.local.remoteHost in listOf("localhost", "127.0.0.1", "0:0:0:0:0:0:0:1", "::1")
-            val authorized = (expected.isNotBlank() && provided == expected) || (expected.isBlank() && loopback)
+            val authorized =
+                (
+                    expected.isNotBlank() && provided != null &&
+                        java.security.MessageDigest.isEqual(provided.toByteArray(), expected.toByteArray())
+                ) ||
+                    (expected.isBlank() && loopback)
             if (!authorized) {
                 call.respond(
                     HttpStatusCode.Forbidden,
@@ -46,6 +51,7 @@ fun Application.configureMetrics() {
                 )
                 return@get
             }
+            call.response.header(HttpHeaders.CacheControl, "no-store")
             call.respondText(appMicrometerRegistry.scrape())
         }
     }

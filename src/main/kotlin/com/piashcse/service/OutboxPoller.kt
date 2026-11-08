@@ -8,7 +8,10 @@ import com.piashcse.event.PoisonEvent
 import com.piashcse.utils.extension.query
 import io.ktor.server.application.*
 import kotlinx.coroutines.*
+import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.isNull
+import org.jetbrains.exposed.v1.core.less
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -17,6 +20,7 @@ import java.time.ZoneOffset
 object OutboxPoller {
     private val log = LoggerFactory.getLogger(OutboxPoller::class.java)
     private var job: Job? = null
+    private const val MAX_ATTEMPTS = 10
 
     fun start(
         scope: CoroutineScope,
@@ -38,49 +42,81 @@ object OutboxPoller {
         job = null
     }
 
-    suspend fun drain(batchSize: Int = 50): Int =
-        query {
-            // Claim the next batch under FOR UPDATE in id order so redeliveries are FIFO.
-            // Exposed 1.5's DAO finder exposes plain FOR UPDATE only (no SKIP LOCKED), so
-            // concurrent pollers would contend on the same head rows: run a single poller
-            // instance; do not scale horizontally without an external claim mechanism.
-            val pending =
-                OutboxDAO.find { OutboxTable.publishedAt.isNull() }
-                    .forUpdate()
+    private data class PendingRow(
+        val id: String,
+        val eventType: String,
+        val payload: String,
+        val aggregateType: String,
+        val aggregateId: String,
+        val attempts: Int,
+    )
+
+    suspend fun drain(batchSize: Int = 50): Int {
+        // Read the batch in one short transaction. Delivery happens outside the
+        // transaction because it waits for subscribers; the row is acknowledged
+        // in a second transaction only after consumers succeed.
+        val pending =
+            query {
+                OutboxDAO.find {
+                    (OutboxTable.publishedAt.isNull()) and (OutboxTable.attempts less MAX_ATTEMPTS)
+                }
+                    .orderBy(OutboxTable.createdAt to SortOrder.ASC)
                     .limit(batchSize).toList()
-                    .sortedBy { it.id.value }
-            var delivered = 0
-            pending.forEach { row ->
-                val event = OutboxPublisher.decode(row.eventType, row.payload)
-                if (event == null) {
-                    // Poison record: undecodable payload. Never mark published-and-dropped —
-                    // keep the row unpublished for operator inspection, bump attempts, and
-                    // surface it on the dead-letter channel.
-                    row.attempts = row.attempts + 1
-                    EventBus.reportPoison(
-                        PoisonEvent(
-                            outboxId = row.id.value,
+                    .map { row ->
+                        PendingRow(
+                            id = row.id.value,
                             eventType = row.eventType,
+                            payload = row.payload,
                             aggregateType = row.aggregateType,
                             aggregateId = row.aggregateId,
                             attempts = row.attempts,
-                        ),
-                    )
-                    return@forEach
+                        )
+                    }
+            }
+
+        var delivered = 0
+        pending.forEach { pendingRow ->
+            val event = OutboxPublisher.decode(pendingRow.eventType, pendingRow.payload)
+            if (event == null) {
+                query {
+                    OutboxDAO.findById(pendingRow.id)?.let { row ->
+                        row.attempts = row.attempts + 1
+                        if (row.attempts >= MAX_ATTEMPTS) {
+                            row.publishedAt = LocalDateTime.now(ZoneOffset.UTC)
+                            log.error("Outbox row ${row.id.value} retired after ${row.attempts} undecodable attempts")
+                        }
+                    }
                 }
-                // At-least-once relay: the row is marked published only after the bus accepts
-                // the event. True exactly-once is not possible here — the in-memory bus has no
-                // transactional consume, so a crash between publish and commit can redeliver;
-                // downstream subscribers must stay idempotent.
-                if (EventBus.publish(event)) {
-                    row.publishedAt = LocalDateTime.now(ZoneOffset.UTC)
-                    delivered++
-                } else {
-                    row.attempts = row.attempts + 1
+                EventBus.reportPoison(
+                    PoisonEvent(
+                        outboxId = pendingRow.id,
+                        eventType = pendingRow.eventType,
+                        aggregateType = pendingRow.aggregateType,
+                        aggregateId = pendingRow.aggregateId,
+                        attempts = pendingRow.attempts + 1,
+                    ),
+                )
+                return@forEach
+            }
+
+            val processed = EventBus.publishAndAwait(event)
+            query {
+                OutboxDAO.findById(pendingRow.id)?.let { row ->
+                    if (processed) {
+                        row.publishedAt = LocalDateTime.now(ZoneOffset.UTC)
+                        delivered++
+                    } else {
+                        row.attempts = row.attempts + 1
+                        if (row.attempts >= MAX_ATTEMPTS) {
+                            row.publishedAt = LocalDateTime.now(ZoneOffset.UTC)
+                            log.error("Outbox row ${row.id.value} retired after ${row.attempts} delivery failures")
+                        }
+                    }
                 }
             }
-            delivered
         }
+        return delivered
+    }
 }
 
 fun Application.configureOutboxPoller() = OutboxPoller.start(this)

@@ -49,7 +49,7 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
     "email": "customer@gmail.com",
-    "password": "p1234",
+    "password": "Password123!",
     "userType": "customer"
   }'
 ```
@@ -380,8 +380,8 @@ curl -X 'PUT' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
   -d '{
-    "oldPassword": "p1234",
-    "newPassword": "newp1234"
+    "oldPassword": "Password123!",
+    "newPassword": "NewPassword123!"
   }'
 ```
 

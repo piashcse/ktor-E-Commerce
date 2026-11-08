@@ -50,7 +50,7 @@ Add a product to the user's shopping cart with specified quantity. If the produc
 
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/carts?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
+  'http://localhost:8080/api/v1/carts' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -d ''
@@ -117,7 +117,7 @@ curl -X 'GET' \
         "productDetail": "Xiaomi Smart Watch",
         "price": 10,
         "discountPrice": 0,
-        "status": 0,
+        "status": "ACTIVE",
         "videoLink": "string",
         "mainSlider": "string",
         "hotDeal": "string",
@@ -173,7 +173,7 @@ Update the quantity of a specific product in the user's cart. This operation set
 
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/carts?productId=5b24d429-c981-47c8-9318-f4d61dd2c1a4&quantity=1' \
+  'http://localhost:8080/api/v1/carts' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -193,7 +193,7 @@ curl -X 'PUT' \
       "productDetail": "Chinese polo T-shirt",
       "price": 100,
       "discountPrice": 0,
-      "status": 0,
+      "status": "ACTIVE",
       "hotDeal": "string",
       "bestRated": "string",
       "buyOneGetOne": "string"
@@ -234,7 +234,7 @@ Remove a specific product from the user's cart completely, regardless of quantit
 
 ```bash
 curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/carts?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
+  'http://localhost:8080/api/v1/carts/remove?productId=71b26dd9-b4b5-4f87-a84d-c8daa506018a' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 ```
@@ -251,7 +251,7 @@ curl -X 'DELETE' \
     "productDetail": "Xiaomi Smart Watch",
     "price": 10,
     "discountPrice": 0,
-    "status": 0,
+    "status": "ACTIVE",
     "videoLink": "string",
     "mainSlider": "string",
     "hotDeal": "string",
