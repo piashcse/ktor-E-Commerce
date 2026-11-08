@@ -50,6 +50,7 @@ data class UpdateNotificationPreferencesRequest(
 
 fun Route.notificationRoutes() {
     val repo: NotificationRepository by inject()
+    val prefService: NotificationPreferencesService by inject()
     customerAuth {
         get {
             val (limit, offset) = call.paginateQueryParams()
@@ -103,6 +104,19 @@ fun Route.notificationRoutes() {
         put("preferences") {
             val body = call.receive<UpdateNotificationPreferencesRequest>()
             call.respondOk(repo.updatePreferences(call.currentUserId, body.channel))
+        }
+        get("preferences/{eventType}") {
+            val eventType =
+                call.parameters["eventType"]
+                    ?: throw IllegalArgumentException("eventType required")
+            call.respondOk(prefService.get(call.currentUserId, eventType))
+        }
+        put("preferences/{eventType}") {
+            val eventType =
+                call.parameters["eventType"]
+                    ?: throw IllegalArgumentException("eventType required")
+            val body = call.receive<UpdateNotificationPreferencesRequest>()
+            call.respondOk(prefService.set(call.currentUserId, eventType, body.channel))
         }
     }
 }

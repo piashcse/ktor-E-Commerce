@@ -10,6 +10,8 @@ import com.piashcse.constants.RmaType
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.event.OutboxPublisher
+import com.piashcse.event.RmaStatusChangedEvent
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
@@ -70,6 +72,26 @@ data class RmaResponse(
 class RmaService {
     private fun activeStatuses() = listOf(RmaStatus.REQUESTED, RmaStatus.APPROVED, RmaStatus.IN_TRANSIT, RmaStatus.RECEIVED)
 
+    private fun enqueueStatusChange(
+        rma: RmaDAO,
+        fromStatus: RmaStatus?,
+        toStatus: RmaStatus,
+    ) {
+        if (fromStatus == toStatus) return
+        OutboxPublisher.enqueueTx(
+            "RMA",
+            rma.id.value,
+            RmaStatusChangedEvent(
+                rmaId = rma.id.value,
+                orderId = rma.orderId.value,
+                userId = rma.userId.value,
+                email = UserDAO.findById(rma.userId.value)?.email.orEmpty(),
+                fromStatus = fromStatus?.name ?: "NONE",
+                toStatus = toStatus.name,
+            ),
+        )
+    }
+
     suspend fun create(
         userId: String,
         request: RmaCreateRequest,
@@ -97,16 +119,19 @@ class RmaService {
                 }.firstOrNull()
             if (existing != null) throw ValidationException("An active return/exchange already exists for this item")
 
-            RmaDAO.new {
-                this.orderId = order.id
-                this.orderItemId = item.id
-                this.userId = order.userId
-                this.shopId = order.shopId
-                this.quantity = request.quantity
-                this.type = request.type
-                this.status = RmaStatus.REQUESTED
-                this.reason = request.reason
-            }.toResponse()
+            val rma =
+                RmaDAO.new {
+                    this.orderId = order.id
+                    this.orderItemId = item.id
+                    this.userId = order.userId
+                    this.shopId = order.shopId
+                    this.quantity = request.quantity
+                    this.type = request.type
+                    this.status = RmaStatus.REQUESTED
+                    this.reason = request.reason
+                }
+            enqueueStatusChange(rma, null, RmaStatus.REQUESTED)
+            rma.toResponse()
         }
 
     suspend fun getUserRmas(
@@ -162,8 +187,10 @@ class RmaService {
                 throw ValidationException("RMA must be approved before shipping")
             }
             trackingNumber.requireNotBlank("Tracking number")
+            val fromStatus = rma.status
             rma.trackingNumber = trackingNumber
             rma.status = RmaStatus.IN_TRANSIT
+            enqueueStatusChange(rma, fromStatus, rma.status)
             rma.toResponse()
         }
 
@@ -177,8 +204,10 @@ class RmaService {
             if (rma.status !in listOf(RmaStatus.REQUESTED, RmaStatus.APPROVED)) {
                 throw ValidationException("RMA cannot be cancelled from status ${rma.status}")
             }
+            val fromStatus = rma.status
             rma.status = RmaStatus.CANCELLED
             rma.resolvedAt = currentUtc()
+            enqueueStatusChange(rma, fromStatus, rma.status)
             rma.toResponse()
         }
 
@@ -202,6 +231,7 @@ class RmaService {
             if (!RmaStatus.canTransitionTo(rma.status, request.status)) {
                 throw ValidationException("Cannot change RMA status from ${rma.status} to ${request.status}")
             }
+            val fromStatus = rma.status
 
             when (request.status) {
                 RmaStatus.APPROVED, RmaStatus.REJECTED -> {
@@ -274,6 +304,7 @@ class RmaService {
                 }
                 else -> throw ValidationException("Unsupported RMA transition")
             }
+            enqueueStatusChange(rma, fromStatus, rma.status)
             rma.toResponse()
         }
 

@@ -1,36 +1,19 @@
 package com.piashcse.event.subscriber
 
-import com.piashcse.event.*
+import com.piashcse.event.DomainEvent
+import com.piashcse.event.SendEmailEvent
+import com.piashcse.event.Subscriber
 import com.piashcse.utils.email.EmailSender
 
+/**
+ * Sends explicitly queued emails (OTP, password reset, admin messages). Domain
+ * notifications are fanned out by [NotificationSubscriber] through the channel
+ * dispatcher so templates and per-event preferences are respected.
+ */
 class EmailSubscriber : Subscriber {
-    override suspend fun onEvent(event: DomainEvent) =
-        when (event) {
-            is SendEmailEvent -> EmailSender.send(event.to, event.subject, event.body)
-            is UserRegisteredEvent ->
-                EmailSender.send(
-                    event.email,
-                    "Welcome to Ktor E-Commerce",
-                    "Welcome! Your account has been created as ${event.userType}.",
-                )
-            is OrderPlacedEvent ->
-                EmailSender.send(
-                    event.email,
-                    "Order Confirmed",
-                    "Order ${event.orderNumber} placed. Total: \$${event.total}",
-                )
-            is PaymentCompletedEvent ->
-                EmailSender.send(
-                    event.email,
-                    "Payment Received",
-                    "Payment of \$${event.amount} for order ${event.orderId} confirmed.",
-                )
-            is AdminActionEvent -> Unit
-            is RefundStatusChangedEvent ->
-                EmailSender.send(
-                    event.email,
-                    "Refund ${event.toStatus}",
-                    "Refund ${event.refundId} for order ${event.orderId}: ${event.fromStatus} -> ${event.toStatus}.",
-                )
+    override suspend fun onEvent(event: DomainEvent) {
+        if (event is SendEmailEvent) {
+            EmailSender.send(event.to, event.subject, event.body)
         }
+    }
 }

@@ -35,6 +35,9 @@ object OutboxPublisher {
                 is RefundStatusChangedEvent ->
                     "REFUND_STATUS_CHANGED" to
                         outboxJson.encodeToString(RefundStatusChangedEvent.serializer(), event)
+                is RmaStatusChangedEvent ->
+                    "RMA_STATUS_CHANGED" to
+                        outboxJson.encodeToString(RmaStatusChangedEvent.serializer(), event)
                 is AdminActionEvent -> "ADMIN_ACTION" to outboxJson.encodeToString(AdminActionEvent.serializer(), event)
                 is UserRegisteredEvent -> "USER_REGISTERED" to outboxJson.encodeToString(UserRegisteredEvent.serializer(), event)
                 is SendEmailEvent -> "SEND_EMAIL" to outboxJson.encodeToString(SendEmailEvent.serializer(), event)
@@ -56,6 +59,7 @@ object OutboxPublisher {
                 "ORDER_PLACED" -> outboxJson.decodeFromString(OrderPlacedEvent.serializer(), payload)
                 "PAYMENT_COMPLETED" -> outboxJson.decodeFromString(PaymentCompletedEvent.serializer(), payload)
                 "REFUND_STATUS_CHANGED" -> outboxJson.decodeFromString(RefundStatusChangedEvent.serializer(), payload)
+                "RMA_STATUS_CHANGED" -> outboxJson.decodeFromString(RmaStatusChangedEvent.serializer(), payload)
                 "ADMIN_ACTION" -> outboxJson.decodeFromString(AdminActionEvent.serializer(), payload)
                 "USER_REGISTERED" -> outboxJson.decodeFromString(UserRegisteredEvent.serializer(), payload)
                 "SEND_EMAIL" -> outboxJson.decodeFromString(SendEmailEvent.serializer(), payload)

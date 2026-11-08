@@ -51,6 +51,7 @@ nav:
       - Inventory: inventory.md
       - Refund Request: refund-request.md
       - RMA / Returns: rma.md
+      - Notifications: notification.md
       - Seller KYC: seller-kyc.md
       - Payouts & Statements: payout.md
       - Privacy Policy: privacy-policy.md
