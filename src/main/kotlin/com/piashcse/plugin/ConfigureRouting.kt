@@ -47,6 +47,7 @@ import com.piashcse.feature.shop.shopRoutes
 import com.piashcse.feature.shop.shopSellerRoutesV1
 import com.piashcse.feature.shop_category.shopCategoryAdminRoutes
 import com.piashcse.feature.shop_category.shopCategoryRoutes
+import com.piashcse.feature.tax.taxAdminRoutes
 import com.piashcse.feature.wishlist.wishListRoutes
 import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.common.MessageResponse
@@ -175,6 +176,7 @@ private fun Route.adminRoutes() {
             route("audit-logs") { auditLogAdminRoutes() }
             route("payouts") { payoutAdminRoutes() }
             route("fx-rates") { fxAdminRoutes() }
+            route("tax-rules") { taxAdminRoutes() }
             route("outbox") { outboxAdminRoutes() }
         }
     }

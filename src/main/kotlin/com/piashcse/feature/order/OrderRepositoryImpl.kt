@@ -4,6 +4,7 @@ import com.piashcse.constants.*
 import com.piashcse.database.entities.*
 import com.piashcse.event.OrderPlacedEvent
 import com.piashcse.event.OutboxPublisher
+import com.piashcse.feature.tax.TaxService
 import com.piashcse.mapper.toOrderItemResponse
 import com.piashcse.mapper.toOrderResponse
 import com.piashcse.model.request.CheckoutRequest
@@ -241,6 +242,7 @@ class OrderRepositoryImpl : OrderRepository {
                         itemsByShop.entries.forEachIndexed { index, (shopIdValue, items) ->
                             val orderNumber = generateOrderNumber(today, index + 1)
                             var shopSubTotal = BigDecimal.ZERO
+                            var shopTax = BigDecimal.ZERO
 
                             val order =
                                 OrderDAO.new {
@@ -277,6 +279,13 @@ class OrderRepositoryImpl : OrderRepository {
                                 val unitPrice = Money.scale2(unitPriceUsd.multiply(fxRate))
                                 val itemTotal = Money.unitTotal(unitPrice, cartItem.quantity)
                                 totalUsdSubTotal = totalUsdSubTotal.add(Money.unitTotal(unitPriceUsd, cartItem.quantity))
+                                shopTax =
+                                    shopTax.add(
+                                        Money.tax(
+                                            itemTotal,
+                                            TaxService.resolve(shippingAddress.country, product.categoryId.value),
+                                        ),
+                                    )
 
                                 val orderItem =
                                     OrderItemDAO.new {
@@ -309,7 +318,7 @@ class OrderRepositoryImpl : OrderRepository {
                             }
 
                             val scaledSubTotal = Money.scale2(shopSubTotal)
-                            val tax = Money.tax(scaledSubTotal, Money.of(AppConstants.DEFAULT_TAX_PERCENTAGE))
+                            val tax = Money.scale2(shopTax)
                             val ship = Money.scale2(shippingMethod.price.multiply(fxRate))
                             order.subTotal = scaledSubTotal
                             order.shippingCost = ship
@@ -403,6 +412,12 @@ class OrderRepositoryImpl : OrderRepository {
             val shippingMethod =
                 ShippingMethodDAO.findById(checkoutRequest.shippingMethodId)
                     ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
+            val shippingAddress =
+                ShippingAddressDAO.findById(checkoutRequest.shippingAddressId)
+                    ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
+            if (shippingAddress.userId.value != userId) {
+                throw ValidationException(Message.Orders.SHIPPING_ADDRESS_UNAUTHORIZED)
+            }
 
             val productsMap =
                 ProductDAO.find {
@@ -425,18 +440,29 @@ class OrderRepositoryImpl : OrderRepository {
                 )
             val sub = Money.scale2(subUsd.multiply(fxRate))
             val ship = Money.scale2(PricingService.shipping(shippingMethod.price, shopCount).multiply(fxRate))
-
-            var response =
-                PricingService.breakdown(sub, ship).let {
-                    CheckoutSummaryResponse(
-                        subTotal = it.subTotal.toPlainString(),
-                        shippingCost = it.shippingTotal.toPlainString(),
-                        taxAmount = it.taxAmount.toPlainString(),
-                        total = it.total.toPlainString(),
-                        itemCount = totalItems,
-                        currency = currency,
+            val taxUsd =
+                cartItems.fold(BigDecimal.ZERO) { acc, cartItem ->
+                    val product =
+                        productsMap[cartItem.productId.value]
+                            ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
+                    acc.add(
+                        Money.tax(
+                            Money.unitTotal(product.discountPrice ?: product.price, cartItem.quantity),
+                            TaxService.resolve(shippingAddress.country, product.categoryId.value),
+                        ),
                     )
                 }
+            val tax = Money.scale2(taxUsd.multiply(fxRate))
+
+            var response =
+                CheckoutSummaryResponse(
+                    subTotal = sub.toPlainString(),
+                    shippingCost = ship.toPlainString(),
+                    taxAmount = tax.toPlainString(),
+                    total = Money.scale2(sub.add(ship).add(tax)).toPlainString(),
+                    itemCount = totalItems,
+                    currency = currency,
+                )
 
             checkoutRequest.couponCode?.let {
                 val coupon =
@@ -449,11 +475,11 @@ class OrderRepositoryImpl : OrderRepository {
                     )
                 val discountUsd = calculateCouponDiscount(coupon, subUsd)
                 val discount = Money.scale2(discountUsd.multiply(fxRate))
-                val withCoupon = PricingService.breakdown(sub, ship, discount)
+                val total = Money.scale2(sub.add(ship).add(tax).subtract(discount).max(BigDecimal.ZERO))
                 response =
                     response.copy(
-                        discountAmount = withCoupon.discount.toPlainString(),
-                        total = withCoupon.total.toPlainString(),
+                        discountAmount = discount.toPlainString(),
+                        total = total.toPlainString(),
                     )
             }
             response

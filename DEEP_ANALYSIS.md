@@ -156,7 +156,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 - [ ] **E-2. Carrier integration, labels, tracking webhooks, delivery slots.**
 - [ ] **E-3. Product variants/options, attributes, bundles, recommendations.**
 - [ ] **E-4. Multi-warehouse inventory, backorders, supplier POs, stock audit.**
-- [ ] **E-5. Tax rules by region/category; promotions engine (stacking/scopes).**
+- [x] **E-5. Tax rules by region/category; promotions engine (stacking/scopes).**
 - [ ] **E-6. Seller KYC, commission tiers, statements, tax exports.**
 - [ ] **E-7. RMA/return portal, exchanges, partial refunds by quantity.**
 - [ ] **E-8. Guest checkout, saved payment methods, order tracking page.**
@@ -180,6 +180,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 4 | `fix/04-remaining-hardening` | `fix/03-platform-observability-docs` | DLQ visibility, tracking number, quantity/shipping/tax refunds, UTC timestamps, public catalog, BigDecimal product prices, paginated lists, V20 |
 | 5 | `fix/05-search-observability` | `fix/04-remaining-hardening` | Full-text search adoption + outbox/payment/refund/payout metrics + GDPR export/erasure |
 | 6 | `fix/06-resilience` | `fix/05-search-observability` | Circuit breakers, jittered retry, DLQ summary/replay API |
+| 7 | `fix/07-tax-rules` | `fix/06-resilience` | Country/category tax rules, admin API, per-item tax in checkout/orders |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 
