@@ -22,6 +22,7 @@ object UserTable : BaseIdTable("user") {
     val resetOtpExpiry = datetime("reset_otp_expiry").nullable()
     val isVerified = bool("is_verified").default(false)
     val isActive = bool("is_active").default(true)
+    val isGuest = bool("is_guest").default(false)
 
     init {
         uniqueIndex("email_userType_idx", email, userType)
@@ -40,6 +41,7 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     var resetOtpExpiry by UserTable.resetOtpExpiry
     var isVerified by UserTable.isVerified
     var isActive by UserTable.isActive
+    var isGuest by UserTable.isGuest
 
     /**
      * Get the seller information if the user is a seller

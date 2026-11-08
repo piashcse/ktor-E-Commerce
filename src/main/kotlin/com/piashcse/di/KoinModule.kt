@@ -10,6 +10,7 @@ import com.piashcse.feature.brand.BrandRepository
 import com.piashcse.feature.brand.BrandRepositoryImpl
 import com.piashcse.feature.cart.CartRepository
 import com.piashcse.feature.cart.CartRepositoryImpl
+import com.piashcse.feature.checkout.GuestCheckoutService
 import com.piashcse.feature.consent.ConsentRepository
 import com.piashcse.feature.consent.ConsentRepositoryImpl
 import com.piashcse.feature.coupon.CouponRepository
@@ -92,6 +93,7 @@ val serviceModule =
         single { ProfileService(get()) }
         single { PrivacyService() }
         single { ApiKeyService() }
+        single { GuestCheckoutService(get()) }
 
         // Split auth services
         single { UserAuthenticationService(get()) }

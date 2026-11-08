@@ -24,6 +24,22 @@ data class ShipOrderRequest(val trackingNumber: String)
  */
 fun Route.orderRoutes() {
     val orderRepo: OrderRepository by inject()
+
+    generalRateLimit {
+        /**
+         * @tag Order
+         * @description Public guest order tracking by order number + checkout email
+         */
+        get("track") {
+            val orderNumber = call.requireQueryParameter("orderNumber")
+            val email = call.requireQueryParameter("email")
+            val order =
+                orderRepo.getOrderForGuest(orderNumber, email)
+                    ?: throw com.piashcse.utils.validator.NotFoundException(Message.Orders.NOT_FOUND)
+            call.respondOk(order)
+        }
+    }
+
     customerOnlyAuth {
         generalRateLimit {
             /**

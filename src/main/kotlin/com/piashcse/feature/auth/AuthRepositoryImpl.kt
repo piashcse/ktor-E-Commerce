@@ -372,6 +372,8 @@ class AuthRepositoryImpl : AuthRepository {
                 return@query false
             }
             userEntity.isVerified = true
+            // A guest checkout account becomes a normal account after OTP verification.
+            userEntity.isGuest = false
             userEntity.otpCode = null
             userEntity.otpExpiry = null
             attempt?.let {

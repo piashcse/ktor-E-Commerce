@@ -3,10 +3,12 @@ package com.piashcse.feature.checkout
 import com.piashcse.config.DotEnv
 import com.piashcse.constants.PolicyType
 import com.piashcse.feature.consent.ConsentRepository
+import com.piashcse.feature.featureflag.FeatureFlags
 import com.piashcse.feature.order.OrderRepository
 import com.piashcse.feature.shipping_address.ShippingAddressRepository
 import com.piashcse.feature.shipping_method.ShippingMethodRepository
 import com.piashcse.model.request.CheckoutRequest
+import com.piashcse.model.request.GuestCheckoutRequest
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.writeRateLimit
@@ -24,6 +26,7 @@ fun Route.checkoutRoutes() {
     val shippingMethodRepo: ShippingMethodRepository by inject()
     val orderRepo: OrderRepository by inject()
     val consentRepo: ConsentRepository by inject()
+    val guestCheckoutService: GuestCheckoutService by inject()
 
     suspend fun requireConfiguredConsents(userId: String) {
         if (!DotEnv.getBoolean("REQUIRE_POLICY_CONSENT", false)) return
@@ -31,6 +34,19 @@ fun Route.checkoutRoutes() {
             if (!consentRepo.hasUserConsented(userId, type)) {
                 throw com.piashcse.utils.validator.ValidationException("Consent required for policy: ${type.name}")
             }
+        }
+    }
+
+    writeRateLimit {
+        /**
+         * @tag Checkout
+         * @description Place an order without an account (feature-flagged)
+         */
+        post("guest") {
+            if (!FeatureFlags.isEnabled("guest_checkout")) {
+                throw com.piashcse.utils.validator.ValidationException("Guest checkout is disabled")
+            }
+            call.respondCreated(guestCheckoutService.placeOrder(call.receive<GuestCheckoutRequest>()))
         }
     }
     customerOnlyAuth {

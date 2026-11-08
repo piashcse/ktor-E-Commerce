@@ -259,6 +259,7 @@ class OrderRepositoryImpl : OrderRepository {
                                     this.shippingMethod = shippingMethod.name
                                     this.total = BigDecimal.ZERO
                                     this.shippingAddress = fullAddress
+                                    this.contactEmail = shippingAddress.email
                                     this.paymentMethod = checkoutRequest.paymentMethod
                                     this.notes = checkoutRequest.notes
                                     this.currency = currency
@@ -517,6 +518,19 @@ class OrderRepositoryImpl : OrderRepository {
                 hasMore = page.hasMore,
                 limit = page.limit,
             )
+        }
+
+    override suspend fun getOrderForGuest(
+        orderNumber: String,
+        email: String,
+    ): OrderResponse? =
+        query {
+            val order =
+                OrderDAO.find {
+                    (OrderTable.orderNumber eq orderNumber) and
+                        (OrderTable.contactEmail eq email.trim().lowercase())
+                }.firstOrNull() ?: return@query null
+            order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
         }
 
     override suspend fun updateOrderStatus(

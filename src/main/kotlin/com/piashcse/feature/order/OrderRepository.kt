@@ -54,6 +54,12 @@ interface OrderRepository {
         cursor: String?,
     ): CursorPage<OrderResponse>
 
+    /** Guest order lookup by order number + checkout email. */
+    suspend fun getOrderForGuest(
+        orderNumber: String,
+        email: String,
+    ): OrderResponse?
+
     /**
      * Updates the status of an order.
      *

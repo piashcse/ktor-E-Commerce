@@ -159,7 +159,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 - [x] **E-5. Tax rules by region/category; promotions engine (stacking/scopes).**
 - [ ] **E-6. Seller KYC, commission tiers, statements, tax exports.**
 - [ ] **E-7. RMA/return portal, exchanges, partial refunds by quantity.**
-- [ ] **E-8. Guest checkout, saved payment methods, order tracking page.**
+- [x] **E-8. Guest checkout, saved payment methods, order tracking page.**
 - [ ] **E-9. Notification templates, email/SMS/push providers, preferences.**
 - [x] **E-10. GDPR export/erasure, consent history UI, audit export.**
 - [x] **E-11. Admin RBAC granular permissions, feature flags, API keys.**
@@ -184,6 +184,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 8 | `test/concurrency-guards` | `fix/07-tax-rules` | DB-backed concurrency tests for stock, order/payment/payout/coupon guards |
 | 9 | `fix/08-rbac-api-keys` | `test/concurrency-guards` | Permission scopes, API keys, feature flags, V22 |
 | 10 | `fix/09-cursor-pagination` | `fix/08-rbac-api-keys` | Keyset pagination for orders/notifications, optional read-replica routing |
+| 11 | `fix/10-guest-checkout` | `fix/09-cursor-pagination` | Guest checkout, guest account claiming, public order tracking, V23 |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 
