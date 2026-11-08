@@ -30,6 +30,7 @@ object AppConstants {
 
     object Authentication {
         const val JWT_AUTHENTICATOR = "jwt-auth"
+        const val API_KEY_AUTHENTICATOR = "api-key"
         const val REFRESH_TOKEN_EXPIRY_SECONDS = 7L * 24 * 60 * 60
         const val JWT_EXPIRY_SECONDS = 900L
         const val MAX_LOGIN_ATTEMPTS = 5

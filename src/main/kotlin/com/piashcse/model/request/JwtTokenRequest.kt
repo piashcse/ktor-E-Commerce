@@ -1,9 +1,17 @@
 package com.piashcse.model.request
 
+import com.piashcse.constants.Permission
 import com.piashcse.constants.UserType
+import com.piashcse.constants.defaultPermissions
 import io.ktor.server.auth.*
 
-data class JwtTokenRequest(val userId: String, val email: String, val userType: String) : Principal {
+data class JwtTokenRequest(
+    val userId: String,
+    val email: String,
+    val userType: String,
+    /** API-key scopes; empty means the role's default permissions apply. */
+    val scopes: Set<String> = emptySet(),
+) : Principal {
     /**
      * Check if current user has access to a specific role (with hierarchy)
      */
@@ -60,6 +68,15 @@ data class JwtTokenRequest(val userId: String, val email: String, val userType: 
     fun isCustomer(): Boolean = getUserType()?.isCustomerOrHigher == true
 
     /**
-     * Check if user has a specific permission
+     * Check if the principal has a specific permission. API-key principals are
+     * restricted to their explicit scopes; JWT sessions use role defaults.
      */
+    fun hasPermission(permission: Permission): Boolean {
+        val role = getUserType() ?: return false
+        return if (scopes.isEmpty()) {
+            permission in role.defaultPermissions()
+        } else {
+            permission.name in scopes
+        }
+    }
 }

@@ -5,6 +5,7 @@ import com.piashcse.constants.UserType
 import com.piashcse.database.entities.BlacklistedTokenDAO
 import com.piashcse.database.entities.BlacklistedTokenTable
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.feature.apikey.ApiKeyService
 import com.piashcse.feature.auth.JwtConfig
 import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.service.CacheService
@@ -20,6 +21,12 @@ private val authLog = LoggerFactory.getLogger("com.piashcse.plugin.ConfigureAuth
 
 fun Application.configureAuth() {
     install(Authentication) {
+        bearer(AppConstants.Authentication.API_KEY_AUTHENTICATOR) {
+            realm = "ecom-api"
+            authenticate { credential ->
+                ApiKeyService().authenticate(credential.token)
+            }
+        }
         jwt(AppConstants.Authentication.JWT_AUTHENTICATOR) {
             verifier(JwtConfig.verifier)
             realm = "ecom-api"

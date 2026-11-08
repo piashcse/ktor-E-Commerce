@@ -1,6 +1,7 @@
 package com.piashcse.plugin
 
 import com.piashcse.constants.AppConstants
+import com.piashcse.feature.apikey.apiKeyRoutes
 import com.piashcse.feature.audit_log.auditLogAdminRoutes
 import com.piashcse.feature.auth.authAdminRoutes
 import com.piashcse.feature.auth.authRoutes
@@ -14,6 +15,7 @@ import com.piashcse.feature.coupon.couponAdminRoutes
 import com.piashcse.feature.coupon.couponRoutes
 import com.piashcse.feature.dashboard.dashboardAdminRoutes
 import com.piashcse.feature.dashboard.dashboardSellerRoutes
+import com.piashcse.feature.featureflag.featureFlagRoutes
 import com.piashcse.feature.fx.fxAdminRoutes
 import com.piashcse.feature.inventory.inventoryAdminRoutes
 import com.piashcse.feature.inventory.inventorySellerRoutes
@@ -138,6 +140,7 @@ private fun Route.customerRoutes() {
     route("coupons") { couponRoutes() }
     route("notifications") { notificationRoutes() }
     route("privacy") { privacyRoutes() }
+    route("api-keys") { apiKeyRoutes() }
 }
 
 private fun Route.sellerRoutes() {
@@ -177,6 +180,7 @@ private fun Route.adminRoutes() {
             route("payouts") { payoutAdminRoutes() }
             route("fx-rates") { fxAdminRoutes() }
             route("tax-rules") { taxAdminRoutes() }
+            route("feature-flags") { featureFlagRoutes() }
             route("outbox") { outboxAdminRoutes() }
         }
     }
