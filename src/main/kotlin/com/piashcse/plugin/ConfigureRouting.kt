@@ -41,6 +41,7 @@ import com.piashcse.feature.product_category.productCategoryRoutes
 import com.piashcse.feature.product_sub_category.productSubCategoryAdminRoutes
 import com.piashcse.feature.product_sub_category.productSubCategoryRoutes
 import com.piashcse.feature.profile.profileRoutes
+import com.piashcse.feature.recommendation.recommendationRoutes
 import com.piashcse.feature.refund_request.refundAdminRoutes
 import com.piashcse.feature.refund_request.refundRequestRoutes
 import com.piashcse.feature.refund_request.refundSellerRoutes
@@ -144,6 +145,7 @@ private fun Route.customerRoutes() {
     route("policy-consents") { consentRoutes() }
     route("refund-requests") { refundRequestRoutes() }
     route("rma-requests") { rmaRoutes() }
+    route("recommendations") { recommendationRoutes() }
     route("coupons") { couponRoutes() }
     route("notifications") { notificationRoutes() }
     route("privacy") { privacyRoutes() }
