@@ -8,6 +8,7 @@ fun InventoryDAO.toInventoryResponse() =
         id = id.value,
         productId = productId.value,
         shopId = shopId.value,
+        warehouseId = warehouseId.value,
         stockQuantity = stockQuantity,
         reservedQuantity = reservedQuantity,
         minimumStockLevel = minimumStockLevel,

@@ -15,32 +15,39 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
 
-/** Finds the inventory record for a product in its shop, with optional for-update locking. */
-fun ProductDAO.findInventory(forUpdate: Boolean = false): InventoryDAO? {
+/** All inventory rows (warehouses) for a product in its shop, with optional row locking. */
+fun ProductDAO.inventories(forUpdate: Boolean = false): List<InventoryDAO> {
     val productId = this.id
-    val shopIdValue = this.shopId?.value ?: return null
+    val shopIdValue = this.shopId?.value ?: return emptyList()
     val query =
         InventoryDAO.find {
             (InventoryTable.productId eq productId) and (InventoryTable.shopId eq EntityID(shopIdValue, ShopTable))
         }
-    return (if (forUpdate) query.forUpdate() else query).firstOrNull()
+    return (if (forUpdate) query.forUpdate() else query)
+        .orderBy(InventoryTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.ASC)
+        .toList()
 }
 
-/** Returns effective stock from inventory (single source of truth). */
-fun ProductDAO.effectiveStock(forUpdate: Boolean = false): Int = findInventory(forUpdate = forUpdate)?.stockQuantity ?: 0
+/** Returns effective stock across all warehouses (single source of truth). */
+fun ProductDAO.effectiveStock(forUpdate: Boolean = false): Int = inventories(forUpdate = forUpdate).sumOf { it.stockQuantity }
 
-/** Decrements inventory stock and updates status. Throws if insufficient stock to prevent overselling. */
+/** Decrements stock across warehouses, oldest first, and throws if insufficient. */
 fun ProductDAO.decrementStock(quantity: Int) {
-    val inv =
-        findInventory(forUpdate = true)
-            ?: throw ValidationException(Message.Inventory.NOT_FOUND)
-    if (inv.stockQuantity < quantity) {
-        throw ValidationException(Message.Validation.insufficientStock(name, inv.stockQuantity))
+    val rows = inventories(forUpdate = true)
+    if (rows.isEmpty()) throw ValidationException(Message.Inventory.NOT_FOUND)
+    val available = rows.sumOf { it.stockQuantity }
+    if (available < quantity) {
+        throw ValidationException(Message.Validation.insufficientStock(name, available))
     }
-    val newStock = inv.stockQuantity - quantity
-    inv.stockQuantity = newStock
-    inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
-    syncProductStatus(newStock)
+    var remaining = quantity
+    rows.forEach { inv ->
+        if (remaining <= 0) return@forEach
+        val take = minOf(inv.stockQuantity, remaining)
+        inv.stockQuantity -= take
+        inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
+        remaining -= take
+    }
+    syncProductStatus(rows.sumOf { it.stockQuantity })
 }
 
 private fun ProductDAO.syncProductStatus(stock: Int) {
@@ -48,15 +55,14 @@ private fun ProductDAO.syncProductStatus(stock: Int) {
     status = if (stock <= 0) ProductStatus.OUT_OF_STOCK else ProductStatus.ACTIVE
 }
 
-/** Restores inventory stock after cancellation. */
+/** Restores stock to the oldest (default) warehouse after cancellation. */
 fun ProductDAO.restoreStock(quantity: Int) {
     val inv =
-        findInventory(forUpdate = true)
+        inventories(forUpdate = true).firstOrNull()
             ?: throw ValidationException(Message.Inventory.NOT_FOUND)
-    val newStock = inv.stockQuantity + quantity
-    inv.stockQuantity = newStock
-    inv.status = InventoryStatus.fromStockLevel(newStock, inv.minimumStockLevel)
-    syncProductStatus(newStock)
+    inv.stockQuantity += quantity
+    inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
+    syncProductStatus(inventories().sumOf { it.stockQuantity })
 }
 
 /** Calculates commission for an order subtotal. */
@@ -81,6 +87,7 @@ fun ProductDAO.removeSales(quantity: Int) {
 object InventoryTable : BaseIdTable("inventory") {
     val productId = reference("product_id", ProductTable.id)
     val shopId = reference("shop_id", ShopTable.id) // Link inventory to specific shop
+    val warehouseId = reference("warehouse_id", WarehouseTable.id).index()
     val stockQuantity = integer("stock_quantity").default(0)
     val reservedQuantity = integer("reserved_quantity").default(0) // Quantity reserved but not yet sold
     val minimumStockLevel = integer("minimum_stock_level").default(10) // When to trigger low stock alert
@@ -90,7 +97,7 @@ object InventoryTable : BaseIdTable("inventory") {
     // createdAt and updatedAt are inherited from BaseIdTable, so we don't need to redeclare them
 
     init {
-        uniqueIndex("inventory_product_shop_idx", productId, shopId)
+        uniqueIndex("inventory_product_shop_warehouse_idx", productId, shopId, warehouseId)
     }
 }
 
@@ -99,6 +106,7 @@ class InventoryDAO(id: EntityID<String>) : BaseEntity(id, InventoryTable) {
 
     var productId by InventoryTable.productId
     var shopId by InventoryTable.shopId
+    var warehouseId by InventoryTable.warehouseId
     var stockQuantity by InventoryTable.stockQuantity
     var reservedQuantity by InventoryTable.reservedQuantity
     var minimumStockLevel by InventoryTable.minimumStockLevel

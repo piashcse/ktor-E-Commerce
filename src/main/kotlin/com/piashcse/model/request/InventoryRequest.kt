@@ -10,6 +10,7 @@ import org.valiktor.validate
 data class InventoryRequest(
     val productId: String,
     val shopId: String,
+    val warehouseId: String? = null,
     val stockQuantity: Int,
     val reservedQuantity: Int = 0,
     val minimumStockLevel: Int? = null,

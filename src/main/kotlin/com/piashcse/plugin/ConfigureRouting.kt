@@ -50,6 +50,7 @@ import com.piashcse.feature.shop.shopSellerRoutesV1
 import com.piashcse.feature.shop_category.shopCategoryAdminRoutes
 import com.piashcse.feature.shop_category.shopCategoryRoutes
 import com.piashcse.feature.tax.taxAdminRoutes
+import com.piashcse.feature.warehouse.warehouseSellerRoutes
 import com.piashcse.feature.wishlist.wishListRoutes
 import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.common.MessageResponse
@@ -149,6 +150,7 @@ private fun Route.sellerRoutes() {
             route("shops") { shopSellerRoutesV1() }
             route("products") { productSellerRoutes() }
             route("inventories") { inventorySellerRoutes() }
+            route("warehouses") { warehouseSellerRoutes() }
             route("orders") { orderSellerRoutes() }
             route("refund-requests") { refundSellerRoutes() }
             route("dashboard") { dashboardSellerRoutes() }

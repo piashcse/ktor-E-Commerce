@@ -66,6 +66,11 @@ class ShopRepositoryImpl : ShopRepository {
                 }
 
             seller.shopId = shop.id
+            com.piashcse.database.entities.WarehouseDAO.new {
+                shopId = shop.id
+                name = "Default"
+                code = "DEFAULT"
+            }
 
             shop.toShopResponse()
         }

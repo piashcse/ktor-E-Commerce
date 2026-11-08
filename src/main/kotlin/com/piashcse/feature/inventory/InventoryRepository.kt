@@ -31,6 +31,7 @@ interface InventoryRepository {
         productId: String,
         quantity: Int,
         operation: String = "add",
+        warehouseId: String? = null,
     ): InventoryResponse
 
     /**
