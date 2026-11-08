@@ -13,6 +13,8 @@ fun Route.privacyRoutes() {
     val privacyService: PrivacyService by inject()
     customerOnlyAuth {
         /**
+         * Export all personal data held for the authenticated user
+         *
          * @tag Privacy
          * @description Export all personal data held for the authenticated user
          */
@@ -21,6 +23,8 @@ fun Route.privacyRoutes() {
         }
 
         /**
+         * Erase/anonymize the authenticated account (password required)
+         *
          * @tag Privacy
          * @description Erase/anonymize the authenticated account (password required)
          */

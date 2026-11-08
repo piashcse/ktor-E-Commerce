@@ -20,6 +20,8 @@ fun Route.profileRoutes() {
     val userProfileService: ProfileService by inject()
     customerOnlyAuth {
         /**
+         * Retrieve the authenticated user's profile information
+         *
          * @tag Profile
          * @description Retrieve the authenticated user's profile information
          */
@@ -29,6 +31,8 @@ fun Route.profileRoutes() {
 
         writeRateLimit {
             /**
+             * Update the authenticated user's profile information
+             *
              * @tag Profile
              * @description Update the authenticated user's profile information
              */
@@ -51,6 +55,8 @@ fun Route.profileRoutes() {
             }
 
             /**
+             * Upload a profile image
+             *
              * @tag Profile
              * @description Upload a profile image
              */

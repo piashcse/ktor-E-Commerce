@@ -19,7 +19,9 @@ import org.koin.ktor.ext.inject
 fun Route.productCategoryRoutes() {
     val productCategoryRepo: ProductCategoryRepository by inject()
     /**
-     * @tag Product-Category
+     * Retrieve a paginated list of all product categories
+     *
+     * @tag Product Category
      * @description Retrieve a paginated list of all product categories
      */
     get {
@@ -35,7 +37,9 @@ fun Route.productCategoryAdminRoutes() {
     val productCategoryRepo: ProductCategoryRepository by inject()
     adminWriteRateLimit {
         /**
-         * @tag Product-Category
+         * Admin: Create a new product category
+         *
+         * @tag Product Category
          * @description Admin: Create a new product category
          */
         post {
@@ -43,7 +47,9 @@ fun Route.productCategoryAdminRoutes() {
         }
 
         /**
-         * @tag Product-Category
+         * Admin: Update an existing product category name
+         *
+         * @tag Product Category
          * @description Admin: Update an existing product category name
          */
         put("{id}") {
@@ -52,7 +58,9 @@ fun Route.productCategoryAdminRoutes() {
         }
 
         /**
-         * @tag Product-Category
+         * Admin: Upload a category image
+         *
+         * @tag Product Category
          * @description Admin: Upload a category image
          */
         post("{id}/image") {
@@ -72,7 +80,9 @@ fun Route.productCategoryAdminRoutes() {
         }
 
         /**
-         * @tag Product-Category
+         * Admin: Permanently delete a product category
+         *
+         * @tag Product Category
          * @description Admin: Permanently delete a product category
          */
         delete("{id}") {

@@ -32,7 +32,9 @@ fun Route.consentRoutes() {
     customerAuth {
         writeRateLimit {
             /**
-             * @tag Privacy-Policy-Consent
+             * Record user consent for a specific policy document
+             *
+             * @tag Consent
              * @description Record user consent for a specific policy document
              */
             post("consent") {
@@ -50,7 +52,9 @@ fun Route.consentRoutes() {
 
     requireRole(UserType.CUSTOMER, UserType.ADMIN) {
         /**
-         * @tag Privacy-Policy-Consent
+         * Retrieve all consent records for the authenticated user
+         *
+         * @tag Consent
          * @description Retrieve all consent records for the authenticated user
          */
         get {
@@ -59,7 +63,9 @@ fun Route.consentRoutes() {
         }
 
         /**
-         * @tag Privacy-Policy-Consent
+         * Check if the user has consented to a specific policy type
+         *
+         * @tag Consent
          * @description Check if the user has consented to a specific policy type
          */
         get("{policyType}") {
@@ -74,7 +80,9 @@ fun Route.consentRoutes() {
         }
 
         /**
-         * @tag Privacy-Policy-Consent
+         * Revoke a consent record (owner or admin)
+         *
+         * @tag Consent
          * @description Revoke a consent record (owner or admin)
          */
         delete("{id}") {
@@ -94,7 +102,9 @@ fun Route.consentRoutes() {
 fun Route.consentAdminRoutes() {
     val consentRepo: ConsentRepository by inject()
     /**
-     * @tag Privacy-Policy-Consent
+     * Admin: Retrieve consent records filtered by user and/or policy type
+     *
+     * @tag Consent
      * @description Admin: Retrieve consent records filtered by user and/or policy type
      */
     get {

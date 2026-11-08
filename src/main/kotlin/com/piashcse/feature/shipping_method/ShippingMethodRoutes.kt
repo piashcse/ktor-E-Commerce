@@ -13,7 +13,9 @@ fun Route.shippingMethodAdminRoutes() {
     val shippingMethodRepo: ShippingMethodRepository by inject()
     adminWriteRateLimit {
         /**
-         * @tag Shipping-Method
+         * Admin: Create a new shipping method
+         *
+         * @tag Shipping Method
          * @description Admin: Create a new shipping method
          */
         post {
@@ -21,7 +23,9 @@ fun Route.shippingMethodAdminRoutes() {
         }
 
         /**
-         * @tag Shipping-Method
+         * Admin: Update an existing shipping method
+         *
+         * @tag Shipping Method
          * @description Admin: Update an existing shipping method
          */
         put("/{id}") {
@@ -30,7 +34,9 @@ fun Route.shippingMethodAdminRoutes() {
         }
 
         /**
-         * @tag Shipping-Method
+         * Admin: Delete a shipping method
+         *
+         * @tag Shipping Method
          * @description Admin: Delete a shipping method
          */
         delete("/{id}") {
@@ -41,7 +47,9 @@ fun Route.shippingMethodAdminRoutes() {
     }
 
     /**
-     * @tag Shipping-Method
+     * Admin: Retrieve all shipping methods
+     *
+     * @tag Shipping Method
      * @description Admin: Retrieve all shipping methods
      */
     get {

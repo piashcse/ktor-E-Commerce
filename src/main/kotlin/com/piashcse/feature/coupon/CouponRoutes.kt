@@ -18,6 +18,8 @@ import org.koin.ktor.ext.inject
 fun Route.couponRoutes() {
     val couponRepo: CouponRepository by inject()
     /**
+     * Retrieve detailed information about a coupon by its code
+     *
      * @tag Coupon
      * @description Retrieve detailed information about a coupon by its code
      */
@@ -36,6 +38,8 @@ fun Route.couponAdminRoutes() {
     val couponRepo: CouponRepository by inject()
     adminWriteRateLimit {
         /**
+         * Admin: Create a new discount coupon
+         *
          * @tag Coupon
          * @description Admin: Create a new discount coupon
          */
@@ -44,6 +48,8 @@ fun Route.couponAdminRoutes() {
         }
 
         /**
+         * Admin: Update an existing coupon
+         *
          * @tag Coupon
          * @description Admin: Update an existing coupon
          */
@@ -53,6 +59,8 @@ fun Route.couponAdminRoutes() {
         }
 
         /**
+         * Admin: Delete a coupon
+         *
          * @tag Coupon
          * @description Admin: Delete a coupon
          */
@@ -66,6 +74,8 @@ fun Route.couponAdminRoutes() {
     }
 
     /**
+     * Admin: Retrieve a list of all coupons
+     *
      * @tag Coupon
      * @description Admin: Retrieve a list of all coupons
      */

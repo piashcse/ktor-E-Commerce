@@ -16,7 +16,9 @@ import org.koin.ktor.ext.inject
 fun Route.productSubCategoryRoutes() {
     val subCategoryRepo: ProductSubCategoryRepository by inject()
     /**
-     * @tag Product-Sub-Category
+     * Retrieve subcategories for a specific category
+     *
+     * @tag Product Sub Category
      * @description Retrieve subcategories for a specific category
      */
     get {
@@ -33,7 +35,9 @@ fun Route.productSubCategoryAdminRoutes() {
     val subCategoryRepo: ProductSubCategoryRepository by inject()
     adminWriteRateLimit {
         /**
-         * @tag Product-Sub-Category
+         * Admin: Create a new product subcategory
+         *
+         * @tag Product Sub Category
          * @description Admin: Create a new product subcategory
          */
         post {
@@ -41,7 +45,9 @@ fun Route.productSubCategoryAdminRoutes() {
         }
 
         /**
-         * @tag Product-Sub-Category
+         * Admin: Update an existing product subcategory name
+         *
+         * @tag Product Sub Category
          * @description Admin: Update an existing product subcategory name
          */
         put("{id}") {
@@ -50,7 +56,9 @@ fun Route.productSubCategoryAdminRoutes() {
         }
 
         /**
-         * @tag Product-Sub-Category
+         * Admin: Permanently delete a product subcategory
+         *
+         * @tag Product Sub Category
          * @description Admin: Permanently delete a product subcategory
          */
         delete("{id}") {

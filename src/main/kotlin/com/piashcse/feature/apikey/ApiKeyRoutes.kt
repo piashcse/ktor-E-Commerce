@@ -1,6 +1,10 @@
 package com.piashcse.feature.apikey
 
 import com.piashcse.constants.Permission
+import com.piashcse.plugin.created
+import com.piashcse.plugin.docs
+import com.piashcse.plugin.jsonBody
+import com.piashcse.plugin.ok
 import com.piashcse.plugin.requirePermission
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
@@ -18,10 +22,15 @@ fun Route.apiKeyRoutes() {
     requirePermission(Permission.API_KEY_MANAGE) {
         get {
             call.respondOk(service.list(call.currentUserId))
+        }.docs("List API keys") {
+            responses { ok<List<ApiKeyResponse>>("Active and revoked keys") }
         }
 
         post {
             call.respondCreated(service.create(call.currentUserId, call.receive<ApiKeyCreateRequest>()))
+        }.docs("Create API key", "The plaintext key is returned once") {
+            requestBody { jsonBody<ApiKeyCreateRequest>() }
+            responses { created<ApiKeyCreatedResponse>("Key created") }
         }
 
         delete("{id}") {
@@ -30,6 +39,6 @@ fun Route.apiKeyRoutes() {
                     ?: throw ValidationException("id is required")
             if (!service.revoke(call.currentUserId, id)) throw NotFoundException("API key not found")
             call.respondOk(MessageResponse("API key revoked"))
-        }
+        }.docs("Revoke API key")
     }
 }

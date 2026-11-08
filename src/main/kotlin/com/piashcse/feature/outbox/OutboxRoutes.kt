@@ -4,6 +4,8 @@ import com.piashcse.database.entities.OutboxDAO
 import com.piashcse.database.entities.OutboxDeadLetterDAO
 import com.piashcse.database.entities.OutboxDeadLetterTable
 import com.piashcse.database.entities.OutboxTable
+import com.piashcse.plugin.docs
+import com.piashcse.plugin.ok
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.paginateQueryParams
@@ -46,6 +48,8 @@ fun Route.outboxAdminRoutes() {
                 )
             }
         call.respondOk(summary)
+    }.docs("Outbox summary", "Pending rows and dead-letter count") {
+        responses { ok<OutboxSummaryResponse>("Outbox health") }
     }
 
     post("dead-letters/{id}/requeue") {
@@ -63,7 +67,7 @@ fun Route.outboxAdminRoutes() {
             deadLetter.delete()
         }
         call.respondOk(MessageResponse("Dead letter requeued"))
-    }
+    }.docs("Requeue dead letter", "Copies the payload back into the outbox")
 
     get("dead-letters") {
         val (limit, offset) = call.paginateQueryParams()
@@ -86,5 +90,5 @@ fun Route.outboxAdminRoutes() {
                     }
             }
         call.respondOk(page)
-    }
+    }.docs("List dead letters", "Newest first")
 }

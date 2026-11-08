@@ -7,9 +7,14 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.model.request.*
+import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.authRateLimit
+import com.piashcse.plugin.created
+import com.piashcse.plugin.docs
+import com.piashcse.plugin.jsonBody
+import com.piashcse.plugin.ok
 import com.piashcse.plugin.otpRateLimit
 import com.piashcse.plugin.refreshTokenRateLimit
 import com.piashcse.plugin.requireRole
@@ -41,31 +46,48 @@ fun Route.authRoutes() {
     // Rate-limited endpoints (brute-force protection)
     authRateLimit {
         /**
+         * Authenticate user with email, password and user type
+         *
          * @tag Auth
          * @description Authenticate user with email, password and user type
          */
         post("login") {
             call.respondOk(userAuthService.login(call.receive<LoginRequest>(), call.clientIp))
+        }.docs("Login", "Returns an access token and rotating refresh token") {
+            requestBody { jsonBody<LoginRequest>() }
+            responses { ok<TokenPair>("Authenticated") }
         }
 
         /**
+         * Register a new user account
+         *
          * @tag Auth
          * @description Register a new user account
          */
         post("register") {
             call.respondCreated(userAuthService.register(call.receive<RegisterRequest>()))
+        }.docs("Register", "Creates/refreshes an unverified account and sends an OTP") {
+            requestBody { jsonBody<RegisterRequest>() }
+            responses { created<RegistrationResult>("Registration result") }
         }
 
         /**
+         * Request password reset OTP
+         *
          * @tag Auth
          * @description Request password reset OTP
          */
         post("forgot-password") {
             userAuthService.forgotPassword(call.receive<ForgotPasswordRequest>())
             call.respondOk(MessageResponse(Message.Auth.OTP_SENT))
+        }.docs("Request password reset OTP") {
+            requestBody { jsonBody<ForgotPasswordRequest>() }
+            responses { ok<MessageResponse>("OTP sent") }
         }
 
         /**
+         * Reset password using OTP verification
+         *
          * @tag Auth
          * @description Reset password using OTP verification
          */
@@ -85,10 +107,15 @@ fun Route.authRoutes() {
                     )
                 }
             }
+        }.docs("Reset password with OTP") {
+            requestBody { jsonBody<ResetRequest>() }
+            responses { ok<MessageResponse>("Password reset") }
         }
     }
 
     /**
+     * Verify user account with OTP
+     *
      * @tag Auth
      * @description Verify user account with OTP
      */
@@ -111,21 +138,31 @@ fun Route.authRoutes() {
                 throw ValidationException(Message.Auth.OTP_INVALID)
             }
             call.respondOk(MessageResponse("OTP verified successfully"))
+        }.docs("Verify account OTP") {
+            requestBody { jsonBody<OtpVerificationRequest>() }
+            responses { ok<MessageResponse>("OTP verified") }
         }
     }
 
     /**
+     * Refresh access token using refresh token
+     *
      * @tag Auth
      * @description Refresh access token using refresh token
      */
     refreshTokenRateLimit {
         post("refresh-token") {
             call.respondOk(authRepo.refreshAccessToken(call.receive<RefreshTokenRequest>()))
+        }.docs("Refresh access token", "Refresh tokens rotate and reuse revokes the session family") {
+            requestBody { jsonBody<RefreshTokenRequest>() }
+            responses { ok<TokenPair>("New token pair") }
         }
     }
 
     requireRole {
         /**
+         * Logout authenticated user
+         *
          * @tag Auth
          * @description Logout authenticated user
          */
@@ -142,6 +179,8 @@ fun Route.authRoutes() {
         }
 
         /**
+         * Change password for authenticated user
+         *
          * @tag Auth
          * @description Change password for authenticated user
          */
@@ -173,6 +212,8 @@ fun Route.authAdminRoutes() {
     val authRepo: AuthRepository by inject()
     adminWriteRateLimit {
         /**
+         * Admin: Change user type
+         *
          * @tag Auth
          * @description Admin: Change user type
          */
@@ -192,6 +233,8 @@ fun Route.authAdminRoutes() {
         }
 
         /**
+         * Admin: Deactivate a user account
+         *
          * @tag Auth
          * @description Admin: Deactivate a user account
          */
@@ -205,6 +248,8 @@ fun Route.authAdminRoutes() {
         }
 
         /**
+         * Admin: activate a user account
+         *
          * @tag Auth
          * @description Admin: activate a user account
          */

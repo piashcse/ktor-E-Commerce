@@ -18,7 +18,9 @@ import org.koin.ktor.ext.inject
 fun Route.policyRoutes() {
     val policyRepo: PolicyRepository by inject()
     /**
-     * @tag Privacy-Policy
+     * Retrieve the latest active version of a policy by type
+     *
+     * @tag Privacy
      * @description Retrieve the latest active version of a policy by type
      */
     get("{policyType}") {
@@ -34,7 +36,9 @@ fun Route.policyAdminRoutes() {
     val policyRepo: PolicyRepository by inject()
     adminWriteRateLimit {
         /**
-         * @tag Privacy-Policy
+         * Admin: Create a new policy document or new version
+         *
+         * @tag Privacy
          * @description Admin: Create a new policy document or new version
          */
         post {
@@ -42,7 +46,9 @@ fun Route.policyAdminRoutes() {
         }
 
         /**
-         * @tag Privacy-Policy
+         * Admin: Update an existing policy document
+         *
+         * @tag Privacy
          * @description Admin: Update an existing policy document
          */
         put("{id}") {
@@ -51,7 +57,9 @@ fun Route.policyAdminRoutes() {
         }
 
         /**
-         * @tag Privacy-Policy
+         * Admin: Deactivate a policy document
+         *
+         * @tag Privacy
          * @description Admin: Deactivate a policy document
          */
         post("deactivate/{id}") {
@@ -61,7 +69,9 @@ fun Route.policyAdminRoutes() {
     }
 
     /**
-     * @tag Privacy-Policy
+     * Admin: Retrieve a policy document by ID
+     *
+     * @tag Privacy
      * @description Admin: Retrieve a policy document by ID
      */
     get("by-id/{id}") {
@@ -70,7 +80,9 @@ fun Route.policyAdminRoutes() {
     }
 
     /**
-     * @tag Privacy-Policy
+     * Admin: Retrieve all versions of a specific policy type
+     *
+     * @tag Privacy
      * @description Admin: Retrieve all versions of a specific policy type
      */
     get("{policyType}/history") {

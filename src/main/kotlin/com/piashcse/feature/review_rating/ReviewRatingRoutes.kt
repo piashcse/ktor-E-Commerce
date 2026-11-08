@@ -2,6 +2,7 @@ package com.piashcse.feature.review_rating
 
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.plugin.customerAuth
+import com.piashcse.plugin.docs
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.service.CatalogCache
 import com.piashcse.utils.extension.currentUserId
@@ -18,7 +19,9 @@ import org.koin.ktor.ext.inject
 fun Route.reviewRatingRoutes() {
     val reviewRatingRepo: ReviewRatingRepository by inject()
     /**
-     * @tag Review-Rating
+     * Retrieve reviews and ratings for a specific product
+     *
+     * @tag Review
      * @description Retrieve reviews and ratings for a specific product
      */
     get {
@@ -30,7 +33,9 @@ fun Route.reviewRatingRoutes() {
     customerAuth {
         writeRateLimit {
             /**
-             * @tag Review-Rating
+             * Submit a new review and rating for a product
+             *
+             * @tag Review
              * @description Submit a new review and rating for a product
              */
             post {
@@ -40,7 +45,9 @@ fun Route.reviewRatingRoutes() {
             }
 
             /**
-             * @tag Review-Rating
+             * Update an existing review and rating
+             *
+             * @tag Review
              * @description Update an existing review and rating
              */
             put("{id}") {
@@ -53,7 +60,9 @@ fun Route.reviewRatingRoutes() {
             }
 
             /**
-             * @tag Review-Rating
+             * Delete a review and rating
+             *
+             * @tag Review
              * @description Delete a review and rating
              */
             delete("{id}") {
@@ -67,7 +76,7 @@ fun Route.reviewRatingRoutes() {
                 val id = call.requirePathParameter("id")
                 val helpful = call.request.queryParameters["helpful"]?.toBoolean() ?: true
                 call.respondOk(reviewRatingRepo.markHelpful(call.currentUserId, id, helpful))
-            }
+            }.docs("Vote a review helpful", "helpful=false removes the vote")
         }
     }
 }

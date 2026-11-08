@@ -21,6 +21,8 @@ import org.koin.ktor.ext.inject
 fun Route.shopRoutes() {
     val shopRepo: ShopRepository by inject()
     /**
+     * Retrieve detailed information about a specific shop
+     *
      * @tag Shop
      * @description Retrieve detailed information about a specific shop
      */
@@ -32,6 +34,8 @@ fun Route.shopRoutes() {
     }
 
     /**
+     * Retrieve public shops with filters (public)
+     *
      * @tag Shop
      * @description Retrieve public shops with filters (public)
      */
@@ -43,6 +47,8 @@ fun Route.shopRoutes() {
     }
 
     /**
+     * Retrieve shops by category (public)
+     *
      * @tag Shop
      * @description Retrieve shops by category (public)
      */
@@ -53,6 +59,8 @@ fun Route.shopRoutes() {
     }
 
     /**
+     * Retrieve featured shops (public)
+     *
      * @tag Shop
      * @description Retrieve featured shops (public)
      */
@@ -69,6 +77,8 @@ fun Route.shopSellerRoutesV1() {
     val shopRepo: ShopRepository by inject()
     sellerWriteRateLimit {
         /**
+         * Seller: Create a new shop
+         *
          * @tag Shop
          * @description Seller: Create a new shop
          */
@@ -77,6 +87,8 @@ fun Route.shopSellerRoutesV1() {
         }
 
         /**
+         * Seller: Update shop details
+         *
          * @tag Shop
          * @description Seller: Update shop details
          */
@@ -86,6 +98,8 @@ fun Route.shopSellerRoutesV1() {
         }
 
         /**
+         * Seller: Upload a shop logo
+         *
          * @tag Shop
          * @description Seller: Upload a shop logo
          */
@@ -107,6 +121,8 @@ fun Route.shopSellerRoutesV1() {
     }
 
     /**
+     * Seller: Retrieve owned shops
+     *
      * @tag Shop
      * @description Seller: Retrieve owned shops
      */
@@ -123,6 +139,8 @@ fun Route.shopAdminRoutes() {
     val shopRepo: ShopRepository by inject()
     adminWriteRateLimit {
         /**
+         * Admin: Approve a pending shop application
+         *
          * @tag Shop
          * @description Admin: Approve a pending shop application
          */
@@ -133,6 +151,8 @@ fun Route.shopAdminRoutes() {
         }
 
         /**
+         * Admin: Reject a shop application
+         *
          * @tag Shop
          * @description Admin: Reject a shop application
          */
@@ -143,6 +163,8 @@ fun Route.shopAdminRoutes() {
         }
 
         /**
+         * Admin: Suspend an active shop
+         *
          * @tag Shop
          * @description Admin: Suspend an active shop
          */
@@ -153,6 +175,8 @@ fun Route.shopAdminRoutes() {
         }
 
         /**
+         * Admin: Activate a suspended shop
+         *
          * @tag Shop
          * @description Admin: Activate a suspended shop
          */
@@ -164,6 +188,8 @@ fun Route.shopAdminRoutes() {
     }
 
     /**
+     * Admin: Retrieve shops filtered by status
+     *
      * @tag Shop
      * @description Admin: Retrieve shops filtered by status
      */

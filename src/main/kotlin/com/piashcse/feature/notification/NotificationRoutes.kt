@@ -1,7 +1,11 @@
 package com.piashcse.feature.notification
 
 import com.piashcse.constants.UserType
+import com.piashcse.plugin.created
 import com.piashcse.plugin.customerAuth
+import com.piashcse.plugin.docs
+import com.piashcse.plugin.jsonBody
+import com.piashcse.plugin.ok
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
@@ -57,9 +61,11 @@ fun Route.notificationRoutes() {
             val (limit, offset) = call.paginateQueryParams()
             val unreadOnly = call.queryBoolean("unreadOnly")
             call.respondOk(repo.list(call.currentUserId, limit, offset, unreadOnly))
-        }
+        }.docs("List notifications", "Preference rows are hidden from the inbox")
         get("unread-count") {
             call.respondOk(UnreadCountResponse(repo.unreadCount(call.currentUserId)))
+        }.docs("Unread notification count") {
+            responses { ok<UnreadCountResponse>("Unread count") }
         }
         get("cursor") {
             val (limit, _) = call.paginateQueryParams()
@@ -72,12 +78,16 @@ fun Route.notificationRoutes() {
                     unreadOnly,
                 ),
             )
-        }
+        }.docs("Cursor-paginated notifications")
         post("{id}/read") {
             call.respondOk(repo.markRead(call.currentUserId, call.parameters["id"] ?: throw IllegalArgumentException("id required")))
+        }.docs("Mark notification read") {
+            responses { ok<NotificationResponse>("Notification") }
         }
         post("read-all") {
             call.respondOk(MarkAllReadResponse(repo.markAllRead(call.currentUserId)))
+        }.docs("Mark all notifications read") {
+            responses { ok<MarkAllReadResponse>("Number marked read") }
         }
     }
     requireRole(UserType.ADMIN, UserType.SUPER_ADMIN, UserType.SELLER) {
@@ -95,22 +105,32 @@ fun Route.notificationRoutes() {
                         type = body.type,
                     ),
                 )
+            }.docs("Send notification", "Admins may target anyone; sellers only their own customers") {
+                requestBody { jsonBody<SendNotificationRequest>() }
+                responses { created<NotificationResponse>("Notification sent") }
             }
         }
     }
     requireRole {
         get("preferences") {
             call.respondOk(repo.getPreferences(call.currentUserId))
+        }.docs("Get global notification channel") {
+            responses { ok<NotificationPreferencesResponse>("Current default channel") }
         }
         put("preferences") {
             val body = call.receive<UpdateNotificationPreferencesRequest>()
             call.respondOk(repo.updatePreferences(call.currentUserId, body.channel))
+        }.docs("Set global notification channel") {
+            requestBody { jsonBody<UpdateNotificationPreferencesRequest>() }
+            responses { ok<NotificationPreferencesResponse>("Updated channel") }
         }
         get("preferences/{eventType}") {
             val eventType =
                 call.parameters["eventType"]
                     ?: throw IllegalArgumentException("eventType required")
             call.respondOk(prefService.get(call.currentUserId, eventType))
+        }.docs("Get per-event channel", "Falls back to the global default") {
+            responses { ok<NotificationPreferenceResponse>("Resolved channel") }
         }
         put("preferences/{eventType}") {
             val eventType =
@@ -118,6 +138,9 @@ fun Route.notificationRoutes() {
                     ?: throw IllegalArgumentException("eventType required")
             val body = call.receive<UpdateNotificationPreferencesRequest>()
             call.respondOk(prefService.set(call.currentUserId, eventType, body.channel))
+        }.docs("Set per-event channel", "In-app rows are always written; this controls the extra channel") {
+            requestBody { jsonBody<UpdateNotificationPreferencesRequest>() }
+            responses { ok<NotificationPreferenceResponse>("Updated preference") }
         }
     }
 }

@@ -31,7 +31,8 @@ fun configureDatabase() {
             // runs stay disabled so a stray older migration fails fast instead of running late.
             .validateOnMigrate(true)
             .load()
-    flyway.validate()
+    // migrate() validates already-applied migrations itself; calling validate()
+    // first fails on a fresh database because no history exists yet.
     flyway.migrate()
     Database.connect(hikariDataSource)
 

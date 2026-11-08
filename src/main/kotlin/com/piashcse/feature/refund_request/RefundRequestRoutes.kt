@@ -30,7 +30,9 @@ fun Route.refundRequestRoutes() {
     customerAuth {
         writeRateLimit {
             /**
-             * @tag Refund-Request
+             * Create a refund request for an order item
+             *
+             * @tag Refund
              * @description Create a refund request for an order item
              */
             post("{orderId}") {
@@ -44,7 +46,9 @@ fun Route.refundRequestRoutes() {
             }
 
             /**
-             * @tag Refund-Request
+             * Mark an approved refund as shipped
+             *
+             * @tag Refund
              * @description Mark an approved refund as shipped
              */
             post("{id}/ship") {
@@ -57,7 +61,9 @@ fun Route.refundRequestRoutes() {
 
     requireRole(UserType.CUSTOMER, UserType.SELLER, UserType.ADMIN, UserType.SUPER_ADMIN) {
         /**
-         * @tag Refund-Request
+         * Get private refund evidence for an authorized refund request
+         *
+         * @tag Refund
          * @description Get private refund evidence for an authorized refund request
          */
         get("{id}/evidence/{fileName}") {
@@ -84,7 +90,9 @@ fun Route.refundRequestRoutes() {
         }
 
         /**
-         * @tag Refund-Request
+         * Get refund requests for an order
+         *
+         * @tag Refund
          * @description Get refund requests for an order
          */
         get("order/{orderId}") {
@@ -101,7 +109,9 @@ fun Route.refundRequestRoutes() {
         }
 
         /**
-         * @tag Refund-Request
+         * Get refund request details
+         *
+         * @tag Refund
          * @description Get refund request details
          */
         get("{id}") {
@@ -127,6 +137,8 @@ fun Route.refundSellerRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
     sellerWriteRateLimit {
         /**
+         * Seller: Update refund request status
+         *
          * @tag Refund
          * @description Seller: Update refund request status
          */
@@ -149,6 +161,8 @@ fun Route.refundAdminRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
     adminWriteRateLimit {
         /**
+         * Admin: Update refund status
+         *
          * @tag Refund
          * @description Admin: Update refund status
          */
@@ -164,6 +178,8 @@ fun Route.refundAdminRoutes() {
     }
 
     /**
+     * Admin: Get all refund requests for an order
+     *
      * @tag Refund
      * @description Admin: Get all refund requests for an order
      */

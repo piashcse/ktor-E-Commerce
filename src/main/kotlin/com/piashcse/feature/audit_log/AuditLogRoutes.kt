@@ -11,7 +11,9 @@ import org.koin.ktor.ext.inject
 fun Route.auditLogAdminRoutes() {
     val repo: AuditLogRepository by inject()
     /**
-     * @tag AuditLog
+     * Get paginated audit logs with optional filters
+     *
+     * @tag Audit Log
      * @description Get paginated audit logs with optional filters
      */
     get {
@@ -30,7 +32,9 @@ fun Route.auditLogAdminRoutes() {
     }
 
     /**
-     * @tag AuditLog
+     * Get a single audit log entry by ID
+     *
+     * @tag Audit Log
      * @description Get a single audit log entry by ID
      */
     get("{id}") {

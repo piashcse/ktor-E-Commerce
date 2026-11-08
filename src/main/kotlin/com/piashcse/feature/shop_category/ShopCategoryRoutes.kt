@@ -16,7 +16,9 @@ import org.koin.ktor.ext.inject
 fun Route.shopCategoryRoutes() {
     val shopCategoryRepo: ShopCategoryRepository by inject()
     /**
-     * @tag Shop-Category
+     * Retrieve a paginated list of all shop categories
+     *
+     * @tag Shop Category
      * @description Retrieve a paginated list of all shop categories
      */
     get {
@@ -32,7 +34,9 @@ fun Route.shopCategoryAdminRoutes() {
     val shopCategoryRepo: ShopCategoryRepository by inject()
     adminWriteRateLimit {
         /**
-         * @tag Shop-Category
+         * Admin: Create a new shop category
+         *
+         * @tag Shop Category
          * @description Admin: Create a new shop category
          */
         post {
@@ -40,7 +44,9 @@ fun Route.shopCategoryAdminRoutes() {
         }
 
         /**
-         * @tag Shop-Category
+         * Admin: Update an existing shop category name
+         *
+         * @tag Shop Category
          * @description Admin: Update an existing shop category name
          */
         put("{id}") {
@@ -49,7 +55,9 @@ fun Route.shopCategoryAdminRoutes() {
         }
 
         /**
-         * @tag Shop-Category
+         * Admin: Permanently delete a shop category
+         *
+         * @tag Shop Category
          * @description Admin: Permanently delete a shop category
          */
         delete("{id}") {

@@ -2,6 +2,8 @@ package com.piashcse.feature.fx
 
 import com.piashcse.database.entities.SupportedCurrencies
 import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.plugin.docs
+import com.piashcse.plugin.jsonBody
 import com.piashcse.service.FxService
 import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.extension.respondOk
@@ -30,7 +32,7 @@ data class FxRateResponse(
 fun Route.fxAdminRoutes() {
     get {
         call.respondOk(FxService.listRates())
-    }
+    }.docs("List FX rates")
     adminWriteRateLimit {
         put("{targetCurrency}") {
             val target = call.requirePathParameter("targetCurrency")
@@ -44,6 +46,8 @@ fun Route.fxAdminRoutes() {
             val body = call.receive<FxRateRequest>()
             if (body.rate <= BigDecimal.ZERO) throw ValidationException("FX rate must be positive")
             call.respondOk(FxService.upsertRate(target, body.rate))
+        }.docs("Set FX rate") {
+            requestBody { jsonBody<FxRateRequest>() }
         }
     }
 }

@@ -2,6 +2,7 @@ package com.piashcse.feature.wishlist
 
 import com.piashcse.model.request.WishListRequest
 import com.piashcse.plugin.customerOnlyAuth
+import com.piashcse.plugin.docs
 import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
@@ -20,6 +21,8 @@ fun Route.wishListRoutes() {
     customerOnlyAuth {
         writeRateLimit {
             /**
+             * Add a product to the authenticated user's wishlist
+             *
              * @tag Wishlist
              * @description Add a product to the authenticated user's wishlist
              */
@@ -28,6 +31,8 @@ fun Route.wishListRoutes() {
             }
 
             /**
+             * Remove a specific product from the wishlist
+             *
              * @tag Wishlist
              * @description Remove a specific product from the wishlist
              */
@@ -40,10 +45,12 @@ fun Route.wishListRoutes() {
             delete("remove") {
                 val productId = call.requireQueryParameter("productId")
                 call.respondOk(wishlistRepo.removeFromWishList(call.currentUserId, productId))
-            }
+            }.docs("Remove from wishlist")
         }
 
         /**
+         * Retrieve all items in the user's wishlist
+         *
          * @tag Wishlist
          * @description Retrieve all items in the user's wishlist
          */
@@ -51,9 +58,11 @@ fun Route.wishListRoutes() {
             get {
                 val (limit, offset) = call.paginateQueryParams()
                 call.respondOk(wishlistRepo.getWishList(call.currentUserId, limit, offset))
-            }
+            }.docs("List wishlist", "Products with preloaded images")
 
             /**
+             * Check if a specific product is in the user's wishlist
+             *
              * @tag Wishlist
              * @description Check if a specific product is in the user's wishlist
              */

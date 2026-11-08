@@ -192,6 +192,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 16 | `fix/15-product-variants` | `fix/14-notification-templates` | Variants, options/values, variant-level price/SKU/stock, V28 |
 | 17 | `fix/16-recommendations` | `fix/15-product-variants` | Related, co-purchase, personalized and best-seller recommendations |
 | 18 | `refactor/17-conciseness-performance` | `fix/16-recommendations` | Detekt clean, decomposition of order/refund flows, bulk loaders, cache/query centralization |
+| 19 | `docs/18-swagger-docs` | `refactor/17-conciseness-performance` | Swagger tags/summaries/DTO schemas/bearer auth, missing docs pages, fresh-DB Flyway fix |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 
@@ -234,6 +235,34 @@ Scope: full `src/main` review for conciseness, reuse, centralization and query e
 
 ---
 
+## 11. Documentation & OpenAPI Pass
+
+**Swagger**
+- Verified the generated spec against a real Postgres instance (`/swagger/documentation.yaml`):
+  **178 paths / 206 operations / 0 missing summaries / 83 schemas / 35 tags**.
+- Route groups now carry tags via `.describe` in `ConfigureRouting`, so every
+  operation is grouped consistently (Product, Cart, Order, RMA, KYC, Payout,
+  Recommendation, Tax, FX, API Keys, Feature Flags, Outbox, …).
+- KDoc `@tag`/`@description` are now normalized and paired with prose summaries.
+- Added `jwt-auth` and `api-key` bearer scheme descriptions; route-level security
+  is inferred from `authenticate`/`requireRole` selectors.
+- Added request/response schemas for auth, product/variant, cart, checkout,
+  order, RMA, KYC, notifications, inventory, warehouses, API keys, feature flags,
+  tax, FX and recommendations via `jsonBody`/`ok`/`created` helpers.
+- Hidden `/metrics` and untagged health probes remain outside the public contract.
+
+**Docs**
+- Added `api-keys.md`, `feature-flags.md`, `tax.md`, `warehouse.md`, `outbox.md`,
+  `fx.md`; linked all in `mkdocs.yml`; `mkdocs build --strict` passes.
+- Updated the home page with variants, recommendations, RMA, KYC/payouts,
+  notifications and platform administration.
+- Added `OpenApiDocumentationTest` to guard info/version/tags/security/operations.
+- Fixed a fresh-database startup bug: `configureDatabase` called Flyway
+  `validate()` before `migrate()`, which always fails on an empty schema; the
+  migrate call already validates applied migrations.
+
+---
+
 ## 7. Remediation Order (executed)
 
 1. P0 security/money.
@@ -252,6 +281,7 @@ Scope: full `src/main` review for conciseness, reuse, centralization and query e
 | 2 | commerce | ✅ | ✅ |
 | 3 | contracts/outbox/cache | ✅ | ✅ |
 | 4 | migrations/config/CI/docs | ✅ | ✅ 299 tests (Postgres test runs in CI when DB_* is set) |
+| 5 | docs/OpenAPI | ✅ | ✅ 300+ tests; spec verified against real Postgres (206 operations, 0 missing summaries) |
 
 **Final verification:** `./gradlew build` passes on all branches (299 tests locally; the Postgres test runs against the CI `DB_*` service or Testcontainers).
 

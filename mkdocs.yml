@@ -51,11 +51,17 @@ nav:
       - Shipping Address: shipping-address.md
       - Shipping Method: shipping-method.md
       - Inventory: inventory.md
+      - Warehouses: warehouse.md
       - Refund Request: refund-request.md
       - RMA / Returns: rma.md
       - Notifications: notification.md
       - Seller KYC: seller-kyc.md
       - Payouts & Statements: payout.md
+      - Tax Rules: tax.md
+      - FX Rates: fx.md
+      - API Keys: api-keys.md
+      - Feature Flags: feature-flags.md
+      - Outbox & DLQ: outbox.md
       - Privacy Policy: privacy-policy.md
       - Privacy Policy Consent: privacy-policy-consent.md
       - Dashboard: dashboard.md

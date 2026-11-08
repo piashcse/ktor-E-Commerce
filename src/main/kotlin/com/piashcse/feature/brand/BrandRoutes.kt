@@ -19,6 +19,8 @@ import org.koin.ktor.ext.inject
 fun Route.brandRoutes() {
     val brandRepo: BrandRepository by inject()
     /**
+     * Retrieve a paginated list of all brands (public)
+     *
      * @tag Brand
      * @description Retrieve a paginated list of all brands (public)
      */
@@ -35,6 +37,8 @@ fun Route.brandAdminRoutes() {
     val brandRepo: BrandRepository by inject()
     adminWriteRateLimit {
         /**
+         * Admin: Create a new brand
+         *
          * @tag Brand
          * @description Admin: Create a new brand
          */
@@ -43,6 +47,8 @@ fun Route.brandAdminRoutes() {
         }
 
         /**
+         * Admin: Update an existing brand
+         *
          * @tag Brand
          * @description Admin: Update an existing brand
          */
@@ -52,6 +58,8 @@ fun Route.brandAdminRoutes() {
         }
 
         /**
+         * Admin: Upload a brand logo
+         *
          * @tag Brand
          * @description Admin: Upload a brand logo
          */
@@ -72,6 +80,8 @@ fun Route.brandAdminRoutes() {
         }
 
         /**
+         * Admin: Delete a brand
+         *
          * @tag Brand
          * @description Admin: Delete a brand
          */

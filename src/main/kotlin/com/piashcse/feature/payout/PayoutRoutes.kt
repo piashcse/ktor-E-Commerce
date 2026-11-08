@@ -1,6 +1,8 @@
 package com.piashcse.feature.payout
 
 import com.piashcse.plugin.adminAuth
+import com.piashcse.plugin.docs
+import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.sellerAuth
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey
@@ -19,10 +21,10 @@ fun Route.payoutSellerRoutes() {
         get {
             val (limit, offset) = call.paginateQueryParams()
             call.respondOk(repo.sellerPayouts(call.currentUserId, limit, offset))
-        }
+        }.docs("Seller: list payouts")
         get("balance") {
             call.respondOk(repo.availableBalance(call.currentUserId))
-        }
+        }.docs("Seller: available balance")
         get("statement") {
             call.respondOk(
                 repo.statement(
@@ -31,7 +33,7 @@ fun Route.payoutSellerRoutes() {
                     call.request.queryParameters["to"],
                 ),
             )
-        }
+        }.docs("Seller: payout statement", "Optional from/to ISO dates")
         get("statement/export") {
             val statement =
                 repo.statement(
@@ -59,10 +61,12 @@ fun Route.payoutSellerRoutes() {
                 }
             call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"statement.csv\"")
             call.respondText(csv, ContentType.parse("text/csv"))
-        }
+        }.docs("Seller: export statement CSV")
         post("request") {
             val body = call.receive<PayoutRequest>()
             call.respondCreated(repo.requestPayout(call.currentUserId, body.amount, call.idempotencyKey()))
+        }.docs("Seller: request payout", "Requires VERIFIED KYC; supports Idempotency-Key") {
+            requestBody { jsonBody<PayoutRequest>() }
         }
     }
 }
@@ -73,13 +77,13 @@ fun Route.payoutAdminRoutes() {
         get {
             val (limit, offset) = call.paginateQueryParams()
             call.respondOk(repo.allPayouts(limit, offset, call.request.queryParameters["status"]))
-        }
+        }.docs("Admin: list payouts")
         post("{id}/approve") {
             call.respondOk(repo.approvePayout(call.parameters["id"] ?: throw IllegalArgumentException("id required")))
-        }
+        }.docs("Admin: approve payout")
         post("{id}/reject") {
             call.respondOk(repo.rejectPayout(call.parameters["id"] ?: throw IllegalArgumentException("id required")))
-        }
+        }.docs("Admin: reject payout")
         post("{id}/pay") {
             call.respondOk(
                 repo.markPaid(
@@ -87,7 +91,7 @@ fun Route.payoutAdminRoutes() {
                     call.currentUserId,
                 ),
             )
-        }
+        }.docs("Admin: mark payout paid")
         get("export") {
             val data = repo.allPayouts(10000, 0, call.request.queryParameters["status"])
             val csv =
@@ -110,6 +114,6 @@ fun Route.payoutAdminRoutes() {
                 }
             call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"payouts.csv\"")
             call.respondText(csv, ContentType.parse("text/csv"))
-        }
+        }.docs("Admin: export payouts CSV")
     }
 }
