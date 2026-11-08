@@ -54,7 +54,6 @@ commons-email = { module = "org.apache.commons:commons-email", version.ref = "co
 valiktor-core = { module = "org.valiktor:valiktor-core", version.ref = "valiktor-core-version" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons-io-version" }
 ktor-swagger-ui = { module = "io.ktor:ktor-server-swagger", version.ref = "ktor-version" }
-swagger-ui-webjar = { module = "org.webjars:swagger-ui", version = "5.34.1" }
 ktor-open-api = { module = "io.ktor:ktor-server-openapi", version.ref = "ktor-version" }
 koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin-version" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin-version" }

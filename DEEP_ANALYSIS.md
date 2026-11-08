@@ -257,13 +257,13 @@ Scope: full `src/main` review for conciseness, reuse, centralization and query e
 - Added request/response schemas for auth, product/variant, cart, checkout,
   order, RMA, KYC, notifications, inventory, warehouses, API keys, feature flags,
   tax, FX and recommendations via `jsonBody`/`ok`/`created` helpers.
-- Swagger UI assets are self-hosted from the `org.webjars:swagger-ui` WebJar
-  (`/swagger-assets/@5.34.1/...`); no CDN/network dependency.
-- CSP is relaxed only for `/swagger*` (inline Swagger initializer/styles); all
-  other routes keep `default-src 'self'`.
+- Swagger UI uses Ktor's documented default asset source (unpkg CDN); no extra
+  WebJar or custom asset route.
+- CSP is relaxed only for `/swagger*`: inline Swagger initializer/styles and
+  `https://unpkg.com`; all other routes keep `default-src 'self'`.
 - Libraries refreshed to current stable releases: Ktor 3.6.1, Kotlin 2.4.21,
-  Exposed 1.6.1, Flyway 13.12.1, PostgreSQL 42.7.14, Logback 1.6.6,
-  Micrometer 1.17.2 and swagger-ui 5.34.1.
+  Exposed 1.6.1, Flyway 13.12.1, PostgreSQL 42.7.14, Logback 1.6.6 and
+  Micrometer 1.17.2.
 
 **Docs**
 - Added `api-keys.md`, `feature-flags.md`, `tax.md`, `warehouse.md`, `outbox.md`,

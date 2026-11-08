@@ -98,8 +98,9 @@ fun Application.configureBasic() {
                 val isSwagger = call.request.path().startsWith("/swagger")
                 val csp =
                     if (isSwagger) {
-                        "default-src 'self'; script-src 'self' 'unsafe-inline'; " +
-                            "style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'"
+                        "default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; " +
+                            "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
+                            "img-src 'self' data: https://unpkg.com; frame-ancestors 'none'"
                     } else {
                         "default-src 'self'; frame-ancestors 'none'"
                     }
