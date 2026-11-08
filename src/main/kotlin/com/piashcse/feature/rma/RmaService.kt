@@ -294,7 +294,7 @@ class RmaService {
                             OrderItemDAO.findById(rma.orderItemId.value)
                                 ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
                         ProductDAO.findById(item.productId.value)?.let { product ->
-                            product.restoreStock(rma.quantity)
+                            product.restoreStockFor(item.variantId?.value, rma.quantity)
                             product.removeSales(rma.quantity)
                         }
                         rma.replacementOrderId = replacement.id

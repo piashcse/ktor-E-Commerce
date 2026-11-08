@@ -18,6 +18,7 @@ interface CartRepository {
         userId: String,
         productId: String,
         quantity: Int,
+        variantId: String? = null,
     ): Cart
 
     /**
@@ -45,6 +46,7 @@ interface CartRepository {
         userId: String,
         productId: String,
         quantity: Int,
+        variantId: String? = null,
     ): Cart?
 
     /**
@@ -57,6 +59,7 @@ interface CartRepository {
     suspend fun removeCartItem(
         userId: String,
         productId: String,
+        variantId: String? = null,
     ): ProductResponse
 
     /**

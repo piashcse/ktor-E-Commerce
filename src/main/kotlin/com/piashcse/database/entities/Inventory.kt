@@ -28,12 +28,42 @@ fun ProductDAO.inventories(forUpdate: Boolean = false): List<InventoryDAO> {
         .toList()
 }
 
+/** Inventory rows for a single variant across the product's warehouses. */
+fun ProductDAO.variantInventories(
+    variantId: String,
+    forUpdate: Boolean = false,
+): List<InventoryDAO> = inventories(forUpdate = forUpdate).filter { it.variantId?.value == variantId }
+
 /** Returns effective stock across all warehouses (single source of truth). */
-fun ProductDAO.effectiveStock(forUpdate: Boolean = false): Int = inventories(forUpdate = forUpdate).sumOf { it.stockQuantity }
+fun ProductDAO.effectiveStock(forUpdate: Boolean = false): Int =
+    inventories(forUpdate = forUpdate).filter { it.variantId == null }.sumOf { it.stockQuantity }
+
+/** Effective stock for a variant, or product-level stock when [variantId] is null. */
+fun ProductDAO.effectiveStockFor(
+    variantId: String?,
+    forUpdate: Boolean = false,
+): Int =
+    if (variantId == null) {
+        effectiveStock(forUpdate = forUpdate)
+    } else {
+        variantInventories(variantId, forUpdate = forUpdate).sumOf { it.stockQuantity }
+    }
 
 /** Decrements stock across warehouses, oldest first, and throws if insufficient. */
-fun ProductDAO.decrementStock(quantity: Int) {
-    val rows = inventories(forUpdate = true)
+fun ProductDAO.decrementStock(quantity: Int) = decrementStockFor(null, quantity)
+
+fun ProductDAO.decrementStockFor(
+    variantId: String?,
+    quantity: Int,
+) {
+    val rows =
+        if (variantId == null) {
+            inventories(forUpdate = true).filter {
+                it.variantId == null
+            }
+        } else {
+            variantInventories(variantId, forUpdate = true)
+        }
     if (rows.isEmpty()) throw ValidationException(Message.Inventory.NOT_FOUND)
     val available = rows.sumOf { it.stockQuantity }
     if (available < quantity) {
@@ -47,7 +77,7 @@ fun ProductDAO.decrementStock(quantity: Int) {
         inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
         remaining -= take
     }
-    syncProductStatus(rows.sumOf { it.stockQuantity })
+    syncProductStatus(inventories().sumOf { it.stockQuantity })
 }
 
 private fun ProductDAO.syncProductStatus(stock: Int) {
@@ -56,9 +86,22 @@ private fun ProductDAO.syncProductStatus(stock: Int) {
 }
 
 /** Restores stock to the oldest (default) warehouse after cancellation. */
-fun ProductDAO.restoreStock(quantity: Int) {
+fun ProductDAO.restoreStock(quantity: Int) = restoreStockFor(null, quantity)
+
+fun ProductDAO.restoreStockFor(
+    variantId: String?,
+    quantity: Int,
+) {
+    val rows =
+        if (variantId == null) {
+            inventories(forUpdate = true).filter {
+                it.variantId == null
+            }
+        } else {
+            variantInventories(variantId, forUpdate = true)
+        }
     val inv =
-        inventories(forUpdate = true).firstOrNull()
+        rows.firstOrNull()
             ?: throw ValidationException(Message.Inventory.NOT_FOUND)
     inv.stockQuantity += quantity
     inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
@@ -86,6 +129,7 @@ fun ProductDAO.removeSales(quantity: Int) {
 
 object InventoryTable : BaseIdTable("inventory") {
     val productId = reference("product_id", ProductTable.id)
+    val variantId = reference("variant_id", ProductVariantTable.id).nullable()
     val shopId = reference("shop_id", ShopTable.id) // Link inventory to specific shop
     val warehouseId = reference("warehouse_id", WarehouseTable.id).index()
     val stockQuantity = integer("stock_quantity").default(0)
@@ -95,16 +139,13 @@ object InventoryTable : BaseIdTable("inventory") {
     val status = enumerationByName<InventoryStatus>("status", 50).default(InventoryStatus.IN_STOCK)
     val lastRestocked = datetime("last_restocked").nullable()
     // createdAt and updatedAt are inherited from BaseIdTable, so we don't need to redeclare them
-
-    init {
-        uniqueIndex("inventory_product_shop_warehouse_idx", productId, shopId, warehouseId)
-    }
 }
 
 class InventoryDAO(id: EntityID<String>) : BaseEntity(id, InventoryTable) {
     companion object : BaseEntityClass<InventoryDAO>(InventoryTable, InventoryDAO::class.java)
 
     var productId by InventoryTable.productId
+    var variantId by InventoryTable.variantId
     var shopId by InventoryTable.shopId
     var warehouseId by InventoryTable.warehouseId
     var stockQuantity by InventoryTable.stockQuantity

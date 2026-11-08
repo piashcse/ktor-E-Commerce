@@ -172,7 +172,7 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
     ) {
         // Stock and sales counters.
         ProductDAO.findById(orderItem.productId.value)?.let { product ->
-            product.restoreStock(quantity)
+            product.restoreStockFor(orderItem.variantId?.value, quantity)
             product.removeSales(quantity)
         }
 

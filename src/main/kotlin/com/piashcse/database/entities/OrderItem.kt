@@ -11,6 +11,7 @@ import java.math.BigDecimal
 object OrderItemTable : BaseIdTable("order_item") {
     val orderId = reference("order_id", OrderTable.id)
     val productId = reference("product_id", ProductTable.id)
+    val variantId = reference("variant_id", ProductVariantTable.id).nullable() // Variant at the time of order
     val shopId = reference("shop_id", ShopTable.id) // Shop that sold this item
     val quantity = integer("quantity")
     val price = decimal("price", 10, 2) // Price of the product at the time of the order
@@ -19,6 +20,7 @@ object OrderItemTable : BaseIdTable("order_item") {
     val total = decimal("total", 10, 2) // Total for this order item (quantity * price - discount + tax)
     val sku = varchar("sku", 100).nullable() // SKU of the product at the time of order
     val productName = varchar("product_name", 255).nullable() // Name of the product at the time of order
+    val variantName = varchar("variant_name", 255).nullable() // Variant label at the time of order
     // createdAt and updatedAt are inherited from BaseIdTable
 }
 
@@ -32,6 +34,7 @@ class OrderItemDAO(id: EntityID<String>) : BaseEntity(id, OrderItemTable) {
 
     var orderId by OrderItemTable.orderId
     var productId by OrderItemTable.productId
+    var variantId by OrderItemTable.variantId
     var shopId by OrderItemTable.shopId
     var quantity by OrderItemTable.quantity
     var price by OrderItemTable.price
@@ -40,4 +43,5 @@ class OrderItemDAO(id: EntityID<String>) : BaseEntity(id, OrderItemTable) {
     var total by OrderItemTable.total
     var sku by OrderItemTable.sku
     var productName by OrderItemTable.productName
+    var variantName by OrderItemTable.variantName
 }

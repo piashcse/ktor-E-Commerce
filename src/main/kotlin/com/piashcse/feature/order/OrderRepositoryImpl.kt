@@ -229,6 +229,15 @@ class OrderRepositoryImpl : OrderRepository {
                             ProductDAO.find {
                                 ProductTable.id inList cartItems.map { it.productId.value }.distinct()
                             }.associateBy { it.id.value }
+                        val variantIds = cartItems.mapNotNull { it.variantId?.value }.distinct()
+                        val variantsMap =
+                            if (variantIds.isNotEmpty()) {
+                                ProductVariantDAO.find {
+                                    ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) }
+                                }.associateBy { it.id.value }
+                            } else {
+                                emptyMap()
+                            }
 
                         val itemsByShop =
                             cartItems.groupBy {
@@ -271,14 +280,32 @@ class OrderRepositoryImpl : OrderRepository {
                                 if (product.status != ProductStatus.ACTIVE) {
                                     throw ValidationException(Message.Products.OUT_OF_STOCK)
                                 }
-                                val available = product.effectiveStock(forUpdate = true)
+                                val variant =
+                                    cartItem.variantId?.value?.let { variantId ->
+                                        variantsMap[variantId] ?: variantId.throwNotFound("Variant")
+                                    }
+                                if (variant != null && variant.productId.value != product.id.value) {
+                                    throw ValidationException("Variant does not belong to product ${product.name}")
+                                }
+                                if (variant == null) {
+                                    val requiresVariant =
+                                        ProductVariantDAO.find { ProductVariantTable.productId eq product.id }
+                                            .firstOrNull() != null
+                                    if (requiresVariant) {
+                                        throw ValidationException("Select a variant for ${product.name}")
+                                    }
+                                }
+                                if (variant != null && variant.status != ProductStatus.ACTIVE) {
+                                    throw ValidationException(Message.Products.OUT_OF_STOCK)
+                                }
+                                val available = product.effectiveStockFor(variant?.id?.value, forUpdate = true)
                                 if (available < cartItem.quantity) {
                                     throw ValidationException(Message.Validation.insufficientStock(product.name, available))
                                 }
 
                                 // Product prices are stored in USD; persist the order-currency
                                 // unit price so refunds and payouts use the same unit as the order.
-                                val unitPriceUsd = product.discountPrice ?: product.price
+                                val unitPriceUsd = variant?.effectivePrice ?: product.discountPrice ?: product.price
                                 val unitPrice = Money.scale2(unitPriceUsd.multiply(fxRate))
                                 val itemTotal = Money.unitTotal(unitPrice, cartItem.quantity)
                                 totalUsdSubTotal = totalUsdSubTotal.add(Money.unitTotal(unitPriceUsd, cartItem.quantity))
@@ -294,23 +321,30 @@ class OrderRepositoryImpl : OrderRepository {
                                     OrderItemDAO.new {
                                         orderId = order.id
                                         productId = product.id
+                                        variantId = variant?.id
                                         shopId = shopIdValue.entityID(ShopTable)
                                         quantity = cartItem.quantity
                                         price = unitPrice
                                         total = itemTotal
-                                        sku = product.sku
+                                        sku = variant?.sku ?: product.sku
                                         productName = product.name
+                                        variantName = variant?.name
                                         taxAmount = BigDecimal.ZERO
                                         discountAmount = BigDecimal.ZERO
                                     }
 
-                                product.decrementStock(cartItem.quantity)
+                                if (variant == null) {
+                                    product.decrementStock(cartItem.quantity)
+                                } else {
+                                    product.decrementStockFor(variant.id.value, cartItem.quantity)
+                                }
                                 product.addSales(cartItem.quantity)
 
                                 StockReservationDAO.new {
                                     this.orderId = order.id
                                     this.orderItemId = orderItem.id
                                     this.productId = product.id
+                                    this.variantId = variant?.id
                                     this.shopId = shopIdValue.entityID(ShopTable)
                                     this.quantity = cartItem.quantity
                                     this.status = ReservationStatus.ACTIVE

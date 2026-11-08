@@ -21,6 +21,7 @@ interface InventoryRepository {
     suspend fun getInventoryByProduct(
         productId: String,
         actorUserId: String,
+        variantId: String? = null,
     ): InventoryResponse?
 
     /**
@@ -32,6 +33,7 @@ interface InventoryRepository {
         quantity: Int,
         operation: String = "add",
         warehouseId: String? = null,
+        variantId: String? = null,
     ): InventoryResponse
 
     /**

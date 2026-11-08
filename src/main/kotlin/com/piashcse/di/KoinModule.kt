@@ -39,6 +39,7 @@ import com.piashcse.feature.product.ProductCatalogService
 import com.piashcse.feature.product.ProductCrudService
 import com.piashcse.feature.product.ProductRepository
 import com.piashcse.feature.product.ProductRepositoryImpl
+import com.piashcse.feature.product.ProductVariantService
 import com.piashcse.feature.product_category.ProductCategoryRepository
 import com.piashcse.feature.product_category.ProductCategoryRepositoryImpl
 import com.piashcse.feature.product_sub_category.ProductSubCategoryRepository
@@ -111,6 +112,7 @@ val serviceModule =
         // Split product services
         single { ProductCatalogService(get()) }
         single { ProductCrudService(get()) }
+        single { ProductVariantService() }
 
         // Non-DI services
         single { UploadService }

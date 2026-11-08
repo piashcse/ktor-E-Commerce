@@ -22,4 +22,6 @@ data class CartItemSummary(
     val stockQuantity: Int,
     val shopId: String?,
     val shopName: String?,
+    val variantId: String? = null,
+    val variantName: String? = null,
 )

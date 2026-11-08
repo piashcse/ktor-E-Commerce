@@ -33,4 +33,5 @@ data class ProductResponse(
     val rating: Double = 0.0,
     val totalReviews: Int = 0,
     val totalSales: Int = 0,
+    val variants: List<ProductVariantResponse> = emptyList(),
 )

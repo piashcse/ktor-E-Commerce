@@ -3,10 +3,14 @@ package com.piashcse.mapper
 import com.piashcse.database.entities.*
 import com.piashcse.model.response.CartItemSummary
 import com.piashcse.model.response.ProductResponse
+import com.piashcse.model.response.ProductVariantResponse
 import com.piashcse.utils.common.Money
 import java.math.BigDecimal
 
-fun CartItemDAO.toCartResponse(product: ProductResponse? = null) = Cart(productId.value, quantity, product)
+fun CartItemDAO.toCartResponse(
+    product: ProductResponse? = null,
+    variant: ProductVariantResponse? = null,
+) = Cart(productId.value, quantity, product, variantId?.value, variant)
 
 fun CartItemDAO.toCartItemSummary(
     product: ProductDAO,
@@ -14,6 +18,7 @@ fun CartItemDAO.toCartItemSummary(
     image: String?,
     stockQuantity: Int,
     shopName: String?,
+    variant: ProductVariantDAO? = null,
 ) = CartItemSummary(
     productId = product.id.value,
     productName = product.name,
@@ -23,6 +28,8 @@ fun CartItemDAO.toCartItemSummary(
     stockQuantity = stockQuantity,
     shopId = product.shopId?.value,
     shopName = shopName,
+    variantId = variantId?.value,
+    variantName = variant?.name,
 )
 
 fun WishListDAO.toWishListResponse(product: ProductResponse? = null) = WishList(product)

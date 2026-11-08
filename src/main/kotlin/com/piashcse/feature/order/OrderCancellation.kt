@@ -22,7 +22,7 @@ import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.calcCommission
 import com.piashcse.database.entities.removeSales
-import com.piashcse.database.entities.restoreStock
+import com.piashcse.database.entities.restoreStockFor
 import com.piashcse.utils.extension.entityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
@@ -66,7 +66,7 @@ object OrderCancellation {
                 emptyMap()
             }
         orderItems.forEach { orderItem ->
-            products[orderItem.productId.value]?.restoreStock(orderItem.quantity)
+            products[orderItem.productId.value]?.restoreStockFor(orderItem.variantId?.value, orderItem.quantity)
             products[orderItem.productId.value]?.removeSales(orderItem.quantity)
         }
 

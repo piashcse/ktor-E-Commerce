@@ -257,7 +257,12 @@ class ProductRepositoryImpl : ProductRepository {
                     productId.throwNotFound("ProductResponse")
                 }
             }
-            product.toProductResponse()
+            product.toProductResponse(
+                variants =
+                    ProductVariantDAO.find { ProductVariantTable.productId eq product.id }
+                        .orderBy(ProductVariantTable.sortOrder to SortOrder.ASC)
+                        .map { it.toResponse() },
+            )
         }
 
     override suspend fun incrementViewCount(productId: String) =

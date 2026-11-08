@@ -10,6 +10,7 @@ import org.valiktor.validate
 data class CartRequest(
     val productId: String,
     val quantity: Int,
+    val variantId: String? = null,
 ) {
     init {
         validate(this) {

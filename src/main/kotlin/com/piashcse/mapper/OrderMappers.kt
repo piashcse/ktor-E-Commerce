@@ -47,4 +47,6 @@ fun OrderItemDAO.toOrderItemResponse() =
         taxAmount = Money.str(taxAmount),
         total = Money.str(total),
         sku = sku,
+        variantId = variantId?.value,
+        variantName = variantName,
     )

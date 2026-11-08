@@ -15,6 +15,7 @@ import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -30,10 +31,18 @@ class CartRepositoryImpl : CartRepository {
         if (quantity != null && quantity <= 0) throw ValidationException(Message.Validation.notPositive("Quantity"))
     }
 
+    private fun variantOp(variantId: String?) =
+        if (variantId == null) {
+            CartItemTable.variantId.isNull()
+        } else {
+            CartItemTable.variantId eq variantId.entityID(ProductVariantTable)
+        }
+
     override suspend fun createCart(
         userId: String,
         productId: String,
         quantity: Int,
+        variantId: String?,
     ): Cart =
         query {
             requireCartParams(userId, productId, quantity)
@@ -41,36 +50,40 @@ class CartRepositoryImpl : CartRepository {
             // Advisory stock check only: read-then-write here is inherently racy (TOCTOU).
             // The authoritative check runs at order creation with a row-locked
             // effectiveStock(forUpdate = true) read, which re-validates before decrementing.
-            val product = requireProductWithStock(productId, quantity)
+            val product = requireProductWithStock(productId, quantity, variantId = variantId)
+            val variant = resolveVariant(product, variantId)
 
             val existing =
                 CartItemDAO.find {
-                    CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
+                    (CartItemTable.userId eq userId) and
+                        (CartItemTable.productId eq productId) and variantOp(variantId)
                 }.singleOrNull()
             existing?.let { item ->
                 // Merge duplicate adds instead of rejecting them, then re-check stock
                 // against the combined quantity.
                 val merged = item.quantity + quantity
-                requireProductWithStock(productId, merged)
+                requireProductWithStock(productId, merged, variantId = variantId)
                 item.quantity = merged
-                return@query item.toCartResponse()
+                return@query item.toCartResponse(product.toProductResponse(), variant?.toResponse())
             }
 
             try {
                 CartItemDAO.new {
                     this.userId = userId.entityID(UserTable)
                     this.productId = productId.entityID(ProductTable)
+                    this.variantId = variant?.id
                     this.quantity = quantity
-                }.toCartResponse()
+                }.toCartResponse(product.toProductResponse(), variant?.toResponse())
             } catch (e: Exception) {
                 // Unique constraint race: concurrent adds → merge into the winner.
                 if ((e.message ?: "").contains("duplicate", ignoreCase = true)) {
                     val winner =
                         CartItemDAO.find {
-                            CartItemTable.userId eq userId and (CartItemTable.productId eq productId)
+                            (CartItemTable.userId eq userId) and
+                                (CartItemTable.productId eq productId) and variantOp(variantId)
                         }.singleOrNull() ?: throw e
                     winner.quantity += quantity
-                    winner.toCartResponse()
+                    winner.toCartResponse(product.toProductResponse(), variant?.toResponse())
                 } else {
                     throw e
                 }
@@ -98,11 +111,24 @@ class CartRepositoryImpl : CartRepository {
                     } else {
                         emptyMap()
                     }
+                val variantIds = rows.mapNotNull { it[CartItemTable.variantId]?.value }.distinct()
+                val variants =
+                    if (variantIds.isNotEmpty()) {
+                        ProductVariantDAO.find { ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) } }
+                            .associateBy { it.id.value }
+                    } else {
+                        emptyMap()
+                    }
                 rows.map { row ->
                     val product =
                         products[row[CartItemTable.productId].value]
                             ?: row[CartItemTable.productId].value.throwNotFound("Product")
-                    CartItemDAO.wrapRow(row).toCartResponse(product.toProductResponse(imagesMap[product.id.value]))
+                    val item = CartItemDAO.wrapRow(row)
+                    val variant = item.variantId?.value?.let { variants[it] }
+                    item.toCartResponse(
+                        product.toProductResponse(imagesMap[product.id.value]),
+                        variant?.toResponse(),
+                    )
                 }
             }
         }
@@ -111,12 +137,13 @@ class CartRepositoryImpl : CartRepository {
         userId: String,
         productId: String,
         quantity: Int,
+        variantId: String?,
     ): Cart? =
         query {
             userId.requireNotBlank("User ID")
             productId.requireNotBlank("Product ID")
 
-            val cartItem = requireCartItem(userId, productId)
+            val cartItem = requireCartItem(userId, productId, variantId)
 
             // Single non-positive path: quantity <= 0 deletes the line item (no throw branch).
             if (quantity <= 0) {
@@ -128,20 +155,22 @@ class CartRepositoryImpl : CartRepository {
             // concurrent checkouts can oversell between this read and order placement.
             // The authoritative check runs at order creation with a row-locked
             // effectiveStock(forUpdate = true) read, which re-validates before decrementing.
-            val product = requireProductWithStock(cartItem.productId.value, quantity)
+            val product = requireProductWithStock(cartItem.productId.value, quantity, variantId = cartItem.variantId?.value)
+            val variant = resolveVariant(product, cartItem.variantId?.value)
             cartItem.quantity = quantity
 
-            cartItem.toCartResponse(product.toProductResponse())
+            cartItem.toCartResponse(product.toProductResponse(), variant?.toResponse())
         }
 
     override suspend fun removeCartItem(
         userId: String,
         productId: String,
+        variantId: String?,
     ): ProductResponse =
         query {
             requireCartParams(userId, productId)
 
-            val cartItem = requireCartItem(userId, productId)
+            val cartItem = requireCartItem(userId, productId, variantId)
 
             val product = requireProduct(cartItem.productId.value)
             cartItem.delete()
@@ -169,10 +198,11 @@ class CartRepositoryImpl : CartRepository {
                 } else {
                     emptyMap()
                 }
-            val inventoryMap =
-                if (products.isNotEmpty()) {
-                    InventoryDAO.find { InventoryTable.productId inList productEntityIds }
-                        .associate { it.productId.value to it.stockQuantity }
+            val variantIds = cartItems.mapNotNull { it.variantId?.value }.distinct()
+            val variants =
+                if (variantIds.isNotEmpty()) {
+                    ProductVariantDAO.find { ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) } }
+                        .associateBy { it.id.value }
                 } else {
                     emptyMap()
                 }
@@ -187,13 +217,20 @@ class CartRepositoryImpl : CartRepository {
             val items =
                 cartItems.mapNotNull { cartItem ->
                     val product = products[cartItem.productId.value] ?: return@mapNotNull null
-                    val unitPrice = product.discountPrice ?: product.price
+                    val variant = cartItem.variantId?.value?.let { variants[it] }
+                    val unitPrice = variant?.effectivePrice ?: product.discountPrice ?: product.price
                     cartItem.toCartItemSummary(
                         product = product,
                         unitPrice = unitPrice,
-                        image = imagesMap[product.id.value]?.firstOrNull(),
-                        stockQuantity = inventoryMap[product.id.value] ?: 0,
+                        image = variant?.imageUrl ?: imagesMap[product.id.value]?.firstOrNull(),
+                        stockQuantity =
+                            if (variant == null) {
+                                product.effectiveStock()
+                            } else {
+                                product.effectiveStockFor(variant.id.value)
+                            },
                         shopName = product.shopId?.value?.let { shops[it]?.name },
+                        variant = variant,
                     )
                 }
 

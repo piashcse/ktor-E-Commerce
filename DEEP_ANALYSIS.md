@@ -122,7 +122,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 - [x] **F-4. Partial/quantity refunds + shipping/tax refund fields.**
 - [x] **F-5. Coupon per-user limit, scoping, usage reversal, admin filters.**
 - [x] **F-6. Payout request aggregate/status/balance endpoint.**
-- [ ] **F-7. Product variants/attributes** — documented as out of scope for this pass (schema addition).
+- [x] **F-7. Product variants/attributes** — variants, option/value dimensions, variant-level price/SKU/stock, V28.
 - [x] **F-8. Category/brand/shop image write path** — currently columns exist but unused.
 - [x] **F-9. Notification preferences honored by subscriber.**
 - [x] **F-10. Cleanup jobs** for outbox, tokens, attempts, notifications.
@@ -154,7 +154,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 
 - [ ] **E-1. Real gateway webhooks + signature verification + 3-D Secure.**
 - [ ] **E-2. Carrier integration, labels, tracking webhooks, delivery slots.**
-- [ ] **E-3. Product variants/options, attributes, bundles, recommendations.**
+- [~] **E-3. Product variants/options, attributes, bundles, recommendations.** — variants/options/attributes done (V28); bundles and recommendations not in this pass.
 - [x] **E-4. Multi-warehouse inventory, backorders, supplier POs, stock audit.**
 - [x] **E-5. Tax rules by region/category; promotions engine (stacking/scopes).**
 - [x] **E-6. Seller KYC, commission tiers, statements, tax exports.**
@@ -189,6 +189,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 13 | `fix/12-rma-returns` | `fix/11-multi-warehouse` | RMA returns/exchanges, refund handoff, replacement-order linkage, V25 |
 | 14 | `fix/13-seller-kyc-statements` | `fix/12-rma-returns` | Seller KYC lifecycle, payout gating, statements/CSV export, V26 |
 | 15 | `fix/14-notification-templates` | `fix/13-seller-kyc-statements` | Templates, in-app/email/SMS/push dispatch, per-event preferences, RMA events, V27 |
+| 16 | `fix/15-product-variants` | `fix/14-notification-templates` | Variants, options/values, variant-level price/SKU/stock, V28 |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 

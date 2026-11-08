@@ -9,6 +9,7 @@ import java.time.LocalDateTime
 data class InventoryResponse(
     val id: String,
     val productId: String,
+    val variantId: String? = null,
     val shopId: String,
     val warehouseId: String? = null,
     val stockQuantity: Int,

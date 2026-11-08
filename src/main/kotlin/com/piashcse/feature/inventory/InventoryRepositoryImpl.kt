@@ -13,6 +13,7 @@ import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -36,6 +37,23 @@ class InventoryRepositoryImpl : InventoryRepository {
         if (product.shopId?.value != shopId) throw ForbiddenException(Message.Errors.FORBIDDEN)
         return product
     }
+
+    private fun requireVariant(
+        productId: String,
+        variantId: String?,
+    ): ProductVariantDAO? {
+        if (variantId == null) return null
+        val variant = ProductVariantDAO.findById(variantId) ?: variantId.throwNotFound("Variant")
+        if (variant.productId.value != productId) throw ValidationException("Variant does not belong to this product")
+        return variant
+    }
+
+    private fun variantOp(variantId: String?) =
+        if (variantId == null) {
+            InventoryTable.variantId.isNull()
+        } else {
+            InventoryTable.variantId eq variantId.entityID(ProductVariantTable)
+        }
 
     private fun resolveWarehouse(
         shopId: String,
@@ -81,13 +99,15 @@ class InventoryRepositoryImpl : InventoryRepository {
 
             val product = ProductDAO.findById(inventoryRequest.productId) ?: inventoryRequest.productId.throwNotFound("Product")
             if (product.shopId?.value != sellerShopId) throw ForbiddenException(Message.Errors.FORBIDDEN)
+            val variant = requireVariant(product.id.value, inventoryRequest.variantId)
             val warehouse = resolveWarehouse(sellerShopId, inventoryRequest.warehouseId)
 
             val existing =
                 InventoryDAO.find {
                     (InventoryTable.productId eq inventoryRequest.productId) and
                         (InventoryTable.shopId eq inventoryRequest.shopId) and
-                        (InventoryTable.warehouseId eq warehouse.id)
+                        (InventoryTable.warehouseId eq warehouse.id) and
+                        variantOp(inventoryRequest.variantId)
                 }.firstOrNull()
 
             val inventory =
@@ -98,6 +118,7 @@ class InventoryRepositoryImpl : InventoryRepository {
                     status = InventoryStatus.fromStockLevel(stockQuantity, minimumStockLevel)
                 } ?: InventoryDAO.new {
                     productId = inventoryRequest.productId.entityID(ProductTable)
+                    variantId = variant?.id
                     shopId = inventoryRequest.shopId.entityID(ShopTable)
                     warehouseId = warehouse.id
                     stockQuantity = inventoryRequest.stockQuantity
@@ -111,10 +132,14 @@ class InventoryRepositoryImpl : InventoryRepository {
     override suspend fun getInventoryByProduct(
         productId: String,
         actorUserId: String,
+        variantId: String?,
     ): InventoryResponse? =
         query {
-            requireOwnedProduct(actorUserId, productId)
-            InventoryDAO.find { InventoryTable.productId eq productId }.firstOrNull()?.toInventoryResponse()
+            val product = requireOwnedProduct(actorUserId, productId)
+            requireVariant(product.id.value, variantId)
+            InventoryDAO.find {
+                (InventoryTable.productId eq productId) and variantOp(variantId)
+            }.firstOrNull()?.toInventoryResponse()
         }
 
     override suspend fun updateStock(
@@ -123,14 +148,16 @@ class InventoryRepositoryImpl : InventoryRepository {
         quantity: Int,
         operation: String,
         warehouseId: String?,
+        variantId: String?,
     ): InventoryResponse =
         retryQuery {
             val product = requireOwnedProduct(actorUserId, productId)
+            requireVariant(product.id.value, variantId)
             product.shopId?.value?.let { resolveWarehouse(it, warehouseId) }
             val inventoryQuery =
                 InventoryDAO.find {
                     (InventoryTable.productId eq product.id) and
-                        (InventoryTable.shopId eq product.shopId!!) and
+                        (InventoryTable.shopId eq product.shopId!!) and variantOp(variantId) and
                         if (warehouseId == null) {
                             org.jetbrains.exposed.v1.core.Op.TRUE
                         } else {

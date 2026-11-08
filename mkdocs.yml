@@ -39,6 +39,7 @@ nav:
       - Product Category: product-category.md
       - Product Sub Category: product-sub-category.md
       - Product: product.md
+      - Product Variants: product-variants.md
       - Review Rating: review-rating.md
       - WishList: wishlist.md
       - Cart: cart.md
