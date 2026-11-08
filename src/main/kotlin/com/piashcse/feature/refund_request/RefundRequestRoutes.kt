@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.refund_request
 
 import com.piashcse.config.DotEnvConfig
@@ -19,6 +21,7 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 import java.io.File
 
@@ -40,7 +43,7 @@ fun Route.refundRequestRoutes() {
                         call.receive<RefundRequestRequest>(),
                     ),
                 )
-            }
+            }.describe { summary = "Create a refund request for an order item" }
 
             /**
              * Mark an approved refund as shipped
@@ -49,7 +52,7 @@ fun Route.refundRequestRoutes() {
                 call.respondOk(
                     refundRequestRepo.shipRefund(call.requirePathParameter("id"), call.receive<ShipRefundRequest>(), call.currentUserId),
                 )
-            }
+            }.describe { summary = "Mark an approved refund as shipped" }
         }
     }
 
@@ -78,7 +81,7 @@ fun Route.refundRequestRoutes() {
             }
             call.response.header(HttpHeaders.CacheControl, "private, no-store")
             call.respondFile(file)
-        }
+        }.describe { summary = "Get private refund evidence for an authorized refund request" }
 
         /**
          * Get refund requests for an order
@@ -94,7 +97,7 @@ fun Route.refundRequestRoutes() {
                     offset,
                 ),
             )
-        }
+        }.describe { summary = "Get refund requests for an order" }
 
         /**
          * Get refund request details
@@ -111,7 +114,7 @@ fun Route.refundRequestRoutes() {
             } else {
                 throw NotFoundException(Message.Refunds.NOT_FOUND)
             }
-        }
+        }.describe { summary = "Get refund request details" }
     }
 }
 
@@ -133,7 +136,7 @@ fun Route.refundSellerRoutes() {
                     call.currentUserId,
                 ),
             )
-        }
+        }.describe { summary = "Seller - Update refund request status" }
     }
 }
 
@@ -155,7 +158,7 @@ fun Route.refundAdminRoutes() {
                     call.currentUserId,
                 ),
             )
-        }
+        }.describe { summary = "Admin - Update refund status" }
     }
 
     /**
@@ -167,5 +170,5 @@ fun Route.refundAdminRoutes() {
         call.respondOk(
             refundRequestRepo.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, UserType.ADMIN, limit, offset),
         )
-    }
+    }.describe { summary = "Admin - Get all refund requests for an order" }
 }

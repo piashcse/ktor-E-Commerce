@@ -27,7 +27,7 @@ fun Route.reviewRatingRoutes() {
         val productId = call.requireQueryParameter("productId")
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(reviewRatingRepo.getReviewRating(productId, limit, offset))
-    }
+    }.describe { summary = "Retrieve reviews and ratings for a specific product" }
 
     customerAuth {
         writeRateLimit {
@@ -38,7 +38,7 @@ fun Route.reviewRatingRoutes() {
                 val result = reviewRatingRepo.addReviewRating(call.currentUserId, call.receive<ReviewRatingRequest>())
                 CatalogCache.invalidate()
                 call.respondCreated(result)
-            }
+            }.describe { summary = "Submit a new review and rating for a product" }
 
             /**
              * Update an existing review and rating
@@ -50,7 +50,7 @@ fun Route.reviewRatingRoutes() {
                 val result = reviewRatingRepo.updateReviewRating(call.currentUserId, id, review, rating.toInt())
                 CatalogCache.invalidate()
                 call.respondOk(result)
-            }
+            }.describe { summary = "Update an existing review and rating" }
 
             /**
              * Delete a review and rating
@@ -60,7 +60,7 @@ fun Route.reviewRatingRoutes() {
                 reviewRatingRepo.deleteReviewRating(call.currentUserId, id)
                 CatalogCache.invalidate()
                 call.respondOk(com.piashcse.utils.common.MessageResponse("Review deleted successfully"))
-            }
+            }.describe { summary = "Delete a review and rating" }
 
             post("{id}/helpful") {
                 val id = call.requirePathParameter("id")

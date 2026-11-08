@@ -184,7 +184,7 @@ fun Route.orderAdminRoutes() {
             val id = call.requirePathParameter("id")
             val status = call.requireQueryParameter("status").parseEnum<OrderStatus>("status")
             call.respondOk(orderRepo.updateOrderStatus(call.currentUserId, id, status))
-        }
+        }.describe { summary = "Admin - Update the status of any order" }
 
         /**
          * Admin - Mark a paid order as shipped
@@ -193,7 +193,7 @@ fun Route.orderAdminRoutes() {
         post("{id}/shipping") {
             val body = call.receive<ShipOrderRequest>()
             call.respondOk(orderRepo.shipOrder(call.requirePathParameter("id"), call.currentUserId, body.trackingNumber))
-        }
+        }.describe { summary = "Admin - Mark a paid order as shipped" }
 
         /**
          * Admin - Cancel any order
@@ -208,7 +208,7 @@ fun Route.orderAdminRoutes() {
                     UserType.ADMIN,
                 ),
             )
-        }
+        }.describe { summary = "Admin - Cancel any order" }
     }
 
     /**

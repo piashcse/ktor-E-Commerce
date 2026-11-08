@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.shop_category
 
 import com.piashcse.model.request.ShopCategoryRequest
@@ -8,6 +10,7 @@ import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 /**
@@ -21,7 +24,7 @@ fun Route.shopCategoryRoutes() {
     get {
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(shopCategoryRepo.getCategories(limit, offset))
-    }
+    }.describe { summary = "Retrieve a paginated list of all shop categories" }
 }
 
 /**
@@ -36,7 +39,7 @@ fun Route.shopCategoryAdminRoutes() {
          */
         post {
             call.respondCreated(shopCategoryRepo.createCategory(call.receive<ShopCategoryRequest>().name))
-        }
+        }.describe { summary = "Admin - Create a new shop category" }
 
         /**
          * Admin - Update an existing shop category name
@@ -45,7 +48,7 @@ fun Route.shopCategoryAdminRoutes() {
         put("{id}") {
             val id = call.requirePathParameter("id")
             call.respondOk(shopCategoryRepo.updateCategory(id, call.nameFromBodyOrQuery()))
-        }
+        }.describe { summary = "Admin - Update an existing shop category name" }
 
         /**
          * Admin - Permanently delete a shop category
@@ -55,6 +58,6 @@ fun Route.shopCategoryAdminRoutes() {
             val id = call.requirePathParameter("id")
             shopCategoryRepo.deleteCategory(id)
             call.respondOk(com.piashcse.utils.common.MessageResponse("Shop category deleted successfully"))
-        }
+        }.describe { summary = "Admin - Permanently delete a shop category" }
     }
 }

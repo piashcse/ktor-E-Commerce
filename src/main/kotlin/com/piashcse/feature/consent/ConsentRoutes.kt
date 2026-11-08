@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 @file:Suppress("MatchingDeclarationName")
 
 package com.piashcse.feature.consent
@@ -18,6 +20,7 @@ import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 
@@ -43,7 +46,7 @@ fun Route.consentRoutes() {
                         )
                     },
                 )
-            }
+            }.describe { summary = "Record user consent for a specific policy document" }
         }
     }
 
@@ -54,7 +57,7 @@ fun Route.consentRoutes() {
         get {
             val (limit, offset) = call.paginateQueryParams()
             call.respondOk(consentRepo.getUserConsents(call.currentUserId, limit, offset))
-        }
+        }.describe { summary = "Retrieve all consent records for the authenticated user" }
 
         /**
          * Check if the user has consented to a specific policy type
@@ -68,7 +71,7 @@ fun Route.consentRoutes() {
                     ),
                 ),
             )
-        }
+        }.describe { summary = "Check if the user has consented to a specific policy type" }
 
         /**
          * Revoke a consent record (owner or admin)
@@ -80,7 +83,7 @@ fun Route.consentRoutes() {
                 call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
             )
             call.respondOk(com.piashcse.utils.common.MessageResponse("Consent revoked successfully"))
-        }
+        }.describe { summary = "Revoke a consent record (owner or admin)" }
     }
 }
 
@@ -98,5 +101,5 @@ fun Route.consentAdminRoutes() {
         val policyType = call.request.queryParameters["policyType"]?.parseEnum<PolicyType>("policy type")
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(consentRepo.listConsentsByUser(userId, policyType, limit, offset))
-    }
+    }.describe { summary = "Admin - Retrieve consent records filtered by user and/or policy type" }
 }

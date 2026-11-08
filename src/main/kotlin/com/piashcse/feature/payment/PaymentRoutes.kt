@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.payment
 
 import com.piashcse.model.request.PaymentRequest
@@ -11,6 +13,7 @@ import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 /**
@@ -27,7 +30,7 @@ fun Route.paymentRoutes() {
                 val body = call.receive<PaymentRequest>()
                 val key = call.idempotencyKey(body.idempotencyKey)
                 call.respondCreated(paymentRepo.createPayment(body.copy(idempotencyKey = key), call.currentUserId))
-            }
+            }.describe { summary = "Create a payment intent for an order. Status is server-owned." }
         }
 
         /**
@@ -36,7 +39,7 @@ fun Route.paymentRoutes() {
         get("{id}") {
             val id = call.requirePathParameter("id")
             call.respondOk(paymentRepo.getPaymentById(id, call.currentUserId))
-        }
+        }.describe { summary = "Retrieve payment details by ID" }
 
         /**
          * Retrieve all payments for a specific order
@@ -45,7 +48,7 @@ fun Route.paymentRoutes() {
             val orderId = call.requirePathParameter("orderId")
             val (limit, offset) = call.paginateQueryParams()
             call.respondOk(paymentRepo.getPaymentsByOrderId(orderId, call.currentUserId, limit, offset))
-        }
+        }.describe { summary = "Retrieve all payments for a specific order" }
     }
 }
 
@@ -63,6 +66,6 @@ fun Route.paymentAdminRoutes() {
         post("{id}/confirm") {
             val id = call.requirePathParameter("id")
             call.respondOk(paymentRepo.confirmPayment(id, call.currentUserId))
-        }
+        }.describe { summary = "Admin - confirm a pending payment as completed" }
     }
 }

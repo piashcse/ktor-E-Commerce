@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.shop
 
 import com.piashcse.constants.Message
@@ -13,6 +15,7 @@ import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 /**
@@ -28,7 +31,7 @@ fun Route.shopRoutes() {
         val shop = shopRepo.getShopById(shopId) ?: throw NotFoundException(Message.Shops.NOT_FOUND)
         if (shop.status != ShopStatus.APPROVED) throw NotFoundException(Message.Shops.NOT_FOUND)
         call.respondOk(shop)
-    }
+    }.describe { summary = "Retrieve detailed information about a specific shop" }
 
     /**
      * Retrieve public shops with filters (public)
@@ -38,7 +41,7 @@ fun Route.shopRoutes() {
         call.respondOk(
             shopRepo.getShops(call.request.queryParameters["status"], call.request.queryParameters["category"], limit, offset),
         )
-    }
+    }.describe { summary = "Retrieve public shops with filters (public)" }
 
     /**
      * Retrieve shops by category (public)
@@ -47,7 +50,7 @@ fun Route.shopRoutes() {
         val categoryId = call.requirePathParameter("categoryId")
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(shopRepo.getShopsByCategory(categoryId, limit, offset))
-    }
+    }.describe { summary = "Retrieve shops by category (public)" }
 
     /**
      * Retrieve featured shops (public)
@@ -55,7 +58,7 @@ fun Route.shopRoutes() {
     get("/featured") {
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(shopRepo.getFeaturedShops(limit, offset))
-    }
+    }.describe { summary = "Retrieve featured shops (public)" }
 }
 
 /**
@@ -70,7 +73,7 @@ fun Route.shopSellerRoutesV1() {
          */
         post {
             call.respondCreated(shopRepo.createShop(call.currentUserId, call.receive<ShopRequest>()))
-        }
+        }.describe { summary = "Seller - Create a new shop" }
 
         /**
          * Seller - Update shop details
@@ -79,7 +82,7 @@ fun Route.shopSellerRoutesV1() {
         put("/{id}") {
             val shopId = call.requirePathParameter("id")
             call.respondOk(shopRepo.updateShop(call.currentUserId, shopId, call.receive<UpdateShopRequest>()))
-        }
+        }.describe { summary = "Seller - Update shop details" }
 
         /**
          * Seller - Upload a shop logo
@@ -99,7 +102,7 @@ fun Route.shopSellerRoutesV1() {
             }
             val url = imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED)
             call.respondOk(shopRepo.updateShop(call.currentUserId, shopId, UpdateShopRequest(logo = url)))
-        }
+        }.describe { summary = "Seller - Upload a shop logo" }
     }
 
     /**
@@ -109,7 +112,7 @@ fun Route.shopSellerRoutesV1() {
     get {
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(shopRepo.getShopsByUser(call.currentUserId, limit, offset))
-    }
+    }.describe { summary = "Seller - Retrieve owned shops" }
 }
 
 /**
@@ -126,7 +129,7 @@ fun Route.shopAdminRoutes() {
             val shopId = call.requirePathParameter("id")
             val (actorId, actorEmail, actorRole) = call.actor()
             call.respondOk(shopRepo.approveShop(shopId, actorId, actorEmail, actorRole))
-        }
+        }.describe { summary = "Admin - Approve a pending shop application" }
 
         /**
          * Admin - Reject a shop application
@@ -136,7 +139,7 @@ fun Route.shopAdminRoutes() {
             val shopId = call.requirePathParameter("id")
             val (actorId, actorEmail, actorRole) = call.actor()
             call.respondOk(shopRepo.rejectShop(shopId, actorId, actorEmail, actorRole))
-        }
+        }.describe { summary = "Admin - Reject a shop application" }
 
         /**
          * Admin - Suspend an active shop
@@ -146,7 +149,7 @@ fun Route.shopAdminRoutes() {
             val shopId = call.requirePathParameter("id")
             val (actorId, actorEmail, actorRole) = call.actor()
             call.respondOk(shopRepo.suspendShop(shopId, actorId, actorEmail, actorRole))
-        }
+        }.describe { summary = "Admin - Suspend an active shop" }
 
         /**
          * Admin - Activate a suspended shop
@@ -156,7 +159,7 @@ fun Route.shopAdminRoutes() {
             val shopId = call.requirePathParameter("id")
             val (actorId, actorEmail, actorRole) = call.actor()
             call.respondOk(shopRepo.activateShop(shopId, actorId, actorEmail, actorRole))
-        }
+        }.describe { summary = "Admin - Activate a suspended shop" }
     }
 
     /**
@@ -166,5 +169,5 @@ fun Route.shopAdminRoutes() {
     get("/status") {
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(shopRepo.getShopsByStatus(call.requireQueryParameter("status").parseEnum<ShopStatus>("shop status"), limit, offset))
-    }
+    }.describe { summary = "Admin - Retrieve shops filtered by status" }
 }

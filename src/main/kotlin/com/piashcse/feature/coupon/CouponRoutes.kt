@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.coupon
 
 import com.piashcse.constants.Message
@@ -13,6 +15,7 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 fun Route.couponRoutes() {
@@ -28,7 +31,7 @@ fun Route.couponRoutes() {
         } else {
             call.respond(HttpStatusCode.NotFound, ApiError(message = Message.Coupons.NOT_FOUND, code = "NOT_FOUND"))
         }
-    }
+    }.describe { summary = "Retrieve detailed information about a coupon by its code" }
 }
 
 fun Route.couponAdminRoutes() {
@@ -40,7 +43,7 @@ fun Route.couponAdminRoutes() {
          */
         post {
             call.respondCreated(couponRepo.createCoupon(call.receive<CouponRequest>(), call.currentUserId))
-        }
+        }.describe { summary = "Admin - Create a new discount coupon" }
 
         /**
          * Admin - Update an existing coupon
@@ -49,7 +52,7 @@ fun Route.couponAdminRoutes() {
         put("{id}") {
             val id = call.requirePathParameter("id")
             call.respondOk(couponRepo.updateCoupon(id, call.receive<CouponRequest>(), call.currentUserId))
-        }
+        }.describe { summary = "Admin - Update an existing coupon" }
 
         /**
          * Admin - Delete a coupon
@@ -61,7 +64,7 @@ fun Route.couponAdminRoutes() {
                 throw NotFoundException(Message.Coupons.NOT_FOUND)
             }
             call.respondOk(com.piashcse.utils.common.MessageResponse("Coupon deleted successfully"))
-        }
+        }.describe { summary = "Admin - Delete a coupon" }
     }
 
     /**
@@ -79,5 +82,5 @@ fun Route.couponAdminRoutes() {
                 active = active,
             ),
         )
-    }
+    }.describe { summary = "Admin - Retrieve a list of all coupons" }
 }

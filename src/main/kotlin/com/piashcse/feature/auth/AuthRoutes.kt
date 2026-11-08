@@ -166,7 +166,7 @@ fun Route.authRoutes() {
             val refreshToken = runCatching { call.receive<LogoutRequest>().refreshToken }.getOrNull()
             authRepo.logout(call.currentUserId, refreshToken)
             call.respondOk(MessageResponse("Logged out successfully"))
-        }
+        }.describe { summary = "Logout authenticated user" }
 
         /**
          * Change password for authenticated user
@@ -188,7 +188,7 @@ fun Route.authRoutes() {
             } else {
                 call.respond(HttpStatusCode.Unauthorized, MessageResponse(Message.Auth.INVALID_CREDENTIALS))
             }
-        }
+        }.describe { summary = "Change password for authenticated user" }
     }
 }
 
@@ -215,7 +215,7 @@ fun Route.authAdminRoutes() {
             } else {
                 call.respond(HttpStatusCode.InternalServerError, MessageResponse("Failed to update user type"))
             }
-        }
+        }.describe { summary = "Admin - Change user type" }
 
         /**
          * Admin - Deactivate a user account
@@ -228,7 +228,7 @@ fun Route.authAdminRoutes() {
             } else {
                 call.respond(HttpStatusCode.InternalServerError, MessageResponse("Failed to deactivate user"))
             }
-        }
+        }.describe { summary = "Admin - Deactivate a user account" }
 
         /**
          * Admin - activate a user account
@@ -241,6 +241,6 @@ fun Route.authAdminRoutes() {
             } else {
                 call.respond(HttpStatusCode.InternalServerError, MessageResponse("Failed to activate user"))
             }
-        }
+        }.describe { summary = "Admin - activate a user account" }
     }
 }

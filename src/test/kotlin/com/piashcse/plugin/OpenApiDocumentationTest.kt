@@ -13,9 +13,12 @@ import io.ktor.server.routing.openapi.describe
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 import org.koin.dsl.module
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class OpenApiDocumentationTest {
     @Test
@@ -47,4 +50,23 @@ class OpenApiDocumentationTest {
             assertContains(body, "bearer")
             assertContains(body, "/sample")
         }
+
+    @Test
+    fun `all feature route files use the unified describe metadata`() {
+        val routeFiles =
+            File("src/main/kotlin/com/piashcse/feature")
+                .walkTopDown()
+                .filter { it.name.endsWith("Routes.kt") }
+                .toList()
+        assertTrue(routeFiles.isNotEmpty())
+        routeFiles.forEach { file ->
+            val source = file.readText()
+            val routes = Regex("(?m)^\\s*(get|post|put|delete|patch)(\\(|\\s*\\{)").findAll(source).count()
+            val describes = Regex("\\.describe\\s*\\{").findAll(source).count()
+            assertTrue(describes >= routes, "${file.name}: $routes routes but $describes describe blocks")
+            assertFalse(source.contains(".docs("), "${file.name}: legacy .docs helper")
+            assertFalse(source.contains("@tag"), "${file.name}: legacy @tag KDoc")
+            assertFalse(source.contains("@description"), "${file.name}: legacy @description KDoc")
+        }
+    }
 }

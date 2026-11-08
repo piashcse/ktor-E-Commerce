@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.brand
 
 import com.piashcse.constants.Message
@@ -11,6 +13,7 @@ import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 /**
@@ -24,7 +27,7 @@ fun Route.brandRoutes() {
     get {
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(brandRepo.getBrands(limit, offset))
-    }
+    }.describe { summary = "Retrieve a paginated list of all brands (public)" }
 }
 
 /**
@@ -39,7 +42,7 @@ fun Route.brandAdminRoutes() {
          */
         post {
             call.respondCreated(brandRepo.createBrand(call.nameFromBodyOrQuery()))
-        }
+        }.describe { summary = "Admin - Create a new brand" }
 
         /**
          * Admin - Update an existing brand
@@ -48,7 +51,7 @@ fun Route.brandAdminRoutes() {
         put("{id}") {
             val id = call.requirePathParameter("id")
             call.respondOk(brandRepo.updateBrand(id, call.nameFromBodyOrQuery()))
-        }
+        }.describe { summary = "Admin - Update an existing brand" }
 
         /**
          * Admin - Upload a brand logo
@@ -68,7 +71,7 @@ fun Route.brandAdminRoutes() {
             }
             val url = imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED)
             call.respondOk(brandRepo.updateBrandLogo(id, url))
-        }
+        }.describe { summary = "Admin - Upload a brand logo" }
 
         /**
          * Admin - Delete a brand
@@ -78,6 +81,6 @@ fun Route.brandAdminRoutes() {
             val id = call.requirePathParameter("id")
             brandRepo.deleteBrand(id)
             call.respondOk(com.piashcse.utils.common.MessageResponse("Brand deleted successfully"))
-        }
+        }.describe { summary = "Admin - Delete a brand" }
     }
 }

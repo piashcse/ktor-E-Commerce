@@ -102,7 +102,7 @@ fun Route.productRoutes() {
          */
         get {
             call.respondOk(productRepo.getProducts(call.productWithFilterRequest(defaultPerPage = 10)))
-        }
+        }.describe { summary = "Retrieve a paginated list of products with optional filters" }
 
         /**
          * List purchasable variants for a product
@@ -145,7 +145,7 @@ fun Route.productRoutes() {
                     useFuzzy = call.request.queryParameters["useFuzzy"]?.toBooleanStrictOrNull() ?: true,
                 )
             call.respondOk(productCatalogService.searchProduct(queryParams))
-        }
+        }.describe { summary = "Search for products by name with fuzzy matching, faceted aggregation, and ranking" }
     }
 }
 
@@ -161,7 +161,7 @@ fun Route.productSellerRoutes() {
      */
     get {
         call.respondOk(productRepo.getProductsByUser(call.currentUserId, call.productWithFilterRequest(defaultPerPage = 10)))
-    }
+    }.describe { summary = "Seller - Retrieve seller products" }
 
     sellerWriteRateLimit {
         /**
@@ -221,7 +221,7 @@ fun Route.productSellerRoutes() {
             }
 
             call.respondOk(imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED))
-        }
+        }.describe { summary = "Seller - Upload a product image" }
 
         variantSellerRoutes()
     }
@@ -241,7 +241,7 @@ fun Route.productAdminRoutes() {
             val id = call.requirePathParameter("id")
             productCrudService.deleteProductAsAdmin(id)
             call.respondOk(MessageResponse("Product deleted successfully"))
-        }
+        }.describe { summary = "Admin - Permanently delete any product" }
     }
 }
 

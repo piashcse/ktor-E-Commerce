@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.audit_log
 
 import com.piashcse.utils.common.ApiError
@@ -6,6 +8,7 @@ import com.piashcse.utils.extension.respondOk
 import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 fun Route.auditLogAdminRoutes() {
@@ -26,7 +29,7 @@ fun Route.auditLogAdminRoutes() {
                 call.queryParameters["outcome"],
             ),
         )
-    }
+    }.describe { summary = "Get paginated audit logs with optional filters" }
 
     /**
      * Get a single audit log entry by ID
@@ -39,5 +42,5 @@ fun Route.auditLogAdminRoutes() {
                     ApiError(message = "Missing id", code = "MISSING_PARAMETER"),
                 )
         call.respondOk(repo.getAuditLogById(id))
-    }
+    }.describe { summary = "Get a single audit log entry by ID" }
 }
