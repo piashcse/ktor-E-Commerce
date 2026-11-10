@@ -8552,6 +8552,305 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 </details>
 
 
+### TAX CLASSES / ZONES / EXEMPTIONS
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/tax-classes</code></summary>
+
+### Description
+List product tax classes.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/tax-classes' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-classes
+```
+
+### Response
+```json
+[{"id":"uuid"}]
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/tax-classes</code></summary>
+
+### Description
+Create a tax class (rate is a decimal fraction).
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/tax-classes' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Reduced","code":"REDUCED","rate":0.10,"isInclusive":true}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-classes
+```
+
+### Response
+```json
+{"id":"uuid","code":"REDUCED"}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/tax-classes/{id}</code></summary>
+
+### Description
+Update a tax class.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/tax-classes/uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Reduced","code":"REDUCED","rate":0.10,"isInclusive":true}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-classes/{id}
+```
+
+### Response
+```json
+{"id":"uuid"}
+```
+</details>
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/tax-classes/{id}</code></summary>
+
+### Description
+Delete a tax class.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/tax-classes/uuid' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-classes/{id}
+```
+
+### Response
+```json
+{"message":"deleted"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/tax-zones</code></summary>
+
+### Description
+List tax zones and nexus flags.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/tax-zones' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-zones
+```
+
+### Response
+```json
+[{"id":"uuid"}]
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/tax-zones</code></summary>
+
+### Description
+Create a tax zone/nexus entry.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/tax-zones' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Dhaka","country":"BD","region":"Dhaka","priority":10}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-zones
+```
+
+### Response
+```json
+{"id":"uuid"}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/tax-zones/{id}</code></summary>
+
+### Description
+Update a tax zone.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/tax-zones/uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Dhaka","country":"BD","region":"Dhaka","priority":10}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-zones/{id}
+```
+
+### Response
+```json
+{"id":"uuid"}
+```
+</details>
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/tax-zones/{id}</code></summary>
+
+### Description
+Delete a tax zone.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/tax-zones/uuid' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-zones/{id}
+```
+
+### Response
+```json
+{"message":"deleted"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/tax-exemptions</code></summary>
+
+### Description
+List customer/business tax exemptions.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/tax-exemptions' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-exemptions
+```
+
+### Response
+```json
+[{"id":"uuid"}]
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/tax-exemptions</code></summary>
+
+### Description
+Create a tax exemption (userId or businessTaxId required).
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/tax-exemptions' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"userId":"user-uuid","reason":"Reseller certificate"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-exemptions
+```
+
+### Response
+```json
+{"id":"uuid"}
+```
+</details>
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/tax-exemptions/{id}</code></summary>
+
+### Description
+Delete a tax exemption.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/tax-exemptions/uuid' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-exemptions/{id}
+```
+
+### Response
+```json
+{"message":"deleted"}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/products/{id}/tax-class</code></summary>
+
+### Description
+Assign or clear a product's tax class.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/products/uuid/tax-class' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"taxClassId":"class-uuid"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/products/{id}/tax-class
+```
+
+### Response
+```json
+{"message":"Product tax class updated"}
+```
+</details>
 ### TAX RULES
 
 <details>

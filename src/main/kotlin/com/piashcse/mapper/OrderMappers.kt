@@ -35,6 +35,8 @@ fun OrderDAO.toOrderResponse(items: List<OrderItemResponse>? = null) =
         createdAt = createdAt,
         updatedAt = updatedAt,
         items = items ?: OrderItemDAO.itemsForOrder(id).map { it.toOrderItemResponse() },
+        businessTaxId = businessTaxId,
+        taxExempt = taxExempt,
     )
 
 fun OrderItemDAO.toOrderItemResponse() =
@@ -50,4 +52,7 @@ fun OrderItemDAO.toOrderItemResponse() =
         sku = sku,
         variantId = variantId?.value,
         variantName = variantName,
+        taxRate = taxRate.toPlainString(),
+        taxInclusive = taxInclusive,
+        taxClassId = taxClassId?.value,
     )

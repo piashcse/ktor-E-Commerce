@@ -16,6 +16,8 @@ data class CheckoutRequest(
     val idempotencyKey: String? = null,
     val couponCode: String? = null,
     val currency: String = "USD",
+    /** Business tax id used to look up a B2B exemption. */
+    val businessTaxId: String? = null,
 ) {
     init {
         validate(this) {

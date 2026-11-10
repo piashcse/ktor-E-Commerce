@@ -17,6 +17,9 @@ object OrderItemTable : BaseIdTable("order_item") {
     val price = decimal("price", 10, 2) // Price of the product at the time of the order
     val discountAmount = decimal("discount_amount", 10, 2).default(BigDecimal("0.00")) // Discount applied to this item
     val taxAmount = decimal("tax_amount", 10, 2).default(BigDecimal("0.00")) // Tax applied to this item
+    val taxRate = decimal("tax_rate", 6, 4).default(BigDecimal.ZERO)
+    val taxInclusive = bool("tax_inclusive").default(false)
+    val taxClassId = reference("tax_class_id", TaxClassTable.id).nullable()
     val total = decimal("total", 10, 2) // Total for this order item (quantity * price - discount + tax)
     val sku = varchar("sku", 100).nullable() // SKU of the product at the time of order
     val productName = varchar("product_name", 255).nullable() // Name of the product at the time of order
@@ -40,6 +43,9 @@ class OrderItemDAO(id: EntityID<String>) : BaseEntity(id, OrderItemTable) {
     var price by OrderItemTable.price
     var discountAmount by OrderItemTable.discountAmount
     var taxAmount by OrderItemTable.taxAmount
+    var taxRate by OrderItemTable.taxRate
+    var taxInclusive by OrderItemTable.taxInclusive
+    var taxClassId by OrderItemTable.taxClassId
     var total by OrderItemTable.total
     var sku by OrderItemTable.sku
     var productName by OrderItemTable.productName

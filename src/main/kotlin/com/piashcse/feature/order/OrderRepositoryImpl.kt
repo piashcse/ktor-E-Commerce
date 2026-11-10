@@ -15,6 +15,7 @@ import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
 import com.piashcse.model.response.OrderItemResponse
 import com.piashcse.model.response.OrderResponse
+import com.piashcse.model.response.TaxLineResponse
 import com.piashcse.service.CatalogCache
 import com.piashcse.service.FxService
 import com.piashcse.service.PricingService
@@ -352,6 +353,8 @@ class OrderRepositoryImpl(
         var shopSubTotal = BigDecimal.ZERO
         var shopUsdSubTotal = BigDecimal.ZERO
         var shopTax = BigDecimal.ZERO
+        var shopExclusiveTax = BigDecimal.ZERO
+        val businessTaxId = checkoutRequest.businessTaxId
 
         val order =
             OrderDAO.new {
@@ -371,6 +374,8 @@ class OrderRepositoryImpl(
                 this.notes = checkoutRequest.notes
                 this.currency = currency
                 this.fxRate = fxRate
+                this.businessTaxId = businessTaxId
+                this.taxExempt = taxService.isExempt(userId, businessTaxId, context.shippingAddress.country)
             }
 
         items.forEach { cartItem ->
@@ -389,13 +394,18 @@ class OrderRepositoryImpl(
             val unitPrice = Money.scale2(unitPriceUsd.multiply(fxRate))
             val itemTotal = Money.unitTotal(unitPrice, cartItem.quantity)
             shopUsdSubTotal = shopUsdSubTotal.add(Money.unitTotal(unitPriceUsd, cartItem.quantity))
-            shopTax =
-                shopTax.add(
-                    Money.tax(
-                        itemTotal,
-                        taxService.resolve(context.shippingAddress.country, product.categoryId.value),
-                    ),
+            val taxQuote =
+                taxService.resolve(
+                    country = context.shippingAddress.country,
+                    region = context.shippingAddress.state,
+                    categoryId = product.categoryId.value,
+                    taxClassId = product.taxClassId?.value,
+                    userId = userId,
+                    businessTaxId = businessTaxId,
                 )
+            val taxAmounts = taxService.apply(itemTotal, taxQuote)
+            shopTax = shopTax.add(taxAmounts.tax)
+            if (!taxQuote.inclusive) shopExclusiveTax = shopExclusiveTax.add(taxAmounts.tax)
 
             val orderItem =
                 OrderItemDAO.new {
@@ -409,7 +419,10 @@ class OrderRepositoryImpl(
                     sku = variant?.sku ?: product.sku
                     productName = product.name
                     variantName = variant?.name
-                    taxAmount = BigDecimal.ZERO
+                    taxAmount = taxAmounts.tax
+                    taxRate = taxQuote.rate
+                    taxInclusive = taxQuote.inclusive
+                    taxClassId = taxQuote.taxClassId?.entityID(TaxClassTable)
                     discountAmount = BigDecimal.ZERO
                 }
 
@@ -440,7 +453,7 @@ class OrderRepositoryImpl(
         order.subTotal = scaledSubTotal
         order.shippingCost = ship
         order.taxAmount = tax
-        order.total = Money.scale2(scaledSubTotal.add(ship).add(tax))
+        order.total = Money.scale2(scaledSubTotal.add(ship).add(shopExclusiveTax))
         return order to shopUsdSubTotal
     }
 
@@ -611,28 +624,49 @@ class OrderRepositoryImpl(
             val subUsd = PricingService.subtotal(cartItems.map { unitPriceUsd(it) to it.quantity })
             val sub = Money.scale2(subUsd.multiply(fxRate))
             val ship = Money.scale2(PricingService.shipping(shippingMethod.price, shopCount).multiply(fxRate))
-            val taxUsd =
-                cartItems.fold(BigDecimal.ZERO) { acc, cartItem ->
-                    val product =
-                        productsMap[cartItem.productId.value]
-                            ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
-                    acc.add(
-                        Money.tax(
-                            Money.unitTotal(unitPriceUsd(cartItem), cartItem.quantity),
-                            taxService.resolve(shippingAddress.country, product.categoryId.value),
-                        ),
+            var tax = BigDecimal.ZERO
+            var exclusiveTax = BigDecimal.ZERO
+            val taxLines = mutableListOf<TaxLineResponse>()
+            cartItems.forEach { cartItem ->
+                val product =
+                    productsMap[cartItem.productId.value]
+                        ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
+                val line = Money.scale2(Money.unitTotal(unitPriceUsd(cartItem), cartItem.quantity).multiply(fxRate))
+                val quote =
+                    taxService.resolve(
+                        country = shippingAddress.country,
+                        region = shippingAddress.state,
+                        categoryId = product.categoryId.value,
+                        taxClassId = product.taxClassId?.value,
+                        userId = userId,
+                        businessTaxId = checkoutRequest.businessTaxId,
                     )
-                }
-            val tax = Money.scale2(taxUsd.multiply(fxRate))
+                val amounts = taxService.apply(line, quote)
+                tax = tax.add(amounts.tax)
+                if (!quote.inclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
+                taxLines +=
+                    TaxLineResponse(
+                        productId = product.id.value,
+                        taxClassId = quote.taxClassId,
+                        rate = quote.rate.toPlainString(),
+                        inclusive = quote.inclusive,
+                        netAmount = amounts.net.toPlainString(),
+                        taxAmount = amounts.tax.toPlainString(),
+                        grossAmount = amounts.gross.toPlainString(),
+                    )
+            }
+            tax = Money.scale2(tax)
+            exclusiveTax = Money.scale2(exclusiveTax)
 
             var response =
                 CheckoutSummaryResponse(
                     subTotal = sub.toPlainString(),
                     shippingCost = ship.toPlainString(),
                     taxAmount = tax.toPlainString(),
-                    total = Money.scale2(sub.add(ship).add(tax)).toPlainString(),
+                    total = Money.scale2(sub.add(ship).add(exclusiveTax)).toPlainString(),
                     itemCount = totalItems,
                     currency = currency,
+                    taxLines = taxLines,
                 )
 
             if (checkoutRequest.couponCode == null) {
@@ -645,7 +679,7 @@ class OrderRepositoryImpl(
                             discountAmount = discount.toPlainString(),
                             total =
                                 Money.scale2(
-                                    sub.add(shipping).add(tax).subtract(discount).max(BigDecimal.ZERO),
+                                    sub.add(shipping).add(exclusiveTax).subtract(discount).max(BigDecimal.ZERO),
                                 ).toPlainString(),
                         )
                 }
@@ -662,7 +696,7 @@ class OrderRepositoryImpl(
                     )
                 val discountUsd = calculateCouponDiscount(coupon, subUsd)
                 val discount = Money.scale2(discountUsd.multiply(fxRate))
-                val total = Money.scale2(sub.add(ship).add(tax).subtract(discount).max(BigDecimal.ZERO))
+                val total = Money.scale2(sub.add(ship).add(exclusiveTax).subtract(discount).max(BigDecimal.ZERO))
                 response =
                     response.copy(
                         discountAmount = discount.toPlainString(),
