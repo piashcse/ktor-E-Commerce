@@ -23,10 +23,10 @@ its own branch so it can be reviewed and merged as an independent PR.
 | 3 | Tax zones/classes/exemptions + inclusive pricing | VAT/GST compliance blocks cross-border sales | P0 | High | 📋 | `feature/tax-engine` |
 | 4 | Fraud/risk + chargeback workflow | Direct revenue loss and compliance risk | P0 | High | 📋 | `feature/fraud-risk` |
 | 5 | Promotions engine | Automatic discounts/free-shipping thresholds drive conversion | P1 | Medium | 📋 | `feature/promotions-engine` |
-| 6 | Review media + moderation | UGC improves trust/conversion; `ReviewStatus` already exists | P1 | Low | 📋 | `feature/review-media-moderation` |
-| 7 | Search suggestions + facets + synonyms | Search users convert at the highest rate | P1 | Medium | 📋 | `feature/search-suggestions` |
-| 8 | Order status/shipping notifications | Reduces WISMO support and improves repeat purchase | P1 | Low | 📋 | `feature/order-notifications` |
-| 9 | Printable invoices + packing slips | Every order/return needs an operational document | P1 | Low | 📋 | `feature/printable-invoices` |
+| 6 | Review media + moderation | UGC improves trust/conversion; `ReviewStatus` already exists | P1 | Low | ✅ | `feature/review-media-moderation` |
+| 7 | Search suggestions + facets + synonyms | Search users convert at the highest rate | P1 | Medium | ✅ | `feature/search-suggestions` |
+| 8 | Order status/shipping notifications | Reduces WISMO support and improves repeat purchase | P1 | Low | ✅ | `feature/order-notifications` |
+| 9 | Printable invoices + packing slips | Every order/return needs an operational document | P1 | Low | ✅ | `feature/printable-invoices` |
 | 10 | Back-in-stock + price-drop alerts | High-ROI retention using existing outbox/preferences | P1 | Medium | 📋 | `feature/stock-alerts` |
 | 11 | Social login + MFA/passkeys | Reduces account friction and improves security | P1 | Medium | 📋 | `feature/identity-hardening` |
 | 12 | Loyalty/referrals/gift cards/store credit | Retention and repeat-purchase levers | P2 | Medium | 📋 | `feature/loyalty-wallet` |
