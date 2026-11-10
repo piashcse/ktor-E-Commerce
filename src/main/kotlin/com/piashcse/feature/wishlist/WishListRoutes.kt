@@ -30,13 +30,16 @@ fun Route.wishListRoutes() {
             }.describe { summary = "Add a product to the authenticated user's wishlist" }
 
             /**
-             * Remove a specific product from the wishlist
+             * Move a wishlist product into the shopping cart
              */
             post("move-to-cart") {
                 val productId = call.requireQueryParameter("productId")
                 val quantity = call.request.queryParameters["quantity"]?.toIntOrNull() ?: 1
                 call.respondCreated(wishlistRepo.moveToCart(call.currentUserId, productId, quantity))
-            }.describe { summary = "Remove a specific product from the wishlist" }
+            }.describe {
+                summary = "Move a wishlist product to the cart"
+                description = "Adds the product to the cart and removes it from the wishlist"
+            }
 
             delete("remove") {
                 val productId = call.requireQueryParameter("productId")

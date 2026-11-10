@@ -19,6 +19,7 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/api/v1/wishlists` | Add a product to wishlist | Yes |
 | `GET` | `/api/v1/wishlists` | Retrieve user's wishlist items (Paginated) | Yes |
 | `GET` | `/api/v1/wishlists/check` | Check if a product is in wishlist | Yes |
+| `POST` | `/api/v1/wishlists/move-to-cart` | Move a wishlist product into the cart | Yes |
 | `DELETE` | `/api/v1/wishlists/remove` | Remove a product from wishlist | Yes |
 
 ---
@@ -151,7 +152,33 @@ true
 
 ---
 
-### 4. Remove Product from Wishlist
+### 4. Move Product to Cart
+
+**`POST /api/v1/wishlists/move-to-cart`**
+
+Adds the product to the cart (merging with an existing cart row if present) and removes it from
+the wishlist.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `productId` | string | Yes | UUID of the wishlist product to move |
+| `quantity` | number | No | Quantity to add (default: 1) |
+
+#### Example Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/wishlists/move-to-cart?productId=6c5078d3-f8e3-4c88-9afe-48b5423c664f&quantity=1' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+Returns the updated cart summary (`201 Created`).
+
+---
+
+### 5. Remove Product from Wishlist
 
 **`DELETE /api/v1/wishlists/remove`**
 

@@ -1,44 +1,33 @@
-# Shop Public Documentation Merged
+# Public Shop Discovery
 
-This documentation has been merged into the main [Shop API documentation](shop.md). Please refer to the main shop.md file for all shop-related endpoints including public shop features and administrative operations.
-## Error Handling
+Public endpoints for browsing shops. No authentication is required. Shop management and admin
+approval lives in [Shop API](shop.md).
 
-This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
+**Base URL:** `http://localhost:8080`
 
-### Success Responses
-- **HTTP status code indicates success** (200, 201, 204)
-- **Response body contains data directly** (no wrapper object)
-- No `isSuccess` or `statusCode` fields needed
+## Endpoints
 
-### Error Responses
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/shops/{id}` | Retrieve a shop by ID (only `APPROVED` shops are public) |
+| `GET` | `/api/v1/shops/public` | List public shops with filters and pagination |
+| `GET` | `/api/v1/shops/category/{categoryId}` | List public shops in a category |
+| `GET` | `/api/v1/shops/featured` | List featured shops |
 
-**Standard Error (400/401/403/404/500):**
-```json
-{
-  "message": "Error description"
-}
+## Filters
+
+`GET /api/v1/shops/public` accepts:
+
+| Parameter | Type | Description |
+|---|---|---|
+| `search` | string | Match shop name/description |
+| `categoryId` | string | Filter by shop category |
+| `limit` / `offset` | number | Offset pagination (or `page`/`perPage`) |
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shops/public?categoryId=9c95c44c-3767-4ca2-9486-e28e390b3741&page=1&perPage=20'
 ```
 
-**Validation Error (400):**
-```json
-{
-  "message": "Validation failed",
-  "errors": [
-    {"field": "email", "message": "Invalid email format"},
-    {"field": "password", "message": "Password must be at least 8 characters"}
-  ]
-}
-```
-
-### Common Error Codes
-
-| Status Code | Description | Example Message |
-|-------------|-------------|-----------------|
-| `400` | Bad Request | `"Invalid email or password"` |
-| `401` | Unauthorized | `"Authentication required"` |
-| `403` | Forbidden | `"Insufficient permissions"` |
-| `404` | Not Found | `"Product not found"` |
-| `409` | Conflict | `"User already exists with this email"` |
-| `500` | Internal Server Error | `"Internal server error"` |
-
-All error messages are centralized and consistent across all endpoints.
+Only shops with `status = APPROVED` are returned. Pending/suspended shops return `404` from the
+public detail endpoint and are excluded from all public lists.

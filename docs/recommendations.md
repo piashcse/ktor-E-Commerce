@@ -9,6 +9,7 @@ Recommendations are read-only, cache-friendly and derived from catalog signals t
 | `GET` | `/api/v1/products/recommendations?limit=10` | Best sellers (guest-safe fallback) |
 | `GET` | `/api/v1/products/{productId}/related?limit=10` | Same category, subcategory boosted |
 | `GET` | `/api/v1/products/{productId}/also-bought?limit=10` | Co-purchase from paid, non-canceled orders |
+| `GET` | `/api/v1/recommendations?limit=10` | Personalized feed (customer auth required) |
 
 ## Personalized endpoint
 

@@ -21,10 +21,10 @@ Authorization: Bearer <admin_access_token>
 
 | Method | Endpoint | Description | Authentication Required | Role |
 |--------|----------|-------------|------------------------|------|
-| `GET` | `/` | Retrieve all available shipping methods | No | Any |
-| `POST` | `/` | Create a new shipping method | Yes | Admin |
-| `PUT` | `/{id}` | Update an existing shipping method | Yes | Admin |
-| `DELETE` | `/{id}` | Delete a shipping method | Yes | Admin |
+| `GET` | `/api/v1/checkout/shipping-method` | Retrieve all available shipping methods | No | Any |
+| `POST` | `/api/v1/admin/shipping-methods` | Create a new shipping method | Yes | Admin |
+| `PUT` | `/api/v1/admin/shipping-methods/{id}` | Update an existing shipping method | Yes | Admin |
+| `DELETE` | `/api/v1/admin/shipping-methods/{id}` | Delete a shipping method | Yes | Admin |
 
 ---
 
@@ -32,7 +32,7 @@ Authorization: Bearer <admin_access_token>
 
 ### 1. Get All Shipping Methods
 
-**`GET /`**
+**`GET /api/v1/checkout/shipping-method`**
 
 Retrieve all available shipping methods.
 
@@ -61,7 +61,7 @@ Retrieve all available shipping methods.
 
 ### 2. Create Shipping Method (Admin)
 
-**`POST /`**
+**`POST /api/v1/admin/shipping-methods`**
 
 Create a new shipping method.
 
@@ -89,7 +89,7 @@ Create a new shipping method.
 
 ### 3. Update Shipping Method (Admin)
 
-**`PUT /{id}`**
+**`PUT /api/v1/admin/shipping-methods/{id}`**
 
 Update an existing shipping method.
 
@@ -107,7 +107,7 @@ Same as **Create Shipping Method**.
 
 ### 4. Delete Shipping Method (Admin)
 
-**`DELETE /{id}`**
+**`DELETE /api/v1/admin/shipping-methods/{id}`**
 
 Delete a shipping method by its ID.
 

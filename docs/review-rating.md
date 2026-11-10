@@ -16,10 +16,11 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/api/v1/reviews` | Get all Reviews | Yes |
+| `GET` | `/api/v1/reviews` | Get reviews for a product (public) | No |
 | `POST` | `/api/v1/reviews` | Create a New Review | Yes |
 | `PUT` | `/api/v1/reviews/{id}` | Update Review | Yes |
 | `DELETE` | `/api/v1/reviews/{id}` | Delete Review | Yes |
+| `POST` | `/api/v1/reviews/{id}/helpful` | Vote a review helpful | Yes |
 
 ---
 
@@ -238,14 +239,33 @@ curl -X 'DELETE' \
 #### Example Response
 
 ```json
-"70ac842b-7a81-4976-9564-d440880d1736"
+{
+  "message": "Review deleted successfully"
+}
 ```
 
 #### Response Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `data` | string | ID of the deleted review |
+| `message` | string | Delete acknowledgement |
+
+---
+
+### 5. Vote Review Helpful
+
+**`POST /api/v1/reviews/{id}/helpful`**
+
+Records an idempotent helpful vote for the authenticated user. Pass `?helpful=false` to remove an
+existing vote.
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/reviews/6c5078d3-f8e3-4c88-9afe-48b5423c664f/helpful?helpful=true' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+Returns the updated review with its `helpfulCount`.
 
 ---
 

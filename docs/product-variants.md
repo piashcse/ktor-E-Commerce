@@ -37,14 +37,14 @@ All routes are under `/api/v1/seller/products` and require the seller to own the
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/{productId}/variants` | Create a variant |
-| `PUT` | `/{productId}/variants/{variantId}` | Update a variant |
-| `DELETE` | `/{productId}/variants/{variantId}` | Delete a variant |
-| `PUT` | `/{productId}/variants/{variantId}/options` | Replace attached option values |
-| `POST` | `/{productId}/options` | Create an option dimension, e.g. `Size` |
-| `DELETE` | `/{productId}/options/{optionId}` | Delete an option and its values |
-| `POST` | `/{productId}/options/{optionId}/values` | Add a value, e.g. `M` |
-| `DELETE` | `/{productId}/options/{optionId}/values/{valueId}` | Delete a value |
+| `POST` | `/api/v1/seller/products/{productId}/variants` | Create a variant |
+| `PUT` | `/api/v1/seller/products/{productId}/variants/{variantId}` | Update a variant |
+| `DELETE` | `/api/v1/seller/products/{productId}/variants/{variantId}` | Delete a variant |
+| `PUT` | `/api/v1/seller/products/{productId}/variants/{variantId}/options` | Replace attached option values |
+| `POST` | `/api/v1/seller/products/{productId}/options` | Create an option dimension, e.g. `Size` |
+| `DELETE` | `/api/v1/seller/products/{productId}/options/{optionId}` | Delete an option and its values |
+| `POST` | `/api/v1/seller/products/{productId}/options/{optionId}/values` | Add a value, e.g. `M` |
+| `DELETE` | `/api/v1/seller/products/{productId}/options/{optionId}/values/{valueId}` | Delete a value |
 
 Create variant body:
 

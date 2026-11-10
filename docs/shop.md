@@ -19,6 +19,7 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/api/v1/seller/shops` | Create a new shop | Yes (Seller) |
 | `GET` | `/api/v1/seller/shops` | Retrieve list of owned shops | Yes (Seller) |
 | `PUT` | `/api/v1/seller/shops/{id}` | Update an existing shop | Yes (Seller) |
+| `POST` | `/api/v1/seller/shops/{id}/image` | Upload a shop logo | Yes (Seller) |
 | `GET` | `/api/v1/shops/{id}` | Retrieve detailed info about a specific shop | No |
 | `GET` | `/api/v1/shops/public` | Retrieve list of public shops with filters | No |
 | `GET` | `/api/v1/shops/category/{categoryId}` | Retrieve shops by category | No |
@@ -28,12 +29,6 @@ Authorization: Bearer <your_access_token>
 | `PUT` | `/api/v1/admin/shops/reject/{id}` | Reject a shop | Yes (Admin) |
 | `PUT` | `/api/v1/admin/shops/suspend/{id}` | Suspend a shop | Yes (Admin) |
 | `PUT` | `/api/v1/admin/shops/activate/{id}` | Activate a shop | Yes (Admin) |
-
-### Shop Endpoints (V2)
-
-| Method | Endpoint | Description | Authentication Required |
-|--------|----------|-------------|------------------------|
-| `PUT` | `/api/v2/seller/shops/{shopId}` | Optimized shop update with source tracking | Yes (Seller) |
 
 ---
 
@@ -84,54 +79,29 @@ curl -X 'POST' \
 
 ---
 
-### 2. Update Shop (V2 Optimized)
+### 2. Upload Shop Logo
 
-**`PUT /api/v2/seller/shops/{shopId}`**
+**`POST /api/v1/seller/shops/{id}/image`**
 
-Update an existing shop with enhanced metadata and a cleaner response structure.
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `shopId` | string | Yes | Unique identifier of the shop to update |
-
-#### Query Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `source` | string | No | Source of the update (e.g., 'mobile', 'web') |
-
-#### Request Body
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `name` | string | No | New name for the shop |
-| `categoryId` | string | No | New category ID |
+`multipart/form-data` with a single image part (`jpg`, `jpeg`, `png`, `gif`, `webp`; max 5 MB).
+The response is the updated shop with its new `logo` URL.
 
 #### Example Request
 
 ```bash
-curl -X 'PUT' \
-  'http://localhost:8080/api/v2/seller/shops/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7?source=mobile_app' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "name": "Updated Shop V2"
-  }'
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/shops/a33b8912-e0b2-4058-9d7b-3c7ef9b935c7/image' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -F 'file=@shop-logo.png'
 ```
 
 #### Example Response
 
 ```json
 {
-    "v2_data": {
-        "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
-        "name": "Updated Shop V2",
-        "categoryId": "9c95c44c-3767-4ca2-9486-e28e390b3741"
-    },
-    "source": "mobile_app"
+  "id": "a33b8912-e0b2-4058-9d7b-3c7ef9b935c7",
+  "name": "Updated Shop",
+  "logo": "/uploads/shop-images/2f8a1c.png"
 }
 ```
 
@@ -219,5 +189,4 @@ curl -X 'PUT' \
 | `401` | Unauthorized (Invalid token) |
 | `403` | Forbidden (Insufficient roles) |
 | `404` | Not Found (Resource does not exist) |
-| `410` | Gone (API version deprecated) |
 | `500` | Internal Server Error |

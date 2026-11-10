@@ -50,7 +50,7 @@ curl -X 'GET' \
 
 Update the status of an order. The allowed statuses depend on the user role.
 - **Customer**: `CANCELED`, `RECEIVED`
-- **Seller**: `CONFIRMED`, `DELIVERED`
+- **Seller**: `CONFIRMED`, `SHIPPED`, `DELIVERED`
 
 #### Example Request
 

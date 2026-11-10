@@ -30,6 +30,7 @@ theme:
 nav:
   - Home: index.md
   - API Reference:
+      - Endpoint Index (all): endpoints.md
       - Auth: auth.md
       - Profile: profile.md
       - Shop Category: shop-category.md

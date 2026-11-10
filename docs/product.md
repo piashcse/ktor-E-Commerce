@@ -25,8 +25,14 @@ Authorization: Bearer <your_access_token>
 | `DELETE` | `/api/v1/seller/products/{id}` | Delete a product (Seller) | Yes (Seller) |
 | `GET` | `/api/v1/seller/products` | Retrieve products belonging to seller | Yes (Seller) |
 | `POST` | `/api/v1/seller/products/image-upload` | Upload product image (Seller) | Yes (Seller) |
-| `GET` | `/api/v1/products/{id}` | Retrieve a specific product | No |
+| `GET` | `/api/v1/products` | Retrieve a paginated list of products with optional filters | No |
 | `GET` | `/api/v1/products/search` | Search products with filters | No |
+| `GET` | `/api/v1/products/{id}` | Retrieve a specific product | No |
+| `GET` | `/api/v1/products/{id}/variants` | List purchasable variants | No |
+| `GET` | `/api/v1/products/{id}/options` | List option dimensions and values | No |
+| `GET` | `/api/v1/products/{id}/related` | Related products | No |
+| `GET` | `/api/v1/products/{id}/also-bought` | Frequently bought together | No |
+| `GET` | `/api/v1/products/recommendations` | Best-seller recommendations | No |
 | `DELETE` | `/api/v1/admin/products/{id}` | Delete a product (Admin) | Yes (Admin) |
 
 ---
@@ -136,6 +142,24 @@ curl -X 'POST' \
 ---
 
 ## Error Handling
+
+## Public catalog and recommendations
+
+| Method | Endpoint | Notes |
+|---|---|---|
+| `GET` | `/api/v1/products` | Offset pagination (`page`/`perPage` or `limit`/`offset`) with the same filters as search |
+| `GET` | `/api/v1/products/{id}/related` | Same category/brand, excludes the current product |
+| `GET` | `/api/v1/products/{id}/also-bought` | Co-purchase feed from paid order history |
+| `GET` | `/api/v1/products/recommendations` | Best sellers, accepts `limit` (default 10) |
+| `GET` | `/api/v1/products/{id}/variants` | Purchasable variants with per-variant stock |
+| `GET` | `/api/v1/products/{id}/options` | Option dimensions (Size, Color) and their values |
+
+```bash
+curl -X 'GET' 'http://localhost:8080/api/v1/products?page=1&perPage=20'
+curl -X 'GET' 'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/related'
+```
+
+See [Product Variants](product-variants.md) for seller-side variant/option management.
 
 ### Success Responses
 - **HTTP 200/201**: Success.

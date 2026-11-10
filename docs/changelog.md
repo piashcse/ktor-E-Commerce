@@ -30,6 +30,12 @@ hide:
 - `TaxService`, `FxService` and `FeatureFlags` are injectable classes instead of global objects.
 - OpenAPI: standardized error responses on auth/order/product/checkout routes; license corrected to
   Apache-2.0; added `LICENSE`.
+- Docs: added a generated **Complete API Endpoint Index** (`docs/endpoints.md`, 206 operations),
+  refreshed per-module tables (FX, inventory, payment, payouts, KYC, policies/consent, products,
+  variants, refunds, reviews, dashboard, shops, wishlist), and corrected stale paths/request fields.
+- README: every operation now has the same `<details>` block format (Description, Curl,
+  Request URL, Response); missing operations were generated from OpenAPI and the complete set is
+  also published as `docs/endpoints.md`.
 - CI now publishes JaCoCo coverage, runs dependency review/submission, builds and scans the Docker
   image, and refuses to silently skip PostgreSQL integration tests.
 

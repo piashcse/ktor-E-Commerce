@@ -169,14 +169,14 @@ curl -X 'POST' \
 #### Example Response
 
 ```json
-"73b21d27-466e-45c6-bc2b-0480eb4db2d2.jpg"
+"/uploads/profile-images/73b21d27-466e-45c6-bc2b-0480eb4db2d2.jpg"
 ```
 
 #### Response Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `data` | string | Unique filename of the uploaded image |
+| (root) | string | Public URL of the uploaded profile image |
 
 ---
 
