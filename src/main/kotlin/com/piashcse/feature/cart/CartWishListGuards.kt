@@ -32,15 +32,24 @@ fun requireProductWithStock(
     quantity: Int,
     resourceName: String = "Product",
     variantId: String? = null,
-): ProductDAO {
+): ProductDAO = requireCartSelection(productId, quantity, resourceName, variantId).first
+
+/** Resolves the product/variant pair and validates stock in one pass. */
+fun requireCartSelection(
+    productId: String,
+    quantity: Int,
+    resourceName: String = "Product",
+    variantId: String? = null,
+): Pair<ProductDAO, ProductVariantDAO?> {
     val product = requireProduct(productId, resourceName)
     val variant = resolveVariant(product, variantId)
-    val stock = if (variant == null) product.effectiveStock() else product.effectiveStockFor(variant.id.value)
     if (variant == null && hasVariants(product)) {
         throw ValidationException("Select a product variant before adding it to the cart")
     }
+    val stock =
+        if (variant == null) product.effectiveStock() else product.effectiveStockFor(variant.id.value)
     if (quantity > stock) throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
-    return product
+    return product to variant
 }
 
 fun resolveVariant(

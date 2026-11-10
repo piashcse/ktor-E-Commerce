@@ -84,8 +84,9 @@ object Retry {
         repeat(attempts) { index ->
             try {
                 return block(index + 1)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Throwable) {
-                if (e is kotlinx.coroutines.CancellationException) throw e
                 last = e
                 if (index < attempts - 1) {
                     val exponential = baseDelayMs * (1L shl index)
@@ -94,6 +95,6 @@ object Retry {
                 }
             }
         }
-        throw last ?: IllegalStateException("Retry failed")
+        throw last ?: error("Retry failed")
     }
 }

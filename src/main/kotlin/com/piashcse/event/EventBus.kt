@@ -152,8 +152,9 @@ object EventBus {
                                 subscriber.onEvent(envelope.event)
                                 lastError = null
                                 break
+                            } catch (e: CancellationException) {
+                                throw e
                             } catch (e: Throwable) {
-                                if (e is CancellationException) throw e
                                 lastError = e
                                 log.warn(
                                     "${subscriber::class.simpleName} failed (attempt $attempt/$MAX_RETRIES) " +

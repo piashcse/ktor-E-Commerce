@@ -1,5 +1,6 @@
 package com.piashcse.feature.wishlist
 
+import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.feature.cart.requireProduct
 import com.piashcse.feature.cart.requireProductWithStock
@@ -10,6 +11,7 @@ import com.piashcse.mapper.toWishListResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -46,8 +48,13 @@ class WishListRepositoryImpl : WishListRepository {
             WishListTable.innerJoin(ProductTable)
                 .selectAll()
                 .andWhere { WishListTable.userId eq userId }
-                .toPaginatedResponse(limit, offset) {
-                    ProductDAO.wrapRow(it).toProductResponse()
+                .paginateWithPreload(
+                    limit,
+                    offset,
+                    rowMapper = { ProductDAO.wrapRow(it) },
+                ) { products ->
+                    val images = ProductImageDAO.imagesForProducts(products.map { it.id })
+                    products.map { it.toProductResponse(images[it.id.value]) }
                 }
         }
 
@@ -69,8 +76,8 @@ class WishListRepositoryImpl : WishListRepository {
     ): Cart =
         query {
             if (quantity <= 0) {
-                throw com.piashcse.utils.validator.ValidationException(
-                    com.piashcse.constants.Message.Validation.notPositive("Quantity"),
+                throw ValidationException(
+                    Message.Validation.notPositive("Quantity"),
                 )
             }
             val item = requireWishlistItem(userId, productId)

@@ -44,14 +44,14 @@ suspend fun <T> retryQuery(
     repeat(maxRetries) { attempt ->
         try {
             return query(block)
+        } catch (e: AppException) {
+            throw e
+        } catch (e: ConstraintViolationException) {
+            throw e
+        } catch (e: IllegalArgumentException) {
+            throw e
         } catch (e: Exception) {
             // Fail fast for business errors — retrying hides bugs and amplifies coupon/stock races.
-            if (e is AppException ||
-                e is ConstraintViolationException ||
-                e is IllegalArgumentException
-            ) {
-                throw e
-            }
             lastError = e
             if (attempt < maxRetries - 1) {
                 delay((initialDelayMs * (1L shl attempt)).milliseconds)

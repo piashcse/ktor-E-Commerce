@@ -20,6 +20,7 @@ import com.piashcse.utils.db.bindParams
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -82,7 +83,8 @@ class ProductRepositoryImpl : ProductRepository {
         val (totalCount, rows) = query.toPaginatedList(limit, offset) { it }
         val data =
             withPreloadedImages(rows) { row, images ->
-                ProductDAO.wrapRow(row).toProductResponse(images[ProductDAO.wrapRow(row).id.value])
+                val product = ProductDAO.wrapRow(row)
+                product.toProductResponse(images[product.id.value])
             }
         return PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
     }
@@ -111,13 +113,13 @@ class ProductRepositoryImpl : ProductRepository {
             val seller = requireSeller(userId)
             val resolvedShopId =
                 shopId ?: seller.shopId?.value
-                    ?: throw com.piashcse.utils.validator.ValidationException(
+                    ?: throw ValidationException(
                         "Create or get a shop approved before listing products",
                     )
             val shop = ShopDAO.findById(resolvedShopId) ?: resolvedShopId.throwNotFound("Shop")
             if (shop.userId.value != userId) throw ForbiddenException(Message.Products.NOT_SHOP_OWNER)
             if (shop.status != com.piashcse.constants.ShopStatus.APPROVED) {
-                throw com.piashcse.utils.validator.ValidationException("Shop must be approved before listing products")
+                throw ValidationException("Shop must be approved before listing products")
             }
 
             ProductDAO.new {
@@ -259,9 +261,11 @@ class ProductRepositoryImpl : ProductRepository {
             }
             product.toProductResponse(
                 variants =
-                    ProductVariantDAO.find { ProductVariantTable.productId eq product.id }
-                        .orderBy(ProductVariantTable.sortOrder to SortOrder.ASC)
-                        .map { it.toResponse() },
+                    variantResponses(
+                        ProductVariantDAO.find { ProductVariantTable.productId eq product.id }
+                            .orderBy(ProductVariantTable.sortOrder to SortOrder.ASC)
+                            .toList(),
+                    ),
             )
         }
 
@@ -312,7 +316,8 @@ class ProductRepositoryImpl : ProductRepository {
 
             val products =
                 withPreloadedImages(orderedRows) { row, images ->
-                    ProductDAO.wrapRow(row).toProductResponse(images[ProductDAO.wrapRow(row).id.value])
+                    val product = ProductDAO.wrapRow(row)
+                    product.toProductResponse(images[product.id.value])
                 }
 
             val facets = buildFacets(searchRequest.name, searchRequest, useFuzzy)

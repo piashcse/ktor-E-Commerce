@@ -17,6 +17,7 @@ import com.piashcse.utils.extension.idempotencyKey
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
+import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
@@ -32,7 +33,7 @@ fun Route.checkoutRoutes() {
         if (!DotEnv.getBoolean("REQUIRE_POLICY_CONSENT", false)) return
         PolicyType.values().filter { it.requiresConsent }.forEach { type ->
             if (!consentRepo.hasUserConsented(userId, type)) {
-                throw com.piashcse.utils.validator.ValidationException("Consent required for policy: ${type.name}")
+                throw ValidationException("Consent required for policy: ${type.name}")
             }
         }
     }
@@ -44,7 +45,7 @@ fun Route.checkoutRoutes() {
          */
         post("guest") {
             if (!FeatureFlags.isEnabled("guest_checkout")) {
-                throw com.piashcse.utils.validator.ValidationException("Guest checkout is disabled")
+                throw ValidationException("Guest checkout is disabled")
             }
             call.respondCreated(guestCheckoutService.placeOrder(call.receive<GuestCheckoutRequest>()))
         }

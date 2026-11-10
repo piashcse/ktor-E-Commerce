@@ -191,8 +191,46 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 15 | `fix/14-notification-templates` | `fix/13-seller-kyc-statements` | Templates, in-app/email/SMS/push dispatch, per-event preferences, RMA events, V27 |
 | 16 | `fix/15-product-variants` | `fix/14-notification-templates` | Variants, options/values, variant-level price/SKU/stock, V28 |
 | 17 | `fix/16-recommendations` | `fix/15-product-variants` | Related, co-purchase, personalized and best-seller recommendations |
+| 18 | `refactor/17-conciseness-performance` | `fix/16-recommendations` | Detekt clean, decomposition of order/refund flows, bulk loaders, cache/query centralization |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
+
+---
+
+## 10. Code Quality / Performance Pass
+
+Scope: full `src/main` review for conciseness, reuse, centralization and query efficiency.
+
+**Results**
+- Detekt findings: `25 → 0` (excluding intentional `@Suppress` on the auth facade).
+- `OrderRepositoryImpl.placeOrder` decomposed into `loadCheckoutContext`,
+  `createOrders`/`createOrderForShop`, `resolveCheckoutVariant`,
+  `applyCoupon`, `updateSellerTotals` and `finalizePlacedOrders`.
+- `RefundRequestRepositoryImpl.updateRefundStatus` split into actor, amount
+  validation and refund-finalization helpers with no duplicate order lookup.
+- Removed per-row N+1 lookups:
+  - `variantResponses`/`optionResponses` bulk-load variant options/values.
+  - Cart list/summary batch-load variants and inventory; stock checks no longer
+    query per cart line.
+  - Wishlist list preloads product images.
+  - Admin KYC list batch-loads user emails.
+- Centralized `CatalogCache.invalidate()` (products + recommendations) and
+  replaced scattered patterns in order/inventory/review/product/variant writes.
+- Added `ApplicationCall.queryInt`/`queryBoolean`; inventory/notification routes
+  use them instead of ad-hoc parsing.
+- Auth password hashing/verification and user-type parsing are single helpers.
+- Removed fully-qualified exception/`Message` references in favour of imports.
+- Existing DB indexes already cover order-item, refund, reservation, outbox and
+  catalog lookups; no new migration needed.
+- Recommendation/checkout summaries now use variant-effective prices (previous
+  checkout summary ignored variant discounts).
+
+**Deliberate limits**
+- `AuthRepository` remains an aggregate facade; splitting it would fragment
+  session/OTP invariants, so `TooManyFunctions` is suppressed with a rationale.
+- Catalog cache is in-process (`MemoryCache`); a Redis-backed `Cache` remains the
+  multi-instance deployment step.
+- Recommendation cache TTL is 5 minutes; invalidation is catalog-wide on writes.
 
 ---
 

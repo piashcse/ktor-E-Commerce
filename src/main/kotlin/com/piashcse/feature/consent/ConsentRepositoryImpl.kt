@@ -15,6 +15,7 @@ import com.piashcse.utils.extension.requireNotBlank
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.extension.verifyOwnership
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
@@ -47,7 +48,7 @@ class ConsentRepositoryImpl : ConsentRepository {
                 PolicyDocumentDAO.findById(consentRequest.policyId)
                     ?: consentRequest.policyId.throwNotFound("Policy")
             if (!policy.isActive || policy.effectiveDate.isAfter(currentUtc())) {
-                throw com.piashcse.utils.validator.ValidationException("Policy is not active yet")
+                throw ValidationException("Policy is not active yet")
             }
 
             // Supersede any active consent for the same policy instead of overwriting

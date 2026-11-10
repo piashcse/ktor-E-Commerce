@@ -10,6 +10,7 @@ import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
@@ -50,7 +51,7 @@ fun Route.outboxAdminRoutes() {
     post("dead-letters/{id}/requeue") {
         val id =
             call.parameters["id"]?.takeIf { it.isNotBlank() }
-                ?: throw com.piashcse.utils.validator.ValidationException("id is required")
+                ?: throw ValidationException("id is required")
         com.piashcse.utils.extension.query {
             val deadLetter = OutboxDeadLetterDAO.findById(id) ?: id.throwNotFound("Dead letter")
             OutboxDAO.new {

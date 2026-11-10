@@ -1,5 +1,6 @@
 package com.piashcse.feature.product_category
 
+import com.piashcse.constants.Message
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.nameFromBodyOrQuery
@@ -66,7 +67,7 @@ fun Route.productCategoryAdminRoutes() {
                 }
                 part.dispose()
             }
-            val url = imageUrl ?: throw ValidationException(com.piashcse.constants.Message.Validation.FILE_REQUIRED)
+            val url = imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED)
             call.respondOk(productCategoryRepo.updateCategoryImage(id, url))
         }
 

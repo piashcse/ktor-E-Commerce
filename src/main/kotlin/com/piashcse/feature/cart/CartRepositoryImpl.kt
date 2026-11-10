@@ -50,8 +50,7 @@ class CartRepositoryImpl : CartRepository {
             // Advisory stock check only: read-then-write here is inherently racy (TOCTOU).
             // The authoritative check runs at order creation with a row-locked
             // effectiveStock(forUpdate = true) read, which re-validates before decrementing.
-            val product = requireProductWithStock(productId, quantity, variantId = variantId)
-            val variant = resolveVariant(product, variantId)
+            val (product, variant) = requireCartSelection(productId, quantity, variantId = variantId)
 
             val existing =
                 CartItemDAO.find {
@@ -114,8 +113,11 @@ class CartRepositoryImpl : CartRepository {
                 val variantIds = rows.mapNotNull { it[CartItemTable.variantId]?.value }.distinct()
                 val variants =
                     if (variantIds.isNotEmpty()) {
-                        ProductVariantDAO.find { ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) } }
-                            .associateBy { it.id.value }
+                        variantResponses(
+                            ProductVariantDAO.find {
+                                ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) }
+                            }.toList(),
+                        ).associateBy { it.id }
                     } else {
                         emptyMap()
                     }
@@ -127,7 +129,7 @@ class CartRepositoryImpl : CartRepository {
                     val variant = item.variantId?.value?.let { variants[it] }
                     item.toCartResponse(
                         product.toProductResponse(imagesMap[product.id.value]),
-                        variant?.toResponse(),
+                        variant,
                     )
                 }
             }
@@ -155,8 +157,8 @@ class CartRepositoryImpl : CartRepository {
             // concurrent checkouts can oversell between this read and order placement.
             // The authoritative check runs at order creation with a row-locked
             // effectiveStock(forUpdate = true) read, which re-validates before decrementing.
-            val product = requireProductWithStock(cartItem.productId.value, quantity, variantId = cartItem.variantId?.value)
-            val variant = resolveVariant(product, cartItem.variantId?.value)
+            val (product, variant) =
+                requireCartSelection(cartItem.productId.value, quantity, variantId = cartItem.variantId?.value)
             cartItem.quantity = quantity
 
             cartItem.toCartResponse(product.toProductResponse(), variant?.toResponse())
@@ -199,13 +201,29 @@ class CartRepositoryImpl : CartRepository {
                     emptyMap()
                 }
             val variantIds = cartItems.mapNotNull { it.variantId?.value }.distinct()
-            val variants =
+            val variantsById =
                 if (variantIds.isNotEmpty()) {
-                    ProductVariantDAO.find { ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) } }
-                        .associateBy { it.id.value }
+                    ProductVariantDAO.find {
+                        ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) }
+                    }.associateBy { it.id.value }
                 } else {
                     emptyMap()
                 }
+            val inventoryRows =
+                if (products.isNotEmpty()) {
+                    InventoryDAO.find { InventoryTable.productId inList productEntityIds }.toList()
+                } else {
+                    emptyList()
+                }
+
+            fun stockFor(
+                productId: String,
+                variantId: String?,
+            ): Int =
+                inventoryRows
+                    .filter {
+                        it.productId.value == productId && it.variantId?.value == variantId
+                    }.sumOf { it.stockQuantity }
             val shopIds = products.values.mapNotNull { it.shopId?.value }.distinct()
             val shops =
                 if (shopIds.isNotEmpty()) {
@@ -217,18 +235,13 @@ class CartRepositoryImpl : CartRepository {
             val items =
                 cartItems.mapNotNull { cartItem ->
                     val product = products[cartItem.productId.value] ?: return@mapNotNull null
-                    val variant = cartItem.variantId?.value?.let { variants[it] }
+                    val variant = cartItem.variantId?.value?.let { variantsById[it] }
                     val unitPrice = variant?.effectivePrice ?: product.discountPrice ?: product.price
                     cartItem.toCartItemSummary(
                         product = product,
                         unitPrice = unitPrice,
                         image = variant?.imageUrl ?: imagesMap[product.id.value]?.firstOrNull(),
-                        stockQuantity =
-                            if (variant == null) {
-                                product.effectiveStock()
-                            } else {
-                                product.effectiveStockFor(variant.id.value)
-                            },
+                        stockQuantity = stockFor(product.id.value, variant?.id?.value),
                         shopName = product.shopId?.value?.let { shops[it]?.name },
                         variant = variant,
                     )

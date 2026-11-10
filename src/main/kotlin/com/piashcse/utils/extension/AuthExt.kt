@@ -20,7 +20,7 @@ private val CurrentUserKey = AttributeKey<JwtTokenRequest>("CurrentUser")
 fun ApplicationCall.currentUser(): JwtTokenRequest {
     return attributes.getOrNull(CurrentUserKey)
         ?: principal<JwtTokenRequest>()?.also { attributes.put(CurrentUserKey, it) }
-        ?: throw IllegalStateException("No authenticated user found")
+        ?: error("No authenticated user found")
 }
 
 fun ApplicationCall.currentUserOrNull(): JwtTokenRequest? {

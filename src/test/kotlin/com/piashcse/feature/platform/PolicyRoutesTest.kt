@@ -35,7 +35,7 @@ class PolicyRoutesTest {
             isActive = true,
         )
 
-    private fun validBody() =
+    private val validBody =
         """{"title":"Privacy Policy","type":"PRIVACY_POLICY","content":"Policy body","version":"1.0","effectiveDate":"2024-01-01"}"""
 
     private fun ApplicationTestBuilder.setup() {
@@ -75,7 +75,7 @@ class PolicyRoutesTest {
                 client.post("/api/v1/admin/policies") {
                     header(HttpHeaders.Authorization, authHeader(userType = "ADMIN"))
                     contentType(ContentType.Application.Json)
-                    setBody(validBody())
+                    setBody(validBody)
                 }
             assertEquals(HttpStatusCode.Created, res.status)
             assertContains(res.bodyAsText(), "Privacy Policy")
@@ -88,7 +88,7 @@ class PolicyRoutesTest {
             val res =
                 client.post("/api/v1/admin/policies") {
                     contentType(ContentType.Application.Json)
-                    setBody(validBody())
+                    setBody(validBody)
                 }
             assertEquals(HttpStatusCode.Unauthorized, res.status)
         }

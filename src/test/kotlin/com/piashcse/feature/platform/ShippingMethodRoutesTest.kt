@@ -30,7 +30,7 @@ class ShippingMethodRoutesTest {
             deliveryTime = "2-3 days",
         )
 
-    private fun validBody() = """{"name":"Express","type":"EXPRESS","price":"9.99","deliveryTime":"2-3 days"}"""
+    private val validBody = """{"name":"Express","type":"EXPRESS","price":"9.99","deliveryTime":"2-3 days"}"""
 
     private fun ApplicationTestBuilder.setup() {
         application {
@@ -48,7 +48,7 @@ class ShippingMethodRoutesTest {
                 client.post("/api/v1/admin/shipping-methods") {
                     header(HttpHeaders.Authorization, authHeader(userType = "ADMIN"))
                     contentType(ContentType.Application.Json)
-                    setBody(validBody())
+                    setBody(validBody)
                 }
             assertEquals(HttpStatusCode.Created, res.status)
             assertContains(res.bodyAsText(), "Express")
@@ -61,7 +61,7 @@ class ShippingMethodRoutesTest {
             val res =
                 client.post("/api/v1/admin/shipping-methods") {
                     contentType(ContentType.Application.Json)
-                    setBody(validBody())
+                    setBody(validBody)
                 }
             assertEquals(HttpStatusCode.Unauthorized, res.status)
         }
@@ -88,7 +88,7 @@ class ShippingMethodRoutesTest {
                 client.put("/api/v1/admin/shipping-methods/sm-1") {
                     header(HttpHeaders.Authorization, authHeader(userType = "ADMIN"))
                     contentType(ContentType.Application.Json)
-                    setBody(validBody())
+                    setBody(validBody)
                 }
             assertEquals(HttpStatusCode.OK, res.status)
             assertContains(res.bodyAsText(), "Express")
@@ -101,7 +101,7 @@ class ShippingMethodRoutesTest {
             val res =
                 client.put("/api/v1/admin/shipping-methods/sm-1") {
                     contentType(ContentType.Application.Json)
-                    setBody(validBody())
+                    setBody(validBody)
                 }
             assertEquals(HttpStatusCode.Unauthorized, res.status)
         }

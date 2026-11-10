@@ -56,14 +56,8 @@ fun ProductDAO.decrementStockFor(
     variantId: String?,
     quantity: Int,
 ) {
-    val rows =
-        if (variantId == null) {
-            inventories(forUpdate = true).filter {
-                it.variantId == null
-            }
-        } else {
-            variantInventories(variantId, forUpdate = true)
-        }
+    val allRows = inventories(forUpdate = true)
+    val rows = allRows.filter { it.variantId?.value == variantId }
     if (rows.isEmpty()) throw ValidationException(Message.Inventory.NOT_FOUND)
     val available = rows.sumOf { it.stockQuantity }
     if (available < quantity) {
@@ -77,7 +71,7 @@ fun ProductDAO.decrementStockFor(
         inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
         remaining -= take
     }
-    syncProductStatus(inventories().sumOf { it.stockQuantity })
+    syncProductStatus(allRows.sumOf { it.stockQuantity })
 }
 
 private fun ProductDAO.syncProductStatus(stock: Int) {
@@ -92,20 +86,13 @@ fun ProductDAO.restoreStockFor(
     variantId: String?,
     quantity: Int,
 ) {
-    val rows =
-        if (variantId == null) {
-            inventories(forUpdate = true).filter {
-                it.variantId == null
-            }
-        } else {
-            variantInventories(variantId, forUpdate = true)
-        }
+    val allRows = inventories(forUpdate = true)
     val inv =
-        rows.firstOrNull()
+        allRows.filter { it.variantId?.value == variantId }.firstOrNull()
             ?: throw ValidationException(Message.Inventory.NOT_FOUND)
     inv.stockQuantity += quantity
     inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
-    syncProductStatus(inventories().sumOf { it.stockQuantity })
+    syncProductStatus(allRows.sumOf { it.stockQuantity })
 }
 
 /** Calculates commission for an order subtotal. */

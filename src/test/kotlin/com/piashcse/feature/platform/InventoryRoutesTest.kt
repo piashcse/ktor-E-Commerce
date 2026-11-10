@@ -39,7 +39,7 @@ class InventoryRoutesTest {
             updatedAt = null,
         )
 
-    private fun validBody() =
+    private val validBody =
         """{"productId":"p-1","shopId":"s-1","stockQuantity":50,"reservedQuantity":0,"minimumStockLevel":5,"maximumStockLevel":100}"""
 
     private fun ApplicationTestBuilder.setup() {
@@ -58,7 +58,7 @@ class InventoryRoutesTest {
                 client.post("/api/v1/seller/inventories") {
                     header(HttpHeaders.Authorization, authHeader(userType = "SELLER"))
                     contentType(ContentType.Application.Json)
-                    setBody(validBody())
+                    setBody(validBody)
                 }
             assertEquals(HttpStatusCode.Created, res.status)
             assertContains(res.bodyAsText(), "p-1")
@@ -71,7 +71,7 @@ class InventoryRoutesTest {
             val res =
                 client.post("/api/v1/seller/inventories") {
                     contentType(ContentType.Application.Json)
-                    setBody(validBody())
+                    setBody(validBody)
                 }
             assertEquals(HttpStatusCode.Unauthorized, res.status)
         }

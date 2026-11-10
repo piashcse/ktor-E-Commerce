@@ -8,6 +8,7 @@ import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
+import com.piashcse.utils.validator.NotFoundException
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -58,7 +59,7 @@ fun Route.couponAdminRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             if (!couponRepo.deleteCoupon(id)) {
-                throw com.piashcse.utils.validator.NotFoundException(Message.Coupons.NOT_FOUND)
+                throw NotFoundException(Message.Coupons.NOT_FOUND)
             }
             call.respondOk(com.piashcse.utils.common.MessageResponse("Coupon deleted successfully"))
         }

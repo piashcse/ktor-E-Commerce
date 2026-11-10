@@ -1,5 +1,6 @@
-package com.piashcse.feature.kyc
+@file:Suppress("MatchingDeclarationName")
 
+package com.piashcse.feature.kyc
 import com.piashcse.constants.KycStatus
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.sellerWriteRateLimit
@@ -7,6 +8,7 @@ import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondOk
+import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.request.receive
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
@@ -38,13 +40,13 @@ fun Route.adminKycRoutes() {
         put("{sellerId}/verify") {
             val sellerId =
                 call.parameters["sellerId"]
-                    ?: throw com.piashcse.utils.validator.ValidationException("sellerId is required")
+                    ?: throw ValidationException("sellerId is required")
             call.respondOk(service.verify(sellerId))
         }
         put("{sellerId}/reject") {
             val sellerId =
                 call.parameters["sellerId"]
-                    ?: throw com.piashcse.utils.validator.ValidationException("sellerId is required")
+                    ?: throw ValidationException("sellerId is required")
             call.respondOk(service.reject(sellerId, call.receive<KycRejectRequest>().reason))
         }
     }

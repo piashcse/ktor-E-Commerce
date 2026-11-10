@@ -37,6 +37,14 @@ val ApplicationCall.clientIp: String
         return request.local.remoteHost
     }
 
+/** Typed query accessors: centralize parsing so routes stay one-liners. */
+fun ApplicationCall.queryInt(name: String): Int? = request.queryParameters[name]?.toIntOrNull()
+
+fun ApplicationCall.queryBoolean(
+    name: String,
+    defaultValue: Boolean = false,
+): Boolean = request.queryParameters[name]?.toBooleanStrictOrNull() ?: defaultValue
+
 fun ApplicationCall.paginateQueryParams(
     defaultPerPage: Int = AppConstants.Pagination.DEFAULT_LIMIT,
     defaultPage: Int = 1,

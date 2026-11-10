@@ -13,6 +13,7 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.paginateWithPreload
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.validator.ConflictException
+import com.piashcse.utils.validator.NotFoundException
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -81,7 +82,7 @@ class ProductCategoryRepositoryImpl : ProductCategoryRepository {
         query {
             val category =
                 ProductCategoryDAO.findById(categoryId)
-                    ?: throw com.piashcse.utils.validator.NotFoundException("Category not found")
+                    ?: throw NotFoundException("Category not found")
             category.image = image
             category.toProductCategoryResponse()
         }

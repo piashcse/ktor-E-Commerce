@@ -33,6 +33,5 @@ object DotEnvConfig {
     // set METRICS_TOKEN in production to require the X-Metrics-Token header.
     val metricsToken: String get() = DotEnv.get("METRICS_TOKEN", "")
 
-    private fun requireEnv(key: String): String =
-        DotEnv.get(key) ?: throw IllegalStateException("$key must be specified in the environment or .env file.")
+    private fun requireEnv(key: String): String = DotEnv.get(key) ?: error("$key must be specified in the environment or .env file.")
 }

@@ -51,7 +51,7 @@ class CircuitBreakerTest {
             val result =
                 com.piashcse.utils.resilience.Retry.withJitter(attempts = 3, baseDelayMs = 1, maxDelayMs = 2) {
                     attempts += 1
-                    if (attempts < 3) throw IllegalStateException("flaky")
+                    if (attempts < 3) error("flaky")
                     "ok"
                 }
             assertTrue(attempts == 3)
