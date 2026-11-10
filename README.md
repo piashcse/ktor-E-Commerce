@@ -143,6 +143,9 @@
 See [Testing & Coverage](docs/testing.md) for the test pyramid, local database setup, thresholds
 and known gaps.
 
+See the [Product Roadmap](docs/roadmap.md) for the prioritised list of remaining
+e-commerce capabilities and the PR-per-feature branch plan.
+
 ## Architecture
 
 <p align="center">
