@@ -14,6 +14,7 @@ data class ReviewRatingResponse(
     val isVerifiedPurchase: Boolean = false,
     val helpfulCount: Int = 0,
     val notHelpfulCount: Int = 0,
+    val images: List<String> = emptyList(),
     val status: ReviewStatus = ReviewStatus.ACTIVE,
     val createdAt: String? = null,
 )

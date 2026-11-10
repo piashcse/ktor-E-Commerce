@@ -3254,6 +3254,93 @@ http://localhost:8080/api/v1/reviews/{id}/helpful?helpful={helpful}
 </details>
 
 
+<details>
+<summary> <code>PUT</code> <code>/api/v1/reviews/{id}/images</code></summary>
+
+### Description
+Replace the review gallery. At most 8 image URLs are allowed.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/reviews/6c5078d3-f8e3-4c88-9afe-48b5423c664f/images' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"images":["/uploads/review-images/front.png"]}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/reviews/{id}/images
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "rating": 5,
+  "images": ["/uploads/review-images/front.png"],
+  "status": "ACTIVE"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/reviews</code></summary>
+
+### Description
+Admin: list reviews with an optional status filter (`ACTIVE`, `HIDDEN`, `FLAGGED`).
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/reviews?status=FLAGGED' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/reviews?status={status}
+```
+
+### Response
+```json
+{
+  "data": [],
+  "metadata": { "totalCount": 0, "limit": 20, "offset": 0 }
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/reviews/{id}/status</code></summary>
+
+### Description
+Admin: set a review status to `ACTIVE`, `HIDDEN` or `FLAGGED`.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/reviews/6c5078d3-f8e3-4c88-9afe-48b5423c664f/status' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"HIDDEN"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/reviews/{id}/status
+```
+
+### Response
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "status": "HIDDEN"
+}
+```
+</details>
+
 ### CART
 
 <details>

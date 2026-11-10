@@ -99,6 +99,55 @@ class ReviewRoutesTest {
         }
 
     @Test
+    fun `add review with images returns gallery`() =
+        testApplication {
+            coEvery { reviewRepo.addReviewRating(any(), any()) } returns
+                sampleReview().copy(images = listOf("/uploads/review-images/a.png"))
+            setup()
+            val res =
+                client.post("/api/v1/reviews") {
+                    header(HttpHeaders.Authorization, authHeader(userType = "CUSTOMER"))
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        """{"productId":"prod-1","reviewText":"Great product","rating":5,"images":["/uploads/review-images/a.png"]}""",
+                    )
+                }
+            assertEquals(HttpStatusCode.Created, res.status)
+            assertContains(res.bodyAsText(), "/uploads/review-images/a.png")
+        }
+
+    @Test
+    fun `add review with too many images returns field error`() =
+        testApplication {
+            setup()
+            val images = (1..9).joinToString(",") { "\"/img-$it.png\"" }
+            val res =
+                client.post("/api/v1/reviews") {
+                    header(HttpHeaders.Authorization, authHeader(userType = "CUSTOMER"))
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"productId":"prod-1","reviewText":"Great product","rating":5,"images":[$images]}""")
+                }
+            assertEquals(HttpStatusCode.BadRequest, res.status)
+            assertContains(res.bodyAsText(), "At most 8 images")
+        }
+
+    @Test
+    fun `replace review images returns updated gallery`() =
+        testApplication {
+            coEvery { reviewRepo.updateReviewImages(any(), any(), any()) } returns
+                sampleReview().copy(images = listOf("/uploads/review-images/b.png"))
+            setup()
+            val res =
+                client.put("/api/v1/reviews/rev-1/images") {
+                    header(HttpHeaders.Authorization, authHeader(userType = "CUSTOMER"))
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"images":["/uploads/review-images/b.png"]}""")
+                }
+            assertEquals(HttpStatusCode.OK, res.status)
+            assertContains(res.bodyAsText(), "/uploads/review-images/b.png")
+        }
+
+    @Test
     fun `update review happy path returns 200`() =
         testApplication {
             coEvery { reviewRepo.updateReviewRating(any(), any(), any(), any()) } returns
