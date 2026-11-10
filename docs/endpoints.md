@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 219  
+**Operations:** 222  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -14,7 +14,7 @@ document served by Swagger UI.
 
 | Tag | Operations |
 |---|---:|
-| [Auth](#auth) | 11 |
+| [Auth](#auth) | 14 |
 | [Profile](#profile) | 3 |
 | [Shop](#shop) | 13 |
 | [Shop Category](#shop-category) | 4 |
@@ -64,6 +64,9 @@ document served by Swagger UI.
 | `POST` | `/api/v1/auth/otp-verification` | Verify account OTP | Public |
 | `POST` | `/api/v1/auth/refresh-token` | Refresh access token | Public |
 | `POST` | `/api/v1/auth/register` | Register | Public |
+| `POST` | `/api/v1/auth/mfa/setup` | Start TOTP MFA setup | Authenticated |
+| `POST` | `/api/v1/auth/mfa/enable` | Enable TOTP MFA | Authenticated |
+| `POST` | `/api/v1/auth/mfa/disable` | Disable TOTP MFA | Authenticated |
 | `POST` | `/api/v1/auth/reset-password` | Reset password with OTP | Public |
 
 ## Profile

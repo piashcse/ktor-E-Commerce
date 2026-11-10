@@ -72,6 +72,12 @@ class UnverifiedAccountException(message: String = Message.Auth.ACCOUNT_NOT_VERI
 class DeactivatedAccountException(message: String = Message.Auth.ACCOUNT_DEACTIVATED) :
     AppException(message, HttpStatusCode.Unauthorized, "ACCOUNT_DEACTIVATED")
 
+class MfaRequiredException(message: String = "MFA code required") :
+    AppException(message, HttpStatusCode.Unauthorized, "MFA_REQUIRED")
+
+class InvalidMfaCodeException(message: String = "Invalid MFA code") :
+    AppException(message, HttpStatusCode.Unauthorized, "INVALID_MFA_CODE")
+
 // ─── 403 Forbidden ─────────────────────────────────────────────────────────
 
 class ForbiddenException(message: String = Message.Errors.FORBIDDEN) :

@@ -16,6 +16,9 @@ This documentation provides comprehensive details for the Authentication API end
 | `POST` | `/api/v1/auth/refresh-token` | Refresh access token using refresh token | No |
 | `POST` | `/api/v1/auth/logout` | Logout and revoke refresh token | Yes |
 | `PUT` | `/api/v1/auth/change-password` | Change password for authenticated user | Yes |
+| `POST` | `/api/v1/auth/mfa/setup` | Start TOTP MFA setup and get the secret | Yes |
+| `POST` | `/api/v1/auth/mfa/enable` | Enable TOTP MFA after verifying a code | Yes |
+| `POST` | `/api/v1/auth/mfa/disable` | Disable TOTP MFA after verifying a code | Yes |
 | `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin/Super Admin) |
 | `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin/Super Admin) |
 | `PUT` | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin/Super Admin) |
@@ -39,6 +42,7 @@ Authenticate a user and receive access + refresh tokens for subsequent API calls
 | `email` | string | Yes | User's email address |
 | `password` | string | Yes | User's password |
 | `userType` | string | Yes | Type of user (`customer`, `seller`, `admin`) |
+| `mfaCode` | string | Conditional | 6-digit TOTP code. Required when MFA is enabled for the account |
 
 #### Example Request
 
@@ -511,6 +515,105 @@ curl -X 'PUT' \
 
 ---
 
+### 12. Start MFA Setup
+
+**`POST /api/v1/auth/mfa/setup`**
+
+Start TOTP multi-factor authentication setup for the authenticated user. Returns a Base32 secret and
+an `otpauth://` URL that can be rendered as a QR code. MFA is not enforced until `mfa/enable`
+succeeds.
+
+#### Headers
+
+| Header | Value | Required |
+|--------|-------|----------|
+| `Authorization` | `Bearer <access_token>` | Yes |
+
+#### Example Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/mfa/setup' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+```
+
+#### Example Response
+
+**Status: 200 OK**
+
+```json
+{
+  "secret": "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP",
+  "otpauthUrl": "otpauth://totp/Ktor%20E-Commerce:customer@gmail.com?secret=JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP&issuer=Ktor%20E-Commerce&digits=6&period=30"
+}
+```
+
+---
+
+### 13. Enable MFA
+
+**`POST /api/v1/auth/mfa/enable`**
+
+Verify a 6-digit code from the authenticator app and enable MFA for the account.
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `code` | string | Yes | 6-digit TOTP code from the authenticator app |
+
+#### Example Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/mfa/enable' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{ "code": "123456" }'
+```
+
+#### Example Response
+
+**Status: 200 OK**
+
+```json
+{ "message": "MFA enabled" }
+```
+
+---
+
+### 14. Disable MFA
+
+**`POST /api/v1/auth/mfa/disable`**
+
+Verify a current authenticator code and disable MFA. The stored secret is removed.
+
+#### Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `code` | string | Yes | 6-digit TOTP code from the authenticator app |
+
+#### Example Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/mfa/disable' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{ "code": "123456" }'
+```
+
+#### Example Response
+
+**Status: 200 OK**
+
+```json
+{ "message": "MFA disabled" }
+```
+
+---
+
 ## Administrative Auth Endpoints
 
 ### Administrative Auth Endpoints Table
@@ -583,6 +686,14 @@ All passwords must meet the following criteria:
 - At least one lowercase letter
 - At least one digit
 - At least one special character
+
+### Multi-Factor Authentication (TOTP)
+- RFC 6238 TOTP with SHA-1, 6 digits and a 30-second period
+- One time step of clock drift is accepted in either direction
+- The secret is generated server-side and stored per user; enable/disable requires a valid code
+- When MFA is enabled, login must include `mfaCode`
+- Missing code returns `401 MFA_REQUIRED`; an incorrect code returns `401 INVALID_MFA_CODE`
+- Failed MFA attempts count toward the same 5-attempt lockout as bad passwords
 
 ### Refresh Token Security
 - Refresh tokens are hashed before storage (SHA-256)

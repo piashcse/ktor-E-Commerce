@@ -11,6 +11,8 @@ import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.InternalServerException
 import com.piashcse.utils.validator.InvalidCredentialsException
 import com.piashcse.utils.validator.InvalidEnumValueException
+import com.piashcse.utils.validator.InvalidMfaCodeException
+import com.piashcse.utils.validator.MfaRequiredException
 import com.piashcse.utils.validator.MissingParameterException
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.RateLimitExceededException
@@ -36,6 +38,8 @@ class ExceptionMappingTest {
         assertMapping(InvalidCredentialsException(), HttpStatusCode.Unauthorized, "INVALID_CREDENTIALS")
         assertMapping(UnverifiedAccountException(), HttpStatusCode.Unauthorized, "ACCOUNT_NOT_VERIFIED")
         assertMapping(DeactivatedAccountException(), HttpStatusCode.Unauthorized, "ACCOUNT_DEACTIVATED")
+        assertMapping(MfaRequiredException(), HttpStatusCode.Unauthorized, "MFA_REQUIRED")
+        assertMapping(InvalidMfaCodeException(), HttpStatusCode.Unauthorized, "INVALID_MFA_CODE")
         assertMapping(ForbiddenException(), HttpStatusCode.Forbidden, "FORBIDDEN")
         assertMapping(NotFoundException(), HttpStatusCode.NotFound, "NOT_FOUND")
         assertMapping(ConflictException("dup"), HttpStatusCode.Conflict, "CONFLICT")

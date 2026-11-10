@@ -101,6 +101,7 @@ class TypedContractTest {
                     every { userType } returns UserType.CUSTOMER
                     every { isVerified } returns true
                     every { isActive } returns true
+                    every { mfaEnabled } returns false
                     every { createdAt } returns LocalDateTime.of(2024, 1, 1, 0, 0)
                     every { updatedAt } returns null
                 }

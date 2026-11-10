@@ -14,6 +14,7 @@ import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.feature.apikey.ApiKeyCreateRequest
 import com.piashcse.feature.apikey.ApiKeyService
 import com.piashcse.feature.audit_log.AuditLogRepositoryImpl
+import com.piashcse.feature.auth.MfaService
 import com.piashcse.feature.featureflag.FeatureFlagUpdateRequest
 import com.piashcse.feature.featureflag.FeatureFlags
 import com.piashcse.feature.kyc.KycService
@@ -261,6 +262,14 @@ class ServiceIntegrationTest {
         assertTrue(kotlinx.coroutines.runBlocking { apiKeys.list(customerId) }.any { it.id == created.id })
         assertTrue(kotlinx.coroutines.runBlocking { apiKeys.revoke(customerId, created.id) })
         assertNull(kotlinx.coroutines.runBlocking { apiKeys.authenticate(created.key) })
+
+        // MFA / TOTP
+        val mfa = MfaService()
+        val mfaSetup = kotlinx.coroutines.runBlocking { mfa.setup(customerId) }
+        val mfaCode = mfa.generateCode(mfaSetup.secret, System.currentTimeMillis() / 1000 / 30)
+        assertTrue(kotlinx.coroutines.runBlocking { mfa.enable(customerId, mfaCode) })
+        assertTrue(kotlinx.coroutines.runBlocking { mfa.verifyLogin(customerId, mfaCode) })
+        assertTrue(kotlinx.coroutines.runBlocking { mfa.disable(customerId, mfaCode) })
 
         // Seed sanity: the product created for this test still exists.
         transaction { assertNotNull(ProductDAO.findById(productId)) }

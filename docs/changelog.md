@@ -6,6 +6,14 @@ hide:
 
 ## [Unreleased]
 
+### Added
+
+- TOTP multi-factor authentication (`V32`): users can start setup, enable MFA with a verified
+  6-digit code, and disable it the same way. Login now accepts an optional `mfaCode`; accounts with
+  MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
+  is wrong. Bad codes count toward the existing lockout policy.
+- Endpoint index and README now document the three MFA operations (222 operations total).
+
 ### Fixed
 
 - Docker image build used a lowercase distribution name while Gradle emitted `ktor-ECommerce`; the

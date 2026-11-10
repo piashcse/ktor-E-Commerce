@@ -5,6 +5,7 @@ import com.piashcse.feature.audit_log.AuditLogRepository
 import com.piashcse.feature.audit_log.AuditLogRepositoryImpl
 import com.piashcse.feature.auth.AuthRepository
 import com.piashcse.feature.auth.AuthRepositoryImpl
+import com.piashcse.feature.auth.MfaService
 import com.piashcse.feature.auth.UserAuthenticationService
 import com.piashcse.feature.brand.BrandRepository
 import com.piashcse.feature.brand.BrandRepositoryImpl
@@ -122,7 +123,8 @@ val serviceModule =
         single { OutboxService() }
 
         // Split auth services
-        single { UserAuthenticationService(get()) }
+        single { MfaService() }
+        single { UserAuthenticationService(get(), get()) }
 
         // Split product services
         single { ProductCatalogService(get()) }

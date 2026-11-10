@@ -23,6 +23,8 @@ object UserTable : BaseIdTable("user") {
     val isVerified = bool("is_verified").default(false)
     val isActive = bool("is_active").default(true)
     val isGuest = bool("is_guest").default(false)
+    val mfaSecret = varchar("mfa_secret", 64).nullable()
+    val mfaEnabled = bool("mfa_enabled").default(false)
 
     init {
         uniqueIndex("email_userType_idx", email, userType)
@@ -42,6 +44,8 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     var isVerified by UserTable.isVerified
     var isActive by UserTable.isActive
     var isGuest by UserTable.isGuest
+    var mfaSecret by UserTable.mfaSecret
+    var mfaEnabled by UserTable.mfaEnabled
 
     /**
      * Get the seller information if the user is a seller

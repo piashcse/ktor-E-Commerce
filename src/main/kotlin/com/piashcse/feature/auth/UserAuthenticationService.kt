@@ -15,9 +15,14 @@ import com.piashcse.model.request.RegisterRequest
 import com.piashcse.model.response.RegistrationResult
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.InvalidCredentialsException
+import com.piashcse.utils.validator.InvalidMfaCodeException
+import com.piashcse.utils.validator.MfaRequiredException
 import com.piashcse.utils.validator.ValidationException
 
-class UserAuthenticationService(private val authRepo: AuthRepository) {
+class UserAuthenticationService(
+    private val authRepo: AuthRepository,
+    private val mfaService: MfaService = MfaService(),
+) {
     suspend fun register(registerRequest: RegisterRequest): RegistrationResult {
         val userType =
             UserType.fromString(registerRequest.userType)
@@ -99,6 +104,20 @@ class UserAuthenticationService(private val authRepo: AuthRepository) {
 
         if (!user.isActive) throw ValidationException(Message.Auth.ACCOUNT_DEACTIVATED)
         if (!user.isVerified) throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)
+
+        // Use the already-loaded user: avoids a second lookup on every login.
+        val mfaValid =
+            !user.mfaEnabled ||
+                (user.mfaSecret != null && mfaService.verify(user.mfaSecret!!, loginRequest.mfaCode.orEmpty()))
+        if (!mfaValid) {
+            val attemptCount = authRepo.recordFailedAttempt(loginRequest.email, userTypeEnum, ipAddress)
+            if (attemptCount >= AppConstants.Authentication.MAX_LOGIN_ATTEMPTS) {
+                authRepo.lockAccount(loginRequest.email, userTypeEnum, AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES)
+                throw ValidationException(Message.Auth.accountLocked(AppConstants.Authentication.ACCOUNT_LOCKOUT_MINUTES))
+            }
+            if (loginRequest.mfaCode.isNullOrBlank()) throw MfaRequiredException()
+            throw InvalidMfaCodeException()
+        }
 
         authRepo.resetLoginAttempts(loginRequest.email, userTypeEnum)
         val tokenPair = authRepo.generateTokenPair(user.id.value, user.email, user.userType.name)
