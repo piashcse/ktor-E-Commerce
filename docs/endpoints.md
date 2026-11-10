@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 223  
+**Operations:** 228  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -31,6 +31,7 @@ document served by Swagger UI.
 | [Payment](#payment) | 5 |
 | [Coupon](#coupon) | 9 |
 | [Shipping Method](#shipping-method) | 4 |
+| [Shipment](#shipment) | 5 |
 | [Inventory](#inventory) | 6 |
 | [Warehouse](#warehouse) | 4 |
 | [Refund](#refund) | 8 |
@@ -267,6 +268,16 @@ document served by Swagger UI.
 | `POST` | `/api/v1/admin/shipping-methods` | Admin - Create a new shipping method | Admin |
 | `PUT` | `/api/v1/admin/shipping-methods/{id}` | Admin - Update an existing shipping method | Admin |
 | `DELETE` | `/api/v1/admin/shipping-methods/{id}` | Admin - Delete a shipping method | Admin |
+
+## Shipment
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `POST` | `/api/v1/orders/{id}/shipping-quotes` | Get live carrier rates for an order | Authenticated |
+| `GET` | `/api/v1/orders/{id}/shipments` | List an order's parcels | Authenticated |
+| `POST` | `/api/v1/orders/{id}/shipments` | Purchase a label and allocate order lines | Seller / Admin |
+| `GET` | `/api/v1/shipments/{id}` | Retrieve a shipment | Authenticated |
+| `POST` | `/api/v1/shipments/webhook/{provider}` | Carrier tracking webhook (signature verified) | Public |
 
 ## Inventory
 

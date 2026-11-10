@@ -53,6 +53,7 @@ fun Application.configureSwagger() {
             tag(ApiTags.PAYMENT, "Payment initiation, confirmation and admin reconciliation")
             tag(ApiTags.COUPON, "Coupon validation and administration")
             tag(ApiTags.SHIPPING_METHOD, "Available delivery methods and prices")
+            tag(ApiTags.SHIPMENT, "Carrier rates, labels, parcels and tracking webhooks")
             tag(ApiTags.INVENTORY, "Warehouse and variant-level stock")
             tag(ApiTags.WAREHOUSE, "Seller physical locations")
             tag(ApiTags.REFUND, "Refund requests and lifecycle")

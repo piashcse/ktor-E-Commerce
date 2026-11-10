@@ -60,6 +60,10 @@ import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
 import com.piashcse.feature.review_rating.ReviewRatingRepository
 import com.piashcse.feature.review_rating.ReviewRatingRepositoryImpl
 import com.piashcse.feature.rma.RmaService
+import com.piashcse.feature.shipping.CarrierGateway
+import com.piashcse.feature.shipping.ManualCarrierGateway
+import com.piashcse.feature.shipping.ShipmentService
+import com.piashcse.feature.shipping.ShippoCarrierGateway
 import com.piashcse.feature.shipping_address.ShippingAddressRepository
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
 import com.piashcse.feature.shipping_method.ShippingMethodRepository
@@ -93,6 +97,21 @@ val serviceModule =
         single<DashboardRepository> { DashboardRepositoryImpl() }
         single<InventoryRepository> { InventoryRepositoryImpl() }
         single<OrderRepository> { OrderRepositoryImpl(get(), get(), get()) }
+        single<CarrierGateway> {
+            if (DotEnvConfig.shippingProvider == "shippo") {
+                require(DotEnvConfig.shippoApiToken.isNotBlank()) {
+                    "SHIPPO_API_TOKEN must be set when SHIPPING_PROVIDER=shippo"
+                }
+                ShippoCarrierGateway(
+                    apiToken = DotEnvConfig.shippoApiToken,
+                    webhookSecret = DotEnvConfig.carrierWebhookSecret,
+                    baseUrl = DotEnvConfig.shippoBaseUrl,
+                )
+            } else {
+                ManualCarrierGateway()
+            }
+        }
+        single { ShipmentService(get()) }
         single<PaymentGateway> {
             if (DotEnvConfig.paymentProvider == "stripe") {
                 require(DotEnvConfig.stripeSecretKey.isNotBlank()) {

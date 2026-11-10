@@ -18,6 +18,7 @@ object ApiTags {
     const val PAYMENT = "Payment"
     const val COUPON = "Coupon"
     const val SHIPPING_METHOD = "Shipping Method"
+    const val SHIPMENT = "Shipment"
     const val INVENTORY = "Inventory"
     const val WAREHOUSE = "Warehouse"
     const val REFUND = "Refund"

@@ -37,6 +37,12 @@ object DotEnvConfig {
     val stripeBaseUrl: String get() = DotEnv.get("STRIPE_BASE_URL", "https://api.stripe.com")
     val stripeWebhookToleranceSeconds: Long get() = DotEnv.getInt("STRIPE_WEBHOOK_TOLERANCE_SECONDS", 300).toLong()
 
+    /** "manual" keeps seller-entered tracking; "shippo" enables rate quotes and labels. */
+    val shippingProvider: String get() = DotEnv.get("SHIPPING_PROVIDER", "manual").lowercase()
+    val shippoApiToken: String get() = DotEnv.get("SHIPPO_API_TOKEN", "")
+    val shippoBaseUrl: String get() = DotEnv.get("SHIPPO_BASE_URL", "https://api.goshippo.com")
+    val carrierWebhookSecret: String get() = DotEnv.get("CARRIER_WEBHOOK_SECRET", "")
+
     /** Optional read-replica JDBC URL; when absent reads use the primary. */
     val dbReadUrl: String? get() = DotEnv.get("DB_READ_URL")
     val dbPoolSize: Int get() = DotEnv.getInt("DB_POOL_SIZE", 10)

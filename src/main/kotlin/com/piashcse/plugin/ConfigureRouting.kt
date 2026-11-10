@@ -54,6 +54,8 @@ import com.piashcse.feature.review_rating.reviewRatingRoutes
 import com.piashcse.feature.rma.rmaAdminRoutes
 import com.piashcse.feature.rma.rmaRoutes
 import com.piashcse.feature.rma.rmaSellerRoutes
+import com.piashcse.feature.shipping.orderShipmentRoutes
+import com.piashcse.feature.shipping.shipmentRoutes
 import com.piashcse.feature.shipping_method.shippingMethodAdminRoutes
 import com.piashcse.feature.shop.shopAdminRoutes
 import com.piashcse.feature.shop.shopRoutes
@@ -161,8 +163,10 @@ private fun Route.customerRoutes() {
     route("orders") {
         orderRoutes()
         orderDocumentRoutes()
+        orderShipmentRoutes()
     }.describe { tag(ApiTags.ORDER) }
     route("payments") { paymentRoutes() }.describe { tag(ApiTags.PAYMENT) }
+    route("shipments") { shipmentRoutes() }.describe { tag(ApiTags.SHIPMENT) }
     route("policies") { policyRoutes() }.describe { tag(ApiTags.POLICY) }
     route("policy-consents") { consentRoutes() }.describe { tag(ApiTags.CONSENT) }
     route("refund-requests") { refundRequestRoutes() }.describe { tag(ApiTags.REFUND) }
