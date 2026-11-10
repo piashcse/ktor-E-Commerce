@@ -25,6 +25,19 @@ data class OrderPlacedEvent(
 ) : DomainEvent()
 
 @Serializable
+data class OrderStatusChangedEvent(
+    val orderId: String,
+    val userId: String,
+    val email: String,
+    val orderNumber: String,
+    val fromStatus: String,
+    val toStatus: String,
+    val trackingNumber: String? = null,
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
+    override val requestId: String? = null,
+) : DomainEvent()
+
+@Serializable
 data class UserRegisteredEvent(
     val userId: String,
     val email: String,

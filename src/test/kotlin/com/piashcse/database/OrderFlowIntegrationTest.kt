@@ -7,6 +7,8 @@ import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.InventoryDAO
+import com.piashcse.database.entities.OutboxDAO
+import com.piashcse.database.entities.OutboxTable
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.SellerDAO
@@ -203,6 +205,11 @@ class OrderFlowIntegrationTest {
         val delivered = kotlinx.coroutines.runBlocking { orders.updateOrderStatus(sellerUserId, order.orderId, OrderStatus.DELIVERED) }
         assertEquals(OrderStatus.DELIVERED, delivered.status)
 
+        assertTrue(
+            transaction { OutboxDAO.find { OutboxTable.eventType eq "ORDER_STATUS_CHANGED" }.count() } >= 2,
+            "Shipping and delivery must enqueue order-status notification events",
+        )
+
         // Second order is canceled and must not keep stock.
         kotlinx.coroutines.runBlocking { cart.createCart(customerId, productId, 1) }
         val second =
@@ -211,6 +218,10 @@ class OrderFlowIntegrationTest {
             }.first()
         val canceled = kotlinx.coroutines.runBlocking { orders.cancelOrder(second.orderId, customerId, "changed mind", UserType.CUSTOMER) }
         assertEquals(OrderStatus.CANCELED, canceled.status)
+        assertTrue(
+            transaction { OutboxDAO.find { OutboxTable.eventType eq "ORDER_STATUS_CHANGED" }.count() } >= 3,
+            "Cancellation must enqueue an order-status notification event",
+        )
 
         val stock = transaction { InventoryDAO.all().first { it.productId.value == productId }.stockQuantity }
         assertEquals(9, stock, "Only the delivered order should consume stock")

@@ -4,6 +4,7 @@ import com.piashcse.constants.*
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.OrderPlacedEvent
+import com.piashcse.event.OrderStatusChangedEvent
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.mapper.toOrderItemResponse
@@ -688,6 +689,7 @@ class OrderRepositoryImpl(
                     throw ValidationException(Message.Orders.INVALID_STATUS)
                 }
 
+                val fromStatus = order.status
                 if (status == OrderStatus.CANCELED) {
                     applyOrderCancellation(order, notes = "Status updated by user", changedBy = userId)
                 } else {
@@ -705,6 +707,9 @@ class OrderRepositoryImpl(
                         else -> {}
                     }
                     logStatusChange(order.id.value, status, "Status updated by user", userId)
+                }
+                if (status in setOf(OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.RECEIVED, OrderStatus.CANCELED)) {
+                    enqueueStatusChanged(order, fromStatus, status, order.trackingNumber)
                 }
                 order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
             }
@@ -728,7 +733,9 @@ class OrderRepositoryImpl(
                 requireOrderAccess(order.userId.value, order.shopId?.value, userId, userType)
                 if (!OrderStatus.canBeCanceled(order.status)) throw ValidationException(Message.Orders.CANNOT_CANCEL)
 
+                val fromStatus = order.status
                 applyOrderCancellation(order, notes = reason, changedBy = userId)
+                enqueueStatusChanged(order, fromStatus, OrderStatus.CANCELED)
                 order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
             }
         CatalogCache.invalidate()
@@ -749,10 +756,12 @@ class OrderRepositoryImpl(
                 if (!OrderStatus.canTransitionTo(order.status, OrderStatus.SHIPPED)) {
                     throw ValidationException(Message.Orders.INVALID_STATUS)
                 }
+                val fromStatus = order.status
                 order.status = OrderStatus.SHIPPED
                 order.shippingDate = currentUtc()
                 order.trackingNumber = trackingNumber
                 logStatusChange(order.id.value, OrderStatus.SHIPPED, "Shipped via $trackingNumber", userId)
+                enqueueStatusChanged(order, fromStatus, OrderStatus.SHIPPED, trackingNumber)
                 order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
             }
         CatalogCache.invalidate()
@@ -764,6 +773,28 @@ class OrderRepositoryImpl(
         notes: String?,
         changedBy: String?,
     ) = OrderCancellation.cancel(order, notes, changedBy)
+
+    private fun enqueueStatusChanged(
+        order: OrderDAO,
+        from: OrderStatus,
+        to: OrderStatus,
+        trackingNumber: String? = null,
+    ) {
+        if (from == to) return
+        OutboxPublisher.enqueueTx(
+            "ORDER",
+            order.id.value,
+            OrderStatusChangedEvent(
+                orderId = order.id.value,
+                userId = order.userId.value,
+                email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
+                orderNumber = order.orderNumber,
+                fromStatus = from.name,
+                toStatus = to.name,
+                trackingNumber = trackingNumber,
+            ),
+        )
+    }
 
     override suspend fun getSellerOrders(
         userId: String,

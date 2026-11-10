@@ -11,8 +11,8 @@ Notifications are rendered from centralized templates and delivered through a ch
 | `SMS` | Inert until an SMS provider is configured; skipped events are logged |
 | `PUSH` | Inert until a push provider is configured; skipped events are logged |
 
-Domain events currently dispatched: `ORDER_PLACED`, `PAYMENT_COMPLETED`,
-`REFUND_<STATUS>`, `RMA_<STATUS>`, `USER_REGISTERED`.
+Domain events currently dispatched: `ORDER_PLACED`, `ORDER_<STATUS>` (shipped/delivered/canceled),
+`PAYMENT_COMPLETED`, `REFUND_<STATUS>`, `RMA_<STATUS>`, `USER_REGISTERED`.
 
 ## Global channel preference
 
