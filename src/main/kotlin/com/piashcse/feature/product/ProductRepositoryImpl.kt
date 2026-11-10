@@ -141,9 +141,18 @@ class ProductRepositoryImpl : ProductRepository {
                 status = productRequest.status ?: ProductStatus.ACTIVE
             }.let { product ->
                 product.setImages(productRequest.images)
+                val warehouse =
+                    WarehouseDAO.find { WarehouseTable.shopId eq resolvedShopId.entityID(ShopTable) }
+                        .firstOrNull()
+                        ?: WarehouseDAO.new {
+                            this.shopId = resolvedShopId.entityID(ShopTable)
+                            name = "Default"
+                            code = "DEFAULT"
+                        }
                 InventoryDAO.new {
                     productId = product.id
                     this.shopId = resolvedShopId.entityID(ShopTable)
+                    warehouseId = warehouse.id
                     stockQuantity = productRequest.stockQuantity
                     minimumStockLevel = 10
                     maximumStockLevel = 1000

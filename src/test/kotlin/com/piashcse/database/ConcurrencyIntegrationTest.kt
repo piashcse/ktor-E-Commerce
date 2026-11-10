@@ -139,9 +139,16 @@ class ConcurrencyIntegrationTest {
                         sku = "STOCK-${UUID.randomUUID()}"
                         price = BigDecimal("10.00")
                     }
+                val warehouse =
+                    com.piashcse.database.entities.WarehouseDAO.new {
+                        this.shopId = shop.id
+                        name = "Default"
+                        code = "DEFAULT"
+                    }
                 InventoryDAO.new {
                     this.productId = product.id
                     this.shopId = shop.id
+                    warehouseId = warehouse.id
                     stockQuantity = 5
                 }
                 productId = product.id

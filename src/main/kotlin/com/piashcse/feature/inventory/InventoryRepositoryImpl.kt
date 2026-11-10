@@ -37,6 +37,25 @@ class InventoryRepositoryImpl : InventoryRepository {
         return product
     }
 
+    private fun resolveWarehouse(
+        shopId: String,
+        warehouseId: String?,
+    ): WarehouseDAO {
+        if (warehouseId != null) {
+            val warehouse = WarehouseDAO.findById(warehouseId) ?: warehouseId.throwNotFound("Warehouse")
+            if (warehouse.shopId.value != shopId) throw ForbiddenException(Message.Errors.FORBIDDEN)
+            if (!warehouse.isActive) throw ValidationException("Warehouse is inactive")
+            return warehouse
+        }
+        return WarehouseDAO.find { WarehouseTable.shopId eq shopId.entityID(ShopTable) }
+            .firstOrNull()
+            ?: WarehouseDAO.new {
+                this.shopId = shopId.entityID(ShopTable)
+                name = "Default"
+                code = "DEFAULT"
+            }
+    }
+
     override suspend fun createOrUpdateInventory(
         inventoryRequest: InventoryRequest,
         actorUserId: String,
@@ -62,11 +81,13 @@ class InventoryRepositoryImpl : InventoryRepository {
 
             val product = ProductDAO.findById(inventoryRequest.productId) ?: inventoryRequest.productId.throwNotFound("Product")
             if (product.shopId?.value != sellerShopId) throw ForbiddenException(Message.Errors.FORBIDDEN)
+            val warehouse = resolveWarehouse(sellerShopId, inventoryRequest.warehouseId)
 
             val existing =
                 InventoryDAO.find {
                     (InventoryTable.productId eq inventoryRequest.productId) and
-                        (InventoryTable.shopId eq inventoryRequest.shopId)
+                        (InventoryTable.shopId eq inventoryRequest.shopId) and
+                        (InventoryTable.warehouseId eq warehouse.id)
                 }.firstOrNull()
 
             val inventory =
@@ -78,6 +99,7 @@ class InventoryRepositoryImpl : InventoryRepository {
                 } ?: InventoryDAO.new {
                     productId = inventoryRequest.productId.entityID(ProductTable)
                     shopId = inventoryRequest.shopId.entityID(ShopTable)
+                    warehouseId = warehouse.id
                     stockQuantity = inventoryRequest.stockQuantity
                     minimumStockLevel = inventoryRequest.minimumStockLevel ?: DEFAULT_MIN_STOCK
                     maximumStockLevel = inventoryRequest.maximumStockLevel ?: DEFAULT_MAX_STOCK
@@ -100,14 +122,23 @@ class InventoryRepositoryImpl : InventoryRepository {
         productId: String,
         quantity: Int,
         operation: String,
+        warehouseId: String?,
     ): InventoryResponse =
         retryQuery {
             val product = requireOwnedProduct(actorUserId, productId)
-            val inventory =
+            product.shopId?.value?.let { resolveWarehouse(it, warehouseId) }
+            val inventoryQuery =
                 InventoryDAO.find {
                     (InventoryTable.productId eq product.id) and
-                        (InventoryTable.shopId eq product.shopId!!)
-                }.forUpdate().firstOrNull()
+                        (InventoryTable.shopId eq product.shopId!!) and
+                        if (warehouseId == null) {
+                            org.jetbrains.exposed.v1.core.Op.TRUE
+                        } else {
+                            InventoryTable.warehouseId eq warehouseId.entityID(WarehouseTable)
+                        }
+                }.forUpdate()
+            val inventory =
+                inventoryQuery.orderBy(InventoryTable.createdAt to SortOrder.ASC).firstOrNull()
                     ?: productId.throwNotFound("Inventory")
 
             if (quantity <= 0) throw ValidationException(Message.Inventory.quantityNotPositive(operation))

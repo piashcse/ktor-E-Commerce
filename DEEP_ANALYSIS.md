@@ -155,7 +155,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 - [ ] **E-1. Real gateway webhooks + signature verification + 3-D Secure.**
 - [ ] **E-2. Carrier integration, labels, tracking webhooks, delivery slots.**
 - [ ] **E-3. Product variants/options, attributes, bundles, recommendations.**
-- [ ] **E-4. Multi-warehouse inventory, backorders, supplier POs, stock audit.**
+- [x] **E-4. Multi-warehouse inventory, backorders, supplier POs, stock audit.**
 - [x] **E-5. Tax rules by region/category; promotions engine (stacking/scopes).**
 - [ ] **E-6. Seller KYC, commission tiers, statements, tax exports.**
 - [ ] **E-7. RMA/return portal, exchanges, partial refunds by quantity.**
@@ -185,6 +185,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 9 | `fix/08-rbac-api-keys` | `test/concurrency-guards` | Permission scopes, API keys, feature flags, V22 |
 | 10 | `fix/09-cursor-pagination` | `fix/08-rbac-api-keys` | Keyset pagination for orders/notifications, optional read-replica routing |
 | 11 | `fix/10-guest-checkout` | `fix/09-cursor-pagination` | Guest checkout, guest account claiming, public order tracking, V23 |
+| 12 | `fix/11-multi-warehouse` | `fix/10-guest-checkout` | Warehouses, per-warehouse stock, cross-warehouse allocation, V24 |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 

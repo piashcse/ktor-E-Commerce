@@ -10,6 +10,7 @@ data class InventoryResponse(
     val id: String,
     val productId: String,
     val shopId: String,
+    val warehouseId: String? = null,
     val stockQuantity: Int,
     val reservedQuantity: Int,
     val minimumStockLevel: Int,

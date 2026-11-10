@@ -55,6 +55,7 @@ import com.piashcse.feature.shop.ShopRepository
 import com.piashcse.feature.shop.ShopRepositoryImpl
 import com.piashcse.feature.shop_category.ShopCategoryRepository
 import com.piashcse.feature.shop_category.ShopCategoryRepositoryImpl
+import com.piashcse.feature.warehouse.WarehouseRepository
 import com.piashcse.feature.wishlist.WishListRepository
 import com.piashcse.feature.wishlist.WishListRepositoryImpl
 import com.piashcse.service.UploadService
@@ -88,6 +89,7 @@ val serviceModule =
         single<ShopRepository> { ShopRepositoryImpl() }
         single<ShopCategoryRepository> { ShopCategoryRepositoryImpl() }
         single<WishListRepository> { WishListRepositoryImpl() }
+        single { WarehouseRepository() }
 
         // Services with business logic
         single { ProfileService(get()) }

@@ -72,3 +72,7 @@ curl -X 'GET' \
 | `401` | Unauthorized |
 | `403` | Forbidden (User does not own the product) |
 | `404` | Not Found |
+
+## Multi-warehouse
+
+Sellers manage physical locations at `/api/v1/seller/warehouses` (create/list/update/deactivate). Inventory rows are per `(product, shop, warehouse)`; `stockQuantity` is tracked per warehouse, and order placement allocates stock across warehouses oldest-first. Existing shops receive a `DEFAULT` warehouse via V24.

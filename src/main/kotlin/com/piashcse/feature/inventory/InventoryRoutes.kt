@@ -38,7 +38,8 @@ fun Route.inventorySellerRoutes() {
             val quantityStr = call.requireQueryParameter("quantity")
             val quantity = quantityStr.toIntOrNull() ?: throw IllegalArgumentException("quantity must be an integer")
             val operation = call.parameters["operation"] ?: "set"
-            val result = inventoryRepo.updateStock(call.currentUserId, productId, quantity, operation)
+            val warehouseId = call.request.queryParameters["warehouseId"]
+            val result = inventoryRepo.updateStock(call.currentUserId, productId, quantity, operation, warehouseId)
             CacheService.cache.invalidatePattern("products:.*")
             call.respondOk(result)
         }
