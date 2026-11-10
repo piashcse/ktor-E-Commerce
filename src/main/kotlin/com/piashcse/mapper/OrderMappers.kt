@@ -37,6 +37,9 @@ fun OrderDAO.toOrderResponse(items: List<OrderItemResponse>? = null) =
         items = items ?: OrderItemDAO.itemsForOrder(id).map { it.toOrderItemResponse() },
         businessTaxId = businessTaxId,
         taxExempt = taxExempt,
+        walletDiscount = Money.str(walletDiscount),
+        giftCardDiscount = Money.str(giftCardDiscount),
+        giftCardCode = giftCardCode,
     )
 
 fun OrderItemDAO.toOrderItemResponse() =

@@ -9177,6 +9177,230 @@ http://localhost:8080/api/v1/admin/chargebacks/{id}
 {"message":"ok"}
 ```
 </details>
+### LOYALTY / WALLET
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/wallet</code></summary>
+
+### Description
+Get my loyalty wallet.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/wallet' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/wallet
+```
+
+### Response
+```json
+{"creditBalance":"25.00","pointsBalance":150,"lifetimePoints":200,"referralCode":"REF12345"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/wallet/ledger</code></summary>
+
+### Description
+List my wallet ledger.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/wallet/ledger' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/wallet/ledger
+```
+
+### Response
+```json
+{"data":[{"id":"ledger-1","type":"POINTS_EARN"}]}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/wallet/gift-cards/{code}</code></summary>
+
+### Description
+Check a gift-card balance.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/wallet/gift-cards/GIFT1234ABCD' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/wallet/gift-cards/{code}
+```
+
+### Response
+```json
+{"code":"GIFT1234ABCD","balance":"50.00","status":"ACTIVE"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/referrals</code></summary>
+
+### Description
+List my referrals.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/referrals' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/referrals
+```
+
+### Response
+```json
+[{"id":"ref-1","status":"PENDING"}]
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/referrals/claim</code></summary>
+
+### Description
+Claim a referral code.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/referrals/claim' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"code":"REF12345"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/referrals/claim
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/gift-cards</code></summary>
+
+### Description
+Admin: list gift cards.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/gift-cards' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/gift-cards
+```
+
+### Response
+```json
+{"data":[{"id":"gc-1","code":"GIFT1234ABCD"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/gift-cards</code></summary>
+
+### Description
+Admin: issue a gift card.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/gift-cards' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"amount":50.00,"currency":"USD"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/gift-cards
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/gift-cards/{id}</code></summary>
+
+### Description
+Admin: void a gift card.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/gift-cards/uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/gift-cards/{id}
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/wallets/{userId}/credit</code></summary>
+
+### Description
+Admin: credit store balance.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/wallets/user-uuid/credit' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"amount":25.00,"note":"Goodwill"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/wallets/{userId}/credit
+```
+
+### Response
+```json
+{"creditBalance":"25.00","pointsBalance":0,"referralCode":"REF12345"}
+```
+</details>
 ### TAX RULES
 
 <details>

@@ -13,3 +13,6 @@
 
 # IDE/bin output
 /bin/
+
+# Kotlin compiler artifacts
+.kotlin/

@@ -81,6 +81,9 @@ Finalizes the purchase and creates order records. Send `Idempotency-Key` (or the
   "paymentMethod": "CREDIT_CARD",
   "notes": "Leave at the door",
   "couponCode": "DISCOUNT10",
+  "usePoints": 500,
+  "walletCredit": 10.00,
+  "giftCardCode": "GIFT1234ABCD",
   "idempotencyKey": "unique-uuid-per-attempt"
 }
 ```

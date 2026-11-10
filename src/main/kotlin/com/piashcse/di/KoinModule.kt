@@ -26,6 +26,7 @@ import com.piashcse.feature.inventory.InventoryRepository
 import com.piashcse.feature.inventory.InventoryRepositoryImpl
 import com.piashcse.feature.invoice.InvoiceService
 import com.piashcse.feature.kyc.KycService
+import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.notification.NotificationDispatcher
 import com.piashcse.feature.notification.NotificationPreferencesService
 import com.piashcse.feature.notification.NotificationRepository
@@ -98,7 +99,8 @@ val serviceModule =
         single<CouponRepository> { CouponRepositoryImpl() }
         single<DashboardRepository> { DashboardRepositoryImpl() }
         single<InventoryRepository> { InventoryRepositoryImpl() }
-        single<OrderRepository> { OrderRepositoryImpl(get(), get(), get()) }
+        single { LoyaltyService() }
+        single<OrderRepository> { OrderRepositoryImpl(get(), get(), get(), get()) }
         single<CarrierGateway> {
             if (DotEnvConfig.shippingProvider == "shippo") {
                 require(DotEnvConfig.shippoApiToken.isNotBlank()) {
@@ -131,7 +133,7 @@ val serviceModule =
         }
         single { FraudService() }
         single { ChargebackService() }
-        single<PaymentRepository> { PaymentRepositoryImpl(get(), get()) }
+        single<PaymentRepository> { PaymentRepositoryImpl(get(), get(), get()) }
         single<PolicyRepository> { PolicyRepositoryImpl() }
         single<ProductRepository> { ProductRepositoryImpl() }
         single<ProductCategoryRepository> { ProductCategoryRepositoryImpl() }

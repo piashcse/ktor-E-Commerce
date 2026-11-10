@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 253  
+**Operations:** 262  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -41,6 +41,7 @@ document served by Swagger UI.
 | [Payout](#payout) | 10 |
 | [Tax](#tax) | 16 |
 | [Fraud](#fraud) | 13 |
+| [Loyalty](#loyalty) | 9 |
 | [FX](#fx) | 2 |
 | [API Keys](#api-keys) | 3 |
 | [Feature Flags](#feature-flags) | 2 |
@@ -404,6 +405,20 @@ document served by Swagger UI.
 | `POST` | `/api/v1/admin/chargebacks` | Record a chargeback | Admin |
 | `GET` | `/api/v1/admin/chargebacks/{id}` | Retrieve a chargeback | Admin |
 | `PUT` | `/api/v1/admin/chargebacks/{id}` | Update chargeback status/outcome | Admin |
+
+## Loyalty
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/api/v1/wallet` | Get loyalty points, store credit and referral code | Authenticated |
+| `GET` | `/api/v1/wallet/ledger` | List wallet ledger entries | Authenticated |
+| `GET` | `/api/v1/wallet/gift-cards/{code}` | Check a gift-card balance | Authenticated |
+| `GET` | `/api/v1/referrals` | List my referrals | Authenticated |
+| `POST` | `/api/v1/referrals/claim` | Claim a referral code | Authenticated |
+| `GET` | `/api/v1/admin/gift-cards` | List gift cards | Admin |
+| `POST` | `/api/v1/admin/gift-cards` | Issue a gift card | Admin |
+| `DELETE` | `/api/v1/admin/gift-cards/{id}` | Void a gift card | Admin |
+| `POST` | `/api/v1/admin/wallets/{userId}/credit` | Credit store balance | Admin |
 
 ## FX
 

@@ -8,6 +8,10 @@ hide:
 
 ### Added
 
+- Loyalty wallet (`V37`): points earned on paid orders, point/store-credit/gift-card redemption
+  at checkout, referral codes with one-time rewards, and admin gift-card issuance plus
+  store-credit adjustments. Orders expose `walletDiscount`, `giftCardDiscount` and
+  `giftCardCode`; checkout summaries preview wallet discounts and balances.
 - Fraud/risk controls (`V36`): velocity rules (`ORDER_COUNT`, `ORDER_AMOUNT`,
   `PAYMENT_ATTEMPTS`), user/email/IP blocklists, `REQUIRE_3DS` enforcement, AVS/CVV capture,
   immutable `payment_risk` history, and a chargeback/dispute lifecycle. Payments return
@@ -28,7 +32,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (253 operations total).
+  (262 operations total).
 
 ### Fixed
 

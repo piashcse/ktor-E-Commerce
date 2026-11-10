@@ -12,6 +12,10 @@ data class CheckoutSummaryResponse(
     val itemCount: Int,
     val currency: String = "USD",
     val taxLines: List<TaxLineResponse> = emptyList(),
+    val walletDiscount: String = "0.00",
+    val giftCardDiscount: String = "0.00",
+    val pointsBalance: Int = 0,
+    val storeCreditBalance: String = "0.00",
 )
 
 @Serializable

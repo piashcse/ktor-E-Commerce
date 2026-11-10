@@ -74,6 +74,7 @@ fun Application.configureSwagger() {
             tag(ApiTags.AUDIT_LOG, "Administrative audit trail")
             tag(ApiTags.FX, "Currency rates")
             tag(ApiTags.FRAUD, "Velocity rules, blocklists, risk decisions and chargebacks")
+            tag(ApiTags.LOYALTY, "Loyalty points, referrals, gift cards and store credit")
         }
     }
 }

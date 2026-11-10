@@ -10,6 +10,10 @@ object AppConstants {
     const val APP_VERSION = "1.0.0"
     const val DEFAULT_TAX_PERCENTAGE = 0.05
 
+    const val LOYALTY_POINTS_PER_USD = 1
+    const val LOYALTY_POINTS_PER_USD_REDEEM = 100
+    const val REFERRAL_REWARD_POINTS = 100
+
     const val BCRYPT_COST = 12
     const val OTP_EXPIRY_MINUTES = 10L
 

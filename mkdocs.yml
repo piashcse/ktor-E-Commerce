@@ -61,6 +61,7 @@ nav:
       - Payouts & Statements: payout.md
       - Tax Rules: tax.md
       - Fraud & Chargebacks: fraud.md
+      - Loyalty & Wallet: loyalty.md
       - FX Rates: fx.md
       - API Keys: api-keys.md
       - Feature Flags: feature-flags.md

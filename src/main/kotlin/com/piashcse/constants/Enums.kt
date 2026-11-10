@@ -188,6 +188,31 @@ enum class ChargebackStatus {
 }
 
 @Serializable
+enum class WalletEntryType {
+    POINTS_EARN,
+    POINTS_REDEEM,
+    CREDIT_EARN,
+    CREDIT_REDEEM,
+    REFERRAL_BONUS,
+    ADMIN_ADJUSTMENT,
+}
+
+@Serializable
+enum class ReferralStatus {
+    PENDING,
+    COMPLETED,
+    EXPIRED,
+}
+
+@Serializable
+enum class GiftCardStatus {
+    ACTIVE,
+    REDEEMED,
+    EXPIRED,
+    VOID,
+}
+
+@Serializable
 enum class PolicyType {
     PRIVACY_POLICY,
     TERMS_CONDITIONS,
