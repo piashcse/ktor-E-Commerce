@@ -4547,6 +4547,50 @@ http://localhost:8080/api/v1/admin/orders/{id}/shipping
 </details>
 
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/orders/{id}/invoice</code></summary>
+
+### Description
+Printable HTML invoice for the order owner, shop seller or admin.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f/invoice' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/orders/{id}/invoice
+```
+
+### Response
+`text/html` printable invoice.
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/orders/{id}/packing-slip</code></summary>
+
+### Description
+Printable HTML packing slip without prices.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f/packing-slip' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/orders/{id}/packing-slip
+```
+
+### Response
+`text/html` printable packing slip.
+</details>
+
 ### PAYMENT
 
 <details>

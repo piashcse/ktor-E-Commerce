@@ -15,6 +15,7 @@ import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.feature.cart.CartRepositoryImpl
+import com.piashcse.feature.invoice.InvoiceService
 import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentRepositoryImpl
@@ -202,6 +203,13 @@ class OrderFlowIntegrationTest {
         assertEquals("TRACK-$suffix", shipped.trackingNumber)
         val delivered = kotlinx.coroutines.runBlocking { orders.updateOrderStatus(sellerUserId, order.orderId, OrderStatus.DELIVERED) }
         assertEquals(OrderStatus.DELIVERED, delivered.status)
+
+        val invoice = kotlinx.coroutines.runBlocking { InvoiceService().invoice(order.orderId, customerId, UserType.CUSTOMER) }
+        assertTrue(invoice.contains("Invoice"))
+        assertTrue(invoice.contains(order.orderNumber))
+        val packingSlip = kotlinx.coroutines.runBlocking { InvoiceService().packingSlip(order.orderId, customerId, UserType.CUSTOMER) }
+        assertTrue(packingSlip.contains("Packing slip"))
+        assertTrue(packingSlip.contains(order.orderNumber))
 
         // Second order is canceled and must not keep stock.
         kotlinx.coroutines.runBlocking { cart.createCart(customerId, productId, 1) }

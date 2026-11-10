@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 206  
+**Operations:** 208  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -27,7 +27,7 @@ document served by Swagger UI.
 | [Wishlist](#wishlist) | 5 |
 | [Cart](#cart) | 6 |
 | [Checkout](#checkout) | 8 |
-| [Order](#order) | 11 |
+| [Order](#order) | 13 |
 | [Payment](#payment) | 4 |
 | [Coupon](#coupon) | 5 |
 | [Shipping Method](#shipping-method) | 4 |
@@ -212,6 +212,8 @@ document served by Swagger UI.
 | Method | Endpoint | Description | Access |
 |---|---|---|---|
 | `GET` | `/api/v1/admin/orders` | Admin: list orders | Admin |
+| `GET` | `/api/v1/orders/{id}/invoice` | Printable order invoice | Authenticated |
+| `GET` | `/api/v1/orders/{id}/packing-slip` | Printable packing slip | Authenticated |
 | `PATCH` | `/api/v1/admin/orders/status/{id}` | Admin - Update the status of any order | Admin |
 | `POST` | `/api/v1/admin/orders/{id}/cancel` | Admin - Cancel any order | Admin |
 | `POST` | `/api/v1/admin/orders/{id}/shipping` | Admin - Mark a paid order as shipped | Admin |
