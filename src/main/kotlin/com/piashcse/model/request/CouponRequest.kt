@@ -1,9 +1,12 @@
 package com.piashcse.model.request
 
 import com.piashcse.constants.CouponDiscountType
+import com.piashcse.utils.validator.FieldValidationException
+import com.piashcse.utils.validator.FieldViolation
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.isGreaterThan
+import org.valiktor.functions.isGreaterThanOrEqualTo
 import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
@@ -30,17 +33,23 @@ data class CouponRequest(
             validate(CouponRequest::code).isNotNull().isNotEmpty()
             validate(CouponRequest::discountType).isNotNull()
             validate(CouponRequest::discountValue).isNotNull().isGreaterThan(BigDecimal.ZERO)
+            validate(CouponRequest::minOrderAmount).isGreaterThanOrEqualTo(BigDecimal.ZERO)
             validate(CouponRequest::startDate).isNotNull().isNotEmpty()
             validate(CouponRequest::endDate).isNotNull().isNotEmpty()
+            validate(CouponRequest::perUserLimit).isGreaterThan(0)
+            maxDiscountAmount?.let { validate(CouponRequest::maxDiscountAmount).isGreaterThan(BigDecimal.ZERO) }
+            usageLimit?.let { validate(CouponRequest::usageLimit).isGreaterThan(0) }
         }
-        require(code.isNotBlank()) { "Coupon code must not be blank" }
-        require(discountType != CouponDiscountType.PERCENTAGE || discountValue <= BigDecimal(100)) {
-            "Percentage discount cannot exceed 100"
-        }
-        require(minOrderAmount >= BigDecimal.ZERO) { "Minimum order amount cannot be negative" }
-        maxDiscountAmount?.let { require(it > BigDecimal.ZERO) { "Max discount must be positive" } }
-        usageLimit?.let { require(it > 0) { "Usage limit must be positive" } }
-        require(perUserLimit > 0) { "Per-user limit must be positive" }
-        require(startDate <= endDate) { "Coupon startDate must be before endDate (ISO strings)" }
+
+        val violations =
+            buildList {
+                if (discountType == CouponDiscountType.PERCENTAGE && discountValue > BigDecimal(100)) {
+                    add(FieldViolation("discountValue", "Percentage discount cannot exceed 100"))
+                }
+                if (startDate > endDate) {
+                    add(FieldViolation("startDate", "Coupon startDate must be before endDate"))
+                }
+            }
+        if (violations.isNotEmpty()) throw FieldValidationException(violations)
     }
 }

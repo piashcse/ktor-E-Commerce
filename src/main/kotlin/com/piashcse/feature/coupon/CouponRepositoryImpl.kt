@@ -166,9 +166,8 @@ class CouponRepositoryImpl : CouponRepository {
         startDate: LocalDateTime,
         endDate: LocalDateTime,
     ) {
-        if (request.discountValue <= BigDecimal.ZERO) {
-            throw ValidationException("Discount value must be greater than 0")
-        }
+        // Basic field constraints are enforced by CouponRequest (Valiktor). Only
+        // cross-field and parsed-date rules remain here.
         if (request.discountType == CouponDiscountType.PERCENTAGE &&
             request.discountValue > BigDecimal(100)
         ) {
@@ -179,17 +178,8 @@ class CouponRepositoryImpl : CouponRepository {
         ) {
             throw ValidationException("Fixed discount value must have at most 2 decimal places")
         }
-        if (request.minOrderAmount < BigDecimal.ZERO) {
-            throw ValidationException("Minimum order amount cannot be negative")
-        }
         if (startDate.isAfter(endDate)) {
             throw ValidationException("Coupon startDate must be before or equal to endDate")
-        }
-        if (request.usageLimit != null && request.usageLimit < 1) {
-            throw ValidationException("Usage limit must be at least 1")
-        }
-        if (request.perUserLimit < 1) {
-            throw ValidationException("Per-user limit must be at least 1")
         }
     }
 

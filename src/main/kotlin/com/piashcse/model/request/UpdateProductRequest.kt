@@ -1,6 +1,8 @@
 package com.piashcse.model.request
 
 import com.piashcse.constants.ProductStatus
+import com.piashcse.utils.validator.requirePositivePrice
+import com.piashcse.utils.validator.validateDiscountPrice
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
@@ -23,10 +25,7 @@ data class UpdateProductRequest(
     val images: List<String> = emptyList(),
 ) {
     init {
-        price?.let { require(it > BigDecimal.ZERO) { "Price must be positive" } }
-        discountPrice?.let { require(it > BigDecimal.ZERO) { "Discount price must be positive" } }
-        if (price != null && discountPrice != null) {
-            require(discountPrice < price) { "Discount price must be lower than the regular price" }
-        }
+        price?.requirePositivePrice()
+        validateDiscountPrice(price, discountPrice)
     }
 }

@@ -15,6 +15,17 @@ open class AppException(
     open val errorCode: String = "BAD_REQUEST",
 ) : Exception(message)
 
+/** Field-level validation failure that maps directly to `ApiError.errors`. */
+data class FieldViolation(
+    val field: String,
+    val message: String,
+)
+
+class FieldValidationException(
+    val violations: List<FieldViolation>,
+    message: String = "Validation failed",
+) : AppException(message, HttpStatusCode.BadRequest, "VALIDATION_FAILED")
+
 // ─── 400 Bad Request ───────────────────────────────────────────────────────
 
 class ValidationException(message: String, override val errorCode: String = "VALIDATION_FAILED") : AppException(
@@ -27,9 +38,10 @@ class InvalidEnumValueException(
     message: String,
     val enumName: String,
     val invalidValue: String,
+    val fieldName: String? = null,
 ) : AppException(message, HttpStatusCode.BadRequest, "INVALID_ENUM_VALUE")
 
-class MissingParameterException(parameterName: String) :
+class MissingParameterException(val parameterName: String) :
     AppException(Message.Errors.MISSING_PARAMETER.format(parameterName), HttpStatusCode.BadRequest, "MISSING_PARAMETER")
 
 // ─── 401 Unauthorized ──────────────────────────────────────────────────────

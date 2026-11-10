@@ -5,6 +5,8 @@ import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.DatabaseException
 import com.piashcse.utils.validator.DeactivatedAccountException
 import com.piashcse.utils.validator.EmailException
+import com.piashcse.utils.validator.FieldValidationException
+import com.piashcse.utils.validator.FieldViolation
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.InternalServerException
 import com.piashcse.utils.validator.InvalidCredentialsException
@@ -23,6 +25,11 @@ class ExceptionMappingTest {
     @Test
     fun `client errors carry the right status and machine code`() {
         assertMapping(ValidationException("bad"), HttpStatusCode.BadRequest, "VALIDATION_FAILED")
+        assertMapping(
+            FieldValidationException(listOf(FieldViolation("name", "blank"))),
+            HttpStatusCode.BadRequest,
+            "VALIDATION_FAILED",
+        )
         assertMapping(InvalidEnumValueException("bad", "E", "X"), HttpStatusCode.BadRequest, "INVALID_ENUM_VALUE")
         assertMapping(MissingParameterException("id"), HttpStatusCode.BadRequest, "MISSING_PARAMETER")
         assertMapping(UnauthorizedException(), HttpStatusCode.Unauthorized, "UNAUTHORIZED")

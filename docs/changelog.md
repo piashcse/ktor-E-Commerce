@@ -42,6 +42,11 @@ hide:
   instruction / 26.0% branch coverage.
 - Fixed a payment bug where `createPayment` validated the order outside a transaction.
 - Added `orderItem.id` to order responses so clients can create refunds/RMAs.
+- Validation: standardized on Valiktor for request shape, added field-level
+  `FieldValidationException`/`errors[]`, removed `require(...)` from request DTOs, and stopped
+  mapping programming `IllegalArgumentException`s to 400.
+- Exception handling: SQLSTATE-based constraint mapping (unique/FK/not-null/check/data),
+  field errors for missing/invalid parameters, and 413/415 responses.
 - CI now publishes JaCoCo coverage, runs dependency review/submission, builds and scans the Docker
   image, and refuses to silently skip PostgreSQL integration tests.
 

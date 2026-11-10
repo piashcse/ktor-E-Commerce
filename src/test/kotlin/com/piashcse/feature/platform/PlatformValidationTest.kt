@@ -8,6 +8,8 @@ import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.model.request.ShippingMethodRequest
 import com.piashcse.model.request.UserProfileRequest
+import com.piashcse.utils.validator.FieldValidationException
+import org.valiktor.ConstraintViolationException
 import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -33,7 +35,7 @@ class PlatformValidationTest {
 
     @Test
     fun `coupon blank code fails validation`() {
-        assertFailsWith<Exception> {
+        assertFailsWith<ConstraintViolationException> {
             CouponRequest(
                 code = "",
                 discountType = CouponDiscountType.FIXED,
@@ -46,7 +48,7 @@ class PlatformValidationTest {
 
     @Test
     fun `coupon zero discount fails validation`() {
-        assertFailsWith<Exception> {
+        assertFailsWith<ConstraintViolationException> {
             CouponRequest(
                 code = "SAVE10",
                 discountType = CouponDiscountType.FIXED,
@@ -59,7 +61,7 @@ class PlatformValidationTest {
 
     @Test
     fun `coupon percentage over 100 fails`() {
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<FieldValidationException> {
             CouponRequest(
                 code = "SAVE10",
                 discountType = CouponDiscountType.PERCENTAGE,
@@ -72,7 +74,7 @@ class PlatformValidationTest {
 
     @Test
     fun `coupon negative min order fails`() {
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<ConstraintViolationException> {
             CouponRequest(
                 code = "SAVE10",
                 discountType = CouponDiscountType.FIXED,
@@ -86,7 +88,7 @@ class PlatformValidationTest {
 
     @Test
     fun `coupon start after end fails`() {
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<FieldValidationException> {
             CouponRequest(
                 code = "SAVE10",
                 discountType = CouponDiscountType.FIXED,
@@ -99,7 +101,7 @@ class PlatformValidationTest {
 
     @Test
     fun `coupon zero usage limit fails`() {
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<ConstraintViolationException> {
             CouponRequest(
                 code = "SAVE10",
                 discountType = CouponDiscountType.FIXED,

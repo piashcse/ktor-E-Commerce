@@ -1,6 +1,7 @@
 package com.piashcse.model.request
 
 import com.piashcse.constants.ProductStatus
+import com.piashcse.utils.validator.validateDiscountPrice
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.isGreaterThan
@@ -35,9 +36,6 @@ data class ProductRequest(
             validate(ProductRequest::price).isNotNull().isGreaterThan(BigDecimal.ZERO)
             validate(ProductRequest::stockQuantity).isGreaterThan(-1)
         }
-        discountPrice?.let {
-            require(it > BigDecimal.ZERO) { "Discount price must be positive" }
-            require(it < price) { "Discount price must be lower than the regular price" }
-        }
+        validateDiscountPrice(price, discountPrice)
     }
 }

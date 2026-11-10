@@ -23,6 +23,8 @@ import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.verifyOwnership
 import com.piashcse.utils.validator.ValidationException
+import com.piashcse.utils.validator.requirePositivePrice
+import com.piashcse.utils.validator.validateDiscountPrice
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
@@ -48,11 +50,8 @@ data class ProductVariantRequest(
     init {
         if (sku.isBlank()) throw ValidationException("SKU is required")
         if (name.isBlank()) throw ValidationException("Variant name is required")
-        if (price <= BigDecimal.ZERO) throw ValidationException("Variant price must be positive")
-        discountPrice?.let {
-            if (it <= BigDecimal.ZERO) throw ValidationException("Discount price must be positive")
-            if (it >= price) throw ValidationException("Discount price must be lower than the regular price")
-        }
+        price.requirePositivePrice("Variant price")
+        validateDiscountPrice(price, discountPrice)
     }
 }
 

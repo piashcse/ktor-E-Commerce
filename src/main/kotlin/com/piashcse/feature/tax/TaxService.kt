@@ -14,6 +14,10 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.valiktor.functions.isBetween
+import org.valiktor.functions.isNotBlank
+import org.valiktor.functions.isNotNull
+import org.valiktor.validate
 import java.math.BigDecimal
 
 @Serializable
@@ -24,9 +28,9 @@ data class TaxRuleRequest(
     val isActive: Boolean = true,
 ) {
     init {
-        require(country.isNotBlank()) { "country is required" }
-        require(rate >= BigDecimal.ZERO && rate <= BigDecimal.ONE) {
-            "Tax rate must be between 0 and 1 (for example 0.05 = 5%)"
+        validate(this) {
+            validate(TaxRuleRequest::country).isNotNull().isNotBlank()
+            validate(TaxRuleRequest::rate).isNotNull().isBetween(BigDecimal.ZERO, BigDecimal.ONE)
         }
     }
 }
