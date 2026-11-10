@@ -8,6 +8,10 @@ hide:
 
 ### Added
 
+- Fraud/risk controls (`V36`): velocity rules (`ORDER_COUNT`, `ORDER_AMOUNT`,
+  `PAYMENT_ATTEMPTS`), user/email/IP blocklists, `REQUIRE_3DS` enforcement, AVS/CVV capture,
+  immutable `payment_risk` history, and a chargeback/dispute lifecycle. Payments return
+  `403 FRAUD_BLOCKED` when a rule blocks them; review payments appear in the high-risk feed.
 - Tax engine (`V35`): tax zones/nexus, product tax classes, inclusive vs exclusive pricing,
   customer/business exemptions, and per-line tax snapshots/breakdowns. Checkout accepts
   `businessTaxId`; order items expose `taxRate`, `taxInclusive` and `taxClassId`.
@@ -24,7 +28,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (240 operations total).
+  (253 operations total).
 
 ### Fixed
 

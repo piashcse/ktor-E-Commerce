@@ -20,6 +20,8 @@ import com.piashcse.feature.coupon.CouponRepositoryImpl
 import com.piashcse.feature.dashboard.DashboardRepository
 import com.piashcse.feature.dashboard.DashboardRepositoryImpl
 import com.piashcse.feature.featureflag.FeatureFlags
+import com.piashcse.feature.fraud.ChargebackService
+import com.piashcse.feature.fraud.FraudService
 import com.piashcse.feature.inventory.InventoryRepository
 import com.piashcse.feature.inventory.InventoryRepositoryImpl
 import com.piashcse.feature.invoice.InvoiceService
@@ -127,7 +129,9 @@ val serviceModule =
                 ManualPaymentGateway()
             }
         }
-        single<PaymentRepository> { PaymentRepositoryImpl(get()) }
+        single { FraudService() }
+        single { ChargebackService() }
+        single<PaymentRepository> { PaymentRepositoryImpl(get(), get()) }
         single<PolicyRepository> { PolicyRepositoryImpl() }
         single<ProductRepository> { ProductRepositoryImpl() }
         single<ProductCategoryRepository> { ProductCategoryRepositoryImpl() }

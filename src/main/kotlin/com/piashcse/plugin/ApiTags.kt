@@ -38,4 +38,5 @@ object ApiTags {
     const val DASHBOARD = "Dashboard"
     const val AUDIT_LOG = "Audit Log"
     const val FX = "FX"
+    const val FRAUD = "Fraud"
 }

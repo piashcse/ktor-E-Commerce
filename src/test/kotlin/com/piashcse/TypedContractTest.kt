@@ -136,7 +136,7 @@ class TypedContractTest {
     fun `payment typed round-trip enforces caller ownership`() =
         testApplication {
             val repo: PaymentRepository = mockk()
-            coEvery { repo.createPayment(any(), any()) } returns
+            coEvery { repo.createPayment(any(), any(), any()) } returns
                 PaymentResponse("pay-1", "o-1", "115.00", "USD", PaymentStatus.COMPLETED, PaymentMethod.COD, "tx-1")
             application {
                 installTestInfra(module { single<PaymentRepository> { repo } })
@@ -152,7 +152,7 @@ class TypedContractTest {
             assertEquals(HttpStatusCode.Created, res.status)
             assertEquals("pay-1", res.body<PaymentResponse>().id)
             // Security: caller id must be threaded through to the repo.
-            coVerify(exactly = 1) { repo.createPayment(any(), "user-1") }
+            coVerify(exactly = 1) { repo.createPayment(any(), "user-1", any()) }
         }
 
     @Test

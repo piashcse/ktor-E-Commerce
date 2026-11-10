@@ -1,5 +1,7 @@
 package com.piashcse.feature.payment
 
+import com.piashcse.constants.AvsResult
+import com.piashcse.constants.CvvResult
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentProvider
 import com.piashcse.constants.ScaStatus
@@ -46,6 +48,7 @@ interface PaymentGateway {
         transactionId: String?,
         returnUrl: String? = null,
         idempotencyKey: String? = null,
+        require3ds: Boolean = false,
     ): GatewayChargeResult
 
     /** Returns the amount to the original instrument. */
@@ -73,6 +76,8 @@ data class GatewayChargeResult(
     val nextActionUrl: String? = null,
     val scaStatus: ScaStatus = ScaStatus.NOT_REQUIRED,
     val providerStatus: String? = null,
+    val avsStatus: AvsResult = AvsResult.UNKNOWN,
+    val cvvStatus: CvvResult = CvvResult.UNKNOWN,
     val message: String? = null,
 )
 
@@ -167,6 +172,7 @@ class ManualPaymentGateway : PaymentGateway {
         transactionId: String?,
         returnUrl: String?,
         idempotencyKey: String?,
+        require3ds: Boolean,
     ): GatewayChargeResult =
         if (paymentMethod == PaymentMethod.COD) {
             GatewayChargeResult(
@@ -229,6 +235,7 @@ class StripePaymentGateway(
         transactionId: String?,
         returnUrl: String?,
         idempotencyKey: String?,
+        require3ds: Boolean,
     ): GatewayChargeResult {
         if (!supports(paymentMethod)) {
             return GatewayChargeResult(false, message = "Stripe does not support $paymentMethod")
@@ -254,6 +261,7 @@ class StripePaymentGateway(
                         put("description", "Order $orderId")
                         transactionId?.let { put("metadata[transaction_id]", it) }
                         put("automatic_payment_methods[allow_redirects]", "always")
+                        if (require3ds) put("payment_method_options[card][request_three_d_secure]", "any")
                         // Return URL is metadata only: confirmation (and 3DS) is client-side.
                         returnUrl?.let { put("metadata[return_url]", it) }
                     },

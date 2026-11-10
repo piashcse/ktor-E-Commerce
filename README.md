@@ -8851,6 +8851,332 @@ http://localhost:8080/api/v1/admin/products/{id}/tax-class
 {"message":"Product tax class updated"}
 ```
 </details>
+### FRAUD / RISK
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/fraud/rules</code></summary>
+
+### Description
+List fraud velocity rules.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/fraud/rules' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/fraud/rules
+```
+
+### Response
+```json
+[{"id":"uuid","metric":"ORDER_COUNT"}]
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/fraud/rules</code></summary>
+
+### Description
+Create a velocity rule.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/fraud/rules' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Velocity","metric":"ORDER_COUNT","windowMinutes":60,"threshold":5,"action":"REVIEW","priority":10}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/fraud/rules
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/fraud/rules/{id}</code></summary>
+
+### Description
+Update a velocity rule.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/fraud/rules/uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Velocity","metric":"ORDER_COUNT","windowMinutes":60,"threshold":5,"action":"REVIEW","priority":10}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/fraud/rules/{id}
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/fraud/rules/{id}</code></summary>
+
+### Description
+Delete a velocity rule.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/fraud/rules/uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/fraud/rules/{id}
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/fraud/blocklist</code></summary>
+
+### Description
+List blocklist entries.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/fraud/blocklist' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/fraud/blocklist
+```
+
+### Response
+```json
+[{"id":"uuid","type":"USER"}]
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/fraud/blocklist</code></summary>
+
+### Description
+Add a blocklist entry.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/fraud/blocklist' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"type":"EMAIL","value":"fraud@example.com","reason":"Chargeback fraud"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/fraud/blocklist
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/fraud/blocklist/{id}</code></summary>
+
+### Description
+Delete a blocklist entry.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/fraud/blocklist/uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/fraud/blocklist/{id}
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/fraud/high-risk</code></summary>
+
+### Description
+List payments with REVIEW or BLOCK decisions.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/fraud/high-risk' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/fraud/high-risk
+```
+
+### Response
+```json
+{"data":[{"id":"pay-1","riskDecision":"REVIEW"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/payments/{id}/risk</code></summary>
+
+### Description
+Record AVS/CVV results for a payment.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payments/uuid/risk' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"avsStatus":"MATCH","cvvStatus":"MISMATCH"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payments/{id}/risk
+```
+
+### Response
+```json
+{"message":"Payment risk result recorded"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/chargebacks</code></summary>
+
+### Description
+List chargebacks.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/chargebacks' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/chargebacks
+```
+
+### Response
+```json
+{"data":[{"id":"cb-1","status":"OPEN"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/chargebacks</code></summary>
+
+### Description
+Record a chargeback/dispute.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/chargebacks' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"paymentId":"pay-1","providerDisputeId":"dp-1","amount":25.00,"reason":"Fraudulent card use"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/chargebacks
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/chargebacks/{id}</code></summary>
+
+### Description
+Retrieve a chargeback.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/chargebacks/uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/chargebacks/{id}
+```
+
+### Response
+```json
+{"id":"cb-1","status":"OPEN"}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/chargebacks/{id}</code></summary>
+
+### Description
+Update chargeback status/outcome.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/chargebacks/uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"WON","outcome":"Evidence accepted"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/chargebacks/{id}
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
 ### TAX RULES
 
 <details>

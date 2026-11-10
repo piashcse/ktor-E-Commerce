@@ -13,6 +13,7 @@ interface PaymentRepository {
     suspend fun createPayment(
         paymentRequest: PaymentRequest,
         callerUserId: String,
+        ipAddress: String? = null,
     ): PaymentResponse
 
     /**

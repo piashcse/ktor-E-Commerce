@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 240  
+**Operations:** 253  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -40,6 +40,7 @@ document served by Swagger UI.
 | [KYC](#kyc) | 5 |
 | [Payout](#payout) | 10 |
 | [Tax](#tax) | 16 |
+| [Fraud](#fraud) | 13 |
 | [FX](#fx) | 2 |
 | [API Keys](#api-keys) | 3 |
 | [Feature Flags](#feature-flags) | 2 |
@@ -385,6 +386,24 @@ document served by Swagger UI.
 | `POST` | `/api/v1/admin/tax-exemptions` | Create an exemption | Admin |
 | `DELETE` | `/api/v1/admin/tax-exemptions/{id}` | Delete an exemption | Admin |
 | `PUT` | `/api/v1/admin/products/{id}/tax-class` | Assign a product tax class | Admin |
+
+## Fraud
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/api/v1/admin/fraud/rules` | List velocity rules | Admin |
+| `POST` | `/api/v1/admin/fraud/rules` | Create a velocity rule | Admin |
+| `PUT` | `/api/v1/admin/fraud/rules/{id}` | Update a velocity rule | Admin |
+| `DELETE` | `/api/v1/admin/fraud/rules/{id}` | Delete a velocity rule | Admin |
+| `GET` | `/api/v1/admin/fraud/blocklist` | List blocklist entries | Admin |
+| `POST` | `/api/v1/admin/fraud/blocklist` | Add a blocklist entry | Admin |
+| `DELETE` | `/api/v1/admin/fraud/blocklist/{id}` | Delete a blocklist entry | Admin |
+| `GET` | `/api/v1/admin/fraud/high-risk` | List review/blocked payments | Admin |
+| `POST` | `/api/v1/admin/payments/{id}/risk` | Record AVS/CVV results | Admin |
+| `GET` | `/api/v1/admin/chargebacks` | List chargebacks | Admin |
+| `POST` | `/api/v1/admin/chargebacks` | Record a chargeback | Admin |
+| `GET` | `/api/v1/admin/chargebacks/{id}` | Retrieve a chargeback | Admin |
+| `PUT` | `/api/v1/admin/chargebacks/{id}` | Update chargeback status/outcome | Admin |
 
 ## FX
 

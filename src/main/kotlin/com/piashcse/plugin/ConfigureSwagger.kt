@@ -73,6 +73,7 @@ fun Application.configureSwagger() {
             tag(ApiTags.DASHBOARD, "Admin and seller metrics")
             tag(ApiTags.AUDIT_LOG, "Administrative audit trail")
             tag(ApiTags.FX, "Currency rates")
+            tag(ApiTags.FRAUD, "Velocity rules, blocklists, risk decisions and chargebacks")
         }
     }
 }
