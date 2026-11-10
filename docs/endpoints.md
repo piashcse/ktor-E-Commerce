@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 206  
+**Operations:** 207  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -21,7 +21,7 @@ document served by Swagger UI.
 | [Brand](#brand) | 5 |
 | [Product Category](#product-category) | 5 |
 | [Product Sub Category](#product-sub-category) | 4 |
-| [Product](#product) | 22 |
+| [Product](#product) | 23 |
 | [Recommendation](#recommendation) | 1 |
 | [Review](#review) | 5 |
 | [Wishlist](#wishlist) | 5 |
@@ -138,6 +138,7 @@ document served by Swagger UI.
 | `GET` | `/api/v1/products` | Retrieve a paginated list of products with optional filters | Public |
 | `GET` | `/api/v1/products/recommendations` | Best-seller recommendations | Public |
 | `GET` | `/api/v1/products/search` | Search for products by name with fuzzy matching, faceted aggregation, and ranking | Public |
+| `GET` | `/api/v1/products/suggest` | Autocomplete over product names, categories and brands | Public |
 | `GET` | `/api/v1/products/{id}` | Get product detail | Public |
 | `GET` | `/api/v1/products/{id}/also-bought` | Frequently bought together | Public |
 | `GET` | `/api/v1/products/{id}/options` | List product options | Public |

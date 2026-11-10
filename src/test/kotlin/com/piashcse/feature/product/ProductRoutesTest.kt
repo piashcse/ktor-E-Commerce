@@ -7,6 +7,8 @@ import com.piashcse.model.response.FacetCount
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.model.response.SearchFacets
 import com.piashcse.model.response.SearchResponse
+import com.piashcse.model.response.SearchSuggestionsResponse
+import com.piashcse.model.response.SuggestionItem
 import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.sellerAuth
 import com.piashcse.service.NoOpCache
@@ -120,6 +122,37 @@ class ProductRoutesTest {
             setup()
             val res = client.get("/api/v1/products/search")
             assertEquals(HttpStatusCode.BadRequest, res.status)
+        }
+
+    @Test
+    fun `suggestions return products categories and brands`() =
+        testApplication {
+            coEvery { productRepo.getSuggestions("pho", 5) } returns
+                SearchSuggestionsResponse(
+                    "pho",
+                    listOf(SuggestionItem("prod-1", "Phone", "PRODUCT"), SuggestionItem("cat-1", "Phones", "CATEGORY")),
+                )
+            setup()
+            val res = client.get("/api/v1/products/suggest?q=pho")
+            assertEquals(HttpStatusCode.OK, res.status)
+            assertContains(res.bodyAsText(), "Phone")
+            assertContains(res.bodyAsText(), "CATEGORY")
+        }
+
+    @Test
+    fun `suggestions clamp the limit`() =
+        testApplication {
+            coEvery { productRepo.getSuggestions("pho", 10) } returns SearchSuggestionsResponse("pho", emptyList())
+            setup()
+            assertEquals(HttpStatusCode.OK, client.get("/api/v1/products/suggest?q=pho&limit=99").status)
+        }
+
+    @Test
+    fun `suggestions do not require authentication`() =
+        testApplication {
+            coEvery { productRepo.getSuggestions("", 5) } returns SearchSuggestionsResponse("", emptyList())
+            setup()
+            assertEquals(HttpStatusCode.OK, client.get("/api/v1/products/suggest").status)
         }
 
     // ─── Seller product management (SELLER role) ───

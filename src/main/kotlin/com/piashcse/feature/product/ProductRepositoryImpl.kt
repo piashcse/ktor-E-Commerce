@@ -3,6 +3,7 @@ package com.piashcse.feature.product
 import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.Message
 import com.piashcse.constants.ProductStatus
+import com.piashcse.constants.ShopStatus
 import com.piashcse.database.entities.*
 import com.piashcse.mapper.toProductResponse
 import com.piashcse.model.request.ProductRequest
@@ -13,6 +14,8 @@ import com.piashcse.model.response.FacetCount
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.model.response.SearchFacets
 import com.piashcse.model.response.SearchResponse
+import com.piashcse.model.response.SearchSuggestionsResponse
+import com.piashcse.model.response.SuggestionItem
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
@@ -24,6 +27,7 @@ import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import java.math.BigDecimal
@@ -327,6 +331,46 @@ class ProductRepositoryImpl : ProductRepository {
                 metadata = PaginationMetadata(totalCount.toLong(), searchRequest.limit, searchRequest.offset),
                 facets = facets,
             )
+        }
+
+    override suspend fun getSuggestions(
+        query: String,
+        limit: Int,
+    ): SearchSuggestionsResponse =
+        query {
+            val q = query.trim()
+            if (q.isBlank()) return@query SearchSuggestionsResponse(query, emptyList())
+            val capped = limit.coerceIn(1, 10)
+            val pattern = "%${q.lowercase()}%"
+
+            val products =
+                ProductTable.innerJoin(ShopTable)
+                    .select(ProductTable.id, ProductTable.name)
+                    .where {
+                        (ProductTable.status eq ProductStatus.ACTIVE) and
+                            ProductTable.deletedAt.isNull() and
+                            (ShopTable.status eq ShopStatus.APPROVED) and
+                            (ProductTable.name.lowerCase() like pattern)
+                    }
+                    .orderBy(ProductTable.createdAt to SortOrder.DESC)
+                    .limit(capped)
+                    .map { SuggestionItem(it[ProductTable.id].value, it[ProductTable.name], "PRODUCT") }
+
+            val categories =
+                ProductCategoryTable.select(ProductCategoryTable.id, ProductCategoryTable.name)
+                    .where { ProductCategoryTable.name.lowerCase() like pattern }
+                    .orderBy(ProductCategoryTable.name to SortOrder.ASC)
+                    .limit(capped)
+                    .map { SuggestionItem(it[ProductCategoryTable.id].value, it[ProductCategoryTable.name], "CATEGORY") }
+
+            val brands =
+                BrandTable.select(BrandTable.id, BrandTable.name)
+                    .where { BrandTable.name.lowerCase() like pattern }
+                    .orderBy(BrandTable.name to SortOrder.ASC)
+                    .limit(capped)
+                    .map { SuggestionItem(it[BrandTable.id].value, it[BrandTable.name], "BRAND") }
+
+            SearchSuggestionsResponse(q, products + categories + brands)
         }
 
     private fun querySearchIds(

@@ -3040,6 +3040,36 @@ http://localhost:8080/api/v1/seller/products/{id}/options/{optionId}/values/{val
 </details>
 
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/products/suggest</code></summary>
+
+### Description
+Public autocomplete over product names, categories and brands.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/suggest?q=phone&limit=5' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/products/suggest?q={q}&limit={limit}
+```
+
+### Response
+```json
+{
+  "query": "phone",
+  "suggestions": [
+    { "id": "prod-uuid", "text": "Phone", "type": "PRODUCT" },
+    { "id": "cat-uuid", "text": "Phones", "type": "CATEGORY" }
+  ]
+}
+```
+</details>
+
 ### REVIEW RATING
 
 <details>
