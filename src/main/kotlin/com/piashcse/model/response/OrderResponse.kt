@@ -38,4 +38,7 @@ data class OrderResponse(
     val items: List<OrderItemResponse>? = null,
     val businessTaxId: String? = null,
     val taxExempt: Boolean = false,
+    val walletDiscount: String = "0.00",
+    val giftCardDiscount: String = "0.00",
+    val giftCardCode: String? = null,
 )

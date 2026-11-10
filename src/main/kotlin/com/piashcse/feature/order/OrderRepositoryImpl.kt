@@ -6,6 +6,7 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.OrderPlacedEvent
 import com.piashcse.event.OrderStatusChangedEvent
 import com.piashcse.event.OutboxPublisher
+import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.promotion.PromotionMatch
 import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.tax.TaxService
@@ -32,6 +33,7 @@ import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -43,6 +45,7 @@ class OrderRepositoryImpl(
     private val fxService: FxService = FxService(),
     private val taxService: TaxService = TaxService(),
     private val promotionService: PromotionService = PromotionService(),
+    private val loyaltyService: LoyaltyService = LoyaltyService(),
 ) : OrderRepository {
     private fun List<OrderItemDAO>.toItemResponses() = map { it.toOrderItemResponse() }
 
@@ -224,6 +227,7 @@ class OrderRepositoryImpl(
                             promotionService.markUsedTx(promotion.id)
                         }
                     }
+                    applyWalletRedemptions(quote, checkoutRequest, userId, fxRate)
                     updateSellerTotals(quote.orders)
                     context.cartItems.forEach { it.delete() }
                     finalizePlacedOrders(quote.orders, userId, callerEmail)
@@ -531,6 +535,45 @@ class OrderRepositoryImpl(
         }
     }
 
+    private fun applyWalletRedemptions(
+        quote: CheckoutQuote,
+        request: CheckoutRequest,
+        userId: String,
+        fxRate: BigDecimal,
+    ) {
+        val points = request.usePoints.coerceAtLeast(0)
+        val creditUsd = request.walletCredit?.takeIf { it > BigDecimal.ZERO }
+        val giftCode = request.giftCardCode?.takeIf { it.isNotBlank() }
+        if (points == 0 && creditUsd == null && giftCode == null) return
+
+        val total = quote.orders.fold(BigDecimal.ZERO) { acc, order -> acc.add(order.total) }
+        if (total <= BigDecimal.ZERO) return
+        val referenceId = request.idempotencyKey?.let { "checkout:$it" } ?: quote.orders.first().id.value
+        var walletUsd = BigDecimal.ZERO
+        if (points > 0) walletUsd = walletUsd.add(loyaltyService.redeemPointsTx(userId, points, referenceId))
+        creditUsd?.let { walletUsd = walletUsd.add(loyaltyService.redeemCreditTx(userId, it, referenceId)) }
+
+        val totalUsd = total.divide(fxRate, 2, RoundingMode.HALF_UP)
+        val remainingUsd = totalUsd.subtract(walletUsd).max(BigDecimal.ZERO)
+        val giftUsd =
+            giftCode?.let {
+                loyaltyService.redeemGiftCardTx(it, userId, quote.orders.first().id.value, remainingUsd)
+            } ?: BigDecimal.ZERO
+
+        val walletTotal = walletUsd.multiply(fxRate).min(total)
+        val giftTotal = giftUsd.multiply(fxRate).min(total.subtract(walletTotal))
+        quote.orders.forEach { order ->
+            val walletShare = Money.proportionalSplit(walletTotal, order.total, total).min(order.total)
+            order.walletDiscount = walletShare
+            order.total = Money.scale2(order.total.subtract(walletShare))
+            val giftShare = Money.proportionalSplit(giftTotal, order.total.add(walletShare), total).min(order.total)
+            order.giftCardDiscount = giftShare
+            order.giftCardCode = giftCode
+            order.total = Money.scale2(order.total.subtract(giftShare))
+            order.discountAmount = Money.scale2(order.discountAmount.add(walletShare).add(giftShare))
+        }
+    }
+
     private fun updateSellerTotals(orders: List<OrderDAO>) {
         val shopIds = orders.mapNotNull { it.shopId?.value }.distinct()
         val sellersByShop =
@@ -703,6 +746,30 @@ class OrderRepositoryImpl(
                         total = total.toPlainString(),
                     )
             }
+            val preview =
+                loyaltyService.redemptionPreviewTx(
+                    userId = userId,
+                    points = checkoutRequest.usePoints,
+                    walletCreditUsd = checkoutRequest.walletCredit,
+                    giftCardCode = checkoutRequest.giftCardCode,
+                )
+            val responseTotal = BigDecimal(response.total)
+            val totalUsd = responseTotal.divide(fxRate, 2, RoundingMode.HALF_UP)
+            val walletUsd = preview.pointsUsd.add(preview.creditUsd).min(totalUsd)
+            val giftUsd = preview.giftCardUsd.min(totalUsd.subtract(walletUsd).max(BigDecimal.ZERO))
+            val walletDiscount = Money.scale2(walletUsd.multiply(fxRate)).min(responseTotal)
+            val giftDiscount = Money.scale2(giftUsd.multiply(fxRate)).min(responseTotal.subtract(walletDiscount))
+            response =
+                response.copy(
+                    walletDiscount = walletDiscount.toPlainString(),
+                    giftCardDiscount = giftDiscount.toPlainString(),
+                    total =
+                        Money.scale2(
+                            responseTotal.subtract(walletDiscount).subtract(giftDiscount).max(BigDecimal.ZERO),
+                        ).toPlainString(),
+                    pointsBalance = preview.pointsAvailable,
+                    storeCreditBalance = preview.creditAvailable.toPlainString(),
+                )
             response
         }
     }

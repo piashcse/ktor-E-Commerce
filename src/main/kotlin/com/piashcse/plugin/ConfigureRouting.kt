@@ -27,6 +27,10 @@ import com.piashcse.feature.inventory.inventorySellerRoutes
 import com.piashcse.feature.invoice.orderDocumentRoutes
 import com.piashcse.feature.kyc.adminKycRoutes
 import com.piashcse.feature.kyc.sellerKycRoutes
+import com.piashcse.feature.loyalty.giftCardAdminRoutes
+import com.piashcse.feature.loyalty.referralRoutes
+import com.piashcse.feature.loyalty.walletAdminRoutes
+import com.piashcse.feature.loyalty.walletRoutes
 import com.piashcse.feature.notification.notificationRoutes
 import com.piashcse.feature.order.orderAdminRoutes
 import com.piashcse.feature.order.orderRoutes
@@ -174,6 +178,8 @@ private fun Route.customerRoutes() {
     }.describe { tag(ApiTags.ORDER) }
     route("payments") { paymentRoutes() }.describe { tag(ApiTags.PAYMENT) }
     route("shipments") { shipmentRoutes() }.describe { tag(ApiTags.SHIPMENT) }
+    route("wallet") { walletRoutes() }.describe { tag(ApiTags.LOYALTY) }
+    route("referrals") { referralRoutes() }.describe { tag(ApiTags.LOYALTY) }
     route("policies") { policyRoutes() }.describe { tag(ApiTags.POLICY) }
     route("policy-consents") { consentRoutes() }.describe { tag(ApiTags.CONSENT) }
     route("refund-requests") { refundRequestRoutes() }.describe { tag(ApiTags.REFUND) }
@@ -224,6 +230,8 @@ private fun Route.adminRoutes() {
             }.describe { tag(ApiTags.PAYMENT) }
             route("fraud") { fraudAdminRoutes() }.describe { tag(ApiTags.FRAUD) }
             route("chargebacks") { chargebackAdminRoutes() }.describe { tag(ApiTags.FRAUD) }
+            route("gift-cards") { giftCardAdminRoutes() }.describe { tag(ApiTags.LOYALTY) }
+            route("wallets") { walletAdminRoutes() }.describe { tag(ApiTags.LOYALTY) }
             route("refund-requests") { refundAdminRoutes() }.describe { tag(ApiTags.REFUND) }
             route("rma-requests") { rmaAdminRoutes() }.describe { tag(ApiTags.RMA) }
             route("policies") { policyAdminRoutes() }.describe { tag(ApiTags.POLICY) }
