@@ -23,6 +23,7 @@ import org.koin.ktor.ext.inject
 fun Route.productRoutes() {
     val productCatalogService: ProductCatalogService by inject()
     val productRepo: ProductRepository by inject()
+    val variantService: ProductVariantService by inject()
 
     searchRateLimit {
         /**
@@ -42,6 +43,22 @@ fun Route.productRoutes() {
          */
         get {
             call.respondOk(productRepo.getProducts(call.productWithFilterRequest(defaultPerPage = 10)))
+        }
+
+        /**
+         * @tag Product
+         * @description List purchasable variants for a product
+         */
+        get("{id}/variants") {
+            call.respondOk(variantService.listVariants(call.requirePathParameter("id")))
+        }
+
+        /**
+         * @tag Product
+         * @description List option dimensions and allowed values for a product
+         */
+        get("{id}/options") {
+            call.respondOk(variantService.listOptions(call.requirePathParameter("id")))
         }
 
         /**
@@ -74,6 +91,7 @@ fun Route.productRoutes() {
 fun Route.productSellerRoutes() {
     val productRepo: ProductRepository by inject()
     val productCrudService: ProductCrudService by inject()
+    val variantService: ProductVariantService by inject()
     /**
      * @tag Product
      * @description Seller: Retrieve seller products
@@ -129,6 +147,119 @@ fun Route.productSellerRoutes() {
             }
 
             call.respondOk(imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED))
+        }
+
+        /**
+         * @tag Product
+         * @description Seller: Create a product variant
+         */
+        post("{id}/variants") {
+            val productId = call.requirePathParameter("id")
+            call.respondCreated(
+                variantService.createVariant(call.currentUserId, productId, call.receive<ProductVariantRequest>()),
+            )
+        }
+
+        /**
+         * @tag Product
+         * @description Seller: Update a product variant
+         */
+        put("{id}/variants/{variantId}") {
+            val productId = call.requirePathParameter("id")
+            val variantId = call.requirePathParameter("variantId")
+            call.respondOk(
+                variantService.updateVariant(
+                    call.currentUserId,
+                    productId,
+                    variantId,
+                    call.receive<ProductVariantRequest>(),
+                ),
+            )
+        }
+
+        /**
+         * @tag Product
+         * @description Seller: Delete a product variant
+         */
+        delete("{id}/variants/{variantId}") {
+            variantService.deleteVariant(
+                call.currentUserId,
+                call.requirePathParameter("id"),
+                call.requirePathParameter("variantId"),
+            )
+            call.respondOk(MessageResponse("Variant deleted successfully"))
+        }
+
+        /**
+         * @tag Product
+         * @description Seller: Replace the option values attached to a variant
+         */
+        put("{id}/variants/{variantId}/options") {
+            val productId = call.requirePathParameter("id")
+            val variantId = call.requirePathParameter("variantId")
+            call.respondOk(
+                variantService.setVariantOptions(
+                    call.currentUserId,
+                    productId,
+                    variantId,
+                    call.receive<SetVariantOptionsRequest>(),
+                ),
+            )
+        }
+
+        /**
+         * @tag Product
+         * @description Seller: Create an option dimension (e.g. Size)
+         */
+        post("{id}/options") {
+            val productId = call.requirePathParameter("id")
+            call.respondCreated(
+                variantService.createOption(call.currentUserId, productId, call.receive<ProductOptionRequest>()),
+            )
+        }
+
+        /**
+         * @tag Product
+         * @description Seller: Delete an option dimension and its values
+         */
+        delete("{id}/options/{optionId}") {
+            variantService.deleteOption(
+                call.currentUserId,
+                call.requirePathParameter("id"),
+                call.requirePathParameter("optionId"),
+            )
+            call.respondOk(MessageResponse("Option deleted successfully"))
+        }
+
+        /**
+         * @tag Product
+         * @description Seller: Add a value to an option (e.g. M)
+         */
+        post("{id}/options/{optionId}/values") {
+            val productId = call.requirePathParameter("id")
+            val optionId = call.requirePathParameter("optionId")
+            call.respondCreated(
+                variantService.addOptionValue(
+                    call.currentUserId,
+                    productId,
+                    optionId,
+                    call.receive<ProductOptionValueRequest>(),
+                ),
+            )
+        }
+
+        /**
+         * @tag Product
+         * @description Seller: Delete an option value
+         */
+        delete("{id}/options/{optionId}/values/{valueId}") {
+            variantService.deleteOptionValue(
+                call.currentUserId,
+                call.requirePathParameter("id"),
+                call.requirePathParameter("optionId"),
+                call.requirePathParameter("valueId"),
+            )
+            call.respondOk(MessageResponse("Option value deleted successfully"))
         }
     }
 }

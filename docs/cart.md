@@ -39,6 +39,7 @@ Add a product to the user's shopping cart with specified quantity. If the produc
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the product to add to cart |
 | `quantity` | number | Yes | Quantity of the product to add (must be positive) |
+| `variantId` | string | Conditional | Required when the product has variants |
 
 #### Headers
 
@@ -223,6 +224,7 @@ Remove a specific product from the user's cart completely, regardless of quantit
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `productId` | string | Yes | UUID of the product to remove from cart |
+| `variantId` | string | No | Variant to remove; omit for base-product lines |
 
 #### Headers
 
@@ -369,6 +371,8 @@ curl -X 'GET' \
 | `items[].stockQuantity` | number | Current effective stock quantity |
 | `items[].shopId` | string | Shop UUID (nullable) |
 | `items[].shopName` | string | Shop name (nullable) |
+| `items[].variantId` | string | Variant UUID (nullable) |
+| `items[].variantName` | string | Variant label (nullable) |
 | `subtotal` | number | Total price of all items before tax |
 | `estimatedTax` | number | Estimated tax amount (10% of subtotal) |
 | `itemCount` | number | Number of unique products in cart |

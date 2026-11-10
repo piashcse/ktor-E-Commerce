@@ -25,7 +25,11 @@ fun Route.cartRoutes() {
              * @description Add an item to the authenticated user's cart
              */
             post {
-                call.respondCreated(call.receive<CartRequest>().let { cartRepo.createCart(call.currentUserId, it.productId, it.quantity) })
+                call.respondCreated(
+                    call.receive<CartRequest>().let {
+                        cartRepo.createCart(call.currentUserId, it.productId, it.quantity, it.variantId)
+                    },
+                )
             }
 
             /**
@@ -33,7 +37,10 @@ fun Route.cartRoutes() {
              * @description Set the absolute quantity of an item in the cart (0 removes the item)
              */
             put("update") {
-                val result = call.receive<CartRequest>().let { cartRepo.updateCartQuantity(call.currentUserId, it.productId, it.quantity) }
+                val result =
+                    call.receive<CartRequest>().let {
+                        cartRepo.updateCartQuantity(call.currentUserId, it.productId, it.quantity, it.variantId)
+                    }
                 call.respondOk(result ?: MessageResponse("Item removed from cart"))
             }
 
@@ -43,7 +50,8 @@ fun Route.cartRoutes() {
              */
             delete("remove") {
                 val productId = call.requireQueryParameter("productId")
-                call.respondOk(cartRepo.removeCartItem(call.currentUserId, productId))
+                val variantId = call.request.queryParameters["variantId"]
+                call.respondOk(cartRepo.removeCartItem(call.currentUserId, productId, variantId))
             }
 
             /**

@@ -16,6 +16,7 @@ object StockReservationTable : BaseIdTable("stock_reservation") {
     val orderId = reference("order_id", OrderTable.id).index()
     val orderItemId = reference("order_item_id", OrderItemTable.id)
     val productId = reference("product_id", ProductTable.id)
+    val variantId = reference("variant_id", ProductVariantTable.id).nullable()
     val shopId = reference("shop_id", ShopTable.id).nullable()
     val quantity = integer("quantity")
     val status = enumerationByName<ReservationStatus>("status", 20).default(ReservationStatus.ACTIVE)
@@ -33,6 +34,7 @@ class StockReservationDAO(id: EntityID<String>) : BaseEntity(id, StockReservatio
     var orderId by StockReservationTable.orderId
     var orderItemId by StockReservationTable.orderItemId
     var productId by StockReservationTable.productId
+    var variantId by StockReservationTable.variantId
     var shopId by StockReservationTable.shopId
     var quantity by StockReservationTable.quantity
     var status by StockReservationTable.status

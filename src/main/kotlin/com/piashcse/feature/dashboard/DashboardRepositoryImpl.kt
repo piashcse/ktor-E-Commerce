@@ -216,7 +216,8 @@ class DashboardRepositoryImpl : DashboardRepository {
             val inventoryMap =
                 if (productIds.isNotEmpty()) {
                     InventoryDAO.find { InventoryTable.productId inList productIds }
-                        .associate { it.productId.value to it.stockQuantity }
+                        .groupBy { it.productId.value }
+                        .mapValues { (_, rows) -> rows.sumOf { it.stockQuantity } }
                 } else {
                     emptyMap()
                 }

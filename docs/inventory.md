@@ -76,3 +76,15 @@ curl -X 'GET' \
 ## Multi-warehouse
 
 Sellers manage physical locations at `/api/v1/seller/warehouses` (create/list/update/deactivate). Inventory rows are per `(product, shop, warehouse)`; `stockQuantity` is tracked per warehouse, and order placement allocates stock across warehouses oldest-first. Existing shops receive a `DEFAULT` warehouse via V24.
+
+## Variants
+
+Inventory requests accept an optional `variantId`. Variant rows are unique per `(product, shop, warehouse, variant)`, while `variantId = NULL` keeps legacy product-level stock. When updating stock or reading product inventory for a variant, pass `?variantId=...`:
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/inventories/stock/{productId}?quantity=10&operation=add&variantId={variantId}' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+See [Product Variants](product-variants.md).
