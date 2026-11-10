@@ -51,6 +51,7 @@ nav:
       - Coupon: coupon.md
       - Shipping Address: shipping-address.md
       - Shipping Method: shipping-method.md
+      - Shipments: shipping.md
       - Inventory: inventory.md
       - Warehouses: warehouse.md
       - Refund Request: refund-request.md

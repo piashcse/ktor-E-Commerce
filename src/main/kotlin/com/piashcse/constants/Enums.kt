@@ -117,6 +117,18 @@ enum class WebhookEventStatus {
     FAILED,
 }
 
+/** Lifecycle of a carrier shipment/label. */
+@Serializable
+enum class ShipmentStatus {
+    PENDING,
+    LABEL_PURCHASED,
+    IN_TRANSIT,
+    DELIVERED,
+    RETURNED,
+    CANCELED,
+    FAILED,
+}
+
 @Serializable
 enum class PolicyType {
     PRIVACY_POLICY,

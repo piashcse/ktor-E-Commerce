@@ -8,6 +8,10 @@ hide:
 
 ### Added
 
+- Shipping carrier integration (`SHIPPING_PROVIDER=shippo`): rate quotes, label purchase,
+  per-line partial fulfillment, shipment/parcel history, and signed tracking webhooks
+  (`V34` adds `shipment`, `shipment_item` and `carrier_webhook_event`). Orders move to
+  `SHIPPED` when every unit is allocated and to `DELIVERED` when every parcel is delivered.
 - Payment provider adapter (`PAYMENT_PROVIDER=stripe`): PaymentIntent creation with
   `clientSecret`/`nextActionUrl`, 3DS/SCA status propagation, signed webhooks deduplicated by
   `(provider, event_id)`, and provider-side refunds for `refundMethod=ORIGINAL`
@@ -17,7 +21,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (223 operations total).
+  (228 operations total).
 
 ### Fixed
 

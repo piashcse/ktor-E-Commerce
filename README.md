@@ -5054,6 +5054,139 @@ http://localhost:8080/api/v1/admin/payments/{id}/confirm
 </details>
 
 
+### SHIPMENT
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/orders/{id}/shipping-quotes</code></summary>
+
+### Description
+Get live carrier rates for an order from the configured shipping provider.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/orders/order-uuid/shipping-quotes' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "origin": {"name":"Warehouse","streetAddress":"12 Main St","city":"Dhaka","zipCode":"1207","country":"BD"},
+  "destination": {"name":"Customer","streetAddress":"9 Side Rd","city":"Chattogram","zipCode":"4000","country":"BD"},
+  "parcels": [{"length":10,"width":8,"height":4,"weight":2}]
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/orders/{id}/shipping-quotes
+```
+
+### Response
+```json
+[
+  {"id":"rate_123","carrier":"USPS","service":"Priority Mail","amount":"7.50","currency":"USD","estimatedDays":2}
+]
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/orders/{id}/shipments</code></summary>
+
+### Description
+List every parcel/shipment recorded for an order.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/orders/order-uuid/shipments' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/orders/{id}/shipments
+```
+
+### Response
+A list of shipments with carrier, tracking, label URL, status and allocated items.
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/orders/{id}/shipments</code></summary>
+
+### Description
+Purchase a carrier label. Omit `items` to ship every remaining unit; supply lines for partial
+fulfillment. The order becomes `SHIPPED` once all units are allocated.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/orders/order-uuid/shipments' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"rateId":"rate_123","items":[{"orderItemId":"item-uuid","quantity":1}]}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/orders/{id}/shipments
+```
+
+### Response
+`201 Created` with the shipment, tracking number, label URL and allocated items.
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/shipments/{id}</code></summary>
+
+### Description
+Retrieve one shipment and its allocated order lines.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shipments/shipment-uuid' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/shipments/{id}
+```
+
+### Response
+```json
+{"id":"shipment-uuid","orderId":"order-uuid","carrier":"USPS","status":"LABEL_PURCHASED","trackingNumber":"9400111","items":[]}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/shipments/webhook/{provider}</code></summary>
+
+### Description
+Carrier tracking webhook. The raw body is verified with `X-Carrier-Signature` (HMAC-SHA256 or the
+shared secret). Deliveries are deduplicated by `(provider,eventId)`; delivery of every parcel moves
+the order to `DELIVERED`.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/shipments/webhook/shippo' \
+  -H 'X-Carrier-Signature: <hmac-or-shared-secret>' \
+  -H 'Content-Type: application/json' \
+  -d '{"event":"track_updated","data":{"tracking_number":"9400111","tracking_status":{"status":"DELIVERED"}}}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/shipments/webhook/{provider}
+```
+
+### Response
+```json
+{ "message": "Webhook processed" }
+```
+</details>
+
 ### PRIVACY POLICY
 
 <details>
