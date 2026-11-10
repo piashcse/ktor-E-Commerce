@@ -27,6 +27,40 @@ import java.util.*
 private fun Throwable.firstConstraintViolation(): ConstraintViolationException? =
     generateSequence(this) { it.cause }.filterIsInstance<ConstraintViolationException>().firstOrNull()
 
+private fun Throwable.firstAppException(): AppException? =
+    generateSequence(this) { it.cause }.filterIsInstance<AppException>().firstOrNull()
+
+private suspend fun ApplicationCall.respondAppException(error: AppException) {
+    when (error) {
+        is FieldValidationException -> {
+            statusPageLog.warn("Validation failed: ${error.violations.joinToString { it.field }}")
+            respond(
+                HttpStatusCode.BadRequest,
+                errorResponse(error.message ?: "Validation failed", HttpStatusCode.BadRequest, error.errorCode)
+                    .copy(errors = error.violations.map { FieldError(it.field, it.message) }),
+            )
+        }
+        is MissingParameterException -> {
+            respond(
+                HttpStatusCode.BadRequest,
+                errorResponse(error.message ?: "Missing parameter", HttpStatusCode.BadRequest, error.errorCode)
+                    .copy(errors = listOf(FieldError(error.parameterName, error.message ?: "Missing parameter"))),
+            )
+        }
+        is InvalidEnumValueException -> {
+            respond(
+                HttpStatusCode.BadRequest,
+                errorResponse(error.message ?: "Invalid value", HttpStatusCode.BadRequest, error.errorCode)
+                    .copy(errors = error.fieldName?.let { listOf(FieldError(it, error.message ?: "Invalid value")) }),
+            )
+        }
+        else -> {
+            statusPageLog.warn("${error::class.simpleName}: ${error.message}")
+            respond(error.code, errorResponse(error.message ?: Message.Errors.INTERNAL, error.code, error.errorCode))
+        }
+    }
+}
+
 private suspend fun ApplicationCall.respondValidationError(exception: ConstraintViolationException) {
     val fieldErrors =
         exception.constraintViolations
@@ -95,38 +129,14 @@ fun Application.configureStatusPage() {
                 return@exception
             }
 
+            // DTO validation can be wrapped by Ktor's body-conversion exception; unwrap it
+            // so field-level errors survive.
+            error.firstAppException()?.let { appError ->
+                call.respondAppException(appError)
+                return@exception
+            }
+
             when (error) {
-                is FieldValidationException -> {
-                    statusPageLog.warn("Validation failed: ${error.violations.joinToString { it.field }}")
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        call.errorResponse(error.message ?: "Validation failed", HttpStatusCode.BadRequest, error.errorCode)
-                            .copy(errors = error.violations.map { FieldError(it.field, it.message) }),
-                    )
-                }
-                is MissingParameterException -> {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        call.errorResponse(error.message ?: "Missing parameter", HttpStatusCode.BadRequest, error.errorCode)
-                            .copy(errors = listOf(FieldError(error.parameterName, error.message ?: "Missing parameter"))),
-                    )
-                }
-                is InvalidEnumValueException -> {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        call.errorResponse(error.message ?: "Invalid value", HttpStatusCode.BadRequest, error.errorCode)
-                            .copy(
-                                errors =
-                                    error.fieldName?.let {
-                                        listOf(FieldError(it, error.message ?: "Invalid value"))
-                                    },
-                            ),
-                    )
-                }
-                is AppException -> {
-                    statusPageLog.warn("${error::class.simpleName}: ${error.message}")
-                    call.respond(error.code, call.errorResponse(error.message ?: Message.Errors.INTERNAL, error.code, error.errorCode))
-                }
                 // MissingRequestParameterException extends BadRequestException — must come first.
                 is MissingRequestParameterException -> {
                     call.respond(

@@ -4,7 +4,7 @@ import com.piashcse.database.entities.ReviewRatingDAO
 import com.piashcse.model.response.ReviewRatingResponse
 import com.piashcse.utils.common.DateTimes.toUtcString
 
-fun ReviewRatingDAO.toReviewRatingResponse() =
+fun ReviewRatingDAO.toReviewRatingResponse(images: List<String> = emptyList()) =
     ReviewRatingResponse(
         id = id.value,
         userId = userId.value,
@@ -15,6 +15,7 @@ fun ReviewRatingDAO.toReviewRatingResponse() =
         isVerifiedPurchase = isVerifiedPurchase,
         helpfulCount = helpfulCount,
         notHelpfulCount = notHelpfulCount,
+        images = images,
         status = status,
         createdAt = createdAt.toUtcString(),
     )

@@ -2,6 +2,7 @@ package com.piashcse.database
 
 import com.piashcse.constants.CouponDiscountType
 import com.piashcse.constants.PolicyType
+import com.piashcse.constants.ReviewStatus
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.InventoryDAO
@@ -191,14 +192,29 @@ class CommerceServiceIntegrationTest {
         val reviews = ReviewRatingRepositoryImpl()
         val review =
             kotlinx.coroutines.runBlocking {
-                reviews.addReviewRating(customerId, ReviewRatingRequest(productId, "Great product", 5))
+                reviews.addReviewRating(
+                    customerId,
+                    ReviewRatingRequest(productId, "Great product", 5, listOf("/uploads/review-images/a.png")),
+                )
             }
         assertEquals(5, review.rating)
+        assertEquals(listOf("/uploads/review-images/a.png"), review.images)
         assertTrue(kotlinx.coroutines.runBlocking { reviews.getReviewRating(productId, 10, 0) }.data.isNotEmpty())
         val updatedReview = kotlinx.coroutines.runBlocking { reviews.updateReviewRating(customerId, review.id, "Updated", 4) }
         assertEquals(4, updatedReview.rating)
+        val withImages =
+            kotlinx.coroutines.runBlocking {
+                reviews.updateReviewImages(customerId, review.id, listOf("/uploads/review-images/b.png"))
+            }
+        assertEquals(listOf("/uploads/review-images/b.png"), withImages.images)
         val helpful = kotlinx.coroutines.runBlocking { reviews.markHelpful(customerId, review.id, true) }
         assertTrue(helpful.helpfulCount >= 1)
+        assertEquals(
+            ReviewStatus.HIDDEN,
+            kotlinx.coroutines.runBlocking { reviews.moderateReview(review.id, ReviewStatus.HIDDEN) }.status,
+        )
+        assertTrue(kotlinx.coroutines.runBlocking { reviews.getReviews(ReviewStatus.HIDDEN, 10, 0) }.data.any { it.id == review.id })
+        assertTrue(kotlinx.coroutines.runBlocking { reviews.getReviewRating(productId, 10, 0) }.data.none { it.id == review.id })
         assertEquals(review.id, kotlinx.coroutines.runBlocking { reviews.deleteReviewRating(customerId, review.id) })
 
         // Profile

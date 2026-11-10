@@ -12,6 +12,8 @@ import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ReviewHelpfulVoteDAO
 import com.piashcse.database.entities.ReviewHelpfulVoteTable
+import com.piashcse.database.entities.ReviewImageDAO
+import com.piashcse.database.entities.ReviewImageTable
 import com.piashcse.database.entities.ReviewRatingDAO
 import com.piashcse.database.entities.ReviewRatingTable
 import com.piashcse.database.entities.UserTable
@@ -22,7 +24,9 @@ import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
+import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -46,18 +50,51 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
         }
     }
 
+    private fun imagesFor(reviewIds: List<EntityID<String>>): Map<String, List<String>> {
+        if (reviewIds.isEmpty()) return emptyMap()
+        return ReviewImageDAO.find { ReviewImageTable.reviewId inList reviewIds }
+            .orderBy(ReviewImageTable.sortOrder to SortOrder.ASC)
+            .groupBy { it.reviewId.value }
+            .mapValues { (_, rows) -> rows.map { it.imageUrl } }
+    }
+
+    private fun ReviewRatingDAO.toResponseWithImages(): ReviewRatingResponse =
+        toReviewRatingResponse(imagesFor(listOf(id))[id.value].orEmpty())
+
     override suspend fun getReviewRating(
         productId: String,
         limit: Int,
         offset: Int,
     ): PaginatedResponse<ReviewRatingResponse> =
         query {
-            ReviewRatingTable.selectAll()
-                .andWhere { ReviewRatingTable.productId eq productId }
-                .andWhere { ReviewRatingTable.status eq ReviewStatus.ACTIVE }
-                .toPaginatedResponse(limit, offset) {
-                    ReviewRatingDAO.wrapRow(it).toReviewRatingResponse()
-                }
+            val (totalCount, rows) =
+                ReviewRatingTable.selectAll()
+                    .andWhere { ReviewRatingTable.productId eq productId }
+                    .andWhere { ReviewRatingTable.status eq ReviewStatus.ACTIVE }
+                    .toPaginatedList(limit, offset) { ReviewRatingDAO.wrapRow(it) }
+            val images = imagesFor(rows.map { it.id })
+            PaginatedResponse(
+                rows.map { it.toReviewRatingResponse(images[it.id.value].orEmpty()) },
+                com.piashcse.utils.common.PaginationMetadata(totalCount, limit, offset),
+            )
+        }
+
+    override suspend fun getReviews(
+        status: ReviewStatus?,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<ReviewRatingResponse> =
+        query {
+            val query = ReviewRatingTable.selectAll()
+            status?.let { query.andWhere { ReviewRatingTable.status eq it } }
+            val (totalCount, rows) =
+                query.orderBy(ReviewRatingTable.createdAt to SortOrder.DESC)
+                    .toPaginatedList(limit, offset) { ReviewRatingDAO.wrapRow(it) }
+            val images = imagesFor(rows.map { it.id })
+            PaginatedResponse(
+                rows.map { it.toReviewRatingResponse(images[it.id.value].orEmpty()) },
+                com.piashcse.utils.common.PaginationMetadata(totalCount, limit, offset),
+            )
         }
 
     override suspend fun addReviewRating(
@@ -99,8 +136,15 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                         isVerifiedPurchase = verified
                         status = ReviewStatus.ACTIVE
                     }
+                reviewRating.images.forEachIndexed { index, url ->
+                    ReviewImageDAO.new {
+                        this.reviewId = review.id
+                        imageUrl = url
+                        sortOrder = index
+                    }
+                }
                 recalculateProductRating(reviewRating.productId)
-                review.toReviewRatingResponse()
+                review.toResponseWithImages()
             }
         }
 
@@ -120,7 +164,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                     it.reviewText = review
                     it.rating = rating
                     recalculateProductRating(it.productId.value)
-                    it.toReviewRatingResponse()
+                    it.toResponseWithImages()
                 } ?: review.throwNotFound("Review")
         }
 
@@ -153,7 +197,41 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                 }
                 existingVote.helpful = helpful
             }
-            r.toReviewRatingResponse()
+            r.toResponseWithImages()
+        }
+
+    override suspend fun updateReviewImages(
+        userId: String,
+        reviewId: String,
+        images: List<String>,
+    ): ReviewRatingResponse =
+        query {
+            val review = ReviewRatingDAO.findById(reviewId) ?: reviewId.throwNotFound("Review")
+            review.verifyOwnership(userId, "review") { r -> r.userId.value }
+            if (images.size > ReviewRatingRequest.MAX_IMAGES) {
+                throw ValidationException("At most ${ReviewRatingRequest.MAX_IMAGES} images are allowed")
+            }
+            if (images.any { it.isBlank() }) throw ValidationException("Image URLs must not be blank")
+            ReviewImageDAO.find { ReviewImageTable.reviewId eq review.id }.forEach { it.delete() }
+            images.forEachIndexed { index, url ->
+                ReviewImageDAO.new {
+                    this.reviewId = review.id
+                    imageUrl = url
+                    sortOrder = index
+                }
+            }
+            review.toResponseWithImages()
+        }
+
+    override suspend fun moderateReview(
+        reviewId: String,
+        status: ReviewStatus,
+    ): ReviewRatingResponse =
+        query {
+            val review = ReviewRatingDAO.findById(reviewId) ?: reviewId.throwNotFound("Review")
+            review.status = status
+            recalculateProductRating(review.productId.value)
+            review.toResponseWithImages()
         }
 
     override suspend fun deleteReviewRating(
@@ -166,6 +244,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                     it.verifyOwnership(userId, "review") { r -> r.userId.value }
                     val productId = it.productId.value
                     ReviewHelpfulVoteDAO.find { ReviewHelpfulVoteTable.reviewId eq it.id }.forEach { vote -> vote.delete() }
+                    ReviewImageDAO.find { ReviewImageTable.reviewId eq it.id }.forEach { image -> image.delete() }
                     it.delete()
                     recalculateProductRating(productId)
                     reviewId

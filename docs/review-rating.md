@@ -20,7 +20,10 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/api/v1/reviews` | Create a New Review | Yes |
 | `PUT` | `/api/v1/reviews/{id}` | Update Review | Yes |
 | `DELETE` | `/api/v1/reviews/{id}` | Delete Review | Yes |
+| `PUT` | `/api/v1/reviews/{id}/images` | Replace review images (max 8) | Yes |
 | `POST` | `/api/v1/reviews/{id}/helpful` | Vote a review helpful | Yes |
+| `GET` | `/api/v1/admin/reviews` | Admin: list reviews by status | Yes (Admin) |
+| `PUT` | `/api/v1/admin/reviews/{id}/status` | Admin: moderate a review | Yes (Admin) |
 
 ---
 
@@ -266,6 +269,37 @@ curl -X 'POST' \
 ```
 
 Returns the updated review with its `helpfulCount`.
+
+### 6. Replace Review Images
+
+**`PUT /api/v1/reviews/{id}/images`**
+
+Replaces the review gallery. At most **8** image URLs are allowed; each must be non-blank.
+
+```json
+{
+  "images": [
+    "/uploads/review-images/front.png",
+    "/uploads/review-images/side.png"
+  ]
+}
+```
+
+Only the review owner can replace images.
+
+### 7. Admin Review Moderation
+
+**`GET /api/v1/admin/reviews?status=FLAGGED`**
+
+Lists reviews, optionally filtered by `ACTIVE`, `HIDDEN` or `FLAGGED`.
+
+**`PUT /api/v1/admin/reviews/{id}/status`**
+
+```json
+{ "status": "HIDDEN" }
+```
+
+Hiding a review removes it from public product review lists and recalculates the product rating.
 
 ---
 

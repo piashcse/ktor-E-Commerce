@@ -2,19 +2,31 @@
 
 package com.piashcse.feature.review_rating
 
+import com.piashcse.constants.ReviewStatus
 import com.piashcse.model.request.ReviewRatingRequest
+import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.customerAuth
+import com.piashcse.plugin.jsonBody
+import com.piashcse.plugin.ok
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.service.CatalogCache
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
+import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
+
+@Serializable
+data class ReviewImagesRequest(val images: List<String>)
+
+@Serializable
+data class ReviewModerationRequest(val status: ReviewStatus)
 
 /**
  * Product review and rating routes.
@@ -53,6 +65,19 @@ fun Route.reviewRatingRoutes() {
                 call.respondOk(result)
             }.describe { summary = "Update an existing review and rating" }
 
+            put("{id}/images") {
+                val id = call.requirePathParameter("id")
+                val body = call.receive<ReviewImagesRequest>()
+                val result = reviewRatingRepo.updateReviewImages(call.currentUserId, id, body.images)
+                CatalogCache.invalidate()
+                call.respondOk(result)
+            }.describe {
+                summary = "Replace review images"
+                description = "At most 8 image URLs"
+                requestBody { jsonBody<ReviewImagesRequest>() }
+                responses { ok<com.piashcse.model.response.ReviewRatingResponse>("Updated review") }
+            }
+
             /**
              * Delete a review and rating
              */
@@ -71,6 +96,33 @@ fun Route.reviewRatingRoutes() {
                 summary = "Vote a review helpful"
                 description = "helpful=false removes the vote"
             }
+        }
+    }
+}
+
+/** Admin review moderation: list by status and hide/flag/restore reviews. */
+fun Route.reviewAdminRoutes() {
+    val reviewRatingRepo: ReviewRatingRepository by inject()
+    get {
+        val (limit, offset) = call.paginateQueryParams()
+        val status = call.request.queryParameters["status"]?.parseEnum<ReviewStatus>("status")
+        call.respondOk(reviewRatingRepo.getReviews(status, limit, offset))
+    }.describe {
+        summary = "Admin: list reviews"
+        description = "Optional status filter"
+    }
+    adminWriteRateLimit {
+        put("{id}/status") {
+            val id = call.requirePathParameter("id")
+            val body = call.receive<ReviewModerationRequest>()
+            val result = reviewRatingRepo.moderateReview(id, body.status)
+            CatalogCache.invalidate()
+            call.respondOk(result)
+        }.describe {
+            summary = "Admin: moderate a review"
+            description = "Set ACTIVE, HIDDEN or FLAGGED"
+            requestBody { jsonBody<ReviewModerationRequest>() }
+            responses { ok<com.piashcse.model.response.ReviewRatingResponse>("Updated review") }
         }
     }
 }

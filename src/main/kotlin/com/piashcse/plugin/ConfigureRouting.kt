@@ -48,6 +48,7 @@ import com.piashcse.feature.recommendation.recommendationRoutes
 import com.piashcse.feature.refund_request.refundAdminRoutes
 import com.piashcse.feature.refund_request.refundRequestRoutes
 import com.piashcse.feature.refund_request.refundSellerRoutes
+import com.piashcse.feature.review_rating.reviewAdminRoutes
 import com.piashcse.feature.review_rating.reviewRatingRoutes
 import com.piashcse.feature.rma.rmaAdminRoutes
 import com.piashcse.feature.rma.rmaRoutes
@@ -207,6 +208,7 @@ private fun Route.adminRoutes() {
             route("policy-consents") { consentAdminRoutes() }.describe { tag(ApiTags.CONSENT) }
             route("shipping-methods") { shippingMethodAdminRoutes() }.describe { tag(ApiTags.SHIPPING_METHOD) }
             route("coupons") { couponAdminRoutes() }.describe { tag(ApiTags.COUPON) }
+            route("reviews") { reviewAdminRoutes() }.describe { tag(ApiTags.REVIEW) }
             route("dashboard") { dashboardAdminRoutes() }.describe { tag(ApiTags.DASHBOARD) }
             route("audit-logs") { auditLogAdminRoutes() }.describe { tag(ApiTags.AUDIT_LOG) }
             route("payouts") { payoutAdminRoutes() }.describe { tag(ApiTags.PAYOUT) }

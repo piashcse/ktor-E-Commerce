@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 209  
+**Operations:** 212  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -23,7 +23,7 @@ document served by Swagger UI.
 | [Product Sub Category](#product-sub-category) | 4 |
 | [Product](#product) | 23 |
 | [Recommendation](#recommendation) | 1 |
-| [Review](#review) | 5 |
+| [Review](#review) | 8 |
 | [Wishlist](#wishlist) | 5 |
 | [Cart](#cart) | 6 |
 | [Checkout](#checkout) | 8 |
@@ -172,7 +172,10 @@ document served by Swagger UI.
 | `POST` | `/api/v1/reviews` | Submit a new review and rating for a product | Authenticated |
 | `PUT` | `/api/v1/reviews/{id}` | Update an existing review and rating | Authenticated |
 | `DELETE` | `/api/v1/reviews/{id}` | Delete a review and rating | Authenticated |
+| `PUT` | `/api/v1/reviews/{id}/images` | Replace review images (max 8) | Authenticated |
 | `POST` | `/api/v1/reviews/{id}/helpful` | Vote a review helpful | Authenticated |
+| `GET` | `/api/v1/admin/reviews` | Admin: list reviews by status | Admin |
+| `PUT` | `/api/v1/admin/reviews/{id}/status` | Admin: moderate a review | Admin |
 
 ## Wishlist
 
