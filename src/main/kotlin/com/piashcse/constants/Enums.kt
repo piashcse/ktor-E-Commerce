@@ -91,6 +91,32 @@ enum class PaymentMethod {
     COD,
 }
 
+/** Payment processor that owns the charge. */
+@Serializable
+enum class PaymentProvider {
+    MANUAL,
+    STRIPE,
+}
+
+/** Strong Customer Authentication / 3-D Secure state reported by the provider. */
+@Serializable
+enum class ScaStatus {
+    NOT_REQUIRED,
+    REQUIRED,
+    PENDING,
+    AUTHENTICATED,
+    FAILED,
+}
+
+/** Processing state of a provider webhook delivery. */
+@Serializable
+enum class WebhookEventStatus {
+    RECEIVED,
+    PROCESSED,
+    IGNORED,
+    FAILED,
+}
+
 @Serializable
 enum class PolicyType {
     PRIVACY_POLICY,

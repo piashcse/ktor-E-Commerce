@@ -23,6 +23,10 @@ object RefundRequestTable : BaseIdTable("refund_request") {
     val taxRefund = decimal("tax_refund", 10, 2).default(java.math.BigDecimal("0.00"))
     val refundMethod = enumerationByName("refund_method", 50, RefundMethod::class).nullable()
     val trackingNumber = varchar("tracking_number", 100).nullable()
+
+    /** Provider refund object id when the refund is returned to the original instrument. */
+    val providerRefundId = varchar("provider_refund_id", 150).nullable()
+    val providerRefundStatus = varchar("provider_refund_status", 30).nullable()
     val requestedAt = datetime("requested_at").clientDefault { currentUtc() }
     val resolvedAt = datetime("resolved_at").nullable()
     // createdAt and updatedAt are inherited from BaseIdTable
@@ -44,6 +48,8 @@ class RefundRequestDAO(id: EntityID<String>) : BaseEntity(id, RefundRequestTable
     var taxRefund by RefundRequestTable.taxRefund
     var refundMethod by RefundRequestTable.refundMethod
     var trackingNumber by RefundRequestTable.trackingNumber
+    var providerRefundId by RefundRequestTable.providerRefundId
+    var providerRefundStatus by RefundRequestTable.providerRefundStatus
     var requestedAt by RefundRequestTable.requestedAt
     var resolvedAt by RefundRequestTable.resolvedAt
 }

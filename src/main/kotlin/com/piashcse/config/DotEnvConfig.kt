@@ -30,6 +30,13 @@ object DotEnvConfig {
     val emailSslEnabled: Boolean get() = DotEnv.getBoolean("EMAIL_SSL", false)
     val uploadDir: String get() = DotEnv.get("UPLOAD_DIR", "uploads")
 
+    /** "manual" keeps COD-only behaviour; "stripe" enables card payments + webhooks. */
+    val paymentProvider: String get() = DotEnv.get("PAYMENT_PROVIDER", "manual").lowercase()
+    val stripeSecretKey: String get() = DotEnv.get("STRIPE_SECRET_KEY", "")
+    val stripeWebhookSecret: String get() = DotEnv.get("STRIPE_WEBHOOK_SECRET", "")
+    val stripeBaseUrl: String get() = DotEnv.get("STRIPE_BASE_URL", "https://api.stripe.com")
+    val stripeWebhookToleranceSeconds: Long get() = DotEnv.getInt("STRIPE_WEBHOOK_TOLERANCE_SECONDS", 300).toLong()
+
     /** Optional read-replica JDBC URL; when absent reads use the primary. */
     val dbReadUrl: String? get() = DotEnv.get("DB_READ_URL")
     val dbPoolSize: Int get() = DotEnv.getInt("DB_POOL_SIZE", 10)

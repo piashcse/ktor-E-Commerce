@@ -8,11 +8,16 @@ hide:
 
 ### Added
 
+- Payment provider adapter (`PAYMENT_PROVIDER=stripe`): PaymentIntent creation with
+  `clientSecret`/`nextActionUrl`, 3DS/SCA status propagation, signed webhooks deduplicated by
+  `(provider, event_id)`, and provider-side refunds for `refundMethod=ORIGINAL`
+  (`V33` adds provider/SCA columns, a webhook inbox and refund references).
 - TOTP multi-factor authentication (`V32`): users can start setup, enable MFA with a verified
   6-digit code, and disable it the same way. Login now accepts an optional `mfaCode`; accounts with
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
-- Endpoint index and README now document the three MFA operations (222 operations total).
+- Endpoint index and README now document the MFA and payment-webhook operations
+  (223 operations total).
 
 ### Fixed
 

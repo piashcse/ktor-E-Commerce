@@ -6,6 +6,7 @@ import com.piashcse.model.request.PaymentRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.writeRateLimit
+import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey
 import com.piashcse.utils.extension.paginateQueryParams
@@ -21,6 +22,23 @@ import org.koin.ktor.ext.inject
  */
 fun Route.paymentRoutes() {
     val paymentRepo: PaymentRepository by inject()
+
+    /**
+     * Provider webhook. Signature verification happens inside the repository so
+     * invalid deliveries never touch the ledger.
+     */
+    post("webhook/{provider}") {
+        val provider = call.requirePathParameter("provider")
+        val signature =
+            call.request.headers["Stripe-Signature"]
+                ?: call.request.headers["X-Webhook-Signature"]
+        val result = paymentRepo.handleWebhook(provider, call.receiveText(), signature)
+        call.respondOk(MessageResponse(result.message))
+    }.describe {
+        summary = "Payment provider webhook"
+        description = "Verifies the provider signature and applies payment/refund state changes idempotently"
+    }
+
     customerOnlyAuth {
         writeRateLimit {
             /**

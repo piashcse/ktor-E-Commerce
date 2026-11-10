@@ -4876,6 +4876,36 @@ http://localhost:8080/api/v1/orders/{id}/packing-slip
 ### PAYMENT
 
 <details>
+<summary> <code>POST</code> <code>/api/v1/payments/webhook/{provider}</code></summary>
+
+### Description
+Payment-provider webhook. The raw body is verified with the provider signature
+(`Stripe-Signature` or `X-Webhook-Signature`) before any ledger update. Deliveries are
+deduplicated by `(provider,eventId)` and repeated calls return `200` without side effects.
+`payment_intent.succeeded` completes the payment and marks the order paid;
+`payment_intent.payment_failed` marks it failed; `refund.updated` updates the refund state.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/payments/webhook/stripe' \
+  -H 'Stripe-Signature: t=1700000000,v1=<signature>' \
+  -H 'Content-Type: application/json' \
+  -d '{"id":"evt_1","type":"payment_intent.succeeded","data":{"object":{"id":"pi_1","status":"succeeded"}}}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/payments/webhook/{provider}
+```
+
+### Response
+```json
+{ "message": "Webhook processed" }
+```
+</details>
+
+<details>
 <summary> <code>POST</code> <code>/api/v1/payments</code></summary>
 
 ### Description

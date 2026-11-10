@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 222  
+**Operations:** 223  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -28,7 +28,7 @@ document served by Swagger UI.
 | [Cart](#cart) | 6 |
 | [Checkout](#checkout) | 8 |
 | [Order](#order) | 13 |
-| [Payment](#payment) | 4 |
+| [Payment](#payment) | 5 |
 | [Coupon](#coupon) | 9 |
 | [Shipping Method](#shipping-method) | 4 |
 | [Inventory](#inventory) | 6 |
@@ -241,6 +241,7 @@ document served by Swagger UI.
 |---|---|---|---|
 | `POST` | `/api/v1/admin/payments/{id}/confirm` | Admin - confirm a pending payment as completed | Admin |
 | `POST` | `/api/v1/payments` | Create a payment intent for an order. Status is server-owned. | Authenticated |
+| `POST` | `/api/v1/payments/webhook/{provider}` | Provider webhook (signature verified) | Public |
 | `GET` | `/api/v1/payments/order/{orderId}` | Retrieve all payments for a specific order | Authenticated |
 | `GET` | `/api/v1/payments/{id}` | Retrieve payment details by ID | Authenticated |
 

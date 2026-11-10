@@ -18,7 +18,7 @@ its own branch so it can be reviewed and merged as an independent PR.
 
 | # | Epic | Why it matters | Priority | Effort | Status | Branch |
 |---|---|---|---|---|---|---|
-| 1 | Real payment provider + webhooks + 3DS | Every order depends on payment capture; cards/wallets are default | P0 | High | 📋 | `feature/payment-provider` |
+| 1 | Real payment provider + webhooks + 3DS | Every order depends on payment capture; cards/wallets are default | P0 | High | ✅ | `feature/payment-provider` |
 | 2 | Carrier integration + shipments + labels + tracking | Shipping status is the top post-purchase support driver | P0 | High | 📋 | `feature/shipping-carrier` |
 | 3 | Tax zones/classes/exemptions + inclusive pricing | VAT/GST compliance blocks cross-border sales | P0 | High | 📋 | `feature/tax-engine` |
 | 4 | Fraud/risk + chargeback workflow | Direct revenue loss and compliance risk | P0 | High | 📋 | `feature/fraud-risk` |
