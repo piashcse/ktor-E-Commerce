@@ -25,4 +25,6 @@ fun RefundRequestDAO.toRefundRequestResponse() =
         resolvedAt = resolvedAt?.toUtcString(),
         createdAt = createdAt.toUtcString(),
         updatedAt = updatedAt?.toUtcString(),
+        providerRefundId = providerRefundId,
+        providerRefundStatus = providerRefundStatus,
     )

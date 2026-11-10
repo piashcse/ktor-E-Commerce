@@ -21,6 +21,8 @@ data class PaymentRequest(
     val paymentMethod: PaymentMethod,
     val transactionId: String? = null,
     val idempotencyKey: String? = null,
+    /** Where the provider should send the customer after 3DS/SCA. */
+    val returnUrl: String? = null,
 ) {
     init {
         validate(this) {

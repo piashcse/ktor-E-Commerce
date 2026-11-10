@@ -1,10 +1,12 @@
 package com.piashcse.di
 
+import com.piashcse.config.DotEnvConfig
 import com.piashcse.feature.apikey.ApiKeyService
 import com.piashcse.feature.audit_log.AuditLogRepository
 import com.piashcse.feature.audit_log.AuditLogRepositoryImpl
 import com.piashcse.feature.auth.AuthRepository
 import com.piashcse.feature.auth.AuthRepositoryImpl
+import com.piashcse.feature.auth.MfaService
 import com.piashcse.feature.auth.UserAuthenticationService
 import com.piashcse.feature.brand.BrandRepository
 import com.piashcse.feature.brand.BrandRepositoryImpl
@@ -33,6 +35,7 @@ import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.payment.PaymentRepository
 import com.piashcse.feature.payment.PaymentRepositoryImpl
+import com.piashcse.feature.payment.StripePaymentGateway
 import com.piashcse.feature.payout.PayoutRepository
 import com.piashcse.feature.payout.PayoutRepositoryImpl
 import com.piashcse.feature.policy.PolicyRepository
@@ -90,14 +93,28 @@ val serviceModule =
         single<DashboardRepository> { DashboardRepositoryImpl() }
         single<InventoryRepository> { InventoryRepositoryImpl() }
         single<OrderRepository> { OrderRepositoryImpl(get(), get(), get()) }
-        single<PaymentGateway> { ManualPaymentGateway() }
+        single<PaymentGateway> {
+            if (DotEnvConfig.paymentProvider == "stripe") {
+                require(DotEnvConfig.stripeSecretKey.isNotBlank()) {
+                    "STRIPE_SECRET_KEY must be set when PAYMENT_PROVIDER=stripe"
+                }
+                StripePaymentGateway(
+                    secretKey = DotEnvConfig.stripeSecretKey,
+                    webhookSecret = DotEnvConfig.stripeWebhookSecret,
+                    baseUrl = DotEnvConfig.stripeBaseUrl,
+                    webhookToleranceSeconds = DotEnvConfig.stripeWebhookToleranceSeconds,
+                )
+            } else {
+                ManualPaymentGateway()
+            }
+        }
         single<PaymentRepository> { PaymentRepositoryImpl(get()) }
         single<PolicyRepository> { PolicyRepositoryImpl() }
         single<ProductRepository> { ProductRepositoryImpl() }
         single<ProductCategoryRepository> { ProductCategoryRepositoryImpl() }
         single<ProductSubCategoryRepository> { ProductSubCategoryRepositoryImpl() }
         single<ProfileRepository> { ProfileRepositoryImpl() }
-        single<RefundRequestRepository> { RefundRequestRepositoryImpl() }
+        single<RefundRequestRepository> { RefundRequestRepositoryImpl(get()) }
         single<ReviewRatingRepository> { ReviewRatingRepositoryImpl() }
         single<ShippingAddressRepository> { ShippingAddressRepositoryImpl() }
         single<ShippingMethodRepository> { ShippingMethodRepositoryImpl() }
@@ -122,7 +139,8 @@ val serviceModule =
         single { OutboxService() }
 
         // Split auth services
-        single { UserAuthenticationService(get()) }
+        single { MfaService() }
+        single { UserAuthenticationService(get(), get()) }
 
         // Split product services
         single { ProductCatalogService(get()) }

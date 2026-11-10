@@ -13,6 +13,7 @@ data class LoginRequest(
     val email: String,
     val password: String,
     val userType: String,
+    val mfaCode: String? = null,
 ) {
     init {
         validate(this) {

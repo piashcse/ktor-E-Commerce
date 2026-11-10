@@ -41,4 +41,20 @@ interface PaymentRepository {
         limit: Int = 20,
         offset: Int = 0,
     ): PaginatedResponse<PaymentResponse>
+
+    /**
+     * Verifies and applies a provider webhook. Deliveries are deduplicated by
+     * `(provider, event_id)` so at-least-once retries are safe.
+     */
+    suspend fun handleWebhook(
+        provider: String,
+        payload: String,
+        signature: String?,
+    ): WebhookResult
 }
+
+data class WebhookResult(
+    val accepted: Boolean,
+    val duplicate: Boolean = false,
+    val message: String,
+)

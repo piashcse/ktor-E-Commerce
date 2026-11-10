@@ -15,4 +15,10 @@ fun PaymentDAO.toPaymentResponse() =
         paymentMethod = paymentMethod,
         transactionId = transactionId,
         createdAt = createdAt.toUtcString(),
+        provider = provider,
+        providerReference = providerReference,
+        clientSecret = clientSecret,
+        nextActionUrl = nextActionUrl,
+        scaStatus = scaStatus,
+        providerStatus = providerStatus,
     )

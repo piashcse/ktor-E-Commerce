@@ -3,6 +3,7 @@ package com.piashcse.feature.refund_request
 import com.piashcse.constants.Message
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.RefundMethod
 import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
@@ -10,6 +11,8 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.RefundStatusChangedEvent
 import com.piashcse.feature.order.OrderCancellation
+import com.piashcse.feature.payment.ManualPaymentGateway
+import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.mapper.toRefundRequestResponse
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
@@ -25,11 +28,25 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 
-class RefundRequestRepositoryImpl : RefundRequestRepository {
+class RefundRequestRepositoryImpl(
+    private val gateway: PaymentGateway = ManualPaymentGateway(),
+) : RefundRequestRepository {
+    private data class ProviderRefundPlan(
+        val providerReference: String,
+        val amount: BigDecimal,
+        val currency: String,
+    )
+
+    private data class ProviderRefundResult(
+        val providerRefundId: String?,
+        val status: String?,
+    )
+
     private fun liveStatuses() = listOf(RefundStatus.PENDING, RefundStatus.APPROVED, RefundStatus.SHIPPED, RefundStatus.REFUNDED)
 
     private fun eventFor(
@@ -204,12 +221,71 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
         }
     }
 
+    /**
+     * Returns money to the original card when the request asks for an ORIGINAL
+     * refund and the order has a completed provider payment. Validation and the
+     * actor check run before the network call so an unauthorized/invalid request
+     * never reaches the processor.
+     */
+    private suspend fun prepareProviderRefund(
+        refundId: String,
+        request: UpdateRefundStatusRequest,
+        userId: String,
+    ): ProviderRefundResult? {
+        if (request.status != RefundStatus.REFUNDED) return null
+        val plan =
+            query {
+                val refund =
+                    RefundRequestDAO.find { RefundRequestTable.id eq refundId.entityID(RefundRequestTable) }
+                        .firstOrNull() ?: return@query null
+                if (refund.status == RefundStatus.REFUNDED || refund.providerRefundId != null) return@query null
+                val method = request.refundMethod ?: refund.refundMethod
+                if (method != RefundMethod.ORIGINAL) return@query null
+                if (!canTransitionTo(refund.status, request.status)) return@query null
+                requireRefundActor(refund, userId)
+
+                val order =
+                    OrderDAO.findById(refund.orderId.value)
+                        ?: throw ValidationException(Message.Orders.NOT_FOUND)
+                val orderItem =
+                    OrderItemDAO.findById(refund.orderItemId.value)
+                        ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
+                val maxRefundAmount = maxRefundableAmount(order, orderItem, refund.quantity)
+                validateRefundAmounts(order, request, maxRefundAmount)
+
+                val payment =
+                    PaymentDAO.find {
+                        (PaymentTable.orderId eq refund.orderId) and
+                            (PaymentTable.status eq PaymentStatus.COMPLETED) and
+                            (PaymentTable.providerReference.isNotNull())
+                    }.orderBy(PaymentTable.createdAt to SortOrder.DESC)
+                        .firstOrNull() ?: return@query null
+
+                val amount =
+                    (request.refundAmount ?: refund.refundAmount ?: maxRefundAmount)
+                        .add(request.refundShippingAmount ?: refund.shippingRefund)
+                        .add(request.refundTaxAmount ?: refund.taxRefund)
+                ProviderRefundPlan(
+                    providerReference = payment.providerReference!!,
+                    amount = amount,
+                    currency = order.currency,
+                )
+            } ?: return null
+
+        val result = gateway.refund(plan.providerReference, plan.amount, plan.currency, "refund:$refundId")
+        if (!result.success) {
+            throw ValidationException(result.message ?: "Provider refund failed")
+        }
+        return ProviderRefundResult(result.providerRefundId, result.status)
+    }
+
     override suspend fun updateRefundStatus(
         refundId: String,
         request: UpdateRefundStatusRequest,
         userId: String,
-    ): RefundRequestResponse =
-        query {
+    ): RefundRequestResponse {
+        val providerRefund = prepareProviderRefund(refundId, request, userId)
+        return query {
             val refundReq =
                 RefundRequestDAO.find { RefundRequestTable.id eq refundId.entityID(RefundRequestTable) }
                     .forUpdate()
@@ -246,10 +322,15 @@ class RefundRequestRepositoryImpl : RefundRequestRepository {
             if (request.status == RefundStatus.REFUNDED) {
                 applyRefunded(refundReq, order, orderItem, maxRefundAmount)
             }
+            providerRefund?.let {
+                refundReq.providerRefundId = it.providerRefundId
+                refundReq.providerRefundStatus = it.status
+            }
             if (request.status == RefundStatus.REJECTED) AppMetrics.refundsRejected.increment()
             eventFor(refundReq, fromStatus.name, request.status.name)
             refundReq.toRefundRequestResponse()
         }
+    }
 
     private fun requireRefundActor(
         refund: RefundRequestDAO,

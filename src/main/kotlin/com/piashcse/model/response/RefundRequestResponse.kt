@@ -24,4 +24,6 @@ data class RefundRequestResponse(
     val resolvedAt: String?,
     val createdAt: String,
     val updatedAt: String?,
+    val providerRefundId: String? = null,
+    val providerRefundStatus: String? = null,
 )

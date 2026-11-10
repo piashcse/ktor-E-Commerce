@@ -19,6 +19,7 @@ Authorization: Bearer <your_access_token>
 | `GET` | `/api/v1/payments/{id}` | Retrieve payment by ID | Yes |
 | `GET` | `/api/v1/payments/order/{orderId}` | Retrieve all payments for an order | Yes |
 | `POST` | `/api/v1/admin/payments/{id}/confirm` | Confirm a pending payment as completed | Yes (Admin) |
+| `POST` | `/api/v1/payments/webhook/{provider}` | Provider webhook with signature verification (public) | No |
 
 ---
 
@@ -308,6 +309,53 @@ curl -X 'POST' \
   'http://localhost:8080/api/v1/admin/payments/4b68917d-4452-4d18-9012-47e843f05c15/confirm' \
   -H 'Authorization: Bearer <admin_token>'
 ```
+
+---
+
+## 5. Provider Webhook
+
+**`POST /api/v1/payments/webhook/{provider}`**
+
+Public endpoint called by the payment processor. The raw request body and the provider
+signature header are verified before anything is written:
+
+- Stripe sends `Stripe-Signature` (`t=<timestamp>,v1=<hmac-sha256>`); the default tolerance is
+  300 seconds and can be tuned with `STRIPE_WEBHOOK_TOLERANCE_SECONDS`.
+- Other adapters can use `X-Webhook-Signature`.
+- Deliveries are deduplicated by `(provider, event_id)`, so retries are safe.
+- `payment_intent.succeeded` completes the payment and marks the order `PAID` once the total is
+  covered; `payment_intent.payment_failed` marks it `FAILED`.
+- `refund.updated` mirrors the processor refund status onto the refund request.
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/payments/webhook/stripe' \
+  -H 'Stripe-Signature: t=1700000000,v1=<signature>' \
+  -H 'Content-Type: application/json' \
+  -d '{"id":"evt_1","type":"payment_intent.succeeded","data":{"object":{"id":"pi_1","status":"succeeded"}}}'
+```
+
+Invalid signatures return `400`; duplicate deliveries return `200`.
+
+---
+
+## Provider configuration
+
+| Variable | Description |
+|---|---|
+| `PAYMENT_PROVIDER` | `manual` (COD only, default) or `stripe` |
+| `STRIPE_SECRET_KEY` | Stripe secret key; required when the provider is `stripe` |
+| `STRIPE_WEBHOOK_SECRET` | Signing secret used to verify webhooks |
+| `STRIPE_BASE_URL` | API base URL (override for tests/proxies) |
+| `STRIPE_WEBHOOK_TOLERANCE_SECONDS` | Maximum accepted clock skew for webhook signatures |
+
+`POST /api/v1/payments` also accepts `returnUrl` (where the customer returns after 3DS). Responses
+include `provider`, `providerReference`, `clientSecret`, `nextActionUrl`, `scaStatus` and
+`providerStatus`. A payment remains `PENDING` while `scaStatus` is `REQUIRED`/`PENDING`.
+
+When a refund is marked `REFUNDED` with `refundMethod=ORIGINAL` and the order has a completed
+provider payment, the API issues the refund through the processor and stores
+`providerRefundId`/`providerRefundStatus` on the refund request.
 
 ---
 

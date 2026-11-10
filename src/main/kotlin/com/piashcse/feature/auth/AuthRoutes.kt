@@ -209,6 +209,55 @@ fun Route.authRoutes() {
                 call.respond(HttpStatusCode.Unauthorized, MessageResponse(Message.Auth.INVALID_CREDENTIALS))
             }
         }.describe { summary = "Change password for authenticated user" }
+
+        mfaRoutes()
+    }
+}
+
+/**
+ * TOTP multi-factor authentication routes for the authenticated user.
+ */
+private fun Route.mfaRoutes() {
+    val mfaService: MfaService by inject()
+    /**
+     * Start MFA setup (authenticated)
+     */
+    post("mfa/setup") {
+        call.respondOk(mfaService.setup(call.currentUserId))
+    }.describe {
+        summary = "Start MFA setup"
+        description = "Returns a TOTP secret and otpauth URL"
+        responses { ok<MfaSetupResponse>("MFA setup") }
+    }
+
+    /**
+     * Enable MFA after verifying a TOTP code
+     */
+    post("mfa/enable") {
+        mfaService.enable(call.currentUserId, call.receive<MfaCodeRequest>().code)
+        call.respondOk(MessageResponse("MFA enabled"))
+    }.describe {
+        summary = "Enable MFA"
+        requestBody { jsonBody<MfaCodeRequest>() }
+        responses {
+            ok<MessageResponse>("MFA enabled")
+            standardErrors()
+        }
+    }
+
+    /**
+     * Disable MFA after verifying a TOTP code
+     */
+    post("mfa/disable") {
+        mfaService.disable(call.currentUserId, call.receive<MfaCodeRequest>().code)
+        call.respondOk(MessageResponse("MFA disabled"))
+    }.describe {
+        summary = "Disable MFA"
+        requestBody { jsonBody<MfaCodeRequest>() }
+        responses {
+            ok<MessageResponse>("MFA disabled")
+            standardErrors()
+        }
     }
 }
 

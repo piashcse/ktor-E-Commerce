@@ -848,6 +848,96 @@ http://localhost:8080/api/v1/admin/auth/{userId}/activate
 ```
 </details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/auth/mfa/setup</code></summary>
+
+### Description
+Start TOTP multi-factor authentication setup. Returns a Base32 secret and an `otpauth://` URL to
+scan with an authenticator app. MFA is not active until a valid code is submitted to
+`/api/v1/auth/mfa/enable`.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/mfa/setup' \
+  -H 'Authorization: Bearer <access-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/mfa/setup
+```
+
+### Response
+```json
+{
+  "data": {
+    "secret": "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP",
+    "otpauthUrl": "otpauth://totp/Ktor%20E-Commerce:customer@gmail.com?secret=JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP&issuer=Ktor%20E-Commerce&digits=6&period=30"
+  },
+  "message": "MFA setup"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/auth/mfa/enable</code></summary>
+
+### Description
+Enable TOTP MFA after verifying a 6-digit code from the authenticator app.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/mfa/enable' \
+  -H 'Authorization: Bearer <access-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{ "code": "123456" }'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/mfa/enable
+```
+
+### Response
+```json
+{
+  "data": null,
+  "message": "MFA enabled"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/auth/mfa/disable</code></summary>
+
+### Description
+Disable TOTP MFA. Requires a valid current authenticator code; the stored secret is removed.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/mfa/disable' \
+  -H 'Authorization: Bearer <access-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{ "code": "123456" }'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/mfa/disable
+```
+
+### Response
+```json
+{
+  "data": null,
+  "message": "MFA disabled"
+}
+```
+</details>
+
 ### PROFILE
 
 <details>
@@ -4784,6 +4874,36 @@ http://localhost:8080/api/v1/orders/{id}/packing-slip
 </details>
 
 ### PAYMENT
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/payments/webhook/{provider}</code></summary>
+
+### Description
+Payment-provider webhook. The raw body is verified with the provider signature
+(`Stripe-Signature` or `X-Webhook-Signature`) before any ledger update. Deliveries are
+deduplicated by `(provider,eventId)` and repeated calls return `200` without side effects.
+`payment_intent.succeeded` completes the payment and marks the order paid;
+`payment_intent.payment_failed` marks it failed; `refund.updated` updates the refund state.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/payments/webhook/stripe' \
+  -H 'Stripe-Signature: t=1700000000,v1=<signature>' \
+  -H 'Content-Type: application/json' \
+  -d '{"id":"evt_1","type":"payment_intent.succeeded","data":{"object":{"id":"pi_1","status":"succeeded"}}}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/payments/webhook/{provider}
+```
+
+### Response
+```json
+{ "message": "Webhook processed" }
+```
+</details>
 
 <details>
 <summary> <code>POST</code> <code>/api/v1/payments</code></summary>

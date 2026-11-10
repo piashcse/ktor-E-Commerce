@@ -3,7 +3,10 @@ package com.piashcse.feature.payment
 import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.ScaStatus
+import com.piashcse.constants.WebhookEventStatus
 import com.piashcse.database.entities.*
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PaymentCompletedEvent
@@ -15,11 +18,13 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.resilience.CircuitBreaker
 import com.piashcse.utils.validator.ForbiddenException
+import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
@@ -175,7 +180,7 @@ class PaymentRepositoryImpl(
         if (replay != null) return replay
 
         // Validate before charging so an invalid order never reaches the provider.
-        query { loadPayableOrder(paymentRequest, callerUserId, forUpdate = false) }
+        val payable = query { loadPayableOrder(paymentRequest, callerUserId, forUpdate = false) }
 
         // Network call happens outside the DB transaction.
         val charge =
@@ -183,8 +188,13 @@ class PaymentRepositoryImpl(
                 gateway.charge(
                     orderId = paymentRequest.orderId,
                     amount = paymentRequest.amount,
+                    currency = payable.currency,
                     paymentMethod = paymentRequest.paymentMethod,
                     transactionId = paymentRequest.transactionId,
+                    returnUrl = paymentRequest.returnUrl,
+                    idempotencyKey =
+                        paymentRequest.idempotencyKey
+                            ?: "charge:${paymentRequest.orderId}:${paymentRequest.amount.toPlainString()}:${paymentRequest.paymentMethod}",
                 )
             }
         if (!charge.success) {
@@ -208,6 +218,12 @@ class PaymentRepositoryImpl(
                         this.paymentMethod = paymentRequest.paymentMethod
                         this.transactionId = charge.gatewayTransactionId ?: paymentRequest.transactionId
                         this.idempotencyKey = paymentRequest.idempotencyKey
+                        this.provider = gateway.provider
+                        this.providerReference = charge.gatewayTransactionId
+                        this.clientSecret = charge.clientSecret
+                        this.nextActionUrl = charge.nextActionUrl
+                        this.scaStatus = charge.scaStatus
+                        this.providerStatus = charge.providerStatus
                         this.status = if (charge.captured) PaymentStatus.COMPLETED else PaymentStatus.PENDING
                     }
                 } catch (e: Exception) {
@@ -274,6 +290,110 @@ class PaymentRepositoryImpl(
             payment.toPaymentResponse()
         }
 
+    override suspend fun handleWebhook(
+        provider: String,
+        payload: String,
+        signature: String?,
+    ): WebhookResult {
+        if (!gateway.provider.name.equals(provider, ignoreCase = true)) {
+            throw NotFoundException("Unknown payment provider: $provider")
+        }
+        if (!gateway.verifyWebhook(payload, signature)) {
+            throw ValidationException("Invalid webhook signature")
+        }
+        val event =
+            runCatching { gateway.parseWebhook(payload) }
+                .getOrElse { throw ValidationException("Invalid webhook payload") }
+
+        return query {
+            val existing =
+                PaymentWebhookEventDAO.find {
+                    (PaymentWebhookEventTable.provider eq event.provider) and
+                        (PaymentWebhookEventTable.eventId eq event.eventId)
+                }.firstOrNull()
+            if (existing != null) {
+                return@query WebhookResult(true, duplicate = true, message = "Duplicate webhook ignored")
+            }
+
+            val record =
+                PaymentWebhookEventDAO.new {
+                    this.provider = event.provider
+                    this.eventId = event.eventId
+                    this.eventType = event.type.name
+                    this.payload = payload
+                    this.status = WebhookEventStatus.RECEIVED
+                }
+            val applied =
+                try {
+                    applyWebhookEvent(event)
+                } catch (e: Exception) {
+                    record.status = WebhookEventStatus.FAILED
+                    record.error = e.message
+                    record.processedAt = currentUtc()
+                    false
+                }
+            if (applied) {
+                record.status = WebhookEventStatus.PROCESSED
+                record.processedAt = currentUtc()
+            } else if (record.status == WebhookEventStatus.RECEIVED) {
+                record.status = WebhookEventStatus.IGNORED
+                record.error = "No matching payment or refund for ${event.type}"
+                record.processedAt = currentUtc()
+            }
+            WebhookResult(true, message = "Webhook processed")
+        }
+    }
+
+    /** Must run inside the webhook transaction. */
+    private fun applyWebhookEvent(event: GatewayWebhookEvent): Boolean =
+        when (event.type) {
+            GatewayEventType.PAYMENT_SUCCEEDED,
+            GatewayEventType.PAYMENT_FAILED,
+            GatewayEventType.PAYMENT_REQUIRES_ACTION,
+            GatewayEventType.PAYMENT_PROCESSING,
+            -> {
+                val reference = event.providerReference ?: return false
+                val payment =
+                    PaymentDAO.find {
+                        (PaymentTable.providerReference eq reference) or (PaymentTable.transactionId eq reference)
+                    }.forUpdate().firstOrNull() ?: return false
+
+                event.providerStatus?.let { payment.providerStatus = it }
+                when (event.type) {
+                    GatewayEventType.PAYMENT_SUCCEEDED -> {
+                        payment.status = PaymentStatus.COMPLETED
+                        payment.scaStatus = ScaStatus.AUTHENTICATED
+                        OrderDAO.find { OrderTable.id eq payment.orderId }
+                            .forUpdate()
+                            .firstOrNull()
+                            ?.let { completeOrderIfFullyPaid(it, payment) }
+                    }
+                    GatewayEventType.PAYMENT_FAILED -> {
+                        payment.status = PaymentStatus.FAILED
+                        payment.scaStatus = ScaStatus.FAILED
+                    }
+                    GatewayEventType.PAYMENT_REQUIRES_ACTION -> {
+                        payment.scaStatus = ScaStatus.REQUIRED
+                    }
+                    GatewayEventType.PAYMENT_PROCESSING -> {
+                        payment.scaStatus = ScaStatus.PENDING
+                    }
+                    else -> Unit
+                }
+                true
+            }
+            GatewayEventType.REFUND_UPDATED -> {
+                val refund = event.refund ?: return false
+                val request =
+                    RefundRequestDAO.find { RefundRequestTable.providerRefundId eq refund.providerRefundId }
+                        .forUpdate()
+                        .firstOrNull() ?: return false
+                request.providerRefundStatus = refund.status
+                true
+            }
+            GatewayEventType.UNKNOWN -> false
+        }
+
     override suspend fun getPaymentById(
         paymentId: String,
         callerUserId: String,
@@ -306,7 +426,8 @@ class PaymentRepositoryImpl(
             PaymentTable.selectAll().andWhere { PaymentTable.orderId eq orderId.entityID(OrderTable) }
                 .orderBy(PaymentTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) {
-                    PaymentDAO.wrapRow(it).toPaymentResponse()
+                    // Lists omit the client secret; it is only returned by create/get-by-id.
+                    PaymentDAO.wrapRow(it).toPaymentResponse().copy(clientSecret = null)
                 }
         }
 }
