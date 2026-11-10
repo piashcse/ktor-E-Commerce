@@ -15,6 +15,7 @@ inline fun <reified T : Enum<T>> String.parseEnum(fieldName: String): T =
                 message = Message.Validation.invalidEnumValue(fieldName, this),
                 enumName = enumValues<T>().joinToString(", ") { it.name },
                 invalidValue = this,
+                fieldName = fieldName,
             )
         }
 

@@ -3,7 +3,15 @@ package com.piashcse.plugin
 import com.piashcse.constants.Message
 import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.common.FieldError
+import com.piashcse.utils.db.isCheckViolation
+import com.piashcse.utils.db.isDataException
+import com.piashcse.utils.db.isForeignKeyViolation
+import com.piashcse.utils.db.isNotNullViolation
+import com.piashcse.utils.db.isUniqueViolation
 import com.piashcse.utils.validator.AppException
+import com.piashcse.utils.validator.FieldValidationException
+import com.piashcse.utils.validator.InvalidEnumValueException
+import com.piashcse.utils.validator.MissingParameterException
 import io.ktor.http.*
 import io.ktor.serialization.JsonConvertException
 import io.ktor.server.application.*
@@ -18,19 +26,6 @@ import java.util.*
 
 private fun Throwable.firstConstraintViolation(): ConstraintViolationException? =
     generateSequence(this) { it.cause }.filterIsInstance<ConstraintViolationException>().firstOrNull()
-
-private fun Throwable.isDuplicateKey(): Boolean =
-    generateSequence(this) { it.cause }.any { t ->
-        val msg = (t.message ?: "").lowercase()
-        "duplicate" in msg || "unique" in msg || "23505" in msg ||
-            t::class.simpleName?.contains("ConstraintViolation", ignoreCase = true) == true
-    }
-
-private fun Throwable.isForeignKeyViolation(): Boolean =
-    generateSequence(this) { it.cause }.any { t ->
-        val msg = (t.message ?: "").lowercase()
-        "foreign key" in msg || "23503" in msg
-    }
 
 private suspend fun ApplicationCall.respondValidationError(exception: ConstraintViolationException) {
     val fieldErrors =
@@ -75,8 +70,8 @@ fun Application.configureStatusPage() {
                 return@exception
             }
 
-            // DB unique violations (wishlist/cart/review/idempotency races) → 409, not 500.
-            if (error.isDuplicateKey()) {
+            // DB constraint violations → deterministic client errors, not 500s.
+            if (error.isUniqueViolation()) {
                 statusPageLog.warn("Duplicate key: ${error.message}")
                 call.respond(HttpStatusCode.Conflict, call.errorResponse("Resource already exists", HttpStatusCode.Conflict, "CONFLICT"))
                 return@exception
@@ -91,7 +86,43 @@ fun Application.configureStatusPage() {
                 return@exception
             }
 
+            if (error.isNotNullViolation() || error.isCheckViolation() || error.isDataException()) {
+                statusPageLog.warn("Constraint violation: ${error.message}")
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    call.errorResponse(Message.Errors.VALIDATION_FAILED, HttpStatusCode.BadRequest, "VALIDATION_FAILED"),
+                )
+                return@exception
+            }
+
             when (error) {
+                is FieldValidationException -> {
+                    statusPageLog.warn("Validation failed: ${error.violations.joinToString { it.field }}")
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        call.errorResponse(error.message ?: "Validation failed", HttpStatusCode.BadRequest, error.errorCode)
+                            .copy(errors = error.violations.map { FieldError(it.field, it.message) }),
+                    )
+                }
+                is MissingParameterException -> {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        call.errorResponse(error.message ?: "Missing parameter", HttpStatusCode.BadRequest, error.errorCode)
+                            .copy(errors = listOf(FieldError(error.parameterName, error.message ?: "Missing parameter"))),
+                    )
+                }
+                is InvalidEnumValueException -> {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        call.errorResponse(error.message ?: "Invalid value", HttpStatusCode.BadRequest, error.errorCode)
+                            .copy(
+                                errors =
+                                    error.fieldName?.let {
+                                        listOf(FieldError(it, error.message ?: "Invalid value"))
+                                    },
+                            ),
+                    )
+                }
                 is AppException -> {
                     statusPageLog.warn("${error::class.simpleName}: ${error.message}")
                     call.respond(error.code, call.errorResponse(error.message ?: Message.Errors.INTERNAL, error.code, error.errorCode))
@@ -100,7 +131,8 @@ fun Application.configureStatusPage() {
                 is MissingRequestParameterException -> {
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        call.errorResponse("Missing parameter: ${error.parameterName}", HttpStatusCode.BadRequest, "MISSING_PARAMETER"),
+                        call.errorResponse("Missing parameter: ${error.parameterName}", HttpStatusCode.BadRequest, "MISSING_PARAMETER")
+                            .copy(errors = listOf(FieldError(error.parameterName, "Missing required parameter"))),
                     )
                 }
                 is BadRequestException -> {
@@ -128,13 +160,11 @@ fun Application.configureStatusPage() {
                     )
                 }
                 is IllegalArgumentException -> {
+                    // `require(...)` leftovers are programming/config errors, not client input.
+                    statusPageLog.error("Unmapped IllegalArgumentException", error)
                     call.respond(
-                        HttpStatusCode.BadRequest,
-                        call.errorResponse(
-                            error.message ?: Message.Errors.VALIDATION_FAILED,
-                            HttpStatusCode.BadRequest,
-                            "VALIDATION_FAILED",
-                        ),
+                        HttpStatusCode.InternalServerError,
+                        call.errorResponse(Message.Errors.INTERNAL, HttpStatusCode.InternalServerError, "INTERNAL"),
                     )
                 }
                 else -> {
@@ -166,6 +196,18 @@ fun Application.configureStatusPage() {
             call.respond(
                 HttpStatusCode.TooManyRequests,
                 call.errorResponse("Rate limit exceeded. Please try again later.", HttpStatusCode.TooManyRequests, "RATE_LIMITED"),
+            )
+        }
+        status(HttpStatusCode.PayloadTooLarge) { call, _ ->
+            call.respond(
+                HttpStatusCode.PayloadTooLarge,
+                call.errorResponse("Request payload is too large", HttpStatusCode.PayloadTooLarge, "PAYLOAD_TOO_LARGE"),
+            )
+        }
+        status(HttpStatusCode.UnsupportedMediaType) { call, _ ->
+            call.respond(
+                HttpStatusCode.UnsupportedMediaType,
+                call.errorResponse("Unsupported media type", HttpStatusCode.UnsupportedMediaType, "UNSUPPORTED_MEDIA_TYPE"),
             )
         }
     }

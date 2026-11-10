@@ -26,6 +26,7 @@ import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
+import com.piashcse.utils.validator.MissingParameterException
 import com.piashcse.utils.validator.RateLimitExceededException
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
@@ -136,10 +137,10 @@ fun Route.authRoutes() {
                 }
             val userId =
                 call.request.queryParameters["userId"] ?: body?.userId
-                    ?: throw ValidationException("userId is required")
+                    ?: throw MissingParameterException("userId")
             val otp =
                 call.request.queryParameters["otp"] ?: body?.otp
-                    ?: throw ValidationException("otp is required")
+                    ?: throw MissingParameterException("otp")
             if (!userAuthService.otpVerification(userId, otp)) {
                 throw ValidationException(Message.Auth.OTP_INVALID)
             }

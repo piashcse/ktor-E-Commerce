@@ -84,8 +84,8 @@ COVERAGE_MIN=0.50 COVERAGE_ENFORCE_DB=true \
 
 At the time of writing (CI configuration):
 
-- **421 tests**
-- **54.2% instruction**, **26.0% branch**, **59.2% line**, **78.1% class**
+- **430 tests**
+- **54.3% instruction**, **25.7% branch**, **59.3% line**, **78.1% class**
 
 Known lower-coverage areas and next targets:
 

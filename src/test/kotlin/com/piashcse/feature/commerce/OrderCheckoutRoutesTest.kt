@@ -80,6 +80,20 @@ class OrderRoutesTest {
         }
 
     @Test
+    fun `invalid enum returns a field-level error`() =
+        testApplication {
+            setup()
+            val res =
+                client.patch("/api/v1/orders/status/o-1?status=BOGUS") {
+                    header(HttpHeaders.Authorization, authHeader())
+                }
+            assertEquals(HttpStatusCode.BadRequest, res.status)
+            val body = res.bodyAsText()
+            assertContains(body, "INVALID_ENUM_VALUE")
+            assertContains(body, "\"field\": \"status\"")
+        }
+
+    @Test
     fun `cancel order happy path returns 200`() =
         testApplication {
             coEvery { repo.cancelOrder(any(), any(), any(), any()) } returns sampleOrder()

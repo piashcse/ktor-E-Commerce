@@ -24,6 +24,7 @@ import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.sellerAuth
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
+import com.piashcse.utils.validator.ValidationException
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.server.routing.*
@@ -187,7 +188,7 @@ class CommerceValidationTest {
 
     @Test
     fun `checkout request rejects bad currency`() {
-        assertFailsWith<IllegalArgumentException> {
+        assertFailsWith<ValidationException> {
             CheckoutRequest("a-1", "m-1", currency = "XXX")
         }
     }

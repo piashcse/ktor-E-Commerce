@@ -3,6 +3,7 @@ package com.piashcse.database.entities
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 
@@ -27,6 +28,8 @@ object SupportedCurrencies {
     val ALL = setOf("USD", "EUR", "GBP", "BDT", "INR")
 
     fun requireValid(code: String) {
-        require(code.uppercase() in ALL) { "Unsupported currency: $code. Supported: ${ALL.sorted().joinToString()}" }
+        if (code.uppercase() !in ALL) {
+            throw ValidationException("Unsupported currency: $code. Supported: ${ALL.sorted().joinToString()}")
+        }
     }
 }

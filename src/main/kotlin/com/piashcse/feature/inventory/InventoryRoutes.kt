@@ -11,10 +11,11 @@ import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.service.CatalogCache
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
-import com.piashcse.utils.extension.queryInt
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
+import com.piashcse.utils.validator.MissingParameterException
 import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
 import io.ktor.openapi.jsonSchema
 import io.ktor.server.request.*
@@ -51,8 +52,12 @@ fun Route.inventorySellerRoutes() {
         put("/stock/{productId}") {
             val productId = call.requirePathParameter("productId")
             val quantity =
-                call.queryInt("quantity")
-                    ?: throw IllegalArgumentException("quantity must be an integer")
+                call.request.queryParameters["quantity"]?.toIntOrNull()
+                    ?: if (call.request.queryParameters["quantity"] == null) {
+                        throw MissingParameterException("quantity")
+                    } else {
+                        throw ValidationException("quantity must be an integer")
+                    }
             val operation = call.parameters["operation"] ?: "set"
             val warehouseId = call.request.queryParameters["warehouseId"]
             val variantId = call.request.queryParameters["variantId"]

@@ -1,9 +1,8 @@
 package com.piashcse.model.request
 
-import com.piashcse.constants.Message
-import com.piashcse.utils.validator.PasswordPolicy
-import com.piashcse.utils.validator.ValidationException
+import com.piashcse.utils.validator.requireStrongPassword
 import kotlinx.serialization.Serializable
+import org.valiktor.functions.isNotEmpty
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
@@ -11,7 +10,7 @@ import org.valiktor.validate
 data class RefreshTokenRequest(val refreshToken: String) {
     init {
         validate(this) {
-            validate(RefreshTokenRequest::refreshToken).isNotNull()
+            validate(RefreshTokenRequest::refreshToken).isNotNull().isNotEmpty()
         }
     }
 }
@@ -25,9 +24,11 @@ data class ChangePasswordRequest(
     val newPassword: String,
 ) {
     init {
-        if (!PasswordPolicy.isStrong(newPassword)) {
-            throw ValidationException(Message.Validation.WEAK_PASSWORD)
+        validate(this) {
+            validate(ChangePasswordRequest::oldPassword).isNotNull().isNotEmpty()
+            validate(ChangePasswordRequest::newPassword).isNotNull().isNotEmpty()
         }
+        newPassword.requireStrongPassword()
     }
 }
 
