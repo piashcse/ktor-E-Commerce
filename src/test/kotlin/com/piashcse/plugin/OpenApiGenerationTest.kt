@@ -13,11 +13,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Builds the real OpenAPI document from the production route tree and leaves it
- * in `build/endpoints.yaml` for `scripts/generate_endpoint_index.py`.
+ * Builds the real OpenAPI document from the production route tree and writes it
+ * to `build/endpoints.yaml` as a verification artifact.
  *
- * This keeps the generated endpoint index and Swagger UI in lockstep with the
- * actual routes instead of a hand-maintained list.
+ * This keeps Swagger UI and the hand-maintained endpoint documentation honest:
+ * the test fails if the route surface shrinks unexpectedly.
  */
 class OpenApiGenerationTest {
     @Test

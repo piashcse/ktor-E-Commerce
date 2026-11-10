@@ -428,7 +428,7 @@ The API is organized into the following modules:
 - **Health** - Liveness and readiness probes
 
 See the **[complete endpoint index](docs/endpoints.md)** for all **206** operations with
-method, path, description and access level. It is generated from the same OpenAPI document
+method, path, description and access level. It mirrors the same OpenAPI document
 that powers Swagger UI.
 
 ### 🌐 Swagger/OpenAPI

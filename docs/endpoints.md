@@ -1,21 +1,14 @@
 # Complete API Endpoint Index
 
-Canonical, generated index of every HTTP operation exposed by the service.
-It is produced from the same OpenAPI document that powers Swagger UI, so it
-cannot drift from the route definitions.
+Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
+document served by Swagger UI.
 
 **Operations:** 206  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
-> Regenerate after changing routes:
->
-> ```bash
-> ./gradlew test --tests 'com.piashcse.plugin.OpenApiGenerationTest'
-> pip install pyyaml
-> python3 scripts/generate_endpoint_index.py build/endpoints.yaml docs/endpoints.md
-> python3 scripts/generate_readme_endpoints.py build/endpoints.yaml README.md
-> ```
+> The live contract is available at `/swagger` and `/swagger/documentation.yaml`.
+> Update this file when routes change.
 
 ## Operation summary
 
