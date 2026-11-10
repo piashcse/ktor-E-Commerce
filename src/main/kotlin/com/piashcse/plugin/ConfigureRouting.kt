@@ -43,6 +43,9 @@ import com.piashcse.feature.refund_request.refundAdminRoutes
 import com.piashcse.feature.refund_request.refundRequestRoutes
 import com.piashcse.feature.refund_request.refundSellerRoutes
 import com.piashcse.feature.review_rating.reviewRatingRoutes
+import com.piashcse.feature.rma.rmaAdminRoutes
+import com.piashcse.feature.rma.rmaRoutes
+import com.piashcse.feature.rma.rmaSellerRoutes
 import com.piashcse.feature.shipping_method.shippingMethodAdminRoutes
 import com.piashcse.feature.shop.shopAdminRoutes
 import com.piashcse.feature.shop.shopRoutes
@@ -138,6 +141,7 @@ private fun Route.customerRoutes() {
     route("policies") { policyRoutes() }
     route("policy-consents") { consentRoutes() }
     route("refund-requests") { refundRequestRoutes() }
+    route("rma-requests") { rmaRoutes() }
     route("coupons") { couponRoutes() }
     route("notifications") { notificationRoutes() }
     route("privacy") { privacyRoutes() }
@@ -153,6 +157,7 @@ private fun Route.sellerRoutes() {
             route("warehouses") { warehouseSellerRoutes() }
             route("orders") { orderSellerRoutes() }
             route("refund-requests") { refundSellerRoutes() }
+            route("rma-requests") { rmaSellerRoutes() }
             route("dashboard") { dashboardSellerRoutes() }
             route("payouts") { payoutSellerRoutes() }
         }
@@ -173,6 +178,7 @@ private fun Route.adminRoutes() {
             route("orders") { orderAdminRoutes() }
             route("payments") { paymentAdminRoutes() }
             route("refund-requests") { refundAdminRoutes() }
+            route("rma-requests") { rmaAdminRoutes() }
             route("policies") { policyAdminRoutes() }
             route("policy-consents") { consentAdminRoutes() }
             route("shipping-methods") { shippingMethodAdminRoutes() }
