@@ -68,7 +68,6 @@ nav:
       - Dashboard: dashboard.md
       - Audit Log: audit-log.md
   - Testing & Coverage: testing.md
-  - Product Roadmap: roadmap.md
   - Changelog: changelog.md
 
 repo_url: https://github.com/piashcse/ktor-ecommerce
