@@ -6,6 +6,7 @@ import com.piashcse.model.request.ProductWithFilterRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.model.response.SearchResponse
+import com.piashcse.model.response.SearchSuggestionsResponse
 import com.piashcse.utils.common.PaginatedResponse
 
 interface ProductRepository {
@@ -103,6 +104,12 @@ interface ProductRepository {
      * @return A list of products matching the search with faceted counts.
      */
     suspend fun searchProduct(productQuery: ProductSearchRequest): SearchResponse
+
+    /** Lightweight autocomplete over product names, categories and brands. */
+    suspend fun getSuggestions(
+        query: String,
+        limit: Int,
+    ): SearchSuggestionsResponse
 
     /**
      * Gets products by category.

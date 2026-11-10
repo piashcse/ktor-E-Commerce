@@ -27,6 +27,7 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/api/v1/seller/products/image-upload` | Upload product image (Seller) | Yes (Seller) |
 | `GET` | `/api/v1/products` | Retrieve a paginated list of products with optional filters | No |
 | `GET` | `/api/v1/products/search` | Search products with filters | No |
+| `GET` | `/api/v1/products/suggest` | Autocomplete over products, categories and brands | No |
 | `GET` | `/api/v1/products/{id}` | Retrieve a specific product | No |
 | `GET` | `/api/v1/products/{id}/variants` | List purchasable variants | No |
 | `GET` | `/api/v1/products/{id}/options` | List option dimensions and values | No |

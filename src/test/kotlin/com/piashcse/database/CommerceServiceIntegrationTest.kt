@@ -21,6 +21,7 @@ import com.piashcse.feature.notification.NotificationRepositoryImpl
 import com.piashcse.feature.outbox.OutboxService
 import com.piashcse.feature.policy.PolicyRepositoryImpl
 import com.piashcse.feature.privacy.PrivacyService
+import com.piashcse.feature.product.ProductRepositoryImpl
 import com.piashcse.feature.profile.ProfileRepositoryImpl
 import com.piashcse.feature.recommendation.RecommendationService
 import com.piashcse.feature.review_rating.ReviewRatingRepositoryImpl
@@ -181,6 +182,10 @@ class CommerceServiceIntegrationTest {
         kotlinx.coroutines.runBlocking { wishlist.addToWishList(customerId, productId) }
         assertNotNull(kotlinx.coroutines.runBlocking { wishlist.removeFromWishList(customerId, productId) })
         kotlinx.coroutines.runBlocking { cartRepo.clearCart(customerId) }
+
+        // Search suggestions
+        val suggestions = kotlinx.coroutines.runBlocking { ProductRepositoryImpl().getSuggestions("Commerce", 5) }
+        assertTrue(suggestions.suggestions.any { it.type == "PRODUCT" && it.text.contains("Commerce") })
 
         // Reviews
         val reviews = ReviewRatingRepositoryImpl()

@@ -12,6 +12,7 @@ import com.piashcse.model.response.ProductOptionResponse
 import com.piashcse.model.response.ProductOptionValueResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.model.response.ProductVariantResponse
+import com.piashcse.model.response.SearchSuggestionsResponse
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.created
 import com.piashcse.plugin.jsonBody
@@ -50,6 +51,23 @@ fun Route.productRoutes() {
                 ok<RecommendationResponse>("Ranked products")
                 standardErrors()
             }
+        }
+
+        /**
+         * Public autocomplete suggestions for products, categories and brands
+         */
+        get("suggest") {
+            val q = call.request.queryParameters["q"].orEmpty()
+            val limit = (call.queryInt("limit") ?: 5).coerceIn(1, 10)
+            call.respondOk(productRepo.getSuggestions(q, limit))
+        }.describe {
+            summary = "Product search suggestions"
+            description = "Autocomplete over product names, categories and brands"
+            parameters {
+                query("q") { description = "Prefix or substring to match" }
+                query("limit") { description = "1..10 (default 5)" }
+            }
+            responses { ok<SearchSuggestionsResponse>("Suggestions") }
         }
 
         /**
