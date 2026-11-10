@@ -7,6 +7,7 @@ import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.utils.extension.nameFromBodyOrQuery
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
@@ -58,7 +59,7 @@ fun Route.productSubCategoryAdminRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             subCategoryRepo.deleteProductSubCategory(id)
-            call.respondOk(com.piashcse.utils.common.MessageResponse("Subcategory deleted successfully"))
+            call.respondDeleted("Subcategory deleted successfully")
         }.describe { summary = "Admin - Permanently delete a product subcategory" }
     }
 }

@@ -18,7 +18,10 @@ Authorization: Bearer <your_access_token>
 |--------|----------|-------------|------------------------|
 | `GET` | `/api/v1/policies/{policyType}` | Retrieve latest active policy by type | No |
 | `POST` | `/api/v1/admin/policies` | Create a new policy or version | Yes (Admin) |
-| `GET` | `/api/v1/admin/policies/{type}/history` | Retrieve all versions of a policy type | Yes (Admin) |
+| `PUT` | `/api/v1/admin/policies/{id}` | Update an existing policy document | Yes (Admin) |
+| `POST` | `/api/v1/admin/policies/deactivate/{id}` | Deactivate a policy document | Yes (Admin) |
+| `GET` | `/api/v1/admin/policies/by-id/{id}` | Retrieve a policy document by ID | Yes (Admin) |
+| `GET` | `/api/v1/admin/policies/{policyType}/history` | Retrieve all versions of a policy type | Yes (Admin) |
 
 ---
 
@@ -350,6 +353,40 @@ curl -X 'POST' \
 
 ---
 
+## Additional Admin Endpoints
+
+### Update Policy
+
+**`PUT /api/v1/admin/policies/{id}`**
+
+Updates title/content/version/effective date of an existing policy document. Only one policy per
+type may be active; activating a new version deactivates the previous one.
+
+### Deactivate Policy
+
+**`POST /api/v1/admin/policies/deactivate/{id}`**
+
+Marks a policy inactive so it is no longer returned by `GET /api/v1/policies/{policyType}`.
+Existing consent records are retained for audit.
+
+### Get Policy By ID
+
+**`GET /api/v1/admin/policies/by-id/{id}`**
+
+Returns the exact version by its identifier (including inactive versions), for editing and audit.
+
+### Policy Version History
+
+**`GET /api/v1/admin/policies/{policyType}/history`**
+
+Returns all versions of a policy type, newest first.
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/policies/PRIVACY_POLICY/history' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
 ## Error Handling
 
 This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
@@ -413,10 +450,13 @@ Common policy types supported by the system:
 
 | Policy Type | Description |
 |-------------|-------------|
-| `PRIVACY_POLICY` | Privacy policy consent |
-| `TERMS_OF_SERVICE` | Terms of service agreement |
-| `COOKIE_POLICY` | Cookie usage consent |
-| `MARKETING_CONSENT` | Marketing communication consent |
+| `PRIVACY_POLICY` | Privacy policy |
+| `TERMS_CONDITIONS` | Terms and conditions |
+| `REFUND_POLICY` | Refund policy |
+| `COOKIE_POLICY` | Cookie usage |
+| `DISCLAIMER` | Platform disclaimer |
+| `EULA` | End-user license agreement |
+| `SHIPPING_POLICY` | Shipping policy |
 
 ## GDPR Data-Subject Requests
 

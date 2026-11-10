@@ -98,7 +98,7 @@ Register a new user account. Users can register with the same email for differen
 > **Security**: This endpoint is rate-limited to 5 requests per 10 minutes per IP address. Passwords must meet strength requirements: minimum 8 characters with uppercase, lowercase, digit, and special character.
 
 #### Key Features
-- Multiple user types supported (customer, seller, admin)
+- Multiple user types supported for self-registration (customer, seller)
 - Same email can be used for different user types
 - Automatic email verification process
 - Password strength validation enforced
@@ -109,7 +109,7 @@ Register a new user account. Users can register with the same email for differen
 |-----------|------|----------|-------------|
 | `email` | string | Yes | User's email address |
 | `password` | string | Yes | User's password (min 8 chars, uppercase, lowercase, digit, special char) |
-| `userType` | string | Yes | Type of user (`customer`, `seller`, `admin`) |
+| `userType` | string | Yes | Type of user (`customer`, `seller`) |
 
 #### Example Request
 

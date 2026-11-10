@@ -2,15 +2,14 @@
 
 package com.piashcse.feature.product_category
 
-import com.piashcse.constants.Message
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.nameFromBodyOrQuery
 import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.receiveSingleImage
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
-import com.piashcse.utils.validator.ValidationException
-import io.ktor.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
@@ -59,17 +58,12 @@ fun Route.productCategoryAdminRoutes() {
          */
         post("{id}/image") {
             val id = call.requirePathParameter("id")
-            val multipart = call.receiveMultipart()
-            var imageUrl: String? = null
-            multipart.forEachPart { part ->
-                if (part is PartData.FileItem) {
-                    val bytes = UploadService.readAndValidateImagePart(part, "category image")
-                    val fileName = UploadService.uploadCategoryImage(part, bytes)
-                    imageUrl = UploadService.getCategoryImageUrl(fileName)
-                }
-                part.dispose()
-            }
-            val url = imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED)
+            val url =
+                call.receiveSingleImage(
+                    purpose = "category image",
+                    upload = UploadService::uploadCategoryImage,
+                    publicUrl = UploadService::getCategoryImageUrl,
+                )
             call.respondOk(productCategoryRepo.updateCategoryImage(id, url))
         }.describe { summary = "Admin - Upload a category image" }
 
@@ -80,7 +74,7 @@ fun Route.productCategoryAdminRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             productCategoryRepo.deleteCategory(id)
-            call.respondOk(com.piashcse.utils.common.MessageResponse("Category deleted successfully"))
+            call.respondDeleted("Category deleted successfully")
         }.describe { summary = "Admin - Permanently delete a product category" }
     }
 }

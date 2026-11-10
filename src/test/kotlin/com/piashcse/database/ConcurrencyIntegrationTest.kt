@@ -37,6 +37,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * DB-backed concurrency guard tests. Prefers the CI `DB_*` service and falls
@@ -64,7 +65,12 @@ class ConcurrencyIntegrationTest {
             block()
             return
         }
-        Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
+        // CI must never silently skip the only real-database check.
+        if (System.getenv("CI") != null) {
+            assertTrue(dockerAvailable(), "DB_* environment or Docker is required in CI")
+        } else {
+            Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
+        }
         val pg = PostgreSQLContainer("postgres:16-alpine")
         pg.start()
         try {
@@ -185,7 +191,7 @@ class ConcurrencyIntegrationTest {
                 val shopCategory = ShopCategoryDAO.new { name = "Order Shops ${UUID.randomUUID()}" }
                 val shop =
                     ShopDAO.new {
-                        userId = user.id
+                        this.userId = user.id
                         categoryId = shopCategory.id
                         name = "Order Shop"
                         status = ShopStatus.APPROVED
@@ -230,7 +236,7 @@ class ConcurrencyIntegrationTest {
                 val shopCategory = ShopCategoryDAO.new { name = "Pay Shops ${UUID.randomUUID()}" }
                 val shop =
                     ShopDAO.new {
-                        userId = user.id
+                        this.userId = user.id
                         categoryId = shopCategory.id
                         name = "Pay Shop"
                         status = ShopStatus.APPROVED
@@ -316,7 +322,7 @@ class ConcurrencyIntegrationTest {
                 val shopCategory = ShopCategoryDAO.new { name = "Coupon Shops ${UUID.randomUUID()}" }
                 val shop =
                     ShopDAO.new {
-                        userId = user.id
+                        this.userId = user.id
                         categoryId = shopCategory.id
                         name = "Coupon Shop"
                         status = ShopStatus.APPROVED

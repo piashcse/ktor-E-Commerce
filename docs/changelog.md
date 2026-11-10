@@ -4,6 +4,47 @@ hide:
 ---
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Docker image build used a lowercase distribution name while Gradle emitted `ktor-ECommerce`; the
+  application distribution is now explicitly `ktor-ecom` (matches `Dockerfile` and `bin/ktor-ecom`).
+- Brand create/rename/delete errors no longer say `BrandResponse ...`; they use the user-facing
+  resource label.
+- Missing `id` path parameters now return `400 MISSING_PARAMETER` instead of `401 UNAUTHORIZED`
+  (RMA, notification, payout).
+- 5xx exceptions (`DatabaseException`, `EmailException`) now carry `DATABASE_ERROR` / `EMAIL_ERROR`
+  instead of masquerading as `BAD_REQUEST`.
+- OTP generation no longer uses `Double.pow` (removed an off-by-one and overflow risk).
+- HSTS is only emitted when `FORCE_HTTPS=true`; pretty JSON is opt-in with `JSON_PRETTY_PRINT=true`.
+- Email logs mask recipient addresses (PII).
+
+### Changed
+
+- Added reusable `receiveSingleImage` helper; all five image-upload endpoints use it.
+- Added `respondDeleted` and standardized delete acknowledgements across catalog/cart/address/
+  review/warehouse/API-key routes.
+- Consolidated `BrandRequest` / `ProductCategoryRequest` / `ShopCategoryRequest` into `NameRequest`.
+- Extracted `OrderStatusPolicy` so order status authorization is no longer embedded in the route.
+- `TaxService`, `FxService` and `FeatureFlags` are injectable classes instead of global objects.
+- OpenAPI: standardized error responses on auth/order/product/checkout routes; license corrected to
+  Apache-2.0; added `LICENSE`.
+- Docs: added a generated **Complete API Endpoint Index** (`docs/endpoints.md`, 206 operations),
+  refreshed per-module tables (FX, inventory, payment, payouts, KYC, policies/consent, products,
+  variants, refunds, reviews, dashboard, shops, wishlist), and corrected stale paths/request fields.
+- README: every operation now has the same `<details>` block format (Description, Curl,
+  Request URL, Response); missing operations were generated from OpenAPI and the complete set is
+  also published as `docs/endpoints.md`.
+- Testing: added Postgres-backed service/commerce/order/after-sales integration suites, pure
+  unit tests for serializers/enums/validators/pagination/date-time/JDBC binding, and split JaCoCo
+  gates (local unit baseline + CI integration target). Current baseline: 421 tests, 54.2%
+  instruction / 26.0% branch coverage.
+- Fixed a payment bug where `createPayment` validated the order outside a transaction.
+- Added `orderItem.id` to order responses so clients can create refunds/RMAs.
+- CI now publishes JaCoCo coverage, runs dependency review/submission, builds and scans the Docker
+  image, and refuses to silently skip PostgreSQL integration tests.
+
 ## [3.5.0] - 27 May 2026
 
 ### What's Changed

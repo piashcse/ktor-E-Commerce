@@ -11,8 +11,6 @@ object Money {
 
     fun of(value: String): BigDecimal = scale2(BigDecimal(value))
 
-    fun fromDouble(value: Double): BigDecimal = of(value)
-
     fun unitTotal(
         unitPrice: BigDecimal,
         quantity: Int,

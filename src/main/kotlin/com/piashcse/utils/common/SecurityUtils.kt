@@ -2,14 +2,15 @@ package com.piashcse.utils.common
 
 import java.security.MessageDigest
 import java.security.SecureRandom
-import kotlin.math.pow
 
 private val secureRandom = SecureRandom()
 
 fun generateOTP(length: Int = 6): String {
-    val min = 10.0.pow(length - 1).toInt()
-    val max = (10.0.pow(length) - 1).toInt()
-    return (secureRandom.nextInt(max - min) + min).toString()
+    require(length in 1..9) { "OTP length must be between 1 and 9" }
+    var min = 1
+    repeat(length - 1) { min *= 10 }
+    val range = 9 * min
+    return (min + secureRandom.nextInt(range)).toString()
 }
 
 fun generateToken(): String {

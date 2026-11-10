@@ -66,7 +66,12 @@ class PostgresIntegrationTest {
             return
         }
 
-        Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
+        // CI must never silently skip the only real-database check.
+        if (System.getenv("CI") != null) {
+            assertTrue(dockerAvailable(), "DB_* environment or Docker is required in CI")
+        } else {
+            Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
+        }
         val pg = PostgreSQLContainer("postgres:16-alpine")
         pg.start()
         try {
@@ -86,8 +91,9 @@ class PostgresIntegrationTest {
                 .dataSource(jdbcUrl, user, dbPassword)
                 .locations("classpath:db/migration")
                 .load()
-        val applied = flyway.migrate()
-        assertTrue(applied.migrations.size >= 27, "Expected V1..V28, got ${applied.migrations.size}")
+        flyway.migrate()
+        val appliedCount = flyway.info().applied().size
+        assertTrue(appliedCount >= 27, "Expected V1..V28, got $appliedCount applied migrations")
 
         Database.connect(jdbcUrl, user = user, password = dbPassword)
         lateinit var sliceUserId: EntityID<String>
@@ -123,12 +129,12 @@ class PostgresIntegrationTest {
 
             val user =
                 UserDAO.new {
-                    email = "slice@example.com"
+                    email = "slice-${java.util.UUID.randomUUID()}@example.com"
                     userType = UserType.CUSTOMER
                     password = "hashed"
                     isVerified = true
                 }
-            val shopCategory = ShopCategoryDAO.new { name = "Slice Shops" }
+            val shopCategory = ShopCategoryDAO.new { name = "Slice Shops ${java.util.UUID.randomUUID()}" }
             val shop =
                 ShopDAO.new {
                     userId = user.id
@@ -144,7 +150,7 @@ class PostgresIntegrationTest {
                     categoryId = category.id
                     name = "Slice Phone"
                     description = "Integration slice phone"
-                    sku = "SLICE-001"
+                    sku = "SLICE-${java.util.UUID.randomUUID()}"
                     price = BigDecimal("99.99")
                 }
             val warehouse =

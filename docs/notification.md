@@ -45,6 +45,7 @@ override controls the additional delivery channel.
 | `GET` | `/api/v1/notifications/cursor` | Keyset-paginated inbox |
 | `POST` | `/api/v1/notifications/{id}/read` | Mark one read |
 | `POST` | `/api/v1/notifications/read-all` | Mark all read |
+| `POST` | `/api/v1/notifications/send` | Send an announcement (Admin / Seller) |
 
 Sellers/admins can send announcements with `POST /api/v1/notifications/send`
 (sellers may only target customers who ordered from their shop).

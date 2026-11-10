@@ -16,6 +16,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import org.koin.ktor.ext.inject
 import java.math.BigDecimal
 
 @Serializable
@@ -32,8 +33,9 @@ data class FxRateResponse(
 
 /** Admin FX-rate management so multi-currency checkout is operable without SQL. */
 fun Route.fxAdminRoutes() {
+    val fxService: FxService by inject()
     get {
-        call.respondOk(FxService.listRates())
+        call.respondOk(fxService.listRates())
     }.describe { summary = "List FX rates" }
     adminWriteRateLimit {
         put("{targetCurrency}") {
@@ -47,7 +49,7 @@ fun Route.fxAdminRoutes() {
             }
             val body = call.receive<FxRateRequest>()
             if (body.rate <= BigDecimal.ZERO) throw ValidationException("FX rate must be positive")
-            call.respondOk(FxService.upsertRate(target, body.rate))
+            call.respondOk(fxService.upsertRate(target, body.rate))
         }.describe {
             summary = "Set FX rate"
             requestBody { jsonBody<FxRateRequest>() }

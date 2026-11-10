@@ -13,6 +13,7 @@ import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
@@ -74,7 +75,7 @@ fun Route.cartRoutes() {
              */
             delete("all") {
                 cartRepo.clearCart(call.currentUserId)
-                call.respondOk(com.piashcse.utils.common.MessageResponse("Cart cleared successfully"))
+                call.respondDeleted("Cart cleared successfully")
             }.describe { summary = "Clear cart" }
         }
 

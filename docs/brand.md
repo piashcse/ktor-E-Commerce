@@ -16,8 +16,9 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `POST` | `/api/v1/admin/brands` | Create a new brand | Yes (Admin) |
-| `GET` | `/api/v1/brands` | Retrieve list of brands | Yes |
+| `GET` | `/api/v1/brands` | Retrieve list of brands | No (public) |
 | `PUT` | `/api/v1/admin/brands/{id}` | Update an existing brand | Yes (Admin) |
+| `POST` | `/api/v1/admin/brands/{id}/image` | Upload a brand logo | Yes (Admin) |
 | `DELETE` | `/api/v1/admin/brands/{id}` | Delete a brand | Yes (Admin) |
 
 ---
@@ -86,17 +87,14 @@ Retrieve a list of brands with optional pagination support.
 
 #### Headers
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
+No authentication required (public).
 
 #### Example Request
 
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/brands?limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+  -H 'accept: application/json'
 ```
 
 #### Example Response
@@ -183,7 +181,36 @@ curl -X 'PUT' \
 
 ---
 
-### 4. Delete Brand
+### 4. Upload Brand Logo
+
+**`POST /api/v1/admin/brands/{id}/image`**
+
+Upload a logo for an existing brand. The request must be `multipart/form-data` with a single
+image part (`jpg`, `jpeg`, `png`, `gif` or `webp`; max 5 MB). The returned response is the updated
+brand with its new `logo` URL.
+
+#### Example Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/brands/6c5078d3-f8e3-4c88-9afe-48b5423c664f/image' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -F 'file=@logo.png'
+```
+
+#### Example Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Nike",
+  "logo": "/uploads/brand-images/8f2c1a.png"
+}
+```
+
+---
+
+### 5. Delete Brand
 
 **`DELETE /api/v1/admin/brands/{id}`**
 
@@ -213,14 +240,16 @@ curl -X 'DELETE' \
 #### Example Response
 
 ```json
-"19dd1021-432c-473c-8b19-0f56d19af9ad"
+{
+  "message": "Brand deleted successfully"
+}
 ```
 
 #### Response Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `data` | string | ID of the deleted brand |
+| `message` | string | Delete acknowledgement |
 
 ---
 

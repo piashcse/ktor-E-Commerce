@@ -1,3 +1,6 @@
+import org.gradle.testing.jacoco.tasks.JacocoCoverageVerification
+import org.gradle.testing.jacoco.tasks.JacocoReport
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
@@ -5,12 +8,17 @@ plugins {
     alias(libs.plugins.shadow)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
+    jacoco
 }
 
 group = "com.piashcse"
 version = "1.0.0"
 application {
     mainClass.set("com.piashcse.ApplicationKt")
+    // Distribution/launcher name must stay lowercase and match Dockerfile + CI
+    // (`build/install/ktor-ecom`, `bin/ktor-ecom`). The Gradle project name is
+    // `ktor-ECommerce`, so relying on the default would break Linux builds.
+    applicationName = "ktor-ecom"
     // adding this for fatjar
     project.setProperty("mainClassName", "com.piashcse.ApplicationKt")
     val isDevelopment: Boolean = project.ext.has("development")
@@ -134,4 +142,122 @@ tasks.test {
     testLogging {
         events("passed", "skipped", "failed", "standardOut", "standardError")
     }
+    // Always produce a coverage report after the suite, even on partial failure.
+    finalizedBy(tasks.named("jacocoTestReport"))
+}
+
+// Belt-and-braces: keep the distribution name aligned with the Dockerfile even
+// if the project name changes again.
+distributions {
+    main {
+        distributionBaseName.set("ktor-ecom")
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.13"
+}
+
+tasks.named<JacocoReport>("jacocoTestReport") {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+    classDirectories.setFrom(
+        files(
+            classDirectories.files.map {
+                fileTree(it) {
+                    exclude(
+                        "**/ApplicationKt.class",
+                        "**/di/**",
+                        "**/database/entities/**",
+                        "**/model/**",
+                        "**/*\$*",
+                    )
+                }
+            },
+        ),
+    )
+}
+
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    dependsOn(tasks.test)
+    classDirectories.setFrom(tasks.named<JacocoReport>("jacocoTestReport").get().classDirectories)
+    val coverageMinimum = System.getenv("COVERAGE_MIN") ?: "0.28"
+    val enforceDbCoverage = System.getenv("COVERAGE_ENFORCE_DB")?.toBoolean() ?: false
+    violationRules {
+        // Overall gate. CI raises this via COVERAGE_MIN after the Postgres-backed
+        // integration suite runs; a developer build without a database still uses
+        // the lower unit-test baseline.
+        rule {
+            limit {
+                counter = "INSTRUCTION"
+                value = "COVEREDRATIO"
+                minimum = coverageMinimum.toBigDecimal()
+            }
+        }
+        rule {
+            limit {
+                counter = "BRANCH"
+                value = "COVEREDRATIO"
+                minimum = "0.08".toBigDecimal()
+            }
+        }
+
+        // Pure, DB-independent modules must stay well covered everywhere.
+        listOf(
+            "com.piashcse.constants" to "0.90",
+            "com.piashcse.utils.validator" to "0.90",
+            "com.piashcse.utils.db" to "0.80",
+            "com.piashcse.utils.resilience" to "0.75",
+            "com.piashcse.utils.common" to "0.55",
+            "com.piashcse.plugin" to "0.65",
+            "com.piashcse.feature.common" to "0.30",
+        ).forEach { (packageName, minRatio) ->
+            rule {
+                element = "PACKAGE"
+                includes = listOf(packageName)
+                limit {
+                    counter = "INSTRUCTION"
+                    value = "COVEREDRATIO"
+                    minimum = minRatio.toBigDecimal()
+                }
+            }
+        }
+
+        // Critical commerce paths are only exercised by integration tests, so
+        // these package gates apply when CI runs against PostgreSQL.
+        if (enforceDbCoverage) {
+            listOf(
+                "com.piashcse.feature.order" to "0.60",
+                "com.piashcse.feature.payment" to "0.60",
+                "com.piashcse.feature.refund_request" to "0.70",
+                "com.piashcse.feature.payout" to "0.55",
+                "com.piashcse.feature.cart" to "0.70",
+                "com.piashcse.feature.dashboard" to "0.80",
+                "com.piashcse.feature.coupon" to "0.60",
+                "com.piashcse.feature.review_rating" to "0.70",
+                "com.piashcse.feature.profile" to "0.70",
+                "com.piashcse.feature.policy" to "0.60",
+            ).forEach { (packageName, minRatio) ->
+                rule {
+                    element = "PACKAGE"
+                    includes = listOf(packageName)
+                    limit {
+                        counter = "INSTRUCTION"
+                        value = "COVEREDRATIO"
+                        minimum = minRatio.toBigDecimal()
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Enforce coverage as part of `check`/`build`; CI additionally sets the
+// integration-aware COVERAGE_MIN/COVERAGE_ENFORCE_DB environment variables.
+tasks.named("check") {
+    dependsOn("jacocoTestCoverageVerification")
 }

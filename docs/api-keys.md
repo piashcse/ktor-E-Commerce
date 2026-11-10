@@ -15,11 +15,18 @@ Create body:
 ```json
 {
   "name": "warehouse-sync",
-  "scopes": ["INVENTORY_READ", "INVENTORY_WRITE"],
+  "scopes": ["INVENTORY_MANAGE", "ORDER_MANAGE"],
   "expiresAt": "2027-01-01T00:00:00"
 }
 ```
 
-The plaintext `key` is returned **only once** in `ApiKeyCreatedResponse`. Scopes are stored as permission names; requests are authorized against the key's scopes by `requirePermission`.
+The plaintext `key` is returned **only once** in `ApiKeyCreatedResponse`. Scopes are stored as
+`Permission` enum names (`ORDER_MANAGE`, `INVENTORY_MANAGE`, `DASHBOARD_VIEW`, …); requests are
+authorized against the key's scopes by `requirePermission`.
 
-Keys can be revoked immediately; lookups use a hash of the key, never the plaintext.
+Keys can be revoked immediately; lookups use a hash of the key, never the plaintext. Revoking
+returns:
+
+```json
+{ "message": "API key revoked" }
+```

@@ -27,10 +27,10 @@ class InvalidEnumValueException(
     message: String,
     val enumName: String,
     val invalidValue: String,
-) : AppException(message, HttpStatusCode.BadRequest)
+) : AppException(message, HttpStatusCode.BadRequest, "INVALID_ENUM_VALUE")
 
 class MissingParameterException(parameterName: String) :
-    AppException(Message.Errors.MISSING_PARAMETER.format(parameterName), HttpStatusCode.BadRequest)
+    AppException(Message.Errors.MISSING_PARAMETER.format(parameterName), HttpStatusCode.BadRequest, "MISSING_PARAMETER")
 
 // ─── 401 Unauthorized ──────────────────────────────────────────────────────
 
@@ -42,6 +42,7 @@ class InvalidCredentialsException(
 ) : AppException(
         buildMessage(remainingAttempts),
         HttpStatusCode.Unauthorized,
+        "INVALID_CREDENTIALS",
     ) {
     companion object {
         private fun buildMessage(remaining: Int?): String =
@@ -54,10 +55,10 @@ class InvalidCredentialsException(
 }
 
 class UnverifiedAccountException(message: String = Message.Auth.ACCOUNT_NOT_VERIFIED) :
-    AppException(message, HttpStatusCode.Unauthorized)
+    AppException(message, HttpStatusCode.Unauthorized, "ACCOUNT_NOT_VERIFIED")
 
 class DeactivatedAccountException(message: String = Message.Auth.ACCOUNT_DEACTIVATED) :
-    AppException(message, HttpStatusCode.Unauthorized)
+    AppException(message, HttpStatusCode.Unauthorized, "ACCOUNT_DEACTIVATED")
 
 // ─── 403 Forbidden ─────────────────────────────────────────────────────────
 
@@ -83,6 +84,6 @@ class RateLimitExceededException(message: String = "Too many requests") :
 class InternalServerException(message: String = Message.Errors.INTERNAL) :
     AppException(message, HttpStatusCode.InternalServerError, "INTERNAL")
 
-class DatabaseException(message: String) : AppException(message, HttpStatusCode.InternalServerError)
+class DatabaseException(message: String) : AppException(message, HttpStatusCode.InternalServerError, "DATABASE_ERROR")
 
-class EmailException(message: String) : AppException(message, HttpStatusCode.InternalServerError)
+class EmailException(message: String) : AppException(message, HttpStatusCode.InternalServerError, "EMAIL_ERROR")

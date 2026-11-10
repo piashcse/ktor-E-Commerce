@@ -93,7 +93,10 @@ fun Application.configureBasic() {
                 call.response.headers.append("X-Frame-Options", "DENY", safeOnly = false)
                 call.response.headers.append("Referrer-Policy", "no-referrer", safeOnly = false)
                 call.response.headers.append("Permissions-Policy", "camera=(), microphone=(), geolocation=()", safeOnly = false)
-                call.response.headers.append("Strict-Transport-Security", "max-age=31536000; includeSubDomains", safeOnly = false)
+                // HSTS is meaningless (and can hurt local/dev clients) on plain HTTP.
+                if (DotEnvConfig.forceHttps) {
+                    call.response.headers.append("Strict-Transport-Security", "max-age=31536000; includeSubDomains", safeOnly = false)
+                }
                 // Swagger UI ships an inline initializer script and inline styles.
                 val isSwagger = call.request.path().startsWith("/swagger")
                 val csp =
@@ -162,7 +165,8 @@ private fun Application.configureContentNegotiation() {
                 ignoreUnknownKeys = true
                 // Do not silently coerce invalid enums/currencies to defaults.
                 coerceInputValues = false
-                prettyPrint = true
+                // Pretty output is a debugging aid; keep production payloads small.
+                prettyPrint = DotEnvConfig.jsonPrettyPrint
                 serializersModule =
                     SerializersModule {
                         contextual(LocalDateTimeSerializer)

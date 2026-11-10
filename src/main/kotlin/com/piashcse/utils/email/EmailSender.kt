@@ -12,6 +12,13 @@ import org.slf4j.LoggerFactory
 
 object EmailSender {
     private val log = LoggerFactory.getLogger(EmailSender::class.java)
+
+    /** Keep recipient addresses out of logs (PII); show only the domain. */
+    private fun maskEmail(value: String): String {
+        val at = value.indexOf('@')
+        return if (at <= 0) "***" else "${value.first()}***${value.substring(at)}"
+    }
+
     private val smtpHost = DotEnvConfig.emailHost
     private val emailPort = DotEnvConfig.emailPort
     private val smtpUser = DotEnvConfig.emailUsername
@@ -30,7 +37,7 @@ object EmailSender {
         val rateLimitKey = "email_rate_limit:$toEmail"
         val recentSends = CacheService.cache.get<Int>(rateLimitKey) ?: 0
         if (recentSends >= MAX_EMAILS_PER_WINDOW) {
-            log.warn("Rate limit exceeded for $toEmail (subject: $subject)")
+            log.warn("Rate limit exceeded for ${maskEmail(toEmail)} (subject: $subject)")
             return
         }
 
@@ -54,10 +61,10 @@ object EmailSender {
                 }
                 // Only successful sends consume the rate-limit slot.
                 CacheService.cache.set(rateLimitKey, recentSends + 1, EMAIL_WINDOW_SECONDS)
-                log.info("Email sent successfully to $toEmail (subject: $subject)")
+                log.info("Email sent successfully to ${maskEmail(toEmail)} (subject: $subject)")
             } catch (e: EmailException) {
                 // Propagate so the EventBus retries/dead-letters instead of silently dropping.
-                log.error("Failed to send email to $toEmail: ${e.message}", e)
+                log.error("Failed to send email to ${maskEmail(toEmail)}: ${e.message}", e)
                 throw e
             }
         }

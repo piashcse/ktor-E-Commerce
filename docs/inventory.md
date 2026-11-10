@@ -17,6 +17,7 @@ All Inventory endpoints require Bearer token authentication for sellers and admi
 | `GET` | `/api/v1/seller/inventories/product/{productId}` | Retrieve inventory item details by product ID | Yes (Seller) |
 | `GET` | `/api/v1/seller/inventories/shop/{shopId}` | Retrieve all inventory items for a shop | Yes (Seller) |
 | `GET` | `/api/v1/seller/inventories/low-stock` | Retrieve items with stock below a threshold | Yes (Seller) |
+| `GET` | `/api/v1/admin/inventories` | List inventory across all shops | Yes (Admin) |
 
 ---
 
@@ -60,6 +61,19 @@ Retrieve inventory records that have fallen below the minimum stock level.
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/inventories/low-stock' \
   -H 'Authorization: Bearer <seller_token>'
+```
+
+## Admin inventory
+
+**`GET /api/v1/admin/inventories`**
+
+Admins can list inventory across every shop with the standard `page`/`perPage` or
+`limit`/`offset` pagination parameters.
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/inventories?page=1&perPage=20' \
+  -H 'Authorization: Bearer <admin_token>'
 ```
 
 ---

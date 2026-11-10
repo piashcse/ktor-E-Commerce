@@ -321,3 +321,18 @@ Scope: full `src/main` review for conciseness, reuse, centralization and query e
 - V18/V19 migrations for OTP index, payment/order currency, payout requests, consent revocation, review votes, indexes, constraints.
 - Docker non-root/healthcheck/volume, CI build, docs corrections, 299 tests, full-text search, money-path metrics and GDPR endpoints.
 3
+
+---
+
+## 6. Reusability / conciseness / standards pass
+
+- [x] **Deployment:** `applicationName` + distribution base name pinned to `ktor-ecom`; Docker image path matches `installDist`. Docker build job added to CI.
+- [x] **Bug:** Brand `conflictLabel`/`notFoundLabel` now say `Brand`, not `BrandResponse`.
+- [x] **HTTP semantics:** RMA/notification/payout missing path params return 400; 5xx exceptions use `DATABASE_ERROR`/`EMAIL_ERROR`; std error envelope carries `type`/`title`/`status`.
+- [x] **Reuse:** `receiveSingleImage` replaces five multipart copies; `respondDeleted` unifies delete acknowledgements; `standardErrors()` centralizes OpenAPI 4xx/5xx schemas.
+- [x] **DTOs:** `BrandRequest`, `ProductCategoryRequest`, `ShopCategoryRequest` folded into validated `NameRequest`.
+- [x] **Layering:** `OrderStatusPolicy` extracted from the route; `TaxService`, `FxService`, `FeatureFlags` and `OutboxService` are injectable classes; outbox DB access moved out of the route.
+- [x] **Config/ops:** dead `application.conf` removed; `FORCE_HTTPS` and `JSON_PRETTY_PRINT` are explicit; email logs mask recipients; OTP generator no longer uses `Double.pow`.
+- [x] **Quality gates:** JaCoCo report + coverage gate, dependency review/submission, Docker build + Trivy scan, and CI no longer silently skips the PostgreSQL integration test.
+- [x] **Tests:** added route/unit coverage for tax, FX, feature flags, KYC, warehouse, privacy, API keys, RMA, outbox, `OrderStatusPolicy`, `CatalogCrud`, and security helpers.
+- [x] **Docs:** `LICENSE` added (Apache-2.0); README version badges, order-number format and production-readiness notes corrected; changelog updated.

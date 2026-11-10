@@ -18,6 +18,7 @@ All Dashboard endpoints require `ADMIN` role.
 | `GET` | `/api/v1/admin/dashboard/users` | Get user growth trends | Yes (Admin) |
 | `GET` | `/api/v1/admin/dashboard/top-products` | Get top selling products | Yes (Admin) |
 | `GET` | `/api/v1/admin/dashboard/activity` | Get recent activity feed | Yes (Admin) |
+| `GET` | `/api/v1/seller/dashboard` | Seller-scoped revenue, orders and top products | Yes (Seller) |
 
 ---
 
@@ -245,6 +246,19 @@ curl -X 'GET' \
     "createdAt": "2024-07-07T09:15:00"
   }
 ]
+```
+
+## Seller dashboard
+
+**`GET /api/v1/seller/dashboard`**
+
+Returns the same metric families as the admin dashboard, scoped to the seller's own shop(s):
+paid-only revenue normalized to USD, order counts by status, top products and low-stock counts.
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/dashboard' \
+  -H 'Authorization: Bearer <seller_token>'
 ```
 
 ---

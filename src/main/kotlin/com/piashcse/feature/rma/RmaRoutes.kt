@@ -2,7 +2,6 @@
 
 package com.piashcse.feature.rma
 
-import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.created
@@ -12,12 +11,12 @@ import com.piashcse.plugin.ok
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.getCurrentUserType
 import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.requireUserType
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
-import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.server.request.receive
+import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
@@ -43,7 +42,7 @@ fun Route.rmaRoutes() {
              *
              */
             post("{id}/ship") {
-                val id = call.parameters["id"] ?: throw UnauthorizedException(Message.Errors.MISSING_PARAMETER)
+                val id = call.requirePathParameter("id")
                 call.respondOk(service.ship(id, call.currentUserId, call.receive<RmaShipRequest>().trackingNumber))
             }.describe {
                 summary = "Mark RMA as shipped"
@@ -57,7 +56,7 @@ fun Route.rmaRoutes() {
              *
              */
             post("{id}/cancel") {
-                val id = call.parameters["id"] ?: throw UnauthorizedException(Message.Errors.MISSING_PARAMETER)
+                val id = call.requirePathParameter("id")
                 call.respondOk(service.cancel(id, call.currentUserId))
             }.describe {
                 summary = "Cancel RMA"
@@ -87,13 +86,13 @@ fun Route.rmaSellerRoutes() {
     }
     sellerWriteRateLimit {
         put("{id}/status") {
-            val id = call.parameters["id"] ?: throw UnauthorizedException(Message.Errors.MISSING_PARAMETER)
+            val id = call.requirePathParameter("id")
             call.respondOk(
                 service.updateStatus(
                     id,
                     call.receive<RmaStatusUpdateRequest>(),
                     call.currentUserId,
-                    call.getCurrentUserType() ?: UserType.SELLER,
+                    call.requireUserType(),
                 ),
             )
         }.describe {
@@ -116,7 +115,7 @@ fun Route.rmaAdminRoutes() {
     }
     adminWriteRateLimit {
         put("{id}/status") {
-            val id = call.parameters["id"] ?: throw UnauthorizedException(Message.Errors.MISSING_PARAMETER)
+            val id = call.requirePathParameter("id")
             call.respondOk(
                 service.updateStatus(
                     id,

@@ -6,7 +6,8 @@ This documentation provides comprehensive details for the Product Sub Category A
 
 ## Authentication
 
-All Product Sub Category endpoints require Bearer token authentication. Include the access token in the Authorization header:
+This documentation provides comprehensive details for the Product Sub Category API endpoints. The
+public listing endpoint is unauthenticated; create/update/delete require an admin token.
 
 ```
 Authorization: Bearer <your_access_token>
@@ -17,7 +18,7 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `POST` | `/api/v1/admin/product-subcategories` | Create a new product sub category | Yes (Admin) |
-| `GET` | `/api/v1/product-subcategories` | Retrieve list of product sub categories | Yes |
+| `GET` | `/api/v1/product-subcategories` | Retrieve list of product sub categories (public) | No |
 | `PUT` | `/api/v1/admin/product-subcategories/{id}` | Update an existing product sub category | Yes (Admin) |
 | `DELETE` | `/api/v1/admin/product-subcategories/{id}` | Delete a product sub category | Yes (Admin) |
 
@@ -90,23 +91,20 @@ Retrieve a list of product sub categories with optional filtering and pagination
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `id` | string | No | Filter by specific category ID (returns sub categories for that category) |
+| `categoryId` | string | No | Filter by category ID (returns sub categories for that category) |
 | `limit` | number | No | Maximum number of sub-categories to return (default: 20) |
 | `offset` | number | No | Number of sub-categories to skip for pagination (default: 0) |
 
 #### Headers
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
+No authentication required (public).
 
 #### Example Request
 
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/product-subcategories?categoryId=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+  -H 'accept: application/json'
 ```
 
 #### Example Response
@@ -217,14 +215,16 @@ curl -X 'DELETE' \
 #### Example Response
 
 ```json
-"751cef10-f98a-4ecc-ae03-4173830a626d"
+{
+  "message": "Subcategory deleted successfully"
+}
 ```
 
 #### Response Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `data` | string | ID of the deleted product sub category |
+| `message` | string | Delete acknowledgement |
 
 ---
 

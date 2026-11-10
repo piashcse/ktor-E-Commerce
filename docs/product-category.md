@@ -6,7 +6,8 @@ This documentation provides comprehensive details for the Product Category API e
 
 ## Authentication
 
-All Product Category endpoints require Bearer token authentication. Include the access token in the Authorization header:
+This documentation provides comprehensive details for the Product Category API endpoints. The
+public listing endpoint is unauthenticated; create/update/delete and image upload require an admin token.
 
 ```
 Authorization: Bearer <your_access_token>
@@ -17,8 +18,9 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `POST` | `/api/v1/admin/product-categories` | Create a new product category | Yes (Admin) |
-| `GET` | `/api/v1/product-categories` | Retrieve list of product categories | Yes |
+| `GET` | `/api/v1/product-categories` | Retrieve list of product categories | No (public) |
 | `PUT` | `/api/v1/admin/product-categories/{id}` | Update an existing product category | Yes (Admin) |
+| `POST` | `/api/v1/admin/product-categories/{id}/image` | Upload a category image | Yes (Admin) |
 | `DELETE` | `/api/v1/admin/product-categories/{id}` | Delete a product category | Yes (Admin) |
 
 ---
@@ -89,17 +91,14 @@ Retrieve a list of product categories with optional pagination support.
 
 #### Headers
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
+No authentication required (public).
 
 #### Example Request
 
 ```bash
 curl -X 'GET' \
   'http://localhost:8080/api/v1/product-categories?limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+  -H 'accept: application/json'
 ```
 
 #### Example Response
@@ -273,5 +272,21 @@ This API follows industry-standard error handling patterns (Stripe, GitHub, Open
 | `500` | Internal Server Error | `"Internal server error"` |
 
 All error messages are centralized and consistent across all endpoints.
+
+---
+
+## Upload Category Image
+
+**`POST /api/v1/admin/product-categories/{id}/image`**
+
+`multipart/form-data` with a single image part (`jpg`, `jpeg`, `png`, `gif`, `webp`; max 5 MB).
+Returns the updated category with its new `image` URL.
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/product-categories/6c5078d3-f8e3-4c88-9afe-48b5423c664f/image' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -F 'file=@category.png'
+```
 
 ---

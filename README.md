@@ -4,11 +4,11 @@
   
   **A high-performance, enterprise-grade e-commerce backend built with Kotlin & Ktor.**
 
-  [![Ktor](https://img.shields.io/badge/ktor-3.5.1-blue.svg)](https://github.com/ktorio/ktor)
-  [![Exposed](https://img.shields.io/badge/Exposed-1.3.0-blue.svg)](https://github.com/JetBrains/Exposed)
-  [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
-  ![Koin](https://img.shields.io/badge/Koin-4.2.0-29BEB0?logo=koin&logoColor=white)
-  [![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-42.7.8-336791?logo=postgresql)](https://www.postgresql.org/)
+  [![Ktor](https://img.shields.io/badge/ktor-3.6.1-blue.svg)](https://github.com/ktorio/ktor)
+  [![Exposed](https://img.shields.io/badge/Exposed-1.6.1-blue.svg)](https://github.com/JetBrains/Exposed)
+  [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+  ![Koin](https://img.shields.io/badge/Koin-4.2.2-29BEB0?logo=koin&logoColor=white)
+  [![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-42.7.14-336791?logo=postgresql)](https://www.postgresql.org/)
   [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
   <a href="https://github.com/piashcse"><img alt="Author" src="https://img.shields.io/static/v1?label=GitHub&message=piashcse&color=C51162"/></a>
 
@@ -71,7 +71,7 @@
 - **Order Cancellation**: Customers can cancel PENDING/CONFIRMED orders with automatic stock restoration.
 - **Seller Orders**: Sellers can view and manage orders from their shop.
 - **Admin Orders**: Admins can view all orders with advanced filters (status, date range).
-- **Human-Readable Order Numbers**: Sequential order numbers in format ORD-YYYYMMDD-XXXX.
+- **Human-Readable Order Numbers**: Date-prefixed order numbers in `ORD-YYYYMMDD-XXXX-XXXXXXXX` format (random suffix guarantees uniqueness under concurrency).
 - **Idempotency Support**: Prevent duplicate orders with idempotency keys.
 - **Payment Integration**: Integrate with popular payment gateways for seamless transactions.
 - **Payment Validation**: Payment amounts validated against order totals.
@@ -127,6 +127,22 @@
 - **Detekt**: Static code analysis for finding potential bugs and code smells.
 - **Pre-commit Hooks**: Enforce quality standards before code is even committed.
 
+### 13. Testing & Coverage
+
+- **Unit + route tests**: `./gradlew test` (no database required)
+- **PostgreSQL integration tests**: Flyway migrations, repositories, order/payment/refund/payout
+  lifecycles and concurrency guards
+- **Coverage gate**: JaCoCo overall + per-package rules; CI enforces the integration-backed target
+- **Current baseline**: 421 tests, **54.2% instruction / 26.0% branch / 59.2% line**
+
+```bash
+./gradlew test jacocoTestReport
+# report: build/reports/jacoco/test/html/index.html
+```
+
+See [Testing & Coverage](docs/testing.md) for the test pyramid, local database setup, thresholds
+and known gaps.
+
 ## Architecture
 
 <p align="center">
@@ -139,8 +155,8 @@
 
 The project follows **Clean Architecture** with clear separation of concerns:
 
-- **Route Layer** (`*Routes.kt`) — HTTP routing only, uses `by inject()` for dependency injection, delegates all logic to services/repositories
-- **Service Layer** (`*Service.kt`) — Business logic orchestration, works with domain models and DTOs, zero Exposed/sql imports
+- **Route Layer** (`*Routes.kt`) — HTTP routing only, uses `by inject()` for dependency injection, delegates logic to services/repositories
+- **Service Layer** (`*Service.kt`) — Business logic orchestration, works with domain models and DTOs
 - **Repository Layer** (`*Repository` interface + `*RepositoryImpl`) — Data access, Exposed queries, transaction management
 - **Mapper Layer** (`*Mappers.kt`) — Object mapping between DAO entities and response DTOs, fully separated from entities
 - **Plugin Layer** — Cross-cutting concerns: auth, status pages, routing configuration, OpenAPI generation
@@ -150,6 +166,16 @@ This architecture ensures:
 - **Swapability**: Data access implementation can change without affecting business logic
 - **Discoverability**: Each concern lives in its own well-named file, not hidden inside god classes
 - **Safety**: Flyway-managed schema migrations prevent destructive table recreation in production
+
+### Production readiness notes
+
+- **Single-instance defaults.** The rate limiter, catalog cache, JWT blacklist cache, email throttle
+  and SMTP circuit breaker are in-process. Running more than one replica requires replacing
+  `CacheService.cache` with a Redis-backed implementation (the `Cache` interface is ready) and using
+  a shared rate-limit store. Until then, deploy as a single instance or accept per-instance limits.
+- **HSTS** is only emitted when `FORCE_HTTPS=true` (set it behind a TLS-terminating proxy).
+- **Pretty JSON** is opt-in via `JSON_PRETTY_PRINT=true`; production should leave it disabled.
+- **Read replicas** are supported via `DB_READ_URL`; only explicitly read-only paths use `readQuery`.
 
 ## Built With 🛠
 
@@ -383,29 +409,53 @@ Comprehensive API documentation is maintained using [MkDocs](https://www.mkdocs.
 
 The API is organized into the following modules:
 
-- **Authentication** - Login, register, OTP, password reset
-- **Profile** - User profile management
-- **Shop** - Shop management for sellers
-- **Product** - Product catalog management
-- **Cart** - Shopping cart operations and summary
-- **Order** - Order processing, cancellation, and management
-- **Payment** - Payment processing and history
-- **Refund Request** - Refund lifecycle management
-- **Inventory** - Stock management
-- **Wishlist** - Product wishlist
-- **Shipping** - Shipping management
-- **Review & Rating** - Product reviews
+- **Authentication** - Login, register, OTP, password reset, refresh, logout
+- **Profile** - User profile and profile image
+- **Shop** - Public shop discovery, seller shop management, admin approval
+- **Shop Category** - Shop category taxonomy
 - **Brand** - Brand management
-- **Product Category** - Product categories
-- **Shop Category** - Shop categories
-- **Privacy Policy** - Policy management
-- **Policy Consent** - User consent tracking
-- **Dashboard** - Admin dashboard analytics and metrics
+- **Product Category / Subcategory** - Catalog taxonomy
+- **Product** - Catalog, search, variants, options and recommendations
+- **Recommendation** - Personalized recommendation feed
+- **Review & Rating** - Product reviews and helpful votes
+- **Wishlist** - Wishlist and move-to-cart
+- **Cart** - Shopping cart operations and summary
+- **Checkout** - Shipping addresses, checkout summary, guest checkout, order placement
+- **Order** - Order processing, tracking, cancellation, seller/admin order views
+- **Payment** - Payment intents, history and admin confirmation
+- **Coupon** - Coupon validation and administration
+- **Shipping Method** - Delivery methods and prices
+- **Inventory** - Seller/admin stock management across warehouses
+- **Warehouse** - Seller physical locations
+- **Refund Request** - Refund lifecycle, private evidence and seller/admin actions
+- **RMA** - Returns, exchanges, replacement orders
+- **Notification** - Inbox, announcements and per-event preferences
+- **Seller KYC** - Business/bank verification workflow
+- **Payout** - Seller balance, payout requests, statements, admin payouts
+- **Tax Rules** - Country/category tax rules
+- **FX Rates** - Multi-currency rates
+- **API Keys** - Scoped self-service API keys
+- **Feature Flags** - Runtime feature switches
+- **Outbox** - Outbox health and dead-letter replay
+- **Privacy Policy / Consent** - Policy lifecycle and GDPR consent
+- **Privacy** - GDPR export and account erasure
+- **Dashboard** - Admin and seller analytics
 - **Audit Log** - Admin audit trail and activity tracking
+- **Health** - Liveness and readiness probes
+
+See the **[complete endpoint index](docs/endpoints.md)** for all **206** operations with
+method, path, description and access level. It mirrors the same OpenAPI document
+that powers Swagger UI.
 
 ### 🌐 Swagger/OpenAPI
 
 Interactive API documentation is available via Swagger UI at `http://localhost:8080/swagger` when the application is running.
+
+> **API contract note:** every operation is documented below as a `<details>` block with
+> Description, Curl, Request URL and Response. All 206 operations are also listed in the
+> generated [endpoint index](docs/endpoints.md). Success responses return data directly and
+> errors use the `ApiError` shape; some older examples may still show a legacy `data`/`message`
+> wrapper, so use the generated blocks and Swagger as the canonical contract.
 
 ### ROLE MANAGEMENT
 
@@ -1019,6 +1069,48 @@ http://localhost:8080/api/v1/admin/shop-categories/{id}
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/shop-categories</code></summary>
+
+### Description
+Retrieve a paginated list of all shop categories
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shop-categories?limit=20' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/shop-categories?limit={limit}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Example Name"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 1,
+    "offset": 1,
+    "page": 1,
+    "perPage": 1,
+    "totalPages": 1,
+    "hasNext": true,
+    "hasPrev": true
+  }
+}
+```
+</details>
+
+
 ### SHOP
 
 <details>
@@ -1439,6 +1531,47 @@ http://localhost:8080/api/v1/admin/shops/activate/{id}
 ```
 </details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/shops/{id}/image</code></summary>
+
+### Description
+Seller - Upload a shop logo
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/shops/6c5078d3-f8e3-4c88-9afe-48b5423c664f/image' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/shops/{id}/image
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "name": "Example Name",
+  "categoryId": "uuid",
+  "description": "string",
+  "address": "string",
+  "phone": "+8801700000000",
+  "email": "user@example.com",
+  "logo": "/uploads/example.png",
+  "coverImage": "/uploads/example.png",
+  "status": "PENDING",
+  "rating": "string",
+  "totalReviews": 1,
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+
 ### BRAND
 
 <details>
@@ -1575,6 +1708,36 @@ http://localhost:8080/api/v1/admin/brands/{id}
 ```
 </details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/brands/{id}/image</code></summary>
+
+### Description
+Admin - Upload a brand logo
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/brands/6c5078d3-f8e3-4c88-9afe-48b5423c664f/image' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/brands/{id}/image
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "name": "Example Name",
+  "logo": "/uploads/example.png"
+}
+```
+</details>
+
+
 ### PRODUCT CATEGORY
 
 <details>
@@ -1705,6 +1868,44 @@ http://localhost:8080/api/v1/admin/product-categories/{id}
 }
 ```
 </details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/product-categories/{id}/image</code></summary>
+
+### Description
+Admin - Upload a category image
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/product-categories/6c5078d3-f8e3-4c88-9afe-48b5423c664f/image' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/product-categories/{id}/image
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "name": "Example Name",
+  "subCategories": [
+    {
+      "id": "uuid",
+      "categoryId": "uuid",
+      "name": "Example Name",
+      "image": "/uploads/example.png"
+    }
+  ],
+  "image": "/uploads/example.png"
+}
+```
+</details>
+
 
 ### PRODUCT SUB CATEGORY
 
@@ -2167,6 +2368,678 @@ http://localhost:8080/api/v1/admin/products/{id}
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/products/recommendations</code></summary>
+
+### Description
+Public, guest-safe fallback ranked by sales and rating
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/recommendations?limit=20' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/products/recommendations?limit={limit}
+```
+
+### Response
+```json
+{
+  "strategy": "19.99",
+  "sourceProductId": "uuid",
+  "items": [
+    {
+      "id": "uuid",
+      "userId": "uuid",
+      "shopId": "uuid",
+      "categoryId": "uuid",
+      "subCategoryId": "uuid",
+      "brandId": "uuid",
+      "name": "Example Name",
+      "description": "string",
+      "sku": "string",
+      "barcode": "CODE-001",
+      "weight": 1,
+      "dimensions": "string",
+      "minOrderQuantity": 1,
+      "price": "19.99",
+      "discountPrice": "19.99",
+      "discountPercentage": "19.99",
+      "videoLink": "string",
+      "hotDeal": true,
+      "featured": true,
+      "bestSeller": true,
+      "newProduct": true,
+      "freeShipping": true,
+      "images": [
+        "/uploads/example.png"
+      ],
+      "status": "ACTIVE",
+      "viewCount": 1,
+      "rating": 1,
+      "totalReviews": 1,
+      "totalSales": 1,
+      "variants": [
+        {
+          "id": "uuid",
+          "productId": "uuid",
+          "sku": "string",
+          "name": "Example Name",
+          "price": "19.99",
+          "discountPrice": "19.99",
+          "discountPercentage": "19.99",
+          "barcode": "CODE-001",
+          "weight": 1,
+          "dimensions": "string",
+          "imageUrl": "/uploads/example.png",
+          "status": "ACTIVE",
+          "isDefault": true,
+          "sortOrder": 1,
+          "options": [
+            null
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/products/{id}/related</code></summary>
+
+### Description
+Same category, subcategory boosted, ranked by sales and rating
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/related?limit=20' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/products/{id}/related?limit={limit}
+```
+
+### Response
+```json
+{
+  "strategy": "19.99",
+  "sourceProductId": "uuid",
+  "items": [
+    {
+      "id": "uuid",
+      "userId": "uuid",
+      "shopId": "uuid",
+      "categoryId": "uuid",
+      "subCategoryId": "uuid",
+      "brandId": "uuid",
+      "name": "Example Name",
+      "description": "string",
+      "sku": "string",
+      "barcode": "CODE-001",
+      "weight": 1,
+      "dimensions": "string",
+      "minOrderQuantity": 1,
+      "price": "19.99",
+      "discountPrice": "19.99",
+      "discountPercentage": "19.99",
+      "videoLink": "string",
+      "hotDeal": true,
+      "featured": true,
+      "bestSeller": true,
+      "newProduct": true,
+      "freeShipping": true,
+      "images": [
+        "/uploads/example.png"
+      ],
+      "status": "ACTIVE",
+      "viewCount": 1,
+      "rating": 1,
+      "totalReviews": 1,
+      "totalSales": 1,
+      "variants": [
+        {
+          "id": "uuid",
+          "productId": "uuid",
+          "sku": "string",
+          "name": "Example Name",
+          "price": "19.99",
+          "discountPrice": "19.99",
+          "discountPercentage": "19.99",
+          "barcode": "CODE-001",
+          "weight": 1,
+          "dimensions": "string",
+          "imageUrl": "/uploads/example.png",
+          "status": "ACTIVE",
+          "isDefault": true,
+          "sortOrder": 1,
+          "options": [
+            null
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/products/{id}/also-bought</code></summary>
+
+### Description
+Co-purchase counts from paid, non-canceled orders
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/also-bought?limit=20' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/products/{id}/also-bought?limit={limit}
+```
+
+### Response
+```json
+{
+  "strategy": "19.99",
+  "sourceProductId": "uuid",
+  "items": [
+    {
+      "id": "uuid",
+      "userId": "uuid",
+      "shopId": "uuid",
+      "categoryId": "uuid",
+      "subCategoryId": "uuid",
+      "brandId": "uuid",
+      "name": "Example Name",
+      "description": "string",
+      "sku": "string",
+      "barcode": "CODE-001",
+      "weight": 1,
+      "dimensions": "string",
+      "minOrderQuantity": 1,
+      "price": "19.99",
+      "discountPrice": "19.99",
+      "discountPercentage": "19.99",
+      "videoLink": "string",
+      "hotDeal": true,
+      "featured": true,
+      "bestSeller": true,
+      "newProduct": true,
+      "freeShipping": true,
+      "images": [
+        "/uploads/example.png"
+      ],
+      "status": "ACTIVE",
+      "viewCount": 1,
+      "rating": 1,
+      "totalReviews": 1,
+      "totalSales": 1,
+      "variants": [
+        {
+          "id": "uuid",
+          "productId": "uuid",
+          "sku": "string",
+          "name": "Example Name",
+          "price": "19.99",
+          "discountPrice": "19.99",
+          "discountPercentage": "19.99",
+          "barcode": "CODE-001",
+          "weight": 1,
+          "dimensions": "string",
+          "imageUrl": "/uploads/example.png",
+          "status": "ACTIVE",
+          "isDefault": true,
+          "sortOrder": 1,
+          "options": [
+            null
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/products/{id}/variants</code></summary>
+
+### Description
+Purchasable variants with option values
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/products/{id}/variants
+```
+
+### Response
+```json
+[
+  {
+    "id": "uuid",
+    "productId": "uuid",
+    "sku": "string",
+    "name": "Example Name",
+    "price": "19.99",
+    "discountPrice": "19.99",
+    "discountPercentage": "19.99",
+    "barcode": "CODE-001",
+    "weight": 1,
+    "dimensions": "string",
+    "imageUrl": "/uploads/example.png",
+    "status": "ACTIVE",
+    "isDefault": true,
+    "sortOrder": 1,
+    "options": [
+      {
+        "optionId": "uuid",
+        "optionName": "Example Name",
+        "valueId": "uuid",
+        "value": "string"
+      }
+    ]
+  }
+]
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/products/{id}/options</code></summary>
+
+### Description
+Option dimensions (for example Size, Color) and allowed values
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/products/{id}/options
+```
+
+### Response
+```json
+[
+  {
+    "id": "uuid",
+    "productId": "uuid",
+    "name": "Example Name",
+    "sortOrder": 1,
+    "values": [
+      {
+        "id": "uuid",
+        "optionId": "uuid",
+        "value": "string",
+        "sortOrder": 1
+      }
+    ]
+  }
+]
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/products/{id}/variants</code></summary>
+
+### Description
+Create product variant
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "sku": "string",
+  "name": "Example Name",
+  "price": "19.99",
+  "discountPrice": "19.99",
+  "barcode": "CODE-001",
+  "weight": "19.99",
+  "dimensions": "string",
+  "imageUrl": "/uploads/example.png",
+  "status": "ACTIVE",
+  "isDefault": true,
+  "sortOrder": 1
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/products/{id}/variants
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "productId": "uuid",
+  "sku": "string",
+  "name": "Example Name",
+  "price": "19.99",
+  "discountPrice": "19.99",
+  "discountPercentage": "19.99",
+  "barcode": "CODE-001",
+  "weight": 1,
+  "dimensions": "string",
+  "imageUrl": "/uploads/example.png",
+  "status": "ACTIVE",
+  "isDefault": true,
+  "sortOrder": 1,
+  "options": [
+    {
+      "optionId": "uuid",
+      "optionName": "Example Name",
+      "valueId": "uuid",
+      "value": "string"
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/seller/products/{id}/variants/{variantId}</code></summary>
+
+### Description
+Update product variant
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants/variant-uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "sku": "string",
+  "name": "Example Name",
+  "price": "19.99",
+  "discountPrice": "19.99",
+  "barcode": "CODE-001",
+  "weight": "19.99",
+  "dimensions": "string",
+  "imageUrl": "/uploads/example.png",
+  "status": "ACTIVE",
+  "isDefault": true,
+  "sortOrder": 1
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/products/{id}/variants/{variantId}
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "productId": "uuid",
+  "sku": "string",
+  "name": "Example Name",
+  "price": "19.99",
+  "discountPrice": "19.99",
+  "discountPercentage": "19.99",
+  "barcode": "CODE-001",
+  "weight": 1,
+  "dimensions": "string",
+  "imageUrl": "/uploads/example.png",
+  "status": "ACTIVE",
+  "isDefault": true,
+  "sortOrder": 1,
+  "options": [
+    {
+      "optionId": "uuid",
+      "optionName": "Example Name",
+      "valueId": "uuid",
+      "value": "string"
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/seller/products/{id}/variants/{variantId}</code></summary>
+
+### Description
+Promotes another variant as default when needed
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants/variant-uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/products/{id}/variants/{variantId}
+```
+
+### Response
+```json
+{
+  "message": "string"
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/seller/products/{id}/variants/{variantId}/options</code></summary>
+
+### Description
+One value per option
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants/variant-uuid/options' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "valueIds": [
+    "string"
+  ]
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/products/{id}/variants/{variantId}/options
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "productId": "uuid",
+  "sku": "string",
+  "name": "Example Name",
+  "price": "19.99",
+  "discountPrice": "19.99",
+  "discountPercentage": "19.99",
+  "barcode": "CODE-001",
+  "weight": 1,
+  "dimensions": "string",
+  "imageUrl": "/uploads/example.png",
+  "status": "ACTIVE",
+  "isDefault": true,
+  "sortOrder": 1,
+  "options": [
+    {
+      "optionId": "uuid",
+      "optionName": "Example Name",
+      "valueId": "uuid",
+      "value": "string"
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/products/{id}/options</code></summary>
+
+### Description
+Create option dimension
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example Name",
+  "sortOrder": 1
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/products/{id}/options
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "productId": "uuid",
+  "name": "Example Name",
+  "sortOrder": 1,
+  "values": [
+    {
+      "id": "uuid",
+      "optionId": "uuid",
+      "value": "string",
+      "sortOrder": 1
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/seller/products/{id}/options/{optionId}</code></summary>
+
+### Description
+Also removes its values and variant links
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options/option-uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/products/{id}/options/{optionId}
+```
+
+### Response
+```json
+{
+  "message": "string"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/products/{id}/options/{optionId}/values</code></summary>
+
+### Description
+Add option value
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options/option-uuid/values' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "value": "string",
+  "sortOrder": 1
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/products/{id}/options/{optionId}/values
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "optionId": "uuid",
+  "value": "string",
+  "sortOrder": 1
+}
+```
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/seller/products/{id}/options/{optionId}/values/{valueId}</code></summary>
+
+### Description
+Delete option value
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options/option-uuid/values/value-uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/products/{id}/options/{optionId}/values/{valueId}
+```
+
+### Response
+```json
+{
+  "message": "string"
+}
+```
+</details>
+
+
 ### REVIEW RATING
 
 <details>
@@ -2309,6 +3182,44 @@ http://localhost:8080/api/v1/reviews/{id}
 }
 ```
 </details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/reviews/{id}/helpful</code></summary>
+
+### Description
+helpful=false removes the vote
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/reviews/6c5078d3-f8e3-4c88-9afe-48b5423c664f/helpful?helpful=string' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/reviews/{id}/helpful?helpful={helpful}
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "userId": "uuid",
+  "productId": "uuid",
+  "reviewText": "string",
+  "rating": 1,
+  "title": "string",
+  "isVerifiedPurchase": true,
+  "helpfulCount": 1,
+  "notHelpfulCount": 1,
+  "status": "ACTIVE",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
 
 ### CART
 
@@ -2648,6 +3559,113 @@ http://localhost:8080/api/v1/wishlists/check?productId={productId}
 ```
 </details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/wishlists/move-to-cart</code></summary>
+
+### Description
+Adds the product to the cart and removes it from the wishlist
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/wishlists/move-to-cart?productId=uuid&quantity=string' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/wishlists/move-to-cart?productId={productId}&quantity={quantity}
+```
+
+### Response
+```json
+{
+  "productId": "uuid",
+  "quantity": 1,
+  "product": {
+    "id": "uuid",
+    "userId": "uuid",
+    "shopId": "uuid",
+    "categoryId": "uuid",
+    "subCategoryId": "uuid",
+    "brandId": "uuid",
+    "name": "Example Name",
+    "description": "string",
+    "sku": "string",
+    "barcode": "CODE-001",
+    "weight": 1,
+    "dimensions": "string",
+    "minOrderQuantity": 1,
+    "price": "19.99",
+    "discountPrice": "19.99",
+    "discountPercentage": "19.99",
+    "videoLink": "string",
+    "hotDeal": true,
+    "featured": true,
+    "bestSeller": true,
+    "newProduct": true,
+    "freeShipping": true,
+    "images": [
+      "/uploads/example.png"
+    ],
+    "status": "ACTIVE",
+    "viewCount": 1,
+    "rating": 1,
+    "totalReviews": 1,
+    "totalSales": 1,
+    "variants": [
+      {
+        "id": "uuid",
+        "productId": "uuid",
+        "sku": "string",
+        "name": "Example Name",
+        "price": "19.99",
+        "discountPrice": "19.99",
+        "discountPercentage": "19.99",
+        "barcode": "CODE-001",
+        "weight": 1,
+        "dimensions": "string",
+        "imageUrl": "/uploads/example.png",
+        "status": "ACTIVE",
+        "isDefault": true,
+        "sortOrder": 1,
+        "options": [
+          null
+        ]
+      }
+    ]
+  },
+  "variantId": "uuid",
+  "variant": {
+    "id": "uuid",
+    "productId": "uuid",
+    "sku": "string",
+    "name": "Example Name",
+    "price": "19.99",
+    "discountPrice": "19.99",
+    "discountPercentage": "19.99",
+    "barcode": "CODE-001",
+    "weight": 1,
+    "dimensions": "string",
+    "imageUrl": "/uploads/example.png",
+    "status": "ACTIVE",
+    "isDefault": true,
+    "sortOrder": 1,
+    "options": [
+      {
+        "optionId": "uuid",
+        "optionName": "Example Name",
+        "valueId": "uuid",
+        "value": "string"
+      }
+    ]
+  }
+}
+```
+</details>
+
+
 ### CHECKOUT
 
 <details>
@@ -2898,7 +3916,7 @@ http://localhost:8080/api/v1/checkout/place-order
 ```json
 {
   "data": {
-    "orderId": "ORD-20240506-ABCD",
+    "orderId": "ORD-20240506-0001-A1B2C3D4",
     "total": 1914.97,
     "status": "PENDING"
   },
@@ -2906,6 +3924,98 @@ http://localhost:8080/api/v1/checkout/place-order
 }
 ```
 </details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/checkout/guest</code></summary>
+
+### Description
+Feature-flagged; creates/claims a guest account and places the order
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/checkout/guest' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "user@example.com",
+  "firstName": "Example Name",
+  "lastName": "Example Name",
+  "phoneNumber": "+8801700000000",
+  "streetAddress": "string",
+  "city": "string",
+  "state": "string",
+  "country": "BD",
+  "postCode": "CODE-001",
+  "shippingMethodId": "uuid",
+  "paymentMethod": "CREDIT_CARD",
+  "couponCode": "CODE-001",
+  "currency": "USD",
+  "notes": "string",
+  "idempotencyKey": "string",
+  "items": [
+    {
+      "productId": "uuid",
+      "quantity": 1
+    }
+  ]
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/checkout/guest
+```
+
+### Response
+```json
+[
+  {
+    "orderId": "uuid",
+    "orderNumber": "string",
+    "userId": "uuid",
+    "shopId": "uuid",
+    "subTotal": "19.99",
+    "shippingCost": "string",
+    "taxAmount": "19.99",
+    "discountAmount": "19.99",
+    "total": "19.99",
+    "currency": "USD",
+    "status": "PENDING",
+    "paymentStatus": "PENDING",
+    "couponCode": "CODE-001",
+    "paymentMethod": "CREDIT_CARD",
+    "notes": "string",
+    "contactEmail": "user@example.com",
+    "shippingAddress": "string",
+    "billingAddress": "string",
+    "shippingMethod": "string",
+    "trackingNumber": "string",
+    "shippingDate": "2024-05-06T12:00:00",
+    "deliveredDate": "2024-05-06T12:00:00",
+    "canceledDate": "2024-05-06T12:00:00",
+    "completedDate": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00",
+    "updatedAt": "2024-05-06T12:00:00",
+    "items": [
+      {
+        "productId": "uuid",
+        "productName": "Example Name",
+        "quantity": 1,
+        "price": "19.99",
+        "discountAmount": "19.99",
+        "taxAmount": "19.99",
+        "total": "19.99",
+        "sku": "string",
+        "variantId": "uuid",
+        "variantName": "Example Name"
+      }
+    ]
+  }
+]
+```
+</details>
+
 
 ### ORDER
 
@@ -2934,7 +4044,7 @@ http://localhost:8080/api/v1/orders?limit={limit}&offset={offset}
   "data": {
     "data": [
       {
-        "orderId": "ORD-20240506-ABCD",
+        "orderId": "ORD-20240506-0001-A1B2C3D4",
         "total": 1914.97,
         "status": "PENDING",
         "createdAt": "2024-05-06T12:00:00"
@@ -2960,7 +4070,7 @@ Update order status (Customer: CANCELED/RECEIVED, Seller: CONFIRMED/DELIVERED).
 ### Curl
 ```bash
 curl -X 'PATCH' \
-  'http://localhost:8080/api/v1/orders/status/ORD-20240506-ABCD?status=canceled' \
+  'http://localhost:8080/api/v1/orders/status/ORD-20240506-0001-A1B2C3D4?status=canceled' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
@@ -2974,7 +4084,7 @@ http://localhost:8080/api/v1/orders/status/{id}?status={status}
 ```json
 {
   "data": {
-    "orderId": "ORD-20240506-ABCD",
+    "orderId": "ORD-20240506-0001-A1B2C3D4",
     "status": "CANCELED"
   },
   "message": "Order status updated"
@@ -2991,7 +4101,7 @@ Cancel an order.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/orders/ORD-20240506-ABCD/cancel' \
+  'http://localhost:8080/api/v1/orders/ORD-20240506-0001-A1B2C3D4/cancel' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
@@ -3039,7 +4149,7 @@ http://localhost:8080/api/v1/seller/orders?status={status}&limit={limit}&offset=
   "data": {
     "data": [
       {
-        "orderId": "ORD-20240506-ABCD",
+        "orderId": "ORD-20240506-0001-A1B2C3D4",
         "total": 1914.97,
         "status": "PENDING"
       }
@@ -3064,7 +4174,7 @@ Admin: Update the status of any order.
 ### Curl
 ```bash
 curl -X 'PATCH' \
-  'http://localhost:8080/api/v1/admin/orders/status/ORD-20240506-ABCD?status=DELIVERED' \
+  'http://localhost:8080/api/v1/admin/orders/status/ORD-20240506-0001-A1B2C3D4?status=DELIVERED' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
@@ -3078,7 +4188,7 @@ http://localhost:8080/api/v1/admin/orders/status/{id}?status={status}
 ```json
 {
   "data": {
-    "orderId": "ORD-20240506-ABCD",
+    "orderId": "ORD-20240506-0001-A1B2C3D4",
     "status": "DELIVERED"
   },
   "message": "Order status updated by admin"
@@ -3095,7 +4205,7 @@ Admin: Cancel any order.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/orders/ORD-20240506-ABCD/cancel' \
+  'http://localhost:8080/api/v1/admin/orders/ORD-20240506-0001-A1B2C3D4/cancel' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>' \
   -H 'Content-Type: application/json' \
@@ -3143,7 +4253,7 @@ http://localhost:8080/api/v1/admin/orders?status={status}&startDate={startDate}&
   "data": {
     "data": [
       {
-        "orderId": "ORD-20240506-ABCD",
+        "orderId": "ORD-20240506-0001-A1B2C3D4",
         "status": "PENDING"
       }
     ],
@@ -3158,13 +4268,294 @@ http://localhost:8080/api/v1/admin/orders?status={status}&startDate={startDate}&
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/orders/track</code></summary>
+
+### Description
+Lookup by order number + checkout email
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/orders/track?orderNumber=string&email=user@example.com' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/orders/track?orderNumber={orderNumber}&email={email}
+```
+
+### Response
+```json
+{
+  "orderId": "uuid",
+  "orderNumber": "string",
+  "userId": "uuid",
+  "shopId": "uuid",
+  "subTotal": "19.99",
+  "shippingCost": "string",
+  "taxAmount": "19.99",
+  "discountAmount": "19.99",
+  "total": "19.99",
+  "currency": "USD",
+  "status": "PENDING",
+  "paymentStatus": "PENDING",
+  "couponCode": "CODE-001",
+  "paymentMethod": "CREDIT_CARD",
+  "notes": "string",
+  "contactEmail": "user@example.com",
+  "shippingAddress": "string",
+  "billingAddress": "string",
+  "shippingMethod": "string",
+  "trackingNumber": "string",
+  "shippingDate": "2024-05-06T12:00:00",
+  "deliveredDate": "2024-05-06T12:00:00",
+  "canceledDate": "2024-05-06T12:00:00",
+  "completedDate": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00",
+  "items": [
+    {
+      "productId": "uuid",
+      "productName": "Example Name",
+      "quantity": 1,
+      "price": "19.99",
+      "discountAmount": "19.99",
+      "taxAmount": "19.99",
+      "total": "19.99",
+      "sku": "string",
+      "variantId": "uuid",
+      "variantName": "Example Name"
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/orders/cursor</code></summary>
+
+### Description
+Cursor-paginated order history
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/orders/cursor?limit=20&cursor=string' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/orders/cursor?limit={limit}&cursor={cursor}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "orderId": "uuid",
+      "orderNumber": "string",
+      "userId": "uuid",
+      "shopId": "uuid",
+      "subTotal": "19.99",
+      "shippingCost": "string",
+      "taxAmount": "19.99",
+      "discountAmount": "19.99",
+      "total": "19.99",
+      "currency": "USD",
+      "status": "PENDING",
+      "paymentStatus": "PENDING",
+      "couponCode": "CODE-001",
+      "paymentMethod": "CREDIT_CARD",
+      "notes": "string",
+      "contactEmail": "user@example.com",
+      "shippingAddress": "string",
+      "billingAddress": "string",
+      "shippingMethod": "string",
+      "trackingNumber": "string",
+      "shippingDate": "2024-05-06T12:00:00",
+      "deliveredDate": "2024-05-06T12:00:00",
+      "canceledDate": "2024-05-06T12:00:00",
+      "completedDate": "2024-05-06T12:00:00",
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00",
+      "items": [
+        {
+          "productId": "uuid",
+          "productName": "Example Name",
+          "quantity": 1,
+          "price": "19.99",
+          "discountAmount": "19.99",
+          "taxAmount": "19.99",
+          "total": "19.99",
+          "sku": "string",
+          "variantId": "uuid",
+          "variantName": "Example Name"
+        }
+      ]
+    }
+  ],
+  "nextCursor": "string",
+  "hasMore": true,
+  "limit": 1
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/orders/{id}/shipping</code></summary>
+
+### Description
+Seller: mark order shipped
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f/shipping' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "trackingNumber": "string"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/orders/{id}/shipping
+```
+
+### Response
+```json
+{
+  "orderId": "uuid",
+  "orderNumber": "string",
+  "userId": "uuid",
+  "shopId": "uuid",
+  "subTotal": "19.99",
+  "shippingCost": "string",
+  "taxAmount": "19.99",
+  "discountAmount": "19.99",
+  "total": "19.99",
+  "currency": "USD",
+  "status": "PENDING",
+  "paymentStatus": "PENDING",
+  "couponCode": "CODE-001",
+  "paymentMethod": "CREDIT_CARD",
+  "notes": "string",
+  "contactEmail": "user@example.com",
+  "shippingAddress": "string",
+  "billingAddress": "string",
+  "shippingMethod": "string",
+  "trackingNumber": "string",
+  "shippingDate": "2024-05-06T12:00:00",
+  "deliveredDate": "2024-05-06T12:00:00",
+  "canceledDate": "2024-05-06T12:00:00",
+  "completedDate": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00",
+  "items": [
+    {
+      "productId": "uuid",
+      "productName": "Example Name",
+      "quantity": 1,
+      "price": "19.99",
+      "discountAmount": "19.99",
+      "taxAmount": "19.99",
+      "total": "19.99",
+      "sku": "string",
+      "variantId": "uuid",
+      "variantName": "Example Name"
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/orders/{id}/shipping</code></summary>
+
+### Description
+Admin - Mark a paid order as shipped
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/orders/6c5078d3-f8e3-4c88-9afe-48b5423c664f/shipping' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "trackingNumber": "string"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/orders/{id}/shipping
+```
+
+### Response
+```json
+{
+  "orderId": "uuid",
+  "orderNumber": "string",
+  "userId": "uuid",
+  "shopId": "uuid",
+  "subTotal": "19.99",
+  "shippingCost": "string",
+  "taxAmount": "19.99",
+  "discountAmount": "19.99",
+  "total": "19.99",
+  "currency": "USD",
+  "status": "PENDING",
+  "paymentStatus": "PENDING",
+  "couponCode": "CODE-001",
+  "paymentMethod": "CREDIT_CARD",
+  "notes": "string",
+  "contactEmail": "user@example.com",
+  "shippingAddress": "string",
+  "billingAddress": "string",
+  "shippingMethod": "string",
+  "trackingNumber": "string",
+  "shippingDate": "2024-05-06T12:00:00",
+  "deliveredDate": "2024-05-06T12:00:00",
+  "canceledDate": "2024-05-06T12:00:00",
+  "completedDate": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00",
+  "items": [
+    {
+      "productId": "uuid",
+      "productName": "Example Name",
+      "quantity": 1,
+      "price": "19.99",
+      "discountAmount": "19.99",
+      "taxAmount": "19.99",
+      "total": "19.99",
+      "sku": "string",
+      "variantId": "uuid",
+      "variantName": "Example Name"
+    }
+  ]
+}
+```
+</details>
+
+
 ### PAYMENT
 
 <details>
 <summary> <code>POST</code> <code>/api/v1/payments</code></summary>
 
 ### Description
-Create a new payment record for an order.
+Create a payment intent for an order. The payment status is **server-owned**; clients cannot mark
+a payment completed. Non-COD payments start `PENDING` and are completed by an admin confirmation
+or provider callback. COD payments follow the order lifecycle.
 
 ### Curl
 ```bash
@@ -3174,11 +4565,10 @@ curl -X 'POST' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "orderId": "ORD-20240506-ABCD",
+  "orderId": "ORD-20240506-0001-A1B2C3D4",
   "transactionId": "TXN-123456",
   "paymentMethod": "CREDIT_CARD",
-  "amount": 1914,
-  "status": "COMPLETED"
+  "amount": 1914
 }'
 ```
 
@@ -3190,12 +4580,11 @@ http://localhost:8080/api/v1/payments
 ### Response
 ```json
 {
-  "data": {
-    "id": "pay-uuid",
-    "orderId": "ORD-20240506-ABCD",
-    "status": "COMPLETED"
-  },
-  "message": "Payment recorded"
+  "id": "pay-uuid",
+  "orderId": "ORD-20240506-0001-A1B2C3D4",
+  "amount": "1914.00",
+  "status": "PENDING",
+  "paymentMethod": "CREDIT_CARD"
 }
 ```
 </details>
@@ -3224,7 +4613,7 @@ http://localhost:8080/api/v1/payments/{id}
 {
   "data": {
     "id": "pay-uuid",
-    "orderId": "ORD-20240506-ABCD",
+    "orderId": "ORD-20240506-0001-A1B2C3D4",
     "amount": 1914,
     "status": "COMPLETED"
   },
@@ -3242,7 +4631,7 @@ Retrieve all payments for a specific order.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/payments/order/ORD-20240506-ABCD' \
+  'http://localhost:8080/api/v1/payments/order/ORD-20240506-0001-A1B2C3D4' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
@@ -3274,6 +4663,41 @@ http://localhost:8080/api/v1/payments/order/{orderId}
 ```
 </details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/payments/{id}/confirm</code></summary>
+
+### Description
+Admin - confirm a pending payment as completed
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payments/6c5078d3-f8e3-4c88-9afe-48b5423c664f/confirm' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payments/{id}/confirm
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "orderId": "uuid",
+  "amount": "19.99",
+  "currency": "USD",
+  "status": "PENDING",
+  "paymentMethod": "CREDIT_CARD",
+  "transactionId": "uuid",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+
 ### PRIVACY POLICY
 
 <details>
@@ -3285,7 +4709,7 @@ Retrieve the latest active version of a policy by type.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/policies/privacy_policy' \
+  'http://localhost:8080/api/v1/policies/PRIVACY_POLICY' \
   -H 'accept: application/json'
 ```
 
@@ -3359,7 +4783,7 @@ Admin: Retrieve all versions of a specific policy type.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/policies/privacy_policy/history' \
+  'http://localhost:8080/api/v1/admin/policies/PRIVACY_POLICY/history' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
@@ -3388,6 +4812,110 @@ http://localhost:8080/api/v1/admin/policies/{policyType}/history
 }
 ```
 </details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/policies/{id}</code></summary>
+
+### Description
+Admin - Update an existing policy document
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/policies/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "title": "string",
+  "content": "string",
+  "version": "string",
+  "effectiveDate": "2024-05-06T12:00:00",
+  "isActive": true
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/policies/{id}
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "title": "string",
+  "type": "TYPE",
+  "content": "string",
+  "version": "string",
+  "effectiveDate": "2024-05-06T12:00:00",
+  "isActive": true,
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/policies/deactivate/{id}</code></summary>
+
+### Description
+Admin - Deactivate a policy document
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/policies/deactivate/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/policies/deactivate/{id}
+```
+
+### Response
+```json
+true
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/policies/by-id/{id}</code></summary>
+
+### Description
+Admin - Retrieve a policy document by ID
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/policies/by-id/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/policies/by-id/{id}
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "title": "string",
+  "type": "TYPE",
+  "content": "string",
+  "version": "string",
+  "effectiveDate": "2024-05-06T12:00:00",
+  "isActive": true,
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
 
 ### PRIVACY POLICY CONSENT
 
@@ -3453,11 +4981,18 @@ http://localhost:8080/api/v1/policy-consents
     {
       "id": "consent-uuid",
       "userId": "user-uuid",
-      "policyId": "PRIVACY_POLICY",
-      "consentDate": "2024-05-06T12:00:00"
+      "policyId": "policy-uuid",
+      "consentDate": "2024-05-06T12:00:00",
+      "ipAddress": "203.0.113.10",
+      "userAgent": "curl/8.0",
+      "revokedAt": null
     }
   ],
-  "message": "User consents retrieved"
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0
+  }
 }
 ```
 </details>
@@ -3471,7 +5006,7 @@ Check if the user has consented to a specific policy type.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/policy-consents/privacy_policy' \
+  'http://localhost:8080/api/v1/policy-consents/PRIVACY_POLICY' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
@@ -3492,6 +5027,81 @@ http://localhost:8080/api/v1/policy-consents/{policyType}
 ```
 </details>
 
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/policy-consents/{id}</code></summary>
+
+### Description
+Revoke a consent record (owner or admin)
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/policy-consents/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/policy-consents/{id}
+```
+
+### Response
+```json
+{
+  "message": "string"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/policy-consents</code></summary>
+
+### Description
+Admin - Retrieve consent records filtered by user and/or policy type
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/policy-consents?userId=uuid&policyType=TYPE&limit=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/policy-consents?userId={userId}&policyType={policyType}&limit={limit}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "userId": "uuid",
+      "policyId": "uuid",
+      "consentDate": "2024-05-06T12:00:00",
+      "ipAddress": "string",
+      "userAgent": "string",
+      "revokedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 1,
+    "offset": 1,
+    "page": 1,
+    "perPage": 1,
+    "totalPages": 1,
+    "hasNext": true,
+    "hasPrev": true
+  }
+}
+```
+</details>
+
+
 ### REFUND REQUEST
 
 <details>
@@ -3503,7 +5113,7 @@ Create a refund request for an order item.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/refund-requests/ORD-20240506-ABCD' \
+  'http://localhost:8080/api/v1/refund-requests/ORD-20240506-0001-A1B2C3D4' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
@@ -3572,7 +5182,7 @@ Get refund requests for an order.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/refund-requests/order/ORD-20240506-ABCD' \
+  'http://localhost:8080/api/v1/refund-requests/order/ORD-20240506-0001-A1B2C3D4' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
@@ -3627,7 +5237,7 @@ http://localhost:8080/api/v1/refund-requests/{id}
 {
   "data": {
     "id": "refund-uuid",
-    "orderId": "ORD-20240506-ABCD",
+    "orderId": "ORD-20240506-0001-A1B2C3D4",
     "reason": "Damaged product",
     "status": "PENDING"
   },
@@ -3682,7 +5292,7 @@ Admin: Get all refund requests for an order.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/refund-requests/order/ORD-20240506-ABCD' \
+  'http://localhost:8080/api/v1/admin/refund-requests/order/ORD-20240506-0001-A1B2C3D4' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
@@ -3747,6 +5357,30 @@ http://localhost:8080/api/v1/admin/refund-requests/{id}/status
 }
 ```
 </details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/refund-requests/{id}/evidence/{fileName}</code></summary>
+
+### Description
+Get private refund evidence for an authorized refund request
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/refund-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/evidence/receipt.png' \
+  -H 'accept: image/*' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/refund-requests/{id}/evidence/{fileName}
+```
+
+### Response
+Binary image bytes. The response `Content-Type` is derived from the stored file extension.
+</details>
+
 
 ### COUPON
 
@@ -4118,6 +5752,59 @@ http://localhost:8080/api/v1/seller/inventories/low-stock?limit={limit}&offset={
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/inventories</code></summary>
+
+### Description
+Optional shop filter
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/inventories?limit=20&shopId=uuid' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/inventories?limit={limit}&shopId={shopId}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "productId": "uuid",
+      "variantId": "uuid",
+      "shopId": "uuid",
+      "warehouseId": "uuid",
+      "stockQuantity": 1,
+      "reservedQuantity": 1,
+      "minimumStockLevel": 1,
+      "maximumStockLevel": 1,
+      "status": "IN_STOCK",
+      "lastRestocked": "string",
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 1,
+    "offset": 1,
+    "page": 1,
+    "perPage": 1,
+    "totalPages": 1,
+    "hasNext": true,
+    "hasPrev": true
+  }
+}
+```
+</details>
+
 
 ### SHIPPING METHOD
 
@@ -4220,6 +5907,52 @@ http://localhost:8080/api/v1/admin/shipping-methods/{id}
 }
 ```
 </details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/shipping-methods</code></summary>
+
+### Description
+Admin - Retrieve all shipping methods
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/shipping-methods?limit=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/shipping-methods?limit={limit}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Example Name",
+      "type": "TYPE",
+      "price": "19.99",
+      "deliveryTime": "string"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 1,
+    "offset": 1,
+    "page": 1,
+    "perPage": 1,
+    "totalPages": 1,
+    "hasNext": true,
+    "hasPrev": true
+  }
+}
+```
+</details>
+
 
 ### DASHBOARD
 
@@ -4351,7 +6084,7 @@ http://localhost:8080/api/v1/admin/dashboard/orders?status={status}
     },
     "recentOrders": [
       {
-        "orderNumber": "ORD-20240506-ABCD",
+        "orderNumber": "ORD-20240506-0001-A1B2C3D4",
         "status": "pending",
         "total": "250.00",
         "createdAt": "2024-05-06T12:00:00"
@@ -4473,9 +6206,9 @@ http://localhost:8080/api/v1/admin/dashboard/activity?limit={limit}
 {
   "data": [
     {
-      "id": "ORD-20240506-ABCD",
+      "id": "ORD-20240506-0001-A1B2C3D4",
       "type": "order",
-      "summary": "Order ORD-20240506-ABCD created - $250.00",
+      "summary": "Order ORD-20240506-0001-A1B2C3D4 created - $250.00",
       "status": "pending",
       "createdAt": "2024-05-06T12:00:00"
     },
@@ -4491,6 +6224,38 @@ http://localhost:8080/api/v1/admin/dashboard/activity?limit={limit}
 }
 ```
 </details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/dashboard</code></summary>
+
+### Description
+Sales, orders, stock and top products
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/dashboard' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/dashboard
+```
+
+### Response
+```json
+{
+  "revenue": {},
+  "orders": {},
+  "users": {},
+  "products": {},
+  "shops": {}
+}
+```
+</details>
+
 
 ### AUDIT LOG
 
@@ -4525,7 +6290,7 @@ http://localhost:8080/api/v1/admin/audit-logs?actorId={actorId}&action={action}&
         "actorRole": "ADMIN",
         "action": "UPDATE",
         "resourceType": "ORDER",
-        "resourceId": "ORD-20240506-ABCD",
+        "resourceId": "ORD-20240506-0001-A1B2C3D4",
         "details": "Updated order status from PENDING to CONFIRMED",
         "ipAddress": "192.168.1.1",
         "userAgent": "Mozilla/5.0...",
@@ -4586,6 +6351,2257 @@ http://localhost:8080/api/v1/admin/audit-logs/{id}
 }
 ```
 </details>
+
+### RECOMMENDATIONS
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/recommendations</code></summary>
+
+### Description
+Order/cart/wishlist category signals, backfilled with best sellers
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/recommendations?limit=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/recommendations?limit={limit}
+```
+
+### Response
+```json
+{
+  "strategy": "19.99",
+  "sourceProductId": "uuid",
+  "items": [
+    {
+      "id": "uuid",
+      "userId": "uuid",
+      "shopId": "uuid",
+      "categoryId": "uuid",
+      "subCategoryId": "uuid",
+      "brandId": "uuid",
+      "name": "Example Name",
+      "description": "string",
+      "sku": "string",
+      "barcode": "CODE-001",
+      "weight": 1,
+      "dimensions": "string",
+      "minOrderQuantity": 1,
+      "price": "19.99",
+      "discountPrice": "19.99",
+      "discountPercentage": "19.99",
+      "videoLink": "string",
+      "hotDeal": true,
+      "featured": true,
+      "bestSeller": true,
+      "newProduct": true,
+      "freeShipping": true,
+      "images": [
+        "/uploads/example.png"
+      ],
+      "status": "ACTIVE",
+      "viewCount": 1,
+      "rating": 1,
+      "totalReviews": 1,
+      "totalSales": 1,
+      "variants": [
+        {
+          "id": "uuid",
+          "productId": "uuid",
+          "sku": "string",
+          "name": "Example Name",
+          "price": "19.99",
+          "discountPrice": "19.99",
+          "discountPercentage": "19.99",
+          "barcode": "CODE-001",
+          "weight": 1,
+          "dimensions": "string",
+          "imageUrl": "/uploads/example.png",
+          "status": "ACTIVE",
+          "isDefault": true,
+          "sortOrder": 1,
+          "options": [
+            null
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+</details>
+
+
+### WAREHOUSES
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/warehouses</code></summary>
+
+### Description
+Create warehouse
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/warehouses' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example Name",
+  "code": "CODE-001",
+  "address": "string",
+  "city": "string",
+  "country": "BD"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/warehouses
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "shopId": "uuid",
+  "name": "Example Name",
+  "code": "CODE-001",
+  "address": "string",
+  "city": "string",
+  "country": "BD",
+  "isActive": true,
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/warehouses</code></summary>
+
+### Description
+List warehouses
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/warehouses' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/warehouses
+```
+
+### Response
+```json
+[
+  {
+    "id": "uuid",
+    "shopId": "uuid",
+    "name": "Example Name",
+    "code": "CODE-001",
+    "address": "string",
+    "city": "string",
+    "country": "BD",
+    "isActive": true,
+    "createdAt": "2024-05-06T12:00:00"
+  }
+]
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/seller/warehouses/{id}</code></summary>
+
+### Description
+Update warehouse
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/warehouses/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example Name",
+  "code": "CODE-001",
+  "address": "string",
+  "city": "string",
+  "country": "BD"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/warehouses/{id}
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "shopId": "uuid",
+  "name": "Example Name",
+  "code": "CODE-001",
+  "address": "string",
+  "city": "string",
+  "country": "BD",
+  "isActive": true,
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/seller/warehouses/{id}</code></summary>
+
+### Description
+Deactivate warehouse
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/warehouses/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/warehouses/{id}
+```
+
+### Response
+```json
+{
+  "message": "string"
+}
+```
+</details>
+
+
+### RMA / RETURNS
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/rma-requests</code></summary>
+
+### Description
+Delivered, paid items only; quantity-aware
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/rma-requests' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "orderId": "uuid",
+  "orderItemId": "uuid",
+  "quantity": 1,
+  "type": "RETURN",
+  "reason": "Reason for the request"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/rma-requests
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "orderId": "uuid",
+  "orderItemId": "uuid",
+  "userId": "uuid",
+  "shopId": "uuid",
+  "quantity": 1,
+  "type": "RETURN",
+  "status": "REQUESTED",
+  "reason": "Reason for the request",
+  "resolution": "REFUND",
+  "trackingNumber": "string",
+  "replacementOrderId": "uuid",
+  "refundRequestId": "uuid",
+  "createdAt": "2024-05-06T12:00:00",
+  "resolvedAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/rma-requests</code></summary>
+
+### Description
+Newest first
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/rma-requests?limit=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/rma-requests?limit={limit}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "orderId": "uuid",
+      "orderItemId": "uuid",
+      "userId": "uuid",
+      "shopId": "uuid",
+      "quantity": 1,
+      "type": "RETURN",
+      "status": "REQUESTED",
+      "reason": "Reason for the request",
+      "resolution": "REFUND",
+      "trackingNumber": "string",
+      "replacementOrderId": "uuid",
+      "refundRequestId": "uuid",
+      "createdAt": "2024-05-06T12:00:00",
+      "resolvedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 1,
+    "offset": 1,
+    "page": 1,
+    "perPage": 1,
+    "totalPages": 1,
+    "hasNext": true,
+    "hasPrev": true
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/rma-requests/{id}/ship</code></summary>
+
+### Description
+Customer ships the approved return back
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/rma-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/ship' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "trackingNumber": "string"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/rma-requests/{id}/ship
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "orderId": "uuid",
+  "orderItemId": "uuid",
+  "userId": "uuid",
+  "shopId": "uuid",
+  "quantity": 1,
+  "type": "RETURN",
+  "status": "REQUESTED",
+  "reason": "Reason for the request",
+  "resolution": "REFUND",
+  "trackingNumber": "string",
+  "replacementOrderId": "uuid",
+  "refundRequestId": "uuid",
+  "createdAt": "2024-05-06T12:00:00",
+  "resolvedAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/rma-requests/{id}/cancel</code></summary>
+
+### Description
+Allowed from REQUESTED or APPROVED
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/rma-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/cancel' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/rma-requests/{id}/cancel
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "orderId": "uuid",
+  "orderItemId": "uuid",
+  "userId": "uuid",
+  "shopId": "uuid",
+  "quantity": 1,
+  "type": "RETURN",
+  "status": "REQUESTED",
+  "reason": "Reason for the request",
+  "resolution": "REFUND",
+  "trackingNumber": "string",
+  "replacementOrderId": "uuid",
+  "refundRequestId": "uuid",
+  "createdAt": "2024-05-06T12:00:00",
+  "resolvedAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/rma-requests</code></summary>
+
+### Description
+Scoped to the seller's shop
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/rma-requests?limit=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/rma-requests?limit={limit}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "orderId": "uuid",
+      "orderItemId": "uuid",
+      "userId": "uuid",
+      "shopId": "uuid",
+      "quantity": 1,
+      "type": "RETURN",
+      "status": "REQUESTED",
+      "reason": "Reason for the request",
+      "resolution": "REFUND",
+      "trackingNumber": "string",
+      "replacementOrderId": "uuid",
+      "refundRequestId": "uuid",
+      "createdAt": "2024-05-06T12:00:00",
+      "resolvedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 1,
+    "offset": 1,
+    "page": 1,
+    "perPage": 1,
+    "totalPages": 1,
+    "hasNext": true,
+    "hasPrev": true
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/seller/rma-requests/{id}/status</code></summary>
+
+### Description
+Approve, reject, receive or complete a return/exchange
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/rma-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/status' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "status": "REQUESTED",
+  "resolution": "REFUND",
+  "replacementOrderId": "uuid",
+  "note": "string"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/rma-requests/{id}/status
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "orderId": "uuid",
+  "orderItemId": "uuid",
+  "userId": "uuid",
+  "shopId": "uuid",
+  "quantity": 1,
+  "type": "RETURN",
+  "status": "REQUESTED",
+  "reason": "Reason for the request",
+  "resolution": "REFUND",
+  "trackingNumber": "string",
+  "replacementOrderId": "uuid",
+  "refundRequestId": "uuid",
+  "createdAt": "2024-05-06T12:00:00",
+  "resolvedAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/rma-requests</code></summary>
+
+### Description
+Optional status filter
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/rma-requests?limit=20&status=ACTIVE' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/rma-requests?limit={limit}&status={status}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "orderId": "uuid",
+      "orderItemId": "uuid",
+      "userId": "uuid",
+      "shopId": "uuid",
+      "quantity": 1,
+      "type": "RETURN",
+      "status": "REQUESTED",
+      "reason": "Reason for the request",
+      "resolution": "REFUND",
+      "trackingNumber": "string",
+      "replacementOrderId": "uuid",
+      "refundRequestId": "uuid",
+      "createdAt": "2024-05-06T12:00:00",
+      "resolvedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 1,
+    "offset": 1,
+    "page": 1,
+    "perPage": 1,
+    "totalPages": 1,
+    "hasNext": true,
+    "hasPrev": true
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/rma-requests/{id}/status</code></summary>
+
+### Description
+Approve, reject, receive or complete a return/exchange
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/rma-requests/6c5078d3-f8e3-4c88-9afe-48b5423c664f/status' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "status": "REQUESTED",
+  "resolution": "REFUND",
+  "replacementOrderId": "uuid",
+  "note": "string"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/rma-requests/{id}/status
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "orderId": "uuid",
+  "orderItemId": "uuid",
+  "userId": "uuid",
+  "shopId": "uuid",
+  "quantity": 1,
+  "type": "RETURN",
+  "status": "REQUESTED",
+  "reason": "Reason for the request",
+  "resolution": "REFUND",
+  "trackingNumber": "string",
+  "replacementOrderId": "uuid",
+  "refundRequestId": "uuid",
+  "createdAt": "2024-05-06T12:00:00",
+  "resolvedAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+
+### NOTIFICATIONS
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/notifications</code></summary>
+
+### Description
+Preference rows are hidden from the inbox
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/notifications?limit=20&unreadOnly=string' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/notifications?limit={limit}&unreadOnly={unreadOnly}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "channel": "string",
+      "type": "TYPE",
+      "title": "string",
+      "body": "string",
+      "resourceType": "TYPE",
+      "resourceId": "uuid",
+      "isRead": true,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 1,
+    "offset": 1,
+    "page": 1,
+    "perPage": 1,
+    "totalPages": 1,
+    "hasNext": true,
+    "hasPrev": true
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/notifications/unread-count</code></summary>
+
+### Description
+Unread notification count
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/notifications/unread-count' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/notifications/unread-count
+```
+
+### Response
+```json
+{
+  "unreadCount": 1
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/notifications/cursor</code></summary>
+
+### Description
+Cursor-paginated notifications
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/notifications/cursor?limit=20&unreadOnly=string&cursor=string' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/notifications/cursor?limit={limit}&unreadOnly={unreadOnly}&cursor={cursor}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "channel": "string",
+      "type": "TYPE",
+      "title": "string",
+      "body": "string",
+      "resourceType": "TYPE",
+      "resourceId": "uuid",
+      "isRead": true,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "nextCursor": "string",
+  "hasMore": true,
+  "limit": 1
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/notifications/{id}/read</code></summary>
+
+### Description
+Mark notification read
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/notifications/6c5078d3-f8e3-4c88-9afe-48b5423c664f/read' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/notifications/{id}/read
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "channel": "string",
+  "type": "TYPE",
+  "title": "string",
+  "body": "string",
+  "resourceType": "TYPE",
+  "resourceId": "uuid",
+  "isRead": true,
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/notifications/read-all</code></summary>
+
+### Description
+Mark all notifications read
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/notifications/read-all' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/notifications/read-all
+```
+
+### Response
+```json
+{
+  "markedRead": 1
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/notifications/send</code></summary>
+
+### Description
+Admins may target anyone; sellers only their own customers
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/notifications/send' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "userId": "uuid",
+  "title": "string",
+  "body": "string",
+  "channel": "string",
+  "type": "TYPE"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/notifications/send
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "channel": "string",
+  "type": "TYPE",
+  "title": "string",
+  "body": "string",
+  "resourceType": "TYPE",
+  "resourceId": "uuid",
+  "isRead": true,
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/notifications/preferences</code></summary>
+
+### Description
+Set global notification channel
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/notifications/preferences' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "channel": "string"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/notifications/preferences
+```
+
+### Response
+```json
+{
+  "userId": "uuid",
+  "channel": "string"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/notifications/preferences</code></summary>
+
+### Description
+Get global notification channel
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/notifications/preferences' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/notifications/preferences
+```
+
+### Response
+```json
+{
+  "userId": "uuid",
+  "channel": "string"
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/notifications/preferences/{eventType}</code></summary>
+
+### Description
+In-app rows are always written; this controls the extra channel
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/notifications/preferences/REFUND_APPROVED' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "channel": "string"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/notifications/preferences/{eventType}
+```
+
+### Response
+```json
+{
+  "eventType": "TYPE",
+  "channel": "string"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/notifications/preferences/{eventType}</code></summary>
+
+### Description
+Falls back to the global default
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/notifications/preferences/REFUND_APPROVED' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/notifications/preferences/{eventType}
+```
+
+### Response
+```json
+{
+  "eventType": "TYPE",
+  "channel": "string"
+}
+```
+</details>
+
+
+### SELLER KYC
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/kyc</code></summary>
+
+### Description
+Business/bank details and optional document URL; marks PENDING
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/kyc' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "businessName": "Example Name",
+  "businessRegistrationNumber": "string",
+  "taxId": "uuid",
+  "bankAccountNumber": "string",
+  "bankName": "Example Name",
+  "bankRoutingNumber": "string",
+  "documentUrl": "/uploads/example.png"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/kyc
+```
+
+### Response
+```json
+{
+  "sellerId": "uuid",
+  "userId": "uuid",
+  "email": "user@example.com",
+  "businessName": "Example Name",
+  "businessRegistrationNumber": "string",
+  "taxId": "uuid",
+  "bankName": "Example Name",
+  "kycStatus": "NOT_SUBMITTED",
+  "documentUrl": "/uploads/example.png",
+  "submittedAt": "2024-05-06T12:00:00",
+  "verifiedAt": "2024-05-06T12:00:00",
+  "rejectionReason": "Reason for the request",
+  "shopStatus": "ACTIVE"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/kyc</code></summary>
+
+### Description
+Get my KYC status
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/kyc' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/kyc
+```
+
+### Response
+```json
+{
+  "sellerId": "uuid",
+  "userId": "uuid",
+  "email": "user@example.com",
+  "businessName": "Example Name",
+  "businessRegistrationNumber": "string",
+  "taxId": "uuid",
+  "bankName": "Example Name",
+  "kycStatus": "NOT_SUBMITTED",
+  "documentUrl": "/uploads/example.png",
+  "submittedAt": "2024-05-06T12:00:00",
+  "verifiedAt": "2024-05-06T12:00:00",
+  "rejectionReason": "Reason for the request",
+  "shopStatus": "ACTIVE"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/sellers</code></summary>
+
+### Description
+Optional status filter
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/sellers?limit=20&status=ACTIVE' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/sellers?limit={limit}&status={status}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "sellerId": "uuid",
+      "userId": "uuid",
+      "email": "user@example.com",
+      "businessName": "Example Name",
+      "businessRegistrationNumber": "string",
+      "taxId": "uuid",
+      "bankName": "Example Name",
+      "kycStatus": "NOT_SUBMITTED",
+      "documentUrl": "/uploads/example.png",
+      "submittedAt": "2024-05-06T12:00:00",
+      "verifiedAt": "2024-05-06T12:00:00",
+      "rejectionReason": "Reason for the request",
+      "shopStatus": "ACTIVE"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 1,
+    "offset": 1,
+    "page": 1,
+    "perPage": 1,
+    "totalPages": 1,
+    "hasNext": true,
+    "hasPrev": true
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/sellers/{sellerId}/verify</code></summary>
+
+### Description
+Admin: verify KYC
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/sellers/seller-uuid/verify' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/sellers/{sellerId}/verify
+```
+
+### Response
+```json
+{
+  "sellerId": "uuid",
+  "userId": "uuid",
+  "email": "user@example.com",
+  "businessName": "Example Name",
+  "businessRegistrationNumber": "string",
+  "taxId": "uuid",
+  "bankName": "Example Name",
+  "kycStatus": "NOT_SUBMITTED",
+  "documentUrl": "/uploads/example.png",
+  "submittedAt": "2024-05-06T12:00:00",
+  "verifiedAt": "2024-05-06T12:00:00",
+  "rejectionReason": "Reason for the request",
+  "shopStatus": "ACTIVE"
+}
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/sellers/{sellerId}/reject</code></summary>
+
+### Description
+Admin: reject KYC
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/sellers/seller-uuid/reject' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "reason": "Reason for the request"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/sellers/{sellerId}/reject
+```
+
+### Response
+```json
+{
+  "sellerId": "uuid",
+  "userId": "uuid",
+  "email": "user@example.com",
+  "businessName": "Example Name",
+  "businessRegistrationNumber": "string",
+  "taxId": "uuid",
+  "bankName": "Example Name",
+  "kycStatus": "NOT_SUBMITTED",
+  "documentUrl": "/uploads/example.png",
+  "submittedAt": "2024-05-06T12:00:00",
+  "verifiedAt": "2024-05-06T12:00:00",
+  "rejectionReason": "Reason for the request",
+  "shopStatus": "ACTIVE"
+}
+```
+</details>
+
+
+### PAYOUTS
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/payouts</code></summary>
+
+### Description
+Seller: list payouts
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/payouts?limit=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/payouts?limit={limit}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "sellerId": "uuid",
+      "orderId": "uuid",
+      "subTotal": "19.99",
+      "commissionAmount": "19.99",
+      "payoutAmount": "19.99",
+      "currency": "USD",
+      "status": "ACTIVE",
+      "payoutRequestId": "uuid",
+      "requestedAt": "2024-05-06T12:00:00",
+      "approvedAt": "2024-05-06T12:00:00",
+      "rejectedAt": "2024-05-06T12:00:00",
+      "paidAt": "2024-05-06T12:00:00",
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 1,
+    "offset": 1,
+    "page": 1,
+    "perPage": 1,
+    "totalPages": 1,
+    "hasNext": true,
+    "hasPrev": true
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/payouts/balance</code></summary>
+
+### Description
+Seller: available balance
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/payouts/balance' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/payouts/balance
+```
+
+### Response
+```json
+{
+  "available": "string",
+  "currency": "USD",
+  "pendingRequestAmount": "19.99"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/payouts/statement</code></summary>
+
+### Description
+Optional from/to ISO dates
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/payouts/statement?from=string&to=string' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/payouts/statement?from={from}&to={to}
+```
+
+### Response
+```json
+{
+  "from": "string",
+  "to": "string",
+  "currency": "USD",
+  "grossSales": "string",
+  "commission": "string",
+  "netPayout": "string",
+  "paid": "uuid",
+  "pending": "string",
+  "available": "string",
+  "taxCollected": "string",
+  "rowCount": 1,
+  "rows": [
+    {
+      "payoutId": "uuid",
+      "orderId": "uuid",
+      "subTotal": "19.99",
+      "commissionAmount": "19.99",
+      "payoutAmount": "19.99",
+      "currency": "USD",
+      "status": "ACTIVE",
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ]
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/payouts/statement/export</code></summary>
+
+### Description
+Seller: export statement CSV
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/payouts/statement/export?from=string&to=string' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/payouts/statement/export?from={from}&to={to}
+```
+
+### Response
+```csv
+id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/payouts/request</code></summary>
+
+### Description
+Requires VERIFIED KYC; supports Idempotency-Key
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/payouts/request' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "amount": "19.99"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/payouts/request
+```
+
+### Response
+```json
+[
+  {
+    "id": "uuid",
+    "sellerId": "uuid",
+    "orderId": "uuid",
+    "subTotal": "19.99",
+    "commissionAmount": "19.99",
+    "payoutAmount": "19.99",
+    "currency": "USD",
+    "status": "ACTIVE",
+    "payoutRequestId": "uuid",
+    "requestedAt": "2024-05-06T12:00:00",
+    "approvedAt": "2024-05-06T12:00:00",
+    "rejectedAt": "2024-05-06T12:00:00",
+    "paidAt": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00"
+  }
+]
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/payouts</code></summary>
+
+### Description
+Admin: list payouts
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/payouts?limit=20&status=ACTIVE' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payouts?limit={limit}&status={status}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "sellerId": "uuid",
+      "orderId": "uuid",
+      "subTotal": "19.99",
+      "commissionAmount": "19.99",
+      "payoutAmount": "19.99",
+      "currency": "USD",
+      "status": "ACTIVE",
+      "payoutRequestId": "uuid",
+      "requestedAt": "2024-05-06T12:00:00",
+      "approvedAt": "2024-05-06T12:00:00",
+      "rejectedAt": "2024-05-06T12:00:00",
+      "paidAt": "2024-05-06T12:00:00",
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 1,
+    "offset": 1,
+    "page": 1,
+    "perPage": 1,
+    "totalPages": 1,
+    "hasNext": true,
+    "hasPrev": true
+  }
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/payouts/{id}/approve</code></summary>
+
+### Description
+Admin: approve payout
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payouts/6c5078d3-f8e3-4c88-9afe-48b5423c664f/approve' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payouts/{id}/approve
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "sellerId": "uuid",
+  "orderId": "uuid",
+  "subTotal": "19.99",
+  "commissionAmount": "19.99",
+  "payoutAmount": "19.99",
+  "currency": "USD",
+  "status": "ACTIVE",
+  "payoutRequestId": "uuid",
+  "requestedAt": "2024-05-06T12:00:00",
+  "approvedAt": "2024-05-06T12:00:00",
+  "rejectedAt": "2024-05-06T12:00:00",
+  "paidAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/payouts/{id}/reject</code></summary>
+
+### Description
+Admin: reject payout
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payouts/6c5078d3-f8e3-4c88-9afe-48b5423c664f/reject' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payouts/{id}/reject
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "sellerId": "uuid",
+  "orderId": "uuid",
+  "subTotal": "19.99",
+  "commissionAmount": "19.99",
+  "payoutAmount": "19.99",
+  "currency": "USD",
+  "status": "ACTIVE",
+  "payoutRequestId": "uuid",
+  "requestedAt": "2024-05-06T12:00:00",
+  "approvedAt": "2024-05-06T12:00:00",
+  "rejectedAt": "2024-05-06T12:00:00",
+  "paidAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/payouts/{id}/pay</code></summary>
+
+### Description
+Admin: mark payout paid
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payouts/6c5078d3-f8e3-4c88-9afe-48b5423c664f/pay' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payouts/{id}/pay
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "sellerId": "uuid",
+  "orderId": "uuid",
+  "subTotal": "19.99",
+  "commissionAmount": "19.99",
+  "payoutAmount": "19.99",
+  "currency": "USD",
+  "status": "ACTIVE",
+  "payoutRequestId": "uuid",
+  "requestedAt": "2024-05-06T12:00:00",
+  "approvedAt": "2024-05-06T12:00:00",
+  "rejectedAt": "2024-05-06T12:00:00",
+  "paidAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/payouts/export</code></summary>
+
+### Description
+Admin: export payouts CSV
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/payouts/export?status=ACTIVE' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payouts/export?status={status}
+```
+
+### Response
+```csv
+id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+```
+</details>
+
+
+### TAX RULES
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/tax-rules</code></summary>
+
+### Description
+Upsert tax rule
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/tax-rules' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "country": "BD",
+  "categoryId": "uuid",
+  "rate": "19.99",
+  "isActive": true
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-rules
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "country": "BD",
+  "categoryId": "uuid",
+  "rate": "19.99",
+  "isActive": true
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/tax-rules</code></summary>
+
+### Description
+Country/category rule; rate is a decimal fraction
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/tax-rules' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "country": "BD",
+  "categoryId": "uuid",
+  "rate": "19.99",
+  "isActive": true
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-rules
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "country": "BD",
+  "categoryId": "uuid",
+  "rate": "19.99",
+  "isActive": true
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/tax-rules</code></summary>
+
+### Description
+List tax rules
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/tax-rules' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-rules
+```
+
+### Response
+```json
+[
+  {
+    "id": "uuid",
+    "country": "BD",
+    "categoryId": "uuid",
+    "rate": "19.99",
+    "isActive": true
+  }
+]
+```
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/tax-rules/{id}</code></summary>
+
+### Description
+Delete tax rule
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/tax-rules/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/tax-rules/{id}
+```
+
+### Response
+```json
+{
+  "message": "string"
+}
+```
+</details>
+
+
+### FX RATES
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/fx-rates</code></summary>
+
+### Description
+List FX rates
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/fx-rates' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/fx-rates
+```
+
+### Response
+```json
+[
+  {
+    "targetCurrency": "USD",
+    "rate": "19.99",
+    "effectiveAt": "2024-05-06T12:00:00"
+  }
+]
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/fx-rates/{targetCurrency}</code></summary>
+
+### Description
+Set FX rate
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/fx-rates/EUR' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "rate": "19.99"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/fx-rates/{targetCurrency}
+```
+
+### Response
+```json
+{
+  "targetCurrency": "USD",
+  "rate": "19.99",
+  "effectiveAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+
+### API KEYS
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/api-keys</code></summary>
+
+### Description
+The plaintext key is returned once
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/api-keys' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example Name",
+  "scopes": [
+    "USER_MANAGE"
+  ],
+  "expiresAt": "2024-05-06T12:00:00"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/api-keys
+```
+
+### Response
+```json
+{
+  "id": "uuid",
+  "name": "Example Name",
+  "prefix": "string",
+  "scopes": [
+    "string"
+  ],
+  "key": "string",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/api-keys</code></summary>
+
+### Description
+List API keys
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/api-keys' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/api-keys
+```
+
+### Response
+```json
+[
+  {
+    "id": "uuid",
+    "name": "Example Name",
+    "prefix": "string",
+    "scopes": [
+      "string"
+    ],
+    "isActive": true,
+    "lastUsedAt": "2024-05-06T12:00:00",
+    "expiresAt": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00"
+  }
+]
+```
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/api-keys/{id}</code></summary>
+
+### Description
+Revoke API key
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/api-keys/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/api-keys/{id}
+```
+
+### Response
+```json
+{
+  "message": "string"
+}
+```
+</details>
+
+
+### FEATURE FLAGS
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/feature-flags</code></summary>
+
+### Description
+List feature flags
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/feature-flags' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/feature-flags
+```
+
+### Response
+```json
+[
+  {
+    "key": "string",
+    "enabled": true,
+    "description": "string",
+    "updatedAt": "2024-05-06T12:00:00"
+  }
+]
+```
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/feature-flags/{key}</code></summary>
+
+### Description
+Set feature flag
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/feature-flags/guest_checkout' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "enabled": true,
+  "description": "string"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/feature-flags/{key}
+```
+
+### Response
+```json
+{
+  "key": "string",
+  "enabled": true,
+  "description": "string",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+</details>
+
+
+### OUTBOX & DEAD LETTERS
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/outbox/summary</code></summary>
+
+### Description
+Pending rows and dead-letter count
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/outbox/summary' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/outbox/summary
+```
+
+### Response
+```json
+{
+  "pending": 1,
+  "deadLetters": 1
+}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/outbox/dead-letters/{id}/requeue</code></summary>
+
+### Description
+Copies the payload back into the outbox
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/outbox/dead-letters/6c5078d3-f8e3-4c88-9afe-48b5423c664f/requeue' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/outbox/dead-letters/{id}/requeue
+```
+
+### Response
+```json
+{
+  "message": "string"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/outbox/dead-letters</code></summary>
+
+### Description
+Newest first
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/outbox/dead-letters?limit=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/outbox/dead-letters?limit={limit}
+```
+
+### Response
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "eventType": "TYPE",
+      "aggregateType": "TYPE",
+      "aggregateId": "uuid",
+      "payload": "string",
+      "error": "string",
+      "attempts": 1,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 1,
+    "offset": 1,
+    "page": 1,
+    "perPage": 1,
+    "totalPages": 1,
+    "hasNext": true,
+    "hasPrev": true
+  }
+}
+```
+</details>
+
+
+### PRIVACY / GDPR
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/privacy/export</code></summary>
+
+### Description
+Export all personal data held for the authenticated user
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/privacy/export' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/privacy/export
+```
+
+### Response
+```csv
+id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/privacy/erase</code></summary>
+
+### Description
+Erase/anonymize the authenticated account (password required)
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/privacy/erase' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "password": "Password123!"
+}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/privacy/erase
+```
+
+### Response
+```json
+{
+  "message": "string"
+}
+```
+</details>
+
+
+### HEALTH & OPERATIONS
+
+<details>
+<summary> <code>GET</code> <code>/health</code></summary>
+
+### Description
+Version and overall status
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/health' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/health
+```
+
+### Response
+```json
+{
+  "status": "ACTIVE",
+  "version": "string"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/health/live</code></summary>
+
+### Description
+Liveness probe
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/health/live' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/health/live
+```
+
+### Response
+```json
+{
+  "message": "UP"
+}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/health/ready</code></summary>
+
+### Description
+Checks database connectivity
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/health/ready' \
+  -H 'accept: application/json'
+```
+
+### Request URL
+```text
+http://localhost:8080/health/ready
+```
+
+### Response
+```json
+{
+  "message": "READY"
+}
+```
+</details>
+
 
 ## 👨 Developed By
 

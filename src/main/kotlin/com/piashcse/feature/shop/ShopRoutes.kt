@@ -11,8 +11,6 @@ import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
-import com.piashcse.utils.validator.ValidationException
-import io.ktor.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
@@ -90,17 +88,12 @@ fun Route.shopSellerRoutesV1() {
          */
         post("/{id}/image") {
             val shopId = call.requirePathParameter("id")
-            val multipart = call.receiveMultipart()
-            var imageUrl: String? = null
-            multipart.forEachPart { part ->
-                if (part is PartData.FileItem) {
-                    val bytes = UploadService.readAndValidateImagePart(part, "shop image")
-                    val fileName = UploadService.uploadShopImage(part, bytes)
-                    imageUrl = UploadService.getShopImageUrl(fileName)
-                }
-                part.dispose()
-            }
-            val url = imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED)
+            val url =
+                call.receiveSingleImage(
+                    purpose = "shop image",
+                    upload = UploadService::uploadShopImage,
+                    publicUrl = UploadService::getShopImageUrl,
+                )
             call.respondOk(shopRepo.updateShop(call.currentUserId, shopId, UpdateShopRequest(logo = url)))
         }.describe { summary = "Seller - Upload a shop logo" }
     }

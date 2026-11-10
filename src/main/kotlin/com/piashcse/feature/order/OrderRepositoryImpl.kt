@@ -35,7 +35,10 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-class OrderRepositoryImpl : OrderRepository {
+class OrderRepositoryImpl(
+    private val fxService: FxService = FxService(),
+    private val taxService: TaxService = TaxService(),
+) : OrderRepository {
     private fun List<OrderItemDAO>.toItemResponses() = map { it.toOrderItemResponse() }
 
     private fun loadItemsForOrders(orders: List<OrderDAO>): Map<String, List<OrderItemResponse>> =
@@ -117,8 +120,8 @@ class OrderRepositoryImpl : OrderRepository {
             throw ValidationException(Message.Orders.couponMinOrderAmount(coupon.minOrderAmount.toPlainString()))
         }
 
-        if (coupon.usageLimit != null && coupon.usageCount >= coupon.usageLimit!!) {
-            throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
+        coupon.usageLimit?.let { limit ->
+            if (coupon.usageCount >= limit) throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
         }
 
         // Per-user limit (default 1) is enforced against the usage ledger.
@@ -197,7 +200,7 @@ class OrderRepositoryImpl : OrderRepository {
         val callerEmail = query { UserDAO.findById(userId)?.email.orEmpty() }
         val currency = checkoutRequest.currency.uppercase()
         // Fail closed: non-USD checkout requires a stored FX rate (no silent USD-under-foreign-label).
-        val fxRate = if (currency != "USD") FxService.rateTo(currency) else BigDecimal.ONE
+        val fxRate = if (currency != "USD") fxService.rateTo(currency) else BigDecimal.ONE
         val idempotencyKey = checkoutRequest.idempotencyKey
         if (idempotencyKey != null && idempotencyKey.length > 60) {
             throw ValidationException("Idempotency-Key must be at most 60 characters")
@@ -381,7 +384,7 @@ class OrderRepositoryImpl : OrderRepository {
                 shopTax.add(
                     Money.tax(
                         itemTotal,
-                        TaxService.resolve(context.shippingAddress.country, product.categoryId.value),
+                        taxService.resolve(context.shippingAddress.country, product.categoryId.value),
                     ),
                 )
 
@@ -530,7 +533,7 @@ class OrderRepositoryImpl : OrderRepository {
         checkoutRequest: CheckoutRequest,
     ): CheckoutSummaryResponse {
         val currency = checkoutRequest.currency.uppercase()
-        val fxRate = if (currency != "USD") FxService.rateTo(currency) else BigDecimal.ONE
+        val fxRate = if (currency != "USD") fxService.rateTo(currency) else BigDecimal.ONE
         return query {
             val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
             if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
@@ -584,7 +587,7 @@ class OrderRepositoryImpl : OrderRepository {
                     acc.add(
                         Money.tax(
                             Money.unitTotal(unitPriceUsd(cartItem), cartItem.quantity),
-                            TaxService.resolve(shippingAddress.country, product.categoryId.value),
+                            taxService.resolve(shippingAddress.country, product.categoryId.value),
                         ),
                     )
                 }

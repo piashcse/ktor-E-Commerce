@@ -302,14 +302,16 @@ curl -X 'DELETE' \
 **Status: 200 OK**
 
 ```json
-true
+{
+  "message": "Cart cleared successfully"
+}
 ```
 
 #### Response Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `data` | boolean | Indicates successful cart clearance |
+| `message` | string | Delete acknowledgement |
 
 ---
 

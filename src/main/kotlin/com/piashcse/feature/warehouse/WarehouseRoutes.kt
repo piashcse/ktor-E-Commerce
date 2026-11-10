@@ -6,9 +6,9 @@ import com.piashcse.plugin.created
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.sellerWriteRateLimit
-import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.receive
 import io.ktor.server.request.requirePathParameter
@@ -47,7 +47,7 @@ fun Route.warehouseSellerRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             repo.deactivate(call.currentUserId, id)
-            call.respondOk(MessageResponse("Warehouse deactivated"))
+            call.respondDeleted("Warehouse deactivated")
         }.describe { summary = "Deactivate warehouse" }
     }
 }

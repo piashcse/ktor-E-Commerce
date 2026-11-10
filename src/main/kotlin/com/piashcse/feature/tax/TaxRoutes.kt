@@ -14,11 +14,13 @@ import io.ktor.server.request.receive
 import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
+import org.koin.ktor.ext.inject
 
 /** Admin tax-rule management. */
 fun Route.taxAdminRoutes() {
+    val taxService: TaxService by inject()
     get {
-        call.respondOk(TaxService.list())
+        call.respondOk(taxService.list())
     }.describe {
         summary = "List tax rules"
         responses { ok<List<TaxRuleResponse>>("Tax rules") }
@@ -26,7 +28,7 @@ fun Route.taxAdminRoutes() {
 
     adminWriteRateLimit {
         post {
-            call.respondCreated(TaxService.upsert(call.receive<TaxRuleRequest>()))
+            call.respondCreated(taxService.upsert(call.receive<TaxRuleRequest>()))
         }.describe {
             summary = "Create or update tax rule"
             description = "Country/category rule; rate is a decimal fraction"
@@ -35,7 +37,7 @@ fun Route.taxAdminRoutes() {
         }
 
         put {
-            call.respondOk(TaxService.upsert(call.receive<TaxRuleRequest>()))
+            call.respondOk(taxService.upsert(call.receive<TaxRuleRequest>()))
         }.describe {
             summary = "Upsert tax rule"
             requestBody { jsonBody<TaxRuleRequest>() }
@@ -44,7 +46,7 @@ fun Route.taxAdminRoutes() {
 
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            if (!TaxService.delete(id)) throw NotFoundException("Tax rule not found")
+            if (!taxService.delete(id)) throw NotFoundException("Tax rule not found")
             call.respondOk(MessageResponse("Tax rule deleted"))
         }.describe { summary = "Delete tax rule" }
     }

@@ -17,7 +17,7 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `POST` | `/api/v1/admin/shop-categories` | Create a new shop category | Yes (Admin) |
-| `GET` | `/api/v1/admin/shop-categories` | Retrieve list of shop categories | Yes (Admin) |
+| `GET` | `/api/v1/shop-categories` | Retrieve list of shop categories (public) | No |
 | `PUT` | `/api/v1/admin/shop-categories/{id}` | Update an existing shop category | Yes (Admin) |
 | `DELETE` | `/api/v1/admin/shop-categories/{id}` | Delete a shop category | Yes (Admin) |
 
@@ -91,17 +91,14 @@ Retrieve a list of shop categories with optional pagination support.
 
 #### Headers
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
+No authentication required (public).
 
 #### Example Request
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/shop-categories?limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+  'http://localhost:8080/api/v1/shop-categories?limit=10' \
+  -H 'accept: application/json'
 ```
 
 #### Example Response
@@ -136,7 +133,7 @@ curl -X 'GET' \
 | `metadata` | object | Pagination metadata |
 | `metadata.totalCount` | number | Total number of items |
 | `metadata.limit` | number | Limit applied |
-| `metadata.skip` | number | Offset applied |
+| `metadata.offset` | number | Offset applied |
 
 ---
 
@@ -222,14 +219,16 @@ curl -X 'DELETE' \
 #### Example Response
 
 ```json
-"2a17da31-7517-41db-b7d3-f77d0ddd52a5"
+{
+  "message": "Shop category deleted successfully"
+}
 ```
 
 #### Response Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `data` | string | ID of the deleted shop category |
+| `message` | string | Delete acknowledgement |
 
 ---
 

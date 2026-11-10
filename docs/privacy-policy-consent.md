@@ -1,44 +1,53 @@
-# Privacy Policy Consent Documentation Merged
+# Policy Consent API
 
-This documentation has been merged into the main [Privacy Policy API documentation](privacy-policy.md). Please refer to the main privacy-policy.md file for all privacy policy and consent-related endpoints.
-## Error Handling
+Records and audits a user's consent to policy documents (privacy policy, terms, cookies, etc.).
+The admin view is read-only; consent is always written by the authenticated user.
 
-This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
+**Base URL:** `http://localhost:8080`
 
-### Success Responses
-- **HTTP status code indicates success** (200, 201, 204)
-- **Response body contains data directly** (no wrapper object)
-- No `isSuccess` or `statusCode` fields needed
+## Endpoints
 
-### Error Responses
+| Method | Endpoint | Description | Authentication Required |
+|---|---|---|---|
+| `GET` | `/api/v1/policy-consents` | List all consent records for the authenticated user | Yes |
+| `GET` | `/api/v1/policy-consents/{policyType}` | Check consent for a policy type | Yes |
+| `POST` | `/api/v1/policy-consents/consent` | Record consent for a specific policy document | Yes |
+| `DELETE` | `/api/v1/policy-consents/{id}` | Revoke a consent record (owner or admin) | Yes |
+| `GET` | `/api/v1/admin/policy-consents` | List consent records filtered by user and/or policy type | Yes (Admin) |
 
-**Standard Error (400/401/403/404/500):**
+## Record consent
+
+**`POST /api/v1/policy-consents/consent`**
+
 ```json
 {
-  "message": "Error description"
+  "policyId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
 }
 ```
 
-**Validation Error (400):**
-```json
-{
-  "message": "Validation failed",
-  "errors": [
-    {"field": "email", "message": "Invalid email format"},
-    {"field": "password", "message": "Password must be at least 8 characters"}
-  ]
-}
+Consent rows are append-only: re-consenting creates a new row with `grantedAt`, and
+`DELETE /api/v1/policy-consents/{id}` sets `revokedAt` rather than deleting the audit trail.
+
+## Check consent
+
+**`GET /api/v1/policy-consents/{policyType}`**
+
+`policyType` is one of `PRIVACY_POLICY`, `TERMS_CONDITIONS`, `REFUND_POLICY`, `COOKIE_POLICY`,
+`DISCLAIMER`, `EULA`, `SHIPPING_POLICY`.
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/policy-consents/PRIVACY_POLICY' \
+  -H 'Authorization: Bearer <access_token>'
 ```
 
-### Common Error Codes
+## Admin filtering
 
-| Status Code | Description | Example Message |
-|-------------|-------------|-----------------|
-| `400` | Bad Request | `"Invalid email or password"` |
-| `401` | Unauthorized | `"Authentication required"` |
-| `403` | Forbidden | `"Insufficient permissions"` |
-| `404` | Not Found | `"Product not found"` |
-| `409` | Conflict | `"User already exists with this email"` |
-| `500` | Internal Server Error | `"Internal server error"` |
+**`GET /api/v1/admin/policy-consents?userId=&policyType=`**
 
-All error messages are centralized and consistent across all endpoints.
+Both filters are optional; results are paginated with `page`/`perPage` or `limit`/`offset`.
+
+## Checkout enforcement
+
+When `REQUIRE_POLICY_CONSENT=true`, checkout rejects orders until the customer has consented to
+every policy type where `requiresConsent` is true (`SHIPPING_POLICY` is excluded).

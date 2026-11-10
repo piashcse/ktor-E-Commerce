@@ -11,12 +11,14 @@ import io.ktor.server.request.receive
 import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
+import org.koin.ktor.ext.inject
 
 /** Super-admin feature flag management. */
 fun Route.featureFlagRoutes() {
+    val featureFlags: FeatureFlags by inject()
     requirePermission(Permission.FEATURE_FLAG_MANAGE) {
         get {
-            call.respondOk(FeatureFlags.list())
+            call.respondOk(featureFlags.list())
         }.describe {
             summary = "List feature flags"
             responses { ok<List<FeatureFlagResponse>>("Flags") }
@@ -24,7 +26,7 @@ fun Route.featureFlagRoutes() {
 
         put("{key}") {
             val key = call.requirePathParameter("key")
-            call.respondOk(FeatureFlags.set(key, call.receive<FeatureFlagUpdateRequest>()))
+            call.respondOk(featureFlags.set(key, call.receive<FeatureFlagUpdateRequest>()))
         }.describe {
             summary = "Set feature flag"
             requestBody { jsonBody<FeatureFlagUpdateRequest>() }

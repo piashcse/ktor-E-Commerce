@@ -27,7 +27,17 @@ val RoleAuthorizationPlugin =
 
             val principal = call.principal<JwtTokenRequest>()
             if (principal == null) {
-                call.respond(HttpStatusCode.Unauthorized, ApiError("Missing or invalid token", code = "UNAUTHORIZED"))
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ApiError(
+                        message = "Missing or invalid token",
+                        code = "UNAUTHORIZED",
+                        requestId = call.requestId(),
+                        type = "UNAUTHORIZED",
+                        title = "Missing or invalid token",
+                        status = HttpStatusCode.Unauthorized.value,
+                    ),
+                )
                 return@on
             }
 
@@ -45,7 +55,14 @@ val RoleAuthorizationPlugin =
             if (!hasAccess) {
                 call.respond(
                     HttpStatusCode.Forbidden,
-                    ApiError("Permission Denied: Insufficient privileges", code = "FORBIDDEN"),
+                    ApiError(
+                        message = "Permission Denied: Insufficient privileges",
+                        code = "FORBIDDEN",
+                        requestId = call.requestId(),
+                        type = "FORBIDDEN",
+                        title = "Permission Denied: Insufficient privileges",
+                        status = HttpStatusCode.Forbidden.value,
+                    ),
                 )
                 return@on
             }
@@ -69,13 +86,31 @@ val PermissionAuthorizationPlugin =
             if (call.response.isCommitted) return@on
             val principal = call.principal<JwtTokenRequest>()
             if (principal == null) {
-                call.respond(HttpStatusCode.Unauthorized, ApiError("Missing or invalid token", code = "UNAUTHORIZED"))
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ApiError(
+                        message = "Missing or invalid token",
+                        code = "UNAUTHORIZED",
+                        requestId = call.requestId(),
+                        type = "UNAUTHORIZED",
+                        title = "Missing or invalid token",
+                        status = HttpStatusCode.Unauthorized.value,
+                    ),
+                )
                 return@on
             }
             if (required.isNotEmpty() && required.none { principal.hasPermission(it) }) {
+                val message = "Permission Denied: missing ${required.joinToString { it.name }}"
                 call.respond(
                     HttpStatusCode.Forbidden,
-                    ApiError("Permission Denied: missing ${required.joinToString { it.name }}", code = "FORBIDDEN"),
+                    ApiError(
+                        message = message,
+                        code = "FORBIDDEN",
+                        requestId = call.requestId(),
+                        type = "FORBIDDEN",
+                        title = message,
+                        status = HttpStatusCode.Forbidden.value,
+                    ),
                 )
             }
         }
@@ -158,8 +193,6 @@ fun Route.customerOnlyAuth(build: Route.() -> Unit) = requireRoleExact(UserType.
 fun Route.sellerAuth(build: Route.() -> Unit) = requireRole(UserType.SELLER, build = build)
 
 fun Route.adminAuth(build: Route.() -> Unit) = requireRole(UserType.ADMIN, UserType.SUPER_ADMIN, build = build)
-
-fun Route.superAdminAuth(build: Route.() -> Unit) = requireRole(UserType.SUPER_ADMIN, build = build)
 
 // Rate Limit DSL helpers
 fun Route.writeRateLimit(build: Route.() -> Unit) {

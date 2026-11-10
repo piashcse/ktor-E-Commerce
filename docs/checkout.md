@@ -3,7 +3,34 @@
 The Checkout module consolidates the process of finalizing an order, including shipping details, total calculations, and order placement.
 
 ## Consolidated Workflow
-All endpoints are under `/api/v1/checkout` and require `CUSTOMER` authentication.
+All endpoints are under `/api/v1/checkout` and require `CUSTOMER` authentication, except
+`POST /api/v1/checkout/guest` which is public and feature-flagged (`guest_checkout`).
+
+### 0. Guest Checkout (feature-flagged)
+`POST /api/v1/checkout/guest`
+
+Places an order without an account. The request may include a guest email; if an account with that
+email already exists the order is claimed by it. Disabled when the `guest_checkout` feature flag is off.
+
+**Request:**
+```json
+{
+  "email": "guest@example.com",
+  "firstName": "Guest",
+  "lastName": "Shopper",
+  "phoneNumber": "+8801700000000",
+  "streetAddress": "12 Main St",
+  "city": "Dhaka",
+  "country": "BD",
+  "postCode": "1207",
+  "shippingMethodId": "uuid",
+  "paymentMethod": "COD",
+  "currency": "USD",
+  "items": [{ "productId": "uuid", "quantity": 1 }]
+}
+```
+
+Returns `201 Created` with the created order(s).
 
 ### 1. Manage Shipping Address
 - `POST /api/v1/checkout/shipping-address`: Add a new address.
@@ -31,11 +58,11 @@ Calculate totals, taxes, and apply coupons without creating an order. Use this t
 **Response:**
 ```json
 {
-  "subTotal": 100.0,
-  "shippingCost": 15.0,
-  "taxAmount": 5.0,
-  "discountAmount": 10.0,
-  "total": 110.0,
+  "subTotal": "100.00",
+  "shippingCost": "15.00",
+  "taxAmount": "5.00",
+  "discountAmount": "10.00",
+  "total": "110.00",
   "itemCount": 3
 }
 ```
@@ -43,7 +70,8 @@ Calculate totals, taxes, and apply coupons without creating an order. Use this t
 ### 4. Place Order
 `POST /api/v1/checkout/place-order`
 
-Finalizes the purchase and creates order records.
+Finalizes the purchase and creates order records. Send `Idempotency-Key` (or the body
+`idempotencyKey`) to make retries safe; totals are server-validated against database prices.
 
 **Request:**
 ```json

@@ -15,9 +15,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/payments` | Create a new payment | Yes |
+| `POST` | `/api/v1/payments` | Create a payment intent for an order (server-owned status) | Yes (Customer) |
 | `GET` | `/api/v1/payments/{id}` | Retrieve payment by ID | Yes |
 | `GET` | `/api/v1/payments/order/{orderId}` | Retrieve all payments for an order | Yes |
+| `POST` | `/api/v1/admin/payments/{id}/confirm` | Confirm a pending payment as completed | Yes (Admin) |
 
 ---
 
@@ -27,23 +28,18 @@ Authorization: Bearer <your_access_token>
 
 **`POST /api/v1/payments`**
 
-Create a new payment for an existing order. The payment will be associated with a specific order and include payment method details.
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-| `Content-Type` | `application/json` | Yes |
+Create a new payment intent for an existing order. **The status is owned by the server**:
+clients cannot mark a payment `COMPLETED`. Non-COD payments start `PENDING` and are completed
+by the provider callback (or an admin confirmation); COD payments follow the order lifecycle.
 
 #### Request Body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `amount` | number | Yes | Payment amount |
+| `amount` | number | Yes | Payment amount; must match the order total |
 | `orderId` | string | Yes | UUID of the order to pay for |
 | `paymentMethod` | string | Yes | Payment method (e.g., "CREDIT_CARD", "BANK_TRANSFER", "PAYPAL", "COD") |
-| `status` | string | Yes | Payment status (e.g., "COMPLETED", "PENDING", "FAILED") |
+| `transactionId` | string | No | Provider transaction id / idempotency reference |
 
 #### Example Request
 
@@ -56,8 +52,7 @@ curl -X 'POST' \
   -d '{
   "amount": 500,
   "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
-  "paymentMethod": "BANK_TRANSFER",
-  "status": "COMPLETED"
+  "paymentMethod": "BANK_TRANSFER"
 }'
 ```
 
@@ -68,9 +63,8 @@ curl -X 'POST' \
     "id": "4b68917d-4452-4d18-9012-47e843f05c15",
     "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
     "amount": 500,
-    "status": "COMPLETED",
+    "status": "PENDING",
     "paymentMethod": "BANK_TRANSFER"
-  }
 }
 ```
 
@@ -176,9 +170,8 @@ curl -X 'GET' \
     "id": "4b68917d-4452-4d18-9012-47e843f05c15",
     "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
     "amount": 500,
-    "status": "COMPLETED",
+    "status": "PENDING",
     "paymentMethod": "BANK_TRANSFER"
-  }
 }
 ```
 
@@ -302,6 +295,22 @@ All error messages are centralized and consistent across all endpoints.
 
 ---
 
+## 4. Confirm Payment (Admin)
+
+**`POST /api/v1/admin/payments/{id}/confirm`**
+
+Confirms a `PENDING` payment as `COMPLETED`. This is the server-side/manual confirmation path
+used when no provider webhook is configured (for example bank transfers or COD reconciliation).
+Repeating the call is idempotent for an already-completed payment.
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payments/4b68917d-4452-4d18-9012-47e843f05c15/confirm' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+---
+
 ## Payment Status Values
 
 ### Common Payment Status Values
@@ -322,9 +331,7 @@ All error messages are centralized and consistent across all endpoints.
 
 | Method | Description |
 |--------|-------------|
-| `Bkash` | Mobile financial service payment |
-| `Card` | Credit/Debit card payment |
-| `Cash` | Cash on delivery payment |
-| `Bank Transfer` | Direct bank transfer |
-| `Nagad` | Mobile financial service payment |
-| `Rocket` | Mobile financial service payment |
+| `CREDIT_CARD` | Credit/debit card payment |
+| `PAYPAL` | PayPal payment |
+| `BANK_TRANSFER` | Direct bank transfer |
+| `COD` | Cash on delivery |

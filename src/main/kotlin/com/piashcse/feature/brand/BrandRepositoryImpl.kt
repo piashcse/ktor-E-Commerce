@@ -21,7 +21,7 @@ class BrandRepositoryImpl : BrandRepository {
             CatalogCrud.createUniqueByName(
                 name = name,
                 validationLabel = "Brand",
-                conflictLabel = "BrandResponse",
+                conflictLabel = "Brand",
                 findExisting = { BrandDAO.find { BrandTable.name eq name }.firstOrNull() },
                 create = {
                     BrandDAO.new {
@@ -51,7 +51,7 @@ class BrandRepositoryImpl : BrandRepository {
                 id = brandId,
                 name = name,
                 validationLabel = "Brand",
-                notFoundLabel = "BrandResponse",
+                notFoundLabel = "Brand",
                 findById = { BrandDAO.findById(it) },
                 rename = { brand, newName -> brand.name = newName },
                 toResponse = { it.toBrandResponse() },
@@ -72,7 +72,7 @@ class BrandRepositoryImpl : BrandRepository {
         query {
             CatalogCrud.deleteById(
                 id = brandId,
-                notFoundLabel = "BrandResponse",
+                notFoundLabel = "Brand",
                 findById = { BrandDAO.findById(it) },
                 guard = {
                     // Guard vs ON DELETE SET NULL/CASCADE data loss: block while products still reference this brand.

@@ -15,7 +15,6 @@ import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
-import com.piashcse.utils.validator.UnauthorizedException
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
 import io.ktor.server.request.*
@@ -70,7 +69,7 @@ fun Route.refundRequestRoutes() {
                 refundRequestRepo.getRefundById(
                     refundId,
                     call.currentUserId,
-                    call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
+                    call.requireUserType(),
                 ) ?: throw NotFoundException(Message.Refunds.NOT_FOUND)
             // Touch the record so authorization above is the gate, then serve the file.
             check(refund.id == refundId)
@@ -92,7 +91,7 @@ fun Route.refundRequestRoutes() {
                 refundRequestRepo.getRefundsByOrderId(
                     call.requirePathParameter("orderId"),
                     call.currentUserId,
-                    call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
+                    call.requireUserType(),
                     limit,
                     offset,
                 ),
@@ -107,7 +106,7 @@ fun Route.refundRequestRoutes() {
                 refundRequestRepo.getRefundById(
                     call.requirePathParameter("id"),
                     call.currentUserId,
-                    call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
+                    call.requireUserType(),
                 )
             if (refundRequest != null) {
                 call.respondOk(refundRequest)
