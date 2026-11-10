@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.policy
 
 import com.piashcse.constants.PolicyType
@@ -10,6 +12,7 @@ import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 /**
@@ -18,13 +21,12 @@ import org.koin.ktor.ext.inject
 fun Route.policyRoutes() {
     val policyRepo: PolicyRepository by inject()
     /**
-     * @tag Privacy-Policy
-     * @description Retrieve the latest active version of a policy by type
+     * Retrieve the latest active version of a policy by type
      */
     get("{policyType}") {
         val policyType = call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type")
         call.respondOk(policyRepo.getPolicyByType(policyType))
-    }
+    }.describe { summary = "Retrieve the latest active version of a policy by type" }
 }
 
 /**
@@ -34,48 +36,48 @@ fun Route.policyAdminRoutes() {
     val policyRepo: PolicyRepository by inject()
     adminWriteRateLimit {
         /**
-         * @tag Privacy-Policy
-         * @description Admin: Create a new policy document or new version
+         * Admin - Create a new policy document or new version
+         *
          */
         post {
             call.respondCreated(policyRepo.createPolicy(call.receive<CreatePolicyRequest>()))
-        }
+        }.describe { summary = "Admin - Create a new policy document or new version" }
 
         /**
-         * @tag Privacy-Policy
-         * @description Admin: Update an existing policy document
+         * Admin - Update an existing policy document
+         *
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
             call.respondOk(policyRepo.updatePolicy(id, call.receive<UpdatePolicyRequest>()))
-        }
+        }.describe { summary = "Admin - Update an existing policy document" }
 
         /**
-         * @tag Privacy-Policy
-         * @description Admin: Deactivate a policy document
+         * Admin - Deactivate a policy document
+         *
          */
         post("deactivate/{id}") {
             val id = call.requirePathParameter("id")
             call.respondOk(policyRepo.deactivatePolicy(id))
-        }
+        }.describe { summary = "Admin - Deactivate a policy document" }
     }
 
     /**
-     * @tag Privacy-Policy
-     * @description Admin: Retrieve a policy document by ID
+     * Admin - Retrieve a policy document by ID
+     *
      */
     get("by-id/{id}") {
         val id = call.requirePathParameter("id")
         call.respondOk(policyRepo.getPolicyById(id))
-    }
+    }.describe { summary = "Admin - Retrieve a policy document by ID" }
 
     /**
-     * @tag Privacy-Policy
-     * @description Admin: Retrieve all versions of a specific policy type
+     * Admin - Retrieve all versions of a specific policy type
+     *
      */
     get("{policyType}/history") {
         val policyType = call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type")
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(policyRepo.getAllPolicies(policyType, limit, offset))
-    }
+    }.describe { summary = "Admin - Retrieve all versions of a specific policy type" }
 }

@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.plugin
 
 import com.piashcse.constants.AppConstants
@@ -66,6 +68,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.*
+import io.ktor.server.routing.openapi.describe
 import io.ktor.utils.io.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -85,11 +88,18 @@ fun Application.configureRoute() {
             call.respond(
                 HealthStatusResponse(status = "UP", version = AppConstants.APP_VERSION),
             )
+        }.describe {
+            summary = "Service health"
+            description = "Version and overall status"
+            tag("Health")
         }
         get("/health/live") {
             call.respond(
                 MessageResponse("UP"),
             )
+        }.describe {
+            summary = "Liveness probe"
+            tag("Health")
         }
         get("/health/ready") {
             val dbOk =
@@ -114,6 +124,10 @@ fun Application.configureRoute() {
                     ),
                 )
             }
+        }.describe {
+            summary = "Readiness probe"
+            description = "Checks database connectivity"
+            tag("Health")
         }
 
         route("/api") {
@@ -127,44 +141,44 @@ fun Application.configureRoute() {
 }
 
 private fun Route.customerRoutes() {
-    route("auth") { authRoutes() }
-    route("profile") { profileRoutes() }
-    route("shops") { shopRoutes() }
-    route("brands") { brandRoutes() }
-    route("product-categories") { productCategoryRoutes() }
-    route("product-subcategories") { productSubCategoryRoutes() }
-    route("shop-categories") { shopCategoryRoutes() }
-    route("products") { productRoutes() }
-    route("reviews") { reviewRatingRoutes() }
-    route("carts") { cartRoutes() }
-    route("wishlists") { wishListRoutes() }
-    route("checkout") { checkoutRoutes() }
-    route("orders") { orderRoutes() }
-    route("payments") { paymentRoutes() }
-    route("policies") { policyRoutes() }
-    route("policy-consents") { consentRoutes() }
-    route("refund-requests") { refundRequestRoutes() }
-    route("rma-requests") { rmaRoutes() }
-    route("recommendations") { recommendationRoutes() }
-    route("coupons") { couponRoutes() }
-    route("notifications") { notificationRoutes() }
-    route("privacy") { privacyRoutes() }
-    route("api-keys") { apiKeyRoutes() }
+    route("auth") { authRoutes() }.describe { tag("Auth") }
+    route("profile") { profileRoutes() }.describe { tag("Profile") }
+    route("shops") { shopRoutes() }.describe { tag("Shop") }
+    route("brands") { brandRoutes() }.describe { tag("Brand") }
+    route("product-categories") { productCategoryRoutes() }.describe { tag("Product Category") }
+    route("product-subcategories") { productSubCategoryRoutes() }.describe { tag("Product Sub Category") }
+    route("shop-categories") { shopCategoryRoutes() }.describe { tag("Shop Category") }
+    route("products") { productRoutes() }.describe { tag("Product") }
+    route("reviews") { reviewRatingRoutes() }.describe { tag("Review") }
+    route("carts") { cartRoutes() }.describe { tag("Cart") }
+    route("wishlists") { wishListRoutes() }.describe { tag("Wishlist") }
+    route("checkout") { checkoutRoutes() }.describe { tag("Checkout") }
+    route("orders") { orderRoutes() }.describe { tag("Order") }
+    route("payments") { paymentRoutes() }.describe { tag("Payment") }
+    route("policies") { policyRoutes() }.describe { tag("Policy") }
+    route("policy-consents") { consentRoutes() }.describe { tag("Consent") }
+    route("refund-requests") { refundRequestRoutes() }.describe { tag("Refund") }
+    route("rma-requests") { rmaRoutes() }.describe { tag("RMA") }
+    route("recommendations") { recommendationRoutes() }.describe { tag("Recommendation") }
+    route("coupons") { couponRoutes() }.describe { tag("Coupon") }
+    route("notifications") { notificationRoutes() }.describe { tag("Notification") }
+    route("privacy") { privacyRoutes() }.describe { tag("Privacy") }
+    route("api-keys") { apiKeyRoutes() }.describe { tag("API Keys") }
 }
 
 private fun Route.sellerRoutes() {
     route("seller") {
         sellerAuth {
-            route("shops") { shopSellerRoutesV1() }
-            route("products") { productSellerRoutes() }
-            route("inventories") { inventorySellerRoutes() }
-            route("warehouses") { warehouseSellerRoutes() }
-            route("kyc") { sellerKycRoutes() }
-            route("orders") { orderSellerRoutes() }
-            route("refund-requests") { refundSellerRoutes() }
-            route("rma-requests") { rmaSellerRoutes() }
-            route("dashboard") { dashboardSellerRoutes() }
-            route("payouts") { payoutSellerRoutes() }
+            route("shops") { shopSellerRoutesV1() }.describe { tag("Shop") }
+            route("products") { productSellerRoutes() }.describe { tag("Product") }
+            route("inventories") { inventorySellerRoutes() }.describe { tag("Inventory") }
+            route("warehouses") { warehouseSellerRoutes() }.describe { tag("Warehouse") }
+            route("kyc") { sellerKycRoutes() }.describe { tag("KYC") }
+            route("orders") { orderSellerRoutes() }.describe { tag("Order") }
+            route("refund-requests") { refundSellerRoutes() }.describe { tag("Refund") }
+            route("rma-requests") { rmaSellerRoutes() }.describe { tag("RMA") }
+            route("dashboard") { dashboardSellerRoutes() }.describe { tag("Dashboard") }
+            route("payouts") { payoutSellerRoutes() }.describe { tag("Payout") }
         }
     }
 }
@@ -172,30 +186,30 @@ private fun Route.sellerRoutes() {
 private fun Route.adminRoutes() {
     route("admin") {
         adminAuth {
-            route("auth") { authAdminRoutes() }
-            route("brands") { brandAdminRoutes() }
-            route("product-categories") { productCategoryAdminRoutes() }
-            route("product-subcategories") { productSubCategoryAdminRoutes() }
-            route("shop-categories") { shopCategoryAdminRoutes() }
-            route("shops") { shopAdminRoutes() }
-            route("sellers") { adminKycRoutes() }
-            route("products") { productAdminRoutes() }
-            route("inventories") { inventoryAdminRoutes() }
-            route("orders") { orderAdminRoutes() }
-            route("payments") { paymentAdminRoutes() }
-            route("refund-requests") { refundAdminRoutes() }
-            route("rma-requests") { rmaAdminRoutes() }
-            route("policies") { policyAdminRoutes() }
-            route("policy-consents") { consentAdminRoutes() }
-            route("shipping-methods") { shippingMethodAdminRoutes() }
-            route("coupons") { couponAdminRoutes() }
-            route("dashboard") { dashboardAdminRoutes() }
-            route("audit-logs") { auditLogAdminRoutes() }
-            route("payouts") { payoutAdminRoutes() }
-            route("fx-rates") { fxAdminRoutes() }
-            route("tax-rules") { taxAdminRoutes() }
-            route("feature-flags") { featureFlagRoutes() }
-            route("outbox") { outboxAdminRoutes() }
+            route("auth") { authAdminRoutes() }.describe { tag("Auth") }
+            route("brands") { brandAdminRoutes() }.describe { tag("Brand") }
+            route("product-categories") { productCategoryAdminRoutes() }.describe { tag("Product Category") }
+            route("product-subcategories") { productSubCategoryAdminRoutes() }.describe { tag("Product Sub Category") }
+            route("shop-categories") { shopCategoryAdminRoutes() }.describe { tag("Shop Category") }
+            route("shops") { shopAdminRoutes() }.describe { tag("Shop") }
+            route("sellers") { adminKycRoutes() }.describe { tag("KYC") }
+            route("products") { productAdminRoutes() }.describe { tag("Product") }
+            route("inventories") { inventoryAdminRoutes() }.describe { tag("Inventory") }
+            route("orders") { orderAdminRoutes() }.describe { tag("Order") }
+            route("payments") { paymentAdminRoutes() }.describe { tag("Payment") }
+            route("refund-requests") { refundAdminRoutes() }.describe { tag("Refund") }
+            route("rma-requests") { rmaAdminRoutes() }.describe { tag("RMA") }
+            route("policies") { policyAdminRoutes() }.describe { tag("Policy") }
+            route("policy-consents") { consentAdminRoutes() }.describe { tag("Consent") }
+            route("shipping-methods") { shippingMethodAdminRoutes() }.describe { tag("Shipping Method") }
+            route("coupons") { couponAdminRoutes() }.describe { tag("Coupon") }
+            route("dashboard") { dashboardAdminRoutes() }.describe { tag("Dashboard") }
+            route("audit-logs") { auditLogAdminRoutes() }.describe { tag("Audit Log") }
+            route("payouts") { payoutAdminRoutes() }.describe { tag("Payout") }
+            route("fx-rates") { fxAdminRoutes() }.describe { tag("FX") }
+            route("tax-rules") { taxAdminRoutes() }.describe { tag("Tax") }
+            route("feature-flags") { featureFlagRoutes() }.describe { tag("Feature Flags") }
+            route("outbox") { outboxAdminRoutes() }.describe { tag("Outbox") }
         }
     }
 }

@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.shop_category
 
 import com.piashcse.model.request.ShopCategoryRequest
@@ -8,6 +10,7 @@ import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 /**
@@ -16,13 +19,12 @@ import org.koin.ktor.ext.inject
 fun Route.shopCategoryRoutes() {
     val shopCategoryRepo: ShopCategoryRepository by inject()
     /**
-     * @tag Shop-Category
-     * @description Retrieve a paginated list of all shop categories
+     * Retrieve a paginated list of all shop categories
      */
     get {
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(shopCategoryRepo.getCategories(limit, offset))
-    }
+    }.describe { summary = "Retrieve a paginated list of all shop categories" }
 }
 
 /**
@@ -32,30 +34,30 @@ fun Route.shopCategoryAdminRoutes() {
     val shopCategoryRepo: ShopCategoryRepository by inject()
     adminWriteRateLimit {
         /**
-         * @tag Shop-Category
-         * @description Admin: Create a new shop category
+         * Admin - Create a new shop category
+         *
          */
         post {
             call.respondCreated(shopCategoryRepo.createCategory(call.receive<ShopCategoryRequest>().name))
-        }
+        }.describe { summary = "Admin - Create a new shop category" }
 
         /**
-         * @tag Shop-Category
-         * @description Admin: Update an existing shop category name
+         * Admin - Update an existing shop category name
+         *
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
             call.respondOk(shopCategoryRepo.updateCategory(id, call.nameFromBodyOrQuery()))
-        }
+        }.describe { summary = "Admin - Update an existing shop category name" }
 
         /**
-         * @tag Shop-Category
-         * @description Admin: Permanently delete a shop category
+         * Admin - Permanently delete a shop category
+         *
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
             shopCategoryRepo.deleteCategory(id)
             call.respondOk(com.piashcse.utils.common.MessageResponse("Shop category deleted successfully"))
-        }
+        }.describe { summary = "Admin - Permanently delete a shop category" }
     }
 }

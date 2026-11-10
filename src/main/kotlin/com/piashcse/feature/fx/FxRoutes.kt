@@ -1,7 +1,10 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.fx
 
 import com.piashcse.database.entities.SupportedCurrencies
 import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.plugin.jsonBody
 import com.piashcse.service.FxService
 import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.extension.respondOk
@@ -10,6 +13,7 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
@@ -30,7 +34,7 @@ data class FxRateResponse(
 fun Route.fxAdminRoutes() {
     get {
         call.respondOk(FxService.listRates())
-    }
+    }.describe { summary = "List FX rates" }
     adminWriteRateLimit {
         put("{targetCurrency}") {
             val target = call.requirePathParameter("targetCurrency")
@@ -44,6 +48,9 @@ fun Route.fxAdminRoutes() {
             val body = call.receive<FxRateRequest>()
             if (body.rate <= BigDecimal.ZERO) throw ValidationException("FX rate must be positive")
             call.respondOk(FxService.upsertRate(target, body.rate))
+        }.describe {
+            summary = "Set FX rate"
+            requestBody { jsonBody<FxRateRequest>() }
         }
     }
 }

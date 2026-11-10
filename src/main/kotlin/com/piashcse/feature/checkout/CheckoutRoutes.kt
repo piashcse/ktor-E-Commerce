@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.checkout
 
 import com.piashcse.config.DotEnv
@@ -10,7 +12,13 @@ import com.piashcse.feature.shipping_method.ShippingMethodRepository
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.GuestCheckoutRequest
 import com.piashcse.model.request.ShippingAddressRequest
+import com.piashcse.model.response.CheckoutSummaryResponse
+import com.piashcse.model.response.OrderResponse
+import com.piashcse.model.response.ShippingAddressResponse
+import com.piashcse.plugin.created
 import com.piashcse.plugin.customerOnlyAuth
+import com.piashcse.plugin.jsonBody
+import com.piashcse.plugin.ok
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey
@@ -20,6 +28,7 @@ import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 fun Route.checkoutRoutes() {
@@ -40,29 +49,35 @@ fun Route.checkoutRoutes() {
 
     writeRateLimit {
         /**
-         * @tag Checkout
-         * @description Place an order without an account (feature-flagged)
+         * Place an order without an account (feature-flagged)
          */
         post("guest") {
             if (!FeatureFlags.isEnabled("guest_checkout")) {
                 throw ValidationException("Guest checkout is disabled")
             }
             call.respondCreated(guestCheckoutService.placeOrder(call.receive<GuestCheckoutRequest>()))
+        }.describe {
+            summary = "Guest checkout"
+            description = "Feature-flagged; creates/claims a guest account and places the order"
+            requestBody { jsonBody<GuestCheckoutRequest>() }
+            responses { created<List<OrderResponse>>("Orders created") }
         }
     }
     customerOnlyAuth {
         writeRateLimit {
             /**
-             * @tag Checkout
-             * @description Add a new shipping address for the authenticated user
+             * Add a new shipping address for the authenticated user
              */
             post("shipping-address") {
                 call.respondCreated(shippingAddressRepo.createShippingAddress(call.currentUserId, call.receive<ShippingAddressRequest>()))
+            }.describe {
+                summary = "Create shipping address"
+                requestBody { jsonBody<ShippingAddressRequest>() }
+                responses { created<ShippingAddressResponse>("Address created") }
             }
 
             /**
-             * @tag Checkout
-             * @description Update an existing shipping address
+             * Update an existing shipping address
              */
             put("shipping-address/{id}") {
                 call.respondOk(
@@ -72,54 +87,63 @@ fun Route.checkoutRoutes() {
                         call.receive<ShippingAddressRequest>(),
                     ),
                 )
+            }.describe {
+                summary = "Update shipping address"
+                requestBody { jsonBody<ShippingAddressRequest>() }
+                responses { ok<ShippingAddressResponse>("Address updated") }
             }
 
             /**
-             * @tag Checkout
-             * @description Delete a shipping address
+             * Delete a shipping address
              */
             delete("shipping-address/{id}") {
                 val id = call.requirePathParameter("id")
                 shippingAddressRepo.deleteShippingAddress(call.currentUserId, id)
                 call.respondOk(com.piashcse.utils.common.MessageResponse("Shipping address deleted successfully"))
-            }
+            }.describe { summary = "Delete shipping address" }
 
             /**
-             * @tag Checkout
-             * @description Get a summary of the checkout (totals) without placing an order
+             * Get a summary of the checkout (totals) without placing an order
              */
             post("summary") {
                 call.respondOk(orderRepo.getCheckoutSummary(call.currentUserId, call.receive<CheckoutRequest>()))
+            }.describe {
+                summary = "Checkout summary"
+                description = "Totals, tax, shipping and coupon preview; uses variant prices"
+                requestBody { jsonBody<CheckoutRequest>() }
+                responses { ok<CheckoutSummaryResponse>("Checkout totals") }
             }
 
             /**
-             * @tag Checkout
-             * @description Place a new order from the cart
+             * Place a new order from the cart
              */
             post("place-order") {
                 val body = call.receive<CheckoutRequest>()
                 val key = call.idempotencyKey(body.idempotencyKey)
                 requireConfiguredConsents(call.currentUserId)
                 call.respondCreated(orderRepo.placeOrder(call.currentUserId, body.copy(idempotencyKey = key)))
+            }.describe {
+                summary = "Place order"
+                description = "Idempotency-Key header/body supported; splits by shop"
+                requestBody { jsonBody<CheckoutRequest>() }
+                responses { created<List<OrderResponse>>("Orders created") }
             }
         }
 
         /**
-         * @tag Checkout
-         * @description Retrieve all shipping addresses for the authenticated user
+         * Retrieve all shipping addresses for the authenticated user
          */
         get("shipping-address") {
             val (limit, offset) = call.paginateQueryParams()
             call.respondOk(shippingAddressRepo.getShippingAddresses(call.currentUserId, limit, offset))
-        }
+        }.describe { summary = "List shipping addresses" }
 
         /**
-         * @tag Checkout
-         * @description Retrieve all available shipping methods
+         * Retrieve all available shipping methods
          */
         get("shipping-method") {
             val (limit, offset) = call.paginateQueryParams()
             call.respondOk(shippingMethodRepo.getShippingMethods(limit, offset))
-        }
+        }.describe { summary = "List shipping methods" }
     }
 }

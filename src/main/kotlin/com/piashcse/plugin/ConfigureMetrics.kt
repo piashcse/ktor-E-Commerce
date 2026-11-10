@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.plugin
 
 import com.piashcse.config.DotEnvConfig
@@ -8,6 +10,7 @@ import io.ktor.server.metrics.micrometer.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.hide
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics
@@ -53,6 +56,6 @@ fun Application.configureMetrics() {
             }
             call.response.header(HttpHeaders.CacheControl, "no-store")
             call.respondText(appMicrometerRegistry.scrape())
-        }
+        }.hide()
     }
 }

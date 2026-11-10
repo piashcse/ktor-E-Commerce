@@ -1,6 +1,11 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.tax
 
 import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.plugin.created
+import com.piashcse.plugin.jsonBody
+import com.piashcse.plugin.ok
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -8,20 +13,33 @@ import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.request.receive
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 
 /** Admin tax-rule management. */
 fun Route.taxAdminRoutes() {
     get {
         call.respondOk(TaxService.list())
+    }.describe {
+        summary = "List tax rules"
+        responses { ok<List<TaxRuleResponse>>("Tax rules") }
     }
 
     adminWriteRateLimit {
         post {
             call.respondCreated(TaxService.upsert(call.receive<TaxRuleRequest>()))
+        }.describe {
+            summary = "Create or update tax rule"
+            description = "Country/category rule; rate is a decimal fraction"
+            requestBody { jsonBody<TaxRuleRequest>() }
+            responses { created<TaxRuleResponse>("Tax rule saved") }
         }
 
         put {
             call.respondOk(TaxService.upsert(call.receive<TaxRuleRequest>()))
+        }.describe {
+            summary = "Upsert tax rule"
+            requestBody { jsonBody<TaxRuleRequest>() }
+            responses { ok<TaxRuleResponse>("Tax rule saved") }
         }
 
         delete("{id}") {
@@ -30,6 +48,6 @@ fun Route.taxAdminRoutes() {
                     ?: throw ValidationException("id is required")
             if (!TaxService.delete(id)) throw NotFoundException("Tax rule not found")
             call.respondOk(MessageResponse("Tax rule deleted"))
-        }
+        }.describe { summary = "Delete tax rule" }
     }
 }

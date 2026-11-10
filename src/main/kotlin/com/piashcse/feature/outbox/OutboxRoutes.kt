@@ -1,9 +1,12 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.outbox
 
 import com.piashcse.database.entities.OutboxDAO
 import com.piashcse.database.entities.OutboxDeadLetterDAO
 import com.piashcse.database.entities.OutboxDeadLetterTable
 import com.piashcse.database.entities.OutboxTable
+import com.piashcse.plugin.ok
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.paginateQueryParams
@@ -12,6 +15,7 @@ import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.isNull
@@ -46,6 +50,10 @@ fun Route.outboxAdminRoutes() {
                 )
             }
         call.respondOk(summary)
+    }.describe {
+        summary = "Outbox summary"
+        description = "Pending rows and dead-letter count"
+        responses { ok<OutboxSummaryResponse>("Outbox health") }
     }
 
     post("dead-letters/{id}/requeue") {
@@ -63,6 +71,9 @@ fun Route.outboxAdminRoutes() {
             deadLetter.delete()
         }
         call.respondOk(MessageResponse("Dead letter requeued"))
+    }.describe {
+        summary = "Requeue dead letter"
+        description = "Copies the payload back into the outbox"
     }
 
     get("dead-letters") {
@@ -86,5 +97,8 @@ fun Route.outboxAdminRoutes() {
                     }
             }
         call.respondOk(page)
+    }.describe {
+        summary = "List dead letters"
+        description = "Newest first"
     }
 }

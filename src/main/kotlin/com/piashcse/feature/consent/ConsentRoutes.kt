@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 @file:Suppress("MatchingDeclarationName")
 
 package com.piashcse.feature.consent
@@ -18,6 +20,7 @@ import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 
@@ -32,8 +35,7 @@ fun Route.consentRoutes() {
     customerAuth {
         writeRateLimit {
             /**
-             * @tag Privacy-Policy-Consent
-             * @description Record user consent for a specific policy document
+             * Record user consent for a specific policy document
              */
             post("consent") {
                 call.respondOk(
@@ -44,23 +46,21 @@ fun Route.consentRoutes() {
                         )
                     },
                 )
-            }
+            }.describe { summary = "Record user consent for a specific policy document" }
         }
     }
 
     requireRole(UserType.CUSTOMER, UserType.ADMIN) {
         /**
-         * @tag Privacy-Policy-Consent
-         * @description Retrieve all consent records for the authenticated user
+         * Retrieve all consent records for the authenticated user
          */
         get {
             val (limit, offset) = call.paginateQueryParams()
             call.respondOk(consentRepo.getUserConsents(call.currentUserId, limit, offset))
-        }
+        }.describe { summary = "Retrieve all consent records for the authenticated user" }
 
         /**
-         * @tag Privacy-Policy-Consent
-         * @description Check if the user has consented to a specific policy type
+         * Check if the user has consented to a specific policy type
          */
         get("{policyType}") {
             call.respondOk(
@@ -71,11 +71,10 @@ fun Route.consentRoutes() {
                     ),
                 ),
             )
-        }
+        }.describe { summary = "Check if the user has consented to a specific policy type" }
 
         /**
-         * @tag Privacy-Policy-Consent
-         * @description Revoke a consent record (owner or admin)
+         * Revoke a consent record (owner or admin)
          */
         delete("{id}") {
             consentRepo.revokeConsent(
@@ -84,7 +83,7 @@ fun Route.consentRoutes() {
                 call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
             )
             call.respondOk(com.piashcse.utils.common.MessageResponse("Consent revoked successfully"))
-        }
+        }.describe { summary = "Revoke a consent record (owner or admin)" }
     }
 }
 
@@ -94,13 +93,13 @@ fun Route.consentRoutes() {
 fun Route.consentAdminRoutes() {
     val consentRepo: ConsentRepository by inject()
     /**
-     * @tag Privacy-Policy-Consent
-     * @description Admin: Retrieve consent records filtered by user and/or policy type
+     * Admin - Retrieve consent records filtered by user and/or policy type
+     *
      */
     get {
         val userId = call.request.queryParameters["userId"]
         val policyType = call.request.queryParameters["policyType"]?.parseEnum<PolicyType>("policy type")
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(consentRepo.listConsentsByUser(userId, policyType, limit, offset))
-    }
+    }.describe { summary = "Admin - Retrieve consent records filtered by user and/or policy type" }
 }

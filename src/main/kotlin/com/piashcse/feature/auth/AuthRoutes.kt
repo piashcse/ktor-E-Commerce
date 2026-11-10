@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 @file:Suppress("MatchingDeclarationName")
 
 package com.piashcse.feature.auth
@@ -7,9 +9,13 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ChangePassword
 import com.piashcse.model.request.*
+import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.authRateLimit
+import com.piashcse.plugin.created
+import com.piashcse.plugin.jsonBody
+import com.piashcse.plugin.ok
 import com.piashcse.plugin.otpRateLimit
 import com.piashcse.plugin.refreshTokenRateLimit
 import com.piashcse.plugin.requireRole
@@ -26,6 +32,7 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 
@@ -41,33 +48,43 @@ fun Route.authRoutes() {
     // Rate-limited endpoints (brute-force protection)
     authRateLimit {
         /**
-         * @tag Auth
-         * @description Authenticate user with email, password and user type
+         * Authenticate user with email, password and user type
          */
         post("login") {
             call.respondOk(userAuthService.login(call.receive<LoginRequest>(), call.clientIp))
+        }.describe {
+            summary = "Login"
+            description = "Returns an access token and rotating refresh token"
+            requestBody { jsonBody<LoginRequest>() }
+            responses { ok<TokenPair>("Authenticated") }
         }
 
         /**
-         * @tag Auth
-         * @description Register a new user account
+         * Register a new user account
          */
         post("register") {
             call.respondCreated(userAuthService.register(call.receive<RegisterRequest>()))
+        }.describe {
+            summary = "Register"
+            description = "Creates/refreshes an unverified account and sends an OTP"
+            requestBody { jsonBody<RegisterRequest>() }
+            responses { created<RegistrationResult>("Registration result") }
         }
 
         /**
-         * @tag Auth
-         * @description Request password reset OTP
+         * Request password reset OTP
          */
         post("forgot-password") {
             userAuthService.forgotPassword(call.receive<ForgotPasswordRequest>())
             call.respondOk(MessageResponse(Message.Auth.OTP_SENT))
+        }.describe {
+            summary = "Request password reset OTP"
+            requestBody { jsonBody<ForgotPasswordRequest>() }
+            responses { ok<MessageResponse>("OTP sent") }
         }
 
         /**
-         * @tag Auth
-         * @description Reset password using OTP verification
+         * Reset password using OTP verification
          */
         post("reset-password") {
             when (authRepo.resetPassword(call.receive<ResetRequest>())) {
@@ -85,12 +102,15 @@ fun Route.authRoutes() {
                     )
                 }
             }
+        }.describe {
+            summary = "Reset password with OTP"
+            requestBody { jsonBody<ResetRequest>() }
+            responses { ok<MessageResponse>("Password reset") }
         }
     }
 
     /**
-     * @tag Auth
-     * @description Verify user account with OTP
+     * Verify user account with OTP
      */
     otpRateLimit {
         post("otp-verification") {
@@ -111,23 +131,30 @@ fun Route.authRoutes() {
                 throw ValidationException(Message.Auth.OTP_INVALID)
             }
             call.respondOk(MessageResponse("OTP verified successfully"))
+        }.describe {
+            summary = "Verify account OTP"
+            requestBody { jsonBody<OtpVerificationRequest>() }
+            responses { ok<MessageResponse>("OTP verified") }
         }
     }
 
     /**
-     * @tag Auth
-     * @description Refresh access token using refresh token
+     * Refresh access token using refresh token
      */
     refreshTokenRateLimit {
         post("refresh-token") {
             call.respondOk(authRepo.refreshAccessToken(call.receive<RefreshTokenRequest>()))
+        }.describe {
+            summary = "Refresh access token"
+            description = "Refresh tokens rotate and reuse revokes the session family"
+            requestBody { jsonBody<RefreshTokenRequest>() }
+            responses { ok<TokenPair>("New token pair") }
         }
     }
 
     requireRole {
         /**
-         * @tag Auth
-         * @description Logout authenticated user
+         * Logout authenticated user
          */
         post("logout") {
             val authHeader = call.request.headers[HttpHeaders.Authorization]
@@ -139,11 +166,10 @@ fun Route.authRoutes() {
             val refreshToken = runCatching { call.receive<LogoutRequest>().refreshToken }.getOrNull()
             authRepo.logout(call.currentUserId, refreshToken)
             call.respondOk(MessageResponse("Logged out successfully"))
-        }
+        }.describe { summary = "Logout authenticated user" }
 
         /**
-         * @tag Auth
-         * @description Change password for authenticated user
+         * Change password for authenticated user
          */
         put("change-password") {
             if (authRepo.changePassword(
@@ -162,7 +188,7 @@ fun Route.authRoutes() {
             } else {
                 call.respond(HttpStatusCode.Unauthorized, MessageResponse(Message.Auth.INVALID_CREDENTIALS))
             }
-        }
+        }.describe { summary = "Change password for authenticated user" }
     }
 }
 
@@ -173,8 +199,8 @@ fun Route.authAdminRoutes() {
     val authRepo: AuthRepository by inject()
     adminWriteRateLimit {
         /**
-         * @tag Auth
-         * @description Admin: Change user type
+         * Admin - Change user type
+         *
          */
         put("/{userId}/change-user-type") {
             val userId = call.requirePathParameter("userId")
@@ -189,11 +215,11 @@ fun Route.authAdminRoutes() {
             } else {
                 call.respond(HttpStatusCode.InternalServerError, MessageResponse("Failed to update user type"))
             }
-        }
+        }.describe { summary = "Admin - Change user type" }
 
         /**
-         * @tag Auth
-         * @description Admin: Deactivate a user account
+         * Admin - Deactivate a user account
+         *
          */
         put("/{userId}/deactivate") {
             val userId = call.requirePathParameter("userId")
@@ -202,11 +228,11 @@ fun Route.authAdminRoutes() {
             } else {
                 call.respond(HttpStatusCode.InternalServerError, MessageResponse("Failed to deactivate user"))
             }
-        }
+        }.describe { summary = "Admin - Deactivate a user account" }
 
         /**
-         * @tag Auth
-         * @description Admin: activate a user account
+         * Admin - activate a user account
+         *
          */
         put("/{userId}/activate") {
             val userId = call.requirePathParameter("userId")
@@ -215,6 +241,6 @@ fun Route.authAdminRoutes() {
             } else {
                 call.respond(HttpStatusCode.InternalServerError, MessageResponse("Failed to activate user"))
             }
-        }
+        }.describe { summary = "Admin - activate a user account" }
     }
 }

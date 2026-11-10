@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.payment
 
 import com.piashcse.model.request.PaymentRequest
@@ -11,6 +13,7 @@ import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 /**
@@ -21,34 +24,31 @@ fun Route.paymentRoutes() {
     customerOnlyAuth {
         writeRateLimit {
             /**
-             * @tag Payment
-             * @description Create a payment intent for an order. Status is server-owned.
+             * Create a payment intent for an order. Status is server-owned.
              */
             post {
                 val body = call.receive<PaymentRequest>()
                 val key = call.idempotencyKey(body.idempotencyKey)
                 call.respondCreated(paymentRepo.createPayment(body.copy(idempotencyKey = key), call.currentUserId))
-            }
+            }.describe { summary = "Create a payment intent for an order. Status is server-owned." }
         }
 
         /**
-         * @tag Payment
-         * @description Retrieve payment details by ID
+         * Retrieve payment details by ID
          */
         get("{id}") {
             val id = call.requirePathParameter("id")
             call.respondOk(paymentRepo.getPaymentById(id, call.currentUserId))
-        }
+        }.describe { summary = "Retrieve payment details by ID" }
 
         /**
-         * @tag Payment
-         * @description Retrieve all payments for a specific order
+         * Retrieve all payments for a specific order
          */
         get("order/{orderId}") {
             val orderId = call.requirePathParameter("orderId")
             val (limit, offset) = call.paginateQueryParams()
             call.respondOk(paymentRepo.getPaymentsByOrderId(orderId, call.currentUserId, limit, offset))
-        }
+        }.describe { summary = "Retrieve all payments for a specific order" }
     }
 }
 
@@ -60,12 +60,12 @@ fun Route.paymentAdminRoutes() {
     val paymentRepo: PaymentRepository by inject()
     adminWriteRateLimit {
         /**
-         * @tag Payment
-         * @description Admin: confirm a pending payment as completed
+         * Admin - confirm a pending payment as completed
+         *
          */
         post("{id}/confirm") {
             val id = call.requirePathParameter("id")
             call.respondOk(paymentRepo.confirmPayment(id, call.currentUserId))
-        }
+        }.describe { summary = "Admin - confirm a pending payment as completed" }
     }
 }

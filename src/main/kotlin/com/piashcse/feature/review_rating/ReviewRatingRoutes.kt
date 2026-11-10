@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.review_rating
 
 import com.piashcse.model.request.ReviewRatingRequest
@@ -10,6 +12,7 @@ import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 /**
@@ -18,30 +21,27 @@ import org.koin.ktor.ext.inject
 fun Route.reviewRatingRoutes() {
     val reviewRatingRepo: ReviewRatingRepository by inject()
     /**
-     * @tag Review-Rating
-     * @description Retrieve reviews and ratings for a specific product
+     * Retrieve reviews and ratings for a specific product
      */
     get {
         val productId = call.requireQueryParameter("productId")
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(reviewRatingRepo.getReviewRating(productId, limit, offset))
-    }
+    }.describe { summary = "Retrieve reviews and ratings for a specific product" }
 
     customerAuth {
         writeRateLimit {
             /**
-             * @tag Review-Rating
-             * @description Submit a new review and rating for a product
+             * Submit a new review and rating for a product
              */
             post {
                 val result = reviewRatingRepo.addReviewRating(call.currentUserId, call.receive<ReviewRatingRequest>())
                 CatalogCache.invalidate()
                 call.respondCreated(result)
-            }
+            }.describe { summary = "Submit a new review and rating for a product" }
 
             /**
-             * @tag Review-Rating
-             * @description Update an existing review and rating
+             * Update an existing review and rating
              */
             put("{id}") {
                 val id = call.requirePathParameter("id")
@@ -50,23 +50,25 @@ fun Route.reviewRatingRoutes() {
                 val result = reviewRatingRepo.updateReviewRating(call.currentUserId, id, review, rating.toInt())
                 CatalogCache.invalidate()
                 call.respondOk(result)
-            }
+            }.describe { summary = "Update an existing review and rating" }
 
             /**
-             * @tag Review-Rating
-             * @description Delete a review and rating
+             * Delete a review and rating
              */
             delete("{id}") {
                 val id = call.requirePathParameter("id")
                 reviewRatingRepo.deleteReviewRating(call.currentUserId, id)
                 CatalogCache.invalidate()
                 call.respondOk(com.piashcse.utils.common.MessageResponse("Review deleted successfully"))
-            }
+            }.describe { summary = "Delete a review and rating" }
 
             post("{id}/helpful") {
                 val id = call.requirePathParameter("id")
                 val helpful = call.request.queryParameters["helpful"]?.toBoolean() ?: true
                 call.respondOk(reviewRatingRepo.markHelpful(call.currentUserId, id, helpful))
+            }.describe {
+                summary = "Vote a review helpful"
+                description = "helpful=false removes the vote"
             }
         }
     }

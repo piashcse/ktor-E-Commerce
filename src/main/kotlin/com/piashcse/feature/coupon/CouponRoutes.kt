@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.coupon
 
 import com.piashcse.constants.Message
@@ -13,13 +15,13 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 fun Route.couponRoutes() {
     val couponRepo: CouponRepository by inject()
     /**
-     * @tag Coupon
-     * @description Retrieve detailed information about a coupon by its code
+     * Retrieve detailed information about a coupon by its code
      */
     get("{code}") {
         val code = call.requirePathParameter("code")
@@ -29,32 +31,32 @@ fun Route.couponRoutes() {
         } else {
             call.respond(HttpStatusCode.NotFound, ApiError(message = Message.Coupons.NOT_FOUND, code = "NOT_FOUND"))
         }
-    }
+    }.describe { summary = "Retrieve detailed information about a coupon by its code" }
 }
 
 fun Route.couponAdminRoutes() {
     val couponRepo: CouponRepository by inject()
     adminWriteRateLimit {
         /**
-         * @tag Coupon
-         * @description Admin: Create a new discount coupon
+         * Admin - Create a new discount coupon
+         *
          */
         post {
             call.respondCreated(couponRepo.createCoupon(call.receive<CouponRequest>(), call.currentUserId))
-        }
+        }.describe { summary = "Admin - Create a new discount coupon" }
 
         /**
-         * @tag Coupon
-         * @description Admin: Update an existing coupon
+         * Admin - Update an existing coupon
+         *
          */
         put("{id}") {
             val id = call.requirePathParameter("id")
             call.respondOk(couponRepo.updateCoupon(id, call.receive<CouponRequest>(), call.currentUserId))
-        }
+        }.describe { summary = "Admin - Update an existing coupon" }
 
         /**
-         * @tag Coupon
-         * @description Admin: Delete a coupon
+         * Admin - Delete a coupon
+         *
          */
         delete("{id}") {
             val id = call.requirePathParameter("id")
@@ -62,12 +64,12 @@ fun Route.couponAdminRoutes() {
                 throw NotFoundException(Message.Coupons.NOT_FOUND)
             }
             call.respondOk(com.piashcse.utils.common.MessageResponse("Coupon deleted successfully"))
-        }
+        }.describe { summary = "Admin - Delete a coupon" }
     }
 
     /**
-     * @tag Coupon
-     * @description Admin: Retrieve a list of all coupons
+     * Admin - Retrieve a list of all coupons
+     *
      */
     get {
         val (limit, offset) = call.paginateQueryParams(defaultPerPage = 10)
@@ -80,5 +82,5 @@ fun Route.couponAdminRoutes() {
                 active = active,
             ),
         )
-    }
+    }.describe { summary = "Admin - Retrieve a list of all coupons" }
 }

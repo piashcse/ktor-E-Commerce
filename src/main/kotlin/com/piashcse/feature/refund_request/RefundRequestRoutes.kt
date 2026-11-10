@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.refund_request
 
 import com.piashcse.config.DotEnvConfig
@@ -19,6 +21,7 @@ import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 import java.io.File
 
@@ -30,8 +33,7 @@ fun Route.refundRequestRoutes() {
     customerAuth {
         writeRateLimit {
             /**
-             * @tag Refund-Request
-             * @description Create a refund request for an order item
+             * Create a refund request for an order item
              */
             post("{orderId}") {
                 call.respondCreated(
@@ -41,24 +43,22 @@ fun Route.refundRequestRoutes() {
                         call.receive<RefundRequestRequest>(),
                     ),
                 )
-            }
+            }.describe { summary = "Create a refund request for an order item" }
 
             /**
-             * @tag Refund-Request
-             * @description Mark an approved refund as shipped
+             * Mark an approved refund as shipped
              */
             post("{id}/ship") {
                 call.respondOk(
                     refundRequestRepo.shipRefund(call.requirePathParameter("id"), call.receive<ShipRefundRequest>(), call.currentUserId),
                 )
-            }
+            }.describe { summary = "Mark an approved refund as shipped" }
         }
     }
 
     requireRole(UserType.CUSTOMER, UserType.SELLER, UserType.ADMIN, UserType.SUPER_ADMIN) {
         /**
-         * @tag Refund-Request
-         * @description Get private refund evidence for an authorized refund request
+         * Get private refund evidence for an authorized refund request
          */
         get("{id}/evidence/{fileName}") {
             val refundId = call.requirePathParameter("id")
@@ -81,11 +81,10 @@ fun Route.refundRequestRoutes() {
             }
             call.response.header(HttpHeaders.CacheControl, "private, no-store")
             call.respondFile(file)
-        }
+        }.describe { summary = "Get private refund evidence for an authorized refund request" }
 
         /**
-         * @tag Refund-Request
-         * @description Get refund requests for an order
+         * Get refund requests for an order
          */
         get("order/{orderId}") {
             val (limit, offset) = call.paginateQueryParams()
@@ -98,11 +97,10 @@ fun Route.refundRequestRoutes() {
                     offset,
                 ),
             )
-        }
+        }.describe { summary = "Get refund requests for an order" }
 
         /**
-         * @tag Refund-Request
-         * @description Get refund request details
+         * Get refund request details
          */
         get("{id}") {
             val refundRequest =
@@ -116,7 +114,7 @@ fun Route.refundRequestRoutes() {
             } else {
                 throw NotFoundException(Message.Refunds.NOT_FOUND)
             }
-        }
+        }.describe { summary = "Get refund request details" }
     }
 }
 
@@ -127,8 +125,8 @@ fun Route.refundSellerRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
     sellerWriteRateLimit {
         /**
-         * @tag Refund
-         * @description Seller: Update refund request status
+         * Seller - Update refund request status
+         *
          */
         put("{id}/status") {
             call.respondOk(
@@ -138,7 +136,7 @@ fun Route.refundSellerRoutes() {
                     call.currentUserId,
                 ),
             )
-        }
+        }.describe { summary = "Seller - Update refund request status" }
     }
 }
 
@@ -149,8 +147,8 @@ fun Route.refundAdminRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
     adminWriteRateLimit {
         /**
-         * @tag Refund
-         * @description Admin: Update refund status
+         * Admin - Update refund status
+         *
          */
         put("{id}/status") {
             call.respondOk(
@@ -160,17 +158,17 @@ fun Route.refundAdminRoutes() {
                     call.currentUserId,
                 ),
             )
-        }
+        }.describe { summary = "Admin - Update refund status" }
     }
 
     /**
-     * @tag Refund
-     * @description Admin: Get all refund requests for an order
+     * Admin - Get all refund requests for an order
+     *
      */
     get("order/{orderId}") {
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(
             refundRequestRepo.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, UserType.ADMIN, limit, offset),
         )
-    }
+    }.describe { summary = "Admin - Get all refund requests for an order" }
 }

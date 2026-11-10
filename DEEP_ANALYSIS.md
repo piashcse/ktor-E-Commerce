@@ -192,6 +192,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 16 | `fix/15-product-variants` | `fix/14-notification-templates` | Variants, options/values, variant-level price/SKU/stock, V28 |
 | 17 | `fix/16-recommendations` | `fix/15-product-variants` | Related, co-purchase, personalized and best-seller recommendations |
 | 18 | `refactor/17-conciseness-performance` | `fix/16-recommendations` | Detekt clean, decomposition of order/refund flows, bulk loaders, cache/query centralization |
+| 19 | `docs/18-swagger-docs` | `refactor/17-conciseness-performance` | Swagger tags/summaries/DTO schemas/bearer auth, missing docs pages, fresh-DB Flyway fix |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 
@@ -234,6 +235,49 @@ Scope: full `src/main` review for conciseness, reuse, centralization and query e
 
 ---
 
+## 11. Documentation & OpenAPI Pass
+
+**Swagger**
+- Verified the generated spec against a real Postgres instance (`/swagger/documentation.yaml`):
+  **178 paths / 206 operations / 0 missing summaries / 0 missing tags / 122 schemas /
+  69 request bodies / 35 tags**. All 203 feature routes plus 3 health probes are
+  documented; `/` and `/metrics` are intentionally hidden.
+- Tags are applied **once per route group** with the runtime `.describe { tag(...) }`
+  DSL in `ConfigureRouting`; every operation is grouped consistently
+  (Product, Cart, Order, RMA, KYC, Payout, Recommendation, Tax, FX, API Keys,
+  Feature Flags, Outbox, …).
+- Every feature route now has an explicit `.describe {}` block for operation
+  metadata (summary, params, request/response schemas). The ad-hoc `.docs`
+  helper and legacy `@tag`/`@description` KDoc were removed. KDoc keeps
+  human-readable prose and official `Description:` comment fields.
+- Follows Ktor's documented precedence: runtime annotations override comment
+  metadata, which overrides compiler/code inference.
+- Added `jwt-auth` and `api-key` bearer scheme descriptions; route-level security
+  is inferred from `authenticate`/`requireRole` selectors.
+- Added request/response schemas for auth, product/variant, cart, checkout,
+  order, RMA, KYC, notifications, inventory, warehouses, API keys, feature flags,
+  tax, FX and recommendations via `jsonBody`/`ok`/`created` helpers.
+- Swagger UI uses Ktor's documented default asset source (unpkg CDN); no extra
+  WebJar or custom asset route.
+- CSP is relaxed only for `/swagger*`: inline Swagger initializer/styles and
+  `https://unpkg.com`; all other routes keep `default-src 'self'`.
+- Libraries refreshed to current stable releases: Ktor 3.6.1, Kotlin 2.4.21,
+  Exposed 1.6.1, Flyway 13.12.1, PostgreSQL 42.7.14, Logback 1.6.6 and
+  Micrometer 1.17.2.
+
+**Docs**
+- Added `api-keys.md`, `feature-flags.md`, `tax.md`, `warehouse.md`, `outbox.md`,
+  `fx.md`; linked all in `mkdocs.yml`; `mkdocs build --strict` passes.
+- Updated the home page with variants, recommendations, RMA, KYC/payouts,
+  notifications and platform administration.
+- Added `OpenApiDocumentationTest` to guard info/version/tags/security/operations
+  and a static test enforcing `.describe` coverage plus no legacy `.docs`/`@tag`.
+- Fixed a fresh-database startup bug: `configureDatabase` called Flyway
+  `validate()` before `migrate()`, which always fails on an empty schema; the
+  migrate call already validates applied migrations.
+
+---
+
 ## 7. Remediation Order (executed)
 
 1. P0 security/money.
@@ -252,6 +296,7 @@ Scope: full `src/main` review for conciseness, reuse, centralization and query e
 | 2 | commerce | ✅ | ✅ |
 | 3 | contracts/outbox/cache | ✅ | ✅ |
 | 4 | migrations/config/CI/docs | ✅ | ✅ 299 tests (Postgres test runs in CI when DB_* is set) |
+| 5 | docs/OpenAPI | ✅ | ✅ 300+ tests; spec verified against real Postgres (206 operations, 0 missing summaries) |
 
 **Final verification:** `./gradlew build` passes on all branches (299 tests locally; the Postgres test runs against the CI `DB_*` service or Testcontainers).
 

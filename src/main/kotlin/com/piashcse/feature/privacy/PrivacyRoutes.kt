@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.privacy
 
 import com.piashcse.plugin.customerOnlyAuth
@@ -6,6 +8,7 @@ import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.receive
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 /** GDPR data-subject endpoints: full export and account erasure. */
@@ -13,21 +16,19 @@ fun Route.privacyRoutes() {
     val privacyService: PrivacyService by inject()
     customerOnlyAuth {
         /**
-         * @tag Privacy
-         * @description Export all personal data held for the authenticated user
+         * Export all personal data held for the authenticated user
          */
         get("export") {
             call.respondOk(privacyService.export(call.currentUserId))
-        }
+        }.describe { summary = "Export all personal data held for the authenticated user" }
 
         /**
-         * @tag Privacy
-         * @description Erase/anonymize the authenticated account (password required)
+         * Erase/anonymize the authenticated account (password required)
          */
         post("erase") {
             val body = call.receive<EraseAccountRequest>()
             privacyService.erase(call.currentUserId, body.password)
             call.respondOk(MessageResponse("Account erased and anonymized"))
-        }
+        }.describe { summary = "Erase/anonymize the authenticated account (password required)" }
     }
 }

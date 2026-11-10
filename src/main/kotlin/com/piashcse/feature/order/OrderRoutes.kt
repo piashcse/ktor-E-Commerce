@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 @file:Suppress("MatchingDeclarationName")
 
 package com.piashcse.feature.order
@@ -5,9 +7,12 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.CancelOrderRequest
+import com.piashcse.model.response.OrderResponse
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.generalRateLimit
+import com.piashcse.plugin.jsonBody
+import com.piashcse.plugin.ok
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.*
@@ -16,6 +21,7 @@ import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 import java.time.Instant
@@ -31,8 +37,7 @@ fun Route.orderRoutes() {
 
     generalRateLimit {
         /**
-         * @tag Order
-         * @description Public guest order tracking by order number + checkout email
+         * Public guest order tracking by order number + checkout email
          */
         get("track") {
             val orderNumber = call.requireQueryParameter("orderNumber")
@@ -41,23 +46,29 @@ fun Route.orderRoutes() {
                 orderRepo.getOrderForGuest(orderNumber, email)
                     ?: throw NotFoundException(Message.Orders.NOT_FOUND)
             call.respondOk(order)
+        }.describe {
+            summary = "Guest order tracking"
+            description = "Lookup by order number + checkout email"
+            parameters {
+                query("orderNumber") { required = true }
+                query("email") { required = true }
+            }
+            responses { ok<OrderResponse>("Order") }
         }
     }
 
     customerOnlyAuth {
         generalRateLimit {
             /**
-             * @tag Order
-             * @description Retrieve all orders for the authenticated customer
+             * Retrieve all orders for the authenticated customer
              */
             get {
                 val (limit, offset) = call.paginateQueryParams()
                 call.respondOk(orderRepo.getOrders(call.currentUserId, limit, offset))
-            }
+            }.describe { summary = "List my orders" }
 
             /**
-             * @tag Order
-             * @description Keyset-paginated order history (`cursor` + `limit`)
+             * Keyset-paginated order history (`cursor` + `limit`)
              */
             get("cursor") {
                 val (limit, _) = call.paginateQueryParams()
@@ -68,15 +79,15 @@ fun Route.orderRoutes() {
                         call.request.queryParameters["cursor"],
                     ),
                 )
-            }
+            }.describe { summary = "Cursor-paginated order history" }
         }
     }
 
     requireRole(UserType.CUSTOMER, UserType.SELLER) {
         writeRateLimit {
             /**
-             * @tag Order
-             * @description Update order status (Customer: CANCELED/RECEIVED, Seller: CONFIRMED/DELIVERED)
+             * Update order status (Customer - CANCELED/RECEIVED, Seller - CONFIRMED/DELIVERED)
+             *
              */
             patch("status/{id}") {
                 val id = call.requirePathParameter("id")
@@ -93,11 +104,16 @@ fun Route.orderRoutes() {
                 }
 
                 call.respondOk(orderRepo.updateOrderStatus(call.currentUserId, id, status))
+            }.describe {
+                summary = "Update order status"
+                description = "Customers: CANCELED/RECEIVED; sellers: CONFIRMED/SHIPPED/DELIVERED"
+                parameters { query("status") { required = true } }
+                responses { ok<OrderResponse>("Updated order") }
             }
 
             /**
-             * @tag Order
-             * @description Seller: mark a paid order as shipped with a tracking number
+             * Seller - mark a paid order as shipped with a tracking number
+             *
              */
             post("{id}/shipping") {
                 val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
@@ -106,11 +122,14 @@ fun Route.orderRoutes() {
                 }
                 val body = call.receive<ShipOrderRequest>()
                 call.respondOk(orderRepo.shipOrder(call.requirePathParameter("id"), call.currentUserId, body.trackingNumber))
+            }.describe {
+                summary = "Seller: mark order shipped"
+                requestBody { jsonBody<ShipOrderRequest>() }
+                responses { ok<OrderResponse>("Shipped order") }
             }
 
             /**
-             * @tag Order
-             * @description Cancel an order
+             * Cancel an order
              */
             post("{id}/cancel") {
                 call.respondOk(
@@ -121,6 +140,10 @@ fun Route.orderRoutes() {
                         call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
                     ),
                 )
+            }.describe {
+                summary = "Cancel order"
+                requestBody { jsonBody<CancelOrderRequest>() }
+                responses { ok<OrderResponse>("Cancelled order") }
             }
         }
     }
@@ -132,14 +155,17 @@ fun Route.orderRoutes() {
 fun Route.orderSellerRoutes() {
     val orderRepo: OrderRepository by inject()
     /**
-     * @tag Order
-     * @description Seller: Retrieve orders for the seller's shop
+     * Seller - Retrieve orders for the seller's shop
+     *
      */
     generalRateLimit {
         get {
             val (limit, offset) = call.paginateQueryParams()
             val status = call.request.queryParameters["status"]
             call.respondOk(orderRepo.getSellerOrders(call.currentUserId, limit, offset, status))
+        }.describe {
+            summary = "Seller: list orders"
+            description = "Optional status filter"
         }
     }
 }
@@ -151,27 +177,27 @@ fun Route.orderAdminRoutes() {
     val orderRepo: OrderRepository by inject()
     adminWriteRateLimit {
         /**
-         * @tag Order
-         * @description Admin: Update the status of any order
+         * Admin - Update the status of any order
+         *
          */
         patch("status/{id}") {
             val id = call.requirePathParameter("id")
             val status = call.requireQueryParameter("status").parseEnum<OrderStatus>("status")
             call.respondOk(orderRepo.updateOrderStatus(call.currentUserId, id, status))
-        }
+        }.describe { summary = "Admin - Update the status of any order" }
 
         /**
-         * @tag Order
-         * @description Admin: Mark a paid order as shipped
+         * Admin - Mark a paid order as shipped
+         *
          */
         post("{id}/shipping") {
             val body = call.receive<ShipOrderRequest>()
             call.respondOk(orderRepo.shipOrder(call.requirePathParameter("id"), call.currentUserId, body.trackingNumber))
-        }
+        }.describe { summary = "Admin - Mark a paid order as shipped" }
 
         /**
-         * @tag Order
-         * @description Admin: Cancel any order
+         * Admin - Cancel any order
+         *
          */
         post("{id}/cancel") {
             call.respondOk(
@@ -182,12 +208,12 @@ fun Route.orderAdminRoutes() {
                     UserType.ADMIN,
                 ),
             )
-        }
+        }.describe { summary = "Admin - Cancel any order" }
     }
 
     /**
-     * @tag Order
-     * @description Admin: Retrieve all orders with advanced filtering
+     * Admin - Retrieve all orders with advanced filtering
+     *
      */
     generalRateLimit {
         get {
@@ -203,6 +229,9 @@ fun Route.orderAdminRoutes() {
                 }
 
             call.respondOk(orderRepo.getAdminOrders(limit, offset, status, startDate, endDate))
+        }.describe {
+            summary = "Admin: list orders"
+            description = "Status and date-range filters"
         }
     }
 }

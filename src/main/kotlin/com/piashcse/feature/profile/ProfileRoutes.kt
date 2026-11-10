@@ -1,3 +1,5 @@
+@file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
+
 package com.piashcse.feature.profile
 
 import com.piashcse.constants.Message
@@ -11,6 +13,7 @@ import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
+import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
 
 /**
@@ -20,17 +23,15 @@ fun Route.profileRoutes() {
     val userProfileService: ProfileService by inject()
     customerOnlyAuth {
         /**
-         * @tag Profile
-         * @description Retrieve the authenticated user's profile information
+         * Retrieve the authenticated user's profile information
          */
         get {
             call.respondOk(userProfileService.getProfile(call.currentUserId))
-        }
+        }.describe { summary = "Retrieve the authenticated user's profile information" }
 
         writeRateLimit {
             /**
-             * @tag Profile
-             * @description Update the authenticated user's profile information
+             * Update the authenticated user's profile information
              */
             put {
                 val params =
@@ -48,11 +49,10 @@ fun Route.profileRoutes() {
                         gender = call.parameters["gender"],
                     )
                 call.respondOk(userProfileService.updateProfile(call.currentUserId, params))
-            }
+            }.describe { summary = "Update the authenticated user's profile information" }
 
             /**
-             * @tag Profile
-             * @description Upload a profile image
+             * Upload a profile image
              */
             post("image-upload") {
                 val multipart = call.receiveMultipart()
@@ -70,7 +70,7 @@ fun Route.profileRoutes() {
                 }
 
                 call.respondOk(imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED))
-            }
+            }.describe { summary = "Upload a profile image" }
         }
     }
 }

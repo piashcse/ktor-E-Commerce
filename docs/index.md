@@ -34,7 +34,9 @@ Access interactive API documentation at the root `/` or `/swagger` endpoint when
 
 - **Product Listings**: Create, update, and delete product listings.
 - **Categories**: Organize products into categories and brands for easy navigation.
-- **Inventory Control**: Keep track of product availability and stock levels.
+- **Variants & Options**: SKU/price/image per variant (Size, Color) with variant-level stock.
+- **Recommendations**: Related products, frequently-bought-together and personalized feeds.
+- **Inventory Control**: Multi-warehouse, variant-level stock with low-stock alerts.
 
 ### 4. Shopping Cart and Checkout
 
@@ -67,13 +69,29 @@ Access interactive API documentation at the root `/` or `/swagger` endpoint when
 - **Refund Approval**: Sellers and admins can approve, reject, or process refunds.
 - **Return Shipping**: Track return shipments with tracking numbers.
 - **Refund Lifecycle**: Complete refund tracking from request to resolution.
+- **RMA / Exchanges**: Return or exchange delivered items with replacement-order linkage.
 
-### 6. Scalability and Performance
+### 8. Seller Operations
+
+- **KYC**: Business/bank verification gates payouts.
+- **Payouts**: Balance, request lifecycle, statements and CSV exports.
+- **Warehouses**: Split stock across physical locations.
+- **Notifications**: In-app inbox plus email/SMS/push providers with per-event preferences.
+- **Tax & FX**: Country/category tax rules and stored FX rates.
+
+### 9. Platform Administration
+
+- **RBAC & API Keys**: Granular permissions and scoped self-service keys.
+- **Feature Flags**: Runtime switches such as guest checkout.
+- **Outbox & DLQ**: Durable domain events with admin replay.
+- **Audit Log**: Immutable admin action trail.
+
+### 10. Scalability and Performance
 
 - **Asynchronous Processing**: Leverage Ktor's async capabilities for high performance.
 - **Load Balancing**: Easily scale your application to accommodate increased traffic.
 
-### 7. Security
+### 11. Security
 
 - **JWT Tokens**: Implement JSON Web Tokens for secure authentication.
 - **Refresh Tokens**: Secure token refresh with hashed storage and automatic revocation.
@@ -85,7 +103,7 @@ Access interactive API documentation at the root `/` or `/swagger` endpoint when
 - **Health Checks**: Comprehensive health monitoring with `/health`, `/health/live`, and `/health/ready` endpoints.
 - **Structured Logging**: Production-ready JSON logging with correlation IDs (Request IDs) for easier debugging and log aggregation.
 
-### 8. Dashboard Analytics
+### 12. Dashboard Analytics
 
 - **Summary Statistics**: Quick overview of revenue, orders, users, products, and shops.
 - **Revenue Analytics**: Detailed revenue breakdown with daily trends and average order value.
@@ -94,7 +112,7 @@ Access interactive API documentation at the root `/` or `/swagger` endpoint when
 - **Top Products**: Best-selling products ranked by sales volume and revenue.
 - **Activity Feed**: Recent platform activity including orders and user registrations.
 
-### 9. Audit Logging
+### 13. Audit Logging
 
 - **Action Tracking**: Records every admin action with actor identity, action type, and target resource.
 - **Rich Context**: Captures actor email, role, IP address, user agent, and outcome.

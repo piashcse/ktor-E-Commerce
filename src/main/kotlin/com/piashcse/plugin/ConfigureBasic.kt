@@ -94,7 +94,17 @@ fun Application.configureBasic() {
                 call.response.headers.append("Referrer-Policy", "no-referrer", safeOnly = false)
                 call.response.headers.append("Permissions-Policy", "camera=(), microphone=(), geolocation=()", safeOnly = false)
                 call.response.headers.append("Strict-Transport-Security", "max-age=31536000; includeSubDomains", safeOnly = false)
-                call.response.headers.append("Content-Security-Policy", "default-src 'self'; frame-ancestors 'none'", safeOnly = false)
+                // Swagger UI ships an inline initializer script and inline styles.
+                val isSwagger = call.request.path().startsWith("/swagger")
+                val csp =
+                    if (isSwagger) {
+                        "default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; " +
+                            "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
+                            "img-src 'self' data: https://unpkg.com; frame-ancestors 'none'"
+                    } else {
+                        "default-src 'self'; frame-ancestors 'none'"
+                    }
+                call.response.headers.append("Content-Security-Policy", csp, safeOnly = false)
                 call.response.headers.append("Cross-Origin-Resource-Policy", "same-origin", safeOnly = false)
                 call.response.headers.append("Cross-Origin-Opener-Policy", "same-origin", safeOnly = false)
             }
