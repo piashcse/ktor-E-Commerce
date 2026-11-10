@@ -160,7 +160,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 - [x] **E-6. Seller KYC, commission tiers, statements, tax exports.**
 - [x] **E-7. RMA/return portal, exchanges, partial refunds by quantity.**
 - [x] **E-8. Guest checkout, saved payment methods, order tracking page.**
-- [ ] **E-9. Notification templates, email/SMS/push providers, preferences.**
+- [x] **E-9. Notification templates, email/SMS/push providers, preferences.**
 - [x] **E-10. GDPR export/erasure, consent history UI, audit export.**
 - [x] **E-11. Admin RBAC granular permissions, feature flags, API keys.**
 - [x] **E-12. Cursor pagination, read replicas, query plan/index review.**
@@ -188,6 +188,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 12 | `fix/11-multi-warehouse` | `fix/10-guest-checkout` | Warehouses, per-warehouse stock, cross-warehouse allocation, V24 |
 | 13 | `fix/12-rma-returns` | `fix/11-multi-warehouse` | RMA returns/exchanges, refund handoff, replacement-order linkage, V25 |
 | 14 | `fix/13-seller-kyc-statements` | `fix/12-rma-returns` | Seller KYC lifecycle, payout gating, statements/CSV export, V26 |
+| 15 | `fix/14-notification-templates` | `fix/13-seller-kyc-statements` | Templates, in-app/email/SMS/push dispatch, per-event preferences, RMA events, V27 |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 

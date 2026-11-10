@@ -1,8 +1,6 @@
 package com.piashcse.event.subscriber
 
 import com.piashcse.database.entities.AuditLogDAO
-import com.piashcse.database.entities.NotificationDAO
-import com.piashcse.database.entities.NotificationTable
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerPayoutDAO
@@ -15,102 +13,110 @@ import com.piashcse.event.DomainEvent
 import com.piashcse.event.OrderPlacedEvent
 import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.event.RefundStatusChangedEvent
+import com.piashcse.event.RmaStatusChangedEvent
 import com.piashcse.event.SendEmailEvent
 import com.piashcse.event.Subscriber
 import com.piashcse.event.UserRegisteredEvent
+import com.piashcse.feature.notification.NotificationDispatcher
+import com.piashcse.feature.notification.NotificationMessage
+import com.piashcse.feature.notification.NotificationTemplates
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
-import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.slf4j.LoggerFactory
 
 /** Writes in-app notifications + seller payout rows. Notification writes are non-fatal;
  * payout capture failures are audit-logged and propagated (EventBus retries + dead-letters). */
-class NotificationSubscriber : Subscriber {
+class NotificationSubscriber(
+    private val dispatcher: NotificationDispatcher = NotificationDispatcher(),
+) : Subscriber {
     private val log = LoggerFactory.getLogger(NotificationSubscriber::class.java)
 
-    private fun notify(
-        userId: String,
-        type: String,
-        title: String,
-        body: String,
-        resourceType: String,
-        resourceId: String,
-    ) {
-        val preferredChannel =
-            NotificationDAO.find {
-                (NotificationTable.userId eq userId.entityID(UserTable)) and
-                    (NotificationTable.type eq "NOTIFICATION_PREFS")
-            }.orderBy(NotificationTable.createdAt to SortOrder.DESC).firstOrNull()?.channel ?: "IN_APP"
-        NotificationDAO.new {
-            this.userId = userId.entityID(UserTable)
-            channel = preferredChannel
-            this.type = type
-            this.title = title
-            this.body = body
-            this.resourceType = resourceType
-            this.resourceId = resourceId
+    private fun messageFor(event: DomainEvent): NotificationMessage? =
+        when (event) {
+            is OrderPlacedEvent -> {
+                val content = NotificationTemplates.orderPlaced(event.orderNumber, Money.str(event.total))
+                NotificationMessage(
+                    userId = event.userId,
+                    email = event.email,
+                    eventType = "ORDER_PLACED",
+                    title = content.title,
+                    body = content.body,
+                    resourceType = "ORDER",
+                    resourceId = event.orderId,
+                )
+            }
+            is PaymentCompletedEvent -> {
+                val content = NotificationTemplates.paymentCompleted(Money.str(event.amount), event.orderId)
+                NotificationMessage(
+                    userId = event.userId,
+                    email = event.email,
+                    eventType = "PAYMENT_COMPLETED",
+                    title = content.title,
+                    body = content.body,
+                    resourceType = "PAYMENT",
+                    resourceId = event.paymentId,
+                )
+            }
+            is RefundStatusChangedEvent -> {
+                val content =
+                    NotificationTemplates.refundStatusChanged(event.refundId, event.fromStatus, event.toStatus)
+                NotificationMessage(
+                    userId = event.userId,
+                    email = event.email,
+                    eventType = "REFUND_${event.toStatus}",
+                    title = content.title,
+                    body = content.body,
+                    resourceType = "REFUND",
+                    resourceId = event.refundId,
+                )
+            }
+            is RmaStatusChangedEvent -> {
+                val content = NotificationTemplates.rmaStatusChanged(event.rmaId, event.fromStatus, event.toStatus)
+                NotificationMessage(
+                    userId = event.userId,
+                    email = event.email,
+                    eventType = "RMA_${event.toStatus}",
+                    title = content.title,
+                    body = content.body,
+                    resourceType = "RMA",
+                    resourceId = event.rmaId,
+                )
+            }
+            is UserRegisteredEvent -> {
+                val content = NotificationTemplates.welcome(event.userType)
+                NotificationMessage(
+                    userId = event.userId,
+                    email = event.email,
+                    eventType = "USER_REGISTERED",
+                    title = content.title,
+                    body = content.body,
+                    resourceType = "USER",
+                    resourceId = event.userId,
+                )
+            }
+            is SendEmailEvent, is AdminActionEvent -> null
         }
-    }
 
     override suspend fun onEvent(event: DomainEvent) {
         // Payout capture must propagate (see captureSellerPayout), so it runs outside
         // the non-fatal notification try/catch below.
         if (event is PaymentCompletedEvent) {
             try {
-                query {
-                    notify(
-                        event.userId,
-                        "PAYMENT_COMPLETED",
-                        "Payment received",
-                        "Amount ${Money.str(event.amount)} for order ${event.orderId}",
-                        "PAYMENT",
-                        event.paymentId,
-                    )
-                    Unit
-                }
+                dispatcher.dispatch(messageFor(event) ?: return)
             } catch (e: Exception) {
-                log.error("Notification write failed for ${event::class.simpleName}", e)
+                log.error("Notification dispatch failed for ${event::class.simpleName}", e)
             }
             captureSellerPayout(event)
             return
         }
+        val message = messageFor(event) ?: return
         try {
-            when (event) {
-                is OrderPlacedEvent ->
-                    query {
-                        notify(
-                            event.userId,
-                            "ORDER_PLACED",
-                            "Order ${event.orderNumber} placed",
-                            "Total ${Money.str(event.total)}",
-                            "ORDER",
-                            event.orderId,
-                        )
-                        Unit
-                    }
-                is RefundStatusChangedEvent ->
-                    query {
-                        notify(
-                            event.userId,
-                            "REFUND_${event.toStatus}",
-                            "Refund ${event.toStatus.lowercase()}",
-                            "Refund ${event.refundId}: ${event.fromStatus} -> ${event.toStatus}",
-                            "REFUND",
-                            event.refundId,
-                        )
-                        Unit
-                    }
-                is PaymentCompletedEvent,
-                is UserRegisteredEvent,
-                is SendEmailEvent,
-                is AdminActionEvent,
-                -> Unit
-            }
+            dispatcher.dispatch(message)
         } catch (e: Exception) {
-            log.error("Notification write failed for ${event::class.simpleName}", e)
+            log.error("Notification dispatch failed for ${event::class.simpleName}", e)
         }
     }
 

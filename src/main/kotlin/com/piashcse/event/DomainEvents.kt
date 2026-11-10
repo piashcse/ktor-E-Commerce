@@ -53,6 +53,18 @@ data class SendEmailEvent(
 ) : DomainEvent()
 
 @Serializable
+data class RmaStatusChangedEvent(
+    val rmaId: String,
+    val orderId: String,
+    val userId: String,
+    val email: String,
+    val fromStatus: String,
+    val toStatus: String,
+    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val requestId: String? = null,
+) : DomainEvent()
+
+@Serializable
 data class AdminActionEvent(
     val actorId: String,
     val actorEmail: String,

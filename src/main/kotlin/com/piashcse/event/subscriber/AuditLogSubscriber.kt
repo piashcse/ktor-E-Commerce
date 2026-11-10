@@ -65,6 +65,16 @@ class AuditLogSubscriber(
                         resourceId = event.refundId,
                         details = "Refund for order ${event.orderId}: ${event.fromStatus} -> ${event.toStatus}",
                     )
+                is RmaStatusChangedEvent ->
+                    auditLogRepository.log(
+                        actorId = event.userId,
+                        actorEmail = event.email,
+                        actorRole = "CUSTOMER",
+                        action = "RMA_${event.toStatus}",
+                        resourceType = "RMA",
+                        resourceId = event.rmaId,
+                        details = "RMA for order ${event.orderId}: ${event.fromStatus} -> ${event.toStatus}",
+                    )
                 is SendEmailEvent -> Unit
             }
         } catch (e: Exception) {
