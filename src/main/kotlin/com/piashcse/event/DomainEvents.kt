@@ -38,6 +38,14 @@ data class OrderStatusChangedEvent(
 ) : DomainEvent()
 
 @Serializable
+data class BackInStockEvent(
+    val productId: String,
+    val variantId: String? = null,
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
+    override val requestId: String? = null,
+) : DomainEvent()
+
+@Serializable
 data class UserRegisteredEvent(
     val userId: String,
     val email: String,

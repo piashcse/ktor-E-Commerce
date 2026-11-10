@@ -3,6 +3,8 @@ package com.piashcse.feature.inventory
 import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
+import com.piashcse.event.BackInStockEvent
+import com.piashcse.event.OutboxPublisher
 import com.piashcse.mapper.toInventoryResponse
 import com.piashcse.model.request.InventoryRequest
 import com.piashcse.model.response.InventoryResponse
@@ -74,6 +76,17 @@ class InventoryRepositoryImpl : InventoryRepository {
             }
     }
 
+    private fun enqueueBackInStock(
+        productId: String,
+        variantId: String?,
+        previousStock: Int,
+        newStock: Int,
+    ) {
+        if (previousStock <= 0 && newStock > 0) {
+            OutboxPublisher.enqueueTx("PRODUCT", productId, BackInStockEvent(productId, variantId))
+        }
+    }
+
     override suspend fun createOrUpdateInventory(
         inventoryRequest: InventoryRequest,
         actorUserId: String,
@@ -110,6 +123,7 @@ class InventoryRepositoryImpl : InventoryRepository {
                         variantOp(inventoryRequest.variantId)
                 }.firstOrNull()
 
+            val previousStock = existing?.stockQuantity ?: 0
             val inventory =
                 existing?.apply {
                     stockQuantity = inventoryRequest.stockQuantity
@@ -126,6 +140,7 @@ class InventoryRepositoryImpl : InventoryRepository {
                     maximumStockLevel = inventoryRequest.maximumStockLevel ?: DEFAULT_MAX_STOCK
                     status = InventoryStatus.fromStockLevel(inventoryRequest.stockQuantity, minimumStockLevel)
                 }
+            enqueueBackInStock(product.id.value, inventoryRequest.variantId, previousStock, inventory.stockQuantity)
             inventory.toInventoryResponse()
         }
 
@@ -192,8 +207,10 @@ class InventoryRepositoryImpl : InventoryRepository {
                 throw ValidationException("Stock cannot exceed the maximum level ${inventory.maximumStockLevel}")
             }
 
+            val previousStock = inventory.stockQuantity
             inventory.stockQuantity = newStock
             inventory.status = InventoryStatus.fromStockLevel(newStock, inventory.minimumStockLevel)
+            enqueueBackInStock(product.id.value, inventory.variantId?.value, previousStock, newStock)
             inventory.toInventoryResponse()
         }
 

@@ -76,6 +76,13 @@ class NotificationTemplatesTest {
         assertEquals("TRACK-1", decoded.trackingNumber)
     }
 
+    @Test
+    fun `back-in-stock template names the product`() {
+        val content = NotificationTemplates.backInStock("Phone")
+        assertEquals("Phone is back in stock", content.title)
+        assertTrue(content.body.contains("Phone"))
+    }
+
     private fun encode(event: RmaStatusChangedEvent): String {
         val json =
             kotlinx.serialization.json.Json {

@@ -12,7 +12,7 @@ Notifications are rendered from centralized templates and delivered through a ch
 | `PUSH` | Inert until a push provider is configured; skipped events are logged |
 
 Domain events currently dispatched: `ORDER_PLACED`, `ORDER_<STATUS>` (shipped/delivered/canceled),
-`PAYMENT_COMPLETED`, `REFUND_<STATUS>`, `RMA_<STATUS>`, `USER_REGISTERED`.
+`PAYMENT_COMPLETED`, `BACK_IN_STOCK`, `REFUND_<STATUS>`, `RMA_<STATUS>`, `USER_REGISTERED`.
 
 ## Global channel preference
 

@@ -54,4 +54,7 @@ object NotificationTemplates {
             }
         return Content(title, body)
     }
+
+    fun backInStock(productName: String) =
+        Content("$productName is back in stock", "$productName is available again. Order it before it sells out.")
 }
