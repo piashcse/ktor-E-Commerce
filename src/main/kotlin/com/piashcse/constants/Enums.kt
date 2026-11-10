@@ -31,6 +31,14 @@ enum class RefundMethod {
 }
 
 @Serializable
+enum class KycStatus {
+    NOT_SUBMITTED,
+    PENDING,
+    VERIFIED,
+    REJECTED,
+}
+
+@Serializable
 enum class RmaType {
     RETURN,
     EXCHANGE,

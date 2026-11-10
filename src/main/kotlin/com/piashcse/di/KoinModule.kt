@@ -19,6 +19,7 @@ import com.piashcse.feature.dashboard.DashboardRepository
 import com.piashcse.feature.dashboard.DashboardRepositoryImpl
 import com.piashcse.feature.inventory.InventoryRepository
 import com.piashcse.feature.inventory.InventoryRepositoryImpl
+import com.piashcse.feature.kyc.KycService
 import com.piashcse.feature.notification.NotificationRepository
 import com.piashcse.feature.notification.NotificationRepositoryImpl
 import com.piashcse.feature.order.OrderRepository
@@ -98,6 +99,7 @@ val serviceModule =
         single { ApiKeyService() }
         single { GuestCheckoutService(get()) }
         single { RmaService() }
+        single { KycService() }
 
         // Split auth services
         single { UserAuthenticationService(get()) }

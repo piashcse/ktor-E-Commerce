@@ -19,6 +19,8 @@ import com.piashcse.feature.featureflag.featureFlagRoutes
 import com.piashcse.feature.fx.fxAdminRoutes
 import com.piashcse.feature.inventory.inventoryAdminRoutes
 import com.piashcse.feature.inventory.inventorySellerRoutes
+import com.piashcse.feature.kyc.adminKycRoutes
+import com.piashcse.feature.kyc.sellerKycRoutes
 import com.piashcse.feature.notification.notificationRoutes
 import com.piashcse.feature.order.orderAdminRoutes
 import com.piashcse.feature.order.orderRoutes
@@ -155,6 +157,7 @@ private fun Route.sellerRoutes() {
             route("products") { productSellerRoutes() }
             route("inventories") { inventorySellerRoutes() }
             route("warehouses") { warehouseSellerRoutes() }
+            route("kyc") { sellerKycRoutes() }
             route("orders") { orderSellerRoutes() }
             route("refund-requests") { refundSellerRoutes() }
             route("rma-requests") { rmaSellerRoutes() }
@@ -173,6 +176,7 @@ private fun Route.adminRoutes() {
             route("product-subcategories") { productSubCategoryAdminRoutes() }
             route("shop-categories") { shopCategoryAdminRoutes() }
             route("shops") { shopAdminRoutes() }
+            route("sellers") { adminKycRoutes() }
             route("products") { productAdminRoutes() }
             route("inventories") { inventoryAdminRoutes() }
             route("orders") { orderAdminRoutes() }

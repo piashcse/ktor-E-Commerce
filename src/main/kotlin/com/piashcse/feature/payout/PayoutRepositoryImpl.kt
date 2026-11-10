@@ -1,6 +1,10 @@
 package com.piashcse.feature.payout
 
+import com.piashcse.constants.KycStatus
+import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.ShopStatus
+import com.piashcse.database.entities.OrderDAO
+import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PayoutRequestDAO
 import com.piashcse.database.entities.PayoutRequestTable
 import com.piashcse.database.entities.SellerDAO
@@ -12,6 +16,7 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
+import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
@@ -25,8 +30,10 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNull
+import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -59,6 +66,9 @@ class PayoutRepositoryImpl : PayoutRepository {
         val user = UserDAO.findById(sellerUserId)
         if (user?.isActive != true) throw ForbiddenException("Seller account is inactive")
         if (seller.status != ShopStatus.APPROVED) throw ForbiddenException("Seller is not approved for payouts")
+        if (seller.kycStatus != KycStatus.VERIFIED) {
+            throw ForbiddenException("Seller KYC must be verified before payouts")
+        }
         return seller
     }
 
@@ -81,6 +91,64 @@ class PayoutRepositoryImpl : PayoutRepository {
                 available = availableRows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }.toPlainString(),
                 currency = availableRows.firstOrNull()?.currency ?: pendingRows.firstOrNull()?.currency ?: "USD",
                 pendingRequestAmount = pendingRows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }.toPlainString(),
+            )
+        }
+
+    override suspend fun statement(
+        sellerUserId: String,
+        from: String?,
+        to: String?,
+    ): SellerStatementResponse =
+        query {
+            val seller = requireActiveSeller(sellerUserId)
+            val fromDate = from?.takeIf { it.isNotBlank() }?.let { java.time.LocalDate.parse(it) }
+            val toDate = to?.takeIf { it.isNotBlank() }?.let { java.time.LocalDate.parse(it) }
+            if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
+                throw ValidationException("from must be before to")
+            }
+            val base = SellerPayoutTable.selectAll().andWhere { SellerPayoutTable.sellerId eq seller.id }
+            fromDate?.let { base.andWhere { SellerPayoutTable.createdAt greaterEq it.atStartOfDay() } }
+            toDate?.let { base.andWhere { SellerPayoutTable.createdAt lessEq it.atTime(java.time.LocalTime.MAX) } }
+            val payouts =
+                base.orderBy(SellerPayoutTable.createdAt to SortOrder.ASC)
+                    .toList()
+                    .map { SellerPayoutDAO.wrapRow(it) }
+
+            val tax =
+                OrderDAO.find {
+                    (OrderTable.shopId eq seller.shopId) and (OrderTable.status neq OrderStatus.CANCELED)
+                }.fold(BigDecimal.ZERO) { acc, order ->
+                    acc.add(order.taxAmount)
+                }
+
+            fun sum(statuses: Set<String>) =
+                payouts.filter { it.status in statuses }.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }
+
+            SellerStatementResponse(
+                from = fromDate?.toString(),
+                to = toDate?.toString(),
+                currency = payouts.firstOrNull()?.currency ?: "USD",
+                grossSales = Money.str(payouts.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.subTotal) }),
+                commission = Money.str(payouts.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.commissionAmount) }),
+                netPayout = Money.str(payouts.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }),
+                paid = Money.str(sum(setOf("PAID"))),
+                pending = Money.str(sum(setOf("PENDING", "REQUESTED", "APPROVED"))),
+                available = Money.str(sum(setOf("PENDING"))),
+                taxCollected = Money.str(tax),
+                rowCount = payouts.size,
+                rows =
+                    payouts.map {
+                        SellerStatementRow(
+                            payoutId = it.id.value,
+                            orderId = it.orderId.value,
+                            subTotal = Money.str(it.subTotal),
+                            commissionAmount = Money.str(it.commissionAmount),
+                            payoutAmount = Money.str(it.payoutAmount),
+                            currency = it.currency,
+                            status = it.status,
+                            createdAt = it.createdAt.toUtcString(),
+                        )
+                    },
             )
         }
 
