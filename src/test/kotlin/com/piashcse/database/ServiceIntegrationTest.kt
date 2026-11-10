@@ -22,8 +22,11 @@ import com.piashcse.feature.kyc.SellerKycSubmitRequest
 import com.piashcse.feature.notification.NotificationPreferencesService
 import com.piashcse.feature.outbox.OutboxService
 import com.piashcse.feature.shipping_method.ShippingMethodRepositoryImpl
+import com.piashcse.feature.tax.TaxClassRequest
+import com.piashcse.feature.tax.TaxExemptionRequest
 import com.piashcse.feature.tax.TaxRuleRequest
 import com.piashcse.feature.tax.TaxService
+import com.piashcse.feature.tax.TaxZoneRequest
 import com.piashcse.feature.warehouse.WarehouseRepository
 import com.piashcse.feature.warehouse.WarehouseRequest
 import com.piashcse.model.request.ShippingMethodRequest
@@ -165,10 +168,62 @@ class ServiceIntegrationTest {
 
         // Tax rules
         val tax = TaxService()
-        val taxRule = kotlinx.coroutines.runBlocking { tax.upsert(TaxRuleRequest("BD", null, BigDecimal("0.05"), true)) }
+        val taxRule =
+            kotlinx.coroutines.runBlocking {
+                tax.upsert(
+                    TaxRuleRequest(country = "BD", rate = BigDecimal("0.05"), isActive = true),
+                )
+            }
         assertEquals("0.05", taxRule.rate)
-        assertEquals(0, transaction { tax.resolve("BD", null) }.compareTo(BigDecimal("0.05")))
+        assertEquals(0, transaction { tax.resolve("BD", null, null, null).rate }.compareTo(BigDecimal("0.05")))
         assertTrue(kotlinx.coroutines.runBlocking { tax.list() }.any { it.id == taxRule.id })
+
+        // Zones, tax classes, inclusive rules and exemptions.
+        val zone =
+            kotlinx.coroutines.runBlocking {
+                tax.createZone(TaxZoneRequest("Dhaka", "BD", "Dhaka", isNexus = true, priority = 10))
+            }
+        val taxClass =
+            kotlinx.coroutines.runBlocking {
+                tax.createClass(TaxClassRequest("Reduced", "REDUCED", BigDecimal("0.10"), isInclusive = true))
+            }
+        val zoneRule =
+            kotlinx.coroutines.runBlocking {
+                tax.upsert(
+                    TaxRuleRequest(
+                        country = "BD",
+                        zoneId = zone.id,
+                        taxClassId = taxClass.id,
+                        rate = BigDecimal("0.15"),
+                        isInclusive = true,
+                        priority = 5,
+                    ),
+                )
+            }
+        assertEquals("0.15", zoneRule.rate)
+        assertEquals(
+            0,
+            transaction { tax.resolve("BD", "Dhaka", null, taxClass.id).rate }
+                .compareTo(BigDecimal("0.15")),
+        )
+        assertTrue(transaction { tax.resolve("BD", "Dhaka", null, taxClass.id).inclusive })
+        kotlinx.coroutines.runBlocking { tax.assignProductTaxClass(productId, taxClass.id) }
+        assertEquals(taxClass.id, transaction { ProductDAO.findById(productId)?.taxClassId?.value })
+
+        val exemption =
+            kotlinx.coroutines.runBlocking {
+                tax.createExemption(
+                    TaxExemptionRequest(userId = customerId, reason = "B2B reseller certificate"),
+                )
+            }
+        assertTrue(
+            transaction { tax.resolve("BD", "Dhaka", null, taxClass.id, customerId, null).exempt },
+        )
+        kotlinx.coroutines.runBlocking { tax.deleteExemption(exemption.id) }
+        kotlinx.coroutines.runBlocking { tax.assignProductTaxClass(productId, null) }
+        kotlinx.coroutines.runBlocking { tax.delete(zoneRule.id) }
+        kotlinx.coroutines.runBlocking { tax.deleteClass(taxClass.id) }
+        kotlinx.coroutines.runBlocking { tax.deleteZone(zone.id) }
         assertTrue(kotlinx.coroutines.runBlocking { tax.delete(taxRule.id) })
 
         // FX rates

@@ -36,4 +36,6 @@ data class OrderResponse(
     val createdAt: @Contextual LocalDateTime? = null,
     val updatedAt: @Contextual LocalDateTime? = null,
     val items: List<OrderItemResponse>? = null,
+    val businessTaxId: String? = null,
+    val taxExempt: Boolean = false,
 )

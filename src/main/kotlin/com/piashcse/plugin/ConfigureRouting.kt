@@ -63,7 +63,11 @@ import com.piashcse.feature.shop.shopSellerRoutesV1
 import com.piashcse.feature.shop_category.shopCategoryAdminRoutes
 import com.piashcse.feature.shop_category.shopCategoryRoutes
 import com.piashcse.feature.stockalert.stockAlertRoutes
+import com.piashcse.feature.tax.productTaxClassAdminRoutes
 import com.piashcse.feature.tax.taxAdminRoutes
+import com.piashcse.feature.tax.taxClassAdminRoutes
+import com.piashcse.feature.tax.taxExemptionAdminRoutes
+import com.piashcse.feature.tax.taxZoneAdminRoutes
 import com.piashcse.feature.warehouse.warehouseSellerRoutes
 import com.piashcse.feature.wishlist.wishListRoutes
 import com.piashcse.utils.common.ApiError
@@ -205,7 +209,10 @@ private fun Route.adminRoutes() {
             route("shop-categories") { shopCategoryAdminRoutes() }.describe { tag(ApiTags.SHOP_CATEGORY) }
             route("shops") { shopAdminRoutes() }.describe { tag(ApiTags.SHOP) }
             route("sellers") { adminKycRoutes() }.describe { tag(ApiTags.KYC) }
-            route("products") { productAdminRoutes() }.describe { tag(ApiTags.PRODUCT) }
+            route("products") {
+                productAdminRoutes()
+                productTaxClassAdminRoutes()
+            }.describe { tag(ApiTags.PRODUCT) }
             route("inventories") { inventoryAdminRoutes() }.describe { tag(ApiTags.INVENTORY) }
             route("orders") { orderAdminRoutes() }.describe { tag(ApiTags.ORDER) }
             route("payments") { paymentAdminRoutes() }.describe { tag(ApiTags.PAYMENT) }
@@ -222,6 +229,9 @@ private fun Route.adminRoutes() {
             route("payouts") { payoutAdminRoutes() }.describe { tag(ApiTags.PAYOUT) }
             route("fx-rates") { fxAdminRoutes() }.describe { tag(ApiTags.FX) }
             route("tax-rules") { taxAdminRoutes() }.describe { tag(ApiTags.TAX) }
+            route("tax-classes") { taxClassAdminRoutes() }.describe { tag(ApiTags.TAX) }
+            route("tax-zones") { taxZoneAdminRoutes() }.describe { tag(ApiTags.TAX) }
+            route("tax-exemptions") { taxExemptionAdminRoutes() }.describe { tag(ApiTags.TAX) }
             route("feature-flags") { featureFlagRoutes() }.describe { tag(ApiTags.FEATURE_FLAGS) }
             route("outbox") { outboxAdminRoutes() }.describe { tag(ApiTags.OUTBOX) }
         }

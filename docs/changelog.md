@@ -8,6 +8,9 @@ hide:
 
 ### Added
 
+- Tax engine (`V35`): tax zones/nexus, product tax classes, inclusive vs exclusive pricing,
+  customer/business exemptions, and per-line tax snapshots/breakdowns. Checkout accepts
+  `businessTaxId`; order items expose `taxRate`, `taxInclusive` and `taxClassId`.
 - Shipping carrier integration (`SHIPPING_PROVIDER=shippo`): rate quotes, label purchase,
   per-line partial fulfillment, shipment/parcel history, and signed tracking webhooks
   (`V34` adds `shipment`, `shipment_item` and `carrier_webhook_event`). Orders move to
@@ -21,7 +24,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (228 operations total).
+  (240 operations total).
 
 ### Fixed
 

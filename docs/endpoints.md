@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 228  
+**Operations:** 240  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -39,7 +39,7 @@ document served by Swagger UI.
 | [Notification](#notification) | 10 |
 | [KYC](#kyc) | 5 |
 | [Payout](#payout) | 10 |
-| [Tax](#tax) | 4 |
+| [Tax](#tax) | 16 |
 | [FX](#fx) | 2 |
 | [API Keys](#api-keys) | 3 |
 | [Feature Flags](#feature-flags) | 2 |
@@ -373,6 +373,18 @@ document served by Swagger UI.
 | `POST` | `/api/v1/admin/tax-rules` | Create or update tax rule | Admin |
 | `PUT` | `/api/v1/admin/tax-rules` | Upsert tax rule | Admin |
 | `DELETE` | `/api/v1/admin/tax-rules/{id}` | Delete tax rule | Admin |
+| `GET` | `/api/v1/admin/tax-classes` | List product tax classes | Admin |
+| `POST` | `/api/v1/admin/tax-classes` | Create a tax class | Admin |
+| `PUT` | `/api/v1/admin/tax-classes/{id}` | Update a tax class | Admin |
+| `DELETE` | `/api/v1/admin/tax-classes/{id}` | Delete a tax class | Admin |
+| `GET` | `/api/v1/admin/tax-zones` | List tax zones/nexus | Admin |
+| `POST` | `/api/v1/admin/tax-zones` | Create a tax zone | Admin |
+| `PUT` | `/api/v1/admin/tax-zones/{id}` | Update a tax zone | Admin |
+| `DELETE` | `/api/v1/admin/tax-zones/{id}` | Delete a tax zone | Admin |
+| `GET` | `/api/v1/admin/tax-exemptions` | List customer/business exemptions | Admin |
+| `POST` | `/api/v1/admin/tax-exemptions` | Create an exemption | Admin |
+| `DELETE` | `/api/v1/admin/tax-exemptions/{id}` | Delete an exemption | Admin |
+| `PUT` | `/api/v1/admin/products/{id}/tax-class` | Assign a product tax class | Admin |
 
 ## FX
 

@@ -15,4 +15,7 @@ data class OrderItemResponse(
     val sku: String?,
     val variantId: String? = null,
     val variantName: String? = null,
+    val taxRate: String = "0.0000",
+    val taxInclusive: Boolean = false,
+    val taxClassId: String? = null,
 )

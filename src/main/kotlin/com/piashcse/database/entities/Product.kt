@@ -20,6 +20,7 @@ object ProductTable : BaseIdTable("product") {
     val categoryId = reference("category_id", ProductCategoryTable.id).index()
     val subCategoryId = reference("sub_category_id", ProductSubCategoryTable.id).nullable()
     val brandId = reference("brand_id", BrandTable.id).nullable()
+    val taxClassId = reference("tax_class_id", TaxClassTable.id).nullable()
     val sku = varchar("sku", 100).uniqueIndex()
     val barcode = varchar("barcode", 100).nullable().index()
     val weight = decimal("weight", 10, 3).nullable()
@@ -50,6 +51,7 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
     var categoryId by ProductTable.categoryId
     var subCategoryId by ProductTable.subCategoryId
     var brandId by ProductTable.brandId
+    var taxClassId by ProductTable.taxClassId
     var name by ProductTable.name
     var description by ProductTable.description
     var sku by ProductTable.sku
