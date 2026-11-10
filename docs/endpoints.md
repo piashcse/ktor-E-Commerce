@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 215  
+**Operations:** 219  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -29,7 +29,7 @@ document served by Swagger UI.
 | [Checkout](#checkout) | 8 |
 | [Order](#order) | 13 |
 | [Payment](#payment) | 4 |
-| [Coupon](#coupon) | 5 |
+| [Coupon](#coupon) | 9 |
 | [Shipping Method](#shipping-method) | 4 |
 | [Inventory](#inventory) | 6 |
 | [Warehouse](#warehouse) | 4 |
@@ -250,6 +250,10 @@ document served by Swagger UI.
 | `PUT` | `/api/v1/admin/coupons/{id}` | Admin - Update an existing coupon | Admin |
 | `DELETE` | `/api/v1/admin/coupons/{id}` | Admin - Delete a coupon | Admin |
 | `GET` | `/api/v1/coupons/{code}` | Retrieve detailed information about a coupon by its code | Public |
+| `GET` | `/api/v1/admin/promotions` | Admin - List automatic promotions | Admin |
+| `POST` | `/api/v1/admin/promotions` | Admin - Create an automatic promotion | Admin |
+| `PUT` | `/api/v1/admin/promotions/{id}` | Admin - Update a promotion | Admin |
+| `DELETE` | `/api/v1/admin/promotions/{id}` | Admin - Deactivate a promotion | Admin |
 
 ## Shipping Method
 

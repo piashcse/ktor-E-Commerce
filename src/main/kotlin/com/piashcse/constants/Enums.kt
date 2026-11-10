@@ -9,6 +9,13 @@ enum class CouponDiscountType {
 }
 
 @Serializable
+enum class PromotionType {
+    PERCENTAGE,
+    FIXED,
+    FREE_SHIPPING,
+}
+
+@Serializable
 enum class ReviewStatus {
     ACTIVE,
     HIDDEN,

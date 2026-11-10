@@ -4,6 +4,7 @@ import com.piashcse.constants.KycStatus
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.PromotionType
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.InventoryDAO
@@ -16,11 +17,14 @@ import com.piashcse.database.entities.ShopCategoryDAO
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WarehouseDAO
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.feature.cart.CartRepositoryImpl
 import com.piashcse.feature.invoice.InvoiceService
 import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentRepositoryImpl
+import com.piashcse.feature.promotion.PromotionRequest
+import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
 import com.piashcse.feature.shipping_method.ShippingMethodRepositoryImpl
 import com.piashcse.model.request.CheckoutRequest
@@ -169,6 +173,19 @@ class OrderFlowIntegrationTest {
         val cart = CartRepositoryImpl()
         val orders = OrderRepositoryImpl()
         val payments = PaymentRepositoryImpl(ManualPaymentGateway())
+        val promotions = PromotionService()
+        kotlinx.coroutines.runBlocking {
+            promotions.create(
+                PromotionRequest(
+                    name = "Order flow 10%",
+                    type = PromotionType.PERCENTAGE,
+                    value = BigDecimal("10"),
+                    startsAt = currentUtc().minusDays(1).toString(),
+                    endsAt = currentUtc().plusDays(1).toString(),
+                    priority = 10,
+                ),
+            )
+        }
 
         kotlinx.coroutines.runBlocking { cart.createCart(customerId, productId, 1) }
         val checkout =
@@ -181,6 +198,11 @@ class OrderFlowIntegrationTest {
         assertNotNull(kotlinx.coroutines.runBlocking { orders.getCheckoutSummary(customerId, checkout) })
         val order = kotlinx.coroutines.runBlocking { orders.placeOrder(customerId, checkout) }.first()
         assertEquals(OrderStatus.PENDING, order.status)
+        assertTrue(BigDecimal(order.discountAmount) > BigDecimal.ZERO, "Automatic promotion must discount the order")
+        assertTrue(
+            kotlinx.coroutines.runBlocking { promotions.list(true, 10, 0) }.data.first().usageCount >= 1,
+            "Promotion usage must be recorded",
+        )
         assertTrue(kotlinx.coroutines.runBlocking { orders.getOrders(customerId, 10, 0) }.data.isNotEmpty())
         assertTrue(kotlinx.coroutines.runBlocking { orders.getSellerOrders(sellerUserId, 10, 0, null) }.data.isNotEmpty())
         assertTrue(kotlinx.coroutines.runBlocking { orders.getAdminOrders(10, 0, null, null, null) }.data.isNotEmpty())

@@ -51,3 +51,32 @@ All admin endpoints require `ADMIN` role.
 
 ### Delete Coupon
 `DELETE /api/v1/admin/coupons/{id}`
+
+## Automatic promotions
+
+Promotions apply without a code when the order is eligible. If a coupon code is supplied, the
+coupon is used instead of an automatic promotion.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/admin/promotions?active=true` | List promotions |
+| `POST` | `/api/v1/admin/promotions` | Create a promotion |
+| `PUT` | `/api/v1/admin/promotions/{id}` | Update a promotion |
+| `DELETE` | `/api/v1/admin/promotions/{id}` | Deactivate a promotion |
+
+```json
+{
+  "name": "Spring 10%",
+  "type": "PERCENTAGE",
+  "value": 10,
+  "minOrderAmount": 50,
+  "maxDiscountAmount": 25,
+  "startsAt": "2026-03-01T00:00:00",
+  "endsAt": "2026-03-31T23:59:59",
+  "priority": 10,
+  "usageLimit": 1000
+}
+```
+
+Types: `PERCENTAGE`, `FIXED`, `FREE_SHIPPING`. The highest-priority eligible promotion is used;
+usage limits are enforced atomically when the order is placed.
