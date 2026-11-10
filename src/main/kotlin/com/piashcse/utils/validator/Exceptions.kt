@@ -78,6 +78,9 @@ class MfaRequiredException(message: String = "MFA code required") :
 class InvalidMfaCodeException(message: String = "Invalid MFA code") :
     AppException(message, HttpStatusCode.Unauthorized, "INVALID_MFA_CODE")
 
+class FraudBlockedException(message: String = "Payment blocked by fraud rules") :
+    AppException(message, HttpStatusCode.Forbidden, "FRAUD_BLOCKED")
+
 // ─── 403 Forbidden ─────────────────────────────────────────────────────────
 
 class ForbiddenException(message: String = Message.Errors.FORBIDDEN) :

@@ -1,8 +1,11 @@
 package com.piashcse.model.response
 
+import com.piashcse.constants.AvsResult
+import com.piashcse.constants.CvvResult
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentProvider
 import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.RiskDecision
 import com.piashcse.constants.ScaStatus
 import kotlinx.serialization.Serializable
 
@@ -24,4 +27,9 @@ data class PaymentResponse(
     val nextActionUrl: String? = null,
     val scaStatus: ScaStatus = ScaStatus.NOT_REQUIRED,
     val providerStatus: String? = null,
+    val riskScore: Int = 0,
+    val riskDecision: RiskDecision = RiskDecision.ALLOW,
+    val avsStatus: AvsResult = AvsResult.UNKNOWN,
+    val cvvStatus: CvvResult = CvvResult.UNKNOWN,
+    val threeDsEnforced: Boolean = false,
 )

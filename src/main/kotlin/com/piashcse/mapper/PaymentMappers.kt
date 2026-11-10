@@ -21,4 +21,9 @@ fun PaymentDAO.toPaymentResponse() =
         nextActionUrl = nextActionUrl,
         scaStatus = scaStatus,
         providerStatus = providerStatus,
+        riskScore = riskScore,
+        riskDecision = riskDecision,
+        avsStatus = avsStatus,
+        cvvStatus = cvvStatus,
+        threeDsEnforced = threeDsEnforced,
     )

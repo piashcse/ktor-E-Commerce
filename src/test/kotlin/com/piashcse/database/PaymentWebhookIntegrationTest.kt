@@ -133,6 +133,7 @@ class PaymentWebhookIntegrationTest {
                     transactionId: String?,
                     returnUrl: String?,
                     idempotencyKey: String?,
+                    require3ds: Boolean,
                 ): GatewayChargeResult = GatewayChargeResult(true)
 
                 override suspend fun refund(

@@ -129,6 +129,64 @@ enum class ShipmentStatus {
     FAILED,
 }
 
+/** Fraud metric evaluated by a velocity rule. */
+@Serializable
+enum class FraudMetric {
+    ORDER_COUNT,
+    ORDER_AMOUNT,
+    PAYMENT_ATTEMPTS,
+}
+
+/** Rule action when a fraud threshold is met. */
+@Serializable
+enum class RiskAction {
+    ALLOW,
+    REVIEW,
+    REQUIRE_3DS,
+    BLOCK,
+}
+
+/** Final risk decision stored on the payment. */
+@Serializable
+enum class RiskDecision {
+    ALLOW,
+    REVIEW,
+    BLOCK,
+}
+
+/** Address Verification System result supplied by the processor. */
+@Serializable
+enum class AvsResult {
+    MATCH,
+    PARTIAL,
+    MISMATCH,
+    UNKNOWN,
+}
+
+/** Card Verification Value result supplied by the processor. */
+@Serializable
+enum class CvvResult {
+    MATCH,
+    MISMATCH,
+    UNKNOWN,
+}
+
+@Serializable
+enum class BlocklistType {
+    USER,
+    EMAIL,
+    IP,
+}
+
+@Serializable
+enum class ChargebackStatus {
+    OPEN,
+    UNDER_REVIEW,
+    WON,
+    LOST,
+    CLOSED,
+}
+
 @Serializable
 enum class PolicyType {
     PRIVACY_POLICY,

@@ -18,6 +18,9 @@ import com.piashcse.feature.coupon.couponRoutes
 import com.piashcse.feature.dashboard.dashboardAdminRoutes
 import com.piashcse.feature.dashboard.dashboardSellerRoutes
 import com.piashcse.feature.featureflag.featureFlagRoutes
+import com.piashcse.feature.fraud.chargebackAdminRoutes
+import com.piashcse.feature.fraud.fraudAdminRoutes
+import com.piashcse.feature.fraud.paymentRiskAdminRoutes
 import com.piashcse.feature.fx.fxAdminRoutes
 import com.piashcse.feature.inventory.inventoryAdminRoutes
 import com.piashcse.feature.inventory.inventorySellerRoutes
@@ -215,7 +218,12 @@ private fun Route.adminRoutes() {
             }.describe { tag(ApiTags.PRODUCT) }
             route("inventories") { inventoryAdminRoutes() }.describe { tag(ApiTags.INVENTORY) }
             route("orders") { orderAdminRoutes() }.describe { tag(ApiTags.ORDER) }
-            route("payments") { paymentAdminRoutes() }.describe { tag(ApiTags.PAYMENT) }
+            route("payments") {
+                paymentAdminRoutes()
+                paymentRiskAdminRoutes()
+            }.describe { tag(ApiTags.PAYMENT) }
+            route("fraud") { fraudAdminRoutes() }.describe { tag(ApiTags.FRAUD) }
+            route("chargebacks") { chargebackAdminRoutes() }.describe { tag(ApiTags.FRAUD) }
             route("refund-requests") { refundAdminRoutes() }.describe { tag(ApiTags.REFUND) }
             route("rma-requests") { rmaAdminRoutes() }.describe { tag(ApiTags.RMA) }
             route("policies") { policyAdminRoutes() }.describe { tag(ApiTags.POLICY) }

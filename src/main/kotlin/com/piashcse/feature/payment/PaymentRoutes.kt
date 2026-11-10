@@ -7,6 +7,7 @@ import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.common.MessageResponse
+import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey
 import com.piashcse.utils.extension.paginateQueryParams
@@ -47,7 +48,7 @@ fun Route.paymentRoutes() {
             post {
                 val body = call.receive<PaymentRequest>()
                 val key = call.idempotencyKey(body.idempotencyKey)
-                call.respondCreated(paymentRepo.createPayment(body.copy(idempotencyKey = key), call.currentUserId))
+                call.respondCreated(paymentRepo.createPayment(body.copy(idempotencyKey = key), call.currentUserId, call.clientIp))
             }.describe { summary = "Create a payment intent for an order. Status is server-owned." }
         }
 

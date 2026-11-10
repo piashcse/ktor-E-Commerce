@@ -10,6 +10,8 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PaymentCompletedEvent
+import com.piashcse.feature.fraud.FraudContext
+import com.piashcse.feature.fraud.FraudService
 import com.piashcse.mapper.toPaymentResponse
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
@@ -18,6 +20,7 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.resilience.CircuitBreaker
 import com.piashcse.utils.validator.ForbiddenException
+import com.piashcse.utils.validator.FraudBlockedException
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
@@ -40,6 +43,7 @@ import java.math.BigDecimal
  */
 class PaymentRepositoryImpl(
     private val gateway: PaymentGateway,
+    private val fraudService: FraudService = FraudService(),
 ) : PaymentRepository {
     private val gatewayBreaker = CircuitBreaker("payment-gateway", failureThreshold = 5, cooldownMs = 30_000)
 
@@ -159,6 +163,7 @@ class PaymentRepositoryImpl(
     override suspend fun createPayment(
         paymentRequest: PaymentRequest,
         callerUserId: String,
+        ipAddress: String?,
     ): PaymentResponse {
         val replay =
             query {
@@ -180,7 +185,23 @@ class PaymentRepositoryImpl(
         if (replay != null) return replay
 
         // Validate before charging so an invalid order never reaches the provider.
-        val payable = query { loadPayableOrder(paymentRequest, callerUserId, forUpdate = false) }
+        val (payable, risk) =
+            query {
+                val snapshot = loadPayableOrder(paymentRequest, callerUserId, forUpdate = false)
+                val email = UserDAO.findById(callerUserId)?.email
+                snapshot to
+                    fraudService.evaluate(
+                        FraudContext(
+                            userId = callerUserId,
+                            email = email,
+                            ipAddress = ipAddress,
+                            amount = snapshot.remaining,
+                        ),
+                    )
+            }
+        if (risk.blocked) {
+            throw FraudBlockedException(risk.reasons.firstOrNull() ?: "Payment blocked by fraud rules")
+        }
 
         // Network call happens outside the DB transaction.
         val charge =
@@ -195,6 +216,7 @@ class PaymentRepositoryImpl(
                     idempotencyKey =
                         paymentRequest.idempotencyKey
                             ?: "charge:${paymentRequest.orderId}:${paymentRequest.amount.toPlainString()}:${paymentRequest.paymentMethod}",
+                    require3ds = risk.requires3ds,
                 )
             }
         if (!charge.success) {
@@ -238,6 +260,10 @@ class PaymentRepositoryImpl(
                     }
                     throw e
                 }
+            fraudService.recordRisk(
+                payment,
+                risk.copy(avsStatus = charge.avsStatus, cvvStatus = charge.cvvStatus),
+            )
 
             AppMetrics.paymentsCreated.increment()
             if (payment.status == PaymentStatus.COMPLETED) {

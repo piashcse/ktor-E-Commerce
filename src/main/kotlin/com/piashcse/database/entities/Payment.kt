@@ -1,8 +1,11 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.AvsResult
+import com.piashcse.constants.CvvResult
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentProvider
 import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.RiskDecision
 import com.piashcse.constants.ScaStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
@@ -34,6 +37,12 @@ object PaymentTable : BaseIdTable("payment") {
     val nextActionUrl = varchar("next_action_url", 1000).nullable()
     val scaStatus = enumerationByName("sca_status", 30, ScaStatus::class).default(ScaStatus.NOT_REQUIRED)
     val providerStatus = varchar("provider_status", 50).nullable()
+
+    val riskScore = integer("risk_score").default(0)
+    val riskDecision = enumerationByName("risk_decision", 20, RiskDecision::class).default(RiskDecision.ALLOW)
+    val avsStatus = enumerationByName("avs_status", 20, AvsResult::class).default(AvsResult.UNKNOWN)
+    val cvvStatus = enumerationByName("cvv_status", 20, CvvResult::class).default(CvvResult.UNKNOWN)
+    val threeDsEnforced = bool("three_ds_enforced").default(false)
 }
 
 class PaymentDAO(id: EntityID<String>) : BaseEntity(id, PaymentTable) {
@@ -54,4 +63,9 @@ class PaymentDAO(id: EntityID<String>) : BaseEntity(id, PaymentTable) {
     var nextActionUrl by PaymentTable.nextActionUrl
     var scaStatus by PaymentTable.scaStatus
     var providerStatus by PaymentTable.providerStatus
+    var riskScore by PaymentTable.riskScore
+    var riskDecision by PaymentTable.riskDecision
+    var avsStatus by PaymentTable.avsStatus
+    var cvvStatus by PaymentTable.cvvStatus
+    var threeDsEnforced by PaymentTable.threeDsEnforced
 }

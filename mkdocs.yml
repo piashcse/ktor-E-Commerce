@@ -60,6 +60,7 @@ nav:
       - Seller KYC: seller-kyc.md
       - Payouts & Statements: payout.md
       - Tax Rules: tax.md
+      - Fraud & Chargebacks: fraud.md
       - FX Rates: fx.md
       - API Keys: api-keys.md
       - Feature Flags: feature-flags.md

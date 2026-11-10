@@ -203,7 +203,7 @@ class PaymentRoutesTest {
     @Test
     fun `create payment happy path returns 201`() =
         testApplication {
-            coEvery { repo.createPayment(any(), any()) } returns samplePayment()
+            coEvery { repo.createPayment(any(), any(), any()) } returns samplePayment()
             setup()
             val res =
                 client.post("/api/v1/payments") {
