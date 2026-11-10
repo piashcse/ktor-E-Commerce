@@ -5805,6 +5805,100 @@ http://localhost:8080/api/v1/admin/coupons/{id}
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/promotions</code></summary>
+
+### Description
+List automatic promotions, optionally filtered by `active`.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/promotions?active=true' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/promotions?active={active}
+```
+
+### Response
+Paginated list of promotions.
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/promotions</code></summary>
+
+### Description
+Create an automatic order-level promotion.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/promotions' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Spring 10%","type":"PERCENTAGE","value":10,"minOrderAmount":50,"startsAt":"2026-03-01T00:00:00","endsAt":"2026-03-31T23:59:59","priority":10}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/promotions
+```
+
+### Response
+`201 Created` with the promotion.
+</details>
+
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/promotions/{id}</code></summary>
+
+### Description
+Update an existing promotion.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/promotions/promo-uuid' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Spring 15%","type":"PERCENTAGE","value":15,"startsAt":"2026-03-01T00:00:00","endsAt":"2026-03-31T23:59:59"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/promotions/{id}
+```
+
+### Response
+Updated promotion.
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/promotions/{id}</code></summary>
+
+### Description
+Deactivate a promotion.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/promotions/promo-uuid' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/promotions/{id}
+```
+
+### Response
+```json
+{ "message": "Promotion deactivated" }
+```
+</details>
+
 ### INVENTORY
 
 <details>

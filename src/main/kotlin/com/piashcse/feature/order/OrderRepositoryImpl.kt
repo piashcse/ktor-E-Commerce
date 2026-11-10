@@ -6,6 +6,8 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.OrderPlacedEvent
 import com.piashcse.event.OrderStatusChangedEvent
 import com.piashcse.event.OutboxPublisher
+import com.piashcse.feature.promotion.PromotionMatch
+import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.mapper.toOrderItemResponse
 import com.piashcse.mapper.toOrderResponse
@@ -39,6 +41,7 @@ import java.util.*
 class OrderRepositoryImpl(
     private val fxService: FxService = FxService(),
     private val taxService: TaxService = TaxService(),
+    private val promotionService: PromotionService = PromotionService(),
 ) : OrderRepository {
     private fun List<OrderItemDAO>.toItemResponses() = map { it.toOrderItemResponse() }
 
@@ -212,8 +215,13 @@ class OrderRepositoryImpl(
                 existingOrderResponses(userId, idempotencyKey) ?: run {
                     val context = loadCheckoutContext(userId, checkoutRequest)
                     val quote = createOrders(context, userId, checkoutRequest, currency, fxRate)
-                    checkoutRequest.couponCode?.let { code ->
-                        applyCoupon(code, quote, context, userId, fxRate)
+                    if (checkoutRequest.couponCode != null) {
+                        applyCoupon(checkoutRequest.couponCode, quote, context, userId, fxRate)
+                    } else {
+                        promotionService.evaluateTx(quote.totalUsdSubTotal)?.let { promotion ->
+                            applyPromotion(quote, promotion, fxRate)
+                            promotionService.markUsedTx(promotion.id)
+                        }
                     }
                     updateSellerTotals(quote.orders)
                     context.cartItems.forEach { it.delete() }
@@ -487,6 +495,29 @@ class OrderRepositoryImpl(
         }
     }
 
+    private fun applyPromotion(
+        quote: CheckoutQuote,
+        promotion: PromotionMatch,
+        fxRate: BigDecimal,
+    ) {
+        val discount = Money.scale2(promotion.discount.multiply(fxRate))
+        val totalSubTotal = quote.orders.fold(BigDecimal.ZERO) { acc, order -> acc.add(order.subTotal) }
+        quote.orders.forEach { order ->
+            val orderDiscount =
+                if (promotion.freeShipping) {
+                    BigDecimal.ZERO.setScale(2)
+                } else {
+                    Money.proportionalSplit(discount, order.subTotal, totalSubTotal)
+                }
+            order.discountAmount = orderDiscount
+            if (promotion.freeShipping) order.shippingCost = BigDecimal.ZERO.setScale(2)
+            order.total =
+                Money.scale2(
+                    order.subTotal.add(order.shippingCost).add(order.taxAmount).subtract(orderDiscount).max(BigDecimal.ZERO),
+                )
+        }
+    }
+
     private fun updateSellerTotals(orders: List<OrderDAO>) {
         val shopIds = orders.mapNotNull { it.shopId?.value }.distinct()
         val sellersByShop =
@@ -603,6 +634,22 @@ class OrderRepositoryImpl(
                     itemCount = totalItems,
                     currency = currency,
                 )
+
+            if (checkoutRequest.couponCode == null) {
+                promotionService.evaluateTx(subUsd)?.let { promotion ->
+                    val discount = Money.scale2(promotion.discount.multiply(fxRate))
+                    val shipping = if (promotion.freeShipping) BigDecimal.ZERO.setScale(2) else ship
+                    response =
+                        response.copy(
+                            shippingCost = shipping.toPlainString(),
+                            discountAmount = discount.toPlainString(),
+                            total =
+                                Money.scale2(
+                                    sub.add(shipping).add(tax).subtract(discount).max(BigDecimal.ZERO),
+                                ).toPlainString(),
+                        )
+                }
+            }
 
             checkoutRequest.couponCode?.let {
                 val coupon =

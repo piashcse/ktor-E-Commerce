@@ -50,6 +50,7 @@ import com.piashcse.feature.product_sub_category.ProductSubCategoryRepositoryImp
 import com.piashcse.feature.profile.ProfileRepository
 import com.piashcse.feature.profile.ProfileRepositoryImpl
 import com.piashcse.feature.profile.ProfileService
+import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.recommendation.RecommendationService
 import com.piashcse.feature.refund_request.RefundRequestRepository
 import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
@@ -88,7 +89,7 @@ val serviceModule =
         single<CouponRepository> { CouponRepositoryImpl() }
         single<DashboardRepository> { DashboardRepositoryImpl() }
         single<InventoryRepository> { InventoryRepositoryImpl() }
-        single<OrderRepository> { OrderRepositoryImpl(get(), get()) }
+        single<OrderRepository> { OrderRepositoryImpl(get(), get(), get()) }
         single<PaymentGateway> { ManualPaymentGateway() }
         single<PaymentRepository> { PaymentRepositoryImpl(get()) }
         single<PolicyRepository> { PolicyRepositoryImpl() }
@@ -114,6 +115,7 @@ val serviceModule =
         single { KycService() }
         single { InvoiceService() }
         single { StockAlertService() }
+        single { PromotionService() }
         single { FxService() }
         single { TaxService() }
         single { FeatureFlags() }
