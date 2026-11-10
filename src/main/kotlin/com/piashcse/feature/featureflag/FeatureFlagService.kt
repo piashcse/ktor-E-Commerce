@@ -23,7 +23,7 @@ data class FeatureFlagUpdateRequest(
     val description: String? = null,
 )
 
-object FeatureFlags {
+class FeatureFlags {
     suspend fun isEnabled(key: String): Boolean =
         query {
             FeatureFlagDAO.find { FeatureFlagTable.key eq key }.firstOrNull()?.enabled ?: false

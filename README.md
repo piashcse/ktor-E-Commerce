@@ -4,11 +4,11 @@
   
   **A high-performance, enterprise-grade e-commerce backend built with Kotlin & Ktor.**
 
-  [![Ktor](https://img.shields.io/badge/ktor-3.5.1-blue.svg)](https://github.com/ktorio/ktor)
-  [![Exposed](https://img.shields.io/badge/Exposed-1.3.0-blue.svg)](https://github.com/JetBrains/Exposed)
-  [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.0-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
-  ![Koin](https://img.shields.io/badge/Koin-4.2.0-29BEB0?logo=koin&logoColor=white)
-  [![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-42.7.8-336791?logo=postgresql)](https://www.postgresql.org/)
+  [![Ktor](https://img.shields.io/badge/ktor-3.6.1-blue.svg)](https://github.com/ktorio/ktor)
+  [![Exposed](https://img.shields.io/badge/Exposed-1.6.1-blue.svg)](https://github.com/JetBrains/Exposed)
+  [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+  ![Koin](https://img.shields.io/badge/Koin-4.2.2-29BEB0?logo=koin&logoColor=white)
+  [![PostgreSQL Version](https://img.shields.io/badge/PostgreSQL-42.7.14-336791?logo=postgresql)](https://www.postgresql.org/)
   [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
   <a href="https://github.com/piashcse"><img alt="Author" src="https://img.shields.io/static/v1?label=GitHub&message=piashcse&color=C51162"/></a>
 
@@ -71,7 +71,7 @@
 - **Order Cancellation**: Customers can cancel PENDING/CONFIRMED orders with automatic stock restoration.
 - **Seller Orders**: Sellers can view and manage orders from their shop.
 - **Admin Orders**: Admins can view all orders with advanced filters (status, date range).
-- **Human-Readable Order Numbers**: Sequential order numbers in format ORD-YYYYMMDD-XXXX.
+- **Human-Readable Order Numbers**: Date-prefixed order numbers in `ORD-YYYYMMDD-XXXX-XXXXXXXX` format (random suffix guarantees uniqueness under concurrency).
 - **Idempotency Support**: Prevent duplicate orders with idempotency keys.
 - **Payment Integration**: Integrate with popular payment gateways for seamless transactions.
 - **Payment Validation**: Payment amounts validated against order totals.
@@ -139,8 +139,8 @@
 
 The project follows **Clean Architecture** with clear separation of concerns:
 
-- **Route Layer** (`*Routes.kt`) — HTTP routing only, uses `by inject()` for dependency injection, delegates all logic to services/repositories
-- **Service Layer** (`*Service.kt`) — Business logic orchestration, works with domain models and DTOs, zero Exposed/sql imports
+- **Route Layer** (`*Routes.kt`) — HTTP routing only, uses `by inject()` for dependency injection, delegates logic to services/repositories
+- **Service Layer** (`*Service.kt`) — Business logic orchestration, works with domain models and DTOs
 - **Repository Layer** (`*Repository` interface + `*RepositoryImpl`) — Data access, Exposed queries, transaction management
 - **Mapper Layer** (`*Mappers.kt`) — Object mapping between DAO entities and response DTOs, fully separated from entities
 - **Plugin Layer** — Cross-cutting concerns: auth, status pages, routing configuration, OpenAPI generation
@@ -150,6 +150,16 @@ This architecture ensures:
 - **Swapability**: Data access implementation can change without affecting business logic
 - **Discoverability**: Each concern lives in its own well-named file, not hidden inside god classes
 - **Safety**: Flyway-managed schema migrations prevent destructive table recreation in production
+
+### Production readiness notes
+
+- **Single-instance defaults.** The rate limiter, catalog cache, JWT blacklist cache, email throttle
+  and SMTP circuit breaker are in-process. Running more than one replica requires replacing
+  `CacheService.cache` with a Redis-backed implementation (the `Cache` interface is ready) and using
+  a shared rate-limit store. Until then, deploy as a single instance or accept per-instance limits.
+- **HSTS** is only emitted when `FORCE_HTTPS=true` (set it behind a TLS-terminating proxy).
+- **Pretty JSON** is opt-in via `JSON_PRETTY_PRINT=true`; production should leave it disabled.
+- **Read replicas** are supported via `DB_READ_URL`; only explicitly read-only paths use `readQuery`.
 
 ## Built With 🛠
 
@@ -2898,7 +2908,7 @@ http://localhost:8080/api/v1/checkout/place-order
 ```json
 {
   "data": {
-    "orderId": "ORD-20240506-ABCD",
+    "orderId": "ORD-20240506-0001-A1B2C3D4",
     "total": 1914.97,
     "status": "PENDING"
   },
@@ -2934,7 +2944,7 @@ http://localhost:8080/api/v1/orders?limit={limit}&offset={offset}
   "data": {
     "data": [
       {
-        "orderId": "ORD-20240506-ABCD",
+        "orderId": "ORD-20240506-0001-A1B2C3D4",
         "total": 1914.97,
         "status": "PENDING",
         "createdAt": "2024-05-06T12:00:00"
@@ -2960,7 +2970,7 @@ Update order status (Customer: CANCELED/RECEIVED, Seller: CONFIRMED/DELIVERED).
 ### Curl
 ```bash
 curl -X 'PATCH' \
-  'http://localhost:8080/api/v1/orders/status/ORD-20240506-ABCD?status=canceled' \
+  'http://localhost:8080/api/v1/orders/status/ORD-20240506-0001-A1B2C3D4?status=canceled' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
@@ -2974,7 +2984,7 @@ http://localhost:8080/api/v1/orders/status/{id}?status={status}
 ```json
 {
   "data": {
-    "orderId": "ORD-20240506-ABCD",
+    "orderId": "ORD-20240506-0001-A1B2C3D4",
     "status": "CANCELED"
   },
   "message": "Order status updated"
@@ -2991,7 +3001,7 @@ Cancel an order.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/orders/ORD-20240506-ABCD/cancel' \
+  'http://localhost:8080/api/v1/orders/ORD-20240506-0001-A1B2C3D4/cancel' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
@@ -3039,7 +3049,7 @@ http://localhost:8080/api/v1/seller/orders?status={status}&limit={limit}&offset=
   "data": {
     "data": [
       {
-        "orderId": "ORD-20240506-ABCD",
+        "orderId": "ORD-20240506-0001-A1B2C3D4",
         "total": 1914.97,
         "status": "PENDING"
       }
@@ -3064,7 +3074,7 @@ Admin: Update the status of any order.
 ### Curl
 ```bash
 curl -X 'PATCH' \
-  'http://localhost:8080/api/v1/admin/orders/status/ORD-20240506-ABCD?status=DELIVERED' \
+  'http://localhost:8080/api/v1/admin/orders/status/ORD-20240506-0001-A1B2C3D4?status=DELIVERED' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
@@ -3078,7 +3088,7 @@ http://localhost:8080/api/v1/admin/orders/status/{id}?status={status}
 ```json
 {
   "data": {
-    "orderId": "ORD-20240506-ABCD",
+    "orderId": "ORD-20240506-0001-A1B2C3D4",
     "status": "DELIVERED"
   },
   "message": "Order status updated by admin"
@@ -3095,7 +3105,7 @@ Admin: Cancel any order.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/orders/ORD-20240506-ABCD/cancel' \
+  'http://localhost:8080/api/v1/admin/orders/ORD-20240506-0001-A1B2C3D4/cancel' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>' \
   -H 'Content-Type: application/json' \
@@ -3143,7 +3153,7 @@ http://localhost:8080/api/v1/admin/orders?status={status}&startDate={startDate}&
   "data": {
     "data": [
       {
-        "orderId": "ORD-20240506-ABCD",
+        "orderId": "ORD-20240506-0001-A1B2C3D4",
         "status": "PENDING"
       }
     ],
@@ -3174,7 +3184,7 @@ curl -X 'POST' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{
-  "orderId": "ORD-20240506-ABCD",
+  "orderId": "ORD-20240506-0001-A1B2C3D4",
   "transactionId": "TXN-123456",
   "paymentMethod": "CREDIT_CARD",
   "amount": 1914,
@@ -3192,7 +3202,7 @@ http://localhost:8080/api/v1/payments
 {
   "data": {
     "id": "pay-uuid",
-    "orderId": "ORD-20240506-ABCD",
+    "orderId": "ORD-20240506-0001-A1B2C3D4",
     "status": "COMPLETED"
   },
   "message": "Payment recorded"
@@ -3224,7 +3234,7 @@ http://localhost:8080/api/v1/payments/{id}
 {
   "data": {
     "id": "pay-uuid",
-    "orderId": "ORD-20240506-ABCD",
+    "orderId": "ORD-20240506-0001-A1B2C3D4",
     "amount": 1914,
     "status": "COMPLETED"
   },
@@ -3242,7 +3252,7 @@ Retrieve all payments for a specific order.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/payments/order/ORD-20240506-ABCD' \
+  'http://localhost:8080/api/v1/payments/order/ORD-20240506-0001-A1B2C3D4' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
@@ -3503,7 +3513,7 @@ Create a refund request for an order item.
 ### Curl
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/v1/refund-requests/ORD-20240506-ABCD' \
+  'http://localhost:8080/api/v1/refund-requests/ORD-20240506-0001-A1B2C3D4' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
@@ -3572,7 +3582,7 @@ Get refund requests for an order.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/refund-requests/order/ORD-20240506-ABCD' \
+  'http://localhost:8080/api/v1/refund-requests/order/ORD-20240506-0001-A1B2C3D4' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <token>'
 ```
@@ -3627,7 +3637,7 @@ http://localhost:8080/api/v1/refund-requests/{id}
 {
   "data": {
     "id": "refund-uuid",
-    "orderId": "ORD-20240506-ABCD",
+    "orderId": "ORD-20240506-0001-A1B2C3D4",
     "reason": "Damaged product",
     "status": "PENDING"
   },
@@ -3682,7 +3692,7 @@ Admin: Get all refund requests for an order.
 ### Curl
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/refund-requests/order/ORD-20240506-ABCD' \
+  'http://localhost:8080/api/v1/admin/refund-requests/order/ORD-20240506-0001-A1B2C3D4' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin-token>'
 ```
@@ -4351,7 +4361,7 @@ http://localhost:8080/api/v1/admin/dashboard/orders?status={status}
     },
     "recentOrders": [
       {
-        "orderNumber": "ORD-20240506-ABCD",
+        "orderNumber": "ORD-20240506-0001-A1B2C3D4",
         "status": "pending",
         "total": "250.00",
         "createdAt": "2024-05-06T12:00:00"
@@ -4473,9 +4483,9 @@ http://localhost:8080/api/v1/admin/dashboard/activity?limit={limit}
 {
   "data": [
     {
-      "id": "ORD-20240506-ABCD",
+      "id": "ORD-20240506-0001-A1B2C3D4",
       "type": "order",
-      "summary": "Order ORD-20240506-ABCD created - $250.00",
+      "summary": "Order ORD-20240506-0001-A1B2C3D4 created - $250.00",
       "status": "pending",
       "createdAt": "2024-05-06T12:00:00"
     },
@@ -4525,7 +4535,7 @@ http://localhost:8080/api/v1/admin/audit-logs?actorId={actorId}&action={action}&
         "actorRole": "ADMIN",
         "action": "UPDATE",
         "resourceType": "ORDER",
-        "resourceId": "ORD-20240506-ABCD",
+        "resourceId": "ORD-20240506-0001-A1B2C3D4",
         "details": "Updated order status from PENDING to CONFIRMED",
         "ipAddress": "192.168.1.1",
         "userAgent": "Mozilla/5.0...",

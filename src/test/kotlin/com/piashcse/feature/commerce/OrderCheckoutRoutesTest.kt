@@ -135,6 +135,9 @@ class CheckoutRoutesTest {
                     single<OrderRepository> { orderRepo }
                     single<ShippingAddressRepository> { addressRepo }
                     single<ShippingMethodRepository> { methodRepo }
+                    single<com.piashcse.feature.consent.ConsentRepository> { mockk() }
+                    single<com.piashcse.feature.checkout.GuestCheckoutService> { mockk() }
+                    single { mockk<com.piashcse.feature.featureflag.FeatureFlags>(relaxed = true) }
                 },
             )
             routing { route("/api/v1/checkout") { checkoutRoutes() } }

@@ -9,6 +9,7 @@ import com.piashcse.service.CatalogCache
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
@@ -59,7 +60,7 @@ fun Route.reviewRatingRoutes() {
                 val id = call.requirePathParameter("id")
                 reviewRatingRepo.deleteReviewRating(call.currentUserId, id)
                 CatalogCache.invalidate()
-                call.respondOk(com.piashcse.utils.common.MessageResponse("Review deleted successfully"))
+                call.respondDeleted("Review deleted successfully")
             }.describe { summary = "Delete a review and rating" }
 
             post("{id}/helpful") {

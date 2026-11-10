@@ -34,7 +34,7 @@ fun Application.configureSwagger() {
                             "Human-readable guides: https://piashcse.github.io/ktor-ecommerce/",
                     termsOfService = "https://piashcse.github.io/",
                     contact = OpenApiInfo.Contact(name = "Mehedi Hassan Piash", email = "piash599@gmail.com"),
-                    license = OpenApiInfo.License(name = "MIT"),
+                    license = OpenApiInfo.License(name = "Apache-2.0"),
                 )
 
             tag(ApiTags.AUTH, "Registration, login, OTP, refresh, logout and password reset")

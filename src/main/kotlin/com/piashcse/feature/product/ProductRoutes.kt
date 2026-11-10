@@ -2,7 +2,6 @@
 
 package com.piashcse.feature.product
 
-import com.piashcse.constants.Message
 import com.piashcse.feature.recommendation.RecommendationResponse
 import com.piashcse.feature.recommendation.RecommendationService
 import com.piashcse.feature.recommendation.recommendationLimit
@@ -19,12 +18,11 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.searchRateLimit
 import com.piashcse.plugin.sellerWriteRateLimit
+import com.piashcse.plugin.standardErrors
 import com.piashcse.service.CacheService
 import com.piashcse.service.UploadService
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.*
-import com.piashcse.utils.validator.ValidationException
-import io.ktor.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
@@ -48,7 +46,10 @@ fun Route.productRoutes() {
         }.describe {
             summary = "Best-seller recommendations"
             description = "Public, guest-safe fallback ranked by sales and rating"
-            responses { ok<RecommendationResponse>("Ranked products") }
+            responses {
+                ok<RecommendationResponse>("Ranked products")
+                standardErrors()
+            }
         }
 
         /**
@@ -62,7 +63,10 @@ fun Route.productRoutes() {
         }.describe {
             summary = "Get product detail"
             description = "Includes images and purchasable variants"
-            responses { ok<ProductResponse>("Product detail") }
+            responses {
+                ok<ProductResponse>("Product detail")
+                standardErrors()
+            }
         }
 
         /**
@@ -78,7 +82,10 @@ fun Route.productRoutes() {
         }.describe {
             summary = "Related products"
             description = "Same category, subcategory boosted, ranked by sales and rating"
-            responses { ok<RecommendationResponse>("Related products") }
+            responses {
+                ok<RecommendationResponse>("Related products")
+                standardErrors()
+            }
         }
 
         /**
@@ -94,7 +101,10 @@ fun Route.productRoutes() {
         }.describe {
             summary = "Frequently bought together"
             description = "Co-purchase counts from paid, non-canceled orders"
-            responses { ok<RecommendationResponse>("Co-purchased products") }
+            responses {
+                ok<RecommendationResponse>("Co-purchased products")
+                standardErrors()
+            }
         }
 
         /**
@@ -173,7 +183,10 @@ fun Route.productSellerRoutes() {
         }.describe {
             summary = "Create product"
             requestBody { jsonBody<ProductRequest>() }
-            responses { created<ProductResponse>("Product created") }
+            responses {
+                created<ProductResponse>("Product created")
+                standardErrors()
+            }
         }
 
         /**
@@ -186,7 +199,10 @@ fun Route.productSellerRoutes() {
         }.describe {
             summary = "Update product"
             requestBody { jsonBody<UpdateProductRequest>() }
-            responses { ok<ProductResponse>("Product updated") }
+            responses {
+                ok<ProductResponse>("Product updated")
+                standardErrors()
+            }
         }
 
         /**
@@ -207,20 +223,13 @@ fun Route.productSellerRoutes() {
          *
          */
         post("image-upload") {
-            val multipart = call.receiveMultipart()
-            var imageUrl: String? = null
-
-            multipart.forEachPart { part ->
-                if (part is PartData.FileItem) {
-                    // Size cap (5 MB) + MIME allowlist enforced before the upload call.
-                    val bytes = UploadService.readAndValidateImagePart(part, "product image")
-                    val fileName = UploadService.uploadProductImage(part, bytes)
-                    imageUrl = UploadService.getProductImageUrl(fileName)
-                }
-                part.dispose()
-            }
-
-            call.respondOk(imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED))
+            val imageUrl =
+                call.receiveSingleImage(
+                    purpose = "product image",
+                    upload = UploadService::uploadProductImage,
+                    publicUrl = UploadService::getProductImageUrl,
+                )
+            call.respondOk(imageUrl)
         }.describe { summary = "Seller - Upload a product image" }
 
         variantSellerRoutes()
@@ -260,7 +269,10 @@ private fun Route.variantSellerRoutes() {
     }.describe {
         summary = "Create product variant"
         requestBody { jsonBody<ProductVariantRequest>() }
-        responses { created<ProductVariantResponse>("Variant created") }
+        responses {
+            created<ProductVariantResponse>("Variant created")
+            standardErrors()
+        }
     }
 
     /**
@@ -281,7 +293,10 @@ private fun Route.variantSellerRoutes() {
     }.describe {
         summary = "Update product variant"
         requestBody { jsonBody<ProductVariantRequest>() }
-        responses { ok<ProductVariantResponse>("Variant updated") }
+        responses {
+            ok<ProductVariantResponse>("Variant updated")
+            standardErrors()
+        }
     }
 
     /**
@@ -319,7 +334,10 @@ private fun Route.variantSellerRoutes() {
         summary = "Attach option values to a variant"
         description = "One value per option"
         requestBody { jsonBody<SetVariantOptionsRequest>() }
-        responses { ok<ProductVariantResponse>("Variant options replaced") }
+        responses {
+            ok<ProductVariantResponse>("Variant options replaced")
+            standardErrors()
+        }
     }
 
     /**
@@ -334,7 +352,10 @@ private fun Route.variantSellerRoutes() {
     }.describe {
         summary = "Create option dimension"
         requestBody { jsonBody<ProductOptionRequest>() }
-        responses { created<ProductOptionResponse>("Option created") }
+        responses {
+            created<ProductOptionResponse>("Option created")
+            standardErrors()
+        }
     }
 
     /**
@@ -371,7 +392,10 @@ private fun Route.variantSellerRoutes() {
     }.describe {
         summary = "Add option value"
         requestBody { jsonBody<ProductOptionValueRequest>() }
-        responses { created<ProductOptionValueResponse>("Option value created") }
+        responses {
+            created<ProductOptionValueResponse>("Option value created")
+            standardErrors()
+        }
     }
 
     /**

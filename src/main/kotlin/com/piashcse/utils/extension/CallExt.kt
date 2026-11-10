@@ -5,6 +5,7 @@ import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.model.request.NameRequest
 import com.piashcse.model.request.ProductWithFilterRequest
+import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -14,6 +15,9 @@ import io.ktor.server.response.*
 suspend inline fun <reified T : Any> ApplicationCall.respondOk(data: T) = respond(HttpStatusCode.OK, data)
 
 suspend inline fun <reified T : Any> ApplicationCall.respondCreated(data: T) = respond(HttpStatusCode.Created, data)
+
+/** Standard delete acknowledgement so every module returns the same shape. */
+suspend fun ApplicationCall.respondDeleted(message: String) = respondOk(MessageResponse(message))
 
 /**
  * Best-effort client IP.

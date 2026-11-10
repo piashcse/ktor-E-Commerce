@@ -87,10 +87,10 @@ fun Route.payoutAdminRoutes() {
             call.respondOk(repo.allPayouts(limit, offset, call.request.queryParameters["status"]))
         }.describe { summary = "Admin: list payouts" }
         post("{id}/approve") {
-            call.respondOk(repo.approvePayout(call.parameters["id"] ?: throw IllegalArgumentException("id required")))
+            call.respondOk(repo.approvePayout(call.requirePathParameter("id")))
         }.describe { summary = "Admin: approve payout" }
         post("{id}/reject") {
-            call.respondOk(repo.rejectPayout(call.parameters["id"] ?: throw IllegalArgumentException("id required")))
+            call.respondOk(repo.rejectPayout(call.requirePathParameter("id")))
         }.describe { summary = "Admin: reject payout" }
         post("{id}/pay") {
             call.respondOk(

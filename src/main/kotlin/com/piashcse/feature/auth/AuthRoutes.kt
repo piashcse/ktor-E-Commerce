@@ -19,6 +19,7 @@ import com.piashcse.plugin.ok
 import com.piashcse.plugin.otpRateLimit
 import com.piashcse.plugin.refreshTokenRateLimit
 import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.standardErrors
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
@@ -56,7 +57,10 @@ fun Route.authRoutes() {
             summary = "Login"
             description = "Returns an access token and rotating refresh token"
             requestBody { jsonBody<LoginRequest>() }
-            responses { ok<TokenPair>("Authenticated") }
+            responses {
+                ok<TokenPair>("Authenticated")
+                standardErrors()
+            }
         }
 
         /**
@@ -68,7 +72,10 @@ fun Route.authRoutes() {
             summary = "Register"
             description = "Creates/refreshes an unverified account and sends an OTP"
             requestBody { jsonBody<RegisterRequest>() }
-            responses { created<RegistrationResult>("Registration result") }
+            responses {
+                created<RegistrationResult>("Registration result")
+                standardErrors()
+            }
         }
 
         /**
@@ -80,7 +87,10 @@ fun Route.authRoutes() {
         }.describe {
             summary = "Request password reset OTP"
             requestBody { jsonBody<ForgotPasswordRequest>() }
-            responses { ok<MessageResponse>("OTP sent") }
+            responses {
+                ok<MessageResponse>("OTP sent")
+                standardErrors()
+            }
         }
 
         /**
@@ -105,7 +115,10 @@ fun Route.authRoutes() {
         }.describe {
             summary = "Reset password with OTP"
             requestBody { jsonBody<ResetRequest>() }
-            responses { ok<MessageResponse>("Password reset") }
+            responses {
+                ok<MessageResponse>("Password reset")
+                standardErrors()
+            }
         }
     }
 
@@ -134,7 +147,10 @@ fun Route.authRoutes() {
         }.describe {
             summary = "Verify account OTP"
             requestBody { jsonBody<OtpVerificationRequest>() }
-            responses { ok<MessageResponse>("OTP verified") }
+            responses {
+                ok<MessageResponse>("OTP verified")
+                standardErrors()
+            }
         }
     }
 
@@ -148,7 +164,10 @@ fun Route.authRoutes() {
             summary = "Refresh access token"
             description = "Refresh tokens rotate and reuse revokes the session family"
             requestBody { jsonBody<RefreshTokenRequest>() }
-            responses { ok<TokenPair>("New token pair") }
+            responses {
+                ok<TokenPair>("New token pair")
+                standardErrors()
+            }
         }
     }
 

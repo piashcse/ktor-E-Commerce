@@ -3,7 +3,6 @@ FROM gradle:8.14-jdk17 AS build
 WORKDIR /app
 COPY gradle gradle
 COPY gradlew gradlew.bat settings.gradle.kts build.gradle.kts gradle.properties ./
-COPY gradle/libs.versions.toml gradle/libs.versions.toml
 RUN ./gradlew dependencies --no-daemon || true
 COPY src src
 COPY config config

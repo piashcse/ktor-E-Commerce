@@ -14,11 +14,10 @@ import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.standardErrors
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.*
-import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.NotFoundException
-import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
@@ -53,7 +52,10 @@ fun Route.orderRoutes() {
                 query("orderNumber") { required = true }
                 query("email") { required = true }
             }
-            responses { ok<OrderResponse>("Order") }
+            responses {
+                ok<OrderResponse>("Order")
+                standardErrors()
+            }
         }
     }
 
@@ -92,23 +94,17 @@ fun Route.orderRoutes() {
             patch("status/{id}") {
                 val id = call.requirePathParameter("id")
                 val status = call.requireQueryParameter("status").parseEnum<OrderStatus>("status")
-                val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
-
-                if ((
-                        status in listOf(OrderStatus.CONFIRMED, OrderStatus.SHIPPED, OrderStatus.DELIVERED) &&
-                            userType != UserType.SELLER
-                    ) ||
-                    (status in listOf(OrderStatus.CANCELED, OrderStatus.RECEIVED) && userType != UserType.CUSTOMER)
-                ) {
-                    throw ForbiddenException(Message.Orders.STATUS_NOT_ALLOWED)
-                }
+                OrderStatusPolicy.assertCanSet(call.requireUserType(), status)
 
                 call.respondOk(orderRepo.updateOrderStatus(call.currentUserId, id, status))
             }.describe {
                 summary = "Update order status"
                 description = "Customers: CANCELED/RECEIVED; sellers: CONFIRMED/SHIPPED/DELIVERED"
                 parameters { query("status") { required = true } }
-                responses { ok<OrderResponse>("Updated order") }
+                responses {
+                    ok<OrderResponse>("Updated order")
+                    standardErrors()
+                }
             }
 
             /**
@@ -116,16 +112,16 @@ fun Route.orderRoutes() {
              *
              */
             post("{id}/shipping") {
-                val userType = call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
-                if (userType != UserType.SELLER) {
-                    throw ForbiddenException(Message.Orders.STATUS_NOT_ALLOWED)
-                }
+                OrderStatusPolicy.assertSeller(call.requireUserType())
                 val body = call.receive<ShipOrderRequest>()
                 call.respondOk(orderRepo.shipOrder(call.requirePathParameter("id"), call.currentUserId, body.trackingNumber))
             }.describe {
                 summary = "Seller: mark order shipped"
                 requestBody { jsonBody<ShipOrderRequest>() }
-                responses { ok<OrderResponse>("Shipped order") }
+                responses {
+                    ok<OrderResponse>("Shipped order")
+                    standardErrors()
+                }
             }
 
             /**
@@ -137,13 +133,16 @@ fun Route.orderRoutes() {
                         call.requirePathParameter("id"),
                         call.currentUserId,
                         call.receive<CancelOrderRequest>().reason,
-                        call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
+                        call.requireUserType(),
                     ),
                 )
             }.describe {
                 summary = "Cancel order"
                 requestBody { jsonBody<CancelOrderRequest>() }
-                responses { ok<OrderResponse>("Cancelled order") }
+                responses {
+                    ok<OrderResponse>("Cancelled order")
+                    standardErrors()
+                }
             }
         }
     }

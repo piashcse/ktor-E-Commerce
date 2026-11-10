@@ -19,11 +19,13 @@ import com.piashcse.plugin.created
 import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
+import com.piashcse.plugin.standardErrors
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.request.*
@@ -37,6 +39,7 @@ fun Route.checkoutRoutes() {
     val orderRepo: OrderRepository by inject()
     val consentRepo: ConsentRepository by inject()
     val guestCheckoutService: GuestCheckoutService by inject()
+    val featureFlags: FeatureFlags by inject()
 
     suspend fun requireConfiguredConsents(userId: String) {
         if (!DotEnv.getBoolean("REQUIRE_POLICY_CONSENT", false)) return
@@ -52,7 +55,7 @@ fun Route.checkoutRoutes() {
          * Place an order without an account (feature-flagged)
          */
         post("guest") {
-            if (!FeatureFlags.isEnabled("guest_checkout")) {
+            if (!featureFlags.isEnabled("guest_checkout")) {
                 throw ValidationException("Guest checkout is disabled")
             }
             call.respondCreated(guestCheckoutService.placeOrder(call.receive<GuestCheckoutRequest>()))
@@ -73,7 +76,10 @@ fun Route.checkoutRoutes() {
             }.describe {
                 summary = "Create shipping address"
                 requestBody { jsonBody<ShippingAddressRequest>() }
-                responses { created<ShippingAddressResponse>("Address created") }
+                responses {
+                    created<ShippingAddressResponse>("Address created")
+                    standardErrors()
+                }
             }
 
             /**
@@ -90,7 +96,10 @@ fun Route.checkoutRoutes() {
             }.describe {
                 summary = "Update shipping address"
                 requestBody { jsonBody<ShippingAddressRequest>() }
-                responses { ok<ShippingAddressResponse>("Address updated") }
+                responses {
+                    ok<ShippingAddressResponse>("Address updated")
+                    standardErrors()
+                }
             }
 
             /**
@@ -99,7 +108,7 @@ fun Route.checkoutRoutes() {
             delete("shipping-address/{id}") {
                 val id = call.requirePathParameter("id")
                 shippingAddressRepo.deleteShippingAddress(call.currentUserId, id)
-                call.respondOk(com.piashcse.utils.common.MessageResponse("Shipping address deleted successfully"))
+                call.respondDeleted("Shipping address deleted successfully")
             }.describe { summary = "Delete shipping address" }
 
             /**
@@ -111,7 +120,10 @@ fun Route.checkoutRoutes() {
                 summary = "Checkout summary"
                 description = "Totals, tax, shipping and coupon preview; uses variant prices"
                 requestBody { jsonBody<CheckoutRequest>() }
-                responses { ok<CheckoutSummaryResponse>("Checkout totals") }
+                responses {
+                    ok<CheckoutSummaryResponse>("Checkout totals")
+                    standardErrors()
+                }
             }
 
             /**

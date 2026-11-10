@@ -2,15 +2,13 @@
 
 package com.piashcse.feature.profile
 
-import com.piashcse.constants.Message
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.extension.receiveSingleImage
 import com.piashcse.utils.extension.respondOk
-import com.piashcse.utils.validator.ValidationException
-import io.ktor.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
@@ -55,21 +53,14 @@ fun Route.profileRoutes() {
              * Upload a profile image
              */
             post("image-upload") {
-                val multipart = call.receiveMultipart()
-                var imageUrl: String? = null
-
-                multipart.forEachPart { part ->
-                    if (part is PartData.FileItem) {
-                        // Size cap (5 MB) + MIME allowlist enforced before the upload call.
-                        val bytes = UploadService.readAndValidateImagePart(part, "profile image")
-                        val fileName = UploadService.uploadProfileImage(part, bytes)
-                        imageUrl = UploadService.getProfileImageUrl(fileName)
-                        userProfileService.updateProfileImage(call.currentUserId, imageUrl)
-                    }
-                    part.dispose()
-                }
-
-                call.respondOk(imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED))
+                val imageUrl =
+                    call.receiveSingleImage(
+                        purpose = "profile image",
+                        upload = UploadService::uploadProfileImage,
+                        publicUrl = UploadService::getProfileImageUrl,
+                    )
+                userProfileService.updateProfileImage(call.currentUserId, imageUrl)
+                call.respondOk(imageUrl)
             }.describe { summary = "Upload a profile image" }
         }
     }

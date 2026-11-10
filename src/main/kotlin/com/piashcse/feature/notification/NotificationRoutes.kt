@@ -16,7 +16,6 @@ import com.piashcse.utils.extension.queryBoolean
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
-import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import kotlinx.serialization.Serializable
@@ -87,7 +86,7 @@ fun Route.notificationRoutes() {
             )
         }.describe { summary = "Cursor-paginated notifications" }
         post("{id}/read") {
-            call.respondOk(repo.markRead(call.currentUserId, call.parameters["id"] ?: throw IllegalArgumentException("id required")))
+            call.respondOk(repo.markRead(call.currentUserId, call.requirePathParameter("id")))
         }.describe {
             summary = "Mark notification read"
             responses { ok<NotificationResponse>("Notification") }

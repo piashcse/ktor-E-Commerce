@@ -6,6 +6,7 @@ import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.content.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.slf4j.LoggerFactory
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
@@ -24,6 +25,8 @@ import java.util.*
  * - Automatic directory initialization
  */
 object UploadService {
+    private val log = LoggerFactory.getLogger(UploadService::class.java)
+
     // Upload configuration
     private val uploadBaseDir = DotEnvConfig.uploadDir
 
@@ -277,6 +280,7 @@ object UploadService {
 
             targetFile.delete()
         } catch (e: Exception) {
+            log.warn("Failed to delete upload '$directory/$fileName'", e)
             false
         }
     }

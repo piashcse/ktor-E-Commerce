@@ -47,7 +47,7 @@ Access interactive API documentation at the root `/` or `/swagger` endpoint when
 
 ### 5. Order Management
 
-- **Order Processing**: Handle order creation with human-readable order numbers (ORD-YYYYMMDD-XXXX).
+- **Order Processing**: Handle order creation with human-readable order numbers (ORD-YYYYMMDD-XXXX-XXXXXXXX).
 - **Order Status History**: Comprehensive audit trail for every status transition.
 - **Automatic Taxation**: Configurable tax calculation applied during checkout.
 - **Order Cancellation**: Cancel PENDING/CONFIRMED orders with automatic stock restoration.

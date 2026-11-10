@@ -2,11 +2,11 @@
 
 package com.piashcse.feature.shop_category
 
-import com.piashcse.model.request.ShopCategoryRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.utils.extension.nameFromBodyOrQuery
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
@@ -38,7 +38,7 @@ fun Route.shopCategoryAdminRoutes() {
          *
          */
         post {
-            call.respondCreated(shopCategoryRepo.createCategory(call.receive<ShopCategoryRequest>().name))
+            call.respondCreated(shopCategoryRepo.createCategory(call.nameFromBodyOrQuery()))
         }.describe { summary = "Admin - Create a new shop category" }
 
         /**
@@ -57,7 +57,7 @@ fun Route.shopCategoryAdminRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             shopCategoryRepo.deleteCategory(id)
-            call.respondOk(com.piashcse.utils.common.MessageResponse("Shop category deleted successfully"))
+            call.respondDeleted("Shop category deleted successfully")
         }.describe { summary = "Admin - Permanently delete a shop category" }
     }
 }

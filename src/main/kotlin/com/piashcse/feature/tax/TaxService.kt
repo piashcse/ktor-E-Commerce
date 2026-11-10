@@ -44,7 +44,7 @@ data class TaxRuleResponse(
  * Resolves a tax rate for a country/category. Resolution order:
  * category-specific rule → country default rule → application default (5%).
  */
-object TaxService {
+class TaxService {
     fun resolve(
         country: String,
         categoryId: String?,

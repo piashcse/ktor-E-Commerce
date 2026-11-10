@@ -1,3 +1,6 @@
+import org.gradle.testing.jacoco.tasks.JacocoCoverageVerification
+import org.gradle.testing.jacoco.tasks.JacocoReport
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
@@ -5,12 +8,17 @@ plugins {
     alias(libs.plugins.shadow)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
+    jacoco
 }
 
 group = "com.piashcse"
 version = "1.0.0"
 application {
     mainClass.set("com.piashcse.ApplicationKt")
+    // Distribution/launcher name must stay lowercase and match Dockerfile + CI
+    // (`build/install/ktor-ecom`, `bin/ktor-ecom`). The Gradle project name is
+    // `ktor-ECommerce`, so relying on the default would break Linux builds.
+    applicationName = "ktor-ecom"
     // adding this for fatjar
     project.setProperty("mainClassName", "com.piashcse.ApplicationKt")
     val isDevelopment: Boolean = project.ext.has("development")
@@ -133,5 +141,56 @@ tasks.named("build") {
 tasks.test {
     testLogging {
         events("passed", "skipped", "failed", "standardOut", "standardError")
+    }
+    // Always produce a coverage report after the suite, even on partial failure.
+    finalizedBy(tasks.named("jacocoTestReport"))
+}
+
+// Belt-and-braces: keep the distribution name aligned with the Dockerfile even
+// if the project name changes again.
+distributions {
+    main {
+        distributionBaseName.set("ktor-ecom")
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.13"
+}
+
+tasks.named<JacocoReport>("jacocoTestReport") {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+    classDirectories.setFrom(
+        files(
+            classDirectories.files.map {
+                fileTree(it) {
+                    exclude(
+                        "**/ApplicationKt.class",
+                        "**/di/**",
+                        "**/database/entities/**",
+                        "**/model/**",
+                        "**/*\$*",
+                    )
+                }
+            },
+        ),
+    )
+}
+
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    dependsOn(tasks.test)
+    classDirectories.setFrom(tasks.named<JacocoReport>("jacocoTestReport").get().classDirectories)
+    violationRules {
+        rule {
+            limit {
+                // Baseline gate (current ~19%). Raise incrementally as route/service tests land.
+                minimum = "0.15".toBigDecimal()
+            }
+        }
     }
 }

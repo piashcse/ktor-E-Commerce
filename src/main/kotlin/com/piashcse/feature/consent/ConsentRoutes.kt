@@ -4,7 +4,6 @@
 
 package com.piashcse.feature.consent
 
-import com.piashcse.constants.Message
 import com.piashcse.constants.PolicyType
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.PolicyConsentRequest
@@ -12,11 +11,10 @@ import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.getCurrentUserType
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.parseEnum
+import com.piashcse.utils.extension.requireUserType
 import com.piashcse.utils.extension.respondOk
-import com.piashcse.utils.validator.UnauthorizedException
 import io.ktor.server.plugins.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
@@ -80,7 +78,7 @@ fun Route.consentRoutes() {
             consentRepo.revokeConsent(
                 call.requirePathParameter("id"),
                 call.currentUserId,
-                call.getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED),
+                call.requireUserType(),
             )
             call.respondOk(com.piashcse.utils.common.MessageResponse("Consent revoked successfully"))
         }.describe { summary = "Revoke a consent record (owner or admin)" }

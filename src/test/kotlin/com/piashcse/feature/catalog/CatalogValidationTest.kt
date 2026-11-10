@@ -1,12 +1,10 @@
 package com.piashcse.feature.catalog
 
-import com.piashcse.model.request.BrandRequest
-import com.piashcse.model.request.ProductCategoryRequest
+import com.piashcse.model.request.NameRequest
 import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.model.request.ReviewRatingRequest
-import com.piashcse.model.request.ShopCategoryRequest
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateProductRequest
 import com.piashcse.model.request.UpdateShopRequest
@@ -18,13 +16,13 @@ import kotlin.test.assertFailsWith
 
 class CatalogValidationTest {
     @Test
-    fun `BrandRequest accepts non-blank name`() {
-        assertEquals("Nike", BrandRequest("Nike").name)
+    fun `NameRequest accepts non-blank name`() {
+        assertEquals("Nike", NameRequest("Nike").name)
     }
 
     @Test
-    fun `BrandRequest rejects blank name`() {
-        assertFailsWith<ConstraintViolationException> { BrandRequest("") }
+    fun `NameRequest rejects blank name`() {
+        assertFailsWith<ConstraintViolationException> { NameRequest("") }
     }
 
     @Test
@@ -81,16 +79,6 @@ class CatalogValidationTest {
     }
 
     @Test
-    fun `ProductCategoryRequest accepts non-blank name`() {
-        assertEquals("Electronics", ProductCategoryRequest("Electronics").name)
-    }
-
-    @Test
-    fun `ProductCategoryRequest rejects blank name`() {
-        assertFailsWith<ConstraintViolationException> { ProductCategoryRequest("") }
-    }
-
-    @Test
     fun `ProductSubCategoryRequest accepts valid payload`() {
         assertEquals("Phones", ProductSubCategoryRequest(categoryId = "cat-1", name = "Phones").name)
     }
@@ -99,16 +87,6 @@ class CatalogValidationTest {
     fun `ProductSubCategoryRequest rejects blank fields`() {
         assertFailsWith<ConstraintViolationException> { ProductSubCategoryRequest(categoryId = "", name = "Phones") }
         assertFailsWith<ConstraintViolationException> { ProductSubCategoryRequest(categoryId = "cat-1", name = "") }
-    }
-
-    @Test
-    fun `ShopCategoryRequest accepts non-blank name`() {
-        assertEquals("Fashion", ShopCategoryRequest("Fashion").name)
-    }
-
-    @Test
-    fun `ShopCategoryRequest rejects blank name`() {
-        assertFailsWith<ConstraintViolationException> { ShopCategoryRequest("") }
     }
 
     private fun validProductRequest() =

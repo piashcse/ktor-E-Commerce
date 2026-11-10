@@ -14,7 +14,7 @@ import org.jetbrains.exposed.v1.core.eq
 import java.math.BigDecimal
 
 /** Converts base-USD amounts to checkout currency using fx_rate (fail-closed when missing/stale). */
-object FxService {
+class FxService {
     private val maxAgeHours: Long get() = DotEnv.getInt("FX_MAX_AGE_HOURS", 168).toLong()
 
     suspend fun rateTo(targetCurrency: String): BigDecimal =

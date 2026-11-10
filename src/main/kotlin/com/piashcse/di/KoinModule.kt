@@ -17,6 +17,7 @@ import com.piashcse.feature.coupon.CouponRepository
 import com.piashcse.feature.coupon.CouponRepositoryImpl
 import com.piashcse.feature.dashboard.DashboardRepository
 import com.piashcse.feature.dashboard.DashboardRepositoryImpl
+import com.piashcse.feature.featureflag.FeatureFlags
 import com.piashcse.feature.inventory.InventoryRepository
 import com.piashcse.feature.inventory.InventoryRepositoryImpl
 import com.piashcse.feature.kyc.KycService
@@ -26,6 +27,7 @@ import com.piashcse.feature.notification.NotificationRepository
 import com.piashcse.feature.notification.NotificationRepositoryImpl
 import com.piashcse.feature.order.OrderRepository
 import com.piashcse.feature.order.OrderRepositoryImpl
+import com.piashcse.feature.outbox.OutboxService
 import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.payment.PaymentRepository
@@ -61,9 +63,11 @@ import com.piashcse.feature.shop.ShopRepository
 import com.piashcse.feature.shop.ShopRepositoryImpl
 import com.piashcse.feature.shop_category.ShopCategoryRepository
 import com.piashcse.feature.shop_category.ShopCategoryRepositoryImpl
+import com.piashcse.feature.tax.TaxService
 import com.piashcse.feature.warehouse.WarehouseRepository
 import com.piashcse.feature.wishlist.WishListRepository
 import com.piashcse.feature.wishlist.WishListRepositoryImpl
+import com.piashcse.service.FxService
 import com.piashcse.service.UploadService
 import org.koin.dsl.module
 
@@ -82,7 +86,7 @@ val serviceModule =
         single<CouponRepository> { CouponRepositoryImpl() }
         single<DashboardRepository> { DashboardRepositoryImpl() }
         single<InventoryRepository> { InventoryRepositoryImpl() }
-        single<OrderRepository> { OrderRepositoryImpl() }
+        single<OrderRepository> { OrderRepositoryImpl(get(), get()) }
         single<PaymentGateway> { ManualPaymentGateway() }
         single<PaymentRepository> { PaymentRepositoryImpl(get()) }
         single<PolicyRepository> { PolicyRepositoryImpl() }
@@ -106,6 +110,10 @@ val serviceModule =
         single { GuestCheckoutService(get()) }
         single { RmaService() }
         single { KycService() }
+        single { FxService() }
+        single { TaxService() }
+        single { FeatureFlags() }
+        single { OutboxService() }
 
         // Split auth services
         single { UserAuthenticationService(get()) }

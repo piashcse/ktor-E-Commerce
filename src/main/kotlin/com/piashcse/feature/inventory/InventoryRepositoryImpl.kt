@@ -154,10 +154,12 @@ class InventoryRepositoryImpl : InventoryRepository {
             val product = requireOwnedProduct(actorUserId, productId)
             requireVariant(product.id.value, variantId)
             product.shopId?.value?.let { resolveWarehouse(it, warehouseId) }
+            val shopCondition =
+                product.shopId?.let { InventoryTable.shopId eq it } ?: InventoryTable.shopId.isNull()
             val inventoryQuery =
                 InventoryDAO.find {
                     (InventoryTable.productId eq product.id) and
-                        (InventoryTable.shopId eq product.shopId!!) and variantOp(variantId) and
+                        shopCondition and variantOp(variantId) and
                         if (warehouseId == null) {
                             org.jetbrains.exposed.v1.core.Op.TRUE
                         } else {

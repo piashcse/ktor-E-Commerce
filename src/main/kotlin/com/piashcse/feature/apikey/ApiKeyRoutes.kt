@@ -7,9 +7,9 @@ import com.piashcse.plugin.created
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.requirePermission
-import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.NotFoundException
 import io.ktor.server.request.receive
@@ -41,7 +41,7 @@ fun Route.apiKeyRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             if (!service.revoke(call.currentUserId, id)) throw NotFoundException("API key not found")
-            call.respondOk(MessageResponse("API key revoked"))
+            call.respondDeleted("API key revoked")
         }.describe { summary = "Revoke API key" }
     }
 }

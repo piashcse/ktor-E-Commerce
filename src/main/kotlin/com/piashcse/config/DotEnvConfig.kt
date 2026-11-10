@@ -16,6 +16,13 @@ object DotEnvConfig {
     val jwtAudience: String get() = DotEnv.get("JWT_AUDIENCE", "ktor-ecommerce")
     val jwtRealm: String get() = DotEnv.get("JWT_REALM", "ktor-ecommerce")
     val allowedOrigins: String get() = DotEnv.get("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080")
+
+    /** Pretty JSON is opt-in (dev only) because it increases payload size and CPU. */
+    val jsonPrettyPrint: Boolean get() = DotEnv.getBoolean("JSON_PRETTY_PRINT", false)
+
+    /** Emit HSTS only when the deployment terminates TLS. */
+    val forceHttps: Boolean get() = DotEnv.getBoolean("FORCE_HTTPS", false)
+
     val emailHost: String get() = DotEnv.get("EMAIL_HOST", "smtp.gmail.com")
     val emailPort: Int get() = DotEnv.getInt("EMAIL_PORT", 587)
     val emailUsername: String get() = requireEnv("EMAIL_USERNAME")

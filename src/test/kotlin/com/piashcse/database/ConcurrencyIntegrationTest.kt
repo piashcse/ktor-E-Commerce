@@ -37,6 +37,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * DB-backed concurrency guard tests. Prefers the CI `DB_*` service and falls
@@ -64,7 +65,12 @@ class ConcurrencyIntegrationTest {
             block()
             return
         }
-        Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
+        // CI must never silently skip the only real-database check.
+        if (System.getenv("CI") != null) {
+            assertTrue(dockerAvailable(), "DB_* environment or Docker is required in CI")
+        } else {
+            Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
+        }
         val pg = PostgreSQLContainer("postgres:16-alpine")
         pg.start()
         try {

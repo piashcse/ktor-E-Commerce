@@ -39,7 +39,15 @@ private suspend fun ApplicationCall.respondValidationError(exception: Constraint
             .map { FieldError(field = it.property, message = it.message) }
     respond(
         HttpStatusCode.BadRequest,
-        ApiError(message = "Validation failed", code = "VALIDATION_FAILED", errors = fieldErrors, requestId = requestId()),
+        ApiError(
+            message = "Validation failed",
+            code = "VALIDATION_FAILED",
+            errors = fieldErrors,
+            requestId = requestId(),
+            type = "VALIDATION_FAILED",
+            title = "Validation failed",
+            status = HttpStatusCode.BadRequest.value,
+        ),
     )
 }
 
@@ -47,7 +55,15 @@ private fun ApplicationCall.errorResponse(
     message: String,
     code: HttpStatusCode = HttpStatusCode.BadRequest,
     errorCode: String = "BAD_REQUEST",
-) = ApiError(message = message, code = errorCode, requestId = requestId())
+) = ApiError(
+    message = message,
+    code = errorCode,
+    requestId = requestId(),
+    // Additive RFC 9457-style aliases; message/code remain the canonical fields.
+    type = errorCode,
+    title = message,
+    status = code.value,
+)
 
 private val statusPageLog = LoggerFactory.getLogger("com.piashcse.plugin.ConfigureStatusPage")
 

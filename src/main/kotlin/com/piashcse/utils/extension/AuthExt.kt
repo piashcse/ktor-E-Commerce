@@ -4,10 +4,8 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.utils.validator.UnauthorizedException
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.response.*
 import io.ktor.util.*
 
 // ============================================================================
@@ -56,21 +54,3 @@ fun ApplicationCall.actor(): Triple<String, String?, String?> =
  * copy-pasted getCurrentUserType() ?: throw UnauthorizedException triple.
  */
 fun ApplicationCall.requireUserType(): UserType = getCurrentUserType() ?: throw UnauthorizedException(Message.Errors.UNAUTHORIZED)
-
-suspend fun ApplicationCall.requireRole(
-    role: UserType,
-    useHierarchy: Boolean = true,
-): Boolean {
-    val user =
-        currentUserOrNull()
-            ?: run {
-                respond(HttpStatusCode.Unauthorized, "Unauthorized")
-                return false
-            }
-    val hasAccess = if (useHierarchy) user.hasAccessTo(role) else user.hasRole(role)
-    if (!hasAccess) {
-        respond(HttpStatusCode.Forbidden, "Forbidden")
-        return false
-    }
-    return true
-}

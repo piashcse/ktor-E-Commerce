@@ -2,15 +2,14 @@
 
 package com.piashcse.feature.brand
 
-import com.piashcse.constants.Message
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.nameFromBodyOrQuery
 import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.receiveSingleImage
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
-import com.piashcse.utils.validator.ValidationException
-import io.ktor.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
@@ -59,17 +58,12 @@ fun Route.brandAdminRoutes() {
          */
         post("{id}/image") {
             val id = call.requirePathParameter("id")
-            val multipart = call.receiveMultipart()
-            var imageUrl: String? = null
-            multipart.forEachPart { part ->
-                if (part is PartData.FileItem) {
-                    val bytes = UploadService.readAndValidateImagePart(part, "brand image")
-                    val fileName = UploadService.uploadBrandImage(part, bytes)
-                    imageUrl = UploadService.getBrandImageUrl(fileName)
-                }
-                part.dispose()
-            }
-            val url = imageUrl ?: throw ValidationException(Message.Validation.FILE_REQUIRED)
+            val url =
+                call.receiveSingleImage(
+                    purpose = "brand image",
+                    upload = UploadService::uploadBrandImage,
+                    publicUrl = UploadService::getBrandImageUrl,
+                )
             call.respondOk(brandRepo.updateBrandLogo(id, url))
         }.describe { summary = "Admin - Upload a brand logo" }
 
@@ -80,7 +74,7 @@ fun Route.brandAdminRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             brandRepo.deleteBrand(id)
-            call.respondOk(com.piashcse.utils.common.MessageResponse("Brand deleted successfully"))
+            call.respondDeleted("Brand deleted successfully")
         }.describe { summary = "Admin - Delete a brand" }
     }
 }

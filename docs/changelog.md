@@ -4,6 +4,35 @@ hide:
 ---
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Docker image build used a lowercase distribution name while Gradle emitted `ktor-ECommerce`; the
+  application distribution is now explicitly `ktor-ecom` (matches `Dockerfile` and `bin/ktor-ecom`).
+- Brand create/rename/delete errors no longer say `BrandResponse ...`; they use the user-facing
+  resource label.
+- Missing `id` path parameters now return `400 MISSING_PARAMETER` instead of `401 UNAUTHORIZED`
+  (RMA, notification, payout).
+- 5xx exceptions (`DatabaseException`, `EmailException`) now carry `DATABASE_ERROR` / `EMAIL_ERROR`
+  instead of masquerading as `BAD_REQUEST`.
+- OTP generation no longer uses `Double.pow` (removed an off-by-one and overflow risk).
+- HSTS is only emitted when `FORCE_HTTPS=true`; pretty JSON is opt-in with `JSON_PRETTY_PRINT=true`.
+- Email logs mask recipient addresses (PII).
+
+### Changed
+
+- Added reusable `receiveSingleImage` helper; all five image-upload endpoints use it.
+- Added `respondDeleted` and standardized delete acknowledgements across catalog/cart/address/
+  review/warehouse/API-key routes.
+- Consolidated `BrandRequest` / `ProductCategoryRequest` / `ShopCategoryRequest` into `NameRequest`.
+- Extracted `OrderStatusPolicy` so order status authorization is no longer embedded in the route.
+- `TaxService`, `FxService` and `FeatureFlags` are injectable classes instead of global objects.
+- OpenAPI: standardized error responses on auth/order/product/checkout routes; license corrected to
+  Apache-2.0; added `LICENSE`.
+- CI now publishes JaCoCo coverage, runs dependency review/submission, builds and scans the Docker
+  image, and refuses to silently skip PostgreSQL integration tests.
+
 ## [3.5.0] - 27 May 2026
 
 ### What's Changed
