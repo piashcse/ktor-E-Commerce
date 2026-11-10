@@ -67,6 +67,7 @@ nav:
       - Privacy Policy Consent: privacy-policy-consent.md
       - Dashboard: dashboard.md
       - Audit Log: audit-log.md
+  - Testing & Coverage: testing.md
   - Changelog: changelog.md
 
 repo_url: https://github.com/piashcse/ktor-ecommerce

@@ -191,7 +191,7 @@ class ConcurrencyIntegrationTest {
                 val shopCategory = ShopCategoryDAO.new { name = "Order Shops ${UUID.randomUUID()}" }
                 val shop =
                     ShopDAO.new {
-                        userId = user.id
+                        this.userId = user.id
                         categoryId = shopCategory.id
                         name = "Order Shop"
                         status = ShopStatus.APPROVED
@@ -236,7 +236,7 @@ class ConcurrencyIntegrationTest {
                 val shopCategory = ShopCategoryDAO.new { name = "Pay Shops ${UUID.randomUUID()}" }
                 val shop =
                     ShopDAO.new {
-                        userId = user.id
+                        this.userId = user.id
                         categoryId = shopCategory.id
                         name = "Pay Shop"
                         status = ShopStatus.APPROVED
@@ -322,7 +322,7 @@ class ConcurrencyIntegrationTest {
                 val shopCategory = ShopCategoryDAO.new { name = "Coupon Shops ${UUID.randomUUID()}" }
                 val shop =
                     ShopDAO.new {
-                        userId = user.id
+                        this.userId = user.id
                         categoryId = shopCategory.id
                         name = "Coupon Shop"
                         status = ShopStatus.APPROVED

@@ -127,6 +127,22 @@
 - **Detekt**: Static code analysis for finding potential bugs and code smells.
 - **Pre-commit Hooks**: Enforce quality standards before code is even committed.
 
+### 13. Testing & Coverage
+
+- **Unit + route tests**: `./gradlew test` (no database required)
+- **PostgreSQL integration tests**: Flyway migrations, repositories, order/payment/refund/payout
+  lifecycles and concurrency guards
+- **Coverage gate**: JaCoCo overall + per-package rules; CI enforces the integration-backed target
+- **Current baseline**: 421 tests, **54.2% instruction / 26.0% branch / 59.2% line**
+
+```bash
+./gradlew test jacocoTestReport
+# report: build/reports/jacoco/test/html/index.html
+```
+
+See [Testing & Coverage](docs/testing.md) for the test pyramid, local database setup, thresholds
+and known gaps.
+
 ## Architecture
 
 <p align="center">

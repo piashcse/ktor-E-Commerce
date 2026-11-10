@@ -42,6 +42,7 @@ class InvalidCredentialsException(
 ) : AppException(
         buildMessage(remainingAttempts),
         HttpStatusCode.Unauthorized,
+        "INVALID_CREDENTIALS",
     ) {
     companion object {
         private fun buildMessage(remaining: Int?): String =
@@ -54,10 +55,10 @@ class InvalidCredentialsException(
 }
 
 class UnverifiedAccountException(message: String = Message.Auth.ACCOUNT_NOT_VERIFIED) :
-    AppException(message, HttpStatusCode.Unauthorized)
+    AppException(message, HttpStatusCode.Unauthorized, "ACCOUNT_NOT_VERIFIED")
 
 class DeactivatedAccountException(message: String = Message.Auth.ACCOUNT_DEACTIVATED) :
-    AppException(message, HttpStatusCode.Unauthorized)
+    AppException(message, HttpStatusCode.Unauthorized, "ACCOUNT_DEACTIVATED")
 
 // ─── 403 Forbidden ─────────────────────────────────────────────────────────
 

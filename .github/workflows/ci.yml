@@ -36,6 +36,9 @@ jobs:
       JWT_SECRET: ci-test-secret-at-least-32-chars-long
       EMAIL_USERNAME: ci@example.com
       EMAIL_PASSWORD: ci-test
+      # Integration-aware gate: CI runs the Postgres-backed suites.
+      COVERAGE_MIN: 0.50
+      COVERAGE_ENFORCE_DB: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -56,6 +59,14 @@ jobs:
         with:
           name: jacoco-report
           path: build/reports/jacoco/
+          retention-days: 7
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: build/reports/tests/
           retention-days: 7
 
       - name: Static analysis

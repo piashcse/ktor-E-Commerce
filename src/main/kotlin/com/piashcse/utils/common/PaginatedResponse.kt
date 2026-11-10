@@ -16,7 +16,7 @@ data class PaginationMetadata(
     val page: Int = (offset / if (limit > 0) limit else 1) + 1,
     val perPage: Int = limit,
     val totalPages: Int = if (limit > 0) ((totalCount + limit.toLong() - 1) / limit.toLong()).toInt() else 0,
-    val hasNext: Boolean = offset + limit < totalCount,
+    val hasNext: Boolean = limit > 0 && offset + limit < totalCount,
     val hasPrev: Boolean = offset > 0,
 ) {
     val nextPage: Int? get() = if (hasNext) page + 1 else null

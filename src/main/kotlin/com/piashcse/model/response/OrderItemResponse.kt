@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class OrderItemResponse(
+    val id: String,
     val productId: String,
     val productName: String?,
     val quantity: Int,

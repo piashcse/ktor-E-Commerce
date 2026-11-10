@@ -39,6 +39,7 @@ fun OrderDAO.toOrderResponse(items: List<OrderItemResponse>? = null) =
 
 fun OrderItemDAO.toOrderItemResponse() =
     OrderItemResponse(
+        id = id.value,
         productId = productId.value,
         productName = productName,
         quantity = quantity,

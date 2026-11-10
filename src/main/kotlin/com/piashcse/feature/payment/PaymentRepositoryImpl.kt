@@ -175,7 +175,7 @@ class PaymentRepositoryImpl(
         if (replay != null) return replay
 
         // Validate before charging so an invalid order never reaches the provider.
-        loadPayableOrder(paymentRequest, callerUserId, forUpdate = false)
+        query { loadPayableOrder(paymentRequest, callerUserId, forUpdate = false) }
 
         // Network call happens outside the DB transaction.
         val charge =

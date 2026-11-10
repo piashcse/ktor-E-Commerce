@@ -36,6 +36,12 @@ hide:
 - README: every operation now has the same `<details>` block format (Description, Curl,
   Request URL, Response); missing operations were generated from OpenAPI and the complete set is
   also published as `docs/endpoints.md`.
+- Testing: added Postgres-backed service/commerce/order/after-sales integration suites, pure
+  unit tests for serializers/enums/validators/pagination/date-time/JDBC binding, and split JaCoCo
+  gates (local unit baseline + CI integration target). Current baseline: 421 tests, 54.2%
+  instruction / 26.0% branch coverage.
+- Fixed a payment bug where `createPayment` validated the order outside a transaction.
+- Added `orderItem.id` to order responses so clients can create refunds/RMAs.
 - CI now publishes JaCoCo coverage, runs dependency review/submission, builds and scans the Docker
   image, and refuses to silently skip PostgreSQL integration tests.
 
