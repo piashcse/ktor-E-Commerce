@@ -64,6 +64,7 @@ import com.piashcse.feature.shop.ShopRepository
 import com.piashcse.feature.shop.ShopRepositoryImpl
 import com.piashcse.feature.shop_category.ShopCategoryRepository
 import com.piashcse.feature.shop_category.ShopCategoryRepositoryImpl
+import com.piashcse.feature.stockalert.StockAlertService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.feature.warehouse.WarehouseRepository
 import com.piashcse.feature.wishlist.WishListRepository
@@ -112,6 +113,7 @@ val serviceModule =
         single { RmaService() }
         single { KycService() }
         single { InvoiceService() }
+        single { StockAlertService() }
         single { FxService() }
         single { TaxService() }
         single { FeatureFlags() }

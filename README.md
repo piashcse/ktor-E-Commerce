@@ -3073,6 +3073,78 @@ http://localhost:8080/api/v1/products/suggest?q={q}&limit={limit}
 ```
 </details>
 
+<details>
+<summary> <code>GET</code> <code>/api/v1/stock-alerts</code></summary>
+
+### Description
+List the authenticated customer's back-in-stock subscriptions.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/stock-alerts' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/stock-alerts
+```
+
+### Response
+```json
+[{ "id": "alert-uuid", "productId": "product-uuid", "variantId": null, "notifiedAt": null }]
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/stock-alerts</code></summary>
+
+### Description
+Subscribe to a back-in-stock alert for a product or variant.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/stock-alerts' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"productId":"product-uuid","variantId":null}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/stock-alerts
+```
+
+### Response
+`201 Created` with the subscription.
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/stock-alerts/{productId}</code></summary>
+
+### Description
+Remove a back-in-stock alert.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/stock-alerts/product-uuid' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/stock-alerts/{productId}
+```
+
+### Response
+```json
+{ "message": "Back-in-stock alert removed" }
+```
+</details>
+
 ### REVIEW RATING
 
 <details>

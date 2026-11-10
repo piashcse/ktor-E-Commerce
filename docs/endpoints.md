@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 212  
+**Operations:** 215  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -21,7 +21,7 @@ document served by Swagger UI.
 | [Brand](#brand) | 5 |
 | [Product Category](#product-category) | 5 |
 | [Product Sub Category](#product-sub-category) | 4 |
-| [Product](#product) | 23 |
+| [Product](#product) | 26 |
 | [Recommendation](#recommendation) | 1 |
 | [Review](#review) | 8 |
 | [Wishlist](#wishlist) | 5 |
@@ -144,6 +144,9 @@ document served by Swagger UI.
 | `GET` | `/api/v1/products/{id}/options` | List product options | Public |
 | `GET` | `/api/v1/products/{id}/related` | Related products | Public |
 | `GET` | `/api/v1/products/{id}/variants` | List product variants | Public |
+| `GET` | `/api/v1/stock-alerts` | List my back-in-stock alerts | Authenticated |
+| `POST` | `/api/v1/stock-alerts` | Subscribe to a back-in-stock alert | Authenticated |
+| `DELETE` | `/api/v1/stock-alerts/{productId}` | Remove a back-in-stock alert | Authenticated |
 | `GET` | `/api/v1/seller/products` | Seller - Retrieve seller products | Seller |
 | `POST` | `/api/v1/seller/products` | Create product | Seller |
 | `POST` | `/api/v1/seller/products/image-upload` | Seller - Upload a product image | Seller |

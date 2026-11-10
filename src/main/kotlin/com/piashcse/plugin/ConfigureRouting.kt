@@ -59,6 +59,7 @@ import com.piashcse.feature.shop.shopRoutes
 import com.piashcse.feature.shop.shopSellerRoutesV1
 import com.piashcse.feature.shop_category.shopCategoryAdminRoutes
 import com.piashcse.feature.shop_category.shopCategoryRoutes
+import com.piashcse.feature.stockalert.stockAlertRoutes
 import com.piashcse.feature.tax.taxAdminRoutes
 import com.piashcse.feature.warehouse.warehouseSellerRoutes
 import com.piashcse.feature.wishlist.wishListRoutes
@@ -154,6 +155,7 @@ private fun Route.customerRoutes() {
     route("reviews") { reviewRatingRoutes() }.describe { tag(ApiTags.REVIEW) }
     route("carts") { cartRoutes() }.describe { tag(ApiTags.CART) }
     route("wishlists") { wishListRoutes() }.describe { tag(ApiTags.WISHLIST) }
+    route("stock-alerts") { stockAlertRoutes() }.describe { tag(ApiTags.PRODUCT) }
     route("checkout") { checkoutRoutes() }.describe { tag(ApiTags.CHECKOUT) }
     route("orders") {
         orderRoutes()

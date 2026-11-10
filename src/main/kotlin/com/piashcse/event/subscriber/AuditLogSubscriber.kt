@@ -86,6 +86,7 @@ class AuditLogSubscriber(
                         details = "RMA for order ${event.orderId}: ${event.fromStatus} -> ${event.toStatus}",
                     )
                 is SendEmailEvent -> Unit
+                is BackInStockEvent -> Unit
             }
         } catch (e: Exception) {
             log.error("Failed to write audit log for event ${event::class.simpleName}", e)

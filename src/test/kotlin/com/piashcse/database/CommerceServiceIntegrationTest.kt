@@ -6,18 +6,27 @@ import com.piashcse.constants.ReviewStatus
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.InventoryDAO
+import com.piashcse.database.entities.OutboxDAO
 import com.piashcse.database.entities.OutboxDeadLetterDAO
+import com.piashcse.database.entities.OutboxTable
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductDAO
+import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.ShopCategoryDAO
 import com.piashcse.database.entities.ShopDAO
+import com.piashcse.database.entities.StockAlertDAO
+import com.piashcse.database.entities.StockAlertTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.event.BackInStockEvent
+import com.piashcse.event.subscriber.NotificationSubscriber
 import com.piashcse.feature.cart.CartRepositoryImpl
 import com.piashcse.feature.coupon.CouponRepositoryImpl
 import com.piashcse.feature.dashboard.DashboardRepositoryImpl
+import com.piashcse.feature.inventory.InventoryRepositoryImpl
+import com.piashcse.feature.notification.NotificationDispatcher
 import com.piashcse.feature.notification.NotificationRepositoryImpl
 import com.piashcse.feature.outbox.OutboxService
 import com.piashcse.feature.policy.PolicyRepositoryImpl
@@ -27,12 +36,17 @@ import com.piashcse.feature.profile.ProfileRepositoryImpl
 import com.piashcse.feature.recommendation.RecommendationService
 import com.piashcse.feature.review_rating.ReviewRatingRepositoryImpl
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
+import com.piashcse.feature.stockalert.StockAlertRequest
+import com.piashcse.feature.stockalert.StockAlertService
 import com.piashcse.feature.wishlist.WishListRepositoryImpl
 import com.piashcse.model.request.CouponRequest
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.model.request.UserProfileRequest
+import com.piashcse.utils.extension.entityID
+import io.mockk.coEvery
+import io.mockk.mockk
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -173,6 +187,28 @@ class CommerceServiceIntegrationTest {
         assertTrue(kotlinx.coroutines.runBlocking { cartRepo.getCartSummary(customerId) }.itemCount >= 1)
         assertNotNull(kotlinx.coroutines.runBlocking { cartRepo.removeCartItem(customerId, productId) })
         assertTrue(kotlinx.coroutines.runBlocking { cartRepo.clearCart(customerId) } || true)
+
+        // Back-in-stock alerts
+        transaction {
+            InventoryDAO.all().first { it.productId.value == productId }.apply { stockQuantity = 0 }
+        }
+        val stockAlerts = StockAlertService()
+        kotlinx.coroutines.runBlocking { stockAlerts.subscribe(customerId, StockAlertRequest(productId)) }
+        kotlinx.coroutines.runBlocking { InventoryRepositoryImpl().updateStock(sellerUserId, productId, 5, "add", null, null) }
+        assertTrue(
+            transaction { OutboxDAO.find { OutboxTable.eventType eq "BACK_IN_STOCK" }.count() } >= 1,
+            "Restocking must enqueue a back-in-stock event",
+        )
+        val dispatcher = mockk<NotificationDispatcher>(relaxed = true)
+        coEvery { dispatcher.dispatch(any(), any()) } returns Unit
+        kotlinx.coroutines.runBlocking { NotificationSubscriber(dispatcher).onEvent(BackInStockEvent(productId)) }
+        assertNotNull(
+            transaction {
+                StockAlertDAO.find { StockAlertTable.productId eq productId.entityID(ProductTable) }.firstOrNull()?.notifiedAt
+            },
+            "Stock alert must be marked notified",
+        )
+        assertTrue(kotlinx.coroutines.runBlocking { stockAlerts.unsubscribe(customerId, productId) })
 
         // Wishlist + move-to-cart
         val wishlist = WishListRepositoryImpl()

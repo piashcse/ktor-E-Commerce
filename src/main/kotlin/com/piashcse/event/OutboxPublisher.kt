@@ -34,6 +34,9 @@ object OutboxPublisher {
                 is OrderStatusChangedEvent ->
                     "ORDER_STATUS_CHANGED" to
                         outboxJson.encodeToString(OrderStatusChangedEvent.serializer(), event)
+                is BackInStockEvent ->
+                    "BACK_IN_STOCK" to
+                        outboxJson.encodeToString(BackInStockEvent.serializer(), event)
                 is PaymentCompletedEvent -> "PAYMENT_COMPLETED" to outboxJson.encodeToString(PaymentCompletedEvent.serializer(), event)
                 is RefundStatusChangedEvent ->
                     "REFUND_STATUS_CHANGED" to
@@ -61,6 +64,7 @@ object OutboxPublisher {
             when (type) {
                 "ORDER_PLACED" -> outboxJson.decodeFromString(OrderPlacedEvent.serializer(), payload)
                 "ORDER_STATUS_CHANGED" -> outboxJson.decodeFromString(OrderStatusChangedEvent.serializer(), payload)
+                "BACK_IN_STOCK" -> outboxJson.decodeFromString(BackInStockEvent.serializer(), payload)
                 "PAYMENT_COMPLETED" -> outboxJson.decodeFromString(PaymentCompletedEvent.serializer(), payload)
                 "REFUND_STATUS_CHANGED" -> outboxJson.decodeFromString(RefundStatusChangedEvent.serializer(), payload)
                 "RMA_STATUS_CHANGED" -> outboxJson.decodeFromString(RmaStatusChangedEvent.serializer(), payload)

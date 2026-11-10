@@ -2,13 +2,20 @@ package com.piashcse.event.subscriber
 
 import com.piashcse.database.entities.AuditLogDAO
 import com.piashcse.database.entities.OrderDAO
+import com.piashcse.database.entities.ProductDAO
+import com.piashcse.database.entities.ProductVariantTable
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerPayoutDAO
 import com.piashcse.database.entities.SellerPayoutTable
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopTable
+import com.piashcse.database.entities.StockAlertDAO
+import com.piashcse.database.entities.StockAlertTable
+import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.AdminActionEvent
+import com.piashcse.event.BackInStockEvent
 import com.piashcse.event.DomainEvent
 import com.piashcse.event.OrderPlacedEvent
 import com.piashcse.event.OrderStatusChangedEvent
@@ -26,6 +33,8 @@ import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNull
+import org.jetbrains.exposed.v1.core.or
 import org.slf4j.LoggerFactory
 
 /** Writes in-app notifications + seller payout rows. Notification writes are non-fatal;
@@ -116,9 +125,15 @@ class NotificationSubscriber(
                 )
             }
             is SendEmailEvent, is AdminActionEvent -> null
+            // Back-in-stock fans out to many subscribers and is handled in onEvent.
+            is BackInStockEvent -> null
         }
 
     override suspend fun onEvent(event: DomainEvent) {
+        if (event is BackInStockEvent) {
+            notifyStockAlerts(event)
+            return
+        }
         // Payout capture must propagate (see captureSellerPayout), so it runs outside
         // the non-fatal notification try/catch below.
         if (event is PaymentCompletedEvent) {
@@ -135,6 +150,43 @@ class NotificationSubscriber(
             dispatcher.dispatch(message)
         } catch (e: Exception) {
             log.error("Notification dispatch failed for ${event::class.simpleName}", e)
+        }
+    }
+
+    private suspend fun notifyStockAlerts(event: BackInStockEvent) {
+        val product = query { ProductDAO.findById(event.productId) } ?: return
+        val alerts =
+            query {
+                StockAlertDAO.find {
+                    (StockAlertTable.productId eq product.id) and
+                        StockAlertTable.notifiedAt.isNull() and
+                        if (event.variantId == null) {
+                            StockAlertTable.variantId.isNull()
+                        } else {
+                            StockAlertTable.variantId.isNull() or
+                                (StockAlertTable.variantId eq event.variantId.entityID(ProductVariantTable))
+                        }
+                }.toList()
+            }
+        val content = NotificationTemplates.backInStock(product.name)
+        alerts.forEach { alert ->
+            val user = query { UserDAO.findById(alert.userId.value) } ?: return@forEach
+            try {
+                dispatcher.dispatch(
+                    NotificationMessage(
+                        userId = user.id.value,
+                        email = user.email,
+                        eventType = "BACK_IN_STOCK",
+                        title = content.title,
+                        body = content.body,
+                        resourceType = "PRODUCT",
+                        resourceId = product.id.value,
+                    ),
+                )
+                query { alert.notifiedAt = currentUtc() }
+            } catch (e: Exception) {
+                log.error("Back-in-stock notification failed for ${user.id.value}", e)
+            }
         }
     }
 
