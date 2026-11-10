@@ -20,6 +20,7 @@ import com.piashcse.feature.dashboard.DashboardRepositoryImpl
 import com.piashcse.feature.featureflag.FeatureFlags
 import com.piashcse.feature.inventory.InventoryRepository
 import com.piashcse.feature.inventory.InventoryRepositoryImpl
+import com.piashcse.feature.invoice.InvoiceService
 import com.piashcse.feature.kyc.KycService
 import com.piashcse.feature.notification.NotificationDispatcher
 import com.piashcse.feature.notification.NotificationPreferencesService
@@ -110,6 +111,7 @@ val serviceModule =
         single { GuestCheckoutService(get()) }
         single { RmaService() }
         single { KycService() }
+        single { InvoiceService() }
         single { FxService() }
         single { TaxService() }
         single { FeatureFlags() }

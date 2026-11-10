@@ -23,6 +23,8 @@ All Order endpoints require Bearer token authentication.
 | `PATCH` | `/api/v1/admin/orders/status/{id}` | Update any order status | Yes (Admin) |
 | `POST` | `/api/v1/admin/orders/{id}/cancel` | Cancel any order | Yes (Admin) |
 | `GET` | `/api/v1/admin/orders` | Retrieve all orders with advanced filters | Yes (Admin) |
+| `GET` | `/api/v1/orders/{id}/invoice` | Printable HTML invoice (owner/seller/admin) | Yes |
+| `GET` | `/api/v1/orders/{id}/packing-slip` | Printable HTML packing slip | Yes |
 
 ---
 

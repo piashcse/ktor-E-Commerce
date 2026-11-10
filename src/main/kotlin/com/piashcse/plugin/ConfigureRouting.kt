@@ -21,6 +21,7 @@ import com.piashcse.feature.featureflag.featureFlagRoutes
 import com.piashcse.feature.fx.fxAdminRoutes
 import com.piashcse.feature.inventory.inventoryAdminRoutes
 import com.piashcse.feature.inventory.inventorySellerRoutes
+import com.piashcse.feature.invoice.orderDocumentRoutes
 import com.piashcse.feature.kyc.adminKycRoutes
 import com.piashcse.feature.kyc.sellerKycRoutes
 import com.piashcse.feature.notification.notificationRoutes
@@ -153,7 +154,10 @@ private fun Route.customerRoutes() {
     route("carts") { cartRoutes() }.describe { tag(ApiTags.CART) }
     route("wishlists") { wishListRoutes() }.describe { tag(ApiTags.WISHLIST) }
     route("checkout") { checkoutRoutes() }.describe { tag(ApiTags.CHECKOUT) }
-    route("orders") { orderRoutes() }.describe { tag(ApiTags.ORDER) }
+    route("orders") {
+        orderRoutes()
+        orderDocumentRoutes()
+    }.describe { tag(ApiTags.ORDER) }
     route("payments") { paymentRoutes() }.describe { tag(ApiTags.PAYMENT) }
     route("policies") { policyRoutes() }.describe { tag(ApiTags.POLICY) }
     route("policy-consents") { consentRoutes() }.describe { tag(ApiTags.CONSENT) }
