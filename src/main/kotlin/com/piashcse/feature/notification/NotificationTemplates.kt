@@ -30,4 +30,28 @@ object NotificationTemplates {
     ) = Content("Return/exchange $to", "Request $rmaId changed from $from to $to.")
 
     fun welcome(userType: String) = Content("Welcome", "Your account has been created as $userType.")
+
+    fun orderStatusChanged(
+        orderNumber: String,
+        status: String,
+        trackingNumber: String? = null,
+    ): Content {
+        val title =
+            when (status) {
+                "SHIPPED" -> "Order $orderNumber shipped"
+                "DELIVERED" -> "Order $orderNumber delivered"
+                "CANCELED" -> "Order $orderNumber canceled"
+                else -> "Order $orderNumber $status"
+            }
+        val body =
+            when (status) {
+                "SHIPPED" ->
+                    "Your order $orderNumber has shipped." +
+                        (trackingNumber?.takeIf { it.isNotBlank() }?.let { " Tracking: $it." } ?: "")
+                "DELIVERED" -> "Your order $orderNumber was delivered."
+                "CANCELED" -> "Your order $orderNumber was canceled."
+                else -> "Your order $orderNumber is now $status."
+            }
+        return Content(title, body)
+    }
 }

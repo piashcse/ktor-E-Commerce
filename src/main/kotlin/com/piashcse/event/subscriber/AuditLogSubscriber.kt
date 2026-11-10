@@ -22,6 +22,16 @@ class AuditLogSubscriber(
                         resourceId = event.orderId,
                         details = "Order ${event.orderNumber} placed, total ${event.total.toPlainString()}",
                     )
+                is OrderStatusChangedEvent ->
+                    auditLogRepository.log(
+                        actorId = event.userId,
+                        actorEmail = event.email,
+                        actorRole = "CUSTOMER",
+                        action = "ORDER_${event.toStatus}",
+                        resourceType = "ORDER",
+                        resourceId = event.orderId,
+                        details = "Order ${event.orderNumber}: ${event.fromStatus} -> ${event.toStatus}",
+                    )
                 is UserRegisteredEvent ->
                     auditLogRepository.log(
                         actorId = event.userId,

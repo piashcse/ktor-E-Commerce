@@ -11,6 +11,7 @@ import com.piashcse.database.entities.UserTable
 import com.piashcse.event.AdminActionEvent
 import com.piashcse.event.DomainEvent
 import com.piashcse.event.OrderPlacedEvent
+import com.piashcse.event.OrderStatusChangedEvent
 import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.event.RefundStatusChangedEvent
 import com.piashcse.event.RmaStatusChangedEvent
@@ -42,6 +43,23 @@ class NotificationSubscriber(
                     userId = event.userId,
                     email = event.email,
                     eventType = "ORDER_PLACED",
+                    title = content.title,
+                    body = content.body,
+                    resourceType = "ORDER",
+                    resourceId = event.orderId,
+                )
+            }
+            is OrderStatusChangedEvent -> {
+                val content =
+                    NotificationTemplates.orderStatusChanged(
+                        event.orderNumber,
+                        event.toStatus,
+                        event.trackingNumber,
+                    )
+                NotificationMessage(
+                    userId = event.userId,
+                    email = event.email,
+                    eventType = "ORDER_${event.toStatus}",
                     title = content.title,
                     body = content.body,
                     resourceType = "ORDER",

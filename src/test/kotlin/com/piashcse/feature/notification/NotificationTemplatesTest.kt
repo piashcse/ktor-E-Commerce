@@ -1,5 +1,6 @@
 package com.piashcse.feature.notification
 
+import com.piashcse.event.OrderStatusChangedEvent
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.RmaStatusChangedEvent
 import kotlinx.serialization.encodeToString
@@ -49,6 +50,32 @@ class NotificationTemplatesTest {
         assertEquals("APPROVED", decoded.toStatus)
     }
 
+    @Test
+    fun `order status template includes tracking when shipped`() {
+        val content = NotificationTemplates.orderStatusChanged("ORD-1", "SHIPPED", "TRACK-1")
+        assertEquals("Order ORD-1 shipped", content.title)
+        assertTrue(content.body.contains("TRACK-1"))
+    }
+
+    @Test
+    fun `order status event round-trips through the outbox`() {
+        val event =
+            OrderStatusChangedEvent(
+                orderId = "o-1",
+                userId = "u-1",
+                email = "buyer@example.com",
+                orderNumber = "ORD-1",
+                fromStatus = "PAID",
+                toStatus = "SHIPPED",
+                trackingNumber = "TRACK-1",
+                occurredAt = java.time.LocalDateTime.of(2026, 1, 1, 0, 0),
+            )
+        val decoded = OutboxPublisher.decode("ORDER_STATUS_CHANGED", encode(event))
+        assertIs<OrderStatusChangedEvent>(decoded)
+        assertEquals("SHIPPED", decoded.toStatus)
+        assertEquals("TRACK-1", decoded.trackingNumber)
+    }
+
     private fun encode(event: RmaStatusChangedEvent): String {
         val json =
             kotlinx.serialization.json.Json {
@@ -59,5 +86,17 @@ class NotificationTemplatesTest {
                     }
             }
         return json.encodeToString(RmaStatusChangedEvent.serializer(), event)
+    }
+
+    private fun encode(event: OrderStatusChangedEvent): String {
+        val json =
+            kotlinx.serialization.json.Json {
+                serializersModule =
+                    kotlinx.serialization.modules.SerializersModule {
+                        contextual(com.piashcse.plugin.BigDecimalSerializer)
+                        contextual(com.piashcse.plugin.LocalDateTimeSerializer)
+                    }
+            }
+        return json.encodeToString(OrderStatusChangedEvent.serializer(), event)
     }
 }
