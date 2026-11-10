@@ -12,8 +12,8 @@ import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondOk
-import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.request.receive
+import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import kotlinx.serialization.Serializable
@@ -54,15 +54,11 @@ fun Route.adminKycRoutes() {
     }
     adminWriteRateLimit {
         put("{sellerId}/verify") {
-            val sellerId =
-                call.parameters["sellerId"]
-                    ?: throw ValidationException("sellerId is required")
+            val sellerId = call.requirePathParameter("sellerId")
             call.respondOk(service.verify(sellerId))
         }.describe { summary = "Admin: verify KYC" }
         put("{sellerId}/reject") {
-            val sellerId =
-                call.parameters["sellerId"]
-                    ?: throw ValidationException("sellerId is required")
+            val sellerId = call.requirePathParameter("sellerId")
             call.respondOk(service.reject(sellerId, call.receive<KycRejectRequest>().reason))
         }.describe {
             summary = "Admin: reject KYC"

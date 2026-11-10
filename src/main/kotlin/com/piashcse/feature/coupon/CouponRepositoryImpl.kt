@@ -7,6 +7,7 @@ import com.piashcse.database.entities.CouponTable
 import com.piashcse.database.entities.CouponUsageDAO
 import com.piashcse.database.entities.CouponUsageTable
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
 import com.piashcse.model.request.CouponRequest
 import com.piashcse.model.response.CouponResponse
@@ -26,7 +27,6 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
-import java.time.ZoneOffset
 
 class CouponRepositoryImpl : CouponRepository {
     private fun auditCoupon(
@@ -119,7 +119,7 @@ class CouponRepositoryImpl : CouponRepository {
 
     override suspend fun getCouponByCode(code: String): CouponResponse? =
         query {
-            val now = LocalDateTime.now(ZoneOffset.UTC)
+            val now = currentUtc()
             CouponDAO.find {
                 (CouponTable.code eq normalizeCode(code)) and
                     (CouponTable.isActive eq true) and

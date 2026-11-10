@@ -7,8 +7,8 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.requirePermission
 import com.piashcse.utils.extension.respondOk
-import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.request.receive
+import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 
@@ -23,9 +23,7 @@ fun Route.featureFlagRoutes() {
         }
 
         put("{key}") {
-            val key =
-                call.parameters["key"]?.takeIf { it.isNotBlank() }
-                    ?: throw ValidationException("key is required")
+            val key = call.requirePathParameter("key")
             call.respondOk(FeatureFlags.set(key, call.receive<FeatureFlagUpdateRequest>()))
         }.describe {
             summary = "Set feature flag"

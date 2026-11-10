@@ -5,10 +5,9 @@ import com.piashcse.constants.RefundStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import com.piashcse.database.entities.base.currentUtc
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 object RefundRequestTable : BaseIdTable("refund_request") {
     val orderItemId = reference("order_item_id", OrderItemTable.id)
@@ -24,7 +23,7 @@ object RefundRequestTable : BaseIdTable("refund_request") {
     val taxRefund = decimal("tax_refund", 10, 2).default(java.math.BigDecimal("0.00"))
     val refundMethod = enumerationByName("refund_method", 50, RefundMethod::class).nullable()
     val trackingNumber = varchar("tracking_number", 100).nullable()
-    val requestedAt = datetime("requested_at").clientDefault { LocalDateTime.now(ZoneOffset.UTC) }
+    val requestedAt = datetime("requested_at").clientDefault { currentUtc() }
     val resolvedAt = datetime("resolved_at").nullable()
     // createdAt and updatedAt are inherited from BaseIdTable
 }

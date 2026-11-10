@@ -6,6 +6,7 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
 import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
@@ -21,7 +22,6 @@ import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import java.security.MessageDigest
 import java.time.Instant
-import java.time.LocalDateTime
 import java.util.*
 
 @Suppress("TooManyFunctions")
@@ -186,11 +186,11 @@ class AuthRepositoryImpl : AuthRepository {
                         .firstOrNull()
 
                 val otp = generateOTP()
-                val otpExpiryTime = LocalDateTime.now().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
+                val otpExpiryTime = currentUtc().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
 
                 if (existingUser != null) {
                     if (existingUser.isVerified) throw ValidationException(Message.Auth.USER_EXISTS)
-                    if (existingUser.otpExpiry?.isAfter(LocalDateTime.now()) == true) {
+                    if (existingUser.otpExpiry?.isAfter(currentUtc()) == true) {
                         throw ValidationException(Message.Auth.OTP_ALREADY_SENT)
                     }
                     existingUser.otpCode = otp
@@ -287,7 +287,7 @@ class AuthRepositoryImpl : AuthRepository {
                     ?: throw NotFoundException(Message.Auth.userNotFoundForRole(forgotPasswordRequest.userType))
             val otp = generateOTP()
             user.resetOtpCode = otp
-            user.resetOtpExpiry = LocalDateTime.now().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
+            user.resetOtpExpiry = currentUtc().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
             otp
         }
 
@@ -303,7 +303,7 @@ class AuthRepositoryImpl : AuthRepository {
             val otpAttempt = resetAttempt(user.id, forUpdate = true)
             if (otpAttempt?.isLocked == true) return@query ResetResult.Locked
 
-            if (user.resetOtpExpiry?.isBefore(LocalDateTime.now()) != false) {
+            if (user.resetOtpExpiry?.isBefore(currentUtc()) != false) {
                 return@query ResetResult.InvalidOrExpiredOtp
             }
 
@@ -367,7 +367,7 @@ class AuthRepositoryImpl : AuthRepository {
                 attempt.attemptCount = 0
                 attempt.lockedUntil = null
             }
-            if (userEntity.otpExpiry?.isBefore(LocalDateTime.now()) != false ||
+            if (userEntity.otpExpiry?.isBefore(currentUtc()) != false ||
                 !constantTimeEquals(userEntity.otpCode.orEmpty(), otp)
             ) {
                 recordLockedOtpFailure(userEntity, attempt)

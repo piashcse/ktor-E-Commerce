@@ -6,6 +6,7 @@ import com.piashcse.database.entities.NotificationTable
 import com.piashcse.database.entities.OtpAttemptTable
 import com.piashcse.database.entities.OutboxTable
 import com.piashcse.database.entities.RefreshTokenTable
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.utils.extension.query
 import kotlinx.coroutines.*
 import org.jetbrains.exposed.v1.core.and
@@ -18,8 +19,6 @@ import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 
 /**
  * Daily retention job. Flyway is the schema source of truth, but these tables
@@ -53,7 +52,7 @@ object MaintenanceCleanup {
     suspend fun clean() =
         query {
             val now = Instant.now()
-            val nowLocal = LocalDateTime.now(ZoneOffset.UTC)
+            val nowLocal = currentUtc()
 
             OutboxTable.deleteWhere {
                 (OutboxTable.publishedAt.isNotNull()) and

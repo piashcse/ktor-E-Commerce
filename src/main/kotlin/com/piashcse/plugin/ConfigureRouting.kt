@@ -91,7 +91,7 @@ fun Application.configureRoute() {
         }.describe {
             summary = "Service health"
             description = "Version and overall status"
-            tag("Health")
+            tag(ApiTags.HEALTH)
         }
         get("/health/live") {
             call.respond(
@@ -99,7 +99,7 @@ fun Application.configureRoute() {
             )
         }.describe {
             summary = "Liveness probe"
-            tag("Health")
+            tag(ApiTags.HEALTH)
         }
         get("/health/ready") {
             val dbOk =
@@ -127,7 +127,7 @@ fun Application.configureRoute() {
         }.describe {
             summary = "Readiness probe"
             description = "Checks database connectivity"
-            tag("Health")
+            tag(ApiTags.HEALTH)
         }
 
         route("/api") {
@@ -141,44 +141,44 @@ fun Application.configureRoute() {
 }
 
 private fun Route.customerRoutes() {
-    route("auth") { authRoutes() }.describe { tag("Auth") }
-    route("profile") { profileRoutes() }.describe { tag("Profile") }
-    route("shops") { shopRoutes() }.describe { tag("Shop") }
-    route("brands") { brandRoutes() }.describe { tag("Brand") }
-    route("product-categories") { productCategoryRoutes() }.describe { tag("Product Category") }
-    route("product-subcategories") { productSubCategoryRoutes() }.describe { tag("Product Sub Category") }
-    route("shop-categories") { shopCategoryRoutes() }.describe { tag("Shop Category") }
-    route("products") { productRoutes() }.describe { tag("Product") }
-    route("reviews") { reviewRatingRoutes() }.describe { tag("Review") }
-    route("carts") { cartRoutes() }.describe { tag("Cart") }
-    route("wishlists") { wishListRoutes() }.describe { tag("Wishlist") }
-    route("checkout") { checkoutRoutes() }.describe { tag("Checkout") }
-    route("orders") { orderRoutes() }.describe { tag("Order") }
-    route("payments") { paymentRoutes() }.describe { tag("Payment") }
-    route("policies") { policyRoutes() }.describe { tag("Policy") }
-    route("policy-consents") { consentRoutes() }.describe { tag("Consent") }
-    route("refund-requests") { refundRequestRoutes() }.describe { tag("Refund") }
-    route("rma-requests") { rmaRoutes() }.describe { tag("RMA") }
-    route("recommendations") { recommendationRoutes() }.describe { tag("Recommendation") }
-    route("coupons") { couponRoutes() }.describe { tag("Coupon") }
-    route("notifications") { notificationRoutes() }.describe { tag("Notification") }
-    route("privacy") { privacyRoutes() }.describe { tag("Privacy") }
-    route("api-keys") { apiKeyRoutes() }.describe { tag("API Keys") }
+    route("auth") { authRoutes() }.describe { tag(ApiTags.AUTH) }
+    route("profile") { profileRoutes() }.describe { tag(ApiTags.PROFILE) }
+    route("shops") { shopRoutes() }.describe { tag(ApiTags.SHOP) }
+    route("brands") { brandRoutes() }.describe { tag(ApiTags.BRAND) }
+    route("product-categories") { productCategoryRoutes() }.describe { tag(ApiTags.PRODUCT_CATEGORY) }
+    route("product-subcategories") { productSubCategoryRoutes() }.describe { tag(ApiTags.PRODUCT_SUB_CATEGORY) }
+    route("shop-categories") { shopCategoryRoutes() }.describe { tag(ApiTags.SHOP_CATEGORY) }
+    route("products") { productRoutes() }.describe { tag(ApiTags.PRODUCT) }
+    route("reviews") { reviewRatingRoutes() }.describe { tag(ApiTags.REVIEW) }
+    route("carts") { cartRoutes() }.describe { tag(ApiTags.CART) }
+    route("wishlists") { wishListRoutes() }.describe { tag(ApiTags.WISHLIST) }
+    route("checkout") { checkoutRoutes() }.describe { tag(ApiTags.CHECKOUT) }
+    route("orders") { orderRoutes() }.describe { tag(ApiTags.ORDER) }
+    route("payments") { paymentRoutes() }.describe { tag(ApiTags.PAYMENT) }
+    route("policies") { policyRoutes() }.describe { tag(ApiTags.POLICY) }
+    route("policy-consents") { consentRoutes() }.describe { tag(ApiTags.CONSENT) }
+    route("refund-requests") { refundRequestRoutes() }.describe { tag(ApiTags.REFUND) }
+    route("rma-requests") { rmaRoutes() }.describe { tag(ApiTags.RMA) }
+    route("recommendations") { recommendationRoutes() }.describe { tag(ApiTags.RECOMMENDATION) }
+    route("coupons") { couponRoutes() }.describe { tag(ApiTags.COUPON) }
+    route("notifications") { notificationRoutes() }.describe { tag(ApiTags.NOTIFICATION) }
+    route("privacy") { privacyRoutes() }.describe { tag(ApiTags.PRIVACY) }
+    route("api-keys") { apiKeyRoutes() }.describe { tag(ApiTags.API_KEYS) }
 }
 
 private fun Route.sellerRoutes() {
     route("seller") {
         sellerAuth {
-            route("shops") { shopSellerRoutesV1() }.describe { tag("Shop") }
-            route("products") { productSellerRoutes() }.describe { tag("Product") }
-            route("inventories") { inventorySellerRoutes() }.describe { tag("Inventory") }
-            route("warehouses") { warehouseSellerRoutes() }.describe { tag("Warehouse") }
-            route("kyc") { sellerKycRoutes() }.describe { tag("KYC") }
-            route("orders") { orderSellerRoutes() }.describe { tag("Order") }
-            route("refund-requests") { refundSellerRoutes() }.describe { tag("Refund") }
-            route("rma-requests") { rmaSellerRoutes() }.describe { tag("RMA") }
-            route("dashboard") { dashboardSellerRoutes() }.describe { tag("Dashboard") }
-            route("payouts") { payoutSellerRoutes() }.describe { tag("Payout") }
+            route("shops") { shopSellerRoutesV1() }.describe { tag(ApiTags.SHOP) }
+            route("products") { productSellerRoutes() }.describe { tag(ApiTags.PRODUCT) }
+            route("inventories") { inventorySellerRoutes() }.describe { tag(ApiTags.INVENTORY) }
+            route("warehouses") { warehouseSellerRoutes() }.describe { tag(ApiTags.WAREHOUSE) }
+            route("kyc") { sellerKycRoutes() }.describe { tag(ApiTags.KYC) }
+            route("orders") { orderSellerRoutes() }.describe { tag(ApiTags.ORDER) }
+            route("refund-requests") { refundSellerRoutes() }.describe { tag(ApiTags.REFUND) }
+            route("rma-requests") { rmaSellerRoutes() }.describe { tag(ApiTags.RMA) }
+            route("dashboard") { dashboardSellerRoutes() }.describe { tag(ApiTags.DASHBOARD) }
+            route("payouts") { payoutSellerRoutes() }.describe { tag(ApiTags.PAYOUT) }
         }
     }
 }
@@ -186,30 +186,30 @@ private fun Route.sellerRoutes() {
 private fun Route.adminRoutes() {
     route("admin") {
         adminAuth {
-            route("auth") { authAdminRoutes() }.describe { tag("Auth") }
-            route("brands") { brandAdminRoutes() }.describe { tag("Brand") }
-            route("product-categories") { productCategoryAdminRoutes() }.describe { tag("Product Category") }
-            route("product-subcategories") { productSubCategoryAdminRoutes() }.describe { tag("Product Sub Category") }
-            route("shop-categories") { shopCategoryAdminRoutes() }.describe { tag("Shop Category") }
-            route("shops") { shopAdminRoutes() }.describe { tag("Shop") }
-            route("sellers") { adminKycRoutes() }.describe { tag("KYC") }
-            route("products") { productAdminRoutes() }.describe { tag("Product") }
-            route("inventories") { inventoryAdminRoutes() }.describe { tag("Inventory") }
-            route("orders") { orderAdminRoutes() }.describe { tag("Order") }
-            route("payments") { paymentAdminRoutes() }.describe { tag("Payment") }
-            route("refund-requests") { refundAdminRoutes() }.describe { tag("Refund") }
-            route("rma-requests") { rmaAdminRoutes() }.describe { tag("RMA") }
-            route("policies") { policyAdminRoutes() }.describe { tag("Policy") }
-            route("policy-consents") { consentAdminRoutes() }.describe { tag("Consent") }
-            route("shipping-methods") { shippingMethodAdminRoutes() }.describe { tag("Shipping Method") }
-            route("coupons") { couponAdminRoutes() }.describe { tag("Coupon") }
-            route("dashboard") { dashboardAdminRoutes() }.describe { tag("Dashboard") }
-            route("audit-logs") { auditLogAdminRoutes() }.describe { tag("Audit Log") }
-            route("payouts") { payoutAdminRoutes() }.describe { tag("Payout") }
-            route("fx-rates") { fxAdminRoutes() }.describe { tag("FX") }
-            route("tax-rules") { taxAdminRoutes() }.describe { tag("Tax") }
-            route("feature-flags") { featureFlagRoutes() }.describe { tag("Feature Flags") }
-            route("outbox") { outboxAdminRoutes() }.describe { tag("Outbox") }
+            route("auth") { authAdminRoutes() }.describe { tag(ApiTags.AUTH) }
+            route("brands") { brandAdminRoutes() }.describe { tag(ApiTags.BRAND) }
+            route("product-categories") { productCategoryAdminRoutes() }.describe { tag(ApiTags.PRODUCT_CATEGORY) }
+            route("product-subcategories") { productSubCategoryAdminRoutes() }.describe { tag(ApiTags.PRODUCT_SUB_CATEGORY) }
+            route("shop-categories") { shopCategoryAdminRoutes() }.describe { tag(ApiTags.SHOP_CATEGORY) }
+            route("shops") { shopAdminRoutes() }.describe { tag(ApiTags.SHOP) }
+            route("sellers") { adminKycRoutes() }.describe { tag(ApiTags.KYC) }
+            route("products") { productAdminRoutes() }.describe { tag(ApiTags.PRODUCT) }
+            route("inventories") { inventoryAdminRoutes() }.describe { tag(ApiTags.INVENTORY) }
+            route("orders") { orderAdminRoutes() }.describe { tag(ApiTags.ORDER) }
+            route("payments") { paymentAdminRoutes() }.describe { tag(ApiTags.PAYMENT) }
+            route("refund-requests") { refundAdminRoutes() }.describe { tag(ApiTags.REFUND) }
+            route("rma-requests") { rmaAdminRoutes() }.describe { tag(ApiTags.RMA) }
+            route("policies") { policyAdminRoutes() }.describe { tag(ApiTags.POLICY) }
+            route("policy-consents") { consentAdminRoutes() }.describe { tag(ApiTags.CONSENT) }
+            route("shipping-methods") { shippingMethodAdminRoutes() }.describe { tag(ApiTags.SHIPPING_METHOD) }
+            route("coupons") { couponAdminRoutes() }.describe { tag(ApiTags.COUPON) }
+            route("dashboard") { dashboardAdminRoutes() }.describe { tag(ApiTags.DASHBOARD) }
+            route("audit-logs") { auditLogAdminRoutes() }.describe { tag(ApiTags.AUDIT_LOG) }
+            route("payouts") { payoutAdminRoutes() }.describe { tag(ApiTags.PAYOUT) }
+            route("fx-rates") { fxAdminRoutes() }.describe { tag(ApiTags.FX) }
+            route("tax-rules") { taxAdminRoutes() }.describe { tag(ApiTags.TAX) }
+            route("feature-flags") { featureFlagRoutes() }.describe { tag(ApiTags.FEATURE_FLAGS) }
+            route("outbox") { outboxAdminRoutes() }.describe { tag(ApiTags.OUTBOX) }
         }
     }
 }

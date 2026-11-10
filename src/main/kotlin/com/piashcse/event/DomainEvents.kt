@@ -1,5 +1,6 @@
 package com.piashcse.event
 
+import com.piashcse.database.entities.base.currentUtc
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.math.BigDecimal
@@ -19,7 +20,7 @@ data class OrderPlacedEvent(
     val shopId: String?,
     val orderNumber: String,
     val total: @Contextual BigDecimal,
-    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
     override val requestId: String? = null,
 ) : DomainEvent()
 
@@ -28,7 +29,7 @@ data class UserRegisteredEvent(
     val userId: String,
     val email: String,
     val userType: String,
-    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
     override val requestId: String? = null,
 ) : DomainEvent()
 
@@ -39,7 +40,7 @@ data class PaymentCompletedEvent(
     val userId: String,
     val email: String,
     val amount: @Contextual BigDecimal,
-    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
     override val requestId: String? = null,
 ) : DomainEvent()
 
@@ -48,7 +49,7 @@ data class SendEmailEvent(
     val to: String,
     val subject: String,
     val body: String,
-    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
     override val requestId: String? = null,
 ) : DomainEvent()
 
@@ -60,7 +61,7 @@ data class RmaStatusChangedEvent(
     val email: String,
     val fromStatus: String,
     val toStatus: String,
-    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
     override val requestId: String? = null,
 ) : DomainEvent()
 
@@ -73,7 +74,7 @@ data class AdminActionEvent(
     val resourceType: String,
     val resourceId: String?,
     val details: String? = null,
-    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
     override val requestId: String? = null,
 ) : DomainEvent()
 
@@ -85,6 +86,6 @@ data class RefundStatusChangedEvent(
     val email: String,
     val fromStatus: String,
     val toStatus: String,
-    override val occurredAt: @Contextual LocalDateTime = LocalDateTime.now(),
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
     override val requestId: String? = null,
 ) : DomainEvent()

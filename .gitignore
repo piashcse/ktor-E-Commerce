@@ -10,3 +10,6 @@
 /uploads/
 /src/main/resources/profile-image/
 /src/main/resources/product-image/
+
+# IDE/bin output
+/bin/
