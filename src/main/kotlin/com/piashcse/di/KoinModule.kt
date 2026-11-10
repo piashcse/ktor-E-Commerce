@@ -47,6 +47,7 @@ import com.piashcse.feature.product_sub_category.ProductSubCategoryRepositoryImp
 import com.piashcse.feature.profile.ProfileRepository
 import com.piashcse.feature.profile.ProfileRepositoryImpl
 import com.piashcse.feature.profile.ProfileService
+import com.piashcse.feature.recommendation.RecommendationService
 import com.piashcse.feature.refund_request.RefundRequestRepository
 import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
 import com.piashcse.feature.review_rating.ReviewRatingRepository
@@ -113,6 +114,7 @@ val serviceModule =
         single { ProductCatalogService(get()) }
         single { ProductCrudService(get()) }
         single { ProductVariantService() }
+        single { RecommendationService() }
 
         // Non-DI services
         single { UploadService }

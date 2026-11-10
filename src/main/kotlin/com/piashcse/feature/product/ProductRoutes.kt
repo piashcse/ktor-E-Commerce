@@ -1,6 +1,8 @@
 package com.piashcse.feature.product
 
 import com.piashcse.constants.Message
+import com.piashcse.feature.recommendation.RecommendationService
+import com.piashcse.feature.recommendation.recommendationLimit
 import com.piashcse.model.request.ProductRequest
 import com.piashcse.model.request.ProductSearchRequest
 import com.piashcse.model.request.UpdateProductRequest
@@ -24,8 +26,17 @@ fun Route.productRoutes() {
     val productCatalogService: ProductCatalogService by inject()
     val productRepo: ProductRepository by inject()
     val variantService: ProductVariantService by inject()
+    val recommendationService: RecommendationService by inject()
 
     searchRateLimit {
+        /**
+         * @tag Product
+         * @description Public best-seller recommendations (guest-safe fallback)
+         */
+        get("recommendations") {
+            call.respondOk(recommendationService.bestSellers(call.recommendationLimit()))
+        }
+
         /**
          * @tag Product
          * @description Retrieve detailed information about a specific product
@@ -35,6 +46,32 @@ fun Route.productRoutes() {
             productRepo.incrementViewCount(productId)
             CacheService.cache.invalidate("products:detail:$productId")
             call.respondOk(productCatalogService.getProductDetail(productId))
+        }
+
+        /**
+         * @tag Product
+         * @description Related products from the same category/subcategory
+         */
+        get("{id}/related") {
+            call.respondOk(
+                recommendationService.related(
+                    call.requirePathParameter("id"),
+                    call.recommendationLimit(),
+                ),
+            )
+        }
+
+        /**
+         * @tag Product
+         * @description Products frequently purchased with this product
+         */
+        get("{id}/also-bought") {
+            call.respondOk(
+                recommendationService.alsoBought(
+                    call.requirePathParameter("id"),
+                    call.recommendationLimit(),
+                ),
+            )
         }
 
         /**

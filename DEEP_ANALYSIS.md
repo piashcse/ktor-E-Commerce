@@ -154,7 +154,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 
 - [ ] **E-1. Real gateway webhooks + signature verification + 3-D Secure.**
 - [ ] **E-2. Carrier integration, labels, tracking webhooks, delivery slots.**
-- [~] **E-3. Product variants/options, attributes, bundles, recommendations.** — variants/options/attributes done (V28); bundles and recommendations not in this pass.
+- [~] **E-3. Product variants/options, attributes, bundles, recommendations.** — variants/options/attributes (V28) and recommendations done; product bundles not in this pass.
 - [x] **E-4. Multi-warehouse inventory, backorders, supplier POs, stock audit.**
 - [x] **E-5. Tax rules by region/category; promotions engine (stacking/scopes).**
 - [x] **E-6. Seller KYC, commission tiers, statements, tax exports.**
@@ -190,6 +190,7 @@ The project has a solid skeleton (clean package layout, BigDecimal money, JWT, F
 | 14 | `fix/13-seller-kyc-statements` | `fix/12-rma-returns` | Seller KYC lifecycle, payout gating, statements/CSV export, V26 |
 | 15 | `fix/14-notification-templates` | `fix/13-seller-kyc-statements` | Templates, in-app/email/SMS/push dispatch, per-event preferences, RMA events, V27 |
 | 16 | `fix/15-product-variants` | `fix/14-notification-templates` | Variants, options/values, variant-level price/SKU/stock, V28 |
+| 17 | `fix/16-recommendations` | `fix/15-product-variants` | Related, co-purchase, personalized and best-seller recommendations |
 
 Stacked PRs are intentional. Merge in order, then retarget the next PR to `master`.
 
