@@ -1,11 +1,17 @@
 package com.piashcse.service
 
+import com.piashcse.database.entities.AnalyticsEventTable
 import com.piashcse.database.entities.BlacklistedTokenTable
+import com.piashcse.database.entities.CarrierWebhookEventTable
+import com.piashcse.database.entities.CartItemTable
+import com.piashcse.database.entities.DigitalEntitlementTable
 import com.piashcse.database.entities.LoginAttemptTable
 import com.piashcse.database.entities.NotificationTable
 import com.piashcse.database.entities.OtpAttemptTable
 import com.piashcse.database.entities.OutboxTable
+import com.piashcse.database.entities.PaymentWebhookEventTable
 import com.piashcse.database.entities.RefreshTokenTable
+import com.piashcse.database.entities.SupportTicketTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.utils.extension.query
 import kotlinx.coroutines.*
@@ -28,6 +34,11 @@ import java.time.Instant
  * - expired blacklisted access tokens
  * - old login/OTP attempt counters
  * - read notifications
+ * - provider webhook inboxes (90 days)
+ * - analytics events (13 months)
+ * - expired digital entitlements
+ * - idle carts (30 days)
+ * - resolved support tickets (3 years)
  */
 object MaintenanceCleanup {
     private val log = LoggerFactory.getLogger(MaintenanceCleanup::class.java)
@@ -85,5 +96,42 @@ object MaintenanceCleanup {
                 (NotificationTable.isRead eq true) and
                     (NotificationTable.createdAt less nowLocal.minusDays(90))
             }
+
+            var purged = 0
+            // Provider webhook payloads are only needed for replay/debugging for 90 days.
+            purged +=
+                PaymentWebhookEventTable.deleteWhere {
+                    PaymentWebhookEventTable.receivedAt less nowLocal.minusDays(90)
+                }
+            purged +=
+                CarrierWebhookEventTable.deleteWhere {
+                    CarrierWebhookEventTable.receivedAt less nowLocal.minusDays(90)
+                }
+
+            // Analytics identifiers/events roll out after 13 months.
+            purged +=
+                AnalyticsEventTable.deleteWhere {
+                    AnalyticsEventTable.occurredAt less nowLocal.minusMonths(13)
+                }
+
+            purged +=
+                DigitalEntitlementTable.deleteWhere {
+                    (DigitalEntitlementTable.expiresAt.isNotNull()) and
+                        (DigitalEntitlementTable.expiresAt less nowLocal)
+                }
+
+            // Abandoned carts are removed after 30 idle days.
+            purged +=
+                CartItemTable.deleteWhere {
+                    CartItemTable.createdAt less nowLocal.minusDays(30)
+                }
+
+            // Closed support tickets and their messages follow the 3-year retention window.
+            purged +=
+                SupportTicketTable.deleteWhere {
+                    (SupportTicketTable.resolvedAt.isNotNull()) and
+                        (SupportTicketTable.resolvedAt less nowLocal.minusYears(3))
+                }
+            if (purged > 0) AppMetrics.retentionPurged.increment(purged.toDouble())
         }
 }

@@ -33,6 +33,8 @@ object AppMetrics {
         Counter.builder("app.subscription.billing.succeeded").description("Subscription invoices paid").register(appMicrometerRegistry)
     val subscriptionBillingFailed: Counter =
         Counter.builder("app.subscription.billing.failed").description("Subscription renewal failures").register(appMicrometerRegistry)
+    val retentionPurged: Counter =
+        Counter.builder("app.retention.purged").description("Rows deleted by the retention job").register(appMicrometerRegistry)
     val supportTicketsOpened: Counter =
         Counter.builder("app.support.ticket.opened").description("Support tickets opened").register(appMicrometerRegistry)
     val b2bQuotesRequested: Counter =
