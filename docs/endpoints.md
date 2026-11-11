@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 313  
+**Operations:** 319  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -47,6 +47,7 @@ document served by Swagger UI.
 | [Seller Tools](#seller-tools) | 14 |
 | [Subscription](#subscription) | 13 |
 | [B2B](#b2b) | 15 |
+| [Omnichannel](#omnichannel) | 6 |
 | [FX](#fx) | 2 |
 | [API Keys](#api-keys) | 3 |
 | [Feature Flags](#feature-flags) | 2 |
@@ -500,6 +501,17 @@ document served by Swagger UI.
 | `GET` | `/api/v1/admin/b2b/accounts` | Admin: list B2B accounts | Admin |
 | `PUT` | `/api/v1/admin/b2b/accounts/{userId}` | Admin: approve/update credit terms | Admin |
 | `GET` | `/api/v1/admin/b2b/purchase-orders` | Admin: list purchase orders | Admin |
+
+## Omnichannel
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/api/v1/stores` | Find nearby pickup stores | Public |
+| `GET` | `/api/v1/seller/pickup-orders` | Seller: list pickup orders | Seller |
+| `POST` | `/api/v1/seller/orders/{id}/pickup/ready` | Seller: mark pickup ready | Seller |
+| `POST` | `/api/v1/seller/orders/{id}/pickup/complete` | Seller: verify pickup code and complete | Seller |
+| `GET` | `/api/v1/seller/pos/sales` | Seller: list POS sales | Seller |
+| `POST` | `/api/v1/seller/pos/sales` | Seller: create an in-store POS sale | Seller |
 
 ## FX
 

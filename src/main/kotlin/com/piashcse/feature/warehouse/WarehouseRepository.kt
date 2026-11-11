@@ -10,10 +10,12 @@ import com.piashcse.utils.extension.requireSellerByUserId
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.neq
+import java.math.BigDecimal
 
 @Serializable
 data class WarehouseRequest(
@@ -22,6 +24,12 @@ data class WarehouseRequest(
     val address: String? = null,
     val city: String? = null,
     val country: String? = null,
+    @Contextual val latitude: BigDecimal? = null,
+    @Contextual val longitude: BigDecimal? = null,
+    val phone: String? = null,
+    val openingHours: String? = null,
+    val supportsPickup: Boolean = false,
+    val supportsPos: Boolean = false,
 )
 
 @Serializable
@@ -34,6 +42,12 @@ data class WarehouseResponse(
     val city: String?,
     val country: String?,
     val isActive: Boolean,
+    val latitude: String? = null,
+    val longitude: String? = null,
+    val phone: String? = null,
+    val openingHours: String? = null,
+    val supportsPickup: Boolean = false,
+    val supportsPos: Boolean = false,
     val createdAt: String,
 )
 
@@ -67,6 +81,12 @@ class WarehouseRepository {
                 address = request.address
                 city = request.city
                 this.country = request.country?.uppercase()
+                latitude = request.latitude
+                longitude = request.longitude
+                phone = request.phone
+                openingHours = request.openingHours
+                supportsPickup = request.supportsPickup
+                supportsPos = request.supportsPos
             }.toResponse()
         }
 
@@ -87,6 +107,12 @@ class WarehouseRepository {
             warehouse.address = request.address
             warehouse.city = request.city
             warehouse.country = request.country?.uppercase()
+            warehouse.latitude = request.latitude
+            warehouse.longitude = request.longitude
+            warehouse.phone = request.phone
+            warehouse.openingHours = request.openingHours
+            warehouse.supportsPickup = request.supportsPickup
+            warehouse.supportsPos = request.supportsPos
             warehouse.toResponse()
         }
 
@@ -138,6 +164,12 @@ class WarehouseRepository {
             city = city,
             country = country,
             isActive = isActive,
+            latitude = latitude?.toPlainString(),
+            longitude = longitude?.toPlainString(),
+            phone = phone,
+            openingHours = openingHours,
+            supportsPickup = supportsPickup,
+            supportsPos = supportsPos,
             createdAt = createdAt.toUtcString(),
         )
 }

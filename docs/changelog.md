@@ -8,6 +8,10 @@ hide:
 
 ### Added
 
+- Omnichannel (`V43`): store locator with distance search, BOPIS pickup checkout with
+  pickup codes/status and seller verification, plus in-store POS sales that create completed
+  orders, decrement stock and record payments. Warehouses now carry coordinates, hours,
+  pickup/POS flags.
 - B2B wholesaling (`V42`): business accounts with approval/credit limits/payment terms,
   quote requests and seller pricing, quote acceptance into purchase orders, and PO fulfillment.
   Credit limits are enforced against open purchase orders; PO due dates follow net terms.
@@ -48,7 +52,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (313 operations total).
+  (319 operations total).
 
 ### Fixed
 

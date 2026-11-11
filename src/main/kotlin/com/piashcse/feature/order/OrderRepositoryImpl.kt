@@ -81,6 +81,11 @@ class OrderRepositoryImpl(
         }
     }
 
+    private fun generatePickupCode(): String {
+        val alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+        return (1..6).map { alphabet[kotlin.random.Random.nextInt(alphabet.length)] }.joinToString("")
+    }
+
     private fun generateOrderNumber(
         datePrefix: String,
         sequenceNumber: Int,
@@ -193,6 +198,7 @@ class OrderRepositoryImpl(
         val shippingAddress: ShippingAddressDAO,
         val fullAddress: String,
         val shippingMethod: ShippingMethodDAO,
+        val pickupWarehouse: WarehouseDAO?,
         val productsMap: Map<String, ProductDAO>,
         val variantsMap: Map<String, ProductVariantDAO>,
         val itemsByShop: Map<String, List<CartItemDAO>>,
@@ -276,6 +282,21 @@ class OrderRepositoryImpl(
         val shippingMethod =
             ShippingMethodDAO.findById(checkoutRequest.shippingMethodId)
                 ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
+        val pickupWarehouse =
+            if (checkoutRequest.fulfillmentType == FulfillmentType.PICKUP) {
+                val id =
+                    checkoutRequest.pickupWarehouseId?.takeIf { it.isNotBlank() }
+                        ?: throw ValidationException("pickupWarehouseId is required for pickup orders")
+                val warehouse =
+                    WarehouseDAO.findById(id)
+                        ?: throw ValidationException("Pickup location not found")
+                if (!warehouse.isActive || !warehouse.supportsPickup) {
+                    throw ValidationException("Pickup location is not available")
+                }
+                warehouse
+            } else {
+                null
+            }
 
         val productsMap =
             ProductDAO.find {
@@ -297,6 +318,12 @@ class OrderRepositoryImpl(
                     ?: throw ValidationException(Message.Orders.productDoesNotBelongToShop(it.productId.value))
             }
         validateShopsApproved(itemsByShop.keys)
+        if (pickupWarehouse != null) {
+            if (itemsByShop.size != 1) throw ValidationException("Pickup orders must contain items from one shop")
+            if (pickupWarehouse.shopId.value != itemsByShop.keys.first()) {
+                throw ValidationException("Pickup location does not belong to the selling shop")
+            }
+        }
 
         val fullAddress =
             buildString {
@@ -311,6 +338,7 @@ class OrderRepositoryImpl(
             shippingAddress = shippingAddress,
             fullAddress = fullAddress,
             shippingMethod = shippingMethod,
+            pickupWarehouse = pickupWarehouse,
             productsMap = productsMap,
             variantsMap = variantsMap,
             itemsByShop = itemsByShop,
@@ -385,6 +413,13 @@ class OrderRepositoryImpl(
                 this.businessTaxId = businessTaxId
                 this.taxExempt = taxService.isExempt(userId, businessTaxId, context.shippingAddress.country)
                 this.locale = com.piashcse.constants.Localization.normalize(checkoutRequest.locale)
+                this.fulfillmentType = checkoutRequest.fulfillmentType
+                this.pickupWarehouseId = context.pickupWarehouse?.id
+                if (context.pickupWarehouse != null) {
+                    this.shippingMethod = "PICKUP"
+                    this.pickupCode = generatePickupCode()
+                    this.pickupStatus = com.piashcse.constants.PickupStatus.PENDING
+                }
                 this.attributionSessionId = checkoutRequest.attribution?.sessionId
                 this.attributionSource = checkoutRequest.attribution?.source
                 this.attributionMedium = checkoutRequest.attribution?.medium
@@ -465,7 +500,12 @@ class OrderRepositoryImpl(
 
         val scaledSubTotal = Money.scale2(shopSubTotal)
         val tax = Money.scale2(shopTax)
-        val ship = if (allDigital) BigDecimal.ZERO.setScale(2) else Money.scale2(context.shippingMethod.price.multiply(fxRate))
+        val ship =
+            if (allDigital || context.pickupWarehouse != null) {
+                BigDecimal.ZERO.setScale(2)
+            } else {
+                Money.scale2(context.shippingMethod.price.multiply(fxRate))
+            }
         order.subTotal = scaledSubTotal
         order.shippingCost = ship
         if (allDigital) order.shippingMethod = "DIGITAL"
@@ -645,6 +685,19 @@ class OrderRepositoryImpl(
             val shippingAddress =
                 ShippingAddressDAO.findById(checkoutRequest.shippingAddressId)
                     ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
+            val pickup =
+                checkoutRequest.fulfillmentType == FulfillmentType.PICKUP
+            if (pickup) {
+                val id =
+                    checkoutRequest.pickupWarehouseId?.takeIf { it.isNotBlank() }
+                        ?: throw ValidationException("pickupWarehouseId is required for pickup orders")
+                val warehouse =
+                    WarehouseDAO.findById(id)
+                        ?: throw ValidationException("Pickup location not found")
+                if (!warehouse.isActive || !warehouse.supportsPickup) {
+                    throw ValidationException("Pickup location is not available")
+                }
+            }
             if (shippingAddress.userId.value != userId) {
                 throw ValidationException(Message.Orders.SHIPPING_ADDRESS_UNAUTHORIZED)
             }
@@ -681,7 +734,7 @@ class OrderRepositoryImpl(
             val sub = Money.scale2(subUsd.multiply(fxRate))
             val allDigital = cartItems.all { productsMap[it.productId.value]?.isDigital == true }
             val ship =
-                if (allDigital) {
+                if (allDigital || pickup) {
                     BigDecimal.ZERO.setScale(2)
                 } else {
                     Money.scale2(PricingService.shipping(shippingMethod.price, shopCount).multiply(fxRate))

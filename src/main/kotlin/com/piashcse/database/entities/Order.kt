@@ -1,8 +1,10 @@
 package com.piashcse.database.entities
 
+import com.piashcse.constants.FulfillmentType
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.PickupStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
@@ -33,6 +35,11 @@ object OrderTable : BaseIdTable("order") {
     val attributionMedium = varchar("attribution_medium", 100).nullable()
     val attributionCampaign = varchar("attribution_campaign", 150).nullable()
     val attributionReferrer = varchar("attribution_referrer", 500).nullable()
+    val fulfillmentType = enumerationByName("fulfillment_type", 20, FulfillmentType::class).default(FulfillmentType.DELIVERY)
+    val pickupWarehouseId = reference("pickup_warehouse_id", WarehouseTable.id).nullable()
+    val pickupCode = varchar("pickup_code", 10).nullable()
+    val pickupStatus = enumerationByName("pickup_status", 20, PickupStatus::class).nullable()
+    val pickedUpAt = datetime("picked_up_at").nullable()
 
     // USD → order-currency rate applied to all monetary fields in this order.
     val fxRate = decimal("fx_rate", 18, 6).default(BigDecimal.ONE)
@@ -83,6 +90,11 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
     var attributionMedium by OrderTable.attributionMedium
     var attributionCampaign by OrderTable.attributionCampaign
     var attributionReferrer by OrderTable.attributionReferrer
+    var fulfillmentType by OrderTable.fulfillmentType
+    var pickupWarehouseId by OrderTable.pickupWarehouseId
+    var pickupCode by OrderTable.pickupCode
+    var pickupStatus by OrderTable.pickupStatus
+    var pickedUpAt by OrderTable.pickedUpAt
     var fxRate by OrderTable.fxRate
     var paymentMethod by OrderTable.paymentMethod
     var paymentStatus by OrderTable.paymentStatus

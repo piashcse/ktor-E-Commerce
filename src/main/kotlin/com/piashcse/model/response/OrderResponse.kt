@@ -1,8 +1,10 @@
 package com.piashcse.model.response
 
+import com.piashcse.constants.FulfillmentType
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.PickupStatus
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
@@ -46,4 +48,9 @@ data class OrderResponse(
     val attributionSource: String? = null,
     val attributionMedium: String? = null,
     val attributionCampaign: String? = null,
+    val fulfillmentType: FulfillmentType = FulfillmentType.DELIVERY,
+    val pickupWarehouseId: String? = null,
+    val pickupCode: String? = null,
+    val pickupStatus: PickupStatus? = null,
+    val pickedUpAt: @Contextual LocalDateTime? = null,
 )

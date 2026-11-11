@@ -80,6 +80,7 @@ fun Application.configureSwagger() {
             tag(ApiTags.SELLER, "Seller reviews, disputes and commission rules")
             tag(ApiTags.SUBSCRIPTION, "Recurring plans, invoices and digital downloads")
             tag(ApiTags.B2B, "Business accounts, quotes, purchase orders and net terms")
+            tag(ApiTags.OMNICHANNEL, "Store locator, BOPIS pickup and POS sales")
         }
     }
 }

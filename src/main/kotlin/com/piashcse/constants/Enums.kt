@@ -286,6 +286,21 @@ enum class PurchaseOrderStatus {
 }
 
 @Serializable
+enum class FulfillmentType {
+    DELIVERY,
+    PICKUP,
+    POS,
+}
+
+@Serializable
+enum class PickupStatus {
+    PENDING,
+    READY,
+    PICKED_UP,
+    CANCELED,
+}
+
+@Serializable
 enum class PolicyType {
     PRIVACY_POLICY,
     TERMS_CONDITIONS,
