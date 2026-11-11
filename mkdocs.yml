@@ -67,6 +67,7 @@ nav:
       - Subscriptions: subscriptions.md
       - B2B Quotes & POs: b2b.md
       - BOPIS, POS & Stores: omnichannel.md
+      - CMS, SEO & Sitemap: cms.md
       - FX Rates: fx.md
       - API Keys: api-keys.md
       - Feature Flags: feature-flags.md

@@ -10758,6 +10758,244 @@ http://localhost:8080/api/v1/seller/pos/sales
 {"orderId":"order-uuid","fulfillmentType":"POS","total":"20.00"}
 ```
 </details>
+### CMS / SEO / SITEMAP
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/cms/pages</code></summary>
+
+### Description
+List published CMS pages.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/cms/pages' \
+  -H 'accept: application/json' \
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/cms/pages
+```
+
+### Response
+```json
+{"data":[{"slug":"about-us","title":"About us"}]}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/cms/pages/{slug}</code></summary>
+
+### Description
+Get a published page.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/cms/pages/about-us' \
+  -H 'accept: application/json' \
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/cms/pages/{slug}
+```
+
+### Response
+```json
+{"slug":"about-us","title":"About us","body":"<p>Hello</p>"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/cms/pages</code></summary>
+
+### Description
+Admin: list CMS pages.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/cms/pages' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/cms/pages
+```
+
+### Response
+```json
+{"data":[{"id":"page-uuid","status":"DRAFT"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/cms/pages</code></summary>
+
+### Description
+Admin: create a page.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/cms/pages' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"slug":"about-us","title":"About us","body":"<p>Hello</p>","status":"PUBLISHED"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/cms/pages
+```
+
+### Response
+```json
+{"id":"page-uuid","slug":"about-us"}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/cms/pages/{id}</code></summary>
+
+### Description
+Admin: update a page.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/cms/pages/page-uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"slug":"about-us","title":"About us","body":"<p>Updated</p>","status":"PUBLISHED"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/cms/pages/{id}
+```
+
+### Response
+```json
+{"id":"page-uuid"}
+```
+</details>
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/cms/pages/{id}</code></summary>
+
+### Description
+Admin: archive a page.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/cms/pages/page-uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/cms/pages/{id}
+```
+
+### Response
+```json
+{"message":"Page archived"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/seo/metadata?entityType=PAGE&entityId=about-us</code></summary>
+
+### Description
+Get SEO metadata for an entity.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seo/metadata?entityType=PAGE&entityId=about-us' \
+  -H 'accept: application/json' \
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seo/metadata?entityType=PAGE&entityId=about-us
+```
+
+### Response
+```json
+{"entityType":"PAGE","entityId":"about-us","title":"About us"}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/seo/metadata</code></summary>
+
+### Description
+Admin: upsert SEO metadata.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/seo/metadata' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"entityType":"PRODUCT","entityId":"product-uuid","title":"Chair","description":"Wooden chair"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/seo/metadata
+```
+
+### Response
+```json
+{"entityType":"PRODUCT"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/sitemap.xml</code></summary>
+
+### Description
+XML sitemap.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/sitemap.xml' \
+  -H 'accept: application/json' \
+```
+
+### Request URL
+```text
+http://localhost:8080/sitemap.xml
+```
+
+### Response
+```json
+<?xml version="1.0"?><urlset/>
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/robots.txt</code></summary>
+
+### Description
+Robots policy.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/robots.txt' \
+  -H 'accept: application/json' \
+```
+
+### Request URL
+```text
+http://localhost:8080/robots.txt
+```
+
+### Response
+```json
+User-agent: *\nAllow: /\nSitemap: http://localhost:8080/sitemap.xml
+```
+</details>
 ### TAX RULES
 
 <details>

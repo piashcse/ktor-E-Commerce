@@ -19,6 +19,11 @@ import com.piashcse.feature.brand.brandAdminRoutes
 import com.piashcse.feature.brand.brandRoutes
 import com.piashcse.feature.cart.cartRoutes
 import com.piashcse.feature.checkout.checkoutRoutes
+import com.piashcse.feature.cms.cmsAdminRoutes
+import com.piashcse.feature.cms.cmsRoutes
+import com.piashcse.feature.cms.seoAdminRoutes
+import com.piashcse.feature.cms.seoRoutes
+import com.piashcse.feature.cms.seoSiteRoutes
 import com.piashcse.feature.consent.consentAdminRoutes
 import com.piashcse.feature.consent.consentRoutes
 import com.piashcse.feature.coupon.couponAdminRoutes
@@ -127,6 +132,7 @@ private data class HealthStatusResponse(val status: String, val version: String)
 @OptIn(ExperimentalKtorApi::class)
 fun Application.configureRoute() {
     routing {
+        seoSiteRoutes()
         get("/") { call.respondRedirect("/swagger") }.hide()
         get("/health") {
             call.respond(
@@ -219,6 +225,8 @@ private fun Route.customerRoutes() {
     route("b2b/quotes") { b2bQuoteRoutes() }.describe { tag(ApiTags.B2B) }
     route("b2b/purchase-orders") { b2bPurchaseOrderRoutes() }.describe { tag(ApiTags.B2B) }
     route("stores") { storeLocatorRoutes() }.describe { tag(ApiTags.OMNICHANNEL) }
+    route("cms") { cmsRoutes() }.describe { tag(ApiTags.CONTENT) }
+    route("seo") { seoRoutes() }.describe { tag(ApiTags.CONTENT) }
     route("policies") { policyRoutes() }.describe { tag(ApiTags.POLICY) }
     route("policy-consents") { consentRoutes() }.describe { tag(ApiTags.CONSENT) }
     route("refund-requests") { refundRequestRoutes() }.describe { tag(ApiTags.REFUND) }
@@ -287,6 +295,8 @@ private fun Route.adminRoutes() {
             route("subscription-plans") { subscriptionPlanAdminRoutes() }.describe { tag(ApiTags.SUBSCRIPTION) }
             route("subscriptions") { subscriptionAdminRoutes() }.describe { tag(ApiTags.SUBSCRIPTION) }
             route("b2b") { b2bAdminRoutes() }.describe { tag(ApiTags.B2B) }
+            route("cms/pages") { cmsAdminRoutes() }.describe { tag(ApiTags.CONTENT) }
+            route("seo") { seoAdminRoutes() }.describe { tag(ApiTags.CONTENT) }
             route("refund-requests") { refundAdminRoutes() }.describe { tag(ApiTags.REFUND) }
             route("rma-requests") { rmaAdminRoutes() }.describe { tag(ApiTags.RMA) }
             route("policies") { policyAdminRoutes() }.describe { tag(ApiTags.POLICY) }

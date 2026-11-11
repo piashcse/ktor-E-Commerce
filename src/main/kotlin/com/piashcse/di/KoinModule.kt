@@ -15,6 +15,7 @@ import com.piashcse.feature.brand.BrandRepositoryImpl
 import com.piashcse.feature.cart.CartRepository
 import com.piashcse.feature.cart.CartRepositoryImpl
 import com.piashcse.feature.checkout.GuestCheckoutService
+import com.piashcse.feature.cms.CmsService
 import com.piashcse.feature.consent.ConsentRepository
 import com.piashcse.feature.consent.ConsentRepositoryImpl
 import com.piashcse.feature.coupon.CouponRepository
@@ -117,6 +118,7 @@ val serviceModule =
         single { SubscriptionService(get()) }
         single { B2bService() }
         single { OmnichannelService(get()) }
+        single { CmsService() }
         single { ProductTranslationService() }
         single<OrderRepository> { OrderRepositoryImpl(get(), get(), get(), get()) }
         single<CarrierGateway> {

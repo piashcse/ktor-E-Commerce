@@ -46,4 +46,5 @@ object ApiTags {
     const val SUBSCRIPTION = "Subscription"
     const val B2B = "B2B"
     const val OMNICHANNEL = "Omnichannel"
+    const val CONTENT = "CMS & SEO"
 }
