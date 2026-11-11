@@ -317,6 +317,39 @@ enum class SeoEntityType {
 }
 
 @Serializable
+enum class TicketCategory {
+    ORDER,
+    PAYMENT,
+    ACCOUNT,
+    PRODUCT,
+    OTHER,
+}
+
+@Serializable
+enum class TicketPriority {
+    LOW,
+    NORMAL,
+    HIGH,
+    URGENT,
+}
+
+@Serializable
+enum class TicketStatus {
+    OPEN,
+    PENDING,
+    RESOLVED,
+    CLOSED,
+}
+
+@Serializable
+enum class SupportSenderRole {
+    CUSTOMER,
+    SELLER,
+    ADMIN,
+    SYSTEM,
+}
+
+@Serializable
 enum class PolicyType {
     PRIVACY_POLICY,
     TERMS_CONDITIONS,

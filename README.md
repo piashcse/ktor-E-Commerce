@@ -10996,6 +10996,223 @@ http://localhost:8080/robots.txt
 User-agent: *\nAllow: /\nSitemap: http://localhost:8080/sitemap.xml
 ```
 </details>
+### SUPPORT TICKETS
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/support/tickets</code></summary>
+
+### Description
+List my support tickets.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/support/tickets' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/support/tickets
+```
+
+### Response
+```json
+{"data":[{"id":"ticket-uuid","status":"OPEN"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/support/tickets</code></summary>
+
+### Description
+Open a support ticket.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/support/tickets' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"subject":"Missing item","body":"One item was missing","category":"ORDER"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/support/tickets
+```
+
+### Response
+```json
+{"ticket":{"id":"ticket-uuid","status":"OPEN"}}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/support/tickets/{id}</code></summary>
+
+### Description
+Get a ticket and public replies.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/support/tickets/ticket-uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/support/tickets/{id}
+```
+
+### Response
+```json
+{"ticket":{"id":"ticket-uuid"},"messages":[]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/support/tickets/{id}/messages</code></summary>
+
+### Description
+Reply to a ticket.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/support/tickets/ticket-uuid/messages' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"body":"Any update?"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/support/tickets/{id}/messages
+```
+
+### Response
+```json
+{"ticket":{"status":"OPEN"}}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/support/tickets/{id}/close</code></summary>
+
+### Description
+Close my ticket.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/support/tickets/ticket-uuid/close' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/support/tickets/{id}/close
+```
+
+### Response
+```json
+{"id":"ticket-uuid","status":"CLOSED"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/support/tickets</code></summary>
+
+### Description
+Admin: list support tickets.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/support/tickets' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/support/tickets
+```
+
+### Response
+```json
+{"data":[{"id":"ticket-uuid"}]}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/support/tickets/{id}</code></summary>
+
+### Description
+Admin: get ticket with internal notes.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/support/tickets/ticket-uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/support/tickets/{id}
+```
+
+### Response
+```json
+{"ticket":{"id":"ticket-uuid"},"messages":[]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/support/tickets/{id}/messages</code></summary>
+
+### Description
+Admin: reply or add internal note.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/support/tickets/ticket-uuid/messages' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"body":"Checking with carrier","isInternal":true}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/support/tickets/{id}/messages
+```
+
+### Response
+```json
+{"ticket":{"id":"ticket-uuid"}}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/support/tickets/{id}</code></summary>
+
+### Description
+Admin: update status/priority/assignment.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/support/tickets/ticket-uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"RESOLVED","priority":"HIGH"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/support/tickets/{id}
+```
+
+### Response
+```json
+{"status":"RESOLVED"}
+```
+</details>
 ### TAX RULES
 
 <details>

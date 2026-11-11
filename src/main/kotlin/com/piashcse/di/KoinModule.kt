@@ -86,6 +86,7 @@ import com.piashcse.feature.shop_category.ShopCategoryRepositoryImpl
 import com.piashcse.feature.stockalert.StockAlertService
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.subscription.SubscriptionService
+import com.piashcse.feature.support.SupportService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.feature.warehouse.WarehouseRepository
 import com.piashcse.feature.wishlist.WishListRepository
@@ -119,6 +120,7 @@ val serviceModule =
         single { B2bService() }
         single { OmnichannelService(get()) }
         single { CmsService() }
+        single { SupportService() }
         single { ProductTranslationService() }
         single<OrderRepository> { OrderRepositoryImpl(get(), get(), get(), get()) }
         single<CarrierGateway> {

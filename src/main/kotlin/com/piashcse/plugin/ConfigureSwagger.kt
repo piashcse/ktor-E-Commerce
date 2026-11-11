@@ -82,6 +82,7 @@ fun Application.configureSwagger() {
             tag(ApiTags.B2B, "Business accounts, quotes, purchase orders and net terms")
             tag(ApiTags.OMNICHANNEL, "Store locator, BOPIS pickup and POS sales")
             tag(ApiTags.CONTENT, "CMS pages, SEO metadata, sitemap and robots")
+            tag(ApiTags.SUPPORT, "Customer support tickets, internal notes and resolution")
         }
     }
 }
