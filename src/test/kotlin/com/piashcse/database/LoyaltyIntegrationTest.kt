@@ -144,6 +144,10 @@ class LoyaltyIntegrationTest {
         assertEquals(0, giftUsd.compareTo(BigDecimal("7.00")))
         assertEquals("13.00", kotlinx.coroutines.runBlocking { loyalty.giftCard(gift.code) }.balance)
 
+        // Cancelling/refunding the order restores the gift-card balance.
+        transaction { loyalty.reverseOrderTx(refereeId, orderId) }
+        assertEquals("20.00", kotlinx.coroutines.runBlocking { loyalty.giftCard(gift.code) }.balance)
+
         val ledger = kotlinx.coroutines.runBlocking { loyalty.ledger(refereeId, 20, 0) }
         assertTrue(ledger.data.any { it.type.name == "POINTS_EARN" })
         assertTrue(ledger.data.any { it.type.name == "POINTS_REDEEM" })

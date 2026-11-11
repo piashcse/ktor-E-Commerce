@@ -288,6 +288,11 @@ class OrderFlowIntegrationTest {
         kotlinx.coroutines.runBlocking {
             orders.cancelOrder(walletOrder.orderId, customerId, "wallet regression", UserType.CUSTOMER)
         }
+        assertEquals(
+            "100.00",
+            kotlinx.coroutines.runBlocking { loyalty.wallet(customerId) }.creditBalance,
+            "Cancellation must restore redeemed store credit",
+        )
 
         val stock = transaction { InventoryDAO.all().first { it.productId.value == productId }.stockQuantity }
         assertEquals(9, stock, "Only the delivered order should consume stock")

@@ -23,6 +23,8 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.calcCommission
 import com.piashcse.database.entities.removeSales
 import com.piashcse.database.entities.restoreStockFor
+import com.piashcse.feature.loyalty.LoyaltyService
+import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.utils.extension.entityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
@@ -76,6 +78,8 @@ object OrderCancellation {
         reverseCouponUsage(order)
         reverseSellerTotals(order)
         reverseSellerPayout(order)
+        LoyaltyService().reverseOrderTx(order.userId.value, order.id.value)
+        DigitalDeliveryService().revokeOrderTx(order.id.value)
     }
 
     private fun reverseCouponUsage(order: OrderDAO) = reverseCouponUsageForOrder(order.id.value)

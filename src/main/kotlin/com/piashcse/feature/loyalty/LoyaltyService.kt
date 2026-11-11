@@ -6,6 +6,7 @@ import com.piashcse.constants.ReferralStatus
 import com.piashcse.constants.WalletEntryType
 import com.piashcse.database.entities.GiftCardDAO
 import com.piashcse.database.entities.GiftCardRedemptionDAO
+import com.piashcse.database.entities.GiftCardRedemptionTable
 import com.piashcse.database.entities.GiftCardTable
 import com.piashcse.database.entities.ReferralDAO
 import com.piashcse.database.entities.ReferralTable
@@ -30,6 +31,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
@@ -199,6 +201,89 @@ class LoyaltyService {
             pointsAvailable = account.pointsBalance,
             creditAvailable = account.creditBalance,
         )
+    }
+
+    /**
+     * Reverses points/credit earned or spent on an order and restores gift-card redemptions.
+     * Idempotent per order. Must run inside the cancellation/refund transaction.
+     */
+    fun reverseOrderTx(
+        userId: String,
+        orderId: String,
+    ) {
+        val user = userId.entityID(com.piashcse.database.entities.UserTable)
+        val alreadyReversed =
+            WalletLedgerDAO.find {
+                (WalletLedgerTable.userId eq user) and
+                    (WalletLedgerTable.referenceType eq "ORDER") and
+                    (WalletLedgerTable.referenceId eq orderId) and
+                    (WalletLedgerTable.type inList listOf(WalletEntryType.POINTS_REVERSAL, WalletEntryType.CREDIT_REVERSAL))
+            }.any()
+        if (alreadyReversed) return
+
+        val account = accountFor(userId)
+        val entries =
+            WalletLedgerDAO.find {
+                (WalletLedgerTable.userId eq user) and
+                    (WalletLedgerTable.referenceType eq "ORDER") and
+                    (WalletLedgerTable.referenceId eq orderId)
+            }.toList()
+        var pointsToRestore = 0
+        var creditToRestore = BigDecimal.ZERO
+        entries.forEach { entry ->
+            when (entry.type) {
+                WalletEntryType.POINTS_EARN ->
+                    account.pointsBalance = (account.pointsBalance - entry.pointsDelta).coerceAtLeast(0)
+                WalletEntryType.POINTS_REDEEM -> pointsToRestore += -entry.pointsDelta
+                WalletEntryType.CREDIT_REDEEM -> creditToRestore = creditToRestore.add(entry.creditDelta.negate())
+                else -> Unit
+            }
+        }
+        if (pointsToRestore > 0) {
+            account.pointsBalance += pointsToRestore
+            WalletLedgerDAO.new {
+                this.userId = user
+                this.type = WalletEntryType.POINTS_REVERSAL
+                this.pointsDelta = pointsToRestore
+                this.referenceType = "ORDER"
+                this.referenceId = orderId
+                this.note = "Points restored after order reversal"
+            }
+        }
+        if (creditToRestore > BigDecimal.ZERO) {
+            account.creditBalance = account.creditBalance.add(creditToRestore).setScale(2, RoundingMode.HALF_UP)
+            WalletLedgerDAO.new {
+                this.userId = user
+                this.type = WalletEntryType.CREDIT_REVERSAL
+                this.creditDelta = creditToRestore
+                this.referenceType = "ORDER"
+                this.referenceId = orderId
+                this.note = "Store credit restored after order reversal"
+            }
+        }
+        if (entries.isNotEmpty() && pointsToRestore == 0 && creditToRestore <= BigDecimal.ZERO) {
+            // Marker so a repeated reversal cannot subtract earned points twice.
+            WalletLedgerDAO.new {
+                this.userId = user
+                this.type = WalletEntryType.POINTS_REVERSAL
+                this.pointsDelta = 0
+                this.referenceType = "ORDER"
+                this.referenceId = orderId
+                this.note = "Order reversal marker"
+            }
+        }
+
+        GiftCardRedemptionDAO.find { GiftCardRedemptionTable.orderId eq orderId.entityID(com.piashcse.database.entities.OrderTable) }
+            .forEach { redemption ->
+                if (redemption.reversedAt == null) {
+                    val card = GiftCardDAO.findById(redemption.giftCardId.value) ?: return@forEach
+                    card.balance = card.balance.add(redemption.amount).setScale(2, RoundingMode.HALF_UP)
+                    if (card.status == GiftCardStatus.REDEEMED && card.expiresAt?.isBefore(currentUtc()) != true) {
+                        card.status = GiftCardStatus.ACTIVE
+                    }
+                    redemption.reversedAt = currentUtc()
+                }
+            }
     }
 
     suspend fun claimReferral(

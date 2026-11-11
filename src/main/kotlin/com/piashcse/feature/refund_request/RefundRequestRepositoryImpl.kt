@@ -10,10 +10,12 @@ import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.RefundStatusChangedEvent
+import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.order.OrderCancellation
 import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.seller.CommissionService
+import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.mapper.toRefundRequestResponse
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
@@ -440,6 +442,8 @@ class RefundRequestRepositoryImpl(
         if (order.paymentStatus == PaymentStatus.COMPLETED && refundedTotal >= order.total) {
             order.paymentStatus = PaymentStatus.REFUNDED
             OrderCancellation.reverseCouponUsageForOrder(order.id.value)
+            LoyaltyService().reverseOrderTx(order.userId.value, order.id.value)
+            DigitalDeliveryService().revokeOrderTx(order.id.value)
         }
     }
 

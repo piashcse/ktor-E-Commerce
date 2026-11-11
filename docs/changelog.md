@@ -8,6 +8,10 @@ hide:
 
 ### Fixed
 
+- Cancellation/full-refund now reverses order lifecycle effects: earned points are removed, redeemed
+  points and store credit are restored, gift-card redemptions are refunded to the card, and
+  order-based digital entitlements are revoked. Reversals are idempotent per order.
+- Loyalty points are earned from the USD-normalized order total, not the native-currency total.
 - Wallet/points/store-credit redemptions are capped before debit, so unused balances are no longer
   burned when the requested amount exceeds the order total.
 - Tax is recalculated on the post-coupon/post-promotion taxable amount; inclusive-tax lines no longer

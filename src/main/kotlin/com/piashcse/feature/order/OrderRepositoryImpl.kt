@@ -599,7 +599,7 @@ class OrderRepositoryImpl(
 
         val total = quote.orders.fold(BigDecimal.ZERO) { acc, order -> acc.add(order.total) }
         if (total <= BigDecimal.ZERO) return
-        val referenceId = request.idempotencyKey?.let { "checkout:$it" } ?: quote.orders.first().id.value
+        val referenceId = quote.orders.first().id.value
         val totalUsd = total.divide(fxRate, 2, RoundingMode.HALF_UP)
         var remainingUsd = totalUsd
 
