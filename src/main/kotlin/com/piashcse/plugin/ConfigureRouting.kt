@@ -102,6 +102,8 @@ import com.piashcse.feature.subscription.subscriptionAdminRoutes
 import com.piashcse.feature.subscription.subscriptionPlanAdminRoutes
 import com.piashcse.feature.subscription.subscriptionPlanRoutes
 import com.piashcse.feature.subscription.subscriptionRoutes
+import com.piashcse.feature.support.supportAdminRoutes
+import com.piashcse.feature.support.supportRoutes
 import com.piashcse.feature.tax.productTaxClassAdminRoutes
 import com.piashcse.feature.tax.taxAdminRoutes
 import com.piashcse.feature.tax.taxClassAdminRoutes
@@ -227,6 +229,7 @@ private fun Route.customerRoutes() {
     route("stores") { storeLocatorRoutes() }.describe { tag(ApiTags.OMNICHANNEL) }
     route("cms") { cmsRoutes() }.describe { tag(ApiTags.CONTENT) }
     route("seo") { seoRoutes() }.describe { tag(ApiTags.CONTENT) }
+    route("support/tickets") { supportRoutes() }.describe { tag(ApiTags.SUPPORT) }
     route("policies") { policyRoutes() }.describe { tag(ApiTags.POLICY) }
     route("policy-consents") { consentRoutes() }.describe { tag(ApiTags.CONSENT) }
     route("refund-requests") { refundRequestRoutes() }.describe { tag(ApiTags.REFUND) }
@@ -297,6 +300,7 @@ private fun Route.adminRoutes() {
             route("b2b") { b2bAdminRoutes() }.describe { tag(ApiTags.B2B) }
             route("cms/pages") { cmsAdminRoutes() }.describe { tag(ApiTags.CONTENT) }
             route("seo") { seoAdminRoutes() }.describe { tag(ApiTags.CONTENT) }
+            route("support/tickets") { supportAdminRoutes() }.describe { tag(ApiTags.SUPPORT) }
             route("refund-requests") { refundAdminRoutes() }.describe { tag(ApiTags.REFUND) }
             route("rma-requests") { rmaAdminRoutes() }.describe { tag(ApiTags.RMA) }
             route("policies") { policyAdminRoutes() }.describe { tag(ApiTags.POLICY) }

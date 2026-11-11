@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 329  
+**Operations:** 338  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -49,6 +49,7 @@ document served by Swagger UI.
 | [B2B](#b2b) | 15 |
 | [Omnichannel](#omnichannel) | 6 |
 | [CMS & SEO](#cms--seo) | 10 |
+| [Support](#support) | 9 |
 | [FX](#fx) | 2 |
 | [API Keys](#api-keys) | 3 |
 | [Feature Flags](#feature-flags) | 2 |
@@ -528,6 +529,20 @@ document served by Swagger UI.
 | `PUT` | `/api/v1/admin/seo/metadata` | Admin: upsert SEO metadata | Admin |
 | `GET` | `/sitemap.xml` | XML sitemap | Public |
 | `GET` | `/robots.txt` | Robots policy | Public |
+
+## Support
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/api/v1/support/tickets` | List my support tickets | Authenticated |
+| `POST` | `/api/v1/support/tickets` | Open a support ticket | Authenticated |
+| `GET` | `/api/v1/support/tickets/{id}` | Get a ticket and public replies | Authenticated |
+| `POST` | `/api/v1/support/tickets/{id}/messages` | Reply to a ticket | Authenticated |
+| `POST` | `/api/v1/support/tickets/{id}/close` | Close my ticket | Authenticated |
+| `GET` | `/api/v1/admin/support/tickets` | Admin: list support tickets | Admin |
+| `GET` | `/api/v1/admin/support/tickets/{id}` | Admin: ticket with internal notes | Admin |
+| `POST` | `/api/v1/admin/support/tickets/{id}/messages` | Admin: reply or add internal note | Admin |
+| `PUT` | `/api/v1/admin/support/tickets/{id}` | Admin: update status/priority/assignment | Admin |
 
 ## FX
 

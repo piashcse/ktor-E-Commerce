@@ -8,6 +8,8 @@ hide:
 
 ### Added
 
+- Support tickets (`V45`): customer ticket creation with optional order linkage, threaded
+  replies, admin internal notes, assignment, priorities and resolution/close lifecycle.
 - CMS/SEO (`V44`): published/draft CMS pages with slugs and SEO fields, per-entity locale-aware
   SEO metadata (`HOME`, `PAGE`, `PRODUCT`, `CATEGORY`, `SHOP`), generated `sitemap.xml`
   (products/categories/pages) and `robots.txt` using `PUBLIC_BASE_URL`.
@@ -55,7 +57,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (329 operations total).
+  (338 operations total).
 
 ### Fixed
 
