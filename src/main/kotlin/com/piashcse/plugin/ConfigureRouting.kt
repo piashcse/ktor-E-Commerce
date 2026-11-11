@@ -65,6 +65,14 @@ import com.piashcse.feature.review_rating.reviewRatingRoutes
 import com.piashcse.feature.rma.rmaAdminRoutes
 import com.piashcse.feature.rma.rmaRoutes
 import com.piashcse.feature.rma.rmaSellerRoutes
+import com.piashcse.feature.seller.commissionAdminRoutes
+import com.piashcse.feature.seller.commissionSellerRoutes
+import com.piashcse.feature.seller.disputeAdminRoutes
+import com.piashcse.feature.seller.disputeRoutes
+import com.piashcse.feature.seller.sellerOwnReviewRoutes
+import com.piashcse.feature.seller.sellerPublicRoutes
+import com.piashcse.feature.seller.sellerReviewAdminRoutes
+import com.piashcse.feature.seller.sellerReviewRoutes
 import com.piashcse.feature.shipping.orderShipmentRoutes
 import com.piashcse.feature.shipping.shipmentRoutes
 import com.piashcse.feature.shipping_method.shippingMethodAdminRoutes
@@ -186,6 +194,9 @@ private fun Route.customerRoutes() {
     route("referrals") { referralRoutes() }.describe { tag(ApiTags.LOYALTY) }
     route("i18n") { i18nRoutes() }.describe { tag(ApiTags.LOCALIZATION) }
     route("analytics") { analyticsRoutes() }.describe { tag(ApiTags.ANALYTICS) }
+    route("sellers") { sellerPublicRoutes() }.describe { tag(ApiTags.SELLER) }
+    route("seller-reviews") { sellerReviewRoutes() }.describe { tag(ApiTags.SELLER) }
+    route("disputes") { disputeRoutes() }.describe { tag(ApiTags.SELLER) }
     route("policies") { policyRoutes() }.describe { tag(ApiTags.POLICY) }
     route("policy-consents") { consentRoutes() }.describe { tag(ApiTags.CONSENT) }
     route("refund-requests") { refundRequestRoutes() }.describe { tag(ApiTags.REFUND) }
@@ -210,6 +221,8 @@ private fun Route.sellerRoutes() {
             route("rma-requests") { rmaSellerRoutes() }.describe { tag(ApiTags.RMA) }
             route("dashboard") { dashboardSellerRoutes() }.describe { tag(ApiTags.DASHBOARD) }
             route("payouts") { payoutSellerRoutes() }.describe { tag(ApiTags.PAYOUT) }
+            route("reviews") { sellerOwnReviewRoutes() }.describe { tag(ApiTags.SELLER) }
+            route("commission") { commissionSellerRoutes() }.describe { tag(ApiTags.SELLER) }
         }
     }
 }
@@ -239,6 +252,9 @@ private fun Route.adminRoutes() {
             route("chargebacks") { chargebackAdminRoutes() }.describe { tag(ApiTags.FRAUD) }
             route("gift-cards") { giftCardAdminRoutes() }.describe { tag(ApiTags.LOYALTY) }
             route("wallets") { walletAdminRoutes() }.describe { tag(ApiTags.LOYALTY) }
+            route("seller-reviews") { sellerReviewAdminRoutes() }.describe { tag(ApiTags.SELLER) }
+            route("disputes") { disputeAdminRoutes() }.describe { tag(ApiTags.SELLER) }
+            route("commission-rules") { commissionAdminRoutes() }.describe { tag(ApiTags.SELLER) }
             route("refund-requests") { refundAdminRoutes() }.describe { tag(ApiTags.REFUND) }
             route("rma-requests") { rmaAdminRoutes() }.describe { tag(ApiTags.RMA) }
             route("policies") { policyAdminRoutes() }.describe { tag(ApiTags.POLICY) }

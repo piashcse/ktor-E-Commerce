@@ -28,6 +28,7 @@ import com.piashcse.event.UserRegisteredEvent
 import com.piashcse.feature.notification.NotificationDispatcher
 import com.piashcse.feature.notification.NotificationMessage
 import com.piashcse.feature.notification.NotificationTemplates
+import com.piashcse.feature.seller.CommissionService
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
@@ -206,7 +207,7 @@ class NotificationSubscriber(
                 if (exists) return@query
                 // Seller is paid on the net product amount after coupon discounts.
                 val netSubTotal = order.subTotal.subtract(order.discountAmount).max(java.math.BigDecimal.ZERO)
-                val commission = Money.commission(netSubTotal, seller.commissionRate)
+                val commission = CommissionService().commissionForOrderTx(order, seller)
                 SellerPayoutDAO.new {
                     this.sellerId = seller.id
                     this.orderId = order.id

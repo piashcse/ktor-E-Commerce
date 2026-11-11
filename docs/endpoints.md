@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 271  
+**Operations:** 285  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -44,6 +44,7 @@ document served by Swagger UI.
 | [Loyalty](#loyalty) | 9 |
 | [Localization](#localization) | 5 |
 | [Analytics](#analytics) | 4 |
+| [Seller Tools](#seller-tools) | 14 |
 | [FX](#fx) | 2 |
 | [API Keys](#api-keys) | 3 |
 | [Feature Flags](#feature-flags) | 2 |
@@ -440,6 +441,25 @@ document served by Swagger UI.
 | `GET` | `/api/v1/admin/analytics/funnel` | Conversion funnel report | Admin |
 | `GET` | `/api/v1/admin/analytics/attribution` | UTM/referrer attribution report | Admin |
 | `GET` | `/api/v1/admin/analytics/products` | Product conversion report | Admin |
+
+## Seller Tools
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/api/v1/sellers/{id}/reviews` | List active seller reviews | Public |
+| `POST` | `/api/v1/seller-reviews` | Review a seller after delivery | Customer |
+| `GET` | `/api/v1/seller/reviews` | Seller: list reviews received | Seller |
+| `GET` | `/api/v1/admin/seller-reviews` | Admin: list seller reviews | Admin |
+| `PUT` | `/api/v1/admin/seller-reviews/{id}/status` | Admin: moderate a seller review | Admin |
+| `GET` | `/api/v1/disputes` | List my disputes | Authenticated |
+| `POST` | `/api/v1/disputes` | Open a dispute | Authenticated |
+| `GET` | `/api/v1/admin/disputes` | Admin: list disputes | Admin |
+| `PUT` | `/api/v1/admin/disputes/{id}` | Admin: resolve/update a dispute | Admin |
+| `GET` | `/api/v1/admin/commission-rules` | List commission rules | Admin |
+| `POST` | `/api/v1/admin/commission-rules` | Create a commission rule | Admin |
+| `PUT` | `/api/v1/admin/commission-rules/{id}` | Update a commission rule | Admin |
+| `DELETE` | `/api/v1/admin/commission-rules/{id}` | Delete a commission rule | Admin |
+| `GET` | `/api/v1/seller/commission` | Seller: effective commission rate | Seller |
 
 ## FX
 

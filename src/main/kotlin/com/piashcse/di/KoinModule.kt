@@ -66,6 +66,8 @@ import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
 import com.piashcse.feature.review_rating.ReviewRatingRepository
 import com.piashcse.feature.review_rating.ReviewRatingRepositoryImpl
 import com.piashcse.feature.rma.RmaService
+import com.piashcse.feature.seller.CommissionService
+import com.piashcse.feature.seller.SellerToolsService
 import com.piashcse.feature.shipping.CarrierGateway
 import com.piashcse.feature.shipping.ManualCarrierGateway
 import com.piashcse.feature.shipping.ShipmentService
@@ -105,6 +107,8 @@ val serviceModule =
         single { LoyaltyService() }
         single { I18nService() }
         single { AnalyticsService() }
+        single { CommissionService() }
+        single { SellerToolsService() }
         single { ProductTranslationService() }
         single<OrderRepository> { OrderRepositoryImpl(get(), get(), get(), get()) }
         single<CarrierGateway> {

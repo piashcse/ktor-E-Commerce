@@ -13,6 +13,7 @@ import com.piashcse.event.RefundStatusChangedEvent
 import com.piashcse.feature.order.OrderCancellation
 import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentGateway
+import com.piashcse.feature.seller.CommissionService
 import com.piashcse.mapper.toRefundRequestResponse
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
@@ -196,7 +197,7 @@ class RefundRequestRepositoryImpl(
 
         // Seller totals and payout ledger.
         SellerDAO.find { SellerTable.shopId eq order.shopId }.firstOrNull()?.let { seller ->
-            val commissionShare = Money.commission(refundAmount, seller.commissionRate)
+            val commissionShare = CommissionService().commissionForItemTx(order, orderItem, seller, refundAmount)
             seller.totalSales = seller.totalSales.subtract(refundAmount).max(BigDecimal.ZERO)
             seller.totalCommission = seller.totalCommission.subtract(commissionShare).max(BigDecimal.ZERO)
             SellerPayoutDAO.find { SellerPayoutTable.orderId eq order.id }.forEach { payout ->
