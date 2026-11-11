@@ -76,6 +76,7 @@ fun Application.configureSwagger() {
             tag(ApiTags.FRAUD, "Velocity rules, blocklists, risk decisions and chargebacks")
             tag(ApiTags.LOYALTY, "Loyalty points, referrals, gift cards and store credit")
             tag(ApiTags.LOCALIZATION, "Locales, message catalogs and product translations")
+            tag(ApiTags.ANALYTICS, "Funnel events, UTM attribution and product conversion")
         }
     }
 }

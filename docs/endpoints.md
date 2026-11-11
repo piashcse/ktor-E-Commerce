@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 267  
+**Operations:** 271  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -43,6 +43,7 @@ document served by Swagger UI.
 | [Fraud](#fraud) | 13 |
 | [Loyalty](#loyalty) | 9 |
 | [Localization](#localization) | 5 |
+| [Analytics](#analytics) | 4 |
 | [FX](#fx) | 2 |
 | [API Keys](#api-keys) | 3 |
 | [Feature Flags](#feature-flags) | 2 |
@@ -430,6 +431,15 @@ document served by Swagger UI.
 | `GET` | `/api/v1/admin/products/{id}/translations` | List product translations | Admin |
 | `PUT` | `/api/v1/admin/products/{id}/translations/{locale}` | Create/update a product translation | Admin |
 | `DELETE` | `/api/v1/admin/products/{id}/translations/{locale}` | Delete a product translation | Admin |
+
+## Analytics
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `POST` | `/api/v1/analytics/events` | Ingest storefront funnel events | Public |
+| `GET` | `/api/v1/admin/analytics/funnel` | Conversion funnel report | Admin |
+| `GET` | `/api/v1/admin/analytics/attribution` | UTM/referrer attribution report | Admin |
+| `GET` | `/api/v1/admin/analytics/products` | Product conversion report | Admin |
 
 ## FX
 

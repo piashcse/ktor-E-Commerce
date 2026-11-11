@@ -85,6 +85,7 @@ Finalizes the purchase and creates order records. Send `Idempotency-Key` (or the
   "walletCredit": 10.00,
   "giftCardCode": "GIFT1234ABCD",
   "locale": "fr",
+  "attribution": {"sessionId":"sess_123","source":"google","medium":"cpc","campaign":"spring"},
   "idempotencyKey": "unique-uuid-per-attempt"
 }
 ```

@@ -3,6 +3,8 @@
 package com.piashcse.plugin
 
 import com.piashcse.constants.AppConstants
+import com.piashcse.feature.analytics.analyticsAdminRoutes
+import com.piashcse.feature.analytics.analyticsRoutes
 import com.piashcse.feature.apikey.apiKeyRoutes
 import com.piashcse.feature.audit_log.auditLogAdminRoutes
 import com.piashcse.feature.auth.authAdminRoutes
@@ -183,6 +185,7 @@ private fun Route.customerRoutes() {
     route("wallet") { walletRoutes() }.describe { tag(ApiTags.LOYALTY) }
     route("referrals") { referralRoutes() }.describe { tag(ApiTags.LOYALTY) }
     route("i18n") { i18nRoutes() }.describe { tag(ApiTags.LOCALIZATION) }
+    route("analytics") { analyticsRoutes() }.describe { tag(ApiTags.ANALYTICS) }
     route("policies") { policyRoutes() }.describe { tag(ApiTags.POLICY) }
     route("policy-consents") { consentRoutes() }.describe { tag(ApiTags.CONSENT) }
     route("refund-requests") { refundRequestRoutes() }.describe { tag(ApiTags.REFUND) }
@@ -245,6 +248,7 @@ private fun Route.adminRoutes() {
             route("promotions") { promotionAdminRoutes() }.describe { tag(ApiTags.COUPON) }
             route("reviews") { reviewAdminRoutes() }.describe { tag(ApiTags.REVIEW) }
             route("dashboard") { dashboardAdminRoutes() }.describe { tag(ApiTags.DASHBOARD) }
+            route("analytics") { analyticsAdminRoutes() }.describe { tag(ApiTags.ANALYTICS) }
             route("audit-logs") { auditLogAdminRoutes() }.describe { tag(ApiTags.AUDIT_LOG) }
             route("payouts") { payoutAdminRoutes() }.describe { tag(ApiTags.PAYOUT) }
             route("fx-rates") { fxAdminRoutes() }.describe { tag(ApiTags.FX) }

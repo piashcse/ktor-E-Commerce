@@ -43,4 +43,7 @@ data class OrderResponse(
     val giftCardCode: String? = null,
     val locale: String = "en",
     val formattedTotal: String? = null,
+    val attributionSource: String? = null,
+    val attributionMedium: String? = null,
+    val attributionCampaign: String? = null,
 )
