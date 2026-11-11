@@ -8,6 +8,9 @@ hide:
 
 ### Added
 
+- Identity hardening (`V46`): Google ID-token social login with automatic verified customer
+  creation/account linking, plus WebAuthn passkey registration, passwordless login and credential
+  management (`GOOGLE_CLIENT_ID`, `WEBAUTHN_RP_ID/RP_NAME/ORIGIN`).
 - Support tickets (`V45`): customer ticket creation with optional order linkage, threaded
   replies, admin internal notes, assignment, priorities and resolution/close lifecycle.
 - CMS/SEO (`V44`): published/draft CMS pages with slugs and SEO fields, per-entity locale-aware
@@ -57,7 +60,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (338 operations total).
+  (345 operations total).
 
 ### Fixed
 

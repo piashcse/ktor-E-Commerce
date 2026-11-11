@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 338  
+**Operations:** 345  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -14,7 +14,7 @@ document served by Swagger UI.
 
 | Tag | Operations |
 |---|---:|
-| [Auth](#auth) | 14 |
+| [Auth](#auth) | 21 |
 | [Profile](#profile) | 3 |
 | [Shop](#shop) | 13 |
 | [Shop Category](#shop-category) | 4 |
@@ -75,6 +75,13 @@ document served by Swagger UI.
 | `POST` | `/api/v1/auth/otp-verification` | Verify account OTP | Public |
 | `POST` | `/api/v1/auth/refresh-token` | Refresh access token | Public |
 | `POST` | `/api/v1/auth/register` | Register | Public |
+| `POST` | `/api/v1/auth/social/google` | Google social login | Public |
+| `POST` | `/api/v1/auth/passkeys/login/options` | Start passkey login | Public |
+| `POST` | `/api/v1/auth/passkeys/login` | Finish passkey login | Public |
+| `GET` | `/api/v1/auth/passkeys` | List my passkeys | Authenticated |
+| `POST` | `/api/v1/auth/passkeys/register/options` | Start passkey registration | Authenticated |
+| `POST` | `/api/v1/auth/passkeys/register` | Finish passkey registration | Authenticated |
+| `DELETE` | `/api/v1/auth/passkeys/{id}` | Delete a passkey | Authenticated |
 | `POST` | `/api/v1/auth/mfa/setup` | Start TOTP MFA setup | Authenticated |
 | `POST` | `/api/v1/auth/mfa/enable` | Enable TOTP MFA | Authenticated |
 | `POST` | `/api/v1/auth/mfa/disable` | Disable TOTP MFA | Authenticated |

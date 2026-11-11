@@ -938,6 +938,182 @@ http://localhost:8080/api/v1/auth/mfa/disable
 ```
 </details>
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/auth/social/google</code></summary>
+
+### Description
+Verify a Google ID token and return app tokens. New verified customers are created automatically.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/social/google' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"idToken":"google-id-token"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/social/google
+```
+
+### Response
+```json
+{"data":{"accessToken":"...","refreshToken":"..."},"message":"Login successful"}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/auth/passkeys/login/options</code></summary>
+
+### Description
+Start passkey login and receive a challenge/allowCredentials list.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/passkeys/login/options' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"customer@example.com","userType":"customer"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/passkeys/login/options
+```
+
+### Response
+```json
+{"challenge":"...","rpId":"localhost","allowCredentials":[]}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/auth/passkeys/login</code></summary>
+
+### Description
+Finish passkey login with the authenticator assertion; returns access/refresh tokens.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/passkeys/login' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"customer@example.com","userType":"customer","credentialId":"...","clientDataJson":"...","authenticatorData":"...","signature":"..."}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/passkeys/login
+```
+
+### Response
+```json
+{"data":{"accessToken":"...","refreshToken":"..."},"message":"Login successful"}
+```
+</details>
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/auth/passkeys</code></summary>
+
+### Description
+List passkeys registered to the authenticated user.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/auth/passkeys' \
+  -H 'Authorization: Bearer <access-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/passkeys
+```
+
+### Response
+```json
+[{"id":"pk-uuid","credentialId":"...","name":"Laptop"}]
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/auth/passkeys/register/options</code></summary>
+
+### Description
+Start passkey registration for the authenticated user.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/passkeys/register/options' \
+  -H 'Authorization: Bearer <access-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/passkeys/register/options
+```
+
+### Response
+```json
+{"challenge":"...","rpId":"localhost","excludeCredentials":[]}
+```
+</details>
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/auth/passkeys/register</code></summary>
+
+### Description
+Finish passkey registration and persist the credential.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/passkeys/register' \
+  -H 'Authorization: Bearer <access-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"credentialId":"...","clientDataJson":"...","publicKey":"base64-spki","name":"Laptop"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/passkeys/register
+```
+
+### Response
+```json
+{"id":"pk-uuid","credentialId":"...","name":"Laptop"}
+```
+</details>
+
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/auth/passkeys/{id}</code></summary>
+
+### Description
+Delete one of the authenticated user's passkeys.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/auth/passkeys/pk-uuid' \
+  -H 'Authorization: Bearer <access-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/auth/passkeys/{id}
+```
+
+### Response
+```json
+{"message":"Passkey deleted"}
+```
+</details>
+
 ### PROFILE
 
 <details>
