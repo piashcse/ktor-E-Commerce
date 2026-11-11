@@ -8,6 +8,10 @@ hide:
 
 ### Fixed
 
+- B2B purchase-order fulfillment now creates the buyer order, decrements stock and links the PO to
+  the generated order.
+- Digital downloads return short-lived signed URLs; raw asset URLs are no longer exposed in JSON.
+- Added a documented data-retention and DSAR/erasure policy.
 - BOPIS checkout no longer requires a shipping address/method and now checks/decrements stock at the
   pickup warehouse.
 - POS supports product variants and warehouse-scoped variant stock.
@@ -99,7 +103,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (347 operations total).
+  (348 operations total).
 
 ### Fixed
 

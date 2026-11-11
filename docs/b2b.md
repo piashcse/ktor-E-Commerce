@@ -91,7 +91,8 @@ Buyer:
 Seller:
 
 - `GET /api/v1/seller/b2b/purchase-orders`
-- `POST /api/v1/seller/b2b/purchase-orders/{id}/fulfill`
+- `POST /api/v1/seller/b2b/purchase-orders/{id}/fulfill` — creates the buyer order, decrements
+  stock, links the PO to the order and sets `FULFILLED`
 
 Admin:
 
@@ -100,6 +101,7 @@ Admin:
 - `GET /api/v1/admin/b2b/purchase-orders`
 
 PO statuses: `OPEN` → `FULFILLED`; `CANCELED` is reserved for future cancellation flows.
+The PO response includes the generated `orderId` after fulfillment.
 
 ## Limits
 

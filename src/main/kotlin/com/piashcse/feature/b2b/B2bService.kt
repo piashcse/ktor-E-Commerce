@@ -2,6 +2,9 @@ package com.piashcse.feature.b2b
 
 import com.piashcse.constants.B2bAccountStatus
 import com.piashcse.constants.B2bQuoteStatus
+import com.piashcse.constants.OrderStatus
+import com.piashcse.constants.PaymentMethod
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.PurchaseOrderStatus
 import com.piashcse.database.entities.B2bAccountDAO
 import com.piashcse.database.entities.B2bAccountTable
@@ -11,12 +14,17 @@ import com.piashcse.database.entities.B2bQuoteDAO
 import com.piashcse.database.entities.B2bQuoteItemDAO
 import com.piashcse.database.entities.B2bQuoteItemTable
 import com.piashcse.database.entities.B2bQuoteTable
+import com.piashcse.database.entities.OrderDAO
+import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopTable
+import com.piashcse.database.entities.UserDAO
+import com.piashcse.database.entities.addSales
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.database.entities.decrementStock
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
@@ -153,6 +161,7 @@ data class QuoteResponse(
 data class PurchaseOrderResponse(
     val id: String,
     val quoteId: String,
+    val orderId: String?,
     val buyerUserId: String,
     val sellerId: String,
     val shopId: String?,
@@ -458,9 +467,55 @@ class B2bService {
     ): PurchaseOrderResponse =
         query {
             val seller = requireSellerByUserId(sellerUserId)
-            val po = B2bPurchaseOrderDAO.findById(poId) ?: poId.throwNotFound("Purchase order")
+            val po =
+                B2bPurchaseOrderDAO.find { B2bPurchaseOrderTable.id eq poId.entityID(B2bPurchaseOrderTable) }
+                    .forUpdate()
+                    .firstOrNull() ?: poId.throwNotFound("Purchase order")
             if (po.sellerId.value != seller.id.value) throw ForbiddenException("Purchase order belongs to another seller")
             if (po.status != PurchaseOrderStatus.OPEN) throw ValidationException("Purchase order is not open")
+            val shopId = po.shopId ?: throw ValidationException("Purchase order has no shop")
+            val quoteItems = B2bQuoteItemDAO.find { B2bQuoteItemTable.quoteId eq po.quoteId }.toList()
+            if (quoteItems.isEmpty()) throw ValidationException("Purchase order has no items")
+            val products =
+                ProductDAO.find {
+                    ProductTable.id inList quoteItems.map { it.productId }
+                }.associateBy { it.id.value }
+            val buyerEmail = UserDAO.findById(po.buyerUserId.value)?.email.orEmpty()
+            val order =
+                OrderDAO.new {
+                    this.userId = po.buyerUserId
+                    this.shopId = shopId
+                    this.orderNumber =
+                        "B2B-${currentUtc().toLocalDate().toString().replace("-", "")}-${UUID.randomUUID().toString().take(6).uppercase()}"
+                    status = OrderStatus.CONFIRMED
+                    paymentStatus = PaymentStatus.PENDING
+                    subTotal = po.total
+                    shippingCost = BigDecimal.ZERO.setScale(2)
+                    taxAmount = BigDecimal.ZERO.setScale(2)
+                    total = po.total
+                    currency = po.currency
+                    fxRate = BigDecimal.ONE
+                    paymentMethod = PaymentMethod.BANK_TRANSFER
+                    shippingMethod = "B2B"
+                    contactEmail = buyerEmail
+                    notes = "B2B PO ${po.poNumber}; net ${po.netTermsDays} days"
+                }
+            quoteItems.forEach { item ->
+                val product = products[item.productId.value] ?: throw ValidationException("Product not found")
+                product.decrementStock(item.quantity)
+                product.addSales(item.quantity)
+                OrderItemDAO.new {
+                    this.orderId = order.id
+                    this.productId = product.id
+                    this.shopId = shopId
+                    quantity = item.quantity
+                    price = item.unitPrice
+                    total = item.total
+                    productName = product.name
+                    sku = product.sku
+                }
+            }
+            po.orderId = order.id
             po.status = PurchaseOrderStatus.FULFILLED
             po.fulfilledAt = currentUtc()
             po.toResponse()
@@ -554,6 +609,7 @@ class B2bService {
         PurchaseOrderResponse(
             id = id.value,
             quoteId = quoteId.value,
+            orderId = orderId?.value,
             buyerUserId = buyerUserId.value,
             sellerId = sellerId.value,
             shopId = shopId?.value,

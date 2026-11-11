@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 347  
+**Operations:** 348  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -492,6 +492,7 @@ document served by Swagger UI.
 | `POST` | `/api/v1/admin/subscriptions/{id}/activate` | Admin: mark pending invoice paid and activate | Admin |
 | `GET` | `/api/v1/library` | List my digital purchases | Authenticated |
 | `GET` | `/api/v1/library/{token}/download` | Redeem a digital download | Authenticated |
+| `GET` | `/api/v1/library/asset` | Resolve a short-lived signed download link | Public (signed) |
 
 ## B2B
 

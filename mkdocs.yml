@@ -74,6 +74,7 @@ nav:
       - Feature Flags: feature-flags.md
       - Outbox & DLQ: outbox.md
       - Privacy Policy: privacy-policy.md
+      - Data Retention: privacy-retention.md
       - Privacy Policy Consent: privacy-policy-consent.md
       - Dashboard: dashboard.md
       - Analytics: analytics.md

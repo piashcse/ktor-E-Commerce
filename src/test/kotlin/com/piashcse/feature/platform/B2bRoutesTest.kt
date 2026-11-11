@@ -46,7 +46,7 @@ class B2bRoutesTest {
 
     private fun po() =
         PurchaseOrderResponse(
-            "po-1", "quote-1", "user-1", "seller-1", "shop-1", "PO-1", PurchaseOrderStatus.OPEN,
+            "po-1", "quote-1", null, "user-1", "seller-1", "shop-1", "PO-1", PurchaseOrderStatus.OPEN,
             "USD", "100.00", 30, null, null, null, null,
         )
 

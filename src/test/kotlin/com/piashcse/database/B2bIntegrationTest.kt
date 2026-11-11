@@ -2,16 +2,20 @@ package com.piashcse.database
 
 import com.piashcse.constants.B2bAccountStatus
 import com.piashcse.constants.B2bQuoteStatus
+import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.KycStatus
 import com.piashcse.constants.PurchaseOrderStatus
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
+import com.piashcse.database.entities.InventoryDAO
+import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.ShopCategoryDAO
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.feature.b2b.B2bAccountRequest
 import com.piashcse.feature.b2b.B2bAccountUpdateRequest
 import com.piashcse.feature.b2b.B2bService
@@ -118,8 +122,14 @@ class B2bIntegrationTest {
                 status = ShopStatus.APPROVED
                 kycStatus = KycStatus.NOT_SUBMITTED
             }
+            val warehouse =
+                WarehouseDAO.new {
+                    this.shopId = shop.id
+                    name = "B2B Warehouse $suffix"
+                    code = "B2B-$suffix"
+                }
             val category = ProductCategoryDAO.new { name = "B2B Cat $suffix" }
-            productA =
+            val productARow =
                 ProductDAO.new {
                     userId = sellerUser.id
                     shopId = shop.id
@@ -128,8 +138,9 @@ class B2bIntegrationTest {
                     description = "Wholesale product A"
                     sku = "B2B-A-$suffix"
                     price = BigDecimal("50.00")
-                }.id.value
-            productB =
+                }
+            productA = productARow.id.value
+            val productBRow =
                 ProductDAO.new {
                     userId = sellerUser.id
                     shopId = shop.id
@@ -138,7 +149,17 @@ class B2bIntegrationTest {
                     description = "Wholesale product B"
                     sku = "B2B-B-$suffix"
                     price = BigDecimal("50.00")
-                }.id.value
+                }
+            productB = productBRow.id.value
+            listOf(productARow, productBRow).forEach { product ->
+                InventoryDAO.new {
+                    productId = product.id
+                    this.shopId = shop.id
+                    this.warehouseId = warehouse.id
+                    stockQuantity = 100
+                    status = InventoryStatus.IN_STOCK
+                }
+            }
         }
 
         val b2b = B2bService()
@@ -218,6 +239,12 @@ class B2bIntegrationTest {
 
         val fulfilled = kotlinx.coroutines.runBlocking { b2b.fulfill(sellerUserId, po.id) }
         assertEquals(PurchaseOrderStatus.FULFILLED, fulfilled.status)
+        assertTrue(fulfilled.orderId != null)
+        transaction {
+            val order = OrderDAO.findById(fulfilled.orderId!!)!!
+            assertEquals(buyerId, order.userId.value)
+            assertEquals("210.00", order.total.toPlainString())
+        }
         assertEquals(1, kotlinx.coroutines.runBlocking { b2b.myPurchaseOrders(buyerId, 10, 0) }.data.size)
         assertEquals(1, kotlinx.coroutines.runBlocking { b2b.sellerPurchaseOrders(sellerUserId, 10, 0) }.data.size)
         assertEquals(1, kotlinx.coroutines.runBlocking { b2b.adminAccounts(null, 10, 0) }.data.size)

@@ -117,7 +117,10 @@ Digital-only orders have **zero shipping cost** and the order shipping method is
 
 - Requires ownership of the entitlement.
 - Rejects expired/exhausted downloads.
-- Increments the download count and returns the asset URL and remaining count.
+- Increments the download count and returns a short-lived signed
+  `/api/v1/library/asset?...` URL plus its expiry and remaining count.
+- The raw asset URL is never returned in JSON; the signed endpoint validates the HMAC/expiry and
+  redirects to the asset.
 
 Subscription entitlements have a higher download limit (50) and expire at the end of the current
 paid period. Canceled/PAST_DUE/expired subscriptions no longer expose active downloads; one-off
