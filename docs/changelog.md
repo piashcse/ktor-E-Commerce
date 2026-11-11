@@ -8,6 +8,11 @@ hide:
 
 ### Fixed
 
+- BOPIS checkout no longer requires a shipping address/method and now checks/decrements stock at the
+  pickup warehouse.
+- POS supports product variants and warehouse-scoped variant stock.
+- `REVIEW` payments now hold order finalization until an admin releases the risk review.
+- Added metrics for subscriptions, digital downloads, support tickets, B2B quotes and webhooks.
 - Cancellation/full-refund now reverses order lifecycle effects: earned points are removed, redeemed
   points and store credit are restored, gift-card redemptions are refunded to the card, and
   order-based digital entitlements are revoked. Reversals are idempotent per order.
@@ -94,7 +99,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (346 operations total).
+  (347 operations total).
 
 ### Fixed
 

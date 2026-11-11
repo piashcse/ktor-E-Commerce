@@ -17,6 +17,7 @@ import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
@@ -291,6 +292,7 @@ class B2bService {
             }
             quote.subtotal = Money.scale2(subtotal)
             quote.total = Money.scale2(subtotal)
+            AppMetrics.b2bQuotesRequested.increment()
             quote.toResponse()
         }
 

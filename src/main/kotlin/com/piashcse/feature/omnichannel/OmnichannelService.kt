@@ -11,6 +11,8 @@ import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
+import com.piashcse.database.entities.ProductVariantDAO
+import com.piashcse.database.entities.ProductVariantTable
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
@@ -20,6 +22,7 @@ import com.piashcse.database.entities.addSales
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.decrementStock
 import com.piashcse.database.entities.decrementStockAt
+import com.piashcse.database.entities.decrementStockFor
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.feature.loyalty.LoyaltyService
@@ -73,6 +76,7 @@ data class StoreResponse(
 data class PosSaleItem(
     val productId: String,
     val quantity: Int,
+    val variantId: String? = null,
 ) {
     init {
         if (quantity <= 0) throw FieldValidationException(listOf(FieldViolation("quantity", "Quantity must be positive")))
@@ -216,6 +220,23 @@ class OmnichannelService(
             if (products.values.any { it.shopId?.value != shopId.value }) {
                 throw ValidationException("All POS items must belong to the seller's shop")
             }
+            val variantIds = request.items.mapNotNull { it.variantId }.distinct()
+            val variants =
+                if (variantIds.isEmpty()) {
+                    emptyMap()
+                } else {
+                    ProductVariantDAO.find {
+                        ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) }
+                    }.associateBy { it.id.value }
+                }
+            request.items.forEach { item ->
+                item.variantId?.let { id ->
+                    val variant = variants[id] ?: throw ValidationException("Variant not found: $id")
+                    if (variant.productId.value != item.productId) {
+                        throw ValidationException("Variant does not belong to product ${item.productId}")
+                    }
+                }
+            }
 
             val customerEmail = request.customerEmail?.takeIf { it.isNotBlank() }?.trim()?.lowercase()
             val customer =
@@ -257,12 +278,19 @@ class OmnichannelService(
 
             request.items.forEach { item ->
                 val product = products.getValue(item.productId)
-                val unit = Money.scale2(product.discountPrice ?: product.price)
+                val variant = item.variantId?.let { variants[it] }
+                val unit = Money.scale2(variant?.effectivePrice ?: product.discountPrice ?: product.price)
                 val lineTotal = Money.scale2(unit.multiply(BigDecimal(item.quantity)))
                 if (warehouse != null) {
-                    product.decrementStockAt(warehouse.id.value, item.quantity)
+                    product.decrementStockAt(warehouse.id.value, variant?.id?.value, item.quantity)
                 } else {
-                    product.decrementStock(item.quantity)
+                    if (variant == null) {
+                        product.decrementStock(
+                            item.quantity,
+                        )
+                    } else {
+                        product.decrementStockFor(variant.id.value, item.quantity)
+                    }
                 }
                 product.addSales(item.quantity)
                 val quote =
@@ -281,6 +309,8 @@ class OmnichannelService(
                 OrderItemTable.insert {
                     it[orderId] = order.id
                     it[productId] = product.id
+                    it[variantId] = variant?.id
+                    it[variantName] = variant?.name
                     it[OrderItemTable.shopId] = seller.shopId!!
                     it[quantity] = item.quantity
                     it[price] = unit

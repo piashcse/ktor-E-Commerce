@@ -17,6 +17,7 @@ import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.OrderStatusChangedEvent
 import com.piashcse.event.OutboxPublisher
+import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
@@ -252,6 +253,7 @@ class ShipmentService(
         val event =
             runCatching { carrier.parseWebhook(payload) }
                 .getOrElse { throw ValidationException("Invalid carrier webhook payload") }
+        AppMetrics.carrierWebhooks.increment()
 
         return query {
             val existing =

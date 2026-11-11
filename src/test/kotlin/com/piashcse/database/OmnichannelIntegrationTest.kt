@@ -19,9 +19,12 @@ import com.piashcse.database.entities.ShopCategoryDAO
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WarehouseDAO
+import com.piashcse.feature.cart.CartRepositoryImpl
 import com.piashcse.feature.omnichannel.OmnichannelService
 import com.piashcse.feature.omnichannel.PosSaleItem
 import com.piashcse.feature.omnichannel.PosSaleRequest
+import com.piashcse.feature.order.OrderRepositoryImpl
+import com.piashcse.model.request.CheckoutRequest
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -211,6 +214,25 @@ class OmnichannelIntegrationTest {
         assertEquals("21.00", pos.total)
         assertEquals(1, kotlinx.coroutines.runBlocking { service.posSales(sellerUserId, 10, 0) }.data.size)
         assertEquals(8, transaction { InventoryDAO.all().first { it.productId.value == productId }.stockQuantity })
-        assertEquals(1, kotlinx.coroutines.runBlocking { service.pickupOrders(sellerUserId, 10, 0) }.data.size)
+
+        // BOPIS checkout no longer needs a shipping address/method and reserves from the store.
+        kotlinx.coroutines.runBlocking { CartRepositoryImpl().createCart(customerId, productId, 1) }
+        val bopis =
+            kotlinx.coroutines.runBlocking {
+                OrderRepositoryImpl().placeOrder(
+                    customerId,
+                    CheckoutRequest(
+                        fulfillmentType = FulfillmentType.PICKUP,
+                        pickupWarehouseId = warehouseId,
+                        paymentMethod = PaymentMethod.COD,
+                        idempotencyKey = "bopis-$suffix",
+                    ),
+                )
+            }.first()
+        assertEquals(FulfillmentType.PICKUP, bopis.fulfillmentType)
+        assertEquals("0.00", bopis.shippingCost)
+        assertTrue(bopis.pickupCode != null)
+        assertEquals(7, transaction { InventoryDAO.all().first { it.productId.value == productId }.stockQuantity })
+        assertEquals(2, kotlinx.coroutines.runBlocking { service.pickupOrders(sellerUserId, 10, 0) }.data.size)
     }
 }

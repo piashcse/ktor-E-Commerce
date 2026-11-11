@@ -69,6 +69,8 @@ Checkout accepts:
 
 - The warehouse must be active, support pickup, and belong to the selling shop.
 - Pickup orders must contain items from one shop.
+- `shippingAddressId`, `shippingMethodId` and shipping cost are no longer required for pickup.
+- Stock is checked and decremented at the selected pickup warehouse.
 - Pickup readiness/completion requires a paid, non-canceled order.
 - Shipping cost is zero and the order shipping method is `PICKUP`.
 - A 6-character `pickupCode` and `pickupStatus = PENDING` are stored on the order.
@@ -108,6 +110,7 @@ Completion sets `pickupStatus = PICKED_UP`, the order status to `RECEIVED`, and 
 
 - Optionally validated against a POS-enabled warehouse owned by the seller.
 - All items must belong to the seller’s shop.
+- Items may include `variantId`; variant prices and warehouse stock are used.
 - Creates a completed order with `fulfillmentType = POS`, `shippingMethod = POS` and zero shipping.
 - Tax is calculated from the POS warehouse country and the normal tax rules.
 - `idempotencyKey` can be supplied to make retries safe.

@@ -8,6 +8,7 @@ import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.SubscriptionDAO
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
@@ -135,6 +136,7 @@ class DigitalDeliveryService {
                 throw ValidationException("Download is expired or has reached its limit")
             }
             entitlement.downloadCount += 1
+            AppMetrics.digitalDownloads.increment()
             DigitalDownloadResponse(
                 downloadUrl = entitlement.downloadUrl,
                 fileName = entitlement.fileName,

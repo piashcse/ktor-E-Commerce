@@ -302,6 +302,15 @@ provider payment, the API issues the refund through the processor and stores
 
 ---
 
+## 6. Release a risk review
+
+**`POST /api/v1/admin/payments/{id}/risk/approve`**
+
+Sets a `REVIEW` payment decision to `ALLOW` and finalizes the order if the payment was already
+captured. `BLOCK` payments cannot be released.
+
+---
+
 ## Payment Status Values
 
 ### Common Payment Status Values

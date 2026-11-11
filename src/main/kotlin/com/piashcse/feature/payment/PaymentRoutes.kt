@@ -86,5 +86,10 @@ fun Route.paymentAdminRoutes() {
             val id = call.requirePathParameter("id")
             call.respondOk(paymentRepo.confirmPayment(id, call.currentUserId))
         }.describe { summary = "Admin - confirm a pending payment as completed" }
+
+        post("{id}/risk/approve") {
+            val id = call.requirePathParameter("id")
+            call.respondOk(paymentRepo.releaseReview(id, call.currentUserId))
+        }.describe { summary = "Admin - release a REVIEW payment" }
     }
 }

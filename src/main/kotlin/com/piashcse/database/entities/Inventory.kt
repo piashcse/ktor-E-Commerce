@@ -53,11 +53,25 @@ fun ProductDAO.effectiveStockFor(
 fun ProductDAO.decrementStock(quantity: Int) = decrementStockFor(null, quantity)
 
 /** Decrements product-level stock at a specific warehouse (POS/BOPIS). */
+fun ProductDAO.effectiveStockForAt(
+    warehouseId: String,
+    variantId: String?,
+): Int =
+    inventories()
+        .filter { it.warehouseId.value == warehouseId && it.variantId?.value == variantId }
+        .sumOf { it.stockQuantity }
+
 fun ProductDAO.decrementStockAt(
     warehouseId: String,
     quantity: Int,
+) = decrementStockAt(warehouseId, null, quantity)
+
+fun ProductDAO.decrementStockAt(
+    warehouseId: String,
+    variantId: String?,
+    quantity: Int,
 ) {
-    val rows = inventories(forUpdate = true).filter { it.warehouseId.value == warehouseId && it.variantId == null }
+    val rows = inventories(forUpdate = true).filter { it.warehouseId.value == warehouseId && it.variantId?.value == variantId }
     if (rows.isEmpty()) throw ValidationException(Message.Inventory.NOT_FOUND)
     val available = rows.sumOf { it.stockQuantity }
     if (available < quantity) {

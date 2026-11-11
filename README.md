@@ -5230,6 +5230,31 @@ http://localhost:8080/api/v1/admin/payments/{id}/confirm
 </details>
 
 
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/payments/{id}/risk/approve</code></summary>
+
+### Description
+Admin: release a `REVIEW` payment. Sets the decision to `ALLOW` and finalizes the order if the
+payment was captured. Blocked payments cannot be released.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payments/payment-uuid/risk/approve' \
+  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/payments/{id}/risk/approve
+```
+
+### Response
+```json
+{"id":"payment-uuid","riskDecision":"ALLOW"}
+```
+</details>
+
 ### SHIPMENT
 
 <details>
