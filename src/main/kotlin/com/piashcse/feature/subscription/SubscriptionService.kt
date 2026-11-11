@@ -27,7 +27,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
@@ -70,6 +70,10 @@ data class SubscriptionPlanResponse(
 data class SubscribeRequest(
     val planId: String,
     val paymentReference: String? = null,
+    /** Stored provider payment-method token used for off-session renewals. */
+    val paymentMethodReference: String? = null,
+    /** Provider customer id that owns [paymentMethodReference]. */
+    val providerCustomerReference: String? = null,
 )
 
 @Serializable
@@ -88,16 +92,23 @@ data class SubscriptionResponse(
     val currentPeriodEnd: String,
     val cancelAtPeriodEnd: Boolean,
     val externalReference: String?,
+    val hasPaymentMethod: Boolean = false,
+    val dunningAttempts: Int = 0,
+    val graceUntil: String? = null,
 )
 
 @Serializable
 data class BillingRunResponse(
     val invoicesCreated: Int,
     val canceled: Int,
+    val paid: Int = 0,
+    val failed: Int = 0,
+    val expired: Int = 0,
 )
 
 class SubscriptionService(
     private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
+    private val billing: SubscriptionBillingService = SubscriptionBillingService(digitalDelivery),
 ) {
     suspend fun plans(productId: String?): List<SubscriptionPlanResponse> =
         query {
@@ -190,6 +201,8 @@ class SubscriptionService(
                     this.currentPeriodEnd = end
                     this.cancelAtPeriodEnd = false
                     this.externalReference = request.paymentReference
+                    this.paymentMethodReference = request.paymentMethodReference
+                    this.providerCustomerReference = request.providerCustomerReference
                 }
             SubscriptionInvoiceDAO.new {
                 this.subscriptionId = subscription.id
@@ -227,20 +240,13 @@ class SubscriptionService(
             val invoice =
                 SubscriptionInvoiceDAO.find {
                     (SubscriptionInvoiceTable.subscriptionId eq subscription.id) and
-                        (SubscriptionInvoiceTable.status eq InvoiceStatus.PENDING)
+                        (SubscriptionInvoiceTable.status inList listOf(InvoiceStatus.PENDING, InvoiceStatus.FAILED))
                 }.orderBy(SubscriptionInvoiceTable.createdAt to SortOrder.DESC)
                     .firstOrNull() ?: throw ValidationException("No pending invoice for this subscription")
-            invoice.status = InvoiceStatus.PAID
-            invoice.providerReference = paymentReference
-            invoice.paidAt = currentUtc()
-            subscription.currentPeriodStart = invoice.periodStart
-            subscription.currentPeriodEnd = invoice.periodEnd
-            subscription.status = SubscriptionStatus.ACTIVE
-            subscription.externalReference = paymentReference
-            val plan = SubscriptionPlanDAO.findById(subscription.planId.value)
-            plan?.let {
-                digitalDelivery.grantSubscriptionTx(subscription.userId.value, it.productId.value, subscription.id.value)
+            if (!billing.applyPaidInvoiceTx(invoice.id.value, paymentReference)) {
+                throw ValidationException("Invoice is already paid")
             }
+            val plan = SubscriptionPlanDAO.findById(subscription.planId.value)
             subscription.toResponse(plan)
         }
 
@@ -271,38 +277,22 @@ class SubscriptionService(
                 }
         }
 
-    /** Manual renewal run for due subscriptions. Extends periods and records paid invoices. */
-    suspend fun runBilling(now: LocalDateTime = currentUtc()): BillingRunResponse =
-        query {
-            val due =
-                SubscriptionDAO.find {
-                    (SubscriptionTable.status eq SubscriptionStatus.ACTIVE) and
-                        (SubscriptionTable.currentPeriodEnd lessEq now)
-                }.toList()
-            var invoicesCreated = 0
-            var canceled = 0
-            due.forEach { subscription ->
-                val plan = SubscriptionPlanDAO.findById(subscription.planId.value) ?: return@forEach
-                if (subscription.cancelAtPeriodEnd) {
-                    subscription.status = SubscriptionStatus.CANCELED
-                    canceled += 1
-                    return@forEach
-                }
-                val start = subscription.currentPeriodEnd
-                val end = periodEnd(start, plan.interval)
-                SubscriptionInvoiceDAO.new {
-                    this.subscriptionId = subscription.id
-                    this.amount = plan.price
-                    this.currency = plan.currency
-                    this.status = InvoiceStatus.PENDING
-                    this.periodStart = start
-                    this.periodEnd = end
-                }
-                subscription.status = SubscriptionStatus.PAST_DUE
-                invoicesCreated += 1
-            }
-            BillingRunResponse(invoicesCreated = invoicesCreated, canceled = canceled)
-        }
+    /**
+     * Renewal run for due subscriptions. Off-session charges paid via the configured
+     * provider extend the period; failures move to PAST_DUE with retries and a grace
+     * period. Without a stored payment method the invoice remains pending for manual
+     * collection.
+     */
+    suspend fun runBilling(now: LocalDateTime = currentUtc()): BillingRunResponse {
+        val result = billing.run(now)
+        return BillingRunResponse(
+            invoicesCreated = result.invoicesCreated,
+            canceled = result.canceled,
+            paid = result.invoicesPaid,
+            failed = result.paymentFailures,
+            expired = result.expired,
+        )
+    }
 
     suspend fun invoicesForUser(
         userId: String,
@@ -356,6 +346,9 @@ class SubscriptionService(
             currentPeriodEnd = currentPeriodEnd.toUtcString(),
             cancelAtPeriodEnd = cancelAtPeriodEnd,
             externalReference = externalReference,
+            hasPaymentMethod = !paymentMethodReference.isNullOrBlank(),
+            dunningAttempts = dunningAttempts,
+            graceUntil = graceUntil?.toUtcString(),
         )
 
     private fun SubscriptionInvoiceDAO.toInvoiceResponse() =

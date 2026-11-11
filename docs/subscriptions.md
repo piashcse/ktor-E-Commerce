@@ -37,12 +37,16 @@ Admin CRUD:
 ```json
 {
   "planId": "plan-uuid",
-  "paymentReference": "pay_123"
+  "paymentReference": "pay_123",
+  "paymentMethodReference": "pm_123",
+  "providerCustomerReference": "cus_123"
 }
 ```
 
 - With a `paymentReference`, creates an `ACTIVE` subscription with a paid invoice.
 - Without a reference, creates a `PENDING` subscription and a `PENDING` invoice; no entitlement is granted until payment is recorded.
+- `paymentMethodReference` / `providerCustomerReference` are **provider tokens**, not card data. They
+  enable off-session renewal charges with `PAYMENT_PROVIDER=stripe`. Never send raw card numbers.
 - Period starts now and ends after one month/year (plus trial days).
 - Grants a digital entitlement when the plan’s product is digital and payment is confirmed.
 - Rejects duplicate active subscriptions for the same plan.
@@ -57,14 +61,30 @@ Other endpoints:
 
 **`POST /api/v1/admin/subscriptions/run-billing`**
 
-Processes every `ACTIVE` subscription whose period has ended:
+Processes every `ACTIVE` subscription whose period has ended and every `PAST_DUE` subscription
+that is due for a retry:
 
-- `cancelAtPeriodEnd = true` → status becomes `CANCELED`
-- otherwise: creates a `PENDING` renewal invoice and sets the subscription `PAST_DUE`
+- `cancelAtPeriodEnd = true` → status becomes `CANCELED`, entitlement revoked
+- with a stored payment method and `PAYMENT_PROVIDER=stripe` → charges the saved payment method
+  off-session. A successful charge extends the period, records a `PAID` invoice, resets dunning and
+  refreshes the entitlement. A `requires_action`/`processing` charge stays pending.
+- without a payment method (or with the manual provider) → creates/keeps a `PENDING` invoice and
+  sets the subscription `PAST_DUE` for manual collection.
+- failed charges record the attempt, failure reason and next retry, and keep the subscription
+  `PAST_DUE` during the 3-day grace period. After the configured attempts/grace period it becomes
+  `EXPIRED` and digital access is revoked.
 
-Returns `{ "invoicesCreated": N, "canceled": M }`.
+Returns:
 
-Confirm the renewal payment and reactivate:
+```json
+{ "invoicesCreated": 1, "canceled": 0, "paid": 1, "failed": 0, "expired": 0 }
+```
+
+Provider renewal webhooks (Stripe `payment_intent.*`) are matched by the
+`subscription_invoice_id` metadata and applied idempotently; a successful webhook also marks the
+invoice paid and activates the subscription.
+
+Confirm a renewal payment manually and reactivate:
 
 **`POST /api/v1/admin/subscriptions/{id}/activate`**
 
@@ -72,8 +92,8 @@ Confirm the renewal payment and reactivate:
 { "paymentReference": "pay_renewal" }
 ```
 
-Marks the pending invoice paid, advances the period, sets the subscription `ACTIVE`, and refreshes
-the digital entitlement expiry.
+Marks the pending/failed invoice paid, advances the period, sets the subscription `ACTIVE`, resets
+dunning, and refreshes the digital entitlement expiry.
 
 ## Digital goods
 
@@ -123,6 +143,7 @@ Digital-only orders have **zero shipping cost** and the order shipping method is
   redirects to the asset.
 
 Subscription entitlements have a higher download limit (50) and expire at the end of the current
-paid period. Canceled/PAST_DUE/expired subscriptions no longer expose active downloads; one-off
+paid period. Canceled/PAST_DUE/expired subscriptions no longer expose active downloads and their
+entitlements are removed on cancellation/expiry; one-off
 order entitlements allow 5 downloads and expire after one year. Order cancellation/full refund
 revokes order-based entitlements immediately.

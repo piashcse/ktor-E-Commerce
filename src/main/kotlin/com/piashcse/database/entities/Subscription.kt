@@ -43,6 +43,10 @@ object SubscriptionTable : BaseIdTable("subscription") {
     val currentPeriodEnd = datetime("current_period_end")
     val cancelAtPeriodEnd = bool("cancel_at_period_end").default(false)
     val externalReference = varchar("external_reference", 150).nullable()
+    val paymentMethodReference = varchar("payment_method_reference", 255).nullable()
+    val providerCustomerReference = varchar("provider_customer_reference", 255).nullable()
+    val dunningAttempts = integer("dunning_attempts").default(0)
+    val graceUntil = datetime("grace_until").nullable()
 }
 
 class SubscriptionDAO(id: EntityID<String>) : BaseEntity(id, SubscriptionTable) {
@@ -56,6 +60,10 @@ class SubscriptionDAO(id: EntityID<String>) : BaseEntity(id, SubscriptionTable) 
     var currentPeriodEnd by SubscriptionTable.currentPeriodEnd
     var cancelAtPeriodEnd by SubscriptionTable.cancelAtPeriodEnd
     var externalReference by SubscriptionTable.externalReference
+    var paymentMethodReference by SubscriptionTable.paymentMethodReference
+    var providerCustomerReference by SubscriptionTable.providerCustomerReference
+    var dunningAttempts by SubscriptionTable.dunningAttempts
+    var graceUntil by SubscriptionTable.graceUntil
 }
 
 object SubscriptionInvoiceTable : BaseIdTable("subscription_invoice") {
@@ -67,6 +75,10 @@ object SubscriptionInvoiceTable : BaseIdTable("subscription_invoice") {
     val periodEnd = datetime("period_end")
     val providerReference = varchar("provider_reference", 150).nullable()
     val paidAt = datetime("paid_at").nullable()
+    val attemptCount = integer("attempt_count").default(0)
+    val lastAttemptAt = datetime("last_attempt_at").nullable()
+    val nextRetryAt = datetime("next_retry_at").nullable()
+    val failureReason = text("failure_reason").nullable()
 }
 
 class SubscriptionInvoiceDAO(id: EntityID<String>) : BaseEntity(id, SubscriptionInvoiceTable) {
@@ -80,6 +92,10 @@ class SubscriptionInvoiceDAO(id: EntityID<String>) : BaseEntity(id, Subscription
     var periodEnd by SubscriptionInvoiceTable.periodEnd
     var providerReference by SubscriptionInvoiceTable.providerReference
     var paidAt by SubscriptionInvoiceTable.paidAt
+    var attemptCount by SubscriptionInvoiceTable.attemptCount
+    var lastAttemptAt by SubscriptionInvoiceTable.lastAttemptAt
+    var nextRetryAt by SubscriptionInvoiceTable.nextRetryAt
+    var failureReason by SubscriptionInvoiceTable.failureReason
 }
 
 object DigitalEntitlementTable : BaseIdTable("digital_entitlement") {

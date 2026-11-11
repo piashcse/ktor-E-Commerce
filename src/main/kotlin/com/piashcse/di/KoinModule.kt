@@ -88,6 +88,7 @@ import com.piashcse.feature.shop_category.ShopCategoryRepository
 import com.piashcse.feature.shop_category.ShopCategoryRepositoryImpl
 import com.piashcse.feature.stockalert.StockAlertService
 import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.feature.subscription.SubscriptionService
 import com.piashcse.feature.support.SupportService
 import com.piashcse.feature.tax.TaxService
@@ -119,7 +120,8 @@ val serviceModule =
         single { CommissionService() }
         single { SellerToolsService() }
         single { DigitalDeliveryService() }
-        single { SubscriptionService(get()) }
+        single { SubscriptionBillingService(get(), get()) }
+        single { SubscriptionService(get(), get()) }
         single { B2bService() }
         single { OmnichannelService(get(), get(), get()) }
         single { CmsService() }
@@ -158,7 +160,7 @@ val serviceModule =
         }
         single { FraudService() }
         single { ChargebackService() }
-        single<PaymentRepository> { PaymentRepositoryImpl(get(), get(), get(), get()) }
+        single<PaymentRepository> { PaymentRepositoryImpl(get(), get(), get(), get(), get()) }
         single<PolicyRepository> { PolicyRepositoryImpl() }
         single<ProductRepository> { ProductRepositoryImpl() }
         single<ProductCategoryRepository> { ProductCategoryRepositoryImpl() }

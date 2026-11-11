@@ -59,6 +59,21 @@ interface PaymentGateway {
         idempotencyKey: String,
     ): GatewayRefundResult
 
+    /**
+     * Charge a stored payment method for a subscription renewal. Providers that do
+     * not support off-session/recurring charges return a failed result so the invoice
+     * stays pending for manual collection.
+     */
+    suspend fun chargeSubscription(
+        subscriptionId: String,
+        invoiceId: String,
+        amount: BigDecimal,
+        currency: String,
+        providerCustomerReference: String?,
+        paymentMethodReference: String,
+        idempotencyKey: String,
+    ): GatewayChargeResult = GatewayChargeResult(false, message = "Recurring charges are not supported by $name")
+
     fun verifyWebhook(
         payload: String,
         signature: String?,
@@ -113,6 +128,8 @@ data class GatewayWebhookEvent(
     val scaStatus: ScaStatus? = null,
     val providerStatus: String? = null,
     val refund: GatewayRefundUpdate? = null,
+    /** Provider metadata, used to route subscription renewal events. */
+    val metadata: Map<String, String> = emptyMap(),
 )
 
 /** Minimal transport seam so provider adapters can be tested without network access. */
@@ -374,6 +391,91 @@ class StripePaymentGateway(
         )
     }
 
+    override suspend fun chargeSubscription(
+        subscriptionId: String,
+        invoiceId: String,
+        amount: BigDecimal,
+        currency: String,
+        providerCustomerReference: String?,
+        paymentMethodReference: String,
+        idempotencyKey: String,
+    ): GatewayChargeResult {
+        if (secretKey.isBlank()) return GatewayChargeResult(false, message = "Stripe is not configured")
+        if (paymentMethodReference.isBlank()) {
+            return GatewayChargeResult(false, message = "No stored payment method for this subscription")
+        }
+        val response =
+            transport.postForm(
+                url = "$baseUrl/v1/payment_intents",
+                headers =
+                    mapOf(
+                        "Authorization" to "Bearer $secretKey",
+                        "Idempotency-Key" to idempotencyKey,
+                    ),
+                form =
+                    buildMap {
+                        put("amount", amountToMinorUnits(amount))
+                        put("currency", currency.lowercase())
+                        put("payment_method", paymentMethodReference)
+                        put("off_session", "true")
+                        put("confirm", "true")
+                        put("description", "Subscription renewal $subscriptionId")
+                        put("metadata[subscription_id]", subscriptionId)
+                        put("metadata[subscription_invoice_id]", invoiceId)
+                        providerCustomerReference?.let { put("customer", it) }
+                    },
+            )
+        val body = runCatching { json.parseToJsonElement(response.body).jsonObject }.getOrNull()
+        if (response.status !in 200..299) {
+            return GatewayChargeResult(false, message = stripeError(body, response.status))
+        }
+        val intent = body ?: return GatewayChargeResult(false, message = "Invalid Stripe response")
+        val status = intent.string("status") ?: "unknown"
+        val intentId = intent.string("id")
+        val nextActionUrl =
+            intent["next_action"]
+                ?.jsonObject
+                ?.get("redirect_to_url")
+                ?.jsonObject
+                ?.get("url")
+                ?.jsonPrimitive
+                ?.contentOrNull
+        return when (status) {
+            "succeeded" ->
+                GatewayChargeResult(
+                    success = true,
+                    captured = true,
+                    gatewayTransactionId = intentId,
+                    scaStatus = ScaStatus.AUTHENTICATED,
+                    providerStatus = status,
+                )
+            "processing" ->
+                GatewayChargeResult(
+                    success = true,
+                    gatewayTransactionId = intentId,
+                    scaStatus = ScaStatus.PENDING,
+                    providerStatus = status,
+                )
+            "requires_action" ->
+                GatewayChargeResult(
+                    success = true,
+                    gatewayTransactionId = intentId,
+                    nextActionUrl = nextActionUrl,
+                    scaStatus = ScaStatus.REQUIRED,
+                    providerStatus = status,
+                )
+            "requires_payment_method", "canceled" ->
+                GatewayChargeResult(false, message = "Recurring charge failed: $status", providerStatus = status)
+            else ->
+                GatewayChargeResult(
+                    success = true,
+                    gatewayTransactionId = intentId,
+                    scaStatus = ScaStatus.PENDING,
+                    providerStatus = status,
+                )
+        }
+    }
+
     override fun verifyWebhook(
         payload: String,
         signature: String?,
@@ -461,6 +563,10 @@ class StripePaymentGateway(
                     else -> null
                 },
             providerStatus = intentStatus,
+            metadata =
+                obj?.get("metadata")?.jsonObject?.mapValues {
+                    it.value.jsonPrimitive.contentOrNull.orEmpty()
+                }.orEmpty(),
         )
     }
 
