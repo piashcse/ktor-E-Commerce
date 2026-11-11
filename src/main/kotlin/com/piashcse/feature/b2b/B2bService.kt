@@ -28,6 +28,7 @@ import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.addSales
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.decrementStock
+import com.piashcse.event.AdminAudit
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
@@ -278,6 +279,13 @@ class B2bService {
                     account.approvedAt = currentUtc()
                 }
             }
+            AdminAudit.publish(
+                actorUserId,
+                "B2B_ACCOUNT_UPDATED",
+                "B2B_ACCOUNT",
+                account.id.value,
+                "Status ${account.status}, credit ${account.creditLimit.toPlainString()}, terms ${account.paymentTermsDays}",
+            )
             account.toAccountResponse()
         }
 
@@ -601,6 +609,7 @@ class B2bService {
     suspend fun markInvoicePaid(
         invoiceId: String,
         providerReference: String?,
+        actorUserId: String? = null,
     ): B2bInvoiceResponse =
         query {
             val invoice =
@@ -622,10 +631,22 @@ class B2bService {
                     }
                 }
             }
+            actorUserId?.let {
+                AdminAudit.publish(
+                    it,
+                    "B2B_INVOICE_PAID",
+                    "B2B_INVOICE",
+                    invoice.id.value,
+                    "Reference ${providerReference.orEmpty()}",
+                )
+            }
             invoice.toResponse()
         }
 
-    suspend fun runDunning(now: LocalDateTime = currentUtc()): B2bDunningResponse =
+    suspend fun runDunning(
+        now: LocalDateTime = currentUtc(),
+        actorUserId: String? = null,
+    ): B2bDunningResponse =
         query {
             val due =
                 B2bInvoiceDAO.find {
@@ -638,6 +659,9 @@ class B2bService {
                 invoice.reminderCount += 1
                 invoice.lastReminderAt = now
                 invoice.nextReminderAt = now.plusDays(7)
+            }
+            actorUserId?.let {
+                AdminAudit.publish(it, "B2B_DUNNING_RUN", "B2B_INVOICE", null, "Reminded ${due.size}")
             }
             B2bDunningResponse(due.size)
         }

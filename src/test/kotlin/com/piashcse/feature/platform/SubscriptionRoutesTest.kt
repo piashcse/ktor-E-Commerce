@@ -132,8 +132,8 @@ class SubscriptionRoutesTest {
     @Test
     fun `admin creates a plan and runs billing`() =
         testApplication {
-            coEvery { subscriptions.createPlan(any()) } returns plan()
-            coEvery { subscriptions.runBilling(any()) } returns BillingRunResponse(2, 1)
+            coEvery { subscriptions.createPlan(any(), "user-1") } returns plan()
+            coEvery { subscriptions.runBilling(any(), "user-1") } returns BillingRunResponse(2, 1)
             setup()
             val created =
                 client.post("/api/v1/admin/subscription-plans") {

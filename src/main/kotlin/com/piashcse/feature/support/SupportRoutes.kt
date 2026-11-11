@@ -100,7 +100,7 @@ fun Route.supportAdminRoutes() {
 
         put("{id}") {
             call.respondOk(
-                service.adminUpdate(call.requirePathParameter("id"), call.receive<TicketUpdateRequest>()),
+                service.adminUpdate(call.requirePathParameter("id"), call.receive<TicketUpdateRequest>(), call.currentUserId),
             )
         }.describe {
             summary = "Admin: update ticket status/priority/assignment"

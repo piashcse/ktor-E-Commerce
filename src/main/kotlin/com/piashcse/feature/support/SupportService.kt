@@ -12,6 +12,7 @@ import com.piashcse.database.entities.SupportTicketTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.event.AdminAudit
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
@@ -253,12 +254,19 @@ class SupportService {
                 ticket.resolvedAt = null
             }
             ticket.lastMessageAt = now
+            AdminAudit.publish(
+                adminId,
+                if (request.isInternal) "SUPPORT_INTERNAL_NOTE" else "SUPPORT_REPLY",
+                "SUPPORT_TICKET",
+                ticket.id.value,
+            )
             adminTicketTx(ticket)
         }
 
     suspend fun adminUpdate(
         ticketId: String,
         request: TicketUpdateRequest,
+        adminId: String? = null,
     ): TicketSummaryResponse =
         query {
             val ticket = SupportTicketDAO.findById(ticketId) ?: ticketId.throwNotFound("Ticket")
@@ -278,6 +286,15 @@ class SupportService {
                     requireUser(assigned)
                     ticket.assignedTo = assigned.entityID(UserTable)
                 }
+            }
+            adminId?.let {
+                AdminAudit.publish(
+                    it,
+                    "SUPPORT_TICKET_UPDATED",
+                    "SUPPORT_TICKET",
+                    ticket.id.value,
+                    "Status ${ticket.status}, priority ${ticket.priority}, assigned ${ticket.assignedTo?.value.orEmpty()}",
+                )
             }
             ticket.toSummary()
         }

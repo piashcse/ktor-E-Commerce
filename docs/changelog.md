@@ -54,6 +54,8 @@ hide:
 - Subscription recurring billing (`V50`): stored provider customer/payment-method references,
   off-session renewal charges, idempotent per-period invoices, retry/backoff dunning, grace periods,
   automatic expiry with entitlement revocation, and webhook-driven invoice activation.
+- Audit logging now covers B2B account/invoice actions, subscription plan/billing actions and
+  support ticket assignment/replies, using a shared actor-resolution helper.
 - WebAuthn challenges are now stored in the database, making registration/login ceremonies
   single-use and safe across multiple nodes (`V52`); expired challenges are purged daily.
 - Analytics ingestion now honors an explicit consent flag and filters bot/crawler user agents.

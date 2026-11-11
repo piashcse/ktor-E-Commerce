@@ -179,12 +179,12 @@ fun Route.b2bAdminRoutes() {
 
     adminWriteRateLimit {
         post("invoices/run-dunning") {
-            call.respondOk(service.runDunning())
+            call.respondOk(service.runDunning(actorUserId = call.currentUserId))
         }.describe { summary = "Admin: send B2B invoice reminders" }
 
         post("invoices/{id}/pay") {
             val reference = call.request.queryParameters["providerReference"]
-            call.respondOk(service.markInvoicePaid(call.requirePathParameter("id"), reference))
+            call.respondOk(service.markInvoicePaid(call.requirePathParameter("id"), reference, call.currentUserId))
         }.describe { summary = "Admin: mark a B2B invoice paid" }
 
         put("accounts/{userId}") {
