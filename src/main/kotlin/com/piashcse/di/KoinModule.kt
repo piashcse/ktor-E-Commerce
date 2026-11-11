@@ -22,6 +22,8 @@ import com.piashcse.feature.dashboard.DashboardRepositoryImpl
 import com.piashcse.feature.featureflag.FeatureFlags
 import com.piashcse.feature.fraud.ChargebackService
 import com.piashcse.feature.fraud.FraudService
+import com.piashcse.feature.i18n.I18nService
+import com.piashcse.feature.i18n.ProductTranslationService
 import com.piashcse.feature.inventory.InventoryRepository
 import com.piashcse.feature.inventory.InventoryRepositoryImpl
 import com.piashcse.feature.invoice.InvoiceService
@@ -100,6 +102,8 @@ val serviceModule =
         single<DashboardRepository> { DashboardRepositoryImpl() }
         single<InventoryRepository> { InventoryRepositoryImpl() }
         single { LoyaltyService() }
+        single { I18nService() }
+        single { ProductTranslationService() }
         single<OrderRepository> { OrderRepositoryImpl(get(), get(), get(), get()) }
         single<CarrierGateway> {
             if (DotEnvConfig.shippingProvider == "shippo") {

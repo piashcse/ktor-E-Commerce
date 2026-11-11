@@ -1,7 +1,9 @@
 package com.piashcse.model.request
 
+import com.piashcse.constants.Localization
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.database.entities.SupportedCurrencies
+import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.isNotEmpty
@@ -26,6 +28,8 @@ data class CheckoutRequest(
     @Contextual val walletCredit: BigDecimal? = null,
     /** Gift card code; unused balance stays on the card. */
     val giftCardCode: String? = null,
+    /** Checkout locale (en, es, fr, bn, hi); also used for formatted totals and emails. */
+    val locale: String = Localization.DEFAULT_LOCALE,
 ) {
     init {
         validate(this) {
@@ -33,5 +37,8 @@ data class CheckoutRequest(
             validate(CheckoutRequest::shippingMethodId).isNotNull().isNotEmpty()
         }
         SupportedCurrencies.requireValid(currency)
+        if (locale.trim().lowercase().substringBefore('-').substringBefore('_') !in Localization.CODES) {
+            throw ValidationException("Unsupported locale: $locale")
+        }
     }
 }

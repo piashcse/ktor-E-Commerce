@@ -41,4 +41,6 @@ data class OrderResponse(
     val walletDiscount: String = "0.00",
     val giftCardDiscount: String = "0.00",
     val giftCardCode: String? = null,
+    val locale: String = "en",
+    val formattedTotal: String? = null,
 )

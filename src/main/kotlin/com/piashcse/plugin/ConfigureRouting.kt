@@ -22,6 +22,8 @@ import com.piashcse.feature.fraud.chargebackAdminRoutes
 import com.piashcse.feature.fraud.fraudAdminRoutes
 import com.piashcse.feature.fraud.paymentRiskAdminRoutes
 import com.piashcse.feature.fx.fxAdminRoutes
+import com.piashcse.feature.i18n.i18nRoutes
+import com.piashcse.feature.i18n.productTranslationAdminRoutes
 import com.piashcse.feature.inventory.inventoryAdminRoutes
 import com.piashcse.feature.inventory.inventorySellerRoutes
 import com.piashcse.feature.invoice.orderDocumentRoutes
@@ -180,6 +182,7 @@ private fun Route.customerRoutes() {
     route("shipments") { shipmentRoutes() }.describe { tag(ApiTags.SHIPMENT) }
     route("wallet") { walletRoutes() }.describe { tag(ApiTags.LOYALTY) }
     route("referrals") { referralRoutes() }.describe { tag(ApiTags.LOYALTY) }
+    route("i18n") { i18nRoutes() }.describe { tag(ApiTags.LOCALIZATION) }
     route("policies") { policyRoutes() }.describe { tag(ApiTags.POLICY) }
     route("policy-consents") { consentRoutes() }.describe { tag(ApiTags.CONSENT) }
     route("refund-requests") { refundRequestRoutes() }.describe { tag(ApiTags.REFUND) }
@@ -221,6 +224,7 @@ private fun Route.adminRoutes() {
             route("products") {
                 productAdminRoutes()
                 productTaxClassAdminRoutes()
+                productTranslationAdminRoutes()
             }.describe { tag(ApiTags.PRODUCT) }
             route("inventories") { inventoryAdminRoutes() }.describe { tag(ApiTags.INVENTORY) }
             route("orders") { orderAdminRoutes() }.describe { tag(ApiTags.ORDER) }

@@ -1,6 +1,7 @@
 package com.piashcse.plugin
 
 import com.piashcse.constants.Message
+import com.piashcse.feature.i18n.I18nService
 import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.common.FieldError
 import com.piashcse.utils.db.isCheckViolation
@@ -84,17 +85,21 @@ private fun ApplicationCall.errorResponse(
     message: String,
     code: HttpStatusCode = HttpStatusCode.BadRequest,
     errorCode: String = "BAD_REQUEST",
-) = ApiError(
-    message = message,
-    code = errorCode,
-    requestId = requestId(),
-    // Additive RFC 9457-style aliases; message/code remain the canonical fields.
-    type = errorCode,
-    title = message,
-    status = code.value,
-)
+): ApiError {
+    val translated = i18n.translate(locale, message)
+    return ApiError(
+        message = translated,
+        code = errorCode,
+        requestId = requestId(),
+        // Additive RFC 9457-style aliases; message/code remain the canonical fields.
+        type = errorCode,
+        title = translated,
+        status = code.value,
+    )
+}
 
 private val statusPageLog = LoggerFactory.getLogger("com.piashcse.plugin.ConfigureStatusPage")
+private val i18n = I18nService()
 
 fun Application.configureStatusPage() {
     install(StatusPages) {

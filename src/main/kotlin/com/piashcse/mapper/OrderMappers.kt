@@ -2,9 +2,12 @@ package com.piashcse.mapper
 
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
+import com.piashcse.feature.i18n.I18nService
 import com.piashcse.model.response.OrderItemResponse
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.utils.common.Money
+
+private val i18n = I18nService()
 
 fun OrderDAO.toOrderResponse(items: List<OrderItemResponse>? = null) =
     OrderResponse(
@@ -40,6 +43,8 @@ fun OrderDAO.toOrderResponse(items: List<OrderItemResponse>? = null) =
         walletDiscount = Money.str(walletDiscount),
         giftCardDiscount = Money.str(giftCardDiscount),
         giftCardCode = giftCardCode,
+        locale = locale,
+        formattedTotal = i18n.formatMoney(total, currency, locale),
     )
 
 fun OrderItemDAO.toOrderItemResponse() =

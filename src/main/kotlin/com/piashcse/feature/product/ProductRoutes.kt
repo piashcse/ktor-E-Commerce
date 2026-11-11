@@ -2,6 +2,7 @@
 
 package com.piashcse.feature.product
 
+import com.piashcse.feature.i18n.ProductTranslationService
 import com.piashcse.feature.recommendation.RecommendationResponse
 import com.piashcse.feature.recommendation.RecommendationService
 import com.piashcse.feature.recommendation.recommendationLimit
@@ -16,6 +17,7 @@ import com.piashcse.model.response.SearchSuggestionsResponse
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.created
 import com.piashcse.plugin.jsonBody
+import com.piashcse.plugin.locale
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.searchRateLimit
 import com.piashcse.plugin.sellerWriteRateLimit
@@ -37,13 +39,15 @@ fun Route.productRoutes() {
     val productRepo: ProductRepository by inject()
     val variantService: ProductVariantService by inject()
     val recommendationService: RecommendationService by inject()
+    val translations: ProductTranslationService by inject()
 
     searchRateLimit {
         /**
          * Public best-seller recommendations (guest-safe fallback)
          */
         get("recommendations") {
-            call.respondOk(recommendationService.bestSellers(call.recommendationLimit()))
+            val response = recommendationService.bestSellers(call.recommendationLimit())
+            call.respondOk(response.copy(items = translations.localizeAll(response.items, call.locale)))
         }.describe {
             summary = "Best-seller recommendations"
             description = "Public, guest-safe fallback ranked by sales and rating"
@@ -77,7 +81,7 @@ fun Route.productRoutes() {
             val productId = call.requirePathParameter("id")
             productRepo.incrementViewCount(productId)
             CacheService.cache.invalidate("products:detail:$productId")
-            call.respondOk(productCatalogService.getProductDetail(productId))
+            call.respondOk(translations.localize(productCatalogService.getProductDetail(productId), call.locale))
         }.describe {
             summary = "Get product detail"
             description = "Includes images and purchasable variants"
@@ -91,12 +95,12 @@ fun Route.productRoutes() {
          * Related products from the same category/subcategory
          */
         get("{id}/related") {
-            call.respondOk(
+            val response =
                 recommendationService.related(
                     call.requirePathParameter("id"),
                     call.recommendationLimit(),
-                ),
-            )
+                )
+            call.respondOk(response.copy(items = translations.localizeAll(response.items, call.locale)))
         }.describe {
             summary = "Related products"
             description = "Same category, subcategory boosted, ranked by sales and rating"
@@ -110,12 +114,12 @@ fun Route.productRoutes() {
          * Products frequently purchased with this product
          */
         get("{id}/also-bought") {
-            call.respondOk(
+            val response =
                 recommendationService.alsoBought(
                     call.requirePathParameter("id"),
                     call.recommendationLimit(),
-                ),
-            )
+                )
+            call.respondOk(response.copy(items = translations.localizeAll(response.items, call.locale)))
         }.describe {
             summary = "Frequently bought together"
             description = "Co-purchase counts from paid, non-canceled orders"
@@ -129,7 +133,7 @@ fun Route.productRoutes() {
          * Retrieve a paginated list of products with optional filters
          */
         get {
-            call.respondOk(productRepo.getProducts(call.productWithFilterRequest(defaultPerPage = 10)))
+            call.respondOk(translations.localize(productRepo.getProducts(call.productWithFilterRequest(defaultPerPage = 10)), call.locale))
         }.describe { summary = "Retrieve a paginated list of products with optional filters" }
 
         /**
@@ -172,7 +176,8 @@ fun Route.productRoutes() {
                     sortOrder = call.request.queryParameters["sortOrder"] ?: "desc",
                     useFuzzy = call.request.queryParameters["useFuzzy"]?.toBooleanStrictOrNull() ?: true,
                 )
-            call.respondOk(productCatalogService.searchProduct(queryParams))
+            val result = productCatalogService.searchProduct(queryParams)
+            call.respondOk(result.copy(products = translations.localizeAll(result.products, call.locale)))
         }.describe { summary = "Search for products by name with fuzzy matching, faceted aggregation, and ranking" }
     }
 }

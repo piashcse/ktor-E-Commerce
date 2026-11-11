@@ -16,6 +16,12 @@ data class CheckoutSummaryResponse(
     val giftCardDiscount: String = "0.00",
     val pointsBalance: Int = 0,
     val storeCreditBalance: String = "0.00",
+    val locale: String = "en",
+    val formattedSubTotal: String? = null,
+    val formattedShipping: String? = null,
+    val formattedTax: String? = null,
+    val formattedDiscount: String? = null,
+    val formattedTotal: String? = null,
 )
 
 @Serializable

@@ -30,7 +30,7 @@ its own branch so it can be reviewed and merged as an independent PR.
 | 10 | Back-in-stock + price-drop alerts | High-ROI retention using existing outbox/preferences | P1 | Medium | ✅ | `feature/stock-alerts` |
 | 11 | Social login + MFA/passkeys | Reduces account friction and improves security | P1 | Medium | 🚧 | `feature/mfa-totp` |
 | 12 | Loyalty/referrals/gift cards/store credit | Retention and repeat-purchase levers | P2 | Medium | ✅ | `feature/loyalty-wallet` |
-| 13 | i18n + localized checkout | Required for cross-border growth | P2 | Medium | 📋 | `feature/localization` |
+| 13 | i18n + localized checkout | Required for cross-border growth | P2 | Medium | ✅ | `feature/localization` |
 | 14 | Funnel/attribution analytics | Needed to optimize conversion work | P2 | Medium | 📋 | `feature/analytics-funnel` |
 | 15 | Seller reviews/disputes/commission rules | Marketplace trust and economics | P2 | Medium | 📋 | `feature/seller-tools` |
 | 16 | Subscriptions + digital goods | New revenue models | P2 | High | 📋 | `feature/subscriptions` |

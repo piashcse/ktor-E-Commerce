@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 262  
+**Operations:** 267  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -42,6 +42,7 @@ document served by Swagger UI.
 | [Tax](#tax) | 16 |
 | [Fraud](#fraud) | 13 |
 | [Loyalty](#loyalty) | 9 |
+| [Localization](#localization) | 5 |
 | [FX](#fx) | 2 |
 | [API Keys](#api-keys) | 3 |
 | [Feature Flags](#feature-flags) | 2 |
@@ -419,6 +420,16 @@ document served by Swagger UI.
 | `POST` | `/api/v1/admin/gift-cards` | Issue a gift card | Admin |
 | `DELETE` | `/api/v1/admin/gift-cards/{id}` | Void a gift card | Admin |
 | `POST` | `/api/v1/admin/wallets/{userId}/credit` | Credit store balance | Admin |
+
+## Localization
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/api/v1/i18n/locales` | List supported locales and default currencies | Public |
+| `GET` | `/api/v1/i18n/messages` | Get a translated API message catalog | Public |
+| `GET` | `/api/v1/admin/products/{id}/translations` | List product translations | Admin |
+| `PUT` | `/api/v1/admin/products/{id}/translations/{locale}` | Create/update a product translation | Admin |
+| `DELETE` | `/api/v1/admin/products/{id}/translations/{locale}` | Delete a product translation | Admin |
 
 ## FX
 
