@@ -13,6 +13,7 @@ import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ShopCategoryDAO
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.feature.analytics.AnalyticsEventRequest
 import com.piashcse.feature.analytics.AnalyticsService
 import org.flywaydb.core.Flyway
@@ -21,7 +22,6 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.junit.Assume
 import org.testcontainers.containers.PostgreSQLContainer
 import java.math.BigDecimal
-import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -78,7 +78,7 @@ class AnalyticsIntegrationTest {
 
         val suffix = UUID.randomUUID().toString().take(8)
         lateinit var productId: String
-        val today = LocalDate.now().toString()
+        val today = currentUtc().toLocalDate().toString()
 
         transaction {
             val seller =

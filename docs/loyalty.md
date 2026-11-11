@@ -28,6 +28,9 @@ All endpoints require Bearer authentication.
 - Redeem **100 points = 1 USD** (`LOYALTY_POINTS_PER_USD_REDEEM`).
 - Earnings are idempotent per order; replaying a payment confirmation does not double-award.
 - Points are awarded when the order becomes fully paid.
+- Points are earned on the **USD-normalized** order total.
+- Cancellation/full refund reverses earned points, restores redeemed points/store credit and
+  refunds gift-card redemptions back to the card.
 
 Checkout body:
 

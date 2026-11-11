@@ -99,7 +99,13 @@ class PaymentRepositoryImpl(
 
         order.paymentStatus = PaymentStatus.COMPLETED
         order.status = OrderStatus.PAID
-        loyaltyService.earnForPaidOrderTx(order.userId.value, order.id.value, order.total)
+        val loyaltyTotalUsd =
+            if (order.fxRate > BigDecimal.ZERO) {
+                order.total.divide(order.fxRate, 2, java.math.RoundingMode.HALF_UP)
+            } else {
+                order.total
+            }
+        loyaltyService.earnForPaidOrderTx(order.userId.value, order.id.value, loyaltyTotalUsd)
         digitalDelivery.grantForOrderTx(order)
         StockReservationDAO.find { StockReservationTable.orderId eq order.id }
             .forEach { it.status = ReservationStatus.FINALIZED }

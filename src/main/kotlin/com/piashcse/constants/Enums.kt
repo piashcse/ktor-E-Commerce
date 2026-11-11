@@ -191,8 +191,10 @@ enum class ChargebackStatus {
 enum class WalletEntryType {
     POINTS_EARN,
     POINTS_REDEEM,
+    POINTS_REVERSAL,
     CREDIT_EARN,
     CREDIT_REDEEM,
+    CREDIT_REVERSAL,
     REFERRAL_BONUS,
     ADMIN_ADJUSTMENT,
 }

@@ -121,4 +121,5 @@ Digital-only orders have **zero shipping cost** and the order shipping method is
 
 Subscription entitlements have a higher download limit (50) and expire at the end of the current
 paid period. Canceled/PAST_DUE/expired subscriptions no longer expose active downloads; one-off
-order entitlements allow 5 downloads and expire after one year.
+order entitlements allow 5 downloads and expire after one year. Order cancellation/full refund
+revokes order-based entitlements immediately.

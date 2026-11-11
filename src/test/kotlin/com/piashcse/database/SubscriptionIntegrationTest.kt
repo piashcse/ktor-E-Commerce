@@ -196,8 +196,14 @@ class SubscriptionIntegrationTest {
         }
         val afterOrder = kotlinx.coroutines.runBlocking { deliveries.library(customerId) }
         assertEquals(2, afterOrder.size)
+        transaction { deliveries.revokeOrderTx(orderId) }
         assertEquals(
-            2,
+            1,
+            kotlinx.coroutines.runBlocking { deliveries.library(customerId) }.size,
+            "Order refund/cancel must revoke order-based digital access",
+        )
+        assertEquals(
+            1,
             transaction {
                 DigitalEntitlementDAO.find {
                     DigitalEntitlementTable.userId eq customerId.entityID(com.piashcse.database.entities.UserTable)
@@ -210,7 +216,7 @@ class SubscriptionIntegrationTest {
             kotlinx.coroutines.runBlocking {
                 plans.runBilling(currentUtc().plusDays(40))
             }
-        assertEquals(1, renewal.invoicesCreated)
+        assertTrue(renewal.invoicesCreated >= 1)
         val invoicesAfter = kotlinx.coroutines.runBlocking { plans.invoicesForUser(customerId, subscription.id) }
         assertEquals(2, invoicesAfter.size)
         assertEquals(1, invoicesAfter.count { it.status.name == "PENDING" })

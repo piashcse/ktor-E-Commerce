@@ -105,6 +105,7 @@ object GiftCardRedemptionTable : BaseIdTable("gift_card_redemption") {
     val orderId = reference("order_id", OrderTable.id).index()
     val userId = reference("user_id", UserTable.id)
     val amount = decimal("amount", 12, 2)
+    val reversedAt = datetime("reversed_at").nullable()
 }
 
 class GiftCardRedemptionDAO(id: EntityID<String>) : BaseEntity(id, GiftCardRedemptionTable) {
@@ -114,4 +115,5 @@ class GiftCardRedemptionDAO(id: EntityID<String>) : BaseEntity(id, GiftCardRedem
     var orderId by GiftCardRedemptionTable.orderId
     var userId by GiftCardRedemptionTable.userId
     var amount by GiftCardRedemptionTable.amount
+    var reversedAt by GiftCardRedemptionTable.reversedAt
 }

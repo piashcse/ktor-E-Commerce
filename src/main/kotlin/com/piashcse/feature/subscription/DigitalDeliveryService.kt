@@ -107,6 +107,13 @@ class DigitalDeliveryService {
         }
     }
 
+    /** Revokes order-based digital access after cancellation/full refund. */
+    fun revokeOrderTx(orderId: String) {
+        DigitalEntitlementDAO.find {
+            DigitalEntitlementTable.orderId eq orderId.entityID(com.piashcse.database.entities.OrderTable)
+        }.forEach { it.delete() }
+    }
+
     suspend fun library(userId: String): List<DigitalLibraryItem> =
         query {
             DigitalEntitlementDAO.find {
