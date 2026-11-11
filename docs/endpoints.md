@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 319  
+**Operations:** 329  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -48,6 +48,7 @@ document served by Swagger UI.
 | [Subscription](#subscription) | 13 |
 | [B2B](#b2b) | 15 |
 | [Omnichannel](#omnichannel) | 6 |
+| [CMS & SEO](#cms--seo) | 10 |
 | [FX](#fx) | 2 |
 | [API Keys](#api-keys) | 3 |
 | [Feature Flags](#feature-flags) | 2 |
@@ -512,6 +513,21 @@ document served by Swagger UI.
 | `POST` | `/api/v1/seller/orders/{id}/pickup/complete` | Seller: verify pickup code and complete | Seller |
 | `GET` | `/api/v1/seller/pos/sales` | Seller: list POS sales | Seller |
 | `POST` | `/api/v1/seller/pos/sales` | Seller: create an in-store POS sale | Seller |
+
+## CMS & SEO
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/api/v1/cms/pages` | List published CMS pages | Public |
+| `GET` | `/api/v1/cms/pages/{slug}` | Get a published page | Public |
+| `GET` | `/api/v1/admin/cms/pages` | Admin: list CMS pages | Admin |
+| `POST` | `/api/v1/admin/cms/pages` | Admin: create a CMS page | Admin |
+| `PUT` | `/api/v1/admin/cms/pages/{id}` | Admin: update a CMS page | Admin |
+| `DELETE` | `/api/v1/admin/cms/pages/{id}` | Admin: archive a CMS page | Admin |
+| `GET` | `/api/v1/seo/metadata` | Get SEO metadata for an entity | Public |
+| `PUT` | `/api/v1/admin/seo/metadata` | Admin: upsert SEO metadata | Admin |
+| `GET` | `/sitemap.xml` | XML sitemap | Public |
+| `GET` | `/robots.txt` | Robots policy | Public |
 
 ## FX
 

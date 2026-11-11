@@ -301,6 +301,22 @@ enum class PickupStatus {
 }
 
 @Serializable
+enum class CmsPageStatus {
+    DRAFT,
+    PUBLISHED,
+    ARCHIVED,
+}
+
+@Serializable
+enum class SeoEntityType {
+    HOME,
+    PAGE,
+    PRODUCT,
+    CATEGORY,
+    SHOP,
+}
+
+@Serializable
 enum class PolicyType {
     PRIVACY_POLICY,
     TERMS_CONDITIONS,

@@ -17,6 +17,9 @@ object DotEnvConfig {
     val jwtRealm: String get() = DotEnv.get("JWT_REALM", "ktor-ecommerce")
     val allowedOrigins: String get() = DotEnv.get("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080")
 
+    /** Absolute storefront base used by sitemap.xml/robots.txt and canonical URLs. */
+    val publicBaseUrl: String get() = DotEnv.get("PUBLIC_BASE_URL", "http://localhost:8080").trimEnd('/')
+
     /** Pretty JSON is opt-in (dev only) because it increases payload size and CPU. */
     val jsonPrettyPrint: Boolean get() = DotEnv.getBoolean("JSON_PRETTY_PRINT", false)
 

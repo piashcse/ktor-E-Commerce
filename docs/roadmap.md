@@ -36,7 +36,7 @@ its own branch so it can be reviewed and merged as an independent PR.
 | 16 | Subscriptions + digital goods | New revenue models | P2 | High | ✅ | `feature/subscriptions` |
 | 17 | B2B quotes/POs/net terms | Wholesale revenue | P3 | High | ✅ | `feature/b2b` |
 | 18 | BOPIS/POS/store locator | Omnichannel | P3 | High | ✅ | `feature/omnichannel` |
-| 19 | CMS/SEO/sitemap | Storefront acquisition | P3 | Medium | 📋 | `feature/content-seo` |
+| 19 | CMS/SEO/sitemap | Storefront acquisition | P3 | Medium | ✅ | `feature/content-seo` |
 | 20 | Support tickets/chat | Customer service | P3 | Medium | 📋 | `feature/support` |
 
 ---
