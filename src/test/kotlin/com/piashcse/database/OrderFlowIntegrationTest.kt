@@ -194,10 +194,13 @@ class OrderFlowIntegrationTest {
                 shippingMethodId = methodId,
                 paymentMethod = PaymentMethod.COD,
                 idempotencyKey = "order-flow-$suffix",
+                locale = "fr",
             )
         assertNotNull(kotlinx.coroutines.runBlocking { orders.getCheckoutSummary(customerId, checkout) })
         val order = kotlinx.coroutines.runBlocking { orders.placeOrder(customerId, checkout) }.first()
         assertEquals(OrderStatus.PENDING, order.status)
+        assertEquals("fr", order.locale)
+        assertTrue(order.formattedTotal != null, "Order total must be localized")
         assertTrue(BigDecimal(order.discountAmount) > BigDecimal.ZERO, "Automatic promotion must discount the order")
         assertTrue(
             kotlinx.coroutines.runBlocking { promotions.list(true, 10, 0) }.data.first().usageCount >= 1,

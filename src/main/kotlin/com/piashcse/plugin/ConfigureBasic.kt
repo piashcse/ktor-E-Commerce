@@ -114,6 +114,7 @@ fun Application.configureBasic() {
         },
     )
     configureCORS()
+    installLocalization()
     configureContentNegotiation()
     configureCallLogging()
 }

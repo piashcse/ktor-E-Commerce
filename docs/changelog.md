@@ -8,6 +8,9 @@ hide:
 
 ### Added
 
+- Internationalization (`V38`): `Accept-Language`/`X-Locale`/`?lang=` negotiation, translated API
+  message catalogs for `en`/`es`/`fr`/`bn`/`hi`, localized product content, order/checkout locale
+  persistence, and currency-aware formatted totals in checkout/order responses.
 - Loyalty wallet (`V37`): points earned on paid orders, point/store-credit/gift-card redemption
   at checkout, referral codes with one-time rewards, and admin gift-card issuance plus
   store-credit adjustments. Orders expose `walletDiscount`, `giftCardDiscount` and
@@ -32,7 +35,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (262 operations total).
+  (267 operations total).
 
 ### Fixed
 

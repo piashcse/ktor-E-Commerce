@@ -3,6 +3,7 @@ package com.piashcse.feature.product
 import com.piashcse.RouteTestHelper.authHeader
 import com.piashcse.RouteTestHelper.installTestInfra
 import com.piashcse.constants.ProductStatus
+import com.piashcse.feature.i18n.ProductTranslationService
 import com.piashcse.model.response.FacetCount
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.model.response.SearchFacets
@@ -65,6 +66,7 @@ class ProductRoutesTest {
                     single<ProductRepository> { productRepo }
                     single { ProductCatalogService(get(), NoOpCache) }
                     single { ProductCrudService(get(), NoOpCache) }
+                    single { ProductTranslationService() }
                 },
             )
             routing {

@@ -27,6 +27,7 @@ object OrderTable : BaseIdTable("order") {
     val walletDiscount = decimal("wallet_discount", 10, 2).default(BigDecimal("0.00"))
     val giftCardDiscount = decimal("gift_card_discount", 10, 2).default(BigDecimal("0.00"))
     val giftCardCode = varchar("gift_card_code", 50).nullable()
+    val locale = varchar("locale", 10).default("en")
 
     // USD → order-currency rate applied to all monetary fields in this order.
     val fxRate = decimal("fx_rate", 18, 6).default(BigDecimal.ONE)
@@ -71,6 +72,7 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
     var walletDiscount by OrderTable.walletDiscount
     var giftCardDiscount by OrderTable.giftCardDiscount
     var giftCardCode by OrderTable.giftCardCode
+    var locale by OrderTable.locale
     var fxRate by OrderTable.fxRate
     var paymentMethod by OrderTable.paymentMethod
     var paymentStatus by OrderTable.paymentStatus

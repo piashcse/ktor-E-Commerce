@@ -6,6 +6,7 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.OrderPlacedEvent
 import com.piashcse.event.OrderStatusChangedEvent
 import com.piashcse.event.OutboxPublisher
+import com.piashcse.feature.i18n.I18nService
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.promotion.PromotionMatch
 import com.piashcse.feature.promotion.PromotionService
@@ -40,6 +41,8 @@ import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.*
+
+private val i18n = I18nService()
 
 class OrderRepositoryImpl(
     private val fxService: FxService = FxService(),
@@ -380,6 +383,7 @@ class OrderRepositoryImpl(
                 this.fxRate = fxRate
                 this.businessTaxId = businessTaxId
                 this.taxExempt = taxService.isExempt(userId, businessTaxId, context.shippingAddress.country)
+                this.locale = com.piashcse.constants.Localization.normalize(checkoutRequest.locale)
             }
 
         items.forEach { cartItem ->
@@ -769,6 +773,16 @@ class OrderRepositoryImpl(
                         ).toPlainString(),
                     pointsBalance = preview.pointsAvailable,
                     storeCreditBalance = preview.creditAvailable.toPlainString(),
+                )
+            val locale = com.piashcse.constants.Localization.normalize(checkoutRequest.locale)
+            response =
+                response.copy(
+                    locale = locale,
+                    formattedSubTotal = i18n.formatMoney(BigDecimal(response.subTotal), currency, locale),
+                    formattedShipping = i18n.formatMoney(BigDecimal(response.shippingCost), currency, locale),
+                    formattedTax = i18n.formatMoney(BigDecimal(response.taxAmount), currency, locale),
+                    formattedDiscount = i18n.formatMoney(BigDecimal(response.discountAmount), currency, locale),
+                    formattedTotal = i18n.formatMoney(BigDecimal(response.total), currency, locale),
                 )
             response
         }

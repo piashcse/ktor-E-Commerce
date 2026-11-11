@@ -9401,6 +9401,125 @@ http://localhost:8080/api/v1/admin/wallets/{userId}/credit
 {"creditBalance":"25.00","pointsBalance":0,"referralCode":"REF12345"}
 ```
 </details>
+### LOCALIZATION
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/i18n/locales</code></summary>
+
+### Description
+List supported locales and default currencies.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/i18n/locales' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/i18n/locales
+```
+
+### Response
+```json
+[{"code":"en","language":"English","defaultCurrency":"USD"}]
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/i18n/messages</code></summary>
+
+### Description
+Get the translated message catalog (query: locale).
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/i18n/messages' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/i18n/messages
+```
+
+### Response
+```json
+{"locale":"es","messages":{"product_not_found":"Producto no encontrado"}}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/products/{id}/translations</code></summary>
+
+### Description
+Admin: list a product's translations.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/products/prod-1/translations' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/products/{id}/translations
+```
+
+### Response
+```json
+[{"locale":"fr","name":"Chaise"}]
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/products/{id}/translations/{locale}</code></summary>
+
+### Description
+Admin: create/update a product translation.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/products/prod-1/translations/fr' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Chaise en bois","description":"Chaise durable."}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/products/{id}/translations/{locale}
+```
+
+### Response
+```json
+{"productId":"prod-1","locale":"fr","name":"Chaise en bois"}
+```
+</details>
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/products/{id}/translations/{locale}</code></summary>
+
+### Description
+Admin: delete a product translation.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/products/prod-1/translations/fr' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/products/{id}/translations/{locale}
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
 ### TAX RULES
 
 <details>

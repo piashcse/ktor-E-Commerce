@@ -17,6 +17,8 @@ import com.piashcse.feature.audit_log.AuditLogRepositoryImpl
 import com.piashcse.feature.auth.MfaService
 import com.piashcse.feature.featureflag.FeatureFlagUpdateRequest
 import com.piashcse.feature.featureflag.FeatureFlags
+import com.piashcse.feature.i18n.ProductTranslationRequest
+import com.piashcse.feature.i18n.ProductTranslationService
 import com.piashcse.feature.kyc.KycService
 import com.piashcse.feature.kyc.SellerKycSubmitRequest
 import com.piashcse.feature.notification.NotificationPreferencesService
@@ -165,6 +167,17 @@ class ServiceIntegrationTest {
             sellerUserId = sellerUser.id.value
             productId = product.id.value
         }
+
+        // Product translations
+        val translations = ProductTranslationService()
+        kotlinx.coroutines.runBlocking {
+            translations.upsert(productId, "fr", ProductTranslationRequest("Produit", "Description"))
+        }
+        val savedTranslations = kotlinx.coroutines.runBlocking { translations.list(productId) }
+        assertEquals(1, savedTranslations.size)
+        assertEquals("fr", savedTranslations.single().locale)
+        assertEquals("Produit", savedTranslations.single().name)
+        assertTrue(kotlinx.coroutines.runBlocking { translations.delete(productId, "fr") })
 
         // Tax rules
         val tax = TaxService()
