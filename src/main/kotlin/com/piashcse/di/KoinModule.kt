@@ -7,7 +7,10 @@ import com.piashcse.feature.audit_log.AuditLogRepository
 import com.piashcse.feature.audit_log.AuditLogRepositoryImpl
 import com.piashcse.feature.auth.AuthRepository
 import com.piashcse.feature.auth.AuthRepositoryImpl
+import com.piashcse.feature.auth.GoogleTokenVerifier
 import com.piashcse.feature.auth.MfaService
+import com.piashcse.feature.auth.PasskeyService
+import com.piashcse.feature.auth.SocialAuthService
 import com.piashcse.feature.auth.UserAuthenticationService
 import com.piashcse.feature.b2b.B2bService
 import com.piashcse.feature.brand.BrandRepository
@@ -187,6 +190,9 @@ val serviceModule =
 
         // Split auth services
         single { MfaService() }
+        single { GoogleTokenVerifier(DotEnvConfig.googleClientId) }
+        single { SocialAuthService(get(), get()) }
+        single { PasskeyService(get(), DotEnvConfig.webauthnRpId, DotEnvConfig.webauthnRpName, DotEnvConfig.webauthnOrigin) }
         single { UserAuthenticationService(get(), get()) }
 
         // Split product services

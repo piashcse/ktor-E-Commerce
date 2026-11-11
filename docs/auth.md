@@ -19,6 +19,13 @@ This documentation provides comprehensive details for the Authentication API end
 | `POST` | `/api/v1/auth/mfa/setup` | Start TOTP MFA setup and get the secret | Yes |
 | `POST` | `/api/v1/auth/mfa/enable` | Enable TOTP MFA after verifying a code | Yes |
 | `POST` | `/api/v1/auth/mfa/disable` | Disable TOTP MFA after verifying a code | Yes |
+| `POST` | `/api/v1/auth/social/google` | Google social login with an ID token | No |
+| `POST` | `/api/v1/auth/passkeys/login/options` | Start passkey login | No |
+| `POST` | `/api/v1/auth/passkeys/login` | Finish passkey login | No |
+| `GET` | `/api/v1/auth/passkeys` | List my passkeys | Yes |
+| `POST` | `/api/v1/auth/passkeys/register/options` | Start passkey registration | Yes |
+| `POST` | `/api/v1/auth/passkeys/register` | Finish passkey registration | Yes |
+| `DELETE` | `/api/v1/auth/passkeys/{id}` | Delete a passkey | Yes |
 | `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin/Super Admin) |
 | `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin/Super Admin) |
 | `PUT` | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin/Super Admin) |
@@ -611,6 +618,86 @@ curl -X 'POST' \
 ```json
 { "message": "MFA disabled" }
 ```
+
+---
+
+## Social login
+
+**`POST /api/v1/auth/social/google`**
+
+```json
+{ "idToken": "google-id-token" }
+```
+
+The server verifies the token through Google's `tokeninfo` endpoint and checks:
+
+- `aud` matches `GOOGLE_CLIENT_ID`
+- `email_verified = true`
+- `exp` is in the future
+
+Existing customers are matched by email; new verified customer accounts are created automatically and
+the Google `sub` is linked as the social identity. The response is the same token payload as password
+login.
+
+## Passkeys (WebAuthn)
+
+Passkeys enable passwordless login with platform authenticators.
+
+1. Start registration (authenticated):
+
+```bash
+curl -X POST 'http://localhost:8080/api/v1/auth/passkeys/register/options' \
+  -H 'Authorization: Bearer <token>'
+```
+
+2. Finish registration with the authenticator result:
+
+```json
+{
+  "credentialId": "base64url-credential-id",
+  "clientDataJson": "base64url-client-data",
+  "publicKey": "base64-spki-public-key",
+  "name": "Laptop",
+  "transports": ["internal"]
+}
+```
+
+3. Start login (public):
+
+```json
+{ "email": "customer@example.com", "userType": "customer" }
+```
+
+4. Finish login with the assertion:
+
+```json
+{
+  "email": "customer@example.com",
+  "userType": "customer",
+  "credentialId": "base64url-credential-id",
+  "clientDataJson": "base64url-client-data",
+  "authenticatorData": "base64url-authenticator-data",
+  "signature": "base64url-signature"
+}
+```
+
+Validation:
+
+- challenge is single-use and expires after 5 minutes
+- ceremony type (`webauthn.create` / `webauthn.get`) and origin must match
+- ES256 signatures are verified against the stored SPKI public key
+- credentials are scoped to the owning user
+
+Configuration:
+
+```bash
+GOOGLE_CLIENT_ID=
+WEBAUTHN_RP_ID=localhost
+WEBAUTHN_RP_NAME=Ktor E-Commerce
+WEBAUTHN_ORIGIN=http://localhost:3000
+```
+
+Passkey login returns the same access/refresh token pair as password login.
 
 ---
 

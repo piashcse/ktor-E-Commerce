@@ -25,6 +25,8 @@ object UserTable : BaseIdTable("user") {
     val isGuest = bool("is_guest").default(false)
     val mfaSecret = varchar("mfa_secret", 64).nullable()
     val mfaEnabled = bool("mfa_enabled").default(false)
+    val socialProvider = varchar("social_provider", 30).nullable()
+    val socialSubject = varchar("social_subject", 255).nullable()
 
     init {
         uniqueIndex("email_userType_idx", email, userType)
@@ -46,6 +48,8 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     var isGuest by UserTable.isGuest
     var mfaSecret by UserTable.mfaSecret
     var mfaEnabled by UserTable.mfaEnabled
+    var socialProvider by UserTable.socialProvider
+    var socialSubject by UserTable.socialSubject
 
     /**
      * Get the seller information if the user is a seller

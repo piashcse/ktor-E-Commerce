@@ -41,12 +41,17 @@ import org.koin.ktor.ext.inject
 @Serializable
 data class OtpVerificationRequest(val userId: String, val otp: String)
 
+@Serializable
+data class SocialLoginRequest(val idToken: String)
+
 /**
  * Authentication and registration routes.
  */
 fun Route.authRoutes() {
     val userAuthService: UserAuthenticationService by inject()
     val authRepo: AuthRepository by inject()
+    val socialAuthService: SocialAuthService by inject()
+    val passkeyService: PasskeyService by inject()
     // Rate-limited endpoints (brute-force protection)
     authRateLimit {
         /**
@@ -62,6 +67,37 @@ fun Route.authRoutes() {
                 ok<TokenPair>("Authenticated")
                 standardErrors()
             }
+        }
+
+        /**
+         * Social login with a Google ID token
+         */
+        post("social/google") {
+            call.respondOk(socialAuthService.googleLogin(call.receive<SocialLoginRequest>().idToken))
+        }.describe {
+            summary = "Google social login"
+            description = "Verifies a Google ID token and returns app tokens"
+            requestBody { jsonBody<SocialLoginRequest>() }
+        }
+
+        /**
+         * Passkey login options
+         */
+        post("passkeys/login/options") {
+            call.respondOk(passkeyService.loginOptions(call.receive<PasskeyLoginOptionsRequest>()))
+        }.describe {
+            summary = "Start passkey login"
+            requestBody { jsonBody<PasskeyLoginOptionsRequest>() }
+        }
+
+        /**
+         * Passkey login assertion
+         */
+        post("passkeys/login") {
+            call.respondOk(passkeyService.login(call.receive<PasskeyLoginRequest>()))
+        }.describe {
+            summary = "Finish passkey login"
+            requestBody { jsonBody<PasskeyLoginRequest>() }
         }
 
         /**
@@ -209,6 +245,29 @@ fun Route.authRoutes() {
                 call.respond(HttpStatusCode.Unauthorized, MessageResponse(Message.Auth.INVALID_CREDENTIALS))
             }
         }.describe { summary = "Change password for authenticated user" }
+
+        get("passkeys") {
+            call.respondOk(passkeyService.list(call.currentUserId))
+        }.describe { summary = "List my passkeys" }
+
+        post("passkeys/register/options") {
+            call.respondOk(passkeyService.registerOptions(call.currentUserId))
+        }.describe { summary = "Start passkey registration" }
+
+        post("passkeys/register") {
+            call.respondOk(passkeyService.register(call.currentUserId, call.receive<PasskeyRegisterRequest>()))
+        }.describe {
+            summary = "Finish passkey registration"
+            requestBody { jsonBody<PasskeyRegisterRequest>() }
+        }
+
+        delete("passkeys/{id}") {
+            val id = call.requirePathParameter("id")
+            if (!passkeyService.delete(call.currentUserId, id)) {
+                throw com.piashcse.utils.validator.NotFoundException("Passkey not found")
+            }
+            call.respondOk(MessageResponse("Passkey deleted"))
+        }.describe { summary = "Delete a passkey" }
 
         mfaRoutes()
     }

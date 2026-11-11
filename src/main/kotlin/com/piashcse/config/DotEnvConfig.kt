@@ -20,6 +20,14 @@ object DotEnvConfig {
     /** Absolute storefront base used by sitemap.xml/robots.txt and canonical URLs. */
     val publicBaseUrl: String get() = DotEnv.get("PUBLIC_BASE_URL", "http://localhost:8080").trimEnd('/')
 
+    // Social login
+    val googleClientId: String get() = DotEnv.get("GOOGLE_CLIENT_ID", "")
+
+    // WebAuthn / passkeys
+    val webauthnRpId: String get() = DotEnv.get("WEBAUTHN_RP_ID", "localhost")
+    val webauthnRpName: String get() = DotEnv.get("WEBAUTHN_RP_NAME", "Ktor E-Commerce")
+    val webauthnOrigin: String get() = DotEnv.get("WEBAUTHN_ORIGIN", "http://localhost:3000")
+
     /** Pretty JSON is opt-in (dev only) because it increases payload size and CPU. */
     val jsonPrettyPrint: Boolean get() = DotEnv.getBoolean("JSON_PRETTY_PRINT", false)
 
