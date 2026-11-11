@@ -26,7 +26,7 @@ class UserAuthenticationServiceMfaTest {
     private val service = UserAuthenticationService(authRepo, mfaService)
 
     private fun userWithMfa() =
-        mockk<UserDAO> {
+        mockk<UserDAO>(relaxed = true) {
             every { id } returns EntityID("user-1", UserTable)
             every { email } returns "test@example.com"
             every { password } returns BCrypt.withDefaults().hashToString(4, "Password1!".toCharArray())

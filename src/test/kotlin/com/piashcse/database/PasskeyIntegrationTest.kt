@@ -20,6 +20,7 @@ import java.util.Base64
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /** WebAuthn passkey registration and assertion against PostgreSQL. */
@@ -122,7 +123,12 @@ class PasskeyIntegrationTest {
                 type = "webauthn.get",
                 challenge = loginOptions.challenge,
             )
-        val authData = ByteArray(37).also { it[32] = 0x01 }
+        val authData =
+            ByteArray(37).also {
+                MessageDigest.getInstance("SHA-256").digest("localhost".toByteArray()).copyInto(it)
+                it[32] = 0x01
+                it[36] = 1
+            }
         val signature =
             sign(
                 keyPair,
@@ -144,6 +150,27 @@ class PasskeyIntegrationTest {
         assertTrue(login.accessToken.isNotBlank())
         assertTrue(login.refreshToken.isNotBlank())
         assertEquals(credentialId, kotlinx.coroutines.runBlocking { service.list(userId) }.single().credentialId)
+
+        // Replaying the same authenticator counter must be rejected as a possible clone.
+        val replayOptions =
+            kotlinx.coroutines.runBlocking { service.loginOptions(PasskeyLoginOptionsRequest(email, "customer")) }
+        val replayClientData = clientData("webauthn.get", replayOptions.challenge)
+        val replaySignature =
+            sign(keyPair, authData + MessageDigest.getInstance("SHA-256").digest(replayClientData.toByteArray()))
+        assertFailsWith<com.piashcse.utils.validator.ValidationException> {
+            kotlinx.coroutines.runBlocking {
+                service.login(
+                    PasskeyLoginRequest(
+                        email = email,
+                        userType = "customer",
+                        credentialId = credentialId,
+                        clientDataJson = base64Url(replayClientData.toByteArray()),
+                        authenticatorData = base64Url(authData),
+                        signature = base64Url(replaySignature),
+                    ),
+                )
+            }
+        }
     }
 
     private fun clientData(

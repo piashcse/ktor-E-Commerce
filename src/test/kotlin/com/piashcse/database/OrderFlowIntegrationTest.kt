@@ -20,6 +20,8 @@ import com.piashcse.database.entities.WarehouseDAO
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.feature.cart.CartRepositoryImpl
 import com.piashcse.feature.invoice.InvoiceService
+import com.piashcse.feature.loyalty.AdminCreditRequest
+import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.feature.payment.ManualPaymentGateway
 import com.piashcse.feature.payment.PaymentRepositoryImpl
@@ -201,6 +203,15 @@ class OrderFlowIntegrationTest {
         assertEquals(OrderStatus.PENDING, order.status)
         assertEquals("fr", order.locale)
         assertTrue(order.formattedTotal != null, "Order total must be localized")
+        assertEquals(
+            0,
+            BigDecimal(order.subTotal)
+                .subtract(BigDecimal(order.discountAmount))
+                .add(BigDecimal(order.shippingCost))
+                .add(BigDecimal(order.taxAmount))
+                .compareTo(BigDecimal(order.total)),
+            "Exclusive tax must be calculated on the discounted taxable amount exactly once",
+        )
         assertTrue(BigDecimal(order.discountAmount) > BigDecimal.ZERO, "Automatic promotion must discount the order")
         assertTrue(
             kotlinx.coroutines.runBlocking { promotions.list(true, 10, 0) }.data.first().usageCount >= 1,
@@ -255,6 +266,28 @@ class OrderFlowIntegrationTest {
             transaction { OutboxDAO.find { OutboxTable.eventType eq "ORDER_STATUS_CHANGED" }.count() } >= 3,
             "Cancellation must enqueue an order-status notification event",
         )
+
+        // Store credit must be capped before debit; an over-sized request must not burn the balance.
+        val loyalty = LoyaltyService()
+        kotlinx.coroutines.runBlocking {
+            loyalty.adminCredit(customerId, AdminCreditRequest(BigDecimal("100.00"), "wallet regression"))
+        }
+        kotlinx.coroutines.runBlocking { cart.createCart(customerId, productId, 1) }
+        val walletOrder =
+            kotlinx.coroutines.runBlocking {
+                orders.placeOrder(
+                    customerId,
+                    checkout.copy(idempotencyKey = "order-wallet-$suffix", walletCredit = BigDecimal("50.00")),
+                )
+            }.first()
+        val walletAfter = kotlinx.coroutines.runBlocking { loyalty.wallet(customerId) }
+        assertTrue(
+            BigDecimal(walletAfter.creditBalance) > BigDecimal("50.00"),
+            "Unused store credit must remain in the wallet",
+        )
+        kotlinx.coroutines.runBlocking {
+            orders.cancelOrder(walletOrder.orderId, customerId, "wallet regression", UserType.CUSTOMER)
+        }
 
         val stock = transaction { InventoryDAO.all().first { it.productId.value == productId }.stockQuantity }
         assertEquals(9, stock, "Only the delivered order should consume stock")

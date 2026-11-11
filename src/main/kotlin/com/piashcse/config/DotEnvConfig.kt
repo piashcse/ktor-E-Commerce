@@ -20,6 +20,9 @@ object DotEnvConfig {
     /** Absolute storefront base used by sitemap.xml/robots.txt and canonical URLs. */
     val publicBaseUrl: String get() = DotEnv.get("PUBLIC_BASE_URL", "http://localhost:8080").trimEnd('/')
 
+    // Encryption key for TOTP secrets at rest (falls back to JWT_SECRET in dev).
+    val mfaEncryptionKey: String get() = DotEnv.get("MFA_ENCRYPTION_KEY", "")
+
     // Social login
     val googleClientId: String get() = DotEnv.get("GOOGLE_CLIENT_ID", "")
 

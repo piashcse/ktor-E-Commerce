@@ -105,7 +105,14 @@ data class QuotePricedItem(
     val productId: String,
     val quantity: Int,
     @Contextual val unitPrice: BigDecimal,
-)
+) {
+    init {
+        if (quantity <= 0) throw FieldValidationException(listOf(FieldViolation("quantity", "Quantity must be positive")))
+        if (unitPrice <= BigDecimal.ZERO) {
+            throw FieldValidationException(listOf(FieldViolation("unitPrice", "Unit price must be positive")))
+        }
+    }
+}
 
 @Serializable
 data class QuoteRespondRequest(
@@ -367,7 +374,7 @@ class B2bService {
         quoteId: String,
     ): PurchaseOrderResponse =
         query {
-            val account = requireApprovedAccount(buyerUserId)
+            val account = requireApprovedAccount(buyerUserId, forUpdate = true)
             val quote = B2bQuoteDAO.findById(quoteId) ?: quoteId.throwNotFound("Quote")
             if (quote.buyerUserId.value != buyerUserId) throw ForbiddenException("Quote belongs to another buyer")
             if (quote.status != B2bQuoteStatus.SENT) throw ValidationException("Only SENT quotes can be accepted")
@@ -467,10 +474,15 @@ class B2bService {
                 .toPaginatedResponse(limit, offset) { B2bPurchaseOrderDAO.wrapRow(it).toResponse() }
         }
 
-    private fun requireApprovedAccount(userId: String): B2bAccountDAO {
-        val account =
+    private fun requireApprovedAccount(
+        userId: String,
+        forUpdate: Boolean = false,
+    ): B2bAccountDAO {
+        val query =
             B2bAccountDAO.find { B2bAccountTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable) }
-                .firstOrNull() ?: throw ValidationException("Apply for a B2B account first")
+        val account =
+            (if (forUpdate) query.forUpdate() else query).firstOrNull()
+                ?: throw ValidationException("Apply for a B2B account first")
         if (account.status != B2bAccountStatus.APPROVED) {
             throw ValidationException("B2B account is not approved")
         }

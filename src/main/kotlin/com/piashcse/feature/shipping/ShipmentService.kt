@@ -69,6 +69,8 @@ data class PurchaseShipmentRequest(
     val rateId: String,
     /** Empty means every remaining unit on the order ships in this parcel. */
     val items: List<ShipmentItemRequest> = emptyList(),
+    /** Optional client retry key; repeated purchases return the original label. */
+    val idempotencyKey: String? = null,
 )
 
 @Serializable
@@ -150,6 +152,21 @@ class ShipmentService(
         request: PurchaseShipmentRequest,
     ): ShipmentResponse {
         if (request.rateId.isBlank()) throw ValidationException("rateId is required")
+        request.idempotencyKey?.takeIf { it.isNotBlank() }?.let { key ->
+            val replay =
+                query {
+                    val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
+                    val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
+                    if (user.userType !in listOf(UserType.SELLER, UserType.ADMIN, UserType.SUPER_ADMIN)) {
+                        throw ForbiddenException("Only sellers and admins can purchase shipping labels")
+                    }
+                    requireOrderAccess(order.userId.value, order.shopId?.value, userId, user.userType)
+                    ShipmentDAO.find {
+                        (ShipmentTable.orderId eq order.id) and (ShipmentTable.idempotencyKey eq key)
+                    }.firstOrNull()
+                }
+            if (replay != null) return query { replay.toResponse() }
+        }
         val allocation = planAllocation(orderId, userId, request.items)
         val label = carrier.purchaseLabel(CarrierLabelRequest(request.rateId, orderId))
         if (!label.success) {
@@ -169,6 +186,7 @@ class ShipmentService(
                     this.trackingNumber = label.trackingNumber
                     this.labelUrl = label.labelUrl
                     this.providerReference = label.providerReference
+                    this.idempotencyKey = request.idempotencyKey?.takeIf { it.isNotBlank() }
                     this.rateId = request.rateId
                     this.rateAmount = label.amount
                     this.currency = label.currency

@@ -334,6 +334,10 @@ class ServiceIntegrationTest {
         // MFA / TOTP
         val mfa = MfaService()
         val mfaSetup = kotlinx.coroutines.runBlocking { mfa.setup(customerId) }
+        assertTrue(
+            transaction { UserDAO.findById(customerId)?.mfaSecret?.startsWith("enc:v1:") == true },
+            "TOTP secrets must be encrypted at rest",
+        )
         val mfaCode = mfa.generateCode(mfaSetup.secret, System.currentTimeMillis() / 1000 / 30)
         assertTrue(kotlinx.coroutines.runBlocking { mfa.enable(customerId, mfaCode) })
         assertTrue(kotlinx.coroutines.runBlocking { mfa.verifyLogin(customerId, mfaCode) })

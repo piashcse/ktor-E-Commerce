@@ -3,9 +3,12 @@ package com.piashcse.database
 import com.piashcse.constants.CmsPageStatus
 import com.piashcse.constants.ProductStatus
 import com.piashcse.constants.SeoEntityType
+import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductDAO
+import com.piashcse.database.entities.ShopCategoryDAO
+import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.feature.cms.CmsPageRequest
 import com.piashcse.feature.cms.CmsService
@@ -83,10 +86,19 @@ class CmsIntegrationTest {
                     password = "hashed"
                     isVerified = true
                 }
+            val shopCategory = ShopCategoryDAO.new { name = "CMS Shop $suffix" }
+            val shop =
+                ShopDAO.new {
+                    userId = seller.id
+                    categoryId = shopCategory.id
+                    name = "CMS Shop $suffix"
+                    status = ShopStatus.APPROVED
+                }
             val category = ProductCategoryDAO.new { name = "CMS Cat $suffix" }
             productId =
                 ProductDAO.new {
                     userId = seller.id
+                    shopId = shop.id
                     categoryId = category.id
                     name = "CMS Product $suffix"
                     description = "Sitemap product"
@@ -125,7 +137,7 @@ class CmsIntegrationTest {
                 )
             }
         assertEquals(CmsPageStatus.DRAFT, draft.status)
-        assertEquals(1, kotlinx.coroutines.runBlocking { cms.publicPages(10, 0) }.data.size)
+        assertEquals(1, kotlinx.coroutines.runBlocking { cms.publicPages(100, 0) }.data.count { it.slug == "about-$suffix" })
         assertEquals("About Us", kotlinx.coroutines.runBlocking { cms.publicPage("about-$suffix") }.title)
         assertFailsWith<NotFoundException> {
             kotlinx.coroutines.runBlocking { cms.publicPage("draft-$suffix") }
@@ -159,6 +171,6 @@ class CmsIntegrationTest {
 
         val archived = kotlinx.coroutines.runBlocking { cms.archive(published.id) }
         assertTrue(archived)
-        assertEquals(0, kotlinx.coroutines.runBlocking { cms.publicPages(10, 0) }.data.size)
+        assertEquals(0, kotlinx.coroutines.runBlocking { cms.publicPages(100, 0) }.data.count { it.slug == "about-$suffix" })
     }
 }

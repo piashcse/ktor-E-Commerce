@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 345  
+**Operations:** 346  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -487,7 +487,8 @@ document served by Swagger UI.
 | `PUT` | `/api/v1/admin/subscription-plans/{id}` | Admin: update a plan | Admin |
 | `DELETE` | `/api/v1/admin/subscription-plans/{id}` | Admin: deactivate a plan | Admin |
 | `GET` | `/api/v1/admin/subscriptions` | Admin: list subscriptions | Admin |
-| `POST` | `/api/v1/admin/subscriptions/run-billing` | Admin: run renewal billing | Admin |
+| `POST` | `/api/v1/admin/subscriptions/run-billing` | Admin: create renewal invoices | Admin |
+| `POST` | `/api/v1/admin/subscriptions/{id}/activate` | Admin: mark pending invoice paid and activate | Admin |
 | `GET` | `/api/v1/library` | List my digital purchases | Authenticated |
 | `GET` | `/api/v1/library/{token}/download` | Redeem a digital download | Authenticated |
 

@@ -108,6 +108,8 @@ Rules:
 - A line cannot ship more than `ordered - already shipped`.
 - When every unit is allocated, the order becomes `SHIPPED` and gets the latest tracking number.
 - Over-shipping and non-seller callers are rejected.
+- `idempotencyKey` is optional; a retry with the same key returns the original label instead of
+  buying a second one.
 
 ---
 

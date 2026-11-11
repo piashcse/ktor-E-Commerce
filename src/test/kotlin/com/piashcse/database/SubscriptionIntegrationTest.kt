@@ -169,7 +169,10 @@ class SubscriptionIntegrationTest {
                     ),
                 )
             }
-        val subscription = kotlinx.coroutines.runBlocking { plans.subscribe(customerId, SubscribeRequest(plan.id)) }
+        val subscription =
+            kotlinx.coroutines.runBlocking {
+                plans.subscribe(customerId, SubscribeRequest(plan.id, paymentReference = "pay_initial"))
+            }
         assertEquals(SubscriptionStatus.ACTIVE, subscription.status)
         assertEquals("Pro Monthly", subscription.planName)
 
@@ -207,9 +210,10 @@ class SubscriptionIntegrationTest {
             kotlinx.coroutines.runBlocking {
                 plans.runBilling(currentUtc().plusDays(40))
             }
-        assertEquals(1, renewal.renewed)
+        assertEquals(1, renewal.invoicesCreated)
         val invoicesAfter = kotlinx.coroutines.runBlocking { plans.invoicesForUser(customerId, subscription.id) }
         assertEquals(2, invoicesAfter.size)
+        assertEquals(1, invoicesAfter.count { it.status.name == "PENDING" })
         assertTrue(
             transaction {
                 SubscriptionInvoiceDAO.find {
@@ -217,8 +221,10 @@ class SubscriptionIntegrationTest {
                 }.count() == 2L
             },
         )
+        val activated = kotlinx.coroutines.runBlocking { plans.activate(subscription.id, "pay_renewal") }
+        assertEquals(SubscriptionStatus.ACTIVE, activated.status)
 
-        // Cancel at period end; the next run cancels instead of charging.
+        // Cancel at period end; the next run cancels instead of invoicing.
         kotlinx.coroutines.runBlocking { plans.cancel(customerId, subscription.id) }
         val canceled = kotlinx.coroutines.runBlocking { plans.runBilling(currentUtc().plusDays(80)) }
         assertEquals(1, canceled.canceled)

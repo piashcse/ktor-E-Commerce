@@ -256,12 +256,23 @@ class ShipmentIntegrationTest {
                 service.purchaseLabel(
                     orderId,
                     sellerUserId,
-                    PurchaseShipmentRequest("rate-1", listOf(ShipmentItemRequest(itemA, 1))),
+                    PurchaseShipmentRequest("rate-1", listOf(ShipmentItemRequest(itemA, 1)), idempotencyKey = "label-$suffix-1"),
                 )
             }
         assertEquals(ShipmentStatus.LABEL_PURCHASED, first.status)
         assertEquals("TRACK-rate-1", first.trackingNumber)
         transaction { assertEquals(OrderStatus.PAID, OrderDAO.findById(orderId)!!.status) }
+
+        // Retrying the same label purchase must not buy a second label.
+        val replay =
+            kotlinx.coroutines.runBlocking {
+                service.purchaseLabel(
+                    orderId,
+                    sellerUserId,
+                    PurchaseShipmentRequest("rate-1", listOf(ShipmentItemRequest(itemA, 1)), idempotencyKey = "label-$suffix-1"),
+                )
+            }
+        assertEquals(first.id, replay.id)
 
         // Second parcel completes the allocation and ships the order.
         val second =

@@ -104,7 +104,8 @@ class CommissionService {
                     } else {
                         BigDecimal.ZERO
                     }
-                val net = item.total.subtract(discountShare).max(BigDecimal.ZERO)
+                // Commission applies to the pre-tax merchandise amount.
+                val net = item.total.subtract(item.taxAmount).subtract(discountShare).max(BigDecimal.ZERO)
                 val categoryId = ProductDAO.findById(item.productId.value)?.categoryId?.value
                 acc.add(Money.commission(net, resolveRateTx(seller, categoryId)))
             }

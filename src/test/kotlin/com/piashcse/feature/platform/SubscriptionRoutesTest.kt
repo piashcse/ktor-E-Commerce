@@ -147,7 +147,7 @@ class SubscriptionRoutesTest {
                     header(HttpHeaders.Authorization, authHeader(userType = "ADMIN"))
                 }
             assertEquals(HttpStatusCode.OK, billed.status)
-            assertContains(billed.bodyAsText(), "\"renewed\": 2")
+            assertContains(billed.bodyAsText(), "\"invoicesCreated\": 2")
         }
 
     @Test

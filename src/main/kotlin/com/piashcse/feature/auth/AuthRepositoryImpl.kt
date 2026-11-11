@@ -35,6 +35,8 @@ class AuthRepositoryImpl : AuthRepository {
 
     private fun userTypeOrNull(raw: String): UserType? = runCatching { UserType.valueOf(raw.uppercase()) }.getOrNull()
 
+    private fun normalizeEmail(value: String): String = value.trim().lowercase()
+
     // ── Token helpers ─────────────────────────────────────────────────────
 
     override fun generateTokenPair(
@@ -120,7 +122,7 @@ class AuthRepositoryImpl : AuthRepository {
     private fun loginAttemptPredicate(
         email: String,
         userType: UserType,
-    ) = (LoginAttemptTable.email eq email) and (LoginAttemptTable.userType eq userType)
+    ) = (LoginAttemptTable.email eq normalizeEmail(email)) and (LoginAttemptTable.userType eq userType)
 
     override suspend fun recordFailedAttempt(
         email: String,
@@ -178,11 +180,12 @@ class AuthRepositoryImpl : AuthRepository {
 
     override suspend fun register(registerRequest: RegisterRequest): RegistrationResult {
         val userTypeEnum = userTypeOrNull(registerRequest.userType) ?: UserType.CUSTOMER
+        val normalizedEmail = normalizeEmail(registerRequest.email)
 
         val (email, otp, result) =
             query {
                 val existingUser =
-                    UserDAO.find { UserTable.email eq registerRequest.email and (UserTable.userType eq userTypeEnum) }
+                    UserDAO.find { UserTable.email eq normalizedEmail and (UserTable.userType eq userTypeEnum) }
                         .firstOrNull()
 
                 val otp = generateOTP()
@@ -207,7 +210,7 @@ class AuthRepositoryImpl : AuthRepository {
                 } else {
                     val inserted =
                         UserDAO.new {
-                            email = registerRequest.email
+                            email = normalizedEmail
                             otpCode = otp
                             otpExpiry = otpExpiryTime
                             password = hashPassword(registerRequest.password)
@@ -220,7 +223,7 @@ class AuthRepositoryImpl : AuthRepository {
                             status = ShopStatus.PENDING
                         }
                     }
-                    Triple(inserted.email, otp, RegistrationResult.Created(inserted.id.value, registerRequest.email, Message.Auth.OTP_SENT))
+                    Triple(inserted.email, otp, RegistrationResult.Created(inserted.id.value, normalizedEmail, Message.Auth.OTP_SENT))
                 }
             }
         return result
@@ -233,7 +236,7 @@ class AuthRepositoryImpl : AuthRepository {
         userTypeEnum: UserType,
     ): UserDAO? =
         query {
-            UserDAO.find { UserTable.email eq email and (UserTable.userType eq userTypeEnum) }.firstOrNull()
+            UserDAO.find { UserTable.email eq normalizeEmail(email) and (UserTable.userType eq userTypeEnum) }.firstOrNull()
         }
 
     override suspend fun findUserById(userId: String): UserDAO? =
@@ -250,7 +253,7 @@ class AuthRepositoryImpl : AuthRepository {
         email: String,
         userTypeStr: String,
     ): UserDAO {
-        val entities = UserDAO.find { UserTable.email eq email }.toList()
+        val entities = UserDAO.find { UserTable.email eq normalizeEmail(email) }.toList()
         if (entities.isEmpty()) email.throwNotFound("User")
         val type =
             userTypeOrNull(userTypeStr)
@@ -277,7 +280,7 @@ class AuthRepositoryImpl : AuthRepository {
 
     override suspend fun forgotPassword(forgotPasswordRequest: ForgotPasswordRequest): String =
         query {
-            val entities = UserDAO.find { UserTable.email eq forgotPasswordRequest.email }.toList()
+            val entities = UserDAO.find { UserTable.email eq normalizeEmail(forgotPasswordRequest.email) }.toList()
             if (entities.isEmpty()) forgotPasswordRequest.email.throwNotFound("User")
             val type =
                 userTypeOrNull(forgotPasswordRequest.userType)
@@ -294,7 +297,7 @@ class AuthRepositoryImpl : AuthRepository {
     override suspend fun resetPassword(resetPasswordRequest: ResetRequest): ResetResult =
         query {
             // Anti-enumeration: unknown email/role behaves exactly like a bad OTP.
-            val entities = UserDAO.find { UserTable.email eq resetPasswordRequest.email }.toList()
+            val entities = UserDAO.find { UserTable.email eq normalizeEmail(resetPasswordRequest.email) }.toList()
             if (entities.isEmpty()) return@query ResetResult.InvalidOrExpiredOtp
             val type = userTypeOrNull(resetPasswordRequest.userType) ?: return@query ResetResult.InvalidOrExpiredOtp
             val user =

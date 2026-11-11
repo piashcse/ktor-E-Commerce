@@ -6,6 +6,36 @@ hide:
 
 ## [Unreleased]
 
+### Fixed
+
+- Wallet/points/store-credit redemptions are capped before debit, so unused balances are no longer
+  burned when the requested amount exceeds the order total.
+- Tax is recalculated on the post-coupon/post-promotion taxable amount; inclusive-tax lines no longer
+  double-tax under automatic promotions.
+- Refund tax is capped per item, cumulative tax refunds are tracked, and tax-inclusive items cannot
+  receive a separate tax refund.
+- Payment webhooks now propagate processing failures so providers retry instead of receiving 200.
+- Subscription renewal now creates `PENDING` invoices and `PAST_DUE` subscriptions; admin activation
+  records payment, advances the period and refreshes entitlement expiry. Canceled/expired
+  subscriptions no longer expose active downloads.
+- POS sales now use warehouse-scoped stock, apply tax rules, support retry idempotency, award loyalty
+  points and emit `PaymentCompletedEvent` for payouts/commission/notifications.
+- BOPIS readiness/completion requires a paid, non-canceled order.
+- B2B quote responses reject non-positive quantities and acceptance locks the account row before the
+  credit check.
+- Passkeys validate RP-ID hash, user presence and signature counters; challenges are purged.
+- Social and passkey login enforce MFA when enabled; email matching is normalized.
+- Shipping label purchase accepts an idempotency key.
+- Commission is calculated pre-tax and payout snapshots the applied rate for refunds.
+- Store locator and sitemap exclude non-approved shops.
+- CMS bodies strip script/style/iframe and inline event handlers; page SEO falls back to CMS fields.
+- GDPR export covers wallet, subscriptions, support, passkeys, digital entitlements, B2B and seller
+  data; erasure removes/anonymizes those records and clears order contact PII.
+- Analytics funnel purchase stages are session-attributed and product views/carts count distinct
+  sessions.
+- Support write routes are rate-limited. Tests assert per-test identifiers instead of global counts.
+- Docs corrected stale registration/payment examples.
+
 ### Added
 
 - Identity hardening (`V46`): Google ID-token social login with automatic verified customer
@@ -60,7 +90,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (345 operations total).
+  (346 operations total).
 
 ### Fixed
 

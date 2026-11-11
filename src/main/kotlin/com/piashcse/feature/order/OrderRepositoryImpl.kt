@@ -236,6 +236,7 @@ class OrderRepositoryImpl(
                             promotionService.markUsedTx(promotion.id)
                         }
                     }
+                    recalculateTaxes(quote)
                     applyWalletRedemptions(quote, checkoutRequest, userId, fxRate)
                     updateSellerTotals(quote.orders)
                     context.cartItems.forEach { it.delete() }
@@ -581,10 +582,7 @@ class OrderRepositoryImpl(
                 }
             order.discountAmount = orderDiscount
             if (promotion.freeShipping) order.shippingCost = BigDecimal.ZERO.setScale(2)
-            order.total =
-                Money.scale2(
-                    order.subTotal.add(order.shippingCost).add(order.taxAmount).subtract(orderDiscount).max(BigDecimal.ZERO),
-                )
+            order.total = Money.scale2(order.subTotal.add(order.shippingCost).subtract(orderDiscount).max(BigDecimal.ZERO))
         }
     }
 
@@ -602,12 +600,33 @@ class OrderRepositoryImpl(
         val total = quote.orders.fold(BigDecimal.ZERO) { acc, order -> acc.add(order.total) }
         if (total <= BigDecimal.ZERO) return
         val referenceId = request.idempotencyKey?.let { "checkout:$it" } ?: quote.orders.first().id.value
-        var walletUsd = BigDecimal.ZERO
-        if (points > 0) walletUsd = walletUsd.add(loyaltyService.redeemPointsTx(userId, points, referenceId))
-        creditUsd?.let { walletUsd = walletUsd.add(loyaltyService.redeemCreditTx(userId, it, referenceId)) }
-
         val totalUsd = total.divide(fxRate, 2, RoundingMode.HALF_UP)
-        val remainingUsd = totalUsd.subtract(walletUsd).max(BigDecimal.ZERO)
+        var remainingUsd = totalUsd
+
+        // Cap every redemption before debiting it; never burn points/credit that cannot be applied.
+        val pointsToRedeem =
+            if (points > 0) {
+                points.coerceAtMost(
+                    remainingUsd.multiply(BigDecimal(100)).setScale(0, RoundingMode.DOWN).toInt(),
+                )
+            } else {
+                0
+            }
+        var walletUsd =
+            if (pointsToRedeem > 0) {
+                loyaltyService.redeemPointsTx(userId, pointsToRedeem, referenceId)
+            } else {
+                BigDecimal.ZERO
+            }
+        remainingUsd = remainingUsd.subtract(walletUsd).max(BigDecimal.ZERO)
+        creditUsd?.let {
+            val capped = it.min(remainingUsd)
+            if (capped > BigDecimal.ZERO) {
+                walletUsd = walletUsd.add(loyaltyService.redeemCreditTx(userId, capped, referenceId))
+                remainingUsd = remainingUsd.subtract(walletUsd).max(BigDecimal.ZERO)
+            }
+        }
+
         val giftUsd =
             giftCode?.let {
                 loyaltyService.redeemGiftCardTx(it, userId, quote.orders.first().id.value, remainingUsd)
@@ -624,6 +643,48 @@ class OrderRepositoryImpl(
             order.giftCardCode = giftCode
             order.total = Money.scale2(order.total.subtract(giftShare))
             order.discountAmount = Money.scale2(order.discountAmount.add(walletShare).add(giftShare))
+        }
+    }
+
+    /**
+     * Recomputes line tax on the post-coupon/post-promotion taxable amount.
+     * Inclusive lines already carry gross values; exclusive lines add tax on top.
+     */
+    private fun recalculateTaxes(quote: CheckoutQuote) {
+        quote.orders.forEach { order ->
+            val items = OrderItemDAO.itemsForOrder(order.id)
+            if (items.isEmpty()) return@forEach
+            val discount = order.discountAmount
+            var allTax = BigDecimal.ZERO
+            var exclusiveTax = BigDecimal.ZERO
+            items.forEach { item ->
+                val discountShare =
+                    if (order.subTotal > BigDecimal.ZERO) {
+                        Money.proportionalSplit(discount, item.total, order.subTotal)
+                    } else {
+                        BigDecimal.ZERO
+                    }
+                val taxable = item.total.subtract(discountShare).max(BigDecimal.ZERO)
+                val amounts =
+                    taxService.apply(
+                        taxable,
+                        com.piashcse.feature.tax.TaxQuote(
+                            rate = item.taxRate,
+                            inclusive = item.taxInclusive,
+                            taxClassId = item.taxClassId?.value,
+                        ),
+                    )
+                item.taxAmount = amounts.tax
+                allTax = allTax.add(amounts.tax)
+                if (!item.taxInclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
+            }
+            order.taxAmount = Money.scale2(allTax)
+            order.total =
+                Money.scale2(
+                    order.subTotal.subtract(discount).max(BigDecimal.ZERO)
+                        .add(order.shippingCost)
+                        .add(exclusiveTax),
+                )
         }
     }
 
@@ -741,7 +802,7 @@ class OrderRepositoryImpl(
                 }
             var tax = BigDecimal.ZERO
             var exclusiveTax = BigDecimal.ZERO
-            val taxLines = mutableListOf<TaxLineResponse>()
+            var taxLines: List<TaxLineResponse> = mutableListOf()
             cartItems.forEach { cartItem ->
                 val product =
                     productsMap[cartItem.productId.value]
@@ -852,6 +913,48 @@ class OrderRepositoryImpl(
                     formattedDiscount = i18n.formatMoney(BigDecimal(response.discountAmount), currency, locale),
                     formattedTotal = i18n.formatMoney(BigDecimal(response.total), currency, locale),
                 )
+            // Coupons/promotions reduce the taxable base; refresh line tax and totals.
+            val discountAmount = BigDecimal(response.discountAmount)
+            if (discountAmount > BigDecimal.ZERO) {
+                var recalculatedTax = BigDecimal.ZERO
+                var recalculatedExclusive = BigDecimal.ZERO
+                taxLines =
+                    taxLines.map { line ->
+                        val gross = BigDecimal(line.grossAmount)
+                        val share =
+                            if (sub > BigDecimal.ZERO) {
+                                Money.proportionalSplit(discountAmount, gross, sub)
+                            } else {
+                                BigDecimal.ZERO
+                            }
+                        val amounts =
+                            taxService.apply(
+                                gross.subtract(share).max(BigDecimal.ZERO),
+                                com.piashcse.feature.tax.TaxQuote(
+                                    rate = BigDecimal(line.rate),
+                                    inclusive = line.inclusive,
+                                    taxClassId = line.taxClassId,
+                                ),
+                            )
+                        recalculatedTax = recalculatedTax.add(amounts.tax)
+                        if (!line.inclusive) recalculatedExclusive = recalculatedExclusive.add(amounts.tax)
+                        line.copy(
+                            netAmount = amounts.net.toPlainString(),
+                            taxAmount = amounts.tax.toPlainString(),
+                            grossAmount = amounts.gross.toPlainString(),
+                        )
+                    }
+                response =
+                    response.copy(
+                        taxAmount = Money.scale2(recalculatedTax).toPlainString(),
+                        total =
+                            Money.scale2(
+                                sub.subtract(discountAmount).max(BigDecimal.ZERO)
+                                    .add(BigDecimal(response.shippingCost))
+                                    .add(recalculatedExclusive),
+                            ).toPlainString(),
+                    )
+            }
             response
         }
     }

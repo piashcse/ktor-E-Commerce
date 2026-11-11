@@ -21,6 +21,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.core.neq
@@ -179,13 +180,19 @@ class AnalyticsService {
                         events.filter { it[AnalyticsEventTable.eventType] == AnalyticsEventType.CHECKOUT_START }
                             .map { it[AnalyticsEventTable.sessionId] }.toSet(),
                 )
+            val trackedSessions = events.map { it[AnalyticsEventTable.sessionId] }.toSet()
             val purchases =
-                OrderTable.selectAll().where {
-                    (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
-                        (OrderTable.status neq OrderStatus.CANCELED) and
-                        (OrderTable.createdAt greaterEq start) and
-                        (OrderTable.createdAt lessEq end)
-                }.count()
+                if (trackedSessions.isEmpty()) {
+                    0L
+                } else {
+                    OrderTable.selectAll().where {
+                        (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
+                            (OrderTable.status neq OrderStatus.CANCELED) and
+                            (OrderTable.createdAt greaterEq start) and
+                            (OrderTable.createdAt lessEq end) and
+                            (OrderTable.attributionSessionId inList trackedSessions)
+                    }.count()
+                }
 
             val counts =
                 listOf(
@@ -272,10 +279,12 @@ class AnalyticsService {
                 }.toList()
             val views =
                 events.filter { it[AnalyticsEventTable.eventType] == AnalyticsEventType.PRODUCT_VIEW }
-                    .groupingBy { it[AnalyticsEventTable.productId]!!.value }.eachCount().mapValues { it.value.toLong() }
+                    .groupBy { it[AnalyticsEventTable.productId]!!.value }
+                    .mapValues { (_, rows) -> rows.map { it[AnalyticsEventTable.sessionId] }.toSet().size.toLong() }
             val carts =
                 events.filter { it[AnalyticsEventTable.eventType] == AnalyticsEventType.ADD_TO_CART }
-                    .groupingBy { it[AnalyticsEventTable.productId]!!.value }.eachCount().mapValues { it.value.toLong() }
+                    .groupBy { it[AnalyticsEventTable.productId]!!.value }
+                    .mapValues { (_, rows) -> rows.map { it[AnalyticsEventTable.sessionId] }.toSet().size.toLong() }
 
             val purchases = mutableMapOf<String, Long>()
             val revenue = mutableMapOf<String, BigDecimal>()

@@ -208,11 +208,20 @@ class NotificationSubscriber(
                 // Seller is paid on the net product amount after coupon discounts.
                 val netSubTotal = order.subTotal.subtract(order.discountAmount).max(java.math.BigDecimal.ZERO)
                 val commission = CommissionService().commissionForOrderTx(order, seller)
+                val effectiveRate =
+                    if (netSubTotal > java.math.BigDecimal.ZERO) {
+                        commission
+                            .multiply(java.math.BigDecimal(100))
+                            .divide(netSubTotal, 2, java.math.RoundingMode.HALF_UP)
+                    } else {
+                        java.math.BigDecimal.ZERO.setScale(2)
+                    }
                 SellerPayoutDAO.new {
                     this.sellerId = seller.id
                     this.orderId = order.id
                     subTotal = netSubTotal
                     commissionAmount = commission
+                    commissionRate = effectiveRate
                     payoutAmount = netSubTotal.subtract(commission)
                     currency = order.currency
                     status = "PENDING"

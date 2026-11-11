@@ -52,6 +52,30 @@ fun ProductDAO.effectiveStockFor(
 /** Decrements stock across warehouses, oldest first, and throws if insufficient. */
 fun ProductDAO.decrementStock(quantity: Int) = decrementStockFor(null, quantity)
 
+/** Decrements product-level stock at a specific warehouse (POS/BOPIS). */
+fun ProductDAO.decrementStockAt(
+    warehouseId: String,
+    quantity: Int,
+) {
+    val rows = inventories(forUpdate = true).filter { it.warehouseId.value == warehouseId && it.variantId == null }
+    if (rows.isEmpty()) throw ValidationException(Message.Inventory.NOT_FOUND)
+    val available = rows.sumOf { it.stockQuantity }
+    if (available < quantity) {
+        throw ValidationException(Message.Validation.insufficientStock(name, available))
+    }
+    var remaining = quantity
+    rows.forEach { inv ->
+        if (remaining <= 0) return@forEach
+        val take = minOf(inv.stockQuantity, remaining)
+        inv.stockQuantity -= take
+        inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
+        remaining -= take
+    }
+    if (deletedAt == null) {
+        status = if (inventories().sumOf { it.stockQuantity } <= 0) ProductStatus.OUT_OF_STOCK else ProductStatus.ACTIVE
+    }
+}
+
 fun ProductDAO.decrementStockFor(
     variantId: String?,
     quantity: Int,

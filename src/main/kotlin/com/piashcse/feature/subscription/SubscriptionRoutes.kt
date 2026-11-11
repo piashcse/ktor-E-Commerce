@@ -103,8 +103,21 @@ fun Route.subscriptionAdminRoutes() {
         post("run-billing") {
             call.respondOk(service.runBilling())
         }.describe {
-            summary = "Run renewal billing for due subscriptions"
-            description = "Creates paid invoices, extends periods, grants digital access and cancels at period end"
+            summary = "Create renewal invoices for due subscriptions"
+            description = "Creates pending invoices, marks subscriptions PAST_DUE and cancels at period end"
+        }
+
+        post("{id}/activate") {
+            call.respondOk(
+                service.activate(
+                    call.requirePathParameter("id"),
+                    call.receive<ActivateSubscriptionRequest>().paymentReference,
+                ),
+            )
+        }.describe {
+            summary = "Admin: mark a pending subscription invoice paid and activate"
+            requestBody { jsonBody<ActivateSubscriptionRequest>() }
+            responses { ok<SubscriptionResponse>("Subscription activated") }
         }
     }
 }
