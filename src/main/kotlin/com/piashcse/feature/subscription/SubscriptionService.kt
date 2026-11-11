@@ -11,6 +11,7 @@ import com.piashcse.database.entities.SubscriptionPlanDAO
 import com.piashcse.database.entities.SubscriptionPlanTable
 import com.piashcse.database.entities.SubscriptionTable
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
@@ -201,6 +202,7 @@ class SubscriptionService(
                 this.paidAt = if (paid) start else null
             }
             if (paid) digitalDelivery.grantSubscriptionTx(userId, plan.productId.value, subscription.id.value)
+            AppMetrics.subscriptionsCreated.increment()
             subscription.toResponse(plan)
         }
 

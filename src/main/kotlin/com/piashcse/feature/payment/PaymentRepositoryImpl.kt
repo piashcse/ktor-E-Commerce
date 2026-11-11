@@ -3,6 +3,7 @@ package com.piashcse.feature.payment
 import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.RiskDecision
 import com.piashcse.constants.ScaStatus
 import com.piashcse.constants.WebhookEventStatus
 import com.piashcse.database.entities.*
@@ -93,6 +94,8 @@ class PaymentRepositoryImpl(
         order: OrderDAO,
         payment: PaymentDAO,
     ) {
+        // REVIEW payments must be explicitly released by an admin before the order is paid.
+        if (payment.riskDecision != RiskDecision.ALLOW) return
         if (order.paymentStatus == PaymentStatus.COMPLETED) return
         val paid = completedTotal(order.id)
         if (paid < order.total) return
@@ -285,6 +288,39 @@ class PaymentRepositoryImpl(
         }
     }
 
+    override suspend fun releaseReview(
+        paymentId: String,
+        actorUserId: String,
+    ): PaymentResponse =
+        retryQuery {
+            val payment =
+                PaymentDAO.find { PaymentTable.id eq paymentId.entityID(PaymentTable) }
+                    .forUpdate()
+                    .firstOrNull()
+                    ?: paymentId.throwNotFound("Payment")
+            if (payment.riskDecision == RiskDecision.BLOCK) {
+                throw ValidationException("Blocked payments cannot be released")
+            }
+            payment.riskDecision = RiskDecision.ALLOW
+            if (payment.status == PaymentStatus.COMPLETED) {
+                val order =
+                    OrderDAO.find { OrderTable.id eq payment.orderId }
+                        .forUpdate()
+                        .firstOrNull()
+                        ?: payment.orderId.value.throwNotFound("Order")
+                completeOrderIfFullyPaid(order, payment)
+            }
+            val actor = runCatching { UserDAO.findById(actorUserId) }.getOrNull()
+            EventBus.publishAdminAction(
+                Triple(actorUserId, actor?.email.orEmpty(), actor?.userType?.name ?: "ADMIN"),
+                "PAYMENT_REVIEW_RELEASED",
+                "PAYMENT",
+                paymentId,
+                "Risk review released",
+            )
+            payment.toPaymentResponse()
+        }
+
     override suspend fun confirmPayment(
         paymentId: String,
         actorUserId: String?,
@@ -342,6 +378,7 @@ class PaymentRepositoryImpl(
         val event =
             runCatching { gateway.parseWebhook(payload) }
                 .getOrElse { throw ValidationException("Invalid webhook payload") }
+        AppMetrics.paymentWebhooks.increment()
 
         return query {
             val existing =

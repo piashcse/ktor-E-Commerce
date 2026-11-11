@@ -17,6 +17,15 @@ interface PaymentRepository {
     ): PaymentResponse
 
     /**
+     * Admin release of a REVIEW payment: sets the decision to ALLOW and finalizes the order
+     * when the payment is already captured.
+     */
+    suspend fun releaseReview(
+        paymentId: String,
+        actorUserId: String,
+    ): PaymentResponse
+
+    /**
      * Explicitly confirms a pending payment (admin / provider webhook). Completes
      * the order and finalizes stock reservations when the order is fully paid.
      */

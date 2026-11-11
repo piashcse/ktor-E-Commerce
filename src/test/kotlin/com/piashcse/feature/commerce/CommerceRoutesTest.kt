@@ -10,6 +10,7 @@ import com.piashcse.database.entities.Cart
 import com.piashcse.feature.cart.CartRepository
 import com.piashcse.feature.cart.cartRoutes
 import com.piashcse.feature.payment.PaymentRepository
+import com.piashcse.feature.payment.paymentAdminRoutes
 import com.piashcse.feature.payment.paymentRoutes
 import com.piashcse.feature.refund_request.RefundRequestRepository
 import com.piashcse.feature.refund_request.refundRequestRoutes
@@ -19,6 +20,7 @@ import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.model.response.RefundRequestResponse
+import com.piashcse.plugin.adminAuth
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import io.ktor.client.request.*
@@ -184,7 +186,10 @@ class PaymentRoutesTest {
     private fun ApplicationTestBuilder.setup() {
         application {
             installTestInfra(module { single<PaymentRepository> { repo } })
-            routing { route("/api/v1/payments") { paymentRoutes() } }
+            routing {
+                route("/api/v1/payments") { paymentRoutes() }
+                route("/api/v1/admin/payments") { adminAuth { paymentAdminRoutes() } }
+            }
         }
     }
 
@@ -213,6 +218,18 @@ class PaymentRoutesTest {
                 }
             assertEquals(HttpStatusCode.Created, res.status)
             assertContains(res.bodyAsText(), "pay-1")
+        }
+
+    @Test
+    fun `admin releases a review payment`() =
+        testApplication {
+            coEvery { repo.releaseReview("pay-1", "admin-1") } returns samplePayment()
+            setup()
+            val res =
+                client.post("/api/v1/admin/payments/pay-1/risk/approve") {
+                    header(HttpHeaders.Authorization, authHeader(userId = "admin-1", userType = "ADMIN"))
+                }
+            assertEquals(HttpStatusCode.OK, res.status)
         }
 
     @Test

@@ -181,7 +181,7 @@ class CommerceValidationTest {
 
     @Test
     fun `checkout request rejects blank ids`() {
-        assertFailsWith<ConstraintViolationException> {
+        assertFailsWith<ValidationException> {
             CheckoutRequest("", "")
         }
     }

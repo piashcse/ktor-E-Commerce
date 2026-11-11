@@ -12,6 +12,7 @@ import com.piashcse.database.entities.SupportTicketTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.entityID
@@ -131,6 +132,7 @@ class SupportService {
                     body = request.body
                     isInternal = false
                 }
+            AppMetrics.supportTicketsOpened.increment()
             TicketResponse(ticket.toSummary(), listOf(message.toResponse()))
         }
 

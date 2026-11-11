@@ -111,5 +111,11 @@ Statuses: `OPEN` → `UNDER_REVIEW` → `WON` / `LOST` / `CLOSED`. Terminal stat
 - `avsStatus`, `cvvStatus`
 - `threeDsEnforced`
 
-A blocked payment returns `403` with code `FRAUD_BLOCKED`; review payments are still created and
-appear in the high-risk feed.
+A blocked payment returns `403` with code `FRAUD_BLOCKED`. `REVIEW` payments are created but the
+order is **not** finalized until an admin releases the review. The release endpoint sets the decision
+to `ALLOW` and finalizes the order if the payment was captured:
+
+```bash
+curl -X POST 'http://localhost:8080/api/v1/admin/payments/payment-uuid/risk/approve' \
+  -H 'Authorization: Bearer <admin-token>'
+```

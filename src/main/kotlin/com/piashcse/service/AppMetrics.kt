@@ -25,4 +25,16 @@ object AppMetrics {
         Counter.builder("app.payout.requested").description("Seller payout requests").register(appMicrometerRegistry)
     val payoutsPaid: Counter =
         Counter.builder("app.payout.paid").description("Payout rows marked PAID").register(appMicrometerRegistry)
+    val subscriptionsCreated: Counter =
+        Counter.builder("app.subscription.created").description("Subscriptions created").register(appMicrometerRegistry)
+    val digitalDownloads: Counter =
+        Counter.builder("app.digital.download").description("Digital downloads served").register(appMicrometerRegistry)
+    val supportTicketsOpened: Counter =
+        Counter.builder("app.support.ticket.opened").description("Support tickets opened").register(appMicrometerRegistry)
+    val b2bQuotesRequested: Counter =
+        Counter.builder("app.b2b.quote.requested").description("B2B quote requests").register(appMicrometerRegistry)
+    val paymentWebhooks: Counter =
+        Counter.builder("app.payment.webhook").description("Payment webhooks received").register(appMicrometerRegistry)
+    val carrierWebhooks: Counter =
+        Counter.builder("app.carrier.webhook").description("Carrier webhooks received").register(appMicrometerRegistry)
 }

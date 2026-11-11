@@ -7,9 +7,6 @@ import com.piashcse.database.entities.SupportedCurrencies
 import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import org.valiktor.functions.isNotEmpty
-import org.valiktor.functions.isNotNull
-import org.valiktor.validate
 import java.math.BigDecimal
 
 @Serializable
@@ -23,8 +20,8 @@ data class CheckoutAttribution(
 
 @Serializable
 data class CheckoutRequest(
-    val shippingAddressId: String,
-    val shippingMethodId: String,
+    val shippingAddressId: String? = null,
+    val shippingMethodId: String? = null,
     val paymentMethod: PaymentMethod? = null,
     val notes: String? = null,
     val idempotencyKey: String? = null,
@@ -47,9 +44,9 @@ data class CheckoutRequest(
     val pickupWarehouseId: String? = null,
 ) {
     init {
-        validate(this) {
-            validate(CheckoutRequest::shippingAddressId).isNotNull().isNotEmpty()
-            validate(CheckoutRequest::shippingMethodId).isNotNull().isNotEmpty()
+        if (fulfillmentType != FulfillmentType.PICKUP) {
+            if (shippingAddressId.isNullOrBlank()) throw ValidationException("shippingAddressId is required for delivery")
+            if (shippingMethodId.isNullOrBlank()) throw ValidationException("shippingMethodId is required for delivery")
         }
         SupportedCurrencies.requireValid(currency)
         if (locale.trim().lowercase().substringBefore('-').substringBefore('_') !in Localization.CODES) {
