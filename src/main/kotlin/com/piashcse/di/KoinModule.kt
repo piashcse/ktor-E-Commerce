@@ -9,6 +9,7 @@ import com.piashcse.feature.auth.AuthRepository
 import com.piashcse.feature.auth.AuthRepositoryImpl
 import com.piashcse.feature.auth.MfaService
 import com.piashcse.feature.auth.UserAuthenticationService
+import com.piashcse.feature.b2b.B2bService
 import com.piashcse.feature.brand.BrandRepository
 import com.piashcse.feature.brand.BrandRepositoryImpl
 import com.piashcse.feature.cart.CartRepository
@@ -113,6 +114,7 @@ val serviceModule =
         single { SellerToolsService() }
         single { DigitalDeliveryService() }
         single { SubscriptionService(get()) }
+        single { B2bService() }
         single { ProductTranslationService() }
         single<OrderRepository> { OrderRepositoryImpl(get(), get(), get(), get()) }
         single<CarrierGateway> {

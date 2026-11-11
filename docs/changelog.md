@@ -8,6 +8,9 @@ hide:
 
 ### Added
 
+- B2B wholesaling (`V42`): business accounts with approval/credit limits/payment terms,
+  quote requests and seller pricing, quote acceptance into purchase orders, and PO fulfillment.
+  Credit limits are enforced against open purchase orders; PO due dates follow net terms.
 - Subscriptions and digital goods (`V41`): monthly/yearly plans tied to digital products,
   subscribe/cancel flows, paid invoice records, manual renewal billing, zero-shipping digital
   checkout, and download entitlements granted on payment or subscription.
@@ -45,7 +48,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (298 operations total).
+  (313 operations total).
 
 ### Fixed
 

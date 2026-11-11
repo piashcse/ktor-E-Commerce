@@ -263,6 +263,29 @@ enum class InvoiceStatus {
 }
 
 @Serializable
+enum class B2bAccountStatus {
+    PENDING,
+    APPROVED,
+    SUSPENDED,
+}
+
+@Serializable
+enum class B2bQuoteStatus {
+    REQUESTED,
+    SENT,
+    ACCEPTED,
+    REJECTED,
+    EXPIRED,
+}
+
+@Serializable
+enum class PurchaseOrderStatus {
+    OPEN,
+    FULFILLED,
+    CANCELED,
+}
+
+@Serializable
 enum class PolicyType {
     PRIVACY_POLICY,
     TERMS_CONDITIONS,

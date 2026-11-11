@@ -79,6 +79,7 @@ fun Application.configureSwagger() {
             tag(ApiTags.ANALYTICS, "Funnel events, UTM attribution and product conversion")
             tag(ApiTags.SELLER, "Seller reviews, disputes and commission rules")
             tag(ApiTags.SUBSCRIPTION, "Recurring plans, invoices and digital downloads")
+            tag(ApiTags.B2B, "Business accounts, quotes, purchase orders and net terms")
         }
     }
 }
