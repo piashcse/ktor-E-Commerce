@@ -54,6 +54,8 @@ hide:
 - Subscription recurring billing (`V50`): stored provider customer/payment-method references,
   off-session renewal charges, idempotent per-period invoices, retry/backoff dunning, grace periods,
   automatic expiry with entitlement revocation, and webhook-driven invoice activation.
+- WebAuthn challenges are now stored in the database, making registration/login ceremonies
+  single-use and safe across multiple nodes (`V52`); expired challenges are purged daily.
 - Analytics ingestion now honors an explicit consent flag and filters bot/crawler user agents.
 - Daily retention enforcement now purges old webhook inbox rows, analytics events, expired digital
   entitlements, idle carts and closed support tickets, with a purged-row metric.

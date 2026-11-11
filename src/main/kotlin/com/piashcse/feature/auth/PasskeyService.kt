@@ -2,6 +2,8 @@ package com.piashcse.feature.auth
 
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.LoginResponse
+import com.piashcse.database.entities.PasskeyChallengeDAO
+import com.piashcse.database.entities.PasskeyChallengeTable
 import com.piashcse.database.entities.PasskeyCredentialDAO
 import com.piashcse.database.entities.PasskeyCredentialTable
 import com.piashcse.database.entities.UserDAO
@@ -20,13 +22,14 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.less
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import java.security.KeyFactory
 import java.security.MessageDigest
 import java.security.Signature
 import java.security.spec.X509EncodedKeySpec
 import java.util.Base64
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 
 @Serializable
 data class CredentialDescriptor(
@@ -93,8 +96,9 @@ data class PasskeyCredentialResponse(
 )
 
 /**
- * Minimal WebAuthn service. Challenges are kept in memory (5 minutes) because the API is
- * single-node; assertion verification uses the stored ES256 SPKI public key.
+ * WebAuthn service. Ceremony challenges are persisted for five minutes so a login/registration
+ * started on one node can be completed on another. Assertion verification uses the stored ES256
+ * SPKI public key.
  */
 class PasskeyService(
     private val authRepo: AuthRepository,
@@ -102,22 +106,12 @@ class PasskeyService(
     private val rpName: String,
     private val origin: String,
     private val mfaService: MfaService = MfaService(),
-    private val clock: () -> Long = System::currentTimeMillis,
 ) {
-    private data class Challenge(
-        val userId: String,
-        val type: String,
-        val expiresAt: Long,
-    )
-
-    private val challenges = ConcurrentHashMap<String, Challenge>()
     private val json = Json { ignoreUnknownKeys = true }
 
     suspend fun registerOptions(userId: String): PasskeyRegisterOptionsResponse {
-        purgeChallenges()
         val user = query { UserDAO.findById(userId) ?: userId.throwNotFound("User") }
-        val challenge = UUID.randomUUID().toString()
-        challenges[challenge] = Challenge(user.id.value, "register", clock() + 5 * 60_000)
+        val challenge = createChallenge(user.id.value, "register")
         val existing =
             query {
                 PasskeyCredentialDAO.find {
@@ -160,13 +154,11 @@ class PasskeyService(
     }
 
     suspend fun loginOptions(request: PasskeyLoginOptionsRequest): PasskeyLoginOptionsResponse {
-        purgeChallenges()
         val userType = UserType.fromString(request.userType) ?: throw ValidationException("Invalid user type")
         val user =
             authRepo.findUserByEmailAndType(request.email.lowercase(), userType)
                 ?: throw ValidationException("No passkey is registered for this account")
-        val challenge = UUID.randomUUID().toString()
-        challenges[challenge] = Challenge(user.id.value, "login", clock() + 5 * 60_000)
+        val challenge = createChallenge(user.id.value, "login")
         val credentials =
             query {
                 PasskeyCredentialDAO.find {
@@ -249,7 +241,7 @@ class PasskeyService(
             true
         }
 
-    private fun verifyClientData(
+    private suspend fun verifyClientData(
         encoded: String,
         expectedType: String,
         userId: String,
@@ -265,10 +257,20 @@ class PasskeyService(
         val actualOrigin = root["origin"]?.jsonPrimitive?.contentOrNull
         if (type != expectedType) throw ValidationException("Invalid WebAuthn ceremony type")
         if (actualOrigin != origin) throw ValidationException("Invalid WebAuthn origin")
-        val stored =
-            challenges.remove(challenge) ?: throw ValidationException("WebAuthn challenge expired")
-        if (stored.userId != userId || stored.type != expectedChallengeType || stored.expiresAt < clock()) {
-            throw ValidationException("Invalid WebAuthn challenge")
+        query {
+            val stored =
+                PasskeyChallengeDAO.find { PasskeyChallengeTable.challenge eq challenge }
+                    .forUpdate()
+                    .firstOrNull() ?: throw ValidationException("WebAuthn challenge expired")
+            if (stored.consumedAt != null ||
+                stored.userId.value != userId ||
+                stored.type != expectedChallengeType ||
+                !stored.expiresAt.isAfter(currentUtc())
+            ) {
+                throw ValidationException("Invalid WebAuthn challenge")
+            }
+            // Single-use: consume inside the same locked transaction.
+            stored.consumedAt = currentUtc()
         }
     }
 
@@ -296,10 +298,22 @@ class PasskeyService(
         }.getOrElse { throw ValidationException("Invalid passkey public key") }
     }
 
-    private fun purgeChallenges() {
-        val now = clock()
-        challenges.entries.removeIf { it.value.expiresAt < now }
-    }
+    private suspend fun createChallenge(
+        userId: String,
+        type: String,
+    ): String =
+        query {
+            val now = currentUtc()
+            PasskeyChallengeTable.deleteWhere { PasskeyChallengeTable.expiresAt less now }
+            val value = UUID.randomUUID().toString()
+            PasskeyChallengeDAO.new {
+                challenge = value
+                this.userId = userId.entityID(UserTable)
+                this.type = type
+                this.expiresAt = now.plusMinutes(5)
+            }
+            value
+        }
 
     private fun decode(value: String): ByteArray {
         val normalized = value.replace('-', '+').replace('_', '/')

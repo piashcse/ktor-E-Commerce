@@ -28,3 +28,22 @@ class PasskeyCredentialDAO(id: EntityID<String>) : BaseEntity(id, PasskeyCredent
     var name by PasskeyCredentialTable.name
     var lastUsedAt by PasskeyCredentialTable.lastUsedAt
 }
+
+/** Durable WebAuthn ceremony challenge (single-use, five-minute TTL). */
+object PasskeyChallengeTable : BaseIdTable("passkey_challenge") {
+    val challenge = varchar("challenge", 200).uniqueIndex()
+    val userId = reference("user_id", UserTable.id).index()
+    val type = varchar("type", 20)
+    val expiresAt = datetime("expires_at")
+    val consumedAt = datetime("consumed_at").nullable()
+}
+
+class PasskeyChallengeDAO(id: EntityID<String>) : BaseEntity(id, PasskeyChallengeTable) {
+    companion object : BaseEntityClass<PasskeyChallengeDAO>(PasskeyChallengeTable, PasskeyChallengeDAO::class.java)
+
+    var challenge by PasskeyChallengeTable.challenge
+    var userId by PasskeyChallengeTable.userId
+    var type by PasskeyChallengeTable.type
+    var expiresAt by PasskeyChallengeTable.expiresAt
+    var consumedAt by PasskeyChallengeTable.consumedAt
+}
