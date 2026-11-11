@@ -48,6 +48,11 @@ fun OrderDAO.toOrderResponse(items: List<OrderItemResponse>? = null) =
         attributionSource = attributionSource,
         attributionMedium = attributionMedium,
         attributionCampaign = attributionCampaign,
+        fulfillmentType = fulfillmentType,
+        pickupWarehouseId = pickupWarehouseId?.value,
+        pickupCode = pickupCode,
+        pickupStatus = pickupStatus,
+        pickedUpAt = pickedUpAt,
     )
 
 fun OrderItemDAO.toOrderItemResponse() =

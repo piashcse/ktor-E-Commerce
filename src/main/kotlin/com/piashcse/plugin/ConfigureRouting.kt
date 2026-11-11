@@ -42,6 +42,10 @@ import com.piashcse.feature.loyalty.referralRoutes
 import com.piashcse.feature.loyalty.walletAdminRoutes
 import com.piashcse.feature.loyalty.walletRoutes
 import com.piashcse.feature.notification.notificationRoutes
+import com.piashcse.feature.omnichannel.pickupActionRoutes
+import com.piashcse.feature.omnichannel.pickupSellerListRoutes
+import com.piashcse.feature.omnichannel.posSellerRoutes
+import com.piashcse.feature.omnichannel.storeLocatorRoutes
 import com.piashcse.feature.order.orderAdminRoutes
 import com.piashcse.feature.order.orderRoutes
 import com.piashcse.feature.order.orderSellerRoutes
@@ -214,6 +218,7 @@ private fun Route.customerRoutes() {
     route("b2b/account") { b2bAccountRoutes() }.describe { tag(ApiTags.B2B) }
     route("b2b/quotes") { b2bQuoteRoutes() }.describe { tag(ApiTags.B2B) }
     route("b2b/purchase-orders") { b2bPurchaseOrderRoutes() }.describe { tag(ApiTags.B2B) }
+    route("stores") { storeLocatorRoutes() }.describe { tag(ApiTags.OMNICHANNEL) }
     route("policies") { policyRoutes() }.describe { tag(ApiTags.POLICY) }
     route("policy-consents") { consentRoutes() }.describe { tag(ApiTags.CONSENT) }
     route("refund-requests") { refundRequestRoutes() }.describe { tag(ApiTags.REFUND) }
@@ -233,7 +238,12 @@ private fun Route.sellerRoutes() {
             route("inventories") { inventorySellerRoutes() }.describe { tag(ApiTags.INVENTORY) }
             route("warehouses") { warehouseSellerRoutes() }.describe { tag(ApiTags.WAREHOUSE) }
             route("kyc") { sellerKycRoutes() }.describe { tag(ApiTags.KYC) }
-            route("orders") { orderSellerRoutes() }.describe { tag(ApiTags.ORDER) }
+            route("orders") {
+                orderSellerRoutes()
+                pickupActionRoutes()
+            }.describe { tag(ApiTags.ORDER) }
+            route("pickup-orders") { pickupSellerListRoutes() }.describe { tag(ApiTags.OMNICHANNEL) }
+            route("pos/sales") { posSellerRoutes() }.describe { tag(ApiTags.OMNICHANNEL) }
             route("refund-requests") { refundSellerRoutes() }.describe { tag(ApiTags.REFUND) }
             route("rma-requests") { rmaSellerRoutes() }.describe { tag(ApiTags.RMA) }
             route("dashboard") { dashboardSellerRoutes() }.describe { tag(ApiTags.DASHBOARD) }

@@ -1,0 +1,17 @@
+-- BOPIS, POS and store locator.
+ALTER TABLE warehouse ADD COLUMN IF NOT EXISTS latitude DECIMAL(9, 6);
+ALTER TABLE warehouse ADD COLUMN IF NOT EXISTS longitude DECIMAL(9, 6);
+ALTER TABLE warehouse ADD COLUMN IF NOT EXISTS phone VARCHAR(30);
+ALTER TABLE warehouse ADD COLUMN IF NOT EXISTS opening_hours VARCHAR(100);
+ALTER TABLE warehouse ADD COLUMN IF NOT EXISTS supports_pickup BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE warehouse ADD COLUMN IF NOT EXISTS supports_pos BOOLEAN NOT NULL DEFAULT FALSE;
+
+CREATE INDEX IF NOT EXISTS warehouse_pickup_idx ON warehouse(supports_pickup, is_active);
+
+ALTER TABLE "order" ADD COLUMN IF NOT EXISTS fulfillment_type VARCHAR(20) NOT NULL DEFAULT 'DELIVERY';
+ALTER TABLE "order" ADD COLUMN IF NOT EXISTS pickup_warehouse_id VARCHAR(50) REFERENCES warehouse(id) ON DELETE SET NULL;
+ALTER TABLE "order" ADD COLUMN IF NOT EXISTS pickup_code VARCHAR(10);
+ALTER TABLE "order" ADD COLUMN IF NOT EXISTS pickup_status VARCHAR(20);
+ALTER TABLE "order" ADD COLUMN IF NOT EXISTS picked_up_at TIMESTAMP;
+
+CREATE INDEX IF NOT EXISTS order_pickup_idx ON "order"(pickup_warehouse_id, pickup_status);

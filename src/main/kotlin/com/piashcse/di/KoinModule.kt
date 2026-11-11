@@ -35,6 +35,7 @@ import com.piashcse.feature.notification.NotificationDispatcher
 import com.piashcse.feature.notification.NotificationPreferencesService
 import com.piashcse.feature.notification.NotificationRepository
 import com.piashcse.feature.notification.NotificationRepositoryImpl
+import com.piashcse.feature.omnichannel.OmnichannelService
 import com.piashcse.feature.order.OrderRepository
 import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.feature.outbox.OutboxService
@@ -115,6 +116,7 @@ val serviceModule =
         single { DigitalDeliveryService() }
         single { SubscriptionService(get()) }
         single { B2bService() }
+        single { OmnichannelService(get()) }
         single { ProductTranslationService() }
         single<OrderRepository> { OrderRepositoryImpl(get(), get(), get(), get()) }
         single<CarrierGateway> {

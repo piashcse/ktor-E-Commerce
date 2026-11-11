@@ -10614,6 +10614,150 @@ http://localhost:8080/api/v1/admin/b2b/purchase-orders
 {"data":[{"id":"po-1"}]}
 ```
 </details>
+### OMNICHANNEL / BOPIS / POS
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/stores?lat=23.81&lng=90.41&radiusKm=10</code></summary>
+
+### Description
+Find nearby pickup stores.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/stores?lat=23.81&lng=90.41&radiusKm=10' \
+  -H 'accept: application/json' \
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/stores?lat=23.81&lng=90.41&radiusKm=10
+```
+
+### Response
+```json
+[{"id":"store-1","name":"Dhaka Store","distanceKm":1.2}]
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/pickup-orders</code></summary>
+
+### Description
+Seller: list pickup orders.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/pickup-orders' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/pickup-orders
+```
+
+### Response
+```json
+{"data":[{"orderId":"order-uuid","pickupStatus":"PENDING"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/orders/{id}/pickup/ready</code></summary>
+
+### Description
+Seller: mark a pickup order ready.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/orders/order-uuid/pickup/ready' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/orders/{id}/pickup/ready
+```
+
+### Response
+```json
+{"orderId":"order-uuid","pickupStatus":"READY"}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/orders/{id}/pickup/complete</code></summary>
+
+### Description
+Seller: verify pickup code and complete.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/orders/order-uuid/pickup/complete' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"pickupCode":"ABC123"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/orders/{id}/pickup/complete
+```
+
+### Response
+```json
+{"orderId":"order-uuid","pickupStatus":"PICKED_UP"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/pos/sales</code></summary>
+
+### Description
+Seller: list POS sales.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/pos/sales' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/pos/sales
+```
+
+### Response
+```json
+{"data":[{"orderId":"order-uuid","fulfillmentType":"POS"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/pos/sales</code></summary>
+
+### Description
+Seller: create an in-store POS sale.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/pos/sales' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"items":[{"productId":"product-uuid","quantity":2}],"paymentMethod":"COD"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/pos/sales
+```
+
+### Response
+```json
+{"orderId":"order-uuid","fulfillmentType":"POS","total":"20.00"}
+```
+</details>
 ### TAX RULES
 
 <details>

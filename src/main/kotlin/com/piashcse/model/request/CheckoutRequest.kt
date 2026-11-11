@@ -1,5 +1,6 @@
 package com.piashcse.model.request
 
+import com.piashcse.constants.FulfillmentType
 import com.piashcse.constants.Localization
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.database.entities.SupportedCurrencies
@@ -41,6 +42,9 @@ data class CheckoutRequest(
     val locale: String = Localization.DEFAULT_LOCALE,
     /** Optional first-touch attribution captured by the storefront. */
     val attribution: CheckoutAttribution? = null,
+    /** DELIVERY (default) or PICKUP; POS sales use the dedicated POS endpoint. */
+    val fulfillmentType: FulfillmentType = FulfillmentType.DELIVERY,
+    val pickupWarehouseId: String? = null,
 ) {
     init {
         validate(this) {
