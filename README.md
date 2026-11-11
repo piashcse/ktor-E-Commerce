@@ -11027,6 +11027,79 @@ http://localhost:8080/api/v1/seller/orders/{id}/pickup/complete
 ```
 </details>
 <details>
+<summary> <code>GET</code> <code>/api/v1/seller/pos/sessions</code></summary>
+
+### Description
+Seller: list POS cash-drawer sessions.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/pos/sessions' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/pos/sessions
+```
+
+### Response
+```json
+{"data":[{"id":"session-1","status":"CLOSED","variance":"0.00"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/pos/sessions/open</code></summary>
+
+### Description
+Seller: open a POS cash-drawer session.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/pos/sessions/open' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"openingFloat":100.00,"warehouseId":"warehouse-uuid"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/pos/sessions/open
+```
+
+### Response
+```json
+{"id":"session-1","status":"OPEN","openingFloat":"100.00"}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/pos/sessions/{id}/close</code></summary>
+
+### Description
+Seller: count cash and close a POS session.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/pos/sessions/session-uuid/close' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"countedCash":121.00,"notes":"Counted by Alice"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/pos/sessions/{id}/close
+```
+
+### Response
+```json
+{"id":"session-1","status":"CLOSED","expectedCash":"121.00","variance":"0.00"}
+```
+</details>
+<details>
 <summary> <code>GET</code> <code>/api/v1/seller/pos/sales</code></summary>
 
 ### Description

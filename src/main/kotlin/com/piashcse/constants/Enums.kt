@@ -312,6 +312,12 @@ enum class PickupStatus {
 }
 
 @Serializable
+enum class PosSessionStatus {
+    OPEN,
+    CLOSED,
+}
+
+@Serializable
 enum class CmsPageStatus {
     DRAFT,
     PUBLISHED,

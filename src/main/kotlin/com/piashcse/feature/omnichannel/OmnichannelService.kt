@@ -5,10 +5,13 @@ import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.PickupStatus
+import com.piashcse.constants.PosSessionStatus
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemTable
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PaymentDAO
+import com.piashcse.database.entities.PosSessionDAO
+import com.piashcse.database.entities.PosSessionTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ProductVariantDAO
@@ -30,6 +33,7 @@ import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.mapper.toOrderResponse
 import com.piashcse.model.response.OrderResponse
+import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
@@ -37,15 +41,19 @@ import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.requireSellerByUserId
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.validator.FieldValidationException
 import com.piashcse.utils.validator.FieldViolation
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -90,6 +98,8 @@ data class PosSaleRequest(
     val paymentMethod: PaymentMethod = PaymentMethod.COD,
     val customerEmail: String? = null,
     val idempotencyKey: String? = null,
+    /** Optional open cash-drawer session; COD sales are counted as cash. */
+    val posSessionId: String? = null,
 ) {
     init {
         if (items.isEmpty()) throw FieldValidationException(listOf(FieldViolation("items", "At least one item is required")))
@@ -98,6 +108,50 @@ data class PosSaleRequest(
 
 @Serializable
 data class PickupCompleteRequest(val pickupCode: String)
+
+@Serializable
+data class PosSessionOpenRequest(
+    @Contextual val openingFloat: BigDecimal = BigDecimal.ZERO,
+    val warehouseId: String? = null,
+    val notes: String? = null,
+) {
+    init {
+        if (openingFloat < BigDecimal.ZERO) {
+            throw FieldValidationException(listOf(FieldViolation("openingFloat", "Opening float cannot be negative")))
+        }
+    }
+}
+
+@Serializable
+data class PosSessionCloseRequest(
+    @Contextual val countedCash: BigDecimal,
+    val notes: String? = null,
+) {
+    init {
+        if (countedCash < BigDecimal.ZERO) {
+            throw FieldValidationException(listOf(FieldViolation("countedCash", "Counted cash cannot be negative")))
+        }
+    }
+}
+
+@Serializable
+data class PosSessionResponse(
+    val id: String,
+    val shopId: String,
+    val warehouseId: String?,
+    val openedBy: String,
+    val status: PosSessionStatus,
+    val openingFloat: String,
+    val cashSales: String,
+    val cardSales: String,
+    val expectedCash: String?,
+    val countedCash: String?,
+    val variance: String?,
+    val openedAt: String,
+    val closedAt: String?,
+    val notes: String?,
+    val closeNotes: String?,
+)
 
 class OmnichannelService(
     private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
@@ -201,10 +255,21 @@ class OmnichannelService(
                         (OrderTable.idempotencyKey eq key)
                 }.firstOrNull()?.let { return@query it.toOrderResponse() }
             }
-            val warehouse =
-                request.warehouseId?.takeIf { it.isNotBlank() }?.let { warehouseId ->
+            val session =
+                request.posSessionId?.takeIf { it.isNotBlank() }?.let { sessionId ->
                     val row =
-                        WarehouseDAO.findById(warehouseId)
+                        PosSessionDAO.find {
+                            (PosSessionTable.id eq sessionId.entityID(PosSessionTable)) and
+                                (PosSessionTable.shopId eq shopId)
+                        }.forUpdate().firstOrNull() ?: throw ValidationException("POS session not found")
+                    if (row.status != PosSessionStatus.OPEN) throw ValidationException("POS session is closed")
+                    row
+                }
+            val warehouseId = request.warehouseId?.takeIf { it.isNotBlank() } ?: session?.warehouseId?.value
+            val warehouse =
+                warehouseId?.let { id ->
+                    val row =
+                        WarehouseDAO.findById(id)
                             ?: throw ValidationException("Warehouse not found")
                     if (row.shopId.value != shopId.value) throw ForbiddenException("Warehouse belongs to another shop")
                     if (!row.supportsPos) throw ValidationException("Warehouse does not support POS")
@@ -273,6 +338,7 @@ class OmnichannelService(
                     shippingMethod = "POS"
                     fulfillmentType = FulfillmentType.POS
                     paymentMethod = request.paymentMethod
+                    this.posSessionId = session?.id
                     notes = "In-store sale"
                 }
 
@@ -342,6 +408,13 @@ class OmnichannelService(
                     providerStatus = "pos"
                     scaStatus = com.piashcse.constants.ScaStatus.NOT_REQUIRED
                 }
+            session?.let {
+                if (request.paymentMethod == PaymentMethod.COD) {
+                    it.cashSales = Money.scale2(it.cashSales.add(order.total))
+                } else {
+                    it.cardSales = Money.scale2(it.cardSales.add(order.total))
+                }
+            }
             loyaltyService.earnForPaidOrderTx(customer.id.value, order.id.value, order.total)
             OutboxPublisher.enqueueTx(
                 "PAYMENT",
@@ -356,6 +429,76 @@ class OmnichannelService(
             )
             digitalDelivery.grantForOrderTx(order)
             order.toOrderResponse()
+        }
+
+    suspend fun openPosSession(
+        sellerUserId: String,
+        request: PosSessionOpenRequest,
+    ): PosSessionResponse =
+        query {
+            val seller = requireSellerByUserId(sellerUserId)
+            val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
+            val warehouse =
+                request.warehouseId?.takeIf { it.isNotBlank() }?.let { warehouseId ->
+                    val row =
+                        WarehouseDAO.findById(warehouseId)
+                            ?: throw ValidationException("Warehouse not found")
+                    if (row.shopId.value != shopId.value) throw ForbiddenException("Warehouse belongs to another shop")
+                    if (!row.supportsPos) throw ValidationException("Warehouse does not support POS")
+                    row
+                }
+            val existing =
+                PosSessionDAO.find {
+                    (PosSessionTable.shopId eq shopId) and (PosSessionTable.status eq PosSessionStatus.OPEN)
+                }.firstOrNull()
+            if (existing != null) throw ValidationException("A POS session is already open for this shop")
+            PosSessionDAO.new {
+                this.shopId = shopId
+                this.warehouseId = warehouse?.id
+                this.openedBy = sellerUserId.entityID(UserTable)
+                status = PosSessionStatus.OPEN
+                openingFloat = Money.scale2(request.openingFloat)
+                notes = request.notes
+            }.toResponse()
+        }
+
+    suspend fun closePosSession(
+        sellerUserId: String,
+        sessionId: String,
+        request: PosSessionCloseRequest,
+    ): PosSessionResponse =
+        query {
+            val seller = requireSellerByUserId(sellerUserId)
+            val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
+            val session =
+                PosSessionDAO.find {
+                    (PosSessionTable.id eq sessionId.entityID(PosSessionTable)) and
+                        (PosSessionTable.shopId eq shopId)
+                }.forUpdate().firstOrNull() ?: throw ValidationException("POS session not found")
+            if (session.status != PosSessionStatus.OPEN) throw ValidationException("POS session is already closed")
+            val expected = Money.scale2(session.openingFloat.add(session.cashSales))
+            val counted = Money.scale2(request.countedCash)
+            session.expectedCash = expected
+            session.countedCash = counted
+            session.variance = Money.scale2(counted.subtract(expected))
+            session.status = PosSessionStatus.CLOSED
+            session.closedAt = currentUtc()
+            session.closeNotes = request.notes
+            session.toResponse()
+        }
+
+    suspend fun posSessions(
+        sellerUserId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<PosSessionResponse> =
+        query {
+            val seller = requireSellerByUserId(sellerUserId)
+            val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
+            PosSessionTable.selectAll()
+                .where { PosSessionTable.shopId eq shopId }
+                .orderBy(PosSessionTable.openedAt to SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) { PosSessionDAO.wrapRow(it).toResponse() }
         }
 
     suspend fun posSales(
@@ -376,6 +519,25 @@ class OmnichannelService(
                 metadata = PaginationMetadata(totalCount = rows.size.toLong(), limit = limit, offset = offset),
             )
         }
+
+    private fun PosSessionDAO.toResponse() =
+        PosSessionResponse(
+            id = id.value,
+            shopId = shopId.value,
+            warehouseId = warehouseId?.value,
+            openedBy = openedBy.value,
+            status = status,
+            openingFloat = Money.str(openingFloat),
+            cashSales = Money.str(cashSales),
+            cardSales = Money.str(cardSales),
+            expectedCash = expectedCash?.let(Money::str),
+            countedCash = countedCash?.let(Money::str),
+            variance = variance?.let(Money::str),
+            openedAt = openedAt.toUtcString(),
+            closedAt = closedAt?.toUtcString(),
+            notes = notes,
+            closeNotes = closeNotes,
+        )
 
     private fun WarehouseDAO.toStoreResponse(
         latitude: Double?,

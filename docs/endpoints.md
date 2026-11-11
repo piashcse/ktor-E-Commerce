@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 353  
+**Operations:** 357  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -529,6 +529,9 @@ document served by Swagger UI.
 | `POST` | `/api/v1/seller/orders/{id}/pickup/complete` | Seller: verify pickup code and complete | Seller |
 | `GET` | `/api/v1/seller/pos/sales` | Seller: list POS sales | Seller |
 | `POST` | `/api/v1/seller/pos/sales` | Seller: create an in-store POS sale | Seller |
+| `GET` | `/api/v1/seller/pos/sessions` | Seller: list POS cash-drawer sessions | Seller |
+| `POST` | `/api/v1/seller/pos/sessions/open` | Seller: open a POS cash-drawer session | Seller |
+| `POST` | `/api/v1/seller/pos/sessions/{id}/close` | Seller: close and reconcile a POS session | Seller |
 
 ## CMS & SEO
 

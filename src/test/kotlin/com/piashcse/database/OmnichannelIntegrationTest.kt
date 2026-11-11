@@ -6,6 +6,7 @@ import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.PickupStatus
+import com.piashcse.constants.PosSessionStatus
 import com.piashcse.constants.ProductStatus
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
@@ -23,6 +24,8 @@ import com.piashcse.feature.cart.CartRepositoryImpl
 import com.piashcse.feature.omnichannel.OmnichannelService
 import com.piashcse.feature.omnichannel.PosSaleItem
 import com.piashcse.feature.omnichannel.PosSaleRequest
+import com.piashcse.feature.omnichannel.PosSessionCloseRequest
+import com.piashcse.feature.omnichannel.PosSessionOpenRequest
 import com.piashcse.feature.order.OrderRepositoryImpl
 import com.piashcse.model.request.CheckoutRequest
 import org.flywaydb.core.Flyway
@@ -198,6 +201,17 @@ class OmnichannelIntegrationTest {
         assertEquals(OrderStatus.RECEIVED, completed.status)
         assertTrue(completed.pickedUpAt != null)
 
+        val session =
+            kotlinx.coroutines.runBlocking {
+                service.openPosSession(
+                    sellerUserId,
+                    PosSessionOpenRequest(
+                        openingFloat = BigDecimal("100.00"),
+                        warehouseId = warehouseId,
+                    ),
+                )
+            }
+        assertEquals(PosSessionStatus.OPEN, session.status)
         val pos =
             kotlinx.coroutines.runBlocking {
                 service.posSale(
@@ -206,6 +220,7 @@ class OmnichannelIntegrationTest {
                         items = listOf(PosSaleItem(productId, 2)),
                         warehouseId = warehouseId,
                         paymentMethod = PaymentMethod.COD,
+                        posSessionId = session.id,
                     ),
                 )
             }
@@ -214,6 +229,15 @@ class OmnichannelIntegrationTest {
         assertEquals("21.00", pos.total)
         assertEquals(1, kotlinx.coroutines.runBlocking { service.posSales(sellerUserId, 10, 0) }.data.size)
         assertEquals(8, transaction { InventoryDAO.all().first { it.productId.value == productId }.stockQuantity })
+        val closed =
+            kotlinx.coroutines.runBlocking {
+                service.closePosSession(sellerUserId, session.id, PosSessionCloseRequest(BigDecimal("121.00")))
+            }
+        assertEquals(PosSessionStatus.CLOSED, closed.status)
+        assertEquals("21.00", closed.cashSales)
+        assertEquals("121.00", closed.expectedCash)
+        assertEquals("0.00", closed.variance)
+        assertEquals(1, kotlinx.coroutines.runBlocking { service.posSessions(sellerUserId, 10, 0) }.data.size)
 
         // BOPIS checkout no longer needs a shipping address/method and reserves from the store.
         kotlinx.coroutines.runBlocking { CartRepositoryImpl().createCart(customerId, productId, 1) }

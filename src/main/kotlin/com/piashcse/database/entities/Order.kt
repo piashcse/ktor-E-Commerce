@@ -40,6 +40,7 @@ object OrderTable : BaseIdTable("order") {
     val pickupCode = varchar("pickup_code", 10).nullable()
     val pickupStatus = enumerationByName("pickup_status", 20, PickupStatus::class).nullable()
     val pickedUpAt = datetime("picked_up_at").nullable()
+    val posSessionId = reference("pos_session_id", PosSessionTable.id).nullable()
 
     // USD → order-currency rate applied to all monetary fields in this order.
     val fxRate = decimal("fx_rate", 18, 6).default(BigDecimal.ONE)
@@ -95,6 +96,7 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
     var pickupCode by OrderTable.pickupCode
     var pickupStatus by OrderTable.pickupStatus
     var pickedUpAt by OrderTable.pickedUpAt
+    var posSessionId by OrderTable.posSessionId
     var fxRate by OrderTable.fxRate
     var paymentMethod by OrderTable.paymentMethod
     var paymentStatus by OrderTable.paymentStatus

@@ -5,11 +5,14 @@ import com.piashcse.RouteTestHelper.installTestInfra
 import com.piashcse.constants.FulfillmentType
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PickupStatus
+import com.piashcse.constants.PosSessionStatus
 import com.piashcse.feature.omnichannel.OmnichannelService
+import com.piashcse.feature.omnichannel.PosSessionResponse
 import com.piashcse.feature.omnichannel.StoreResponse
 import com.piashcse.feature.omnichannel.pickupActionRoutes
 import com.piashcse.feature.omnichannel.pickupSellerListRoutes
 import com.piashcse.feature.omnichannel.posSellerRoutes
+import com.piashcse.feature.omnichannel.posSessionSellerRoutes
 import com.piashcse.feature.omnichannel.storeLocatorRoutes
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.plugin.sellerAuth
@@ -58,6 +61,25 @@ class OmnichannelRoutesTest {
             pickupStatus = PickupStatus.READY,
         )
 
+    private fun session() =
+        PosSessionResponse(
+            id = "session-1",
+            shopId = "shop-1",
+            warehouseId = "store-1",
+            openedBy = "seller-user",
+            status = PosSessionStatus.OPEN,
+            openingFloat = "100.00",
+            cashSales = "21.00",
+            cardSales = "0.00",
+            expectedCash = null,
+            countedCash = null,
+            variance = null,
+            openedAt = "2026-06-01T00:00:00Z",
+            closedAt = null,
+            notes = null,
+            closeNotes = null,
+        )
+
     private fun ApplicationTestBuilder.setup() {
         application {
             installTestInfra(module { single { service } })
@@ -67,6 +89,7 @@ class OmnichannelRoutesTest {
                     route("orders") { sellerAuth { pickupActionRoutes() } }
                     route("pickup-orders") { sellerAuth { pickupSellerListRoutes() } }
                     route("pos/sales") { sellerAuth { posSellerRoutes() } }
+                    route("pos/sessions") { sellerAuth { posSessionSellerRoutes() } }
                 }
             }
         }
@@ -124,6 +147,37 @@ class OmnichannelRoutesTest {
                 }
             assertEquals(HttpStatusCode.OK, res.status)
             assertContains(res.bodyAsText(), "PICKED_UP")
+        }
+
+    @Test
+    fun `seller opens lists and closes POS sessions`() =
+        testApplication {
+            coEvery { service.openPosSession("seller-user", any()) } returns session()
+            coEvery { service.posSessions("seller-user", 20, 0) } returns
+                PaginatedResponse(listOf(session()), PaginationMetadata(1, 20, 0))
+            coEvery { service.closePosSession("seller-user", "session-1", any()) } returns
+                session().copy(status = PosSessionStatus.CLOSED, expectedCash = "121.00", countedCash = "121.00", variance = "0.00")
+            setup()
+            val opened =
+                client.post("/api/v1/seller/pos/sessions/open") {
+                    header(HttpHeaders.Authorization, authHeader(userId = "seller-user", userType = "SELLER"))
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"openingFloat":100.00,"warehouseId":"store-1"}""")
+                }
+            assertEquals(HttpStatusCode.Created, opened.status)
+            val listed =
+                client.get("/api/v1/seller/pos/sessions") {
+                    header(HttpHeaders.Authorization, authHeader(userId = "seller-user", userType = "SELLER"))
+                }
+            assertEquals(HttpStatusCode.OK, listed.status)
+            val closed =
+                client.post("/api/v1/seller/pos/sessions/session-1/close") {
+                    header(HttpHeaders.Authorization, authHeader(userId = "seller-user", userType = "SELLER"))
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"countedCash":121.00}""")
+                }
+            assertEquals(HttpStatusCode.OK, closed.status)
+            assertContains(closed.bodyAsText(), "CLOSED")
         }
 
     @Test
