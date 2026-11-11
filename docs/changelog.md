@@ -8,6 +8,9 @@ hide:
 
 ### Added
 
+- Funnel/attribution analytics (`V39`): anonymous storefront event ingestion, distinct-session
+  conversion funnels, UTM/referrer order attribution, and per-product view→cart→purchase reports.
+  Checkout accepts first-touch attribution and orders expose source/medium/campaign.
 - Internationalization (`V38`): `Accept-Language`/`X-Locale`/`?lang=` negotiation, translated API
   message catalogs for `en`/`es`/`fr`/`bn`/`hi`, localized product content, order/checkout locale
   persistence, and currency-aware formatted totals in checkout/order responses.
@@ -35,7 +38,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (267 operations total).
+  (271 operations total).
 
 ### Fixed
 

@@ -45,6 +45,9 @@ fun OrderDAO.toOrderResponse(items: List<OrderItemResponse>? = null) =
         giftCardCode = giftCardCode,
         locale = locale,
         formattedTotal = i18n.formatMoney(total, currency, locale),
+        attributionSource = attributionSource,
+        attributionMedium = attributionMedium,
+        attributionCampaign = attributionCampaign,
     )
 
 fun OrderItemDAO.toOrderItemResponse() =

@@ -212,6 +212,18 @@ enum class GiftCardStatus {
     VOID,
 }
 
+/** Storefront funnel event names. */
+@Serializable
+enum class AnalyticsEventType {
+    PAGE_VIEW,
+    PRODUCT_VIEW,
+    SEARCH,
+    ADD_TO_CART,
+    CHECKOUT_START,
+    PURCHASE,
+    SIGNUP,
+}
+
 @Serializable
 enum class PolicyType {
     PRIVACY_POLICY,

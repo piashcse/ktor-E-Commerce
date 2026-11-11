@@ -9520,6 +9520,102 @@ http://localhost:8080/api/v1/admin/products/{id}/translations/{locale}
 {"message":"ok"}
 ```
 </details>
+### ANALYTICS
+
+<details>
+<summary> <code>POST</code> <code>/api/v1/analytics/events</code></summary>
+
+### Description
+Ingest storefront funnel events (public, max 50).
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/analytics/events' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"events":[{"eventType":"PRODUCT_VIEW","sessionId":"sess_123","productId":"product-uuid"}]}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/analytics/events
+```
+
+### Response
+```json
+{"accepted":1,"rejected":0}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/analytics/funnel?startDate=2026-05-01&endDate=2026-05-31</code></summary>
+
+### Description
+Admin: conversion funnel report.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/analytics/funnel?startDate=2026-05-01&endDate=2026-05-31' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/analytics/funnel?startDate=2026-05-01&endDate=2026-05-31
+```
+
+### Response
+```json
+{"stages":[{"name":"page_view","sessions":1000}],"overallConversion":4.5}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/analytics/attribution?startDate=2026-05-01&endDate=2026-05-31</code></summary>
+
+### Description
+Admin: UTM/referrer attribution report.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/analytics/attribution?startDate=2026-05-01&endDate=2026-05-31' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/analytics/attribution?startDate=2026-05-01&endDate=2026-05-31
+```
+
+### Response
+```json
+{"rows":[{"source":"google","orders":12,"revenueUsd":"1200.00"}]}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/analytics/products?startDate=2026-05-01&endDate=2026-05-31</code></summary>
+
+### Description
+Admin: product view→cart→purchase conversion.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/analytics/products?startDate=2026-05-01&endDate=2026-05-31' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/analytics/products?startDate=2026-05-01&endDate=2026-05-31
+```
+
+### Response
+```json
+{"products":[{"productId":"p-1","views":100,"purchases":5}]}
+```
+</details>
 ### TAX RULES
 
 <details>

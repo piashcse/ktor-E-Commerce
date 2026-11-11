@@ -12,6 +12,15 @@ import org.valiktor.validate
 import java.math.BigDecimal
 
 @Serializable
+data class CheckoutAttribution(
+    val sessionId: String,
+    val source: String? = null,
+    val medium: String? = null,
+    val campaign: String? = null,
+    val referrer: String? = null,
+)
+
+@Serializable
 data class CheckoutRequest(
     val shippingAddressId: String,
     val shippingMethodId: String,
@@ -30,6 +39,8 @@ data class CheckoutRequest(
     val giftCardCode: String? = null,
     /** Checkout locale (en, es, fr, bn, hi); also used for formatted totals and emails. */
     val locale: String = Localization.DEFAULT_LOCALE,
+    /** Optional first-touch attribution captured by the storefront. */
+    val attribution: CheckoutAttribution? = null,
 ) {
     init {
         validate(this) {

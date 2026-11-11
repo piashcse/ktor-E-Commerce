@@ -70,6 +70,7 @@ nav:
       - Privacy Policy: privacy-policy.md
       - Privacy Policy Consent: privacy-policy-consent.md
       - Dashboard: dashboard.md
+      - Analytics: analytics.md
       - Audit Log: audit-log.md
   - Testing & Coverage: testing.md
   - Changelog: changelog.md

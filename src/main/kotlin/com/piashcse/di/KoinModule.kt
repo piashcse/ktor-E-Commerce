@@ -1,6 +1,7 @@
 package com.piashcse.di
 
 import com.piashcse.config.DotEnvConfig
+import com.piashcse.feature.analytics.AnalyticsService
 import com.piashcse.feature.apikey.ApiKeyService
 import com.piashcse.feature.audit_log.AuditLogRepository
 import com.piashcse.feature.audit_log.AuditLogRepositoryImpl
@@ -103,6 +104,7 @@ val serviceModule =
         single<InventoryRepository> { InventoryRepositoryImpl() }
         single { LoyaltyService() }
         single { I18nService() }
+        single { AnalyticsService() }
         single { ProductTranslationService() }
         single<OrderRepository> { OrderRepositoryImpl(get(), get(), get(), get()) }
         single<CarrierGateway> {

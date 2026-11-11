@@ -384,6 +384,11 @@ class OrderRepositoryImpl(
                 this.businessTaxId = businessTaxId
                 this.taxExempt = taxService.isExempt(userId, businessTaxId, context.shippingAddress.country)
                 this.locale = com.piashcse.constants.Localization.normalize(checkoutRequest.locale)
+                this.attributionSessionId = checkoutRequest.attribution?.sessionId
+                this.attributionSource = checkoutRequest.attribution?.source
+                this.attributionMedium = checkoutRequest.attribution?.medium
+                this.attributionCampaign = checkoutRequest.attribution?.campaign
+                this.attributionReferrer = checkoutRequest.attribution?.referrer
             }
 
         items.forEach { cartItem ->

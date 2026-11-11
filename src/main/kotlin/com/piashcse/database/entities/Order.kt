@@ -28,6 +28,11 @@ object OrderTable : BaseIdTable("order") {
     val giftCardDiscount = decimal("gift_card_discount", 10, 2).default(BigDecimal("0.00"))
     val giftCardCode = varchar("gift_card_code", 50).nullable()
     val locale = varchar("locale", 10).default("en")
+    val attributionSessionId = varchar("attribution_session_id", 100).nullable()
+    val attributionSource = varchar("attribution_source", 100).nullable()
+    val attributionMedium = varchar("attribution_medium", 100).nullable()
+    val attributionCampaign = varchar("attribution_campaign", 150).nullable()
+    val attributionReferrer = varchar("attribution_referrer", 500).nullable()
 
     // USD → order-currency rate applied to all monetary fields in this order.
     val fxRate = decimal("fx_rate", 18, 6).default(BigDecimal.ONE)
@@ -73,6 +78,11 @@ class OrderDAO(id: EntityID<String>) : BaseEntity(id, OrderTable) {
     var giftCardDiscount by OrderTable.giftCardDiscount
     var giftCardCode by OrderTable.giftCardCode
     var locale by OrderTable.locale
+    var attributionSessionId by OrderTable.attributionSessionId
+    var attributionSource by OrderTable.attributionSource
+    var attributionMedium by OrderTable.attributionMedium
+    var attributionCampaign by OrderTable.attributionCampaign
+    var attributionReferrer by OrderTable.attributionReferrer
     var fxRate by OrderTable.fxRate
     var paymentMethod by OrderTable.paymentMethod
     var paymentStatus by OrderTable.paymentStatus
