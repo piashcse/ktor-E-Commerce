@@ -6,6 +6,7 @@ import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.utils.extension.respondOk
+import io.ktor.http.HttpHeaders
 import io.ktor.server.request.receive
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
@@ -17,6 +18,11 @@ fun Route.analyticsRoutes() {
     generalRateLimit {
         post("events") {
             val body = call.receive<AnalyticsBatchRequest>()
+            val userAgent = call.request.headers[HttpHeaders.UserAgent]
+            if (!AnalyticsIngestPolicy.shouldIngest(body.consent, userAgent)) {
+                call.respondOk(AnalyticsIngestResponse(accepted = 0, rejected = body.events.size))
+                return@post
+            }
             call.respondOk(service.track(userId = null, events = body.events))
         }.describe {
             summary = "Ingest storefront analytics events"

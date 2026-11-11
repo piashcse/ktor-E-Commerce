@@ -58,11 +58,29 @@ data class AnalyticsEventRequest(
 }
 
 @Serializable
-data class AnalyticsBatchRequest(val events: List<AnalyticsEventRequest>) {
+data class AnalyticsBatchRequest(
+    val events: List<AnalyticsEventRequest>,
+    /** Explicit consent flag; ingestion is skipped when false. */
+    val consent: Boolean = true,
+) {
     init {
         if (events.isEmpty()) throw ValidationException("At least one event is required")
         if (events.size > 50) throw ValidationException("At most 50 events can be ingested per request")
     }
+}
+
+/** Consent and bot screening for public analytics ingestion. */
+object AnalyticsIngestPolicy {
+    private val botPattern =
+        Regex(
+            "(?i)(bot|crawler|spider|slurp|bingpreview|facebookexternalhit|headlesschrome|" +
+                "python-requests|python-urllib|curl/|wget|scrapy|httpclient|okhttp)",
+        )
+
+    fun shouldIngest(
+        consent: Boolean,
+        userAgent: String?,
+    ): Boolean = consent && !botPattern.containsMatchIn(userAgent.orEmpty())
 }
 
 @Serializable
