@@ -9616,6 +9616,342 @@ http://localhost:8080/api/v1/admin/analytics/products?startDate=2026-05-01&endDa
 {"products":[{"productId":"p-1","views":100,"purchases":5}]}
 ```
 </details>
+### SELLER TOOLS
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/sellers/{id}/reviews</code></summary>
+
+### Description
+Public active reviews for a seller.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/sellers/uuid/reviews' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/sellers/{id}/reviews
+```
+
+### Response
+```json
+{"data":[{"id":"rev-1","rating":5}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller-reviews</code></summary>
+
+### Description
+Customer reviews a seller after delivery.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller-reviews' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"orderId":"order-uuid","rating":5,"comment":"Great seller"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller-reviews
+```
+
+### Response
+```json
+{"id":"rev-1","rating":5}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/reviews</code></summary>
+
+### Description
+Seller: list reviews received.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/reviews' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/reviews
+```
+
+### Response
+```json
+{"data":[{"id":"rev-1"}]}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/seller-reviews</code></summary>
+
+### Description
+Admin: list seller reviews.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/seller-reviews' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/seller-reviews
+```
+
+### Response
+```json
+{"data":[{"id":"rev-1","status":"ACTIVE"}]}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/seller-reviews/{id}/status</code></summary>
+
+### Description
+Admin: moderate a seller review.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/seller-reviews/uuid/status' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"HIDDEN"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/seller-reviews/{id}/status
+```
+
+### Response
+```json
+{"id":"rev-1","status":"HIDDEN"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/disputes</code></summary>
+
+### Description
+List my disputes.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/disputes' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/disputes
+```
+
+### Response
+```json
+{"data":[{"id":"disp-1","status":"OPEN"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/disputes</code></summary>
+
+### Description
+Open a dispute.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/disputes' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"orderId":"order-uuid","type":"ORDER_ISSUE","subject":"Missing item","description":"One item missing"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/disputes
+```
+
+### Response
+```json
+{"id":"disp-1","status":"OPEN"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/disputes</code></summary>
+
+### Description
+Admin: list disputes.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/disputes' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/disputes
+```
+
+### Response
+```json
+{"data":[{"id":"disp-1","status":"OPEN"}]}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/disputes/{id}</code></summary>
+
+### Description
+Admin: resolve/update a dispute.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/disputes/uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"RESOLVED","resolution":"Refunded"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/disputes/{id}
+```
+
+### Response
+```json
+{"id":"disp-1","status":"RESOLVED"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/commission-rules</code></summary>
+
+### Description
+List commission rules.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/commission-rules' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/commission-rules
+```
+
+### Response
+```json
+{"data":[{"id":"rule-1","rate":"3.00"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/commission-rules</code></summary>
+
+### Description
+Create a commission rule.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/commission-rules' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Seller rate","sellerId":"seller-uuid","rate":3.00,"priority":10}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/commission-rules
+```
+
+### Response
+```json
+{"id":"rule-1","rate":"3.00"}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/commission-rules/{id}</code></summary>
+
+### Description
+Update a commission rule.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/commission-rules/uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Seller rate","sellerId":"seller-uuid","rate":3.00,"priority":10}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/commission-rules/{id}
+```
+
+### Response
+```json
+{"id":"rule-1","rate":"3.00"}
+```
+</details>
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/commission-rules/{id}</code></summary>
+
+### Description
+Delete a commission rule.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/commission-rules/uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/commission-rules/{id}
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/commission</code></summary>
+
+### Description
+Seller: effective commission rate.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/commission' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/commission
+```
+
+### Response
+```json
+{"rate":"3.00","source":"rule"}
+```
+</details>
 ### TAX RULES
 
 <details>

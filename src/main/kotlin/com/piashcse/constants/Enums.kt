@@ -224,6 +224,23 @@ enum class AnalyticsEventType {
     SIGNUP,
 }
 
+/** Buyer/seller dispute categories. */
+@Serializable
+enum class DisputeType {
+    ORDER_ISSUE,
+    PAYOUT,
+    REVIEW,
+    OTHER,
+}
+
+@Serializable
+enum class DisputeStatus {
+    OPEN,
+    UNDER_REVIEW,
+    RESOLVED,
+    REJECTED,
+}
+
 @Serializable
 enum class PolicyType {
     PRIVACY_POLICY,

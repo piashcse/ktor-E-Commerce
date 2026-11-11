@@ -8,6 +8,10 @@ hide:
 
 ### Added
 
+- Seller tools (`V40`): post-delivery seller reviews with shop rating aggregation, buyer/seller
+  disputes with an admin resolution lifecycle, and scope-aware commission rules
+  (seller > shop > category > seller default). Payouts and refund commission reversals now use the
+  resolved rule per line.
 - Funnel/attribution analytics (`V39`): anonymous storefront event ingestion, distinct-session
   conversion funnels, UTM/referrer order attribution, and per-product view→cart→purchase reports.
   Checkout accepts first-touch attribution and orders expose source/medium/campaign.
@@ -38,7 +42,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (271 operations total).
+  (285 operations total).
 
 ### Fixed
 
