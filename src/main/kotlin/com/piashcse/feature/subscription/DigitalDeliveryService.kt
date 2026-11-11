@@ -1,11 +1,12 @@
 package com.piashcse.feature.subscription
 
+import com.piashcse.constants.SubscriptionStatus
 import com.piashcse.database.entities.DigitalEntitlementDAO
 import com.piashcse.database.entities.DigitalEntitlementTable
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.database.entities.ProductDAO
-import com.piashcse.database.entities.SubscriptionTable
+import com.piashcse.database.entities.SubscriptionDAO
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.extension.entityID
@@ -81,23 +82,28 @@ class DigitalDeliveryService {
     ) {
         val product = ProductDAO.findById(productId) ?: return
         if (!product.isDigital) return
-        val exists =
+        val subscription =
+            SubscriptionDAO.findById(subscriptionId) ?: return
+        val existing =
             DigitalEntitlementDAO.find {
                 (DigitalEntitlementTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable)) and
                     (DigitalEntitlementTable.productId eq product.id) and
-                    (DigitalEntitlementTable.subscriptionId eq subscriptionId.entityID(SubscriptionTable))
-            }.any()
-        if (exists) return
+                    (DigitalEntitlementTable.subscriptionId eq subscription.id)
+            }.firstOrNull()
+        if (existing != null) {
+            existing.expiresAt = subscription.currentPeriodEnd
+            return
+        }
         DigitalEntitlementDAO.new {
             this.userId = userId.entityID(com.piashcse.database.entities.UserTable)
             this.productId = product.id
             this.orderId = null
-            this.subscriptionId = subscriptionId.entityID(SubscriptionTable)
+            this.subscriptionId = subscription.id
             this.downloadToken = UUID.randomUUID().toString()
             this.downloadUrl = product.digitalAssetUrl ?: "local://digital/${product.id.value}"
             this.fileName = product.digitalFileName ?: product.name
             this.maxDownloads = 50
-            this.expiresAt = null
+            this.expiresAt = subscription.currentPeriodEnd
         }
     }
 
@@ -118,7 +124,9 @@ class DigitalDeliveryService {
                     .forUpdate()
                     .firstOrNull() ?: token.throwNotFound("Download")
             if (entitlement.userId.value != userId) throw ForbiddenException("This download belongs to another account")
-            if (!entitlement.isActive()) throw ValidationException("Download is expired or has reached its limit")
+            if (!entitlement.isActive() || !subscriptionActive(entitlement.subscriptionId?.value)) {
+                throw ValidationException("Download is expired or has reached its limit")
+            }
             entitlement.downloadCount += 1
             DigitalDownloadResponse(
                 downloadUrl = entitlement.downloadUrl,
@@ -126,6 +134,12 @@ class DigitalDeliveryService {
                 remainingDownloads = (entitlement.maxDownloads - entitlement.downloadCount).coerceAtLeast(0),
             )
         }
+
+    private fun subscriptionActive(subscriptionId: String?): Boolean {
+        if (subscriptionId == null) return true
+        val subscription = SubscriptionDAO.findById(subscriptionId) ?: return false
+        return subscription.status == SubscriptionStatus.ACTIVE && subscription.currentPeriodEnd.isAfter(currentUtc())
+    }
 
     private fun DigitalEntitlementDAO.toLibraryItem(): DigitalLibraryItem {
         val product = ProductDAO.findById(productId.value)
@@ -139,7 +153,7 @@ class DigitalDeliveryService {
             maxDownloads = maxDownloads,
             remainingDownloads = (maxDownloads - downloadCount).coerceAtLeast(0),
             expiresAt = expiresAt?.toUtcString(),
-            active = isActive(),
+            active = isActive() && subscriptionActive(subscriptionId?.value),
             grantedByOrder = orderId?.value,
             grantedBySubscription = subscriptionId?.value,
         )

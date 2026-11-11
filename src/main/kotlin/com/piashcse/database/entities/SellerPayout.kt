@@ -11,6 +11,7 @@ object SellerPayoutTable : BaseIdTable("seller_payout") {
     val orderId = reference("order_id", OrderTable.id).index()
     val subTotal = decimal("sub_total", 12, 2)
     val commissionAmount = decimal("commission_amount", 12, 2)
+    val commissionRate = decimal("commission_rate", 5, 2).nullable()
     val payoutAmount = decimal("payout_amount", 12, 2)
     val currency = varchar("currency", 3).default("USD")
     val status = varchar("status", 20).default("PENDING").index()
@@ -42,6 +43,7 @@ class SellerPayoutDAO(id: EntityID<String>) : BaseEntity(id, SellerPayoutTable) 
     var orderId by SellerPayoutTable.orderId
     var subTotal by SellerPayoutTable.subTotal
     var commissionAmount by SellerPayoutTable.commissionAmount
+    var commissionRate by SellerPayoutTable.commissionRate
     var payoutAmount by SellerPayoutTable.payoutAmount
     var currency by SellerPayoutTable.currency
     var status by SellerPayoutTable.status

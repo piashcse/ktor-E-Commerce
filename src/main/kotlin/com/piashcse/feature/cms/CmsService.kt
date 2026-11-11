@@ -4,6 +4,7 @@ import com.piashcse.constants.CmsPageStatus
 import com.piashcse.constants.Localization
 import com.piashcse.constants.ProductStatus
 import com.piashcse.constants.SeoEntityType
+import com.piashcse.constants.ShopStatus
 import com.piashcse.database.entities.CmsPageDAO
 import com.piashcse.database.entities.CmsPageTable
 import com.piashcse.database.entities.ProductCategoryTable
@@ -11,6 +12,7 @@ import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.SeoMetadataDAO
 import com.piashcse.database.entities.SeoMetadataTable
+import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
@@ -24,6 +26,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -126,7 +129,7 @@ class CmsService {
                 slug = request.slug
                 title = request.title
                 excerpt = request.excerpt
-                body = request.body
+                body = sanitizeHtml(request.body)
                 status = request.status
                 seoTitle = request.seoTitle
                 seoDescription = request.seoDescription
@@ -150,7 +153,7 @@ class CmsService {
                 slug = request.slug
                 title = request.title
                 excerpt = request.excerpt
-                body = request.body
+                body = sanitizeHtml(request.body)
                 status = request.status
                 seoTitle = request.seoTitle
                 seoDescription = request.seoDescription
@@ -181,7 +184,24 @@ class CmsService {
                         (SeoMetadataTable.entityId eq entityId) and
                         (SeoMetadataTable.locale eq normalized)
                 }.firstOrNull()
-            row?.toResponse() ?: SeoMetadataResponse(entityType, entityId, normalized, null, null, null, null, null, false)
+            if (row != null) return@query row.toResponse()
+            if (entityType == SeoEntityType.PAGE && !entityId.isNullOrBlank()) {
+                val page = CmsPageDAO.find { CmsPageTable.slug eq entityId }.firstOrNull()
+                if (page != null) {
+                    return@query SeoMetadataResponse(
+                        entityType = entityType,
+                        entityId = entityId,
+                        locale = normalized,
+                        title = page.seoTitle ?: page.title,
+                        description = page.seoDescription ?: page.excerpt,
+                        keywords = null,
+                        canonicalUrl = page.canonicalUrl,
+                        ogImage = page.ogImage,
+                        noIndex = false,
+                    )
+                }
+            }
+            SeoMetadataResponse(entityType, entityId, normalized, null, null, null, null, null, false)
         }
 
     suspend fun upsertSeo(request: SeoMetadataRequest): SeoMetadataResponse =
@@ -220,9 +240,15 @@ class CmsService {
 
     suspend fun sitemap(baseUrl: String): String =
         query {
+            val approvedShops =
+                com.piashcse.database.entities.ShopDAO.find { ShopTable.status eq ShopStatus.APPROVED }
+                    .map { it.id }
+                    .toSet()
             val products =
                 ProductDAO.find {
-                    (ProductTable.status eq ProductStatus.ACTIVE) and (ProductTable.deletedAt.isNull())
+                    (ProductTable.status eq ProductStatus.ACTIVE) and
+                        (ProductTable.deletedAt.isNull()) and
+                        (ProductTable.shopId inList approvedShops)
                 }.take(5000)
             val categories = ProductCategoryTable.selectAll().limit(1000).map { it[ProductCategoryTable.id].value }
             val pages =
@@ -263,6 +289,12 @@ class CmsService {
             )
         }
     }
+
+    private fun sanitizeHtml(html: String): String =
+        html
+            .replace(Regex("(?is)<(script|style|iframe)[^>]*>.*?</\\1>"), "")
+            .replace(Regex("(?i)\\son\\w+\\s*=\\s*(\"[^\"]*\"|'[^']*'|[^\\s>]+)"), "")
+            .replace(Regex("(?i)javascript:"), "")
 
     private fun CmsPageDAO.toResponse() =
         CmsPageResponse(

@@ -27,6 +27,7 @@ object UserTable : BaseIdTable("user") {
     val mfaEnabled = bool("mfa_enabled").default(false)
     val socialProvider = varchar("social_provider", 30).nullable()
     val socialSubject = varchar("social_subject", 255).nullable()
+    val mfaLastUsedStep = long("mfa_last_used_step").nullable()
 
     init {
         uniqueIndex("email_userType_idx", email, userType)
@@ -50,6 +51,7 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     var mfaEnabled by UserTable.mfaEnabled
     var socialProvider by UserTable.socialProvider
     var socialSubject by UserTable.socialSubject
+    var mfaLastUsedStep by UserTable.mfaLastUsedStep
 
     /**
      * Get the seller information if the user is a seller

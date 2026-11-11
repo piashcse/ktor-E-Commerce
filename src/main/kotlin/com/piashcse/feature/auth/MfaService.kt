@@ -24,7 +24,9 @@ data class MfaCodeRequest(val code: String)
  * RFC 6238 TOTP (SHA-1, 6 digits, 30-second period, ±1 step window).
  * Secrets are stored per user and MFA is enabled only after a valid code.
  */
-class MfaService {
+class MfaService(
+    private val cipher: MfaSecretCipher = MfaSecretCipher.fromConfig(),
+) {
     private val random = SecureRandom()
 
     suspend fun setup(userId: String): MfaSetupResponse =
@@ -32,7 +34,7 @@ class MfaService {
             val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
             if (user.mfaEnabled) throw ValidationException("MFA is already enabled")
             val secret = Base32.encode(ByteArray(20).also { random.nextBytes(it) })
-            user.mfaSecret = secret
+            user.mfaSecret = cipher.encrypt(secret)
             user.mfaEnabled = false
             MfaSetupResponse(secret, otpauthUrl(user.email, secret))
         }
@@ -45,7 +47,7 @@ class MfaService {
             val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
             if (user.mfaEnabled) return@query true
             val secret = user.mfaSecret ?: throw ValidationException("Start MFA setup first")
-            if (!verify(secret, code)) throw ValidationException("Invalid MFA code")
+            if (!verify(cipher.decrypt(secret), code)) throw ValidationException("Invalid MFA code")
             user.mfaEnabled = true
             true
         }
@@ -58,7 +60,7 @@ class MfaService {
             val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
             if (!user.mfaEnabled) return@query true
             val secret = user.mfaSecret ?: throw ValidationException("MFA is not configured")
-            if (!verify(secret, code)) throw ValidationException("Invalid MFA code")
+            if (!verify(cipher.decrypt(secret), code)) throw ValidationException("Invalid MFA code")
             user.mfaEnabled = false
             user.mfaSecret = null
             true
@@ -73,17 +75,38 @@ class MfaService {
             val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
             if (!user.mfaEnabled) return@query true
             val secret = user.mfaSecret ?: return@query false
-            code != null && verify(secret, code)
+            code != null && verify(cipher.decrypt(secret), code)
         }
+
+    fun verifyStoredSecret(
+        storedSecret: String,
+        code: String,
+        nowMillis: Long = System.currentTimeMillis(),
+    ): Boolean = verifyStoredStep(storedSecret, code, nowMillis) != null
+
+    fun verifyStoredStep(
+        storedSecret: String,
+        code: String,
+        nowMillis: Long = System.currentTimeMillis(),
+    ): Long? = verifyStep(cipher.decrypt(storedSecret), code, nowMillis)
 
     fun verify(
         secret: String,
         code: String,
         nowMillis: Long = System.currentTimeMillis(),
-    ): Boolean {
-        if (!code.matches(Regex("\\d{6}"))) return false
-        val step = nowMillis / 1000 / 30
-        return (-1L..1L).any { generateCode(secret, step + it) == code }
+    ): Boolean = verifyStep(secret, code, nowMillis) != null
+
+    /** Returns the matched TOTP step so callers can reject replay of the same step. */
+    fun verifyStep(
+        secret: String,
+        code: String,
+        nowMillis: Long = System.currentTimeMillis(),
+    ): Long? {
+        if (!code.matches(Regex("\\d{6}"))) return null
+        val current = nowMillis / 1000 / 30
+        return (-1L..1L).firstOrNull { offset ->
+            generateCode(secret, current + offset) == code
+        }?.let { current + it }
     }
 
     fun generateCode(

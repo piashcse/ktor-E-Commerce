@@ -16,6 +16,7 @@ object ShipmentTable : BaseIdTable("shipment") {
     val trackingNumber = varchar("tracking_number", 100).nullable().index()
     val labelUrl = text("label_url").nullable()
     val providerReference = varchar("provider_reference", 150).nullable().index()
+    val idempotencyKey = varchar("idempotency_key", 100).nullable()
     val rateId = varchar("rate_id", 150).nullable()
     val rateAmount = decimal("rate_amount", 10, 2).nullable()
     val currency = varchar("currency", 3).default("USD")
@@ -33,6 +34,7 @@ class ShipmentDAO(id: EntityID<String>) : BaseEntity(id, ShipmentTable) {
     var trackingNumber by ShipmentTable.trackingNumber
     var labelUrl by ShipmentTable.labelUrl
     var providerReference by ShipmentTable.providerReference
+    var idempotencyKey by ShipmentTable.idempotencyKey
     var rateId by ShipmentTable.rateId
     var rateAmount by ShipmentTable.rateAmount
     var currency by ShipmentTable.currency

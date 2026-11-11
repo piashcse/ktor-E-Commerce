@@ -42,7 +42,7 @@ import org.koin.ktor.ext.inject
 data class OtpVerificationRequest(val userId: String, val otp: String)
 
 @Serializable
-data class SocialLoginRequest(val idToken: String)
+data class SocialLoginRequest(val idToken: String, val mfaCode: String? = null)
 
 /**
  * Authentication and registration routes.
@@ -73,7 +73,8 @@ fun Route.authRoutes() {
          * Social login with a Google ID token
          */
         post("social/google") {
-            call.respondOk(socialAuthService.googleLogin(call.receive<SocialLoginRequest>().idToken))
+            val body = call.receive<SocialLoginRequest>()
+            call.respondOk(socialAuthService.googleLogin(body.idToken, body.mfaCode))
         }.describe {
             summary = "Google social login"
             description = "Verifies a Google ID token and returns app tokens"

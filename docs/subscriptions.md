@@ -41,10 +41,10 @@ Admin CRUD:
 }
 ```
 
-- Creates an `ACTIVE` subscription.
+- With a `paymentReference`, creates an `ACTIVE` subscription with a paid invoice.
+- Without a reference, creates a `PENDING` subscription and a `PENDING` invoice; no entitlement is granted until payment is recorded.
 - Period starts now and ends after one month/year (plus trial days).
-- Records a paid invoice (or `PENDING` when no reference is supplied).
-- Grants a digital entitlement when the plan’s product is digital.
+- Grants a digital entitlement when the plan’s product is digital and payment is confirmed.
 - Rejects duplicate active subscriptions for the same plan.
 
 Other endpoints:
@@ -60,12 +60,20 @@ Other endpoints:
 Processes every `ACTIVE` subscription whose period has ended:
 
 - `cancelAtPeriodEnd = true` → status becomes `CANCELED`
-- otherwise: creates a paid invoice, advances the period and re-grants digital access
+- otherwise: creates a `PENDING` renewal invoice and sets the subscription `PAST_DUE`
 
-Returns `{ "renewed": N, "canceled": M }`.
+Returns `{ "invoicesCreated": N, "canceled": M }`.
 
-This is a manual/scheduled billing run; provider-specific recurring charges remain a deployment
-integration (the invoice records `manual-renewal` unless a provider reference is added).
+Confirm the renewal payment and reactivate:
+
+**`POST /api/v1/admin/subscriptions/{id}/activate`**
+
+```json
+{ "paymentReference": "pay_renewal" }
+```
+
+Marks the pending invoice paid, advances the period, sets the subscription `ACTIVE`, and refreshes
+the digital entitlement expiry.
 
 ## Digital goods
 
@@ -111,5 +119,6 @@ Digital-only orders have **zero shipping cost** and the order shipping method is
 - Rejects expired/exhausted downloads.
 - Increments the download count and returns the asset URL and remaining count.
 
-Subscription entitlements have a higher download limit (50) and no expiry; one-off order
-entitlements allow 5 downloads and expire after one year.
+Subscription entitlements have a higher download limit (50) and expire at the end of the current
+paid period. Canceled/PAST_DUE/expired subscriptions no longer expose active downloads; one-off
+order entitlements allow 5 downloads and expire after one year.

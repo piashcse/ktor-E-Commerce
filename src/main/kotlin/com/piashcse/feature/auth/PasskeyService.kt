@@ -78,6 +78,7 @@ data class PasskeyLoginRequest(
     val clientDataJson: String,
     val authenticatorData: String,
     val signature: String,
+    val mfaCode: String? = null,
 )
 
 @Serializable
@@ -100,6 +101,7 @@ class PasskeyService(
     private val rpId: String,
     private val rpName: String,
     private val origin: String,
+    private val mfaService: MfaService = MfaService(),
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
     private data class Challenge(
@@ -112,6 +114,7 @@ class PasskeyService(
     private val json = Json { ignoreUnknownKeys = true }
 
     suspend fun registerOptions(userId: String): PasskeyRegisterOptionsResponse {
+        purgeChallenges()
         val user = query { UserDAO.findById(userId) ?: userId.throwNotFound("User") }
         val challenge = UUID.randomUUID().toString()
         challenges[challenge] = Challenge(user.id.value, "register", clock() + 5 * 60_000)
@@ -157,6 +160,7 @@ class PasskeyService(
     }
 
     suspend fun loginOptions(request: PasskeyLoginOptionsRequest): PasskeyLoginOptionsResponse {
+        purgeChallenges()
         val userType = UserType.fromString(request.userType) ?: throw ValidationException("Invalid user type")
         val user =
             authRepo.findUserByEmailAndType(request.email.lowercase(), userType)
@@ -181,21 +185,43 @@ class PasskeyService(
         val user =
             authRepo.findUserByEmailAndType(request.email.lowercase(), userType)
                 ?: throw ValidationException("Invalid passkey login")
-        val credential =
-            query {
+        if (!user.isActive) throw ValidationException("Account has been deactivated")
+        if (user.mfaEnabled) {
+            val secret = user.mfaSecret ?: throw ValidationException("MFA is not configured")
+            if (request.mfaCode.isNullOrBlank()) throw com.piashcse.utils.validator.MfaRequiredException()
+            if (!mfaService.verifyStoredSecret(secret, request.mfaCode)) {
+                throw com.piashcse.utils.validator.InvalidMfaCodeException()
+            }
+        }
+
+        verifyClientData(request.clientDataJson, "webauthn.get", user.id.value, "login")
+        val authenticatorData = decode(request.authenticatorData)
+        val rpIdHash = MessageDigest.getInstance("SHA-256").digest(rpId.toByteArray())
+        if (authenticatorData.size < 37 || !authenticatorData.copyOfRange(0, 32).contentEquals(rpIdHash)) {
+            throw ValidationException("Authenticator is not bound to this relying party")
+        }
+        val flags = authenticatorData[32].toInt() and 0xff
+        if (flags and 0x01 == 0) throw ValidationException("User presence is required")
+        val newSignCount =
+            ((authenticatorData[33].toLong() and 0xff) shl 24) or
+                ((authenticatorData[34].toLong() and 0xff) shl 16) or
+                ((authenticatorData[35].toLong() and 0xff) shl 8) or
+                (authenticatorData[36].toLong() and 0xff)
+
+        query {
+            val credential =
                 PasskeyCredentialDAO.find {
                     (PasskeyCredentialTable.credentialId eq request.credentialId) and
                         (PasskeyCredentialTable.userId eq user.id)
-                }.firstOrNull()
-            } ?: throw ValidationException("Invalid passkey login")
-
-        verifyClientData(request.clientDataJson, "webauthn.get", user.id.value, "login")
-        if (!verifySignature(credential, request.clientDataJson, request.authenticatorData, request.signature)) {
-            throw ValidationException("Invalid passkey signature")
-        }
-        if (!user.isActive) throw ValidationException("Account has been deactivated")
-        query {
-            credential.signCount = maxOf(credential.signCount, 0)
+                }.forUpdate().firstOrNull()
+                    ?: throw ValidationException("Invalid passkey login")
+            if (!verifySignature(credential, request.clientDataJson, request.authenticatorData, request.signature)) {
+                throw ValidationException("Invalid passkey signature")
+            }
+            if (credential.signCount > 0 && newSignCount <= credential.signCount) {
+                throw ValidationException("Passkey counter regression; credential may be cloned")
+            }
+            credential.signCount = maxOf(credential.signCount, newSignCount)
             credential.lastUsedAt = currentUtc()
         }
         val tokens = authRepo.generateTokenPair(user.id.value, user.email, user.userType.name)
@@ -268,6 +294,11 @@ class PasskeyService(
         runCatching {
             KeyFactory.getInstance("EC").generatePublic(X509EncodedKeySpec(decode(publicKey)))
         }.getOrElse { throw ValidationException("Invalid passkey public key") }
+    }
+
+    private fun purgeChallenges() {
+        val now = clock()
+        challenges.entries.removeIf { it.value.expiresAt < now }
     }
 
     private fun decode(value: String): ByteArray {

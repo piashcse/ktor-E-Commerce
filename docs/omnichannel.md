@@ -69,6 +69,7 @@ Checkout accepts:
 
 - The warehouse must be active, support pickup, and belong to the selling shop.
 - Pickup orders must contain items from one shop.
+- Pickup readiness/completion requires a paid, non-canceled order.
 - Shipping cost is zero and the order shipping method is `PICKUP`.
 - A 6-character `pickupCode` and `pickupStatus = PENDING` are stored on the order.
 - Order responses expose `fulfillmentType`, `pickupWarehouseId`, `pickupCode`, `pickupStatus` and `pickedUpAt`.
@@ -107,10 +108,13 @@ Completion sets `pickupStatus = PICKED_UP`, the order status to `RECEIVED`, and 
 
 - Optionally validated against a POS-enabled warehouse owned by the seller.
 - All items must belong to the seller’s shop.
-- Creates a completed order with `fulfillmentType = POS`, `shippingMethod = POS`, zero shipping and
-  zero tax.
-- Decrements stock, increments sales counters, records a completed manual payment and grants any
-  digital entitlements.
+- Creates a completed order with `fulfillmentType = POS`, `shippingMethod = POS` and zero shipping.
+- Tax is calculated from the POS warehouse country and the normal tax rules.
+- `idempotencyKey` can be supplied to make retries safe.
+- Stock is decremented at the selected POS warehouse.
+- Decrements stock, increments sales counters, records a completed manual payment, grants digital
+  entitlements, awards loyalty points and emits the normal payment-completed event (seller payouts,
+  commission and notifications).
 - Returns `201 Created` with the order.
 
 **`GET /api/v1/seller/pos/sales`** lists the seller’s POS sales with pagination.

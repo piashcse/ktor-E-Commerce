@@ -43,7 +43,8 @@ Checkout body:
 ```
 
 `walletCredit` is in **USD** and is converted with the order FX rate. Redemptions are applied after
-coupons/promotions and capped at the order total. Points/credit/gift-card debits are recorded in
+coupons/promotions and capped at the order total **before** points/credit are debited, so unused
+balances are never burned. Points/credit/gift-card debits are recorded in
 `wallet_ledger`/`gift_card_redemption` and the order stores `walletDiscount` and
 `giftCardDiscount`.
 

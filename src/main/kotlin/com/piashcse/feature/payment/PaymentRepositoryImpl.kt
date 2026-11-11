@@ -355,15 +355,9 @@ class PaymentRepositoryImpl(
                     this.payload = payload
                     this.status = WebhookEventStatus.RECEIVED
                 }
-            val applied =
-                try {
-                    applyWebhookEvent(event)
-                } catch (e: Exception) {
-                    record.status = WebhookEventStatus.FAILED
-                    record.error = e.message
-                    record.processedAt = currentUtc()
-                    false
-                }
+            // Let unexpected failures roll back and surface as 5xx so the provider retries.
+            // Only logically ignored events are acknowledged with 200.
+            val applied = applyWebhookEvent(event)
             if (applied) {
                 record.status = WebhookEventStatus.PROCESSED
                 record.processedAt = currentUtc()

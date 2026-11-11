@@ -121,7 +121,7 @@ val serviceModule =
         single { DigitalDeliveryService() }
         single { SubscriptionService(get()) }
         single { B2bService() }
-        single { OmnichannelService(get()) }
+        single { OmnichannelService(get(), get(), get()) }
         single { CmsService() }
         single { SupportService() }
         single { ProductTranslationService() }
@@ -191,8 +191,8 @@ val serviceModule =
         // Split auth services
         single { MfaService() }
         single { GoogleTokenVerifier(DotEnvConfig.googleClientId) }
-        single { SocialAuthService(get(), get()) }
-        single { PasskeyService(get(), DotEnvConfig.webauthnRpId, DotEnvConfig.webauthnRpName, DotEnvConfig.webauthnOrigin) }
+        single { SocialAuthService(get(), get(), get()) }
+        single { PasskeyService(get(), DotEnvConfig.webauthnRpId, DotEnvConfig.webauthnRpName, DotEnvConfig.webauthnOrigin, get()) }
         single { UserAuthenticationService(get(), get()) }
 
         // Split product services

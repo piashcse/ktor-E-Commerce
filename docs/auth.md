@@ -132,7 +132,7 @@ curl -X 'POST' \
   -d '{
     "email": "piash@gmail.com",
     "password": "Str0ng!Pass",
-    "userType": "admin"
+    "userType": "customer"
   }'
 ```
 
@@ -626,8 +626,10 @@ curl -X 'POST' \
 **`POST /api/v1/auth/social/google`**
 
 ```json
-{ "idToken": "google-id-token" }
+{ "idToken": "google-id-token", "mfaCode": "123456" }
 ```
+
+`mfaCode` is required when the linked account has TOTP MFA enabled.
 
 The server verifies the token through Google's `tokeninfo` endpoint and checks:
 
@@ -677,7 +679,8 @@ curl -X POST 'http://localhost:8080/api/v1/auth/passkeys/register/options' \
   "credentialId": "base64url-credential-id",
   "clientDataJson": "base64url-client-data",
   "authenticatorData": "base64url-authenticator-data",
-  "signature": "base64url-signature"
+  "signature": "base64url-signature",
+  "mfaCode": "123456"
 }
 ```
 
@@ -697,7 +700,9 @@ WEBAUTHN_RP_NAME=Ktor E-Commerce
 WEBAUTHN_ORIGIN=http://localhost:3000
 ```
 
-Passkey login returns the same access/refresh token pair as password login.
+Passkey login returns the same access/refresh token pair as password login. When the account has
+TOTP MFA enabled, `mfaCode` is required. The authenticator RP-ID hash, user-presence flag and
+signature counter are validated; a counter regression is rejected.
 
 ---
 
@@ -777,7 +782,9 @@ All passwords must meet the following criteria:
 ### Multi-Factor Authentication (TOTP)
 - RFC 6238 TOTP with SHA-1, 6 digits and a 30-second period
 - One time step of clock drift is accepted in either direction
-- The secret is generated server-side and stored per user; enable/disable requires a valid code
+- The secret is generated server-side and stored AES-GCM encrypted (`MFA_ENCRYPTION_KEY`, falling
+  back to `JWT_SECRET` in development); enable/disable requires a valid code
+- A TOTP time step can only be used once, preventing code replay within the 30-second window
 - When MFA is enabled, login must include `mfaCode`
 - Missing code returns `401 MFA_REQUIRED`; an incorrect code returns `401 INVALID_MFA_CODE`
 - Failed MFA attempts count toward the same 5-attempt lockout as bad passwords

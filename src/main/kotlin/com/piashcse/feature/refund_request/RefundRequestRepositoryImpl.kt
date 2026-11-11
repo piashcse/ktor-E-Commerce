@@ -197,16 +197,21 @@ class RefundRequestRepositoryImpl(
 
         // Seller totals and payout ledger.
         SellerDAO.find { SellerTable.shopId eq order.shopId }.firstOrNull()?.let { seller ->
-            val commissionShare = CommissionService().commissionForItemTx(order, orderItem, seller, refundAmount)
-            seller.totalSales = seller.totalSales.subtract(refundAmount).max(BigDecimal.ZERO)
-            seller.totalCommission = seller.totalCommission.subtract(commissionShare).max(BigDecimal.ZERO)
+            val fallbackRate = CommissionService().resolveRateTx(seller, null)
+            var totalCommissionReversed = BigDecimal.ZERO
             SellerPayoutDAO.find { SellerPayoutTable.orderId eq order.id }.forEach { payout ->
+                // Use the rate snapshot from the original payout; current rules may have changed.
+                val rate = payout.commissionRate ?: fallbackRate
+                val commissionShare = Money.commission(refundAmount, rate)
                 payout.payoutAmount = payout.payoutAmount.subtract(refundAmount).max(BigDecimal.ZERO)
                 payout.commissionAmount = payout.commissionAmount.subtract(commissionShare).max(BigDecimal.ZERO)
+                totalCommissionReversed = totalCommissionReversed.add(commissionShare)
                 if (payout.payoutAmount.compareTo(BigDecimal.ZERO) == 0) {
                     payout.status = "REFUNDED"
                 }
             }
+            seller.totalSales = seller.totalSales.subtract(refundAmount).max(BigDecimal.ZERO)
+            seller.totalCommission = seller.totalCommission.subtract(totalCommissionReversed).max(BigDecimal.ZERO)
         }
 
         // Refund ledger entry so the original payment is no longer the last word.
@@ -252,7 +257,7 @@ class RefundRequestRepositoryImpl(
                     OrderItemDAO.findById(refund.orderItemId.value)
                         ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
                 val maxRefundAmount = maxRefundableAmount(order, orderItem, refund.quantity)
-                validateRefundAmounts(order, request, maxRefundAmount)
+                validateRefundAmounts(order, orderItem, refund.quantity, request, maxRefundAmount)
 
                 val payment =
                     PaymentDAO.find {
@@ -305,7 +310,7 @@ class RefundRequestRepositoryImpl(
                 OrderItemDAO.findById(refundReq.orderItemId.value)
                     ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
             val maxRefundAmount = maxRefundableAmount(order, orderItem, refundReq.quantity)
-            validateRefundAmounts(order, request, maxRefundAmount)
+            validateRefundAmounts(order, orderItem, refundReq.quantity, request, maxRefundAmount)
             if (request.status == RefundStatus.REFUNDED && request.refundAmount == null && refundReq.refundAmount == null) {
                 throw ValidationException(Message.Refunds.REFUND_AMOUNT_REQUIRED)
             }
@@ -356,6 +361,8 @@ class RefundRequestRepositoryImpl(
 
     private fun validateRefundAmounts(
         order: OrderDAO,
+        orderItem: OrderItemDAO,
+        refundQuantity: Int,
         request: UpdateRefundStatusRequest,
         maxRefundAmount: BigDecimal,
     ) {
@@ -365,8 +372,25 @@ class RefundRequestRepositoryImpl(
             }
         }
         request.refundTaxAmount?.let { amount ->
-            if (amount < BigDecimal.ZERO || amount > order.taxAmount) {
-                throw ValidationException("Tax refund cannot exceed the order tax amount")
+            // Inclusive lines already contain tax in the item total; a separate tax refund would double-pay.
+            if (orderItem.taxInclusive && amount > BigDecimal.ZERO) {
+                throw ValidationException("Tax-inclusive items cannot be given a separate tax refund")
+            }
+            val itemTaxShare =
+                if (orderItem.taxInclusive || orderItem.quantity == 0) {
+                    BigDecimal.ZERO
+                } else {
+                    orderItem.taxAmount
+                        .multiply(BigDecimal(refundQuantity))
+                        .divide(BigDecimal(orderItem.quantity), 2, java.math.RoundingMode.HALF_UP)
+                }
+            val alreadyRefundedTax =
+                RefundRequestDAO.find {
+                    (RefundRequestTable.orderItemId eq orderItem.id) and
+                        (RefundRequestTable.status eq RefundStatus.REFUNDED)
+                }.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.taxRefund) }
+            if (amount < BigDecimal.ZERO || amount > itemTaxShare.subtract(alreadyRefundedTax).max(BigDecimal.ZERO)) {
+                throw ValidationException("Tax refund cannot exceed the remaining tax on this item")
             }
         }
         request.refundAmount?.let { amount ->

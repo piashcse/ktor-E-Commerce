@@ -16,8 +16,6 @@ Authorization: Bearer <your_access_token>
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
 | `POST` | `/api/v1/payments` | Create a payment intent for an order (server-owned status) | Yes (Customer) |
-| `GET` | `/api/v1/payments/{id}` | Retrieve payment by ID | Yes |
-| `GET` | `/api/v1/payments/order/{orderId}` | Retrieve all payments for an order | Yes |
 | `POST` | `/api/v1/admin/payments/{id}/confirm` | Confirm a pending payment as completed | Yes (Admin) |
 | `POST` | `/api/v1/payments/webhook/{provider}` | Provider webhook with signature verification (public) | No |
 
@@ -78,62 +76,6 @@ curl -X 'POST' \
 | `amount` | number | Payment amount |
 | `status` | string | Current payment status |
 | `paymentMethod` | string | Payment method used |
-
----
-
-### 2. Get User Payments
-
-**`GET /api/v1/payments`**
-
-Retrieve a list of payments associated with the authenticated user.
-
-#### Query Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `limit` | number | No | Maximum number of payments to return (default: 10) |
-| `offset` | number | No | Number of payments to skip for pagination |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-
-#### Example Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/payments?limit=10' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
-
-#### Example Response
-
-```json
-[
-    {
-      "id": "4b68917d-4452-4d18-9012-47e843f05c15",
-      "orderId": "7e49b2a1-fa0c-4aac-b996-91f2411f14b7",
-      "amount": 500,
-      "status": "COMPLETED",
-      "paymentMethod": "BANK_TRANSFER"
-    }
-  ]
-}
-```
-
-#### Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `data` | array | Array of payment objects |
-| `data[].id` | string | Unique identifier for the payment |
-| `data[].orderId` | string | UUID of the associated order |
-| `data[].amount` | number | Payment amount |
-| `data[].status` | string | Current payment status |
-| `data[].paymentMethod` | string | Payment method used |
 
 ---
 
@@ -335,7 +277,8 @@ curl -X 'POST' \
   -d '{"id":"evt_1","type":"payment_intent.succeeded","data":{"object":{"id":"pi_1","status":"succeeded"}}}'
 ```
 
-Invalid signatures return `400`; duplicate deliveries return `200`.
+Invalid signatures return `400`; duplicate deliveries return `200`. Processing failures return a
+5xx so the provider retries rather than the event being permanently dropped.
 
 ---
 
@@ -368,7 +311,6 @@ provider payment, the API issues the refund through the processor and stores
 | `PENDING` | Payment has been initiated but not yet processed |
 | `COMPLETED` | Payment has been successfully processed |
 | `FAILED` | Payment processing failed |
-| `CANCELLED` | Payment was cancelled |
 | `REFUNDED` | Payment has been refunded |
 
 ---

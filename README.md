@@ -950,7 +950,7 @@ curl -X 'POST' \
   'http://localhost:8080/api/v1/auth/social/google' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
-  -d '{"idToken":"google-id-token"}'
+  -d '{"idToken":"google-id-token","mfaCode":"123456"}'
 ```
 
 ### Request URL
@@ -1002,7 +1002,7 @@ curl -X 'POST' \
   'http://localhost:8080/api/v1/auth/passkeys/login' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
-  -d '{"email":"customer@example.com","userType":"customer","credentialId":"...","clientDataJson":"...","authenticatorData":"...","signature":"..."}'
+  -d '{"email":"customer@example.com","userType":"customer","credentialId":"...","clientDataJson":"...","authenticatorData":"...","signature":"...","mfaCode":"123456"}'
 ```
 
 ### Request URL
@@ -10386,7 +10386,7 @@ http://localhost:8080/api/v1/admin/subscriptions/run-billing
 
 ### Response
 ```json
-{"renewed":2,"canceled":1}
+{"invoicesCreated":2,"canceled":1}
 ```
 </details>
 <details>
@@ -11389,6 +11389,32 @@ http://localhost:8080/api/v1/admin/support/tickets/{id}
 {"status":"RESOLVED"}
 ```
 </details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/subscriptions/{id}/activate</code></summary>
+
+### Description
+Admin: mark the pending subscription invoice paid, advance the period and reactivate digital access.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/subscriptions/sub-uuid/activate' \
+  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"paymentReference":"pay_renewal"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/subscriptions/{id}/activate
+```
+
+### Response
+```json
+{"id":"sub-uuid","status":"ACTIVE"}
+```
+</details>
+
 ### TAX RULES
 
 <details>

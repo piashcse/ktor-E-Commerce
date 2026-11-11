@@ -208,7 +208,7 @@ class OmnichannelIntegrationTest {
             }
         assertEquals(FulfillmentType.POS, pos.fulfillmentType)
         assertEquals(OrderStatus.PAID, pos.status)
-        assertEquals("20.00", pos.total)
+        assertEquals("21.00", pos.total)
         assertEquals(1, kotlinx.coroutines.runBlocking { service.posSales(sellerUserId, 10, 0) }.data.size)
         assertEquals(8, transaction { InventoryDAO.all().first { it.productId.value == productId }.stockQuantity })
         assertEquals(1, kotlinx.coroutines.runBlocking { service.pickupOrders(sellerUserId, 10, 0) }.data.size)

@@ -48,7 +48,7 @@ class IdentityRoutesTest {
     @Test
     fun `google login returns tokens`() =
         testApplication {
-            coEvery { social.googleLogin("google-id-token") } returns loginResponse()
+            coEvery { social.googleLogin("google-id-token", null) } returns loginResponse()
             setup()
             val res =
                 client.post("/api/v1/auth/social/google") {

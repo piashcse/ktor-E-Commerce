@@ -106,9 +106,18 @@ class UserAuthenticationService(
         if (!user.isVerified) throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)
 
         // Use the already-loaded user: avoids a second lookup on every login.
+        val matchedStep =
+            if (!user.mfaEnabled) {
+                null
+            } else {
+                user.mfaSecret?.let { mfaService.verifyStoredStep(it, loginRequest.mfaCode.orEmpty()) }
+            }
         val mfaValid =
             !user.mfaEnabled ||
-                (user.mfaSecret != null && mfaService.verify(user.mfaSecret!!, loginRequest.mfaCode.orEmpty()))
+                (matchedStep != null && (user.mfaLastUsedStep == null || matchedStep > user.mfaLastUsedStep!!))
+        if (mfaValid && matchedStep != null) {
+            user.mfaLastUsedStep = matchedStep
+        }
         if (!mfaValid) {
             val attemptCount = authRepo.recordFailedAttempt(loginRequest.email, userTypeEnum, ipAddress)
             if (attemptCount >= AppConstants.Authentication.MAX_LOGIN_ATTEMPTS) {

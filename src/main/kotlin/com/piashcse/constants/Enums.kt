@@ -249,6 +249,7 @@ enum class BillingInterval {
 
 @Serializable
 enum class SubscriptionStatus {
+    PENDING,
     ACTIVE,
     PAST_DUE,
     CANCELED,

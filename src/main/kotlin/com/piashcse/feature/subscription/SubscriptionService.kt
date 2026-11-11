@@ -72,6 +72,9 @@ data class SubscribeRequest(
 )
 
 @Serializable
+data class ActivateSubscriptionRequest(val paymentReference: String)
+
+@Serializable
 data class SubscriptionResponse(
     val id: String,
     val userId: String,
@@ -88,7 +91,7 @@ data class SubscriptionResponse(
 
 @Serializable
 data class BillingRunResponse(
-    val renewed: Int,
+    val invoicesCreated: Int,
     val canceled: Int,
 )
 
@@ -175,11 +178,12 @@ class SubscriptionService(
             if (existing != null) throw ValidationException("You already have an active subscription for this plan")
             val start = currentUtc()
             val end = periodEnd(start.plusDays(plan.trialDays.toLong()), plan.interval)
+            val paid = !request.paymentReference.isNullOrBlank()
             val subscription =
                 SubscriptionDAO.new {
                     this.userId = userId.entityID(com.piashcse.database.entities.UserTable)
                     this.planId = plan.id
-                    this.status = SubscriptionStatus.ACTIVE
+                    this.status = if (paid) SubscriptionStatus.ACTIVE else SubscriptionStatus.PENDING
                     this.startedAt = start
                     this.currentPeriodStart = start
                     this.currentPeriodEnd = end
@@ -190,13 +194,13 @@ class SubscriptionService(
                 this.subscriptionId = subscription.id
                 this.amount = plan.price
                 this.currency = plan.currency
-                this.status = InvoiceStatus.PAID
+                this.status = if (paid) InvoiceStatus.PAID else InvoiceStatus.PENDING
                 this.periodStart = start
                 this.periodEnd = end
-                this.providerReference = request.paymentReference ?: "manual"
-                this.paidAt = start
+                this.providerReference = request.paymentReference
+                this.paidAt = if (paid) start else null
             }
-            digitalDelivery.grantSubscriptionTx(userId, plan.productId.value, subscription.id.value)
+            if (paid) digitalDelivery.grantSubscriptionTx(userId, plan.productId.value, subscription.id.value)
             subscription.toResponse(plan)
         }
 
@@ -207,6 +211,35 @@ class SubscriptionService(
                     val plan = SubscriptionPlanDAO.findById(subscription.planId.value)
                     subscription.toResponse(plan)
                 }
+        }
+
+    suspend fun activate(
+        subscriptionId: String,
+        paymentReference: String,
+    ): SubscriptionResponse =
+        query {
+            if (paymentReference.isBlank()) throw ValidationException("paymentReference is required")
+            val subscription =
+                SubscriptionDAO.findById(subscriptionId)
+                    ?: subscriptionId.throwNotFound("Subscription")
+            val invoice =
+                SubscriptionInvoiceDAO.find {
+                    (SubscriptionInvoiceTable.subscriptionId eq subscription.id) and
+                        (SubscriptionInvoiceTable.status eq InvoiceStatus.PENDING)
+                }.orderBy(SubscriptionInvoiceTable.createdAt to SortOrder.DESC)
+                    .firstOrNull() ?: throw ValidationException("No pending invoice for this subscription")
+            invoice.status = InvoiceStatus.PAID
+            invoice.providerReference = paymentReference
+            invoice.paidAt = currentUtc()
+            subscription.currentPeriodStart = invoice.periodStart
+            subscription.currentPeriodEnd = invoice.periodEnd
+            subscription.status = SubscriptionStatus.ACTIVE
+            subscription.externalReference = paymentReference
+            val plan = SubscriptionPlanDAO.findById(subscription.planId.value)
+            plan?.let {
+                digitalDelivery.grantSubscriptionTx(subscription.userId.value, it.productId.value, subscription.id.value)
+            }
+            subscription.toResponse(plan)
         }
 
     suspend fun cancel(
@@ -244,7 +277,7 @@ class SubscriptionService(
                     (SubscriptionTable.status eq SubscriptionStatus.ACTIVE) and
                         (SubscriptionTable.currentPeriodEnd lessEq now)
                 }.toList()
-            var renewed = 0
+            var invoicesCreated = 0
             var canceled = 0
             due.forEach { subscription ->
                 val plan = SubscriptionPlanDAO.findById(subscription.planId.value) ?: return@forEach
@@ -259,18 +292,14 @@ class SubscriptionService(
                     this.subscriptionId = subscription.id
                     this.amount = plan.price
                     this.currency = plan.currency
-                    this.status = InvoiceStatus.PAID
+                    this.status = InvoiceStatus.PENDING
                     this.periodStart = start
                     this.periodEnd = end
-                    this.providerReference = "manual-renewal"
-                    this.paidAt = now
                 }
-                subscription.currentPeriodStart = start
-                subscription.currentPeriodEnd = end
-                digitalDelivery.grantSubscriptionTx(subscription.userId.value, plan.productId.value, subscription.id.value)
-                renewed += 1
+                subscription.status = SubscriptionStatus.PAST_DUE
+                invoicesCreated += 1
             }
-            BillingRunResponse(renewed = renewed, canceled = canceled)
+            BillingRunResponse(invoicesCreated = invoicesCreated, canceled = canceled)
         }
 
     suspend fun invoicesForUser(
