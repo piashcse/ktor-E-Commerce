@@ -27,6 +27,9 @@ data class ProductRequest(
     val featured: Boolean = false,
     val freeShipping: Boolean = false,
     val images: List<String> = emptyList(),
+    val isDigital: Boolean = false,
+    val digitalAssetUrl: String? = null,
+    val digitalFileName: String? = null,
 ) {
     init {
         validate(this) {

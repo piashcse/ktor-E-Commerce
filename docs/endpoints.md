@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 285  
+**Operations:** 298  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -45,6 +45,7 @@ document served by Swagger UI.
 | [Localization](#localization) | 5 |
 | [Analytics](#analytics) | 4 |
 | [Seller Tools](#seller-tools) | 14 |
+| [Subscription](#subscription) | 13 |
 | [FX](#fx) | 2 |
 | [API Keys](#api-keys) | 3 |
 | [Feature Flags](#feature-flags) | 2 |
@@ -460,6 +461,24 @@ document served by Swagger UI.
 | `PUT` | `/api/v1/admin/commission-rules/{id}` | Update a commission rule | Admin |
 | `DELETE` | `/api/v1/admin/commission-rules/{id}` | Delete a commission rule | Admin |
 | `GET` | `/api/v1/seller/commission` | Seller: effective commission rate | Seller |
+
+## Subscription
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/api/v1/subscription-plans` | List active subscription plans | Public |
+| `GET` | `/api/v1/subscriptions` | List my subscriptions | Authenticated |
+| `GET` | `/api/v1/subscriptions/{id}/invoices` | List my subscription invoices | Authenticated |
+| `POST` | `/api/v1/subscriptions` | Subscribe to a plan | Authenticated |
+| `POST` | `/api/v1/subscriptions/{id}/cancel` | Cancel at period end | Authenticated |
+| `GET` | `/api/v1/admin/subscription-plans` | Admin: list plans | Admin |
+| `POST` | `/api/v1/admin/subscription-plans` | Admin: create a plan | Admin |
+| `PUT` | `/api/v1/admin/subscription-plans/{id}` | Admin: update a plan | Admin |
+| `DELETE` | `/api/v1/admin/subscription-plans/{id}` | Admin: deactivate a plan | Admin |
+| `GET` | `/api/v1/admin/subscriptions` | Admin: list subscriptions | Admin |
+| `POST` | `/api/v1/admin/subscriptions/run-billing` | Admin: run renewal billing | Admin |
+| `GET` | `/api/v1/library` | List my digital purchases | Authenticated |
+| `GET` | `/api/v1/library/{token}/download` | Redeem a digital download | Authenticated |
 
 ## FX
 

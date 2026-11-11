@@ -43,4 +43,5 @@ object ApiTags {
     const val LOCALIZATION = "Localization"
     const val ANALYTICS = "Analytics"
     const val SELLER = "Seller Tools"
+    const val SUBSCRIPTION = "Subscription"
 }

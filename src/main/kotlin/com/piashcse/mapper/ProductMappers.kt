@@ -31,6 +31,7 @@ fun ProductDAO.toProductResponse(
     bestSeller = bestSeller,
     newProduct = newProduct,
     freeShipping = freeShipping,
+    isDigital = isDigital,
     images = images ?: imageUrls,
     status = status,
     viewCount = viewCount,

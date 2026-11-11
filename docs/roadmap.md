@@ -33,7 +33,7 @@ its own branch so it can be reviewed and merged as an independent PR.
 | 13 | i18n + localized checkout | Required for cross-border growth | P2 | Medium | ✅ | `feature/localization` |
 | 14 | Funnel/attribution analytics | Needed to optimize conversion work | P2 | Medium | ✅ | `feature/analytics-funnel` |
 | 15 | Seller reviews/disputes/commission rules | Marketplace trust and economics | P2 | Medium | ✅ | `feature/seller-tools` |
-| 16 | Subscriptions + digital goods | New revenue models | P2 | High | 📋 | `feature/subscriptions` |
+| 16 | Subscriptions + digital goods | New revenue models | P2 | High | ✅ | `feature/subscriptions` |
 | 17 | B2B quotes/POs/net terms | Wholesale revenue | P3 | High | 📋 | `feature/b2b` |
 | 18 | BOPIS/POS/store locator | Omnichannel | P3 | High | 📋 | `feature/omnichannel` |
 | 19 | CMS/SEO/sitemap | Storefront acquisition | P3 | Medium | 📋 | `feature/content-seo` |

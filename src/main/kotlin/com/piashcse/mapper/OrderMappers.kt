@@ -66,4 +66,5 @@ fun OrderItemDAO.toOrderItemResponse() =
         taxRate = taxRate.toPlainString(),
         taxInclusive = taxInclusive,
         taxClassId = taxClassId?.value,
+        isDigital = isDigital,
     )
