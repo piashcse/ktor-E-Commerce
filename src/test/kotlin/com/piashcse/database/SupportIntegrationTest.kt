@@ -164,6 +164,10 @@ class SupportIntegrationTest {
         assertEquals(TicketStatus.CLOSED, closed.status)
 
         assertEquals(1, kotlinx.coroutines.runBlocking { support.myTickets(customerId, 10, 0) }.data.size)
-        assertEquals(1, kotlinx.coroutines.runBlocking { support.adminTickets(null, null, null, 10, 0) }.data.size)
+        assertEquals(
+            1,
+            kotlinx.coroutines.runBlocking { support.adminTickets(null, null, null, 10, 0) }.data
+                .count { it.id == created.ticket.id },
+        )
     }
 }

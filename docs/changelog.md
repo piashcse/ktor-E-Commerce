@@ -54,6 +54,8 @@ hide:
 - Subscription recurring billing (`V50`): stored provider customer/payment-method references,
   off-session renewal charges, idempotent per-period invoices, retry/backoff dunning, grace periods,
   automatic expiry with entitlement revocation, and webhook-driven invoice activation.
+- Integration assertions now scope admin account/ticket checks to the test's unique identifiers
+  instead of relying on global row counts.
 - POS cash-drawer sessions (`V53`): open/close a drawer per shop, link sales to a session,
   accumulate cash/card totals and reconcile expected cash against the counted amount.
 - Audit logging now covers B2B account/invoice actions, subscription plan/billing actions and
