@@ -13,6 +13,7 @@ import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.feature.fraud.FraudContext
 import com.piashcse.feature.fraud.FraudService
 import com.piashcse.feature.loyalty.LoyaltyService
+import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.mapper.toPaymentResponse
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
@@ -46,6 +47,7 @@ class PaymentRepositoryImpl(
     private val gateway: PaymentGateway,
     private val fraudService: FraudService = FraudService(),
     private val loyaltyService: LoyaltyService = LoyaltyService(),
+    private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
 ) : PaymentRepository {
     private val gatewayBreaker = CircuitBreaker("payment-gateway", failureThreshold = 5, cooldownMs = 30_000)
 
@@ -98,6 +100,7 @@ class PaymentRepositoryImpl(
         order.paymentStatus = PaymentStatus.COMPLETED
         order.status = OrderStatus.PAID
         loyaltyService.earnForPaidOrderTx(order.userId.value, order.id.value, order.total)
+        digitalDelivery.grantForOrderTx(order)
         StockReservationDAO.find { StockReservationTable.orderId eq order.id }
             .forEach { it.status = ReservationStatus.FINALIZED }
         OutboxPublisher.enqueueTx(

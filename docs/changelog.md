@@ -8,6 +8,9 @@ hide:
 
 ### Added
 
+- Subscriptions and digital goods (`V41`): monthly/yearly plans tied to digital products,
+  subscribe/cancel flows, paid invoice records, manual renewal billing, zero-shipping digital
+  checkout, and download entitlements granted on payment or subscription.
 - Seller tools (`V40`): post-delivery seller reviews with shop rating aggregation, buyer/seller
   disputes with an admin resolution lifecycle, and scope-aware commission rules
   (seller > shop > category > seller default). Payouts and refund commission reversals now use the
@@ -42,7 +45,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (285 operations total).
+  (298 operations total).
 
 ### Fixed
 

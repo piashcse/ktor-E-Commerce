@@ -144,6 +144,9 @@ class ProductRepositoryImpl : ProductRepository {
                 bestSeller = false
                 newProduct = true
                 freeShipping = productRequest.freeShipping
+                isDigital = productRequest.isDigital
+                digitalAssetUrl = productRequest.digitalAssetUrl?.takeIf { it.isNotBlank() }
+                digitalFileName = productRequest.digitalFileName?.takeIf { it.isNotBlank() }
                 status = productRequest.status ?: ProductStatus.ACTIVE
             }.let { product ->
                 product.setImages(productRequest.images)
@@ -197,6 +200,9 @@ class ProductRepositoryImpl : ProductRepository {
                 hotDeal = updateProduct.hotDeal ?: hotDeal
                 featured = updateProduct.featured ?: featured
                 freeShipping = updateProduct.freeShipping ?: freeShipping
+                isDigital = updateProduct.isDigital ?: isDigital
+                updateProduct.digitalAssetUrl?.let { digitalAssetUrl = it.takeIf { value -> value.isNotBlank() } }
+                updateProduct.digitalFileName?.let { digitalFileName = it.takeIf { value -> value.isNotBlank() } }
                 if (updateProduct.images.isNotEmpty()) setImages(updateProduct.images)
             }.toProductResponse()
         }

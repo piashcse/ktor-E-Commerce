@@ -82,6 +82,11 @@ import com.piashcse.feature.shop.shopSellerRoutesV1
 import com.piashcse.feature.shop_category.shopCategoryAdminRoutes
 import com.piashcse.feature.shop_category.shopCategoryRoutes
 import com.piashcse.feature.stockalert.stockAlertRoutes
+import com.piashcse.feature.subscription.digitalLibraryRoutes
+import com.piashcse.feature.subscription.subscriptionAdminRoutes
+import com.piashcse.feature.subscription.subscriptionPlanAdminRoutes
+import com.piashcse.feature.subscription.subscriptionPlanRoutes
+import com.piashcse.feature.subscription.subscriptionRoutes
 import com.piashcse.feature.tax.productTaxClassAdminRoutes
 import com.piashcse.feature.tax.taxAdminRoutes
 import com.piashcse.feature.tax.taxClassAdminRoutes
@@ -197,6 +202,9 @@ private fun Route.customerRoutes() {
     route("sellers") { sellerPublicRoutes() }.describe { tag(ApiTags.SELLER) }
     route("seller-reviews") { sellerReviewRoutes() }.describe { tag(ApiTags.SELLER) }
     route("disputes") { disputeRoutes() }.describe { tag(ApiTags.SELLER) }
+    route("subscription-plans") { subscriptionPlanRoutes() }.describe { tag(ApiTags.SUBSCRIPTION) }
+    route("subscriptions") { subscriptionRoutes() }.describe { tag(ApiTags.SUBSCRIPTION) }
+    route("library") { digitalLibraryRoutes() }.describe { tag(ApiTags.SUBSCRIPTION) }
     route("policies") { policyRoutes() }.describe { tag(ApiTags.POLICY) }
     route("policy-consents") { consentRoutes() }.describe { tag(ApiTags.CONSENT) }
     route("refund-requests") { refundRequestRoutes() }.describe { tag(ApiTags.REFUND) }
@@ -255,6 +263,8 @@ private fun Route.adminRoutes() {
             route("seller-reviews") { sellerReviewAdminRoutes() }.describe { tag(ApiTags.SELLER) }
             route("disputes") { disputeAdminRoutes() }.describe { tag(ApiTags.SELLER) }
             route("commission-rules") { commissionAdminRoutes() }.describe { tag(ApiTags.SELLER) }
+            route("subscription-plans") { subscriptionPlanAdminRoutes() }.describe { tag(ApiTags.SUBSCRIPTION) }
+            route("subscriptions") { subscriptionAdminRoutes() }.describe { tag(ApiTags.SUBSCRIPTION) }
             route("refund-requests") { refundAdminRoutes() }.describe { tag(ApiTags.REFUND) }
             route("rma-requests") { rmaAdminRoutes() }.describe { tag(ApiTags.RMA) }
             route("policies") { policyAdminRoutes() }.describe { tag(ApiTags.POLICY) }

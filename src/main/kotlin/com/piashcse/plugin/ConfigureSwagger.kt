@@ -78,6 +78,7 @@ fun Application.configureSwagger() {
             tag(ApiTags.LOCALIZATION, "Locales, message catalogs and product translations")
             tag(ApiTags.ANALYTICS, "Funnel events, UTM attribution and product conversion")
             tag(ApiTags.SELLER, "Seller reviews, disputes and commission rules")
+            tag(ApiTags.SUBSCRIPTION, "Recurring plans, invoices and digital downloads")
         }
     }
 }

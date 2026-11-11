@@ -35,6 +35,9 @@ object ProductTable : BaseIdTable("product") {
     val bestSeller = bool("best_seller").default(false).index()
     val newProduct = bool("new_product").default(false)
     val freeShipping = bool("free_shipping").default(false)
+    val isDigital = bool("is_digital").default(false)
+    val digitalAssetUrl = text("digital_asset_url").nullable()
+    val digitalFileName = varchar("digital_file_name", 255).nullable()
     val status = enumerationByName<ProductStatus>("status", 50).default(ProductStatus.ACTIVE).index()
     val viewCount = integer("view_count").default(0)
     val rating = decimal("rating", 3, 2).default(BigDecimal("0.00"))
@@ -68,6 +71,9 @@ class ProductDAO(id: EntityID<String>) : BaseEntity(id, ProductTable) {
     var bestSeller by ProductTable.bestSeller
     var newProduct by ProductTable.newProduct
     var freeShipping by ProductTable.freeShipping
+    var isDigital by ProductTable.isDigital
+    var digitalAssetUrl by ProductTable.digitalAssetUrl
+    var digitalFileName by ProductTable.digitalFileName
     var status by ProductTable.status
     var viewCount by ProductTable.viewCount
     var rating by ProductTable.rating

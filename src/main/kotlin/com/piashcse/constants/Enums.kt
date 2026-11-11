@@ -242,6 +242,27 @@ enum class DisputeStatus {
 }
 
 @Serializable
+enum class BillingInterval {
+    MONTH,
+    YEAR,
+}
+
+@Serializable
+enum class SubscriptionStatus {
+    ACTIVE,
+    PAST_DUE,
+    CANCELED,
+    EXPIRED,
+}
+
+@Serializable
+enum class InvoiceStatus {
+    PENDING,
+    PAID,
+    FAILED,
+}
+
+@Serializable
 enum class PolicyType {
     PRIVACY_POLICY,
     TERMS_CONDITIONS,

@@ -27,6 +27,7 @@ data class ProductResponse(
     val bestSeller: Boolean = false,
     val newProduct: Boolean = false,
     val freeShipping: Boolean = false,
+    val isDigital: Boolean = false,
     val images: List<String>,
     val status: ProductStatus,
     val viewCount: Int = 0,

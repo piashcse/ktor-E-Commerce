@@ -23,6 +23,9 @@ data class UpdateProductRequest(
     val featured: Boolean? = null,
     val freeShipping: Boolean? = null,
     val images: List<String> = emptyList(),
+    val isDigital: Boolean? = null,
+    val digitalAssetUrl: String? = null,
+    val digitalFileName: String? = null,
 ) {
     init {
         price?.requirePositivePrice()

@@ -9952,6 +9952,313 @@ http://localhost:8080/api/v1/seller/commission
 {"rate":"3.00","source":"rule"}
 ```
 </details>
+### SUBSCRIPTIONS / DIGITAL
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/subscription-plans</code></summary>
+
+### Description
+List active subscription plans.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/subscription-plans' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/subscription-plans
+```
+
+### Response
+```json
+[{"id":"plan-1","name":"Pro Monthly","interval":"MONTH"}]
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/subscriptions</code></summary>
+
+### Description
+List my subscriptions.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/subscriptions' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/subscriptions
+```
+
+### Response
+```json
+[{"id":"sub-1","status":"ACTIVE"}]
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/subscriptions/{id}/invoices</code></summary>
+
+### Description
+List my subscription invoices.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/subscriptions/uuid/invoices' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/subscriptions/{id}/invoices
+```
+
+### Response
+```json
+[{"id":"inv-1","status":"PAID"}]
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/subscriptions</code></summary>
+
+### Description
+Subscribe to a plan.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/subscriptions' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"planId":"plan-1","paymentReference":"pay_123"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/subscriptions
+```
+
+### Response
+```json
+{"id":"sub-1","status":"ACTIVE"}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/subscriptions/{id}/cancel</code></summary>
+
+### Description
+Cancel at period end.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/subscriptions/uuid/cancel' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/subscriptions/{id}/cancel
+```
+
+### Response
+```json
+{"id":"sub-1","cancelAtPeriodEnd":true}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/subscription-plans</code></summary>
+
+### Description
+Admin: list plans.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/subscription-plans' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/subscription-plans
+```
+
+### Response
+```json
+{"data":[{"id":"plan-1"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/subscription-plans</code></summary>
+
+### Description
+Admin: create a plan.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/subscription-plans' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Pro Monthly","description":"Digital access","productId":"product-uuid","interval":"MONTH","price":9.99}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/subscription-plans
+```
+
+### Response
+```json
+{"id":"plan-1"}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/subscription-plans/{id}</code></summary>
+
+### Description
+Admin: update a plan.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/subscription-plans/uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Pro Monthly","description":"Digital access","productId":"product-uuid","interval":"MONTH","price":9.99}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/subscription-plans/{id}
+```
+
+### Response
+```json
+{"id":"plan-1"}
+```
+</details>
+<details>
+<summary> <code>DELETE</code> <code>/api/v1/admin/subscription-plans/{id}</code></summary>
+
+### Description
+Admin: deactivate a plan.
+
+### Curl
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/subscription-plans/uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/subscription-plans/{id}
+```
+
+### Response
+```json
+{"message":"ok"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/subscriptions</code></summary>
+
+### Description
+Admin: list subscriptions.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/subscriptions' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/subscriptions
+```
+
+### Response
+```json
+{"data":[{"id":"sub-1"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/subscriptions/run-billing</code></summary>
+
+### Description
+Admin: run renewal billing.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/subscriptions/run-billing' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/subscriptions/run-billing
+```
+
+### Response
+```json
+{"renewed":2,"canceled":1}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/library</code></summary>
+
+### Description
+List my digital purchases.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/library' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/library
+```
+
+### Response
+```json
+[{"entitlementId":"ent-1","downloadToken":"tok-uuid"}]
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/library/{token}/download</code></summary>
+
+### Description
+Redeem a digital download.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/library/tok-uuid/download' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/library/{token}/download
+```
+
+### Response
+```json
+{"downloadUrl":"https://downloads.example/pack.zip","remainingDownloads":4}
+```
+</details>
 ### TAX RULES
 
 <details>

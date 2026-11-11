@@ -64,6 +64,7 @@ nav:
       - Fraud & Chargebacks: fraud.md
       - Loyalty & Wallet: loyalty.md
       - Localization: localization.md
+      - Subscriptions: subscriptions.md
       - FX Rates: fx.md
       - API Keys: api-keys.md
       - Feature Flags: feature-flags.md

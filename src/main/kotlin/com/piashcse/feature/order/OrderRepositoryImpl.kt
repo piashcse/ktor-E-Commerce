@@ -361,6 +361,7 @@ class OrderRepositoryImpl(
         var shopUsdSubTotal = BigDecimal.ZERO
         var shopTax = BigDecimal.ZERO
         var shopExclusiveTax = BigDecimal.ZERO
+        var allDigital = true
         val businessTaxId = checkoutRequest.businessTaxId
 
         val order =
@@ -403,6 +404,7 @@ class OrderRepositoryImpl(
 
             // Product prices are stored in USD; persist the order-currency unit
             // price so refunds and payouts use the same unit as the order.
+            if (!product.isDigital) allDigital = false
             val unitPriceUsd = variant?.effectivePrice ?: product.discountPrice ?: product.price
             val unitPrice = Money.scale2(unitPriceUsd.multiply(fxRate))
             val itemTotal = Money.unitTotal(unitPrice, cartItem.quantity)
@@ -436,6 +438,7 @@ class OrderRepositoryImpl(
                     taxRate = taxQuote.rate
                     taxInclusive = taxQuote.inclusive
                     taxClassId = taxQuote.taxClassId?.entityID(TaxClassTable)
+                    isDigital = product.isDigital
                     discountAmount = BigDecimal.ZERO
                 }
 
@@ -462,9 +465,10 @@ class OrderRepositoryImpl(
 
         val scaledSubTotal = Money.scale2(shopSubTotal)
         val tax = Money.scale2(shopTax)
-        val ship = Money.scale2(context.shippingMethod.price.multiply(fxRate))
+        val ship = if (allDigital) BigDecimal.ZERO.setScale(2) else Money.scale2(context.shippingMethod.price.multiply(fxRate))
         order.subTotal = scaledSubTotal
         order.shippingCost = ship
+        if (allDigital) order.shippingMethod = "DIGITAL"
         order.taxAmount = tax
         order.total = Money.scale2(scaledSubTotal.add(ship).add(shopExclusiveTax))
         return order to shopUsdSubTotal
@@ -675,7 +679,13 @@ class OrderRepositoryImpl(
 
             val subUsd = PricingService.subtotal(cartItems.map { unitPriceUsd(it) to it.quantity })
             val sub = Money.scale2(subUsd.multiply(fxRate))
-            val ship = Money.scale2(PricingService.shipping(shippingMethod.price, shopCount).multiply(fxRate))
+            val allDigital = cartItems.all { productsMap[it.productId.value]?.isDigital == true }
+            val ship =
+                if (allDigital) {
+                    BigDecimal.ZERO.setScale(2)
+                } else {
+                    Money.scale2(PricingService.shipping(shippingMethod.price, shopCount).multiply(fxRate))
+                }
             var tax = BigDecimal.ZERO
             var exclusiveTax = BigDecimal.ZERO
             val taxLines = mutableListOf<TaxLineResponse>()
