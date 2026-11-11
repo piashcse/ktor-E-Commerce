@@ -9,6 +9,12 @@ import com.piashcse.feature.apikey.apiKeyRoutes
 import com.piashcse.feature.audit_log.auditLogAdminRoutes
 import com.piashcse.feature.auth.authAdminRoutes
 import com.piashcse.feature.auth.authRoutes
+import com.piashcse.feature.b2b.b2bAccountRoutes
+import com.piashcse.feature.b2b.b2bAdminRoutes
+import com.piashcse.feature.b2b.b2bPurchaseOrderRoutes
+import com.piashcse.feature.b2b.b2bQuoteRoutes
+import com.piashcse.feature.b2b.b2bSellerPurchaseOrderRoutes
+import com.piashcse.feature.b2b.b2bSellerQuoteRoutes
 import com.piashcse.feature.brand.brandAdminRoutes
 import com.piashcse.feature.brand.brandRoutes
 import com.piashcse.feature.cart.cartRoutes
@@ -205,6 +211,9 @@ private fun Route.customerRoutes() {
     route("subscription-plans") { subscriptionPlanRoutes() }.describe { tag(ApiTags.SUBSCRIPTION) }
     route("subscriptions") { subscriptionRoutes() }.describe { tag(ApiTags.SUBSCRIPTION) }
     route("library") { digitalLibraryRoutes() }.describe { tag(ApiTags.SUBSCRIPTION) }
+    route("b2b/account") { b2bAccountRoutes() }.describe { tag(ApiTags.B2B) }
+    route("b2b/quotes") { b2bQuoteRoutes() }.describe { tag(ApiTags.B2B) }
+    route("b2b/purchase-orders") { b2bPurchaseOrderRoutes() }.describe { tag(ApiTags.B2B) }
     route("policies") { policyRoutes() }.describe { tag(ApiTags.POLICY) }
     route("policy-consents") { consentRoutes() }.describe { tag(ApiTags.CONSENT) }
     route("refund-requests") { refundRequestRoutes() }.describe { tag(ApiTags.REFUND) }
@@ -231,6 +240,8 @@ private fun Route.sellerRoutes() {
             route("payouts") { payoutSellerRoutes() }.describe { tag(ApiTags.PAYOUT) }
             route("reviews") { sellerOwnReviewRoutes() }.describe { tag(ApiTags.SELLER) }
             route("commission") { commissionSellerRoutes() }.describe { tag(ApiTags.SELLER) }
+            route("b2b/quotes") { b2bSellerQuoteRoutes() }.describe { tag(ApiTags.B2B) }
+            route("b2b/purchase-orders") { b2bSellerPurchaseOrderRoutes() }.describe { tag(ApiTags.B2B) }
         }
     }
 }
@@ -265,6 +276,7 @@ private fun Route.adminRoutes() {
             route("commission-rules") { commissionAdminRoutes() }.describe { tag(ApiTags.SELLER) }
             route("subscription-plans") { subscriptionPlanAdminRoutes() }.describe { tag(ApiTags.SUBSCRIPTION) }
             route("subscriptions") { subscriptionAdminRoutes() }.describe { tag(ApiTags.SUBSCRIPTION) }
+            route("b2b") { b2bAdminRoutes() }.describe { tag(ApiTags.B2B) }
             route("refund-requests") { refundAdminRoutes() }.describe { tag(ApiTags.REFUND) }
             route("rma-requests") { rmaAdminRoutes() }.describe { tag(ApiTags.RMA) }
             route("policies") { policyAdminRoutes() }.describe { tag(ApiTags.POLICY) }

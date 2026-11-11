@@ -65,6 +65,7 @@ nav:
       - Loyalty & Wallet: loyalty.md
       - Localization: localization.md
       - Subscriptions: subscriptions.md
+      - B2B Quotes & POs: b2b.md
       - FX Rates: fx.md
       - API Keys: api-keys.md
       - Feature Flags: feature-flags.md

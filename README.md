@@ -10259,6 +10259,361 @@ http://localhost:8080/api/v1/library/{token}/download
 {"downloadUrl":"https://downloads.example/pack.zip","remainingDownloads":4}
 ```
 </details>
+### B2B QUOTES / PO / NET TERMS
+
+<details>
+<summary> <code>GET</code> <code>/api/v1/b2b/account</code></summary>
+
+### Description
+Get my B2B account.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/b2b/account' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/b2b/account
+```
+
+### Response
+```json
+{"userId":"user-uuid","status":"APPROVED","creditLimit":"5000.00"}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/b2b/account</code></summary>
+
+### Description
+Apply for/update a B2B account.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/b2b/account' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"companyName":"Acme Wholesale","taxId":"TAX-123","contactName":"Alice"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/b2b/account
+```
+
+### Response
+```json
+{"status":"PENDING"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/b2b/quotes</code></summary>
+
+### Description
+List my B2B quotes.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/b2b/quotes' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/b2b/quotes
+```
+
+### Response
+```json
+{"data":[{"id":"quote-1","status":"SENT"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/b2b/quotes</code></summary>
+
+### Description
+Request a B2B quote.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/b2b/quotes' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"items":[{"productId":"p-1","quantity":10}],"validDays":14}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/b2b/quotes
+```
+
+### Response
+```json
+{"id":"quote-1","status":"REQUESTED"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/b2b/quotes/{id}</code></summary>
+
+### Description
+Get a B2B quote.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/b2b/quotes/uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/b2b/quotes/{id}
+```
+
+### Response
+```json
+{"id":"quote-1","items":[]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/b2b/quotes/{id}/accept</code></summary>
+
+### Description
+Accept a quote and create a PO.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/b2b/quotes/uuid/accept' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/b2b/quotes/{id}/accept
+```
+
+### Response
+```json
+{"id":"po-1","poNumber":"PO-20260501-ABC123","status":"OPEN"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/b2b/purchase-orders</code></summary>
+
+### Description
+List my purchase orders.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/b2b/purchase-orders' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/b2b/purchase-orders
+```
+
+### Response
+```json
+{"data":[{"id":"po-1","status":"OPEN"}]}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/b2b/purchase-orders/{id}</code></summary>
+
+### Description
+Get a purchase order.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/b2b/purchase-orders/uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/b2b/purchase-orders/{id}
+```
+
+### Response
+```json
+{"id":"po-1","dueDate":"2026-06-01T00:00:00Z"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/b2b/quotes</code></summary>
+
+### Description
+Seller: list quote requests.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/b2b/quotes' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/b2b/quotes
+```
+
+### Response
+```json
+{"data":[{"id":"quote-1"}]}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/seller/b2b/quotes/{id}</code></summary>
+
+### Description
+Seller: price/send/reject a quote.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/b2b/quotes/uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"SENT","items":[{"productId":"p-1","quantity":10,"unitPrice":8.50}]}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/b2b/quotes/{id}
+```
+
+### Response
+```json
+{"id":"quote-1","status":"SENT"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/b2b/purchase-orders</code></summary>
+
+### Description
+Seller: list purchase orders.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/b2b/purchase-orders' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/b2b/purchase-orders
+```
+
+### Response
+```json
+{"data":[{"id":"po-1"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/seller/b2b/purchase-orders/{id}/fulfill</code></summary>
+
+### Description
+Seller: fulfill a purchase order.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/b2b/purchase-orders/uuid/fulfill' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/b2b/purchase-orders/{id}/fulfill
+```
+
+### Response
+```json
+{"id":"po-1","status":"FULFILLED"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/b2b/accounts</code></summary>
+
+### Description
+Admin: list B2B accounts.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/b2b/accounts' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/b2b/accounts
+```
+
+### Response
+```json
+{"data":[{"userId":"user-uuid","status":"PENDING"}]}
+```
+</details>
+<details>
+<summary> <code>PUT</code> <code>/api/v1/admin/b2b/accounts/{userId}</code></summary>
+
+### Description
+Admin: approve/update credit terms.
+
+### Curl
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/b2b/accounts/user-uuid' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"APPROVED","creditLimit":5000.00,"paymentTermsDays":30}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/b2b/accounts/{userId}
+```
+
+### Response
+```json
+{"status":"APPROVED"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/b2b/purchase-orders</code></summary>
+
+### Description
+Admin: list purchase orders.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/b2b/purchase-orders' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/b2b/purchase-orders
+```
+
+### Response
+```json
+{"data":[{"id":"po-1"}]}
+```
+</details>
 ### TAX RULES
 
 <details>

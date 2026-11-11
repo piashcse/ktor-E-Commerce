@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 298  
+**Operations:** 313  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -46,6 +46,7 @@ document served by Swagger UI.
 | [Analytics](#analytics) | 4 |
 | [Seller Tools](#seller-tools) | 14 |
 | [Subscription](#subscription) | 13 |
+| [B2B](#b2b) | 15 |
 | [FX](#fx) | 2 |
 | [API Keys](#api-keys) | 3 |
 | [Feature Flags](#feature-flags) | 2 |
@@ -479,6 +480,26 @@ document served by Swagger UI.
 | `POST` | `/api/v1/admin/subscriptions/run-billing` | Admin: run renewal billing | Admin |
 | `GET` | `/api/v1/library` | List my digital purchases | Authenticated |
 | `GET` | `/api/v1/library/{token}/download` | Redeem a digital download | Authenticated |
+
+## B2B
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/api/v1/b2b/account` | Get my B2B account | Authenticated |
+| `POST` | `/api/v1/b2b/account` | Apply for/update a B2B account | Authenticated |
+| `GET` | `/api/v1/b2b/quotes` | List my B2B quotes | Authenticated |
+| `POST` | `/api/v1/b2b/quotes` | Request a B2B quote | Authenticated |
+| `GET` | `/api/v1/b2b/quotes/{id}` | Get a B2B quote | Authenticated |
+| `POST` | `/api/v1/b2b/quotes/{id}/accept` | Accept a quote and create a PO | Authenticated |
+| `GET` | `/api/v1/b2b/purchase-orders` | List my purchase orders | Authenticated |
+| `GET` | `/api/v1/b2b/purchase-orders/{id}` | Get a purchase order | Authenticated |
+| `GET` | `/api/v1/seller/b2b/quotes` | Seller: list quote requests | Seller |
+| `PUT` | `/api/v1/seller/b2b/quotes/{id}` | Seller: price/send/reject a quote | Seller |
+| `GET` | `/api/v1/seller/b2b/purchase-orders` | Seller: list purchase orders | Seller |
+| `POST` | `/api/v1/seller/b2b/purchase-orders/{id}/fulfill` | Seller: fulfill a purchase order | Seller |
+| `GET` | `/api/v1/admin/b2b/accounts` | Admin: list B2B accounts | Admin |
+| `PUT` | `/api/v1/admin/b2b/accounts/{userId}` | Admin: approve/update credit terms | Admin |
+| `GET` | `/api/v1/admin/b2b/purchase-orders` | Admin: list purchase orders | Admin |
 
 ## FX
 

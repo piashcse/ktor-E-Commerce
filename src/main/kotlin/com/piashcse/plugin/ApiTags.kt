@@ -44,4 +44,5 @@ object ApiTags {
     const val ANALYTICS = "Analytics"
     const val SELLER = "Seller Tools"
     const val SUBSCRIPTION = "Subscription"
+    const val B2B = "B2B"
 }
