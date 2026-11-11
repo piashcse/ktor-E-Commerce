@@ -1,6 +1,7 @@
 package com.piashcse.database.entities
 
 import com.piashcse.constants.B2bAccountStatus
+import com.piashcse.constants.B2bInvoiceStatus
 import com.piashcse.constants.B2bQuoteStatus
 import com.piashcse.constants.PurchaseOrderStatus
 import com.piashcse.database.entities.base.BaseEntity
@@ -118,4 +119,40 @@ class B2bPurchaseOrderDAO(id: EntityID<String>) : BaseEntity(id, B2bPurchaseOrde
     var dueDate by B2bPurchaseOrderTable.dueDate
     var fulfilledAt by B2bPurchaseOrderTable.fulfilledAt
     var canceledAt by B2bPurchaseOrderTable.canceledAt
+}
+
+object B2bInvoiceTable : BaseIdTable("b2b_invoice") {
+    val purchaseOrderId = reference("purchase_order_id", B2bPurchaseOrderTable.id).uniqueIndex()
+    val orderId = reference("order_id", OrderTable.id).nullable()
+    val buyerUserId = reference("buyer_user_id", UserTable.id).index()
+    val sellerId = reference("seller_id", SellerTable.id).index()
+    val invoiceNumber = varchar("invoice_number", 50).uniqueIndex()
+    val status = enumerationByName("status", 20, B2bInvoiceStatus::class).default(B2bInvoiceStatus.PENDING).index()
+    val currency = varchar("currency", 3).default("USD")
+    val amount = decimal("amount", 12, 2)
+    val dueDate = datetime("due_date")
+    val paidAt = datetime("paid_at").nullable()
+    val providerReference = varchar("provider_reference", 150).nullable()
+    val reminderCount = integer("reminder_count").default(0)
+    val lastReminderAt = datetime("last_reminder_at").nullable()
+    val nextReminderAt = datetime("next_reminder_at").nullable()
+}
+
+class B2bInvoiceDAO(id: EntityID<String>) : BaseEntity(id, B2bInvoiceTable) {
+    companion object : BaseEntityClass<B2bInvoiceDAO>(B2bInvoiceTable, B2bInvoiceDAO::class.java)
+
+    var purchaseOrderId by B2bInvoiceTable.purchaseOrderId
+    var orderId by B2bInvoiceTable.orderId
+    var buyerUserId by B2bInvoiceTable.buyerUserId
+    var sellerId by B2bInvoiceTable.sellerId
+    var invoiceNumber by B2bInvoiceTable.invoiceNumber
+    var status by B2bInvoiceTable.status
+    var currency by B2bInvoiceTable.currency
+    var amount by B2bInvoiceTable.amount
+    var dueDate by B2bInvoiceTable.dueDate
+    var paidAt by B2bInvoiceTable.paidAt
+    var providerReference by B2bInvoiceTable.providerReference
+    var reminderCount by B2bInvoiceTable.reminderCount
+    var lastReminderAt by B2bInvoiceTable.lastReminderAt
+    var nextReminderAt by B2bInvoiceTable.nextReminderAt
 }

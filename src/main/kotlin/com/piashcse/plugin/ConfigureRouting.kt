@@ -11,8 +11,10 @@ import com.piashcse.feature.auth.authAdminRoutes
 import com.piashcse.feature.auth.authRoutes
 import com.piashcse.feature.b2b.b2bAccountRoutes
 import com.piashcse.feature.b2b.b2bAdminRoutes
+import com.piashcse.feature.b2b.b2bInvoiceRoutes
 import com.piashcse.feature.b2b.b2bPurchaseOrderRoutes
 import com.piashcse.feature.b2b.b2bQuoteRoutes
+import com.piashcse.feature.b2b.b2bSellerInvoiceRoutes
 import com.piashcse.feature.b2b.b2bSellerPurchaseOrderRoutes
 import com.piashcse.feature.b2b.b2bSellerQuoteRoutes
 import com.piashcse.feature.brand.brandAdminRoutes
@@ -226,6 +228,7 @@ private fun Route.customerRoutes() {
     route("b2b/account") { b2bAccountRoutes() }.describe { tag(ApiTags.B2B) }
     route("b2b/quotes") { b2bQuoteRoutes() }.describe { tag(ApiTags.B2B) }
     route("b2b/purchase-orders") { b2bPurchaseOrderRoutes() }.describe { tag(ApiTags.B2B) }
+    route("b2b/invoices") { b2bInvoiceRoutes() }.describe { tag(ApiTags.B2B) }
     route("stores") { storeLocatorRoutes() }.describe { tag(ApiTags.OMNICHANNEL) }
     route("cms") { cmsRoutes() }.describe { tag(ApiTags.CONTENT) }
     route("seo") { seoRoutes() }.describe { tag(ApiTags.CONTENT) }
@@ -263,6 +266,7 @@ private fun Route.sellerRoutes() {
             route("commission") { commissionSellerRoutes() }.describe { tag(ApiTags.SELLER) }
             route("b2b/quotes") { b2bSellerQuoteRoutes() }.describe { tag(ApiTags.B2B) }
             route("b2b/purchase-orders") { b2bSellerPurchaseOrderRoutes() }.describe { tag(ApiTags.B2B) }
+            route("b2b/invoices") { b2bSellerInvoiceRoutes() }.describe { tag(ApiTags.B2B) }
         }
     }
 }
