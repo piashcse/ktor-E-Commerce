@@ -181,6 +181,27 @@ class OmnichannelRoutesTest {
         }
 
     @Test
+    fun `seller prints POS receipt and session report`() =
+        testApplication {
+            coEvery { service.posReceipt("seller-user", "order-1") } returns "<html>receipt</html>"
+            coEvery { service.posSessionReport("seller-user", "session-1") } returns "<html>report</html>"
+            setup()
+            val receipt =
+                client.get("/api/v1/seller/pos/sales/order-1/receipt") {
+                    header(HttpHeaders.Authorization, authHeader(userId = "seller-user", userType = "SELLER"))
+                }
+            assertEquals(HttpStatusCode.OK, receipt.status)
+            assertEquals(ContentType.Text.Html.withCharset(Charsets.UTF_8), receipt.contentType())
+            assertContains(receipt.bodyAsText(), "receipt")
+            val report =
+                client.get("/api/v1/seller/pos/sessions/session-1/report") {
+                    header(HttpHeaders.Authorization, authHeader(userId = "seller-user", userType = "SELLER"))
+                }
+            assertEquals(HttpStatusCode.OK, report.status)
+            assertContains(report.bodyAsText(), "report")
+        }
+
+    @Test
     fun `seller creates and lists POS sales`() =
         testApplication {
             coEvery { service.posSale("seller-user", any()) } returns order().copy(fulfillmentType = FulfillmentType.POS)

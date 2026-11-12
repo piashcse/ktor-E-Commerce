@@ -238,6 +238,12 @@ class OmnichannelIntegrationTest {
         assertEquals("121.00", closed.expectedCash)
         assertEquals("0.00", closed.variance)
         assertEquals(1, kotlinx.coroutines.runBlocking { service.posSessions(sellerUserId, 10, 0) }.data.size)
+        val receipt = kotlinx.coroutines.runBlocking { service.posReceipt(sellerUserId, pos.orderId) }
+        assertTrue(receipt.contains("POS Receipt"))
+        assertTrue(receipt.contains("Omni Product $suffix"))
+        val report = kotlinx.coroutines.runBlocking { service.posSessionReport(sellerUserId, session.id) }
+        assertTrue(report.contains("POS Session Report"))
+        assertTrue(report.contains("Expected cash"))
 
         // BOPIS checkout no longer needs a shipping address/method and reserves from the store.
         kotlinx.coroutines.runBlocking { CartRepositoryImpl().createCart(customerId, productId, 1) }

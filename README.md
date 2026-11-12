@@ -11169,6 +11169,52 @@ http://localhost:8080/api/v1/seller/pos/sessions/{id}/close
 ```
 </details>
 <details>
+<summary> <code>GET</code> <code>/api/v1/seller/pos/sales/{id}/receipt</code></summary>
+
+### Description
+Seller: printable POS receipt.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/pos/sales/order-uuid/receipt' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/pos/sales/{id}/receipt
+```
+
+### Response
+```html
+<html><body><h1>POS-20260601-ABC123</h1></body></html>
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/pos/sessions/{id}/report</code></summary>
+
+### Description
+Seller: printable POS session/Z report.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/pos/sessions/session-uuid/report' \
+  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/pos/sessions/{id}/report
+```
+
+### Response
+```html
+<html><body><h1>POS Session Report</h1></body></html>
+```
+</details>
+<details>
 <summary> <code>GET</code> <code>/api/v1/seller/pos/sales</code></summary>
 
 ### Description

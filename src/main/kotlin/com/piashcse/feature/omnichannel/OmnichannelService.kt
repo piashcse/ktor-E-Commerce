@@ -7,6 +7,7 @@ import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.PickupStatus
 import com.piashcse.constants.PosSessionStatus
 import com.piashcse.database.entities.OrderDAO
+import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.database.entities.OrderItemTable
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PaymentDAO
@@ -524,6 +525,113 @@ class OmnichannelService(
             session.closeNotes = request.notes
             session.toResponse()
         }
+
+    suspend fun posReceipt(
+        sellerUserId: String,
+        orderId: String,
+    ): String =
+        query {
+            val seller = requireSellerByUserId(sellerUserId)
+            val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
+            val order =
+                OrderDAO.find {
+                    (OrderTable.id eq orderId.entityID(OrderTable)) and
+                        (OrderTable.shopId eq shopId)
+                }.firstOrNull() ?: orderId.throwNotFound("POS order")
+            if (order.fulfillmentType != FulfillmentType.POS) throw ValidationException("Order is not a POS sale")
+            val items = OrderItemDAO.find { OrderItemTable.orderId eq order.id }.toList()
+            val sessionId = order.posSessionId?.value
+            val title = "POS Receipt ${order.orderNumber}"
+            val rows =
+                items.joinToString("") { item ->
+                    """
+                    <tr>
+                      <td>${escapeHtml(item.productName.orEmpty())}</td>
+                      <td class="num">${item.quantity}</td>
+                      <td class="num">${item.price.toPlainString()}</td>
+                      <td class="num">${item.total.toPlainString()}</td>
+                    </tr>
+                    """.trimIndent()
+                }
+            """
+            <!doctype html>
+            <html><head><meta charset="utf-8"><title>$title</title>
+            <style>
+              body{font-family:system-ui,sans-serif;max-width:420px;margin:24px auto;color:#111}
+              h1{font-size:20px;text-align:center;margin:0 0 4px}
+              .muted{color:#666;text-align:center;font-size:12px}
+              table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+              th,td{padding:6px 4px;border-bottom:1px dashed #ddd;text-align:left}
+              .num{text-align:right}.totals td{border:0;padding:2px 4px}
+              .total{font-weight:700;font-size:16px}.foot{text-align:center;font-size:11px;color:#666;margin-top:20px}
+              @media print{body{margin:0}}
+            </style></head><body>
+            <h1>${escapeHtml(order.orderNumber)}</h1>
+            <div class="muted">${escapeHtml(order.createdAt.toString())}</div>
+            <table><thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Total</th></tr></thead>
+            <tbody>$rows</tbody></table>
+            <table class="totals">
+              <tr><td>Subtotal</td><td class="num">${order.subTotal.toPlainString()}</td></tr>
+              <tr><td>Tax</td><td class="num">${order.taxAmount.toPlainString()}</td></tr>
+              <tr class="total"><td>Total</td><td class="num">${order.total.toPlainString()} ${escapeHtml(order.currency)}</td></tr>
+              <tr><td>Payment</td><td class="num">${order.paymentMethod?.name ?: "POS"}</td></tr>
+              <tr><td>Session</td><td class="num">${escapeHtml(sessionId ?: "-")}</td></tr>
+            </table>
+            <div class="foot">Thank you for shopping with us.</div>
+            </body></html>
+            """.trimIndent()
+        }
+
+    suspend fun posSessionReport(
+        sellerUserId: String,
+        sessionId: String,
+    ): String =
+        query {
+            val seller = requireSellerByUserId(sellerUserId)
+            val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
+            val session =
+                PosSessionDAO.find {
+                    (PosSessionTable.id eq sessionId.entityID(PosSessionTable)) and
+                        (PosSessionTable.shopId eq shopId)
+                }.firstOrNull() ?: sessionId.throwNotFound("POS session")
+            val sales =
+                OrderDAO.find {
+                    (OrderTable.posSessionId eq session.id) and
+                        (OrderTable.fulfillmentType eq FulfillmentType.POS)
+                }.count()
+            val expected = session.expectedCash ?: Money.scale2(session.openingFloat.add(session.cashSales))
+            """
+            <!doctype html>
+            <html><head><meta charset="utf-8"><title>POS Session ${escapeHtml(session.id.value)}</title>
+            <style>
+              body{font-family:system-ui,sans-serif;max-width:520px;margin:24px auto;color:#111}
+              h1{font-size:20px;text-align:center;margin:0 0 4px}.muted{color:#666;text-align:center;font-size:12px}
+              table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px}
+              td{padding:8px 4px;border-bottom:1px dashed #ddd}.num{text-align:right;font-variant-numeric:tabular-nums}
+              .total{font-weight:700}.foot{text-align:center;font-size:11px;color:#666;margin-top:20px}
+              @media print{body{margin:0}}
+            </style></head><body>
+            <h1>POS Session Report</h1>
+            <div class="muted">${escapeHtml(session.id.value)} · ${escapeHtml(session.status.name)}</div>
+            <table>
+              <tr><td>Opened</td><td class="num">${escapeHtml(session.openedAt.toString())}</td></tr>
+              <tr><td>Closed</td><td class="num">${session.closedAt?.toString() ?: "-"}</td></tr>
+              <tr><td>Sales</td><td class="num">$sales</td></tr>
+              <tr><td>Opening float</td><td class="num">${session.openingFloat.toPlainString()}</td></tr>
+              <tr><td>Cash sales</td><td class="num">${session.cashSales.toPlainString()}</td></tr>
+              <tr><td>Card sales</td><td class="num">${session.cardSales.toPlainString()}</td></tr>
+              <tr class="total"><td>Expected cash</td><td class="num">${expected.toPlainString()}</td></tr>
+              <tr><td>Counted cash</td><td class="num">${session.countedCash?.toPlainString() ?: "-"}</td></tr>
+              <tr class="total"><td>Variance</td><td class="num">${session.variance?.toPlainString() ?: "-"}</td></tr>
+            </table>
+            <div class="foot">Generated from the POS ledger.</div>
+            </body></html>
+            """.trimIndent()
+        }
+
+    private fun escapeHtml(value: String): String =
+        value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            .replace("\"", "&quot;").replace("'", "&#39;")
 
     suspend fun posSessions(
         sellerUserId: String,
