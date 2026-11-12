@@ -15,6 +15,7 @@ import com.piashcse.database.entities.ShipmentItemTable
 import com.piashcse.database.entities.ShipmentTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.event.AdminAudit
 import com.piashcse.event.OrderStatusChangedEvent
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.service.AppMetrics
@@ -103,6 +104,7 @@ data class ShipmentResponse(
     val items: List<ShipmentItemResponse>,
 )
 
+@Serializable
 data class CarrierWebhookResult(
     val accepted: Boolean,
     val duplicate: Boolean = false,
@@ -292,6 +294,56 @@ class ShipmentService(
             CarrierWebhookResult(true, message = "Webhook processed")
         }
     }
+
+    suspend fun replayWebhook(
+        eventId: String,
+        actorUserId: String,
+    ): CarrierWebhookResult =
+        query {
+            val record =
+                CarrierWebhookEventDAO.find {
+                    CarrierWebhookEventTable.id eq eventId.entityID(CarrierWebhookEventTable)
+                }.forUpdate().firstOrNull() ?: eventId.throwNotFound("Carrier webhook event")
+            val event =
+                runCatching { carrier.parseWebhook(record.payload) }
+                    .getOrElse { error ->
+                        record.status = WebhookEventStatus.FAILED
+                        record.error = error.message ?: "Invalid stored carrier payload"
+                        record.processedAt = currentUtc()
+                        AdminAudit.publish(
+                            actorUserId,
+                            "WEBHOOK_REPLAY_FAILED",
+                            "CARRIER_WEBHOOK",
+                            eventId,
+                            record.error,
+                        )
+                        return@query CarrierWebhookResult(false, message = "Invalid stored carrier payload")
+                    }
+            val applied =
+                runCatching { applyTrackingEvent(event) }
+                    .getOrElse { error ->
+                        record.status = WebhookEventStatus.FAILED
+                        record.error = error.message
+                        record.processedAt = currentUtc()
+                        false
+                    }
+            record.status =
+                if (applied) {
+                    WebhookEventStatus.PROCESSED
+                } else {
+                    WebhookEventStatus.IGNORED
+                }
+            record.error = if (applied) null else "No matching shipment for ${event.trackingNumber ?: event.eventType}"
+            record.processedAt = currentUtc()
+            AdminAudit.publish(
+                actorUserId,
+                "WEBHOOK_REPLAYED",
+                "CARRIER_WEBHOOK",
+                eventId,
+                "${event.eventType}: ${record.status}",
+            )
+            CarrierWebhookResult(true, message = "Carrier webhook replayed")
+        }
 
     private fun applyTrackingEvent(event: CarrierWebhookEvent): Boolean {
         val status = event.status ?: return false

@@ -6,6 +6,7 @@ import com.piashcse.constants.PaymentProvider
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.ScaStatus
 import com.piashcse.constants.UserType
+import com.piashcse.constants.WebhookEventStatus
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.database.entities.PaymentWebhookEventDAO
@@ -83,6 +84,7 @@ class PaymentWebhookIntegrationTest {
         val suffix = UUID.randomUUID().toString().take(8)
         lateinit var orderId: String
         lateinit var paymentId: String
+        lateinit var replayEventId: String
         val reference = "pi_$suffix"
 
         transaction {
@@ -116,6 +118,15 @@ class PaymentWebhookIntegrationTest {
                     transactionId = reference
                 }
             paymentId = payment.id.value
+            replayEventId =
+                PaymentWebhookEventDAO.new {
+                    provider = PaymentProvider.STRIPE
+                    eventId = "replay-$suffix"
+                    eventType = "PAYMENT_SUCCEEDED"
+                    this.payload = "{}"
+                    status = WebhookEventStatus.IGNORED
+                    error = "Stored for replay test"
+                }.id.value
         }
 
         val gateway =
@@ -188,6 +199,14 @@ class PaymentWebhookIntegrationTest {
         }
         assertFailsWith<com.piashcse.utils.validator.NotFoundException> {
             kotlinx.coroutines.runBlocking { repo.handleWebhook("unknown", "{}", "sig") }
+        }
+
+        val replayed = kotlinx.coroutines.runBlocking { repo.replayWebhook(replayEventId, "admin-1") }
+        assertTrue(replayed.accepted)
+        transaction {
+            val record = PaymentWebhookEventDAO.findById(replayEventId)!!
+            assertEquals(WebhookEventStatus.PROCESSED, record.status)
+            assertEquals(null, record.error)
         }
     }
 }

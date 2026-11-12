@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 357  
+**Operations:** 360  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -261,6 +261,9 @@ document served by Swagger UI.
 | `POST` | `/api/v1/admin/payments/{id}/risk/approve` | Admin - release a REVIEW payment | Admin |
 | `POST` | `/api/v1/payments` | Create a payment intent for an order. Status is server-owned. | Authenticated |
 | `POST` | `/api/v1/payments/webhook/{provider}` | Provider webhook (signature verified) | Public |
+| `GET` | `/api/v1/admin/webhooks` | Admin: list payment/carrier webhook events | Admin |
+| `POST` | `/api/v1/admin/webhooks/payments/{id}/replay` | Admin: replay a payment webhook | Admin |
+| `POST` | `/api/v1/admin/webhooks/carriers/{id}/replay` | Admin: replay a carrier webhook | Admin |
 | `GET` | `/api/v1/payments/order/{orderId}` | Retrieve all payments for a specific order | Authenticated |
 | `GET` | `/api/v1/payments/{id}` | Retrieve payment details by ID | Authenticated |
 
