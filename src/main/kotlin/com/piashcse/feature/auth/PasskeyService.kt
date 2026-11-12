@@ -1,5 +1,6 @@
 package com.piashcse.feature.auth
 
+import com.piashcse.config.DotEnvConfig
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.LoginResponse
 import com.piashcse.database.entities.PasskeyChallengeDAO
@@ -48,6 +49,7 @@ data class PasskeyRegisterOptionsResponse(
     val userDisplayName: String,
     val timeout: Long = 60_000,
     val excludeCredentials: List<CredentialDescriptor> = emptyList(),
+    val userVerification: String = "preferred",
 )
 
 @Serializable
@@ -57,6 +59,15 @@ data class PasskeyRegisterRequest(
     val publicKey: String,
     val name: String? = null,
     val transports: List<String> = emptyList(),
+    /** Current password or MFA code is required for step-up before adding a passkey. */
+    val password: String? = null,
+    val mfaCode: String? = null,
+)
+
+@Serializable
+data class PasskeyDeleteRequest(
+    val password: String? = null,
+    val mfaCode: String? = null,
 )
 
 @Serializable
@@ -71,6 +82,7 @@ data class PasskeyLoginOptionsResponse(
     val rpId: String,
     val timeout: Long = 60_000,
     val allowCredentials: List<CredentialDescriptor> = emptyList(),
+    val userVerification: String = "preferred",
 )
 
 @Serializable
@@ -106,6 +118,7 @@ class PasskeyService(
     private val rpName: String,
     private val origin: String,
     private val mfaService: MfaService = MfaService(),
+    private val requireUserVerification: Boolean = DotEnvConfig.webauthnRequireUv,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -126,6 +139,7 @@ class PasskeyService(
             userName = user.email,
             userDisplayName = user.email,
             excludeCredentials = existing,
+            userVerification = if (requireUserVerification) "required" else "preferred",
         )
     }
 
@@ -133,6 +147,7 @@ class PasskeyService(
         userId: String,
         request: PasskeyRegisterRequest,
     ): PasskeyCredentialResponse {
+        reauthenticate(userId, request.password, request.mfaCode)
         verifyClientData(request.clientDataJson, "webauthn.create", userId, "register")
         val existing =
             query {
@@ -169,6 +184,7 @@ class PasskeyService(
             challenge = challenge,
             rpId = rpId,
             allowCredentials = credentials,
+            userVerification = if (requireUserVerification) "required" else "preferred",
         )
     }
 
@@ -194,6 +210,9 @@ class PasskeyService(
         }
         val flags = authenticatorData[32].toInt() and 0xff
         if (flags and 0x01 == 0) throw ValidationException("User presence is required")
+        if (requireUserVerification && flags and 0x04 == 0) {
+            throw ValidationException("User verification is required")
+        }
         val newSignCount =
             ((authenticatorData[33].toLong() and 0xff) shl 24) or
                 ((authenticatorData[34].toLong() and 0xff) shl 16) or
@@ -230,8 +249,10 @@ class PasskeyService(
     suspend fun delete(
         userId: String,
         id: String,
-    ): Boolean =
-        query {
+        request: PasskeyDeleteRequest = PasskeyDeleteRequest(),
+    ): Boolean {
+        reauthenticate(userId, request.password, request.mfaCode)
+        return query {
             val credential =
                 PasskeyCredentialDAO.find {
                     (PasskeyCredentialTable.id eq id.entityID(PasskeyCredentialTable)) and
@@ -240,6 +261,28 @@ class PasskeyService(
             credential.delete()
             true
         }
+    }
+
+    private suspend fun reauthenticate(
+        userId: String,
+        password: String?,
+        mfaCode: String?,
+    ) {
+        val user = query { UserDAO.findById(userId) ?: userId.throwNotFound("User") }
+        if (user.mfaEnabled) {
+            val secret = user.mfaSecret ?: throw ValidationException("MFA is not configured")
+            if (mfaCode.isNullOrBlank()) throw com.piashcse.utils.validator.MfaRequiredException()
+            if (!mfaService.verifyStoredSecret(secret, mfaCode)) {
+                throw com.piashcse.utils.validator.InvalidMfaCodeException()
+            }
+        }
+        if (!password.isNullOrBlank() && !authRepo.verifyUserPassword(userId, password)) {
+            throw ValidationException("Invalid password")
+        }
+        if (!user.mfaEnabled && password.isNullOrBlank()) {
+            throw ValidationException("Password or MFA code is required to change passkeys")
+        }
+    }
 
     private suspend fun verifyClientData(
         encoded: String,

@@ -1,8 +1,10 @@
 package com.piashcse.database
 
+import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.feature.auth.AuthRepositoryImpl
+import com.piashcse.feature.auth.PasskeyDeleteRequest
 import com.piashcse.feature.auth.PasskeyLoginOptionsRequest
 import com.piashcse.feature.auth.PasskeyLoginRequest
 import com.piashcse.feature.auth.PasskeyRegisterRequest
@@ -80,7 +82,7 @@ class PasskeyIntegrationTest {
                 UserDAO.new {
                     this.email = "passkey-$suffix@example.com"
                     userType = UserType.CUSTOMER
-                    password = "hashed"
+                    password = BCrypt.withDefaults().hashToString(10, "password123".toCharArray())
                     isVerified = true
                     isActive = true
                 }
@@ -109,6 +111,7 @@ class PasskeyIntegrationTest {
                         clientDataJson = base64Url(registerClientData.toByteArray()),
                         publicKey = Base64.getEncoder().encodeToString(keyPair.public.encoded),
                         name = "Test key",
+                        password = "password123",
                     ),
                 )
             }
@@ -173,6 +176,13 @@ class PasskeyIntegrationTest {
                 )
             }
         }
+
+        assertTrue(
+            kotlinx.coroutines.runBlocking {
+                service.delete(userId, registered.id, PasskeyDeleteRequest(password = "password123"))
+            },
+        )
+        assertTrue(kotlinx.coroutines.runBlocking { service.list(userId) }.isEmpty())
     }
 
     private fun clientData(

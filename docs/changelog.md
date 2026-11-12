@@ -56,6 +56,8 @@ hide:
   automatic expiry with entitlement revocation, and webhook-driven invoice activation.
 - Integration assertions now scope admin account/ticket checks to the test's unique identifiers
   instead of relying on global row counts.
+- Passkey registration/deletion now requires recent password or MFA step-up; login options can
+  require authenticator user verification via `WEBAUTHN_REQUIRE_UV`.
 - Support tickets accept private image attachments with authenticated customer/admin downloads
   (`V55`).
 - POS receipts and printable session/Z reports are available to the selling shop.

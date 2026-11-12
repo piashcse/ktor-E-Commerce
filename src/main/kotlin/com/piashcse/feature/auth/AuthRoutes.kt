@@ -264,11 +264,14 @@ fun Route.authRoutes() {
 
         delete("passkeys/{id}") {
             val id = call.requirePathParameter("id")
-            if (!passkeyService.delete(call.currentUserId, id)) {
+            if (!passkeyService.delete(call.currentUserId, id, call.receive<PasskeyDeleteRequest>())) {
                 throw com.piashcse.utils.validator.NotFoundException("Passkey not found")
             }
             call.respondOk(MessageResponse("Passkey deleted"))
-        }.describe { summary = "Delete a passkey" }
+        }.describe {
+            summary = "Delete a passkey"
+            requestBody { jsonBody<PasskeyDeleteRequest>() }
+        }
 
         mfaRoutes()
     }
