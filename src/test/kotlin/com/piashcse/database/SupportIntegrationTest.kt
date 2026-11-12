@@ -11,6 +11,7 @@ import com.piashcse.database.entities.UserDAO
 import com.piashcse.feature.support.CreateTicketRequest
 import com.piashcse.feature.support.SupportService
 import com.piashcse.feature.support.TicketReplyRequest
+import com.piashcse.feature.support.TicketSatisfactionRequest
 import com.piashcse.feature.support.TicketUpdateRequest
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -162,6 +163,15 @@ class SupportIntegrationTest {
 
         val closed = kotlinx.coroutines.runBlocking { support.close(customerId, created.ticket.id) }
         assertEquals(TicketStatus.CLOSED, closed.status)
+        assertTrue(closed.firstResponseAt != null)
+        assertTrue(closed.responseDueAt != null)
+        val rated =
+            kotlinx.coroutines.runBlocking {
+                support.rate(customerId, created.ticket.id, TicketSatisfactionRequest(5, "Fast resolution"))
+            }
+        assertEquals(5, rated.csatScore)
+        assertEquals("Fast resolution", rated.csatComment)
+        assertTrue(rated.csatRatedAt != null)
 
         assertEquals(1, kotlinx.coroutines.runBlocking { support.myTickets(customerId, 10, 0) }.data.size)
         assertEquals(

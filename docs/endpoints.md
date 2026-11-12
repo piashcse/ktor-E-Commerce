@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 360  
+**Operations:** 361  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -560,6 +560,7 @@ document served by Swagger UI.
 | `GET` | `/api/v1/support/tickets/{id}` | Get a ticket and public replies | Authenticated |
 | `POST` | `/api/v1/support/tickets/{id}/messages` | Reply to a ticket | Authenticated |
 | `POST` | `/api/v1/support/tickets/{id}/close` | Close my ticket | Authenticated |
+| `POST` | `/api/v1/support/tickets/{id}/satisfaction` | Rate a resolved/closed ticket | Authenticated |
 | `GET` | `/api/v1/admin/support/tickets` | Admin: list support tickets | Admin |
 | `GET` | `/api/v1/admin/support/tickets/{id}` | Admin: ticket with internal notes | Admin |
 | `POST` | `/api/v1/admin/support/tickets/{id}/messages` | Admin: reply or add internal note | Admin |

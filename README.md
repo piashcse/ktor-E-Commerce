@@ -11554,6 +11554,32 @@ http://localhost:8080/api/v1/support/tickets/{id}/messages
 </details>
 <details>
 <summary> <code>POST</code> <code>/api/v1/support/tickets/{id}/close</code></summary>
+<details>
+<summary> <code>POST</code> <code>/api/v1/support/tickets/{id}/satisfaction</code></summary>
+
+### Description
+Rate a resolved or closed support ticket (1-5).
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/support/tickets/ticket-uuid/satisfaction' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"score":5,"comment":"Fast resolution"}'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/support/tickets/{id}/satisfaction
+```
+
+### Response
+```json
+{"id":"ticket-1","status":"CLOSED","csatScore":5,"csatComment":"Fast resolution"}
+```
+</details>
+
 
 ### Description
 Close my ticket.
