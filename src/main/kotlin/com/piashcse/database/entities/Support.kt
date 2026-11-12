@@ -63,3 +63,23 @@ class SupportMessageDAO(id: EntityID<String>) : BaseEntity(id, SupportMessageTab
     var body by SupportMessageTable.body
     var isInternal by SupportMessageTable.isInternal
 }
+
+object SupportAttachmentTable : BaseIdTable("support_attachment") {
+    val ticketId = reference("ticket_id", SupportTicketTable.id).index()
+    val uploadedBy = reference("uploaded_by", UserTable.id)
+    val fileName = varchar("file_name", 255)
+    val contentType = varchar("content_type", 100).nullable()
+    val storageName = varchar("storage_name", 255)
+    val sizeBytes = long("size_bytes").default(0)
+}
+
+class SupportAttachmentDAO(id: EntityID<String>) : BaseEntity(id, SupportAttachmentTable) {
+    companion object : BaseEntityClass<SupportAttachmentDAO>(SupportAttachmentTable, SupportAttachmentDAO::class.java)
+
+    var ticketId by SupportAttachmentTable.ticketId
+    var uploadedBy by SupportAttachmentTable.uploadedBy
+    var fileName by SupportAttachmentTable.fileName
+    var contentType by SupportAttachmentTable.contentType
+    var storageName by SupportAttachmentTable.storageName
+    var sizeBytes by SupportAttachmentTable.sizeBytes
+}

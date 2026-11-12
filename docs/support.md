@@ -33,6 +33,8 @@ Other customer endpoints:
 | `POST` | `/api/v1/support/tickets/{id}/messages` | Reply |
 | `POST` | `/api/v1/support/tickets/{id}/close` | Close |
 | `POST` | `/api/v1/support/tickets/{id}/satisfaction` | Rate a resolved/closed ticket |
+| `POST` | `/api/v1/support/tickets/{id}/attachments` | Upload an image attachment |
+| `GET` | `/api/v1/support/tickets/{id}/attachments/{attachmentId}` | Download an attachment |
 
 - Customers never see `isInternal` messages.
 - Replying reopens `PENDING` / `RESOLVED` tickets.
@@ -126,6 +128,29 @@ The first admin reply records `firstResponseAt`.
 This is polling-based chat: clients fetch the ticket thread and post replies. No WebSocket channel is
 required.
 
+
+## Attachments
+
+`POST /api/v1/support/tickets/{id}/attachments` accepts a multipart image (JPEG/PNG/WebP/GIF, 5 MB)
+from the ticket owner. `GET /api/v1/support/tickets/{id}/attachments/{attachmentId}` and the admin
+counterpart serve the file privately with `Cache-Control: private, no-store`.
+
+Attachments appear in ticket responses:
+
+```json
+{
+  "attachments": [
+    {
+      "id": "attachment-uuid",
+      "ticketId": "ticket-uuid",
+      "fileName": "proof.png",
+      "contentType": "image/png",
+      "sizeBytes": 12345,
+      "createdAt": "2026-05-01T10:00:00Z"
+    }
+  ]
+}
+```
 
 ## Satisfaction (CSAT)
 
