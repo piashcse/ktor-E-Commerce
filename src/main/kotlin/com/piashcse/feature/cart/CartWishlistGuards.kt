@@ -7,8 +7,8 @@ import com.piashcse.database.entities.CartItemTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductVariantDAO
 import com.piashcse.database.entities.ProductVariantTable
-import com.piashcse.database.entities.WishListDAO
-import com.piashcse.database.entities.WishListTable
+import com.piashcse.database.entities.WishlistDAO
+import com.piashcse.database.entities.WishlistTable
 import com.piashcse.database.entities.effectiveStock
 import com.piashcse.database.entities.effectiveStockFor
 import com.piashcse.utils.extension.entityID
@@ -92,7 +92,7 @@ fun requireCartItem(
 fun requireWishlistItem(
     userId: String,
     productId: String,
-): WishListDAO =
-    WishListDAO.find {
-        WishListTable.userId eq userId and (WishListTable.productId eq productId)
+): WishlistDAO =
+    WishlistDAO.find {
+        WishlistTable.userId eq userId and (WishlistTable.productId eq productId)
     }.firstOrNull() ?: productId.throwNotFound("ProductResponse")

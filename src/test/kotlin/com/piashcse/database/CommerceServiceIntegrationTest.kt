@@ -38,7 +38,7 @@ import com.piashcse.feature.review_rating.ReviewRatingRepositoryImpl
 import com.piashcse.feature.shipping_address.ShippingAddressRepositoryImpl
 import com.piashcse.feature.stockalert.StockAlertRequest
 import com.piashcse.feature.stockalert.StockAlertService
-import com.piashcse.feature.wishlist.WishListRepositoryImpl
+import com.piashcse.feature.wishlist.WishlistRepositoryImpl
 import com.piashcse.model.request.CouponRequest
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.ReviewRatingRequest
@@ -211,13 +211,13 @@ class CommerceServiceIntegrationTest {
         assertTrue(kotlinx.coroutines.runBlocking { stockAlerts.unsubscribe(customerId, productId) })
 
         // Wishlist + move-to-cart
-        val wishlist = WishListRepositoryImpl()
-        kotlinx.coroutines.runBlocking { wishlist.addToWishList(customerId, productId) }
-        assertTrue(kotlinx.coroutines.runBlocking { wishlist.isProductInWishList(customerId, productId) })
-        assertEquals(1, kotlinx.coroutines.runBlocking { wishlist.getWishList(customerId, 10, 0) }.data.size)
+        val wishlist = WishlistRepositoryImpl()
+        kotlinx.coroutines.runBlocking { wishlist.addToWishlist(customerId, productId) }
+        assertTrue(kotlinx.coroutines.runBlocking { wishlist.isProductInWishlist(customerId, productId) })
+        assertEquals(1, kotlinx.coroutines.runBlocking { wishlist.getWishlist(customerId, 10, 0) }.data.size)
         assertNotNull(kotlinx.coroutines.runBlocking { wishlist.moveToCart(customerId, productId, 1) })
-        kotlinx.coroutines.runBlocking { wishlist.addToWishList(customerId, productId) }
-        assertNotNull(kotlinx.coroutines.runBlocking { wishlist.removeFromWishList(customerId, productId) })
+        kotlinx.coroutines.runBlocking { wishlist.addToWishlist(customerId, productId) }
+        assertNotNull(kotlinx.coroutines.runBlocking { wishlist.removeFromWishlist(customerId, productId) })
         kotlinx.coroutines.runBlocking { cartRepo.clearCart(customerId) }
 
         // Search suggestions

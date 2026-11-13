@@ -114,7 +114,7 @@ import com.piashcse.feature.tax.taxExemptionAdminRoutes
 import com.piashcse.feature.tax.taxZoneAdminRoutes
 import com.piashcse.feature.warehouse.warehouseSellerRoutes
 import com.piashcse.feature.webhook.webhookAdminRoutes
-import com.piashcse.feature.wishlist.wishListRoutes
+import com.piashcse.feature.wishlist.wishlistRoutes
 import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.common.MessageResponse
 import io.ktor.http.HttpStatusCode
@@ -207,7 +207,7 @@ private fun Route.customerRoutes() {
     route("products") { productRoutes() }.describe { tag(ApiTags.PRODUCT) }
     route("reviews") { reviewRatingRoutes() }.describe { tag(ApiTags.REVIEW) }
     route("carts") { cartRoutes() }.describe { tag(ApiTags.CART) }
-    route("wishlists") { wishListRoutes() }.describe { tag(ApiTags.WISHLIST) }
+    route("wishlists") { wishlistRoutes() }.describe { tag(ApiTags.WISHLIST) }
     route("stock-alerts") { stockAlertRoutes() }.describe { tag(ApiTags.PRODUCT) }
     route("checkout") { checkoutRoutes() }.describe { tag(ApiTags.CHECKOUT) }
     route("orders") {
