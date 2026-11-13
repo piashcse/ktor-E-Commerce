@@ -35,6 +35,7 @@ object UploadService {
     private const val PRODUCT_DIR = "product-images"
     private const val SHOP_DIR = "shop-images"
     private const val REFUND_DIR = "refund-images"
+    private const val SUPPORT_DIR = "support-attachments"
     private const val CATEGORY_DIR = "category-images"
     private const val BRAND_DIR = "brand-images"
 
@@ -56,7 +57,7 @@ object UploadService {
 
     init {
         // Create all upload directories on startup
-        listOf(PROFILE_DIR, PRODUCT_DIR, SHOP_DIR, REFUND_DIR, CATEGORY_DIR, BRAND_DIR)
+        listOf(PROFILE_DIR, PRODUCT_DIR, SHOP_DIR, REFUND_DIR, SUPPORT_DIR, CATEGORY_DIR, BRAND_DIR)
             .forEach { ensureDirectoryExists(it) }
     }
 
@@ -88,6 +89,12 @@ object UploadService {
      * Uploads a refund evidence image (5MB limit).
      */
     suspend fun uploadRefundImage(file: PartData.FileItem): String = upload(file, REFUND_DIR, MAX_FILE_SIZE, "refund image")
+
+    /** Uploads a support-ticket evidence image (5MB limit). */
+    suspend fun uploadSupportAttachment(
+        file: PartData.FileItem,
+        preloadedBytes: ByteArray? = null,
+    ): String = upload(file, SUPPORT_DIR, MAX_FILE_SIZE, "support attachment", preloadedBytes)
 
     /**
      * Uploads a category image (5MB limit).
@@ -259,7 +266,7 @@ object UploadService {
     /**
      * Deletes a file from the specified upload directory.
      */
-    private val ALLOWED_DIRS = setOf(PROFILE_DIR, PRODUCT_DIR, SHOP_DIR, REFUND_DIR, CATEGORY_DIR, BRAND_DIR)
+    private val ALLOWED_DIRS = setOf(PROFILE_DIR, PRODUCT_DIR, SHOP_DIR, REFUND_DIR, SUPPORT_DIR, CATEGORY_DIR, BRAND_DIR)
 
     fun delete(
         directory: String,

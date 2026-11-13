@@ -5,6 +5,8 @@ import com.piashcse.constants.TicketCategory
 import com.piashcse.constants.TicketPriority
 import com.piashcse.constants.TicketStatus
 import com.piashcse.database.entities.OrderDAO
+import com.piashcse.database.entities.SupportAttachmentDAO
+import com.piashcse.database.entities.SupportAttachmentTable
 import com.piashcse.database.entities.SupportMessageDAO
 import com.piashcse.database.entities.SupportMessageTable
 import com.piashcse.database.entities.SupportTicketDAO
@@ -114,9 +116,26 @@ data class TicketSummaryResponse(
 )
 
 @Serializable
+data class TicketAttachmentResponse(
+    val id: String,
+    val ticketId: String,
+    val fileName: String,
+    val contentType: String?,
+    val sizeBytes: Long,
+    val createdAt: String?,
+)
+
+data class SupportAttachmentDownload(
+    val storageName: String,
+    val fileName: String,
+    val contentType: String?,
+)
+
+@Serializable
 data class TicketResponse(
     val ticket: TicketSummaryResponse,
     val messages: List<TicketMessageResponse>,
+    val attachments: List<TicketAttachmentResponse> = emptyList(),
 )
 
 class SupportService {
@@ -182,6 +201,7 @@ class SupportService {
                         (SupportMessageTable.ticketId eq ticket.id) and (SupportMessageTable.isInternal eq false)
                     }.orderBy(SupportMessageTable.createdAt to SortOrder.ASC)
                         .map { it.toResponse() },
+                attachments = ticketAttachments(ticket.id.value),
             )
         }
 
@@ -239,6 +259,77 @@ class SupportService {
             ticket.toSummary()
         }
 
+    suspend fun attach(
+        userId: String,
+        ticketId: String,
+        fileName: String,
+        contentType: String?,
+        storageName: String,
+        sizeBytes: Long,
+        isAdmin: Boolean = false,
+    ): TicketAttachmentResponse =
+        query {
+            val ticket = SupportTicketDAO.findById(ticketId) ?: ticketId.throwNotFound("Ticket")
+            if (!isAdmin && ticket.userId.value != userId) {
+                throw ForbiddenException("Ticket belongs to another account")
+            }
+            SupportAttachmentDAO.new {
+                this.ticketId = ticket.id
+                this.uploadedBy = userId.entityID(UserTable)
+                this.fileName = fileName.take(255)
+                this.contentType = contentType?.take(100)
+                this.storageName = storageName
+                this.sizeBytes = sizeBytes
+            }.toAttachmentResponse()
+        }
+
+    suspend fun attachmentForCustomer(
+        userId: String,
+        ticketId: String,
+        attachmentId: String,
+    ): SupportAttachmentDownload =
+        query {
+            val ticket = SupportTicketDAO.findById(ticketId) ?: ticketId.throwNotFound("Ticket")
+            if (ticket.userId.value != userId) throw ForbiddenException("Ticket belongs to another account")
+            findAttachment(ticket.id.value, attachmentId)
+        }
+
+    suspend fun attachmentForAdmin(
+        ticketId: String,
+        attachmentId: String,
+    ): SupportAttachmentDownload =
+        query {
+            val ticket = SupportTicketDAO.findById(ticketId) ?: ticketId.throwNotFound("Ticket")
+            findAttachment(ticket.id.value, attachmentId)
+        }
+
+    private fun findAttachment(
+        ticketId: String,
+        attachmentId: String,
+    ): SupportAttachmentDownload {
+        val attachment =
+            SupportAttachmentDAO.find {
+                (SupportAttachmentTable.id eq attachmentId.entityID(SupportAttachmentTable)) and
+                    (SupportAttachmentTable.ticketId eq ticketId.entityID(SupportTicketTable))
+            }.firstOrNull() ?: attachmentId.throwNotFound("Attachment")
+        return SupportAttachmentDownload(attachment.storageName, attachment.fileName, attachment.contentType)
+    }
+
+    private fun ticketAttachments(ticketId: String): List<TicketAttachmentResponse> =
+        SupportAttachmentDAO.find { SupportAttachmentTable.ticketId eq ticketId.entityID(SupportTicketTable) }
+            .orderBy(SupportAttachmentTable.createdAt to SortOrder.ASC)
+            .map { it.toAttachmentResponse() }
+
+    private fun SupportAttachmentDAO.toAttachmentResponse() =
+        TicketAttachmentResponse(
+            id = id.value,
+            ticketId = ticketId.value,
+            fileName = fileName,
+            contentType = contentType,
+            sizeBytes = sizeBytes,
+            createdAt = createdAt.toUtcString(),
+        )
+
     suspend fun adminTickets(
         status: TicketStatus?,
         priority: TicketPriority?,
@@ -267,6 +358,7 @@ class SupportService {
                     SupportMessageDAO.find { SupportMessageTable.ticketId eq ticket.id }
                         .orderBy(SupportMessageTable.createdAt to SortOrder.ASC)
                         .map { it.toResponse() },
+                attachments = ticketAttachments(ticket.id.value),
             )
         }
 
@@ -343,6 +435,7 @@ class SupportService {
                 SupportMessageDAO.find { SupportMessageTable.ticketId eq ticket.id }
                     .orderBy(SupportMessageTable.createdAt to SortOrder.ASC)
                     .map { it.toResponse() },
+            attachments = ticketAttachments(ticket.id.value),
         )
 
     private fun myTicketTx(ticket: SupportTicketDAO): TicketResponse =
@@ -354,6 +447,7 @@ class SupportService {
                         (SupportMessageTable.isInternal eq false)
                 }.orderBy(SupportMessageTable.createdAt to SortOrder.ASC)
                     .map { it.toResponse() },
+            attachments = ticketAttachments(ticket.id.value),
         )
 
     private fun SupportTicketDAO.responseDueAt() = createdAt.plusHours(responseHours())

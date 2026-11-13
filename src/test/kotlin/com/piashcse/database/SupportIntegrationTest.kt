@@ -122,6 +122,26 @@ class SupportIntegrationTest {
             }
         assertEquals(TicketStatus.OPEN, created.ticket.status)
         assertEquals(1, created.messages.size)
+        val attachment =
+            kotlinx.coroutines.runBlocking {
+                support.attach(
+                    customerId,
+                    created.ticket.id,
+                    fileName = "proof.png",
+                    contentType = "image/png",
+                    storageName = "stored-$suffix.png",
+                    sizeBytes = 4,
+                )
+            }
+        assertEquals("proof.png", attachment.fileName)
+        val withAttachment = kotlinx.coroutines.runBlocking { support.myTicket(customerId, created.ticket.id) }
+        assertEquals(1, withAttachment.attachments.size)
+        assertEquals(
+            "stored-$suffix.png",
+            kotlinx.coroutines.runBlocking {
+                support.attachmentForCustomer(customerId, created.ticket.id, attachment.id)
+            }.storageName,
+        )
 
         val customerReply =
             kotlinx.coroutines.runBlocking {

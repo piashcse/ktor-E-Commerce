@@ -56,6 +56,8 @@ hide:
   automatic expiry with entitlement revocation, and webhook-driven invoice activation.
 - Integration assertions now scope admin account/ticket checks to the test's unique identifiers
   instead of relying on global row counts.
+- Support tickets accept private image attachments with authenticated customer/admin downloads
+  (`V55`).
 - POS receipts and printable session/Z reports are available to the selling shop.
 - Support tickets now expose first-response/resolution SLA deadlines with breach detection, and
   customers can submit CSAT scores/comments after resolution (`V54`).
@@ -123,7 +125,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (363 operations total).
+  (366 operations total).
 
 ### Fixed
 

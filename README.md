@@ -11601,6 +11601,30 @@ http://localhost:8080/api/v1/support/tickets/{id}/messages
 <details>
 <summary> <code>POST</code> <code>/api/v1/support/tickets/{id}/close</code></summary>
 <details>
+<summary> <code>POST</code> <code>/api/v1/support/tickets/{id}/attachments</code></summary>
+
+### Description
+Upload an image attachment to my support ticket.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/support/tickets/ticket-uuid/attachments' \
+  -H 'Authorization: Bearer <token>' \
+  -F 'file=@proof.png'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/support/tickets/{id}/attachments
+```
+
+### Response
+```json
+{"id":"attachment-1","fileName":"proof.png","contentType":"image/png"}
+```
+</details>
+<details>
 <summary> <code>POST</code> <code>/api/v1/support/tickets/{id}/satisfaction</code></summary>
 
 ### Description
