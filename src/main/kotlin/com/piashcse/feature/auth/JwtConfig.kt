@@ -17,7 +17,10 @@ object JwtConfig {
     val verifier: JWTVerifier =
         JWT.require(algorithm).withIssuer(issuer).withAudience(audience).build()
 
-    fun tokenProvider(jwtTokenBody: JwtTokenRequest): String =
+    fun tokenProvider(
+        jwtTokenBody: JwtTokenRequest,
+        tokenVersion: Int = 0,
+    ): String =
         JWT.create()
             .withSubject("Authentication")
             .withIssuer(issuer)
@@ -25,6 +28,7 @@ object JwtConfig {
             .withClaim("email", jwtTokenBody.email)
             .withClaim("userId", jwtTokenBody.userId)
             .withClaim("userType", jwtTokenBody.userType)
+            .withClaim("tokenVersion", tokenVersion)
             .withExpiresAt(Date(System.currentTimeMillis() + VALIDITY_MS))
             .sign(algorithm)
 }

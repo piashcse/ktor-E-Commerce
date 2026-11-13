@@ -29,6 +29,9 @@ object UserTable : BaseIdTable("user") {
     val socialSubject = varchar("social_subject", 255).nullable()
     val mfaLastUsedStep = long("mfa_last_used_step").nullable()
 
+    /** Incremented on credential changes; access tokens carrying an older version are rejected. */
+    val tokenVersion = integer("token_version").default(0)
+
     init {
         uniqueIndex("email_userType_idx", email, userType)
     }
@@ -52,6 +55,7 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     var socialProvider by UserTable.socialProvider
     var socialSubject by UserTable.socialSubject
     var mfaLastUsedStep by UserTable.mfaLastUsedStep
+    var tokenVersion by UserTable.tokenVersion
 
     /**
      * Get the seller information if the user is a seller

@@ -39,12 +39,13 @@ class AuthRepositoryImpl : AuthRepository {
 
     // ── Token helpers ─────────────────────────────────────────────────────
 
-    override fun generateTokenPair(
+    override suspend fun generateTokenPair(
         userId: String,
         email: String,
         userType: String,
     ): TokenPair {
-        val accessToken = JwtConfig.tokenProvider(JwtTokenRequest(userId, email, userType))
+        val tokenVersion = query { UserDAO.findById(userId)?.tokenVersion ?: 0 }
+        val accessToken = JwtConfig.tokenProvider(JwtTokenRequest(userId, email, userType), tokenVersion)
         return TokenPair(accessToken = accessToken, refreshToken = UUID.randomUUID().toString(), expiresIn = 900)
     }
 
@@ -293,6 +294,7 @@ class AuthRepositoryImpl : AuthRepository {
             if (!verifyPassword(changePassword.oldPassword, userEntity.password)) return@query false
             if (changePassword.oldPassword == changePassword.newPassword) throw ValidationException(Message.Auth.PASSWORD_SAME)
             userEntity.password = hashPassword(changePassword.newPassword)
+            userEntity.tokenVersion += 1
             // A password change must invalidate every existing session.
             revokeAllUserTokensTx(userId)
             true
@@ -363,6 +365,7 @@ class AuthRepositoryImpl : AuthRepository {
             user.resetOtpCode = null
             user.resetOtpExpiry = null
             user.password = hashPassword(resetPasswordRequest.newPassword)
+            user.tokenVersion += 1
             // Password reset must invalidate every existing session.
             revokeAllUserTokensTx(user.id.value)
             ResetResult.Success

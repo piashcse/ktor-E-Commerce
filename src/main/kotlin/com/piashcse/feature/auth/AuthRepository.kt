@@ -58,7 +58,7 @@ interface AuthRepository {
 
     suspend fun revokeAllUserTokens(userId: String): Boolean
 
-    fun generateTokenPair(
+    suspend fun generateTokenPair(
         userId: String,
         email: String,
         userType: String,
