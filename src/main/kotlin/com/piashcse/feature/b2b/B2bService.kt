@@ -5,6 +5,7 @@ import com.piashcse.constants.B2bInvoiceStatus
 import com.piashcse.constants.B2bQuoteStatus
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
+import com.piashcse.constants.PaymentProvider
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.PurchaseOrderStatus
 import com.piashcse.database.entities.B2bAccountDAO
@@ -19,6 +20,7 @@ import com.piashcse.database.entities.B2bQuoteItemTable
 import com.piashcse.database.entities.B2bQuoteTable
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
+import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.SellerDAO
@@ -29,6 +31,9 @@ import com.piashcse.database.entities.addSales
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.decrementStock
 import com.piashcse.event.AdminAudit
+import com.piashcse.event.OutboxPublisher
+import com.piashcse.event.PaymentCompletedEvent
+import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
@@ -394,7 +399,6 @@ class B2bService {
             }
             request.items?.let { items ->
                 if (items.isEmpty()) throw ValidationException("At least one item is required")
-                var subtotal = BigDecimal.ZERO
                 items.forEach { item ->
                     val row =
                         B2bQuoteItemDAO.find {
@@ -405,10 +409,15 @@ class B2bService {
                     row.quantity = item.quantity
                     row.unitPrice = item.unitPrice
                     row.total = Money.scale2(item.unitPrice.multiply(BigDecimal(item.quantity)))
-                    subtotal = subtotal.add(row.total)
                 }
-                quote.subtotal = Money.scale2(subtotal)
-                quote.total = Money.scale2(subtotal)
+                // Re-price every stored line, not just the lines present in this
+                // request. Omitted lines must not disappear from the total while
+                // fulfill() still ships them.
+                val storedTotal =
+                    B2bQuoteItemDAO.find { B2bQuoteItemTable.quoteId eq quote.id }
+                        .fold(BigDecimal.ZERO) { acc, row -> acc.add(row.total) }
+                quote.subtotal = Money.scale2(storedTotal)
+                quote.total = Money.scale2(storedTotal)
             }
             request.notes?.let { quote.notes = it }
             request.validUntil?.let { quote.validUntil = parseDate(it) }
@@ -435,9 +444,16 @@ class B2bService {
                     (B2bPurchaseOrderTable.buyerUserId eq buyerUserId.entityID(com.piashcse.database.entities.UserTable)) and
                         (B2bPurchaseOrderTable.status eq PurchaseOrderStatus.OPEN)
                 }.fold(BigDecimal.ZERO) { acc, po -> acc.add(po.total) }
-            if (account.creditLimit <= BigDecimal.ZERO || openTotal.add(quote.total) > account.creditLimit) {
+            // Fulfilled POs become unpaid invoices; those still consume credit.
+            val unpaidInvoices =
+                B2bInvoiceDAO.find {
+                    (B2bInvoiceTable.buyerUserId eq buyerUserId.entityID(com.piashcse.database.entities.UserTable)) and
+                        (B2bInvoiceTable.status inList listOf(B2bInvoiceStatus.PENDING, B2bInvoiceStatus.OVERDUE))
+                }.fold(BigDecimal.ZERO) { acc, invoice -> acc.add(invoice.amount) }
+            val exposure = openTotal.add(unpaidInvoices)
+            if (account.creditLimit <= BigDecimal.ZERO || exposure.add(quote.total) > account.creditLimit) {
                 throw ValidationException(
-                    "Credit limit exceeded: available ${account.creditLimit.subtract(openTotal).max(BigDecimal.ZERO)}",
+                    "Credit limit exceeded: available ${account.creditLimit.subtract(exposure).max(BigDecimal.ZERO)}",
                 )
             }
             val dueDate = currentUtc().plusDays(account.paymentTermsDays.toLong())
@@ -624,11 +640,34 @@ class B2bService {
             invoice.nextReminderAt = null
             invoice.orderId?.let { orderId ->
                 OrderDAO.findById(orderId.value)?.let { order ->
+                    val payment =
+                        PaymentDAO.new {
+                            this.orderId = order.id
+                            this.userId = order.userId
+                            this.amount = invoice.amount
+                            this.currency = invoice.currency
+                            this.paymentMethod = PaymentMethod.BANK_TRANSFER
+                            this.transactionId = "b2b:${invoice.id.value}"
+                            this.provider = PaymentProvider.MANUAL
+                            this.providerStatus = "b2b-invoice"
+                            this.status = PaymentStatus.COMPLETED
+                        }
                     order.paymentStatus = PaymentStatus.COMPLETED
                     if (order.status in listOf(OrderStatus.PENDING, OrderStatus.CONFIRMED)) {
                         order.status = OrderStatus.PAID
-                        order.completedDate = currentUtc()
                     }
+                    DigitalDeliveryService().grantForOrderTx(order)
+                    OutboxPublisher.enqueueTx(
+                        "PAYMENT",
+                        payment.id.value,
+                        PaymentCompletedEvent(
+                            paymentId = payment.id.value,
+                            orderId = order.id.value,
+                            userId = order.userId.value,
+                            email = UserDAO.findById(order.userId.value)?.email.orEmpty(),
+                            amount = payment.amount,
+                        ),
+                    )
                 }
             }
             actorUserId?.let {

@@ -249,6 +249,9 @@ class OmnichannelService(
         query {
             val seller = requireSellerByUserId(sellerUserId)
             val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
+            if (request.paymentMethod in listOf(PaymentMethod.CREDIT_CARD, PaymentMethod.PAYPAL)) {
+                throw ValidationException("POS card/PayPal processing is not configured; use COD or bank transfer")
+            }
             findIdempotentPosSale(shopId.value, request.idempotencyKey)?.let { return@query it.toOrderResponse() }
             val session = resolvePosSession(shopId.value, request.posSessionId)
             val warehouse = resolvePosWarehouse(shopId.value, request.warehouseId, session)
@@ -370,6 +373,7 @@ class OmnichannelService(
                 userId = customer.id
                 this.shopId = shopId.entityID(com.piashcse.database.entities.ShopTable)
                 this.orderNumber = orderNumber
+                idempotencyKey = request.idempotencyKey?.takeIf { it.isNotBlank() }
                 status = OrderStatus.PAID
                 paymentStatus = PaymentStatus.COMPLETED
                 subTotal = BigDecimal.ZERO
