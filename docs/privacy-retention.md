@@ -61,11 +61,11 @@ identities are removed or anonymized. Order contact PII and delivery snapshots a
 - deletes expired digital entitlements
 - deletes cart items idle for more than 30 days
 - deletes resolved support tickets (and cascaded messages) older than 3 years
+- deletes expired WebAuthn ceremony challenges
 
 Still recommended:
 
 - expire/clear stale wishlists
-- share passkey challenges across nodes and purge them centrally
 - run the documented legal-hold review before deleting financial records
 
 ## Open decisions

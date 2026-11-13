@@ -89,6 +89,8 @@ class PasskeyIntegrationTest {
         }
 
         val service = PasskeyService(AuthRepositoryImpl(), "localhost", "Ktor E-Commerce", "http://localhost:3000")
+        // A second instance simulates another node: the DB challenge store must be shared.
+        val otherNode = PasskeyService(AuthRepositoryImpl(), "localhost", "Ktor E-Commerce", "http://localhost:3000")
         val keyPair = generateKeyPair()
         val credentialId = "cred-$suffix"
 
@@ -100,7 +102,7 @@ class PasskeyIntegrationTest {
             )
         val registered =
             kotlinx.coroutines.runBlocking {
-                service.register(
+                otherNode.register(
                     userId,
                     PasskeyRegisterRequest(
                         credentialId = credentialId,
@@ -136,7 +138,7 @@ class PasskeyIntegrationTest {
             )
         val login =
             kotlinx.coroutines.runBlocking {
-                service.login(
+                otherNode.login(
                     PasskeyLoginRequest(
                         email = email,
                         userType = "customer",
