@@ -31,6 +31,8 @@ data class PayoutBalanceResponse(
     val available: String,
     val currency: String = "USD",
     val pendingRequestAmount: String = "0.00",
+    /** Available balance per ISO currency (multi-currency sellers). */
+    val balances: Map<String, String> = emptyMap(),
 )
 
 @Serializable
@@ -91,6 +93,7 @@ interface PayoutRepository {
         sellerUserId: String,
         amount: BigDecimal,
         requestKey: String?,
+        currency: String? = null,
     ): List<PayoutResponse>
 
     suspend fun approvePayout(payoutId: String): PayoutResponse
@@ -101,6 +104,8 @@ interface PayoutRepository {
 @Serializable
 data class PayoutRequest(
     @Contextual val amount: BigDecimal,
+    /** ISO currency; required when the seller has balances in multiple currencies. */
+    val currency: String? = null,
 ) {
     init {
         validate(this) {

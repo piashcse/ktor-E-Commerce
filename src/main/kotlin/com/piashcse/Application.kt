@@ -13,6 +13,7 @@ import com.piashcse.service.AsyncWorker
 import com.piashcse.service.MaintenanceCleanup
 import com.piashcse.service.OutboxPoller
 import com.piashcse.service.StockReservationCleanup
+import com.piashcse.service.SubscriptionBillingWorker
 import com.piashcse.service.configureOutboxPoller
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -51,6 +52,7 @@ fun Application.configureAll() {
     AsyncWorker.start(this)
     StockReservationCleanup.start(this)
     MaintenanceCleanup.start(this)
+    SubscriptionBillingWorker.start(this)
     @Suppress("DEPRECATION")
     environment.monitor.subscribe(ApplicationStopping) {
         // Stop producers and consumers before tearing down the datasource.
@@ -58,6 +60,7 @@ fun Application.configureAll() {
         AsyncWorker.stop()
         StockReservationCleanup.stop()
         MaintenanceCleanup.stop()
+        SubscriptionBillingWorker.stop()
         EventBus.stop()
     }
     @Suppress("DEPRECATION")

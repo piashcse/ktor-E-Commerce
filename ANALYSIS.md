@@ -276,6 +276,7 @@ com.<org>.<app>
 | `fix/09-access-token-version` | `fix/08-split-order-wallet` | per-user token version claim; password change/reset increments it and rejects older access tokens | compile + auth/identity/MFA tests |
 | `fix/10-tax-promotions` | `fix/09-access-token-version` | promotion usage ledger/reversal, inclusive-tax invoice labels, offset-to-UTC normalization, coupon end-of-day, analytics date validation | compile + promotion/coupon/invoice/analytics/order tests |
 | `fix/11-privacy-notifications` | `fix/10-tax-promotions` | complete GDPR export/erase tables, notification external delivery after commit, back-in-stock active-user guard, analytics purchase-funnel dedupe by session | compile + privacy/notification/analytics tests |
+| `fix/12-subscriptions-payouts` | `fix/11-privacy-notifications` | autonomous daily subscription billing worker, per-currency payout balances and currency-aware requests | compile + payout/subscription/after-sales tests |
 
 > The checkbox statuses above are the **target** end state. Several items remain partial or open; see section 7.
 
@@ -283,7 +284,7 @@ com.<org>.<app>
 
 - **Auth/session:** refresh-rotation atomicity, passkey base64url challenge, encrypted OTP storage, step-up rate limits, enumeration-resistant responses.
 - **Orders/money:** one tax engine for cart summary, tax-inclusive checkout-summary reconciliation, money-as-`BigDecimal` in filters.
-- **Refunds/payouts:** wallet/gift restoration on partial refunds, multi-currency payout balances, partial payout withdrawals (currently full-balance only), subscription billing scheduler and self-serve PENDING activation.
+- **Refunds/payouts:** wallet/gift restoration on partial refunds, partial payout withdrawals (currently full-balance only), subscription proration/plan changes.
 - **Platform:** SMS/push providers, seller dashboard top products, analytics user linkage, policy version consent snapshots.
 - **Marketplace edges:** B2B PO cancel/VOID/credit notes/tax/address/reminders, POS card processing (now rejected explicitly), drawer refund accounting, shipment rate validation/cancel/label refund/webhook ack semantics, RMA replacement creation, KYC document validation, seller support routes.
 - **Refactor:** full package rename (`audit_log`, `refund_request`, `review_rating`, `product_category`, …), `PayoutStatus` enum, god-class decomposition (`OrderRepositoryImpl`, `B2bService`, `OmnichannelService`), DTO relocation, raw-JDBC replacement, `Instant`/`timestamptz` migration.
