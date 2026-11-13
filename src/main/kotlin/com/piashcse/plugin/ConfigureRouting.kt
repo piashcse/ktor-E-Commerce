@@ -52,6 +52,7 @@ import com.piashcse.feature.notification.notificationRoutes
 import com.piashcse.feature.omnichannel.pickupActionRoutes
 import com.piashcse.feature.omnichannel.pickupSellerListRoutes
 import com.piashcse.feature.omnichannel.posSellerRoutes
+import com.piashcse.feature.omnichannel.posSessionSellerRoutes
 import com.piashcse.feature.omnichannel.storeLocatorRoutes
 import com.piashcse.feature.order.orderAdminRoutes
 import com.piashcse.feature.order.orderRoutes
@@ -258,6 +259,7 @@ private fun Route.sellerRoutes() {
             }.describe { tag(ApiTags.ORDER) }
             route("pickup-orders") { pickupSellerListRoutes() }.describe { tag(ApiTags.OMNICHANNEL) }
             route("pos/sales") { posSellerRoutes() }.describe { tag(ApiTags.OMNICHANNEL) }
+            route("pos/sessions") { posSessionSellerRoutes() }.describe { tag(ApiTags.OMNICHANNEL) }
             route("refund-requests") { refundSellerRoutes() }.describe { tag(ApiTags.REFUND) }
             route("rma-requests") { rmaSellerRoutes() }.describe { tag(ApiTags.RMA) }
             route("dashboard") { dashboardSellerRoutes() }.describe { tag(ApiTags.DASHBOARD) }

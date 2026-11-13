@@ -85,3 +85,36 @@ fun Route.posSellerRoutes() {
         }
     }
 }
+
+/** Seller POS cash-drawer sessions. */
+fun Route.posSessionSellerRoutes() {
+    val service: OmnichannelService by inject()
+    get {
+        val (limit, offset) = call.paginateQueryParams()
+        call.respondOk(service.posSessions(call.currentUserId, limit, offset))
+    }.describe { summary = "Seller: list POS cash-drawer sessions" }
+
+    writeRateLimit {
+        post("open") {
+            call.respondCreated(service.openPosSession(call.currentUserId, call.receive<PosSessionOpenRequest>()))
+        }.describe {
+            summary = "Seller: open a POS cash-drawer session"
+            requestBody { jsonBody<PosSessionOpenRequest>() }
+            responses { created<PosSessionResponse>("POS session opened") }
+        }
+
+        post("{id}/close") {
+            call.respondOk(
+                service.closePosSession(
+                    call.currentUserId,
+                    call.requirePathParameter("id"),
+                    call.receive<PosSessionCloseRequest>(),
+                ),
+            )
+        }.describe {
+            summary = "Seller: close a POS session and reconcile cash"
+            requestBody { jsonBody<PosSessionCloseRequest>() }
+            responses { ok<PosSessionResponse>("POS session closed") }
+        }
+    }
+}

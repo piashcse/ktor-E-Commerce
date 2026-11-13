@@ -104,7 +104,8 @@ Completion sets `pickupStatus = PICKED_UP`, the order status to `RECEIVED`, and 
   ],
   "warehouseId": "warehouse-uuid",
   "paymentMethod": "COD",
-  "customerEmail": "walkin@example.com"
+  "customerEmail": "walkin@example.com",
+  "posSessionId": "session-uuid"
 }
 ```
 
@@ -115,9 +116,44 @@ Completion sets `pickupStatus = PICKED_UP`, the order status to `RECEIVED`, and 
 - Tax is calculated from the POS warehouse country and the normal tax rules.
 - `idempotencyKey` can be supplied to make retries safe.
 - Stock is decremented at the selected POS warehouse.
+- `posSessionId` links the sale to an open cash-drawer session; `COD` is treated as cash and other
+  methods as card for drawer reconciliation.
 - Decrements stock, increments sales counters, records a completed manual payment, grants digital
   entitlements, awards loyalty points and emits the normal payment-completed event (seller payouts,
   commission and notifications).
 - Returns `201 Created` with the order.
 
 **`GET /api/v1/seller/pos/sales`** lists the seller’s POS sales with pagination.
+
+
+## POS cash-drawer sessions
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/seller/pos/sessions` | List drawer sessions |
+| `POST` | `/api/v1/seller/pos/sessions/open` | Open a drawer session |
+| `POST` | `/api/v1/seller/pos/sessions/{id}/close` | Count cash and close |
+
+Open:
+
+```json
+{
+  "openingFloat": 100.00,
+  "warehouseId": "warehouse-uuid",
+  "notes": "Morning shift"
+}
+```
+
+Close:
+
+```json
+{
+  "countedCash": 121.00,
+  "notes": "Counted by Alice"
+}
+```
+
+- One open session is allowed per shop.
+- Cash sales (`COD`) and card sales are accumulated separately.
+- Closing records `expectedCash = openingFloat + cashSales`, `countedCash` and `variance`.
+- Sessions remain available for POS history/export.
