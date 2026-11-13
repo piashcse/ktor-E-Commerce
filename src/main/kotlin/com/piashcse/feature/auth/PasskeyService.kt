@@ -27,10 +27,10 @@ import org.jetbrains.exposed.v1.core.less
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import java.security.KeyFactory
 import java.security.MessageDigest
+import java.security.SecureRandom
 import java.security.Signature
 import java.security.spec.X509EncodedKeySpec
 import java.util.Base64
-import java.util.UUID
 
 @Serializable
 data class CredentialDescriptor(
@@ -121,6 +121,7 @@ class PasskeyService(
     private val requireUserVerification: Boolean = DotEnvConfig.webauthnRequireUv,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
+    private val random = SecureRandom()
 
     suspend fun registerOptions(userId: String): PasskeyRegisterOptionsResponse {
         val user = query { UserDAO.findById(userId) ?: userId.throwNotFound("User") }
@@ -348,7 +349,9 @@ class PasskeyService(
         query {
             val now = currentUtc()
             PasskeyChallengeTable.deleteWhere { PasskeyChallengeTable.expiresAt less now }
-            val value = UUID.randomUUID().toString()
+            // WebAuthn challenges are byte arrays. Store/return the base64url
+            // representation that browsers echo in clientDataJSON.
+            val value = base64Url(ByteArray(32).also { random.nextBytes(it) })
             PasskeyChallengeDAO.new {
                 challenge = value
                 this.userId = userId.entityID(UserTable)
