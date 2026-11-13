@@ -52,14 +52,21 @@ identities are removed or anonymized. Order contact PII and delivery snapshots a
 
 ## Operational jobs
 
-Recommended scheduled jobs:
+`MaintenanceCleanup` runs daily and currently:
 
-- purge analytics events older than 13 months
-- purge webhook inbox rows older than 90 days
-- expire/clear idle carts and wishlists
-- delete expired passkey challenges (in-memory today)
-- revoke digital entitlements whose subscription period ended
-- expire and anonymize support tickets after the retention window
+- purges published outbox rows, expired/revoked refresh tokens and expired blacklisted tokens
+- purges old login/OTP counters and read notifications
+- purges payment and carrier webhook inbox payloads older than 90 days
+- purges analytics events older than 13 months
+- deletes expired digital entitlements
+- deletes cart items idle for more than 30 days
+- deletes resolved support tickets (and cascaded messages) older than 3 years
+
+Still recommended:
+
+- expire/clear stale wishlists
+- share passkey challenges across nodes and purge them centrally
+- run the documented legal-hold review before deleting financial records
 
 ## Open decisions
 
