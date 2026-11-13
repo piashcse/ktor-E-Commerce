@@ -172,6 +172,7 @@ class NotificationSubscriber(
         val content = NotificationTemplates.backInStock(product.name)
         alerts.forEach { alert ->
             val user = query { UserDAO.findById(alert.userId.value) } ?: return@forEach
+            if (!user.isActive) return@forEach
             try {
                 dispatcher.dispatch(
                     NotificationMessage(

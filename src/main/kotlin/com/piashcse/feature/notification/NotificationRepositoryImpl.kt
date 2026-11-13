@@ -127,46 +127,60 @@ class NotificationRepositoryImpl : NotificationRepository {
         body: String,
         channel: String?,
         type: String?,
-    ) = query {
-        UserDAO.findById(userId) ?: userId.throwNotFound("User")
-        if (title.isBlank()) throw ValidationException("Notification title cannot be blank")
-        if (body.isBlank()) throw ValidationException("Notification body cannot be blank")
+    ): NotificationResponse {
+        val (notification, message) =
+            query {
+                val recipient = UserDAO.findById(userId) ?: userId.throwNotFound("User")
+                if (title.isBlank()) throw ValidationException("Notification title cannot be blank")
+                if (body.isBlank()) throw ValidationException("Notification body cannot be blank")
 
-        val normalizedType = type?.takeIf { it.isNotBlank() }?.uppercase() ?: DEFAULT_SEND_TYPE
-        if (normalizedType == PREFS_TYPE) {
-            throw ValidationException("Reserved notification type")
-        }
-
-        when (actorType) {
-            UserType.SELLER -> {
-                val shopId =
-                    requireSellerByUserId(actorUserId).shopId?.value
-                        ?: throw ForbiddenException("Seller has no shop")
-                val orderedFromShop =
-                    OrderDAO.find {
-                        (OrderTable.userId eq userId.entityID(UserTable)) and
-                            (OrderTable.shopId eq shopId.entityID(ShopTable))
-                    }.firstOrNull() != null
-                if (!orderedFromShop) {
-                    throw ForbiddenException("Seller may only notify customers of their own shop")
+                val normalizedType = type?.takeIf { it.isNotBlank() }?.uppercase() ?: DEFAULT_SEND_TYPE
+                if (normalizedType == PREFS_TYPE) {
+                    throw ValidationException("Reserved notification type")
                 }
-            }
-            UserType.ADMIN, UserType.SUPER_ADMIN -> Unit
-            else -> throw ForbiddenException("Insufficient permissions to send notifications")
-        }
 
-        // The recipient's stored preference is authoritative. A caller-supplied
-        // channel must not override it (and no provider is invoked here, so
-        // labelling an announcement EMAIL/SMS would be misleading).
-        channel?.let { requireChannel(it) }
-        val resolvedChannel = storedChannel(userId)
-        NotificationDAO.new {
-            this.userId = userId.entityID(UserTable)
-            this.channel = resolvedChannel
-            this.type = normalizedType
-            this.title = title
-            this.body = body
-        }.toResponse()
+                when (actorType) {
+                    UserType.SELLER -> {
+                        val shopId =
+                            requireSellerByUserId(actorUserId).shopId?.value
+                                ?: throw ForbiddenException("Seller has no shop")
+                        val orderedFromShop =
+                            OrderDAO.find {
+                                (OrderTable.userId eq userId.entityID(UserTable)) and
+                                    (OrderTable.shopId eq shopId.entityID(ShopTable))
+                            }.firstOrNull() != null
+                        if (!orderedFromShop) {
+                            throw ForbiddenException("Seller may only notify customers of their own shop")
+                        }
+                    }
+                    UserType.ADMIN, UserType.SUPER_ADMIN -> Unit
+                    else -> throw ForbiddenException("Insufficient permissions to send notifications")
+                }
+
+                // The recipient's stored preference is authoritative. A caller-supplied
+                // channel must not override it.
+                channel?.let { requireChannel(it) }
+                val resolvedChannel = storedChannel(userId)
+                val row =
+                    NotificationDAO.new {
+                        this.userId = userId.entityID(UserTable)
+                        this.channel = resolvedChannel
+                        this.type = normalizedType
+                        this.title = title
+                        this.body = body
+                    }
+                row.toResponse() to
+                    NotificationMessage(
+                        userId = userId,
+                        email = recipient.email,
+                        eventType = normalizedType,
+                        title = title,
+                        body = body,
+                    )
+            }
+        // External channel delivery happens after the inbox row commits.
+        NotificationDispatcher().dispatchExternal(message)
+        return notification
     }
 
     override suspend fun getPreferences(userId: String) =

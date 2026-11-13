@@ -43,7 +43,7 @@ class PrivacyService {
     suspend fun export(userId: String): PrivacyExportResponse =
         query {
             val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
-            val orders = OrderDAO.find { OrderTable.userId eq user.id }.limit(1_000).toList()
+            val orders = OrderDAO.find { OrderTable.userId eq user.id }.toList()
             PrivacyExportResponse(
                 user = user.toUserResponse(),
                 profile = UserProfileDAO.find { UserProfileTable.userId eq user.id }.firstOrNull()?.toUserProfileResponse(),
@@ -111,6 +111,83 @@ class PrivacyService {
                             "analyticsEvents",
                             AnalyticsEventDAO.find { AnalyticsEventTable.userId eq user.id }.map { it.toPrivacyMap() },
                         )
+                        put(
+                            "cartItems",
+                            CartItemDAO.find { CartItemTable.userId eq user.id }.map {
+                                mapOf(
+                                    "productId" to it.productId.value,
+                                    "variantId" to it.variantId?.value.orEmpty(),
+                                    "quantity" to it.quantity.toString(),
+                                )
+                            },
+                        )
+                        put(
+                            "wishlist",
+                            WishlistDAO.find { WishlistTable.userId eq user.id }.map {
+                                mapOf("productId" to it.productId.value, "createdAt" to it.createdAt.toUtcString())
+                            },
+                        )
+                        put(
+                            "stockAlerts",
+                            StockAlertDAO.find { StockAlertTable.userId eq user.id }.map {
+                                mapOf(
+                                    "productId" to it.productId.value,
+                                    "variantId" to it.variantId?.value.orEmpty(),
+                                    "notifiedAt" to (it.notifiedAt?.toUtcString() ?: ""),
+                                )
+                            },
+                        )
+                        put(
+                            "notificationPreferences",
+                            NotificationPreferenceDAO.find { NotificationPreferenceTable.userId eq user.id }.map {
+                                mapOf("eventType" to it.eventType, "channel" to it.channel)
+                            },
+                        )
+                        put(
+                            "apiKeys",
+                            ApiKeyDAO.find { ApiKeyTable.userId eq user.id }.map {
+                                mapOf(
+                                    "id" to it.id.value,
+                                    "name" to it.name,
+                                    "prefix" to it.prefix,
+                                    "scopes" to it.scopes,
+                                    "isActive" to it.isActive.toString(),
+                                    "createdAt" to it.createdAt.toUtcString(),
+                                )
+                            },
+                        )
+                        put(
+                            "couponUsage",
+                            CouponUsageDAO.find { CouponUsageTable.userId eq user.id }.map {
+                                mapOf(
+                                    "couponId" to it.couponId.value,
+                                    "orderId" to it.orderId?.value.orEmpty(),
+                                    "usedAt" to it.usedAt.toUtcString(),
+                                )
+                            },
+                        )
+                        put(
+                            "taxExemptions",
+                            TaxExemptionDAO.find { TaxExemptionTable.userId eq user.id }.map {
+                                mapOf(
+                                    "id" to it.id.value,
+                                    "businessTaxId" to it.businessTaxId.orEmpty(),
+                                    "country" to it.country.orEmpty(),
+                                    "expiresAt" to (it.expiresAt?.toUtcString() ?: ""),
+                                )
+                            },
+                        )
+                        put(
+                            "walletAccount",
+                            WalletAccountDAO.find { WalletAccountTable.userId eq user.id }.map {
+                                mapOf(
+                                    "creditBalance" to it.creditBalance.toPlainString(),
+                                    "pointsBalance" to it.pointsBalance.toString(),
+                                    "lifetimePoints" to it.lifetimePoints.toString(),
+                                    "referralCode" to it.referralCode,
+                                )
+                            },
+                        )
                     },
                 exportedAt = currentUtc().toUtcString(),
             )
@@ -125,6 +202,7 @@ class PrivacyService {
             if (!BCrypt.verifyer().verify(password.toCharArray(), user.password).verified) {
                 throw UnauthorizedException(Message.Auth.INVALID_CREDENTIALS)
             }
+            val previousEmail = user.email
 
             // Anonymize the account and invalidate every session.
             user.email = "deleted+${user.id.value}@invalid.local"
@@ -149,6 +227,14 @@ class PrivacyService {
             ReviewHelpfulVoteDAO.find { ReviewHelpfulVoteTable.userId eq user.id }.forEach { it.delete() }
             ReviewRatingDAO.find { ReviewRatingTable.userId eq user.id }.forEach { it.delete() }
             NotificationDAO.find { NotificationTable.userId eq user.id }.forEach { it.delete() }
+            NotificationPreferenceDAO.find { NotificationPreferenceTable.userId eq user.id }.forEach { it.delete() }
+            StockAlertDAO.find { StockAlertTable.userId eq user.id }.forEach { it.delete() }
+            ApiKeyDAO.find { ApiKeyTable.userId eq user.id }.forEach { it.delete() }
+            CouponUsageDAO.find { CouponUsageTable.userId eq user.id }.forEach { it.delete() }
+            TaxExemptionDAO.find { TaxExemptionTable.userId eq user.id }.forEach { it.delete() }
+            OtpAttemptDAO.find { OtpAttemptTable.userId eq user.id }.forEach { it.delete() }
+            PasskeyChallengeDAO.find { PasskeyChallengeTable.userId eq user.id }.forEach { it.delete() }
+            LoginAttemptDAO.find { LoginAttemptTable.email eq previousEmail }.forEach { it.delete() }
 
             UserProfileDAO.find { UserProfileTable.userId eq user.id }.forEach { profile ->
                 profile.image = null
