@@ -15,6 +15,7 @@ import com.piashcse.feature.fraud.FraudContext
 import com.piashcse.feature.fraud.FraudService
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.subscription.DigitalDeliveryService
+import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.mapper.toPaymentResponse
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
@@ -49,6 +50,7 @@ class PaymentRepositoryImpl(
     private val fraudService: FraudService = FraudService(),
     private val loyaltyService: LoyaltyService = LoyaltyService(),
     private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
+    private val subscriptionBilling: SubscriptionBillingService = SubscriptionBillingService(digitalDelivery),
 ) : PaymentRepository {
     private val gatewayBreaker = CircuitBreaker("payment-gateway", failureThreshold = 5, cooldownMs = 30_000)
 
@@ -414,8 +416,22 @@ class PaymentRepositoryImpl(
     }
 
     /** Must run inside the webhook transaction. */
-    private fun applyWebhookEvent(event: GatewayWebhookEvent): Boolean =
-        when (event.type) {
+    private fun applyWebhookEvent(event: GatewayWebhookEvent): Boolean {
+        // Subscription renewals are PaymentIntents without an order; route them by invoice metadata.
+        val subscriptionInvoiceId = event.metadata["subscription_invoice_id"]
+        if (!subscriptionInvoiceId.isNullOrBlank()) {
+            return when (event.type) {
+                GatewayEventType.PAYMENT_SUCCEEDED ->
+                    subscriptionBilling.applyPaidInvoiceTx(subscriptionInvoiceId, event.providerReference)
+                GatewayEventType.PAYMENT_FAILED ->
+                    subscriptionBilling.applyFailedInvoiceTx(
+                        subscriptionInvoiceId,
+                        event.providerStatus ?: "Subscription payment failed at provider",
+                    )
+                else -> false
+            }
+        }
+        return when (event.type) {
             GatewayEventType.PAYMENT_SUCCEEDED,
             GatewayEventType.PAYMENT_FAILED,
             GatewayEventType.PAYMENT_REQUIRES_ACTION,
@@ -462,6 +478,7 @@ class PaymentRepositoryImpl(
             }
             GatewayEventType.UNKNOWN -> false
         }
+    }
 
     override suspend fun getPaymentById(
         paymentId: String,

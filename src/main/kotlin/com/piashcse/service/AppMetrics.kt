@@ -29,6 +29,10 @@ object AppMetrics {
         Counter.builder("app.subscription.created").description("Subscriptions created").register(appMicrometerRegistry)
     val digitalDownloads: Counter =
         Counter.builder("app.digital.download").description("Digital downloads served").register(appMicrometerRegistry)
+    val subscriptionBillingSucceeded: Counter =
+        Counter.builder("app.subscription.billing.succeeded").description("Subscription invoices paid").register(appMicrometerRegistry)
+    val subscriptionBillingFailed: Counter =
+        Counter.builder("app.subscription.billing.failed").description("Subscription renewal failures").register(appMicrometerRegistry)
     val supportTicketsOpened: Counter =
         Counter.builder("app.support.ticket.opened").description("Support tickets opened").register(appMicrometerRegistry)
     val b2bQuotesRequested: Counter =

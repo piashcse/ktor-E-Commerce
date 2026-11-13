@@ -117,6 +117,13 @@ class DigitalDeliveryService(
         }
     }
 
+    /** Revokes subscription-based digital access after cancellation/expiry/dunning failure. */
+    fun revokeSubscriptionTx(subscriptionId: String) {
+        DigitalEntitlementDAO.find {
+            DigitalEntitlementTable.subscriptionId eq subscriptionId.entityID(com.piashcse.database.entities.SubscriptionTable)
+        }.forEach { it.delete() }
+    }
+
     /** Revokes order-based digital access after cancellation/full refund. */
     fun revokeOrderTx(orderId: String) {
         DigitalEntitlementDAO.find {

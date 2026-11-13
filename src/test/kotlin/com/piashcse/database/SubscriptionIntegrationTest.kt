@@ -3,6 +3,8 @@ package com.piashcse.database
 import com.piashcse.constants.BillingInterval
 import com.piashcse.constants.InvoiceStatus
 import com.piashcse.constants.OrderStatus
+import com.piashcse.constants.PaymentMethod
+import com.piashcse.constants.PaymentProvider
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.ProductStatus
 import com.piashcse.constants.ShopStatus
@@ -21,8 +23,13 @@ import com.piashcse.database.entities.SubscriptionInvoiceTable
 import com.piashcse.database.entities.SubscriptionTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.feature.payment.GatewayChargeResult
+import com.piashcse.feature.payment.GatewayRefundResult
+import com.piashcse.feature.payment.GatewayWebhookEvent
+import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.subscription.SubscribeRequest
+import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.feature.subscription.SubscriptionPlanRequest
 import com.piashcse.feature.subscription.SubscriptionService
 import com.piashcse.utils.extension.entityID
@@ -53,6 +60,60 @@ class SubscriptionIntegrationTest {
         runCatching {
             ProcessBuilder("docker", "info").redirectErrorStream(true).start().waitFor() == 0
         }.getOrDefault(false)
+
+    private class FakeRecurringGateway : PaymentGateway {
+        val failing = mutableSetOf<String>()
+        override val name: String = "FAKE"
+        override val provider: PaymentProvider = PaymentProvider.STRIPE
+
+        override fun supports(paymentMethod: PaymentMethod): Boolean = true
+
+        override suspend fun charge(
+            orderId: String,
+            amount: BigDecimal,
+            currency: String,
+            paymentMethod: PaymentMethod,
+            transactionId: String?,
+            returnUrl: String?,
+            idempotencyKey: String?,
+            require3ds: Boolean,
+        ): GatewayChargeResult = GatewayChargeResult(false, message = "not used")
+
+        override suspend fun refund(
+            providerReference: String,
+            amount: BigDecimal,
+            currency: String,
+            idempotencyKey: String,
+        ): GatewayRefundResult = GatewayRefundResult(false, message = "not used")
+
+        override fun verifyWebhook(
+            payload: String,
+            signature: String?,
+        ): Boolean = false
+
+        override fun parseWebhook(payload: String): GatewayWebhookEvent =
+            GatewayWebhookEvent("fake", PaymentProvider.STRIPE, com.piashcse.feature.payment.GatewayEventType.UNKNOWN)
+
+        override suspend fun chargeSubscription(
+            subscriptionId: String,
+            invoiceId: String,
+            amount: BigDecimal,
+            currency: String,
+            providerCustomerReference: String?,
+            paymentMethodReference: String,
+            idempotencyKey: String,
+        ): GatewayChargeResult =
+            if (subscriptionId in failing) {
+                GatewayChargeResult(false, message = "card declined")
+            } else {
+                GatewayChargeResult(
+                    success = true,
+                    captured = true,
+                    gatewayTransactionId = "pi_$invoiceId",
+                    providerStatus = "succeeded",
+                )
+            }
+    }
 
     @Test
     fun `subscriptions renew and grant digital access`() {
@@ -249,7 +310,109 @@ class SubscriptionIntegrationTest {
         assertEquals(1, canceled.canceled)
         assertEquals(
             SubscriptionStatus.CANCELED,
-            kotlinx.coroutines.runBlocking { plans.mySubscriptions(customerId) }.single().status,
+            kotlinx.coroutines.runBlocking { plans.mySubscriptions(customerId) }
+                .first { it.id == subscription.id }.status,
+        )
+
+        // A stored payment method is charged off-session on renewal.
+        val recurringPlan =
+            kotlinx.coroutines.runBlocking {
+                plans.createPlan(
+                    SubscriptionPlanRequest(
+                        name = "Recurring Monthly",
+                        description = "Stored-card renewal",
+                        productId = productId,
+                        interval = BillingInterval.MONTH,
+                        price = BigDecimal("4.99"),
+                    ),
+                )
+            }
+        val recurringDeliveries = DigitalDeliveryService()
+        val gateway = FakeRecurringGateway()
+        val recurring =
+            SubscriptionService(
+                recurringDeliveries,
+                SubscriptionBillingService(recurringDeliveries, gateway, graceDays = 3, maxAttempts = 2),
+            )
+        val recurringSubscription =
+            kotlinx.coroutines.runBlocking {
+                recurring.subscribe(
+                    customerId,
+                    SubscribeRequest(
+                        recurringPlan.id,
+                        paymentReference = "pay_recurring_initial",
+                        paymentMethodReference = "pm_test",
+                        providerCustomerReference = "cus_test",
+                    ),
+                )
+            }
+        val renewed = kotlinx.coroutines.runBlocking { recurring.runBilling(currentUtc().plusDays(100)) }
+        assertTrue(renewed.paid >= 1)
+        assertEquals(
+            SubscriptionStatus.ACTIVE,
+            kotlinx.coroutines.runBlocking { recurring.mySubscriptions(customerId) }
+                .first { it.id == recurringSubscription.id }.status,
+        )
+        assertEquals(
+            2,
+            kotlinx.coroutines.runBlocking { recurring.invoicesForUser(customerId, recurringSubscription.id) }.size,
+        )
+
+        // Failed renewals enter dunning and expire after the grace period.
+        val dunningPlan =
+            kotlinx.coroutines.runBlocking {
+                plans.createPlan(
+                    SubscriptionPlanRequest(
+                        name = "Dunning Monthly",
+                        description = "Declined-card renewal",
+                        productId = productId,
+                        interval = BillingInterval.MONTH,
+                        price = BigDecimal("2.99"),
+                    ),
+                )
+            }
+        val dunningSubscription =
+            kotlinx.coroutines.runBlocking {
+                recurring.subscribe(
+                    customerId,
+                    SubscribeRequest(
+                        dunningPlan.id,
+                        paymentReference = "pay_dunning_initial",
+                        paymentMethodReference = "pm_declined",
+                    ),
+                )
+            }
+        gateway.failing += dunningSubscription.id
+        val failedRun = kotlinx.coroutines.runBlocking { recurring.runBilling(currentUtc().plusDays(130)) }
+        assertTrue(failedRun.failed >= 1)
+        assertEquals(
+            SubscriptionStatus.PAST_DUE,
+            kotlinx.coroutines.runBlocking { recurring.mySubscriptions(customerId) }
+                .first { it.id == dunningSubscription.id }.status,
+        )
+        val retryRun = kotlinx.coroutines.runBlocking { recurring.runBilling(currentUtc().plusDays(132)) }
+        assertTrue(retryRun.expired >= 1)
+        assertEquals(
+            2,
+            transaction {
+                SubscriptionInvoiceDAO.find {
+                    SubscriptionInvoiceTable.subscriptionId eq dunningSubscription.id.entityID(SubscriptionTable)
+                }.maxOf { it.attemptCount }
+            },
+        )
+        assertEquals(
+            SubscriptionStatus.EXPIRED,
+            kotlinx.coroutines.runBlocking { recurring.mySubscriptions(customerId) }
+                .first { it.id == dunningSubscription.id }.status,
+        )
+
+        assertEquals(
+            2,
+            transaction {
+                SubscriptionInvoiceDAO.find {
+                    SubscriptionInvoiceTable.subscriptionId eq dunningSubscription.id.entityID(SubscriptionTable)
+                }.maxOf { it.attemptCount }
+            },
         )
     }
 }

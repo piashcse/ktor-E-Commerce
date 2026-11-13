@@ -173,6 +173,52 @@ class StripePaymentGatewayTest {
     }
 
     @Test
+    fun `subscription renewal charges the stored payment method off session`() =
+        runBlocking {
+            val transport =
+                FakeTransport {
+                    GatewayHttpResponse(200, """{"id":"pi_renew","status":"succeeded"}""")
+                }
+            val result =
+                gateway(transport).chargeSubscription(
+                    subscriptionId = "sub-1",
+                    invoiceId = "inv-1",
+                    amount = BigDecimal("9.99"),
+                    currency = "USD",
+                    providerCustomerReference = "cus_1",
+                    paymentMethodReference = "pm_1",
+                    idempotencyKey = "renew:inv-1:1",
+                )
+
+            assertTrue(result.success)
+            assertTrue(result.captured)
+            assertEquals("pi_renew", result.gatewayTransactionId)
+            val form = transport.requests.single().second
+            assertEquals("999", form["amount"])
+            assertEquals("pm_1", form["payment_method"])
+            assertEquals("cus_1", form["customer"])
+            assertEquals("true", form["off_session"])
+            assertEquals("true", form["confirm"])
+            assertEquals("sub-1", form["metadata[subscription_id]"])
+            assertEquals("inv-1", form["metadata[subscription_invoice_id]"])
+        }
+
+    @Test
+    fun `subscription webhook exposes invoice metadata`() {
+        val gateway = gateway(FakeTransport { GatewayHttpResponse(200, "{}") })
+        val event =
+            gateway.parseWebhook(
+                """
+                {"id":"evt_sub","type":"payment_intent.succeeded",
+                 "data":{"object":{"id":"pi_sub","status":"succeeded","amount_received":999,"currency":"usd",
+                   "metadata":{"subscription_id":"sub-1","subscription_invoice_id":"inv-1"}}}}
+                """.trimIndent(),
+            )
+        assertEquals("inv-1", event.metadata["subscription_invoice_id"])
+        assertEquals("sub-1", event.metadata["subscription_id"])
+    }
+
+    @Test
     fun `unknown events do not mutate anything`() {
         val gateway = gateway(FakeTransport { GatewayHttpResponse(200, "{}") })
         val event =

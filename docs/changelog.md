@@ -51,6 +51,9 @@ hide:
 
 ### Added
 
+- Subscription recurring billing (`V50`): stored provider customer/payment-method references,
+  off-session renewal charges, idempotent per-period invoices, retry/backoff dunning, grace periods,
+  automatic expiry with entitlement revocation, and webhook-driven invoice activation.
 - Identity hardening (`V46`): Google ID-token social login with automatic verified customer
   creation/account linking, plus WebAuthn passkey registration, passwordless login and credential
   management (`GOOGLE_CLIENT_ID`, `WEBAUTHN_RP_ID/RP_NAME/ORIGIN`).
