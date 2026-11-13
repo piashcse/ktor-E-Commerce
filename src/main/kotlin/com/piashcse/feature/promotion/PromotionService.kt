@@ -1,12 +1,17 @@
 package com.piashcse.feature.promotion
 
 import com.piashcse.constants.PromotionType
+import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PromotionDAO
 import com.piashcse.database.entities.PromotionTable
+import com.piashcse.database.entities.PromotionUsageDAO
+import com.piashcse.database.entities.PromotionUsageTable
+import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.extension.toPaginatedResponse
@@ -120,7 +125,12 @@ class PromotionService {
     suspend fun evaluate(amountUsd: BigDecimal): PromotionMatch? = query { evaluateTx(amountUsd) }
 
     /** Must be called inside the same DB transaction as the order write. */
-    fun markUsedTx(promotionId: String) {
+    fun markUsedTx(
+        promotionId: String,
+        userId: String,
+        orderIds: List<String>,
+        checkoutReference: String,
+    ) {
         val promotion =
             PromotionDAO.find { PromotionTable.id eq promotionId }
                 .forUpdate()
@@ -128,9 +138,40 @@ class PromotionService {
         if (promotion.usageLimit == null || promotion.usageCount < promotion.usageLimit!!) {
             promotion.usageCount++
         }
+        orderIds.forEach { orderId ->
+            PromotionUsageDAO.new {
+                this.promotionId = promotion.id
+                this.userId = userId.entityID(UserTable)
+                this.orderId = orderId.entityID(OrderTable)
+                this.checkoutReference = checkoutReference
+                this.usedAt = currentUtc()
+            }
+        }
     }
 
-    suspend fun markUsed(promotionId: String) = query { markUsedTx(promotionId) }
+    suspend fun markUsed(
+        promotionId: String,
+        userId: String,
+        orderIds: List<String>,
+        checkoutReference: String,
+    ) = query { markUsedTx(promotionId, userId, orderIds, checkoutReference) }
+
+    /** Releases a promotion redemption when any order in the checkout is canceled/refunded. */
+    fun reverseForOrderTx(orderId: String) {
+        val rows =
+            PromotionUsageDAO.find {
+                PromotionUsageTable.orderId eq orderId.entityID(OrderTable)
+            }.toList()
+        rows.groupBy { it.checkoutReference }.forEach { (_, checkoutRows) ->
+            if (checkoutRows.any { it.reversedAt != null }) return@forEach
+            val promotionId = checkoutRows.first().promotionId
+            PromotionDAO.findById(promotionId.value)?.let { promotion ->
+                promotion.usageCount = (promotion.usageCount - 1).coerceAtLeast(0)
+            }
+            PromotionUsageDAO.find { PromotionUsageTable.checkoutReference eq checkoutRows.first().checkoutReference }
+                .forEach { it.reversedAt = currentUtc() }
+        }
+    }
 
     suspend fun list(
         active: Boolean?,
@@ -199,7 +240,7 @@ class PromotionService {
         field: String,
     ): LocalDateTime =
         runCatching { LocalDateTime.parse(value) }
-            .recoverCatching { OffsetDateTime.parse(value).toLocalDateTime() }
+            .recoverCatching { OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime() }
             .getOrElse { throw ValidationException("Invalid $field: $value") }
 
     private fun PromotionDAO.toResponse() =

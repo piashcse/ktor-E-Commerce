@@ -34,7 +34,7 @@ class PolicyRepositoryImpl : PolicyRepository {
                 LocalDate.parse(value).atStartOfDay()
             } catch (_: Exception) {
                 try {
-                    OffsetDateTime.parse(value).toLocalDateTime()
+                    OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime()
                 } catch (_: Exception) {
                     throw ValidationException("Invalid effectiveDate: $value")
                 }

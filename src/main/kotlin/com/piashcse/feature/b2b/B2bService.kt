@@ -748,7 +748,7 @@ class B2bService {
 
     private fun parseDate(value: String): LocalDateTime =
         runCatching { LocalDateTime.parse(value) }
-            .recoverCatching { OffsetDateTime.parse(value).toLocalDateTime() }
+            .recoverCatching { OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime() }
             .getOrElse { throw ValidationException("Invalid date: $value") }
 
     private fun B2bAccountDAO.toAccountResponse() =

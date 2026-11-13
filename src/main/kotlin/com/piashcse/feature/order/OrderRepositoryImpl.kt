@@ -282,7 +282,12 @@ class OrderRepositoryImpl(
                     } else {
                         promotionService.evaluateTx(quote.totalUsdSubTotal)?.let { promotion ->
                             applyPromotion(quote, promotion, fxRate)
-                            promotionService.markUsedTx(promotion.id)
+                            promotionService.markUsedTx(
+                                promotion.id,
+                                userId,
+                                quote.orders.map { it.id.value },
+                                checkoutReference,
+                            )
                         }
                     }
                     recalculateTaxes(quote)

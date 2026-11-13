@@ -344,17 +344,25 @@ class AnalyticsService {
         endDate: String?,
     ): Pair<LocalDateTime, LocalDateTime> {
         val now = currentUtc()
+
+        fun parse(
+            value: String,
+            field: String,
+        ): LocalDate =
+            runCatching { LocalDate.parse(value) }.getOrElse {
+                throw ValidationException("Invalid $field: $value (expected yyyy-MM-dd)")
+            }
         val start =
-            startDate?.let { LocalDate.parse(it).atStartOfDay() }
+            startDate?.let { parse(it, "startDate").atStartOfDay() }
                 ?: now.minusDays(30).toLocalDate().atStartOfDay()
-        val end = endDate?.let { LocalDate.parse(it).atTime(LocalTime.MAX) } ?: now
+        val end = endDate?.let { parse(it, "endDate").atTime(LocalTime.MAX) } ?: now
         if (start.isAfter(end)) throw ValidationException("startDate must be before endDate")
         return start to end
     }
 
     private fun parseDate(value: String): LocalDateTime =
         runCatching { LocalDateTime.parse(value) }
-            .recoverCatching { OffsetDateTime.parse(value).toLocalDateTime() }
+            .recoverCatching { OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime() }
             .getOrElse { throw ValidationException("Invalid occurredAt: $value") }
 
     private fun toUsd(
