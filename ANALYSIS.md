@@ -283,6 +283,7 @@ com.<org>.<app>
 | `fix/16-passkey-mfa` | `fix/15-shipment-webhook` | MFA step-up rate limiting, base64url WebAuthn challenges | compile + auth/passkey/MFA tests |
 | `fix/17-refresh-rotation` | `fix/16-passkey-mfa` | refresh-token revocation and replacement persisted in one transaction | compile + auth/identity tests |
 | `fix/18-consent-tax-evidence` | `fix/17-refresh-rotation` | consent snapshots accepted policy version/hash, checkout summary exposes `taxInclusive` | compile + consent/policy/order tests |
+| `refactor/19-shared-helpers` | `master` | unified `DateTimes.parseFlexible/parseLocalDate`, `Money.toUsd`, typed `PayoutStatus`, replaced 10 duplicate parsers and magic payout strings | compile + full `./gradlew test` |
 
 > The checkbox statuses above are the **target** end state. Several items remain partial or open; see section 7.
 
@@ -293,4 +294,4 @@ com.<org>.<app>
 - **Refunds/payouts:** wallet/gift restoration on partial refunds, partial payout withdrawals (currently full-balance only), subscription proration/plan changes.
 - **Platform:** SMS/push providers, analytics user linkage.
 - **Marketplace edges:** B2B tax/delivery address/credit notes, POS card processing (now rejected explicitly), drawer refund accounting, shipment rate validation/cancel/label refund, RMA replacement creation, seller support routes.
-- **Refactor:** full package rename (`audit_log`, `refund_request`, `review_rating`, `product_category`, …), `PayoutStatus` enum, god-class decomposition (`OrderRepositoryImpl`, `B2bService`, `OmnichannelService`), DTO relocation, raw-JDBC replacement, `Instant`/`timestamptz` migration.
+- **Refactor:** full package rename (`audit_log`, `refund_request`, `review_rating`, `product_category`, …), god-class decomposition (`OrderRepositoryImpl`, `B2bService`, `OmnichannelService`), DTO relocation, raw-JDBC replacement, `Instant`/`timestamptz` migration.

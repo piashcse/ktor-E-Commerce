@@ -16,6 +16,7 @@ import com.piashcse.database.entities.WalletAccountTable
 import com.piashcse.database.entities.WalletLedgerDAO
 import com.piashcse.database.entities.WalletLedgerTable
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
@@ -37,8 +38,6 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.security.SecureRandom
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
 
 @Serializable
 data class WalletResponse(
@@ -428,7 +427,7 @@ class LoyaltyService {
                 this.currency = request.currency.uppercase()
                 this.status = GiftCardStatus.ACTIVE
                 this.issuedBy = issuedBy.entityID(com.piashcse.database.entities.UserTable)
-                this.expiresAt = parseDate(request.expiresAt)
+                this.expiresAt = DateTimes.parseFlexibleOrNull(request.expiresAt, "expiresAt")
             }.toGiftCardResponse()
         }
 
@@ -531,13 +530,6 @@ class LoyaltyService {
     private fun randomCode(length: Int): String {
         val alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
         return (1..length).map { alphabet[random.nextInt(alphabet.length)] }.joinToString("")
-    }
-
-    private fun parseDate(value: String?): LocalDateTime? {
-        if (value.isNullOrBlank()) return null
-        return runCatching { LocalDateTime.parse(value) }
-            .recoverCatching { OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime() }
-            .getOrElse { throw ValidationException("Invalid expiresAt: $value") }
     }
 
     private fun WalletAccountDAO.toWalletResponse() =

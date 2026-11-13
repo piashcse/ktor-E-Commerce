@@ -19,6 +19,7 @@ import com.piashcse.database.entities.PaymentRiskDAO
 import com.piashcse.database.entities.PaymentTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.mapper.toPaymentResponse
+import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
@@ -39,8 +40,6 @@ import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
 
 @Serializable
 data class FraudRuleRequest(
@@ -276,7 +275,7 @@ class FraudService {
                 value = request.value
                 reason = request.reason
                 isActive = request.isActive
-                expiresAt = parseDate(request.expiresAt)
+                expiresAt = DateTimes.parseFlexibleOrNull(request.expiresAt, "expiresAt")
             }.toResponse()
         }
 
@@ -336,13 +335,6 @@ class FraudService {
                     }.count(),
                 )
         }
-    }
-
-    private fun parseDate(value: String?): LocalDateTime? {
-        if (value.isNullOrBlank()) return null
-        return runCatching { LocalDateTime.parse(value) }
-            .recoverCatching { OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime() }
-            .getOrElse { throw ValidationException("Invalid expiresAt: $value") }
     }
 
     private fun FraudRuleDAO.toResponse() =

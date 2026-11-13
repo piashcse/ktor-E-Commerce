@@ -11,6 +11,7 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
 import com.piashcse.model.request.CouponRequest
 import com.piashcse.model.response.CouponResponse
+import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
@@ -24,9 +25,7 @@ import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 
 class CouponRepositoryImpl : CouponRepository {
     private fun auditCoupon(
@@ -49,8 +48,8 @@ class CouponRepositoryImpl : CouponRepository {
         actorId: String?,
     ): CouponResponse =
         query {
-            val startDate = parseDate(request.startDate, "startDate")
-            val endDate = parseDate(request.endDate, "endDate", endOfDay = true)
+            val startDate = DateTimes.parseFlexible(request.startDate, "startDate")
+            val endDate = DateTimes.parseFlexible(request.endDate, "endDate", endOfDay = true)
             validateCouponRequest(request, startDate, endDate)
             CouponDAO.new {
                 code = normalizeCode(request.code)
@@ -75,8 +74,8 @@ class CouponRepositoryImpl : CouponRepository {
     ): CouponResponse =
         query {
             val coupon = CouponDAO.findById(couponId) ?: throw NotFoundException(Message.Coupons.NOT_FOUND)
-            val startDate = parseDate(request.startDate, "startDate")
-            val endDate = parseDate(request.endDate, "endDate", endOfDay = true)
+            val startDate = DateTimes.parseFlexible(request.startDate, "startDate")
+            val endDate = DateTimes.parseFlexible(request.endDate, "endDate", endOfDay = true)
             validateCouponRequest(request, startDate, endDate)
             if (request.usageLimit != null && request.usageLimit < coupon.usageCount) {
                 throw ValidationException("Usage limit cannot be lower than the current usage count (${coupon.usageCount})")
@@ -142,26 +141,6 @@ class CouponRepositoryImpl : CouponRepository {
         }
 
     private fun normalizeCode(code: String): String = code.trim().uppercase()
-
-    private fun parseDate(
-        value: String,
-        fieldName: String,
-        endOfDay: Boolean = false,
-    ): LocalDateTime =
-        try {
-            LocalDateTime.parse(value)
-        } catch (_: Exception) {
-            try {
-                val date = LocalDate.parse(value)
-                if (endOfDay) date.atTime(java.time.LocalTime.MAX) else date.atStartOfDay()
-            } catch (_: Exception) {
-                try {
-                    OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime()
-                } catch (_: Exception) {
-                    throw ValidationException(Message.Validation.invalidFormat("$fieldName: $value"))
-                }
-            }
-        }
 
     private fun validateCouponRequest(
         request: CouponRequest,

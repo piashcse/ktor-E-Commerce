@@ -6,6 +6,7 @@ import com.piashcse.database.entities.ChargebackTable
 import com.piashcse.database.entities.PaymentDAO
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.isResolved
+import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
@@ -19,8 +20,6 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
 
 @Serializable
 data class ChargebackRequest(
@@ -91,7 +90,7 @@ class ChargebackService {
                 this.currency = payment.currency
                 this.status = ChargebackStatus.OPEN
                 this.reason = request.reason
-                this.evidenceDueAt = parseDate(request.evidenceDueAt)
+                this.evidenceDueAt = DateTimes.parseFlexibleOrNull(request.evidenceDueAt, "evidenceDueAt")
             }.toResponse()
         }
 
@@ -125,13 +124,6 @@ class ChargebackService {
                 target in listOf(ChargebackStatus.WON, ChargebackStatus.LOST, ChargebackStatus.CLOSED)
             ChargebackStatus.WON, ChargebackStatus.LOST, ChargebackStatus.CLOSED -> false
         }
-
-    private fun parseDate(value: String?): LocalDateTime? {
-        if (value.isNullOrBlank()) return null
-        return runCatching { LocalDateTime.parse(value) }
-            .recoverCatching { OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime() }
-            .getOrElse { throw ValidationException("Invalid evidenceDueAt: $value") }
-    }
 
     private fun ChargebackDAO.toResponse() =
         ChargebackResponse(

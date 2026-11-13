@@ -9,6 +9,7 @@ import com.piashcse.mapper.toPolicyDocumentResponse
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.model.response.PolicyDocumentResponse
+import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
@@ -21,29 +22,11 @@ import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
 
 class PolicyRepositoryImpl : PolicyRepository {
-    private fun parseDate(value: String): LocalDateTime =
-        try {
-            LocalDateTime.parse(value)
-        } catch (_: Exception) {
-            try {
-                LocalDate.parse(value).atStartOfDay()
-            } catch (_: Exception) {
-                try {
-                    OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime()
-                } catch (_: Exception) {
-                    throw ValidationException("Invalid effectiveDate: $value")
-                }
-            }
-        }
-
     override suspend fun createPolicy(createPolicyRequest: CreatePolicyRequest): PolicyDocumentResponse =
         query {
-            val effectiveDate = parseDate(createPolicyRequest.effectiveDate)
+            val effectiveDate = DateTimes.parseFlexible(createPolicyRequest.effectiveDate, "effectiveDate")
             val shouldBeActive = !effectiveDate.isAfter(currentUtc())
 
             // Deactivate before inserting when this policy becomes live, otherwise the
@@ -79,7 +62,7 @@ class PolicyRepositoryImpl : PolicyRepository {
             updatePolicyRequest.content?.let { policyDocument.content = it }
             updatePolicyRequest.version?.let { policyDocument.version = it }
             updatePolicyRequest.effectiveDate?.let {
-                policyDocument.effectiveDate = parseDate(it)
+                policyDocument.effectiveDate = DateTimes.parseFlexible(it, "effectiveDate")
             }
             updatePolicyRequest.isActive?.let {
                 if (it && policyDocument.effectiveDate.isAfter(currentUtc())) {

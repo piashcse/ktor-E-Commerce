@@ -432,6 +432,17 @@ enum class PaymentStatus {
     val isSuccessful get() = this == COMPLETED
 }
 
+/** Seller payout row/request lifecycle. Stored as its name for API compatibility. */
+@Serializable
+enum class PayoutStatus {
+    PENDING,
+    REQUESTED,
+    APPROVED,
+    PAID,
+    REJECTED,
+    REFUNDED,
+}
+
 /**
  * Product availability status
  */
