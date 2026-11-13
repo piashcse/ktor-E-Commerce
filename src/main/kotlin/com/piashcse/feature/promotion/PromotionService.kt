@@ -101,7 +101,7 @@ class PromotionService {
                     (PromotionTable.minOrderAmount lessEq amountUsd)
             }.orderBy(PromotionTable.priority to org.jetbrains.exposed.v1.core.SortOrder.DESC)
                 .orderBy(PromotionTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.ASC)
-                .firstOrNull { it.usageLimit == null || it.usageCount < it.usageLimit!! }
+                .firstOrNull { it.usageLimit?.let { limit -> it.usageCount < limit } ?: true }
                 ?: return null
 
         val discount =
@@ -134,7 +134,7 @@ class PromotionService {
             PromotionDAO.find { PromotionTable.id eq promotionId }
                 .forUpdate()
                 .firstOrNull() ?: return
-        if (promotion.usageLimit == null || promotion.usageCount < promotion.usageLimit!!) {
+        if (promotion.usageLimit?.let { promotion.usageCount < it } ?: true) {
             promotion.usageCount++
         }
         orderIds.forEach { orderId ->

@@ -295,7 +295,9 @@ class RefundRequestRepositoryImpl(
                         .add(request.refundShippingAmount ?: refund.shippingRefund)
                         .add(request.refundTaxAmount ?: refund.taxRefund)
                 ProviderRefundPlan(
-                    providerReference = payment.providerReference!!,
+                    providerReference =
+                        payment.providerReference
+                            ?: throw ValidationException("Completed payment has no provider reference"),
                     amount = amount,
                     currency = order.currency,
                 )

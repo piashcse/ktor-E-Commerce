@@ -96,4 +96,4 @@ class TaxExemptionDAO(id: EntityID<String>) : BaseEntity(id, TaxExemptionTable) 
     var expiresAt by TaxExemptionTable.expiresAt
 }
 
-fun TaxExemptionDAO.isLive(): Boolean = isActive && (expiresAt == null || expiresAt!!.isAfter(currentUtc()))
+fun TaxExemptionDAO.isLive(): Boolean = isActive && (expiresAt?.isAfter(currentUtc()) ?: true)

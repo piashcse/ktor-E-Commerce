@@ -125,7 +125,7 @@ class DigitalEntitlementDAO(id: EntityID<String>) : BaseEntity(id, DigitalEntitl
     var maxDownloads by DigitalEntitlementTable.maxDownloads
     var expiresAt by DigitalEntitlementTable.expiresAt
 
-    fun isActive(): Boolean = downloadCount < maxDownloads && (expiresAt == null || expiresAt!!.isAfter(currentUtc()))
+    fun isActive(): Boolean = downloadCount < maxDownloads && (expiresAt?.isAfter(currentUtc()) ?: true)
 }
 
 fun ProductDAO.isDigitalProduct(): Boolean = isDigital

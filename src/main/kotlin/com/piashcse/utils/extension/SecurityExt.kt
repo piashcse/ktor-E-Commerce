@@ -31,6 +31,11 @@ fun findSellerByUserId(userId: String): SellerDAO? = SellerDAO.find { SellerTabl
 fun requireSellerByUserId(userId: String): SellerDAO =
     findSellerByUserId(userId) ?: throw ForbiddenException(Message.Errors.SELLER_REQUIRED)
 
+/** Seller record + approved shop ID in one call; the shared guard for seller-scoped writes. */
+fun requireSellerShopId(userId: String): String =
+    requireSellerByUserId(userId).shopId?.value
+        ?: throw ForbiddenException(Message.Orders.NO_SHOP_ASSOCIATED)
+
 /** Checks if a seller owns a specific shop. Uses the provided seller or looks it up. */
 fun sellerOwnsShop(
     userId: String,

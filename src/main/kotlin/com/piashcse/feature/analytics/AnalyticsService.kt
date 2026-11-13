@@ -300,11 +300,13 @@ class AnalyticsService {
                 }.toList()
             val views =
                 events.filter { it[AnalyticsEventTable.eventType] == AnalyticsEventType.PRODUCT_VIEW }
-                    .groupBy { it[AnalyticsEventTable.productId]!!.value }
+                    .mapNotNull { row -> row[AnalyticsEventTable.productId]?.value?.let { it to row } }
+                    .groupBy({ it.first }, { it.second })
                     .mapValues { (_, rows) -> rows.map { it[AnalyticsEventTable.sessionId] }.toSet().size.toLong() }
             val carts =
                 events.filter { it[AnalyticsEventTable.eventType] == AnalyticsEventType.ADD_TO_CART }
-                    .groupBy { it[AnalyticsEventTable.productId]!!.value }
+                    .mapNotNull { row -> row[AnalyticsEventTable.productId]?.value?.let { it to row } }
+                    .groupBy({ it.first }, { it.second })
                     .mapValues { (_, rows) -> rows.map { it[AnalyticsEventTable.sessionId] }.toSet().size.toLong() }
 
             val purchases = mutableMapOf<String, Long>()

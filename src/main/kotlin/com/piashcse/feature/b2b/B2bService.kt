@@ -436,7 +436,7 @@ class B2bService {
             val quote = B2bQuoteDAO.findById(quoteId) ?: quoteId.throwNotFound("Quote")
             if (quote.buyerUserId.value != buyerUserId) throw ForbiddenException("Quote belongs to another buyer")
             if (quote.status != B2bQuoteStatus.SENT) throw ValidationException("Only SENT quotes can be accepted")
-            if (quote.validUntil != null && quote.validUntil!!.isBefore(currentUtc())) {
+            if (quote.validUntil?.isBefore(currentUtc()) == true) {
                 quote.status = B2bQuoteStatus.EXPIRED
                 throw ValidationException("Quote has expired")
             }

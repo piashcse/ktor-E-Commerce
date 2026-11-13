@@ -163,15 +163,15 @@ class SubscriptionBillingService(
                     } else {
                         null
                     }
+                val graceExpired = subscription.graceUntil?.isAfter(now) == false
                 if (invoice == null) {
-                    if (subscription.graceUntil != null && !subscription.graceUntil!!.isAfter(now)) {
+                    if (graceExpired) {
                         subscription.status = SubscriptionStatus.EXPIRED
                         digitalDelivery.revokeSubscriptionTx(subscription.id.value)
                         return@query Loaded.Expired
                     }
                     return@query Loaded.Skipped
                 }
-                val graceExpired = subscription.graceUntil != null && !subscription.graceUntil!!.isAfter(now)
                 if (invoice.status == InvoiceStatus.FAILED && (invoice.attemptCount >= maxAttempts || graceExpired)) {
                     subscription.status = SubscriptionStatus.EXPIRED
                     digitalDelivery.revokeSubscriptionTx(subscription.id.value)
