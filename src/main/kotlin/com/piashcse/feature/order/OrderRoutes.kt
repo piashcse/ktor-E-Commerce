@@ -18,6 +18,7 @@ import com.piashcse.plugin.standardErrors
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
@@ -219,12 +220,16 @@ fun Route.orderAdminRoutes() {
             val (limit, offset) = call.paginateQueryParams()
             val status = call.request.queryParameters["status"]
             val startDate =
-                call.request.queryParameters["startDate"]?.let {
-                    runCatching { Instant.parse(it) }.getOrNull()
+                call.request.queryParameters["startDate"]?.let { raw ->
+                    runCatching { Instant.parse(raw) }.getOrElse {
+                        throw ValidationException(Message.Errors.invalidParameter("startDate", raw))
+                    }
                 }
             val endDate =
-                call.request.queryParameters["endDate"]?.let {
-                    runCatching { Instant.parse(it) }.getOrNull()
+                call.request.queryParameters["endDate"]?.let { raw ->
+                    runCatching { Instant.parse(raw) }.getOrElse {
+                        throw ValidationException(Message.Errors.invalidParameter("endDate", raw))
+                    }
                 }
 
             call.respondOk(orderRepo.getAdminOrders(limit, offset, status, startDate, endDate))
