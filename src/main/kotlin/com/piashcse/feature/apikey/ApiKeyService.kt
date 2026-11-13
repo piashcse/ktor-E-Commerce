@@ -64,8 +64,9 @@ class ApiKeyService {
             if (request.name.isBlank()) throw ValidationException("API key name is required")
             val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
             val allowed = user.userType.defaultPermissions()
-            val requested =
-                request.scopes?.takeIf { it.isNotEmpty() }?.toSet() ?: allowed
+            // Omit scopes to inherit the role defaults. An explicit empty list
+            // means "no scopes" and must not fail open to all permissions.
+            val requested = request.scopes?.toSet() ?: allowed
             val invalid = requested - allowed
             if (invalid.isNotEmpty()) {
                 throw ValidationException(
@@ -136,6 +137,7 @@ class ApiKeyService {
                 email = user.email,
                 userType = user.userType.name,
                 scopes = key.scopes.split(',').filter { it.isNotBlank() }.toSet(),
+                isApiKey = true,
             )
         }
 

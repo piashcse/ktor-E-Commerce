@@ -41,8 +41,11 @@ fun Route.checkoutRoutes() {
     val guestCheckoutService: GuestCheckoutService by inject()
     val featureFlags: FeatureFlags by inject()
 
+    suspend fun consentRequired(): Boolean =
+        DotEnv.getBoolean("REQUIRE_POLICY_CONSENT", false) || featureFlags.isEnabled("require_policy_consent")
+
     suspend fun requireConfiguredConsents(userId: String) {
-        if (!DotEnv.getBoolean("REQUIRE_POLICY_CONSENT", false)) return
+        if (!consentRequired()) return
         PolicyType.values().filter { it.requiresConsent }.forEach { type ->
             if (!consentRepo.hasUserConsented(userId, type)) {
                 throw ValidationException("Consent required for policy: ${type.name}")
@@ -58,7 +61,11 @@ fun Route.checkoutRoutes() {
             if (!featureFlags.isEnabled("guest_checkout")) {
                 throw ValidationException("Guest checkout is disabled")
             }
-            call.respondCreated(guestCheckoutService.placeOrder(call.receive<GuestCheckoutRequest>()))
+            val body = call.receive<GuestCheckoutRequest>()
+            if (consentRequired() && !body.consentAccepted) {
+                throw ValidationException("Explicit policy consent is required for guest checkout")
+            }
+            call.respondCreated(guestCheckoutService.placeOrder(body))
         }.describe {
             summary = "Guest checkout"
             description = "Feature-flagged; creates/claims a guest account and places the order"

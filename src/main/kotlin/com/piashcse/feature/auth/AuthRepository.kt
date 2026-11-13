@@ -25,6 +25,16 @@ interface AuthRepository {
 
     suspend fun findUserById(userId: String): UserDAO?
 
+    /**
+     * Atomically records the last accepted TOTP step for a user. Must run inside a
+     * repository transaction; mutating a DAO returned by [findUserByEmailAndType]
+     * after that call's transaction has closed throws.
+     */
+    suspend fun recordMfaStep(
+        userId: String,
+        step: Long,
+    )
+
     /** Verifies a user's current password for sensitive step-up operations. */
     suspend fun verifyUserPassword(
         userId: String,

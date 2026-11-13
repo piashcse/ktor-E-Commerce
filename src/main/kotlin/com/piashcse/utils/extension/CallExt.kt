@@ -41,6 +41,19 @@ val ApplicationCall.clientIp: String
         return request.local.remoteHost
     }
 
+/**
+ * Extracts a Bearer credential exactly the way Ktor's auth providers do:
+ * scheme comparison is case-insensitive and extra whitespace is ignored.
+ * Using `startsWith("Bearer ")` + fixed `substring(7)` bypasses blacklist
+ * checks for `bearer ...` / `Bearer   ...` headers while Ktor still accepts them.
+ */
+fun ApplicationCall.bearerToken(): String? {
+    val header = request.headers[HttpHeaders.Authorization]?.trim() ?: return null
+    val parts = header.split(Regex("\\s+"), limit = 2)
+    if (parts.size != 2 || !parts[0].equals("Bearer", ignoreCase = true)) return null
+    return parts[1].trim().takeIf { it.isNotEmpty() }
+}
+
 /** Typed query accessors: centralize parsing so routes stay one-liners. */
 fun ApplicationCall.queryInt(name: String): Int? = request.queryParameters[name]?.toIntOrNull()
 

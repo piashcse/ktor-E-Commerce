@@ -21,6 +21,7 @@ import com.piashcse.plugin.refreshTokenRateLimit
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.standardErrors
 import com.piashcse.utils.common.MessageResponse
+import com.piashcse.utils.extension.bearerToken
 import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.parseEnum
@@ -214,10 +215,7 @@ fun Route.authRoutes() {
          * Logout authenticated user
          */
         post("logout") {
-            val authHeader = call.request.headers[HttpHeaders.Authorization]
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                authRepo.blacklistToken(authHeader.substring(7))
-            }
+            call.bearerToken()?.let { authRepo.blacklistToken(it) }
 
             // Body is optional — access token is already blacklisted above even if refresh token missing.
             val refreshToken = runCatching { call.receive<LogoutRequest>().refreshToken }.getOrNull()
@@ -237,10 +235,7 @@ fun Route.authRoutes() {
                 )
             ) {
                 // Invalidate the access token used for this request as well.
-                call.request.headers[HttpHeaders.Authorization]
-                    ?.takeIf { it.startsWith("Bearer ") }
-                    ?.substring(7)
-                    ?.let { authRepo.blacklistToken(it) }
+                call.bearerToken()?.let { authRepo.blacklistToken(it) }
                 call.respondOk(MessageResponse(Message.Auth.PASSWORD_CHANGE_SUCCESS))
             } else {
                 call.respond(HttpStatusCode.Unauthorized, MessageResponse(Message.Auth.INVALID_CREDENTIALS))
@@ -282,22 +277,34 @@ fun Route.authRoutes() {
  */
 private fun Route.mfaRoutes() {
     val mfaService: MfaService by inject()
+    val authRepo: AuthRepository by inject()
     /**
-     * Start MFA setup (authenticated)
+     * Start MFA setup (authenticated + password re-authentication)
      */
     post("mfa/setup") {
+        val body = call.receive<MfaSetupRequest>()
+        if (!authRepo.verifyUserPassword(call.currentUserId, body.password)) {
+            throw ValidationException("Invalid password")
+        }
         call.respondOk(mfaService.setup(call.currentUserId))
     }.describe {
         summary = "Start MFA setup"
-        description = "Returns a TOTP secret and otpauth URL"
+        description = "Password re-authentication is required; returns a TOTP secret and otpauth URL"
+        requestBody { jsonBody<MfaSetupRequest>() }
         responses { ok<MfaSetupResponse>("MFA setup") }
     }
 
     /**
-     * Enable MFA after verifying a TOTP code
+     * Enable MFA after verifying a TOTP code. Password re-authentication prevents a
+     * stolen access token from enrolling an attacker-controlled authenticator.
      */
     post("mfa/enable") {
-        mfaService.enable(call.currentUserId, call.receive<MfaCodeRequest>().code)
+        val body = call.receive<MfaCodeRequest>()
+        val password = body.password?.takeIf { it.isNotBlank() } ?: throw ValidationException("Password is required")
+        if (!authRepo.verifyUserPassword(call.currentUserId, password)) {
+            throw ValidationException("Invalid password")
+        }
+        mfaService.enable(call.currentUserId, body.code)
         call.respondOk(MessageResponse("MFA enabled"))
     }.describe {
         summary = "Enable MFA"

@@ -18,7 +18,17 @@ data class MfaSetupResponse(
 )
 
 @Serializable
-data class MfaCodeRequest(val code: String)
+data class MfaCodeRequest(
+    val code: String,
+    /** Required for enable; optional for disable (the TOTP is the step-up factor). */
+    val password: String? = null,
+)
+
+@Serializable
+data class MfaSetupRequest(
+    /** Password re-authentication is required before minting a new TOTP secret. */
+    val password: String,
+)
 
 /**
  * RFC 6238 TOTP (SHA-1, 6 digits, 30-second period, ±1 step window).

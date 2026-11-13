@@ -9,6 +9,7 @@ import com.piashcse.feature.apikey.ApiKeyService
 import com.piashcse.feature.auth.JwtConfig
 import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.service.CacheService
+import com.piashcse.utils.extension.bearerToken
 import com.piashcse.utils.extension.query
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -31,8 +32,7 @@ fun Application.configureAuth() {
             verifier(JwtConfig.verifier)
             realm = "ecom-api"
             validate { credential ->
-                val authHeader = this.request.headers[HttpHeaders.Authorization]
-                val token = authHeader?.takeIf { it.startsWith("Bearer ") }?.substring(7)
+                val token = bearerToken()
                 if (token != null) {
                     val cacheKey = "blacklisted_token:$token"
                     if (CacheService.cache.get<Boolean>(cacheKey) == true) {

@@ -137,7 +137,7 @@ class AuthRepositoryImpl : AuthRepository {
                 existing.attemptCount
             } else {
                 LoginAttemptDAO.new {
-                    this.email = email
+                    this.email = normalizeEmail(email)
                     this.userType = userType
                     this.ipAddress = ipAddress
                     this.attemptCount = 1
@@ -243,6 +243,17 @@ class AuthRepositoryImpl : AuthRepository {
         query {
             UserDAO.findById(userId)
         }
+
+    override suspend fun recordMfaStep(
+        userId: String,
+        step: Long,
+    ) = query {
+        UserDAO.findById(userId)?.let { user ->
+            val lastStep = user.mfaLastUsedStep
+            if (lastStep == null || step > lastStep) user.mfaLastUsedStep = step
+        }
+        Unit
+    }
 
     override suspend fun verifyUserPassword(
         userId: String,

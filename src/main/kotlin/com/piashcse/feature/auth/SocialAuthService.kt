@@ -41,6 +41,11 @@ class SocialAuthService(
                 }.also { UserProfileDAO.new { userId = it.id } }
             }
         if (!user.isActive) throw ValidationException("Account has been deactivated")
+        // A Google account must be linked to one immutable subject. Re-assigned
+        // Google addresses must not silently take over an existing app account.
+        if (user.socialSubject != null && user.socialSubject != identity.subject) {
+            throw ValidationException("This email is linked to a different social identity")
+        }
         if (user.mfaEnabled) {
             val secret = user.mfaSecret ?: throw ValidationException("MFA is not configured")
             if (mfaCode.isNullOrBlank()) throw com.piashcse.utils.validator.MfaRequiredException()
@@ -53,6 +58,16 @@ class SocialAuthService(
                 val current = UserDAO.findById(user.id) ?: user.id.value.throwNotFound("User")
                 current.socialProvider = "GOOGLE"
                 current.socialSubject = identity.subject
+                // A pre-hijacked unverified row may carry an attacker-chosen
+                // password. Google proves ownership of the mailbox, so invalidate
+                // that password and force a reset before password login works.
+                if (!current.isVerified) {
+                    current.password =
+                        BCrypt.withDefaults().hashToString(
+                            AppConstants.BCRYPT_COST,
+                            UUID.randomUUID().toString().toCharArray(),
+                        )
+                }
                 current.isVerified = true
             }
         }

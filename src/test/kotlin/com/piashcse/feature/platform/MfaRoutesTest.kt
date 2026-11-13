@@ -25,6 +25,7 @@ class MfaRoutesTest {
     private val mfaService: MfaService = mockk()
 
     private fun ApplicationTestBuilder.setup() {
+        coEvery { authRepo.verifyUserPassword("user-1", any()) } returns true
         application {
             installTestInfra(
                 module {
@@ -46,6 +47,8 @@ class MfaRoutesTest {
             val res =
                 client.post("/api/v1/auth/mfa/setup") {
                     header(HttpHeaders.Authorization, authHeader(userType = "CUSTOMER"))
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"password":"Password1!"}""")
                 }
             assertEquals(HttpStatusCode.OK, res.status)
             assertContains(res.bodyAsText(), "otpauth")
@@ -60,7 +63,7 @@ class MfaRoutesTest {
                 client.post("/api/v1/auth/mfa/enable") {
                     header(HttpHeaders.Authorization, authHeader(userType = "CUSTOMER"))
                     contentType(ContentType.Application.Json)
-                    setBody("""{"code":"123456"}""")
+                    setBody("""{"code":"123456","password":"Password1!"}""")
                 }
             assertEquals(HttpStatusCode.OK, res.status)
             assertContains(res.bodyAsText(), "MFA enabled")

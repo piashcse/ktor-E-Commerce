@@ -2,7 +2,7 @@
 
 package com.piashcse.feature.privacy
 
-import com.piashcse.plugin.customerOnlyAuth
+import com.piashcse.plugin.requireRole
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondOk
@@ -14,7 +14,8 @@ import org.koin.ktor.ext.inject
 /** GDPR data-subject endpoints: full export and account erasure. */
 fun Route.privacyRoutes() {
     val privacyService: PrivacyService by inject()
-    customerOnlyAuth {
+    // GDPR data-subject rights apply to every authenticated account, not only CUSTOMER.
+    requireRole {
         /**
          * Export all personal data held for the authenticated user
          */

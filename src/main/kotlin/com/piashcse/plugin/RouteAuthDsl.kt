@@ -4,6 +4,7 @@ import com.piashcse.constants.AppConstants.Authentication.API_KEY_AUTHENTICATOR
 import com.piashcse.constants.AppConstants.Authentication.JWT_AUTHENTICATOR
 import com.piashcse.constants.Permission
 import com.piashcse.constants.UserType
+import com.piashcse.constants.defaultPermissions
 import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.utils.common.ApiError
 import io.ktor.http.*
@@ -46,7 +47,12 @@ val RoleAuthorizationPlugin =
             val exact = pluginConfig.exactMatch
             val hasAccess =
                 allowedRoles.any { role ->
-                    if (exact) {
+                    if (principal.isApiKey) {
+                        // API keys are scope-bound. Require the full default scope
+                        // set of a role before allowing role-gated routes; narrow
+                        // keys must use explicit permission routes.
+                        principal.scopes.containsAll(role.defaultPermissions().map { it.name })
+                    } else if (exact) {
                         principal.getUserType()?.hasExactRole(role) == true
                     } else {
                         principal.hasAccessTo(role)
