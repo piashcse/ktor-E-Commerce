@@ -274,13 +274,14 @@ com.<org>.<app>
 | `fix/07-marketplace-money` | `refactor/06-wishlist-naming` | B2B invoice payment ledger/payout/digital, B2B credit exposure and re-pricing, POS idempotency and card guard, shipment idempotency/duplicate-line/status monotonicity, digital download quota | compile + B2B/omnichannel/shipment/subscription/notification tests |
 | `fix/08-split-order-wallet` | `fix/07-marketplace-money` | wallet/credit/gift redemptions allocated per split order so cancellation/refund reverses only that order's share | compile + commerce/order/loyalty tests |
 | `fix/09-access-token-version` | `fix/08-split-order-wallet` | per-user token version claim; password change/reset increments it and rejects older access tokens | compile + auth/identity/MFA tests |
+| `fix/10-tax-promotions` | `fix/09-access-token-version` | promotion usage ledger/reversal, inclusive-tax invoice labels, offset-to-UTC normalization, coupon end-of-day, analytics date validation | compile + promotion/coupon/invoice/analytics/order tests |
 
 > The checkbox statuses above are the **target** end state. Several items remain partial or open; see section 7.
 
 ## 7. Remaining Work (not shipped in this pass)
 
 - **Auth/session:** refresh-rotation atomicity, passkey base64url challenge, encrypted OTP storage, step-up rate limits, enumeration-resistant responses.
-- **Orders/money:** promotion usage reversal, one tax engine for cart summary, tax-inclusive invoice/summary reconciliation, offset-to-UTC normalization, money-as-`BigDecimal` in filters.
+- **Orders/money:** one tax engine for cart summary, tax-inclusive checkout-summary reconciliation, money-as-`BigDecimal` in filters.
 - **Refunds/payouts:** wallet/gift restoration on partial refunds, multi-currency payout balances, partial payout withdrawals (currently full-balance only), subscription billing scheduler and self-serve PENDING activation.
 - **Platform:** notification `/send` still does not invoke external providers, SMS/push providers, back-in-stock `isActive` check, seller dashboard top products, analytics funnel units/user linkage, complete GDPR export/erase, policy version consent snapshots.
 - **Marketplace edges:** B2B PO cancel/VOID/credit notes/tax/address/reminders, POS card processing (now rejected explicitly), drawer refund accounting, shipment rate validation/cancel/label refund/webhook ack semantics, RMA replacement creation, KYC document validation, seller support routes.
