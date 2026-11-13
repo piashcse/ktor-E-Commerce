@@ -305,6 +305,61 @@ class DashboardRepositoryImpl : DashboardRepository {
                     .map { it[OrderTable.userId].value }
                     .distinct()
 
+            val sellerTopProducts =
+                ProductDAO.find {
+                    (ProductTable.shopId inList sellerShopIds) and
+                        (ProductTable.status eq ProductStatus.ACTIVE) and
+                        ProductTable.deletedAt.isNull()
+                }.orderBy(ProductTable.totalSales to SortOrder.DESC).limit(5).toList()
+            val sellerProductIds = sellerTopProducts.map { it.id }
+            val sellerRevenueByProduct =
+                if (sellerProductIds.isEmpty()) {
+                    emptyMap()
+                } else {
+                    (OrderItemTable innerJoin OrderTable)
+                        .select(
+                            OrderItemTable.productId,
+                            OrderItemTable.total,
+                            OrderItemTable.discountAmount,
+                            OrderTable.fxRate,
+                        )
+                        .where {
+                            (OrderItemTable.productId inList sellerProductIds) and
+                                (OrderTable.shopId inList sellerShopIds) and
+                                (OrderTable.status neq OrderStatus.CANCELED) and
+                                (OrderTable.paymentStatus eq PaymentStatus.COMPLETED)
+                        }
+                        .toList()
+                        .groupBy { it[OrderItemTable.productId].value }
+                        .mapValues { (_, rows) ->
+                            rows.fold(BigDecimal.ZERO) { acc, row ->
+                                val net = row[OrderItemTable.total].subtract(row[OrderItemTable.discountAmount])
+                                acc.add(toUsd(net.max(BigDecimal.ZERO), row[OrderTable.fxRate]))
+                            }
+                        }
+                }
+            val sellerStock =
+                if (sellerProductIds.isEmpty()) {
+                    emptyMap()
+                } else {
+                    InventoryDAO.find { InventoryTable.productId inList sellerProductIds }
+                        .groupBy { it.productId.value }
+                        .mapValues { (_, rows) -> rows.sumOf { it.stockQuantity } }
+                }
+            val sellerTopResponses =
+                sellerTopProducts.map { p ->
+                    TopProductResponse(
+                        p.id.value,
+                        p.name,
+                        p.sku,
+                        p.totalSales,
+                        Money.str(sellerRevenueByProduct[p.id.value] ?: BigDecimal.ZERO),
+                        sellerStock[p.id.value] ?: 0,
+                        Money.str(p.rating),
+                        p.status.name.lowercase(),
+                    )
+                }
+
             DashboardStatsResponse(
                 revenue = mapOf("total" to Money.str(totalRevenue), "today" to Money.str(todayRevenue)),
                 orders =
@@ -351,6 +406,7 @@ class DashboardRepositoryImpl : DashboardRepository {
                                 (ShopTable.id inList sellerShopIds) and (ShopTable.status eq ShopStatus.PENDING)
                             }.count(),
                     ),
+                topProducts = sellerTopResponses,
             )
         }
 
