@@ -24,6 +24,7 @@ class InvoiceService {
         query {
             val order = loadOrder(orderId, callerId, userType)
             val items = OrderItemDAO.itemsForOrder(order.id)
+            val hasInclusiveTax = items.any { it.taxInclusive }
             val shopName = order.shopId?.value?.let { ShopDAO.findById(it)?.name }
             val email = order.contactEmail ?: UserDAO.findById(order.userId.value)?.email
 
@@ -72,10 +73,14 @@ class InvoiceService {
                       </tbody>
                     </table>
                     <section class="totals">
-                      <p><span>Subtotal</span><span>${escape(Money.str(order.subTotal))} ${escape(order.currency)}</span></p>
+                      <p><span>Subtotal${if (hasInclusiveTax) " (incl. tax)" else ""}</span><span>${escape(
+                        Money.str(order.subTotal),
+                    )} ${escape(order.currency)}</span></p>
                       <p><span>Discount</span><span>-${escape(Money.str(order.discountAmount))} ${escape(order.currency)}</span></p>
                       <p><span>Shipping</span><span>${escape(Money.str(order.shippingCost))} ${escape(order.currency)}</span></p>
-                      <p><span>Tax</span><span>${escape(Money.str(order.taxAmount))} ${escape(order.currency)}</span></p>
+                      <p><span>${if (hasInclusiveTax) "Included tax" else "Tax"}</span><span>${escape(
+                        Money.str(order.taxAmount),
+                    )} ${escape(order.currency)}</span></p>
                       <p class="grand"><span>Total</span><span>${escape(Money.str(order.total))} ${escape(order.currency)}</span></p>
                     </section>
                     """.trimIndent(),

@@ -43,7 +43,7 @@ object LocalDateTimeSerializer : KSerializer<LocalDateTime> {
 
     override fun deserialize(decoder: Decoder): LocalDateTime {
         val text = decoder.decodeString()
-        return runCatching { java.time.OffsetDateTime.parse(text).toLocalDateTime() }
+        return runCatching { java.time.OffsetDateTime.parse(text).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime() }
             .getOrElse { LocalDateTime.parse(text) }
     }
 }

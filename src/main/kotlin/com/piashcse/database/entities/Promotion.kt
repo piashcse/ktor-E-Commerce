@@ -4,6 +4,7 @@ import com.piashcse.constants.PromotionType
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import com.piashcse.database.entities.base.currentUtc
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
@@ -36,4 +37,25 @@ class PromotionDAO(id: EntityID<String>) : BaseEntity(id, PromotionTable) {
     var priority by PromotionTable.priority
     var usageLimit by PromotionTable.usageLimit
     var usageCount by PromotionTable.usageCount
+}
+
+/** Ledger of automatic promotion redemptions; one row per split order. */
+object PromotionUsageTable : BaseIdTable("promotion_usage") {
+    val promotionId = reference("promotion_id", PromotionTable.id).index()
+    val userId = reference("user_id", UserTable.id).index()
+    val orderId = reference("order_id", OrderTable.id).index()
+    val checkoutReference = varchar("checkout_reference", 64).index()
+    val usedAt = datetime("used_at").clientDefault { currentUtc() }
+    val reversedAt = datetime("reversed_at").nullable()
+}
+
+class PromotionUsageDAO(id: EntityID<String>) : BaseEntity(id, PromotionUsageTable) {
+    companion object : BaseEntityClass<PromotionUsageDAO>(PromotionUsageTable, PromotionUsageDAO::class.java)
+
+    var promotionId by PromotionUsageTable.promotionId
+    var userId by PromotionUsageTable.userId
+    var orderId by PromotionUsageTable.orderId
+    var checkoutReference by PromotionUsageTable.checkoutReference
+    var usedAt by PromotionUsageTable.usedAt
+    var reversedAt by PromotionUsageTable.reversedAt
 }

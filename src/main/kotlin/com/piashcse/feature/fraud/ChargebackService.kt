@@ -129,7 +129,7 @@ class ChargebackService {
     private fun parseDate(value: String?): LocalDateTime? {
         if (value.isNullOrBlank()) return null
         return runCatching { LocalDateTime.parse(value) }
-            .recoverCatching { OffsetDateTime.parse(value).toLocalDateTime() }
+            .recoverCatching { OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime() }
             .getOrElse { throw ValidationException("Invalid evidenceDueAt: $value") }
     }
 

@@ -50,7 +50,7 @@ class CouponRepositoryImpl : CouponRepository {
     ): CouponResponse =
         query {
             val startDate = parseDate(request.startDate, "startDate")
-            val endDate = parseDate(request.endDate, "endDate")
+            val endDate = parseDate(request.endDate, "endDate", endOfDay = true)
             validateCouponRequest(request, startDate, endDate)
             CouponDAO.new {
                 code = normalizeCode(request.code)
@@ -76,7 +76,7 @@ class CouponRepositoryImpl : CouponRepository {
         query {
             val coupon = CouponDAO.findById(couponId) ?: throw NotFoundException(Message.Coupons.NOT_FOUND)
             val startDate = parseDate(request.startDate, "startDate")
-            val endDate = parseDate(request.endDate, "endDate")
+            val endDate = parseDate(request.endDate, "endDate", endOfDay = true)
             validateCouponRequest(request, startDate, endDate)
             if (request.usageLimit != null && request.usageLimit < coupon.usageCount) {
                 throw ValidationException("Usage limit cannot be lower than the current usage count (${coupon.usageCount})")
@@ -146,15 +146,17 @@ class CouponRepositoryImpl : CouponRepository {
     private fun parseDate(
         value: String,
         fieldName: String,
+        endOfDay: Boolean = false,
     ): LocalDateTime =
         try {
             LocalDateTime.parse(value)
         } catch (_: Exception) {
             try {
-                LocalDate.parse(value).atStartOfDay()
+                val date = LocalDate.parse(value)
+                if (endOfDay) date.atTime(java.time.LocalTime.MAX) else date.atStartOfDay()
             } catch (_: Exception) {
                 try {
-                    OffsetDateTime.parse(value).toLocalDateTime()
+                    OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime()
                 } catch (_: Exception) {
                     throw ValidationException(Message.Validation.invalidFormat("$fieldName: $value"))
                 }

@@ -26,6 +26,7 @@ import com.piashcse.database.entities.calcCommission
 import com.piashcse.database.entities.removeSales
 import com.piashcse.database.entities.restoreStockFor
 import com.piashcse.feature.loyalty.LoyaltyService
+import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.validator.ValidationException
@@ -88,6 +89,7 @@ object OrderCancellation {
             .forEach { it.status = ReservationStatus.RELEASED }
 
         reverseCouponUsage(order)
+        PromotionService().reverseForOrderTx(order.id.value)
         reverseSellerTotals(order)
         reverseSellerPayout(order)
         LoyaltyService().reverseOrderTx(order.userId.value, order.id.value)
