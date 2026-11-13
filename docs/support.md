@@ -32,6 +32,7 @@ Other customer endpoints:
 | `GET` | `/api/v1/support/tickets/{id}` | Ticket + public replies |
 | `POST` | `/api/v1/support/tickets/{id}/messages` | Reply |
 | `POST` | `/api/v1/support/tickets/{id}/close` | Close |
+| `POST` | `/api/v1/support/tickets/{id}/satisfaction` | Rate a resolved/closed ticket |
 
 - Customers never see `isInternal` messages.
 - Replying reopens `PENDING` / `RESOLVED` tickets.
@@ -67,6 +68,18 @@ Send a blank `assignedTo` to unassign.
 
 Statuses: `OPEN`, `PENDING`, `RESOLVED`, `CLOSED`.
 
+SLA targets by priority:
+
+| Priority | First response | Resolution |
+|---|---|---|
+| `URGENT` | 1 hour | 4 hours |
+| `HIGH` | 4 hours | 24 hours |
+| `NORMAL` | 24 hours | 72 hours |
+| `LOW` | 48 hours | 120 hours |
+
+Ticket responses include `firstResponseAt`, `responseDueAt`, `resolutionDueAt` and `slaBreached`.
+The first admin reply records `firstResponseAt`.
+
 - `RESOLVED` / `CLOSED` record `resolvedAt`.
 - `OPEN` clears `resolvedAt`.
 - Every reply updates `lastMessageAt`, which drives the queue ordering.
@@ -87,7 +100,14 @@ Statuses: `OPEN`, `PENDING`, `RESOLVED`, `CLOSED`.
     "assignedTo": null,
     "lastMessageAt": "2026-05-01T10:00:00Z",
     "resolvedAt": null,
-    "createdAt": "2026-05-01T10:00:00Z"
+    "createdAt": "2026-05-01T10:00:00Z",
+    "firstResponseAt": null,
+    "responseDueAt": "2026-05-02T10:00:00Z",
+    "resolutionDueAt": "2026-05-04T10:00:00Z",
+    "slaBreached": false,
+    "csatScore": null,
+    "csatComment": null,
+    "csatRatedAt": null
   },
   "messages": [
     {
@@ -105,3 +125,16 @@ Statuses: `OPEN`, `PENDING`, `RESOLVED`, `CLOSED`.
 
 This is polling-based chat: clients fetch the ticket thread and post replies. No WebSocket channel is
 required.
+
+
+## Satisfaction (CSAT)
+
+**`POST /api/v1/support/tickets/{id}/satisfaction`**
+
+```json
+{ "score": 5, "comment": "Fast resolution" }
+```
+
+- Score must be between 1 and 5.
+- Only the ticket owner can rate, and only after the ticket is `RESOLVED` or `CLOSED`.
+- Re-rating replaces the previous score/comment.

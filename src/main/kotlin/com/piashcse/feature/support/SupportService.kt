@@ -68,6 +68,18 @@ data class TicketUpdateRequest(
 )
 
 @Serializable
+data class TicketSatisfactionRequest(
+    val score: Int,
+    val comment: String? = null,
+) {
+    init {
+        if (score !in 1..5) {
+            throw FieldValidationException(listOf(FieldViolation("score", "Score must be between 1 and 5")))
+        }
+    }
+}
+
+@Serializable
 data class TicketMessageResponse(
     val id: String,
     val ticketId: String,
@@ -92,6 +104,13 @@ data class TicketSummaryResponse(
     val lastMessageAt: String?,
     val resolvedAt: String?,
     val createdAt: String?,
+    val firstResponseAt: String? = null,
+    val responseDueAt: String? = null,
+    val resolutionDueAt: String? = null,
+    val slaBreached: Boolean = false,
+    val csatScore: Int? = null,
+    val csatComment: String? = null,
+    val csatRatedAt: String? = null,
 )
 
 @Serializable
@@ -203,6 +222,23 @@ class SupportService {
             ticket.toSummary()
         }
 
+    suspend fun rate(
+        userId: String,
+        ticketId: String,
+        request: TicketSatisfactionRequest,
+    ): TicketSummaryResponse =
+        query {
+            val ticket = SupportTicketDAO.findById(ticketId) ?: ticketId.throwNotFound("Ticket")
+            if (ticket.userId.value != userId) throw ForbiddenException("Ticket belongs to another account")
+            if (ticket.status !in listOf(TicketStatus.RESOLVED, TicketStatus.CLOSED)) {
+                throw ValidationException("Only resolved or closed tickets can be rated")
+            }
+            ticket.csatScore = request.score
+            ticket.csatComment = request.comment?.trim()?.takeIf { it.isNotBlank() }
+            ticket.csatRatedAt = currentUtc()
+            ticket.toSummary()
+        }
+
     suspend fun adminTickets(
         status: TicketStatus?,
         priority: TicketPriority?,
@@ -254,6 +290,7 @@ class SupportService {
                 ticket.resolvedAt = null
             }
             ticket.lastMessageAt = now
+            if (ticket.firstResponseAt == null) ticket.firstResponseAt = now
             AdminAudit.publish(
                 adminId,
                 if (request.isInternal) "SUPPORT_INTERNAL_NOTE" else "SUPPORT_REPLY",
@@ -319,6 +356,41 @@ class SupportService {
                     .map { it.toResponse() },
         )
 
+    private fun SupportTicketDAO.responseDueAt() = createdAt.plusHours(responseHours())
+
+    private fun SupportTicketDAO.resolutionDueAt() = createdAt.plusHours(resolutionHours())
+
+    private fun SupportTicketDAO.responseHours(): Long =
+        when (priority) {
+            TicketPriority.URGENT -> 1
+            TicketPriority.HIGH -> 4
+            TicketPriority.NORMAL -> 24
+            TicketPriority.LOW -> 48
+        }
+
+    private fun SupportTicketDAO.resolutionHours(): Long =
+        when (priority) {
+            TicketPriority.URGENT -> 4
+            TicketPriority.HIGH -> 24
+            TicketPriority.NORMAL -> 72
+            TicketPriority.LOW -> 120
+        }
+
+    private fun SupportTicketDAO.slaBreached(): Boolean {
+        val now = currentUtc()
+        val responseDeadline = responseDueAt()
+        val responseBreached =
+            firstResponseAt?.isAfter(responseDeadline) ?: now.isAfter(responseDeadline)
+        val resolutionDeadline = resolutionDueAt()
+        val resolutionBreached =
+            if (status in listOf(TicketStatus.RESOLVED, TicketStatus.CLOSED)) {
+                resolvedAt?.isAfter(resolutionDeadline) ?: false
+            } else {
+                now.isAfter(resolutionDeadline)
+            }
+        return responseBreached || resolutionBreached
+    }
+
     private fun requireUser(userId: String) {
         UserDAO.findById(userId) ?: userId.throwNotFound("User")
     }
@@ -337,6 +409,13 @@ class SupportService {
             lastMessageAt = lastMessageAt?.toUtcString(),
             resolvedAt = resolvedAt?.toUtcString(),
             createdAt = createdAt.toUtcString(),
+            firstResponseAt = firstResponseAt?.toUtcString(),
+            responseDueAt = responseDueAt().toUtcString(),
+            resolutionDueAt = resolutionDueAt().toUtcString(),
+            slaBreached = slaBreached(),
+            csatScore = csatScore,
+            csatComment = csatComment,
+            csatRatedAt = csatRatedAt?.toUtcString(),
         )
 
     private fun SupportMessageDAO.toResponse() =

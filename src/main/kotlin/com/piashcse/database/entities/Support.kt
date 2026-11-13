@@ -21,6 +21,10 @@ object SupportTicketTable : BaseIdTable("support_ticket") {
     val assignedTo = reference("assigned_to", UserTable.id).nullable()
     val lastMessageAt = datetime("last_message_at").nullable()
     val resolvedAt = datetime("resolved_at").nullable()
+    val firstResponseAt = datetime("first_response_at").nullable()
+    val csatScore = integer("csat_score").nullable()
+    val csatComment = text("csat_comment").nullable()
+    val csatRatedAt = datetime("csat_rated_at").nullable()
 }
 
 class SupportTicketDAO(id: EntityID<String>) : BaseEntity(id, SupportTicketTable) {
@@ -36,6 +40,10 @@ class SupportTicketDAO(id: EntityID<String>) : BaseEntity(id, SupportTicketTable
     var assignedTo by SupportTicketTable.assignedTo
     var lastMessageAt by SupportTicketTable.lastMessageAt
     var resolvedAt by SupportTicketTable.resolvedAt
+    var firstResponseAt by SupportTicketTable.firstResponseAt
+    var csatScore by SupportTicketTable.csatScore
+    var csatComment by SupportTicketTable.csatComment
+    var csatRatedAt by SupportTicketTable.csatRatedAt
 }
 
 object SupportMessageTable : BaseIdTable("support_message") {

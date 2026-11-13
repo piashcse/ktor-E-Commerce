@@ -58,6 +58,20 @@ fun Route.supportRoutes() {
         post("{id}/close") {
             call.respondOk(service.close(call.currentUserId, call.requirePathParameter("id")))
         }.describe { summary = "Close my support ticket" }
+
+        post("{id}/satisfaction") {
+            call.respondOk(
+                service.rate(
+                    call.currentUserId,
+                    call.requirePathParameter("id"),
+                    call.receive<TicketSatisfactionRequest>(),
+                ),
+            )
+        }.describe {
+            summary = "Rate a resolved/closed support ticket"
+            requestBody { jsonBody<TicketSatisfactionRequest>() }
+            responses { ok<TicketSummaryResponse>("Satisfaction recorded") }
+        }
     }
 }
 

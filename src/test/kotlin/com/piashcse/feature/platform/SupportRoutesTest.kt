@@ -113,6 +113,22 @@ class SupportRoutesTest {
         }
 
     @Test
+    fun `customer rates a resolved ticket`() =
+        testApplication {
+            coEvery { service.rate("user-1", "ticket-1", any()) } returns
+                summary().copy(status = TicketStatus.CLOSED, csatScore = 5, csatComment = "Great")
+            setup()
+            val res =
+                client.post("/api/v1/support/tickets/ticket-1/satisfaction") {
+                    header(HttpHeaders.Authorization, authHeader())
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"score":5,"comment":"Great"}""")
+                }
+            assertEquals(HttpStatusCode.OK, res.status)
+            assertContains(res.bodyAsText(), "\"csatScore\": 5")
+        }
+
+    @Test
     fun `admin replies internally and updates status`() =
         testApplication {
             coEvery { service.adminReply("admin-1", "ticket-1", any()) } returns ticket()
