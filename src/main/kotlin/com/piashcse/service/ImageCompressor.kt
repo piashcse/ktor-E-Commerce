@@ -16,6 +16,27 @@ object ImageCompressor {
     // Guard against decompression bombs (a tiny file can decode to a huge raster).
     private const val MAX_PIXELS = 50_000_000L
 
+    /**
+     * Reads only the image header to reject decompression bombs before ImageIO
+     * allocates the full raster.
+     */
+    private fun exceedsPixelGuard(file: File): Boolean {
+        val stream = ImageIO.createImageInputStream(file) ?: return false
+        stream.use {
+            val readers = ImageIO.getImageReaders(it)
+            if (!readers.hasNext()) return false
+            val reader = readers.next()
+            return try {
+                reader.input = it
+                reader.getWidth(0).toLong() * reader.getHeight(0).toLong() > MAX_PIXELS
+            } catch (_: Exception) {
+                false
+            } finally {
+                reader.dispose()
+            }
+        }
+    }
+
     fun compress(filePath: String) {
         val file = File(filePath)
         if (!file.exists()) return
@@ -24,6 +45,10 @@ object ImageCompressor {
         if (ext !in listOf("jpg", "jpeg", "png")) return
 
         val originalSize = file.length()
+        if (exceedsPixelGuard(file)) {
+            log.warn("Skipping image compression for {}: dimensions exceed the pixel guard", filePath)
+            return
+        }
         val image = ImageIO.read(file) ?: return
         if (image.width.toLong() * image.height.toLong() > MAX_PIXELS) {
             log.warn("Skipping image compression for {}: dimensions {}x{} exceed the pixel guard", filePath, image.width, image.height)

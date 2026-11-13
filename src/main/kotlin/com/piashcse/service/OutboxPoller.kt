@@ -14,6 +14,7 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.less
+import org.jetbrains.exposed.v1.core.or
 import org.slf4j.LoggerFactory
 
 /** Polls `outbox` for unpublished rows and relays them to the in-memory bus. At-least-once. */
@@ -67,17 +68,25 @@ object OutboxPoller {
     }
 
     suspend fun drain(batchSize: Int = 50): Int {
-        // Read the batch in one short transaction. Delivery happens outside the
-        // transaction because it waits for subscribers; the row is acknowledged
-        // in a second transaction only after consumers succeed.
+        // Do not burn delivery attempts while the in-process bus is still starting
+        // or has no subscribers. The next poll retries without incrementing.
+        if (!EventBus.isReady()) return 0
+        // Read + claim the batch in one short transaction. Delivery happens outside
+        // the transaction because it waits for subscribers; a crashed instance's
+        // claim expires after five minutes.
+        val claimCutoff = currentUtc().minusMinutes(5)
         val pending =
             query {
                 OutboxDAO.find {
-                    (OutboxTable.publishedAt.isNull()) and (OutboxTable.attempts less MAX_ATTEMPTS)
+                    (OutboxTable.publishedAt.isNull()) and
+                        (OutboxTable.attempts less MAX_ATTEMPTS) and
+                        (OutboxTable.claimedAt.isNull() or (OutboxTable.claimedAt less claimCutoff))
                 }
+                    .forUpdate()
                     .orderBy(OutboxTable.createdAt to SortOrder.ASC)
                     .limit(batchSize).toList()
                     .map { row ->
+                        row.claimedAt = currentUtc()
                         PendingRow(
                             id = row.id.value,
                             eventType = row.eventType,
@@ -95,6 +104,7 @@ object OutboxPoller {
             if (event == null) {
                 query {
                     OutboxDAO.findById(pendingRow.id)?.let { row ->
+                        row.claimedAt = null
                         row.attempts = row.attempts + 1
                         if (row.attempts >= MAX_ATTEMPTS) {
                             deadLetter(row, "Undecodable event payload after ${row.attempts} attempts")
@@ -120,10 +130,12 @@ object OutboxPoller {
                 OutboxDAO.findById(pendingRow.id)?.let { row ->
                     if (processed) {
                         row.publishedAt = currentUtc()
+                        row.claimedAt = null
                         AppMetrics.outboxDelivered.increment()
                         delivered++
                     } else {
                         AppMetrics.outboxFailed.increment()
+                        row.claimedAt = null
                         row.attempts = row.attempts + 1
                         if (row.attempts >= MAX_ATTEMPTS) {
                             deadLetter(row, "Subscriber delivery failed after ${row.attempts} attempts")

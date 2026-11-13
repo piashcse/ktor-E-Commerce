@@ -31,8 +31,10 @@ services:
       PORT: 8080
       HOST: 0.0.0.0
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be at least 32 characters}
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?MFA_ENCRYPTION_KEY must be set}
+      DIGITAL_URL_SECRET: ${DIGITAL_URL_SECRET:?DIGITAL_URL_SECRET must be set}
       EMAIL_USERNAME: ${EMAIL_USERNAME:-test@example.com}
-      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-test}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:?EMAIL_PASSWORD must be set}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8080}
       TRUST_PROXY: ${TRUST_PROXY:-false}
       METRICS_TOKEN: ${METRICS_TOKEN:-}
@@ -41,7 +43,7 @@ services:
     volumes:
       - uploads:/app/uploads
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/health/live || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/health/ready || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3

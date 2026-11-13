@@ -45,6 +45,8 @@ object EventBus {
     private val _events = MutableSharedFlow<Envelope>(extraBufferCapacity = 256)
     private val events = _events.asSharedFlow()
     private val subscribers = CopyOnWriteArrayList<Subscriber>()
+
+    @Volatile
     private var job: Job? = null
 
     private val publishedCount = AtomicLong(0)
@@ -75,9 +77,11 @@ object EventBus {
         if (!subscribers.contains(subscriber)) subscribers.add(subscriber)
     }
 
+    fun isReady(): Boolean = job != null && subscribers.isNotEmpty()
+
     /** Returns false when the bus is not running or the buffer is full. */
     fun publish(event: DomainEvent): Boolean {
-        if (job == null || subscribers.isEmpty()) {
+        if (!isReady()) {
             log.error("EventBus not ready — dropped ${event::class.simpleName}")
             failedCount.incrementAndGet()
             return false
@@ -101,7 +105,7 @@ object EventBus {
         event: DomainEvent,
         timeoutMs: Long = 10_000L,
     ): Boolean {
-        if (job == null || subscribers.isEmpty()) return false
+        if (!isReady()) return false
         val ack = CompletableDeferred<Boolean>()
         if (!_events.tryEmit(Envelope(event, ack))) return false
         publishedCount.incrementAndGet()
@@ -193,5 +197,8 @@ object EventBus {
     fun stop() {
         job?.cancel()
         job = null
+        // Application restart (dev reload / multiple testApplication instances)
+        // must not retain stale subscribers from the previous bus.
+        subscribers.clear()
     }
 }
