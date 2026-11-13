@@ -54,6 +54,8 @@ hide:
 - Subscription recurring billing (`V50`): stored provider customer/payment-method references,
   off-session renewal charges, idempotent per-period invoices, retry/backoff dunning, grace periods,
   automatic expiry with entitlement revocation, and webhook-driven invoice activation.
+- B2B net-terms invoices (`V51`): invoice generation on PO fulfillment, buyer/seller/admin invoice
+  lists, overdue reminders and admin settlement that completes the linked order payment.
 - Identity hardening (`V46`): Google ID-token social login with automatic verified customer
   creation/account linking, plus WebAuthn passkey registration, passwordless login and credential
   management (`GOOGLE_CLIENT_ID`, `WEBAUTHN_RP_ID/RP_NAME/ORIGIN`).
@@ -106,7 +108,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (348 operations total).
+  (353 operations total).
 
 ### Fixed
 

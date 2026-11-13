@@ -80,6 +80,17 @@ fun Route.b2bQuoteRoutes() {
     }
 }
 
+/** Buyer net-terms invoices. */
+fun Route.b2bInvoiceRoutes() {
+    val service: B2bService by inject()
+    requireRole {
+        get {
+            val (limit, offset) = call.paginateQueryParams()
+            call.respondOk(service.myInvoices(call.currentUserId, limit, offset))
+        }.describe { summary = "List my B2B invoices" }
+    }
+}
+
 /** Buyer purchase orders. */
 fun Route.b2bPurchaseOrderRoutes() {
     val service: B2bService by inject()
@@ -123,6 +134,15 @@ fun Route.b2bSellerQuoteRoutes() {
     }
 }
 
+/** Seller net-terms invoices. */
+fun Route.b2bSellerInvoiceRoutes() {
+    val service: B2bService by inject()
+    get {
+        val (limit, offset) = call.paginateQueryParams()
+        call.respondOk(service.sellerInvoices(call.currentUserId, limit, offset))
+    }.describe { summary = "Seller: list B2B invoices" }
+}
+
 /** Seller purchase orders. */
 fun Route.b2bSellerPurchaseOrderRoutes() {
     val service: B2bService by inject()
@@ -152,7 +172,21 @@ fun Route.b2bAdminRoutes() {
         call.respondOk(service.adminPurchaseOrders(limit, offset))
     }.describe { summary = "Admin: list B2B purchase orders" }
 
+    get("invoices") {
+        val (limit, offset) = call.paginateQueryParams()
+        call.respondOk(service.adminInvoices(limit, offset))
+    }.describe { summary = "Admin: list B2B invoices" }
+
     adminWriteRateLimit {
+        post("invoices/run-dunning") {
+            call.respondOk(service.runDunning())
+        }.describe { summary = "Admin: send B2B invoice reminders" }
+
+        post("invoices/{id}/pay") {
+            val reference = call.request.queryParameters["providerReference"]
+            call.respondOk(service.markInvoicePaid(call.requirePathParameter("id"), reference))
+        }.describe { summary = "Admin: mark a B2B invoice paid" }
+
         put("accounts/{userId}") {
             call.respondOk(
                 service.updateAccount(

@@ -1,6 +1,7 @@
 package com.piashcse.feature.b2b
 
 import com.piashcse.constants.B2bAccountStatus
+import com.piashcse.constants.B2bInvoiceStatus
 import com.piashcse.constants.B2bQuoteStatus
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentMethod
@@ -8,6 +9,8 @@ import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.PurchaseOrderStatus
 import com.piashcse.database.entities.B2bAccountDAO
 import com.piashcse.database.entities.B2bAccountTable
+import com.piashcse.database.entities.B2bInvoiceDAO
+import com.piashcse.database.entities.B2bInvoiceTable
 import com.piashcse.database.entities.B2bPurchaseOrderDAO
 import com.piashcse.database.entities.B2bPurchaseOrderTable
 import com.piashcse.database.entities.B2bQuoteDAO
@@ -44,6 +47,9 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.isNull
+import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
@@ -174,7 +180,30 @@ data class PurchaseOrderResponse(
     val fulfilledAt: String?,
     val canceledAt: String?,
     val createdAt: String?,
+    val invoiceId: String? = null,
 )
+
+@Serializable
+data class B2bInvoiceResponse(
+    val id: String,
+    val purchaseOrderId: String,
+    val orderId: String?,
+    val invoiceNumber: String,
+    val buyerUserId: String,
+    val sellerId: String,
+    val status: B2bInvoiceStatus,
+    val currency: String,
+    val amount: String,
+    val dueDate: String,
+    val paidAt: String?,
+    val providerReference: String?,
+    val reminderCount: Int,
+    val lastReminderAt: String?,
+    val nextReminderAt: String?,
+)
+
+@Serializable
+data class B2bDunningResponse(val reminded: Int)
 
 class B2bService {
     suspend fun account(userId: String): B2bAccountResponse =
@@ -500,6 +529,8 @@ class B2bService {
                     contactEmail = buyerEmail
                     notes = "B2B PO ${po.poNumber}; net ${po.netTermsDays} days"
                 }
+            // Flush before linking the PO/invoice so FK checks see the order row.
+            order.flush()
             quoteItems.forEach { item ->
                 val product = products[item.productId.value] ?: throw ValidationException("Product not found")
                 product.decrementStock(item.quantity)
@@ -518,7 +549,97 @@ class B2bService {
             po.orderId = order.id
             po.status = PurchaseOrderStatus.FULFILLED
             po.fulfilledAt = currentUtc()
+            B2bInvoiceDAO.new {
+                this.purchaseOrderId = po.id
+                this.orderId = order.id
+                this.buyerUserId = po.buyerUserId
+                this.sellerId = po.sellerId
+                this.invoiceNumber = generateInvoiceNumber()
+                this.status = B2bInvoiceStatus.PENDING
+                this.currency = po.currency
+                this.amount = po.total
+                this.dueDate = po.dueDate ?: currentUtc().plusDays(po.netTermsDays.toLong())
+            }
             po.toResponse()
+        }
+
+    suspend fun myInvoices(
+        buyerUserId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<B2bInvoiceResponse> =
+        query {
+            B2bInvoiceTable.selectAll()
+                .where { B2bInvoiceTable.buyerUserId eq buyerUserId.entityID(com.piashcse.database.entities.UserTable) }
+                .orderBy(B2bInvoiceTable.dueDate to SortOrder.ASC)
+                .toPaginatedResponse(limit, offset) { B2bInvoiceDAO.wrapRow(it).toResponse() }
+        }
+
+    suspend fun sellerInvoices(
+        sellerUserId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<B2bInvoiceResponse> =
+        query {
+            val seller = requireSellerByUserId(sellerUserId)
+            B2bInvoiceTable.selectAll()
+                .where { B2bInvoiceTable.sellerId eq seller.id }
+                .orderBy(B2bInvoiceTable.dueDate to SortOrder.ASC)
+                .toPaginatedResponse(limit, offset) { B2bInvoiceDAO.wrapRow(it).toResponse() }
+        }
+
+    suspend fun adminInvoices(
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<B2bInvoiceResponse> =
+        query {
+            B2bInvoiceTable.selectAll()
+                .orderBy(B2bInvoiceTable.dueDate to SortOrder.ASC)
+                .toPaginatedResponse(limit, offset) { B2bInvoiceDAO.wrapRow(it).toResponse() }
+        }
+
+    suspend fun markInvoicePaid(
+        invoiceId: String,
+        providerReference: String?,
+    ): B2bInvoiceResponse =
+        query {
+            val invoice =
+                B2bInvoiceDAO.find { B2bInvoiceTable.id eq invoiceId.entityID(B2bInvoiceTable) }
+                    .forUpdate()
+                    .firstOrNull() ?: invoiceId.throwNotFound("B2B invoice")
+            if (invoice.status == B2bInvoiceStatus.PAID) return@query invoice.toResponse()
+            if (invoice.status == B2bInvoiceStatus.VOID) throw ValidationException("Void invoices cannot be paid")
+            invoice.status = B2bInvoiceStatus.PAID
+            invoice.paidAt = currentUtc()
+            invoice.providerReference = providerReference
+            invoice.nextReminderAt = null
+            invoice.orderId?.let { orderId ->
+                OrderDAO.findById(orderId.value)?.let { order ->
+                    order.paymentStatus = PaymentStatus.COMPLETED
+                    if (order.status in listOf(OrderStatus.PENDING, OrderStatus.CONFIRMED)) {
+                        order.status = OrderStatus.PAID
+                        order.completedDate = currentUtc()
+                    }
+                }
+            }
+            invoice.toResponse()
+        }
+
+    suspend fun runDunning(now: LocalDateTime = currentUtc()): B2bDunningResponse =
+        query {
+            val due =
+                B2bInvoiceDAO.find {
+                    (B2bInvoiceTable.status inList listOf(B2bInvoiceStatus.PENDING, B2bInvoiceStatus.OVERDUE)) and
+                        (B2bInvoiceTable.dueDate lessEq now) and
+                        ((B2bInvoiceTable.nextReminderAt.isNull()) or (B2bInvoiceTable.nextReminderAt lessEq now))
+                }.toList()
+            due.forEach { invoice ->
+                invoice.status = B2bInvoiceStatus.OVERDUE
+                invoice.reminderCount += 1
+                invoice.lastReminderAt = now
+                invoice.nextReminderAt = now.plusDays(7)
+            }
+            B2bDunningResponse(due.size)
         }
 
     suspend fun adminPurchaseOrders(
@@ -558,6 +679,9 @@ class B2bService {
 
     private fun generatePoNumber(): String =
         "PO-${currentUtc().toLocalDate().toString().replace("-", "")}-${UUID.randomUUID().toString().take(6).uppercase()}"
+
+    private fun generateInvoiceNumber(): String =
+        "INV-${currentUtc().toLocalDate().toString().replace("-", "")}-${UUID.randomUUID().toString().take(6).uppercase()}"
 
     private fun parseDate(value: String): LocalDateTime =
         runCatching { LocalDateTime.parse(value) }
@@ -622,5 +746,29 @@ class B2bService {
             fulfilledAt = fulfilledAt?.toUtcString(),
             canceledAt = canceledAt?.toUtcString(),
             createdAt = createdAt.toUtcString(),
+            invoiceId =
+                B2bInvoiceDAO.find { B2bInvoiceTable.purchaseOrderId eq id }
+                    .firstOrNull()
+                    ?.id
+                    ?.value,
+        )
+
+    private fun B2bInvoiceDAO.toResponse() =
+        B2bInvoiceResponse(
+            id = id.value,
+            purchaseOrderId = purchaseOrderId.value,
+            orderId = orderId?.value,
+            invoiceNumber = invoiceNumber,
+            buyerUserId = buyerUserId.value,
+            sellerId = sellerId.value,
+            status = status,
+            currency = currency,
+            amount = Money.str(amount),
+            dueDate = dueDate.toUtcString(),
+            paidAt = paidAt?.toUtcString(),
+            providerReference = providerReference,
+            reminderCount = reminderCount,
+            lastReminderAt = lastReminderAt?.toUtcString(),
+            nextReminderAt = nextReminderAt?.toUtcString(),
         )
 }

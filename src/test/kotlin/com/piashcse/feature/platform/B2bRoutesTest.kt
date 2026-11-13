@@ -3,20 +3,27 @@ package com.piashcse.feature.platform
 import com.piashcse.RouteTestHelper.authHeader
 import com.piashcse.RouteTestHelper.installTestInfra
 import com.piashcse.constants.B2bAccountStatus
+import com.piashcse.constants.B2bInvoiceStatus
 import com.piashcse.constants.B2bQuoteStatus
 import com.piashcse.constants.PurchaseOrderStatus
 import com.piashcse.feature.b2b.B2bAccountResponse
+import com.piashcse.feature.b2b.B2bDunningResponse
+import com.piashcse.feature.b2b.B2bInvoiceResponse
 import com.piashcse.feature.b2b.B2bService
 import com.piashcse.feature.b2b.PurchaseOrderResponse
 import com.piashcse.feature.b2b.QuoteResponse
 import com.piashcse.feature.b2b.b2bAccountRoutes
 import com.piashcse.feature.b2b.b2bAdminRoutes
+import com.piashcse.feature.b2b.b2bInvoiceRoutes
 import com.piashcse.feature.b2b.b2bPurchaseOrderRoutes
 import com.piashcse.feature.b2b.b2bQuoteRoutes
+import com.piashcse.feature.b2b.b2bSellerInvoiceRoutes
 import com.piashcse.feature.b2b.b2bSellerPurchaseOrderRoutes
 import com.piashcse.feature.b2b.b2bSellerQuoteRoutes
 import com.piashcse.plugin.adminAuth
 import com.piashcse.plugin.sellerAuth
+import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -47,7 +54,13 @@ class B2bRoutesTest {
     private fun po() =
         PurchaseOrderResponse(
             "po-1", "quote-1", null, "user-1", "seller-1", "shop-1", "PO-1", PurchaseOrderStatus.OPEN,
-            "USD", "100.00", 30, null, null, null, null,
+            "USD", "100.00", 30, null, null, null, null, "invoice-1",
+        )
+
+    private fun invoice() =
+        B2bInvoiceResponse(
+            "invoice-1", "po-1", "order-1", "INV-1", "user-1", "seller-1", B2bInvoiceStatus.PENDING,
+            "USD", "100.00", "2026-06-01T00:00:00Z", null, null, 0, null, null,
         )
 
     private fun ApplicationTestBuilder.setup() {
@@ -57,8 +70,10 @@ class B2bRoutesTest {
                 route("/api/v1/b2b/account") { b2bAccountRoutes() }
                 route("/api/v1/b2b/quotes") { b2bQuoteRoutes() }
                 route("/api/v1/b2b/purchase-orders") { b2bPurchaseOrderRoutes() }
+                route("/api/v1/b2b/invoices") { b2bInvoiceRoutes() }
                 route("/api/v1/seller/b2b/quotes") { sellerAuth { b2bSellerQuoteRoutes() } }
                 route("/api/v1/seller/b2b/purchase-orders") { sellerAuth { b2bSellerPurchaseOrderRoutes() } }
+                route("/api/v1/seller/b2b/invoices") { sellerAuth { b2bSellerInvoiceRoutes() } }
                 route("/api/v1/admin/b2b") { adminAuth { b2bAdminRoutes() } }
             }
         }
@@ -144,6 +159,51 @@ class B2bRoutesTest {
                     setBody("""{"status":"APPROVED","creditLimit":1000.00,"paymentTermsDays":30}""")
                 }
             assertEquals(HttpStatusCode.OK, res.status)
+        }
+
+    @Test
+    fun `buyer lists invoices`() =
+        testApplication {
+            coEvery { service.myInvoices("user-1", 20, 0) } returns
+                PaginatedResponse(listOf(invoice()), PaginationMetadata(1, 10, 0))
+            setup()
+            val res =
+                client.get("/api/v1/b2b/invoices") {
+                    header(HttpHeaders.Authorization, authHeader())
+                }
+            assertEquals(HttpStatusCode.OK, res.status)
+            assertContains(res.bodyAsText(), "INV-1")
+        }
+
+    @Test
+    fun `seller lists invoices`() =
+        testApplication {
+            coEvery { service.sellerInvoices("seller-user", 20, 0) } returns
+                PaginatedResponse(listOf(invoice()), PaginationMetadata(1, 10, 0))
+            setup()
+            val res =
+                client.get("/api/v1/seller/b2b/invoices") {
+                    header(HttpHeaders.Authorization, authHeader(userId = "seller-user", userType = "SELLER"))
+                }
+            assertEquals(HttpStatusCode.OK, res.status)
+        }
+
+    @Test
+    fun `admin marks invoice paid and runs dunning`() =
+        testApplication {
+            coEvery { service.markInvoicePaid("invoice-1", "wire-1") } returns invoice().copy(status = B2bInvoiceStatus.PAID)
+            coEvery { service.runDunning(any()) } returns B2bDunningResponse(1)
+            setup()
+            val paid =
+                client.post("/api/v1/admin/b2b/invoices/invoice-1/pay?providerReference=wire-1") {
+                    header(HttpHeaders.Authorization, authHeader(userId = "admin-1", userType = "ADMIN"))
+                }
+            assertEquals(HttpStatusCode.OK, paid.status)
+            val dunning =
+                client.post("/api/v1/admin/b2b/invoices/run-dunning") {
+                    header(HttpHeaders.Authorization, authHeader(userId = "admin-1", userType = "ADMIN"))
+                }
+            assertEquals(HttpStatusCode.OK, dunning.status)
         }
 
     @Test

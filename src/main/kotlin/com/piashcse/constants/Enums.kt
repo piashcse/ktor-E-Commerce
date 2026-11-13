@@ -289,6 +289,14 @@ enum class PurchaseOrderStatus {
 }
 
 @Serializable
+enum class B2bInvoiceStatus {
+    PENDING,
+    OVERDUE,
+    PAID,
+    VOID,
+}
+
+@Serializable
 enum class FulfillmentType {
     DELIVERY,
     PICKUP,

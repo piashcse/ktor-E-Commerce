@@ -10651,6 +10651,29 @@ http://localhost:8080/api/v1/b2b/purchase-orders/{id}
 ```
 </details>
 <details>
+<summary> <code>GET</code> <code>/api/v1/b2b/invoices</code></summary>
+
+### Description
+List my B2B net-terms invoices.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/b2b/invoices' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/b2b/invoices
+```
+
+### Response
+```json
+{"data":[{"id":"invoice-1","status":"PENDING","amount":"210.00"}]}
+```
+</details>
+<details>
 <summary> <code>GET</code> <code>/api/v1/seller/b2b/quotes</code></summary>
 
 ### Description
@@ -10742,6 +10765,98 @@ http://localhost:8080/api/v1/seller/b2b/purchase-orders/{id}/fulfill
 ### Response
 ```json
 {"id":"po-1","status":"FULFILLED"}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/seller/b2b/invoices</code></summary>
+
+### Description
+Seller: list B2B net-terms invoices.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/b2b/invoices' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <seller-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/seller/b2b/invoices
+```
+
+### Response
+```json
+{"data":[{"id":"invoice-1","status":"PENDING"}]}
+```
+</details>
+<details>
+<summary> <code>GET</code> <code>/api/v1/admin/b2b/invoices</code></summary>
+
+### Description
+Admin: list B2B net-terms invoices.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/b2b/invoices' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/b2b/invoices
+```
+
+### Response
+```json
+{"data":[{"id":"invoice-1","status":"PENDING"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/b2b/invoices/run-dunning</code></summary>
+
+### Description
+Admin: mark due B2B invoices overdue and schedule reminders.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/b2b/invoices/run-dunning' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/b2b/invoices/run-dunning
+```
+
+### Response
+```json
+{"reminded":1}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/b2b/invoices/{id}/pay</code></summary>
+
+### Description
+Admin: mark a B2B invoice paid and settle the linked order.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/b2b/invoices/invoice-uuid/pay?providerReference=wire-123' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/b2b/invoices/{id}/pay?providerReference=wire-123
+```
+
+### Response
+```json
+{"id":"invoice-1","status":"PAID"}
 ```
 </details>
 <details>

@@ -103,9 +103,32 @@ Admin:
 PO statuses: `OPEN` → `FULFILLED`; `CANCELED` is reserved for future cancellation flows.
 The PO response includes the generated `orderId` after fulfillment.
 
+## Invoices and dunning
+
+Fulfilling a PO creates a net-terms invoice (`PENDING`) with a unique invoice number and the PO
+due date.
+
+Buyer / seller / admin:
+
+- `GET /api/v1/b2b/invoices`
+- `GET /api/v1/seller/b2b/invoices`
+- `GET /api/v1/admin/b2b/invoices`
+
+Admin actions:
+
+- `POST /api/v1/admin/b2b/invoices/run-dunning` — marks due invoices `OVERDUE`, increments the
+  reminder count and schedules the next reminder in 7 days. Returns `{ "reminded": N }`.
+- `POST /api/v1/admin/b2b/invoices/{id}/pay?providerReference=wire-123` — records settlement,
+  marks the invoice `PAID`, and marks the linked order payment `COMPLETED` (and `PAID` while it is
+  still `PENDING`/`CONFIRMED`).
+
+Invoice statuses: `PENDING` → `OVERDUE` → `PAID`; `VOID` is reserved for cancellation/credit-note
+flows.
+
 ## Limits
 
 - Quote items must be positive quantities.
 - Unit prices must be positive.
 - Credit limit cannot be negative; terms must be positive.
-- The platform does not auto-charge net-terms invoices — settlement remains an accounting/ERP integration.
+- The platform tracks net-terms invoices and reminders but does not auto-charge bank transfers;
+  settlement remains an accounting/ERP integration.

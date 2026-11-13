@@ -1,9 +1,11 @@
 package com.piashcse.database
 
 import com.piashcse.constants.B2bAccountStatus
+import com.piashcse.constants.B2bInvoiceStatus
 import com.piashcse.constants.B2bQuoteStatus
 import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.KycStatus
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.PurchaseOrderStatus
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
@@ -16,6 +18,7 @@ import com.piashcse.database.entities.ShopCategoryDAO
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.WarehouseDAO
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.feature.b2b.B2bAccountRequest
 import com.piashcse.feature.b2b.B2bAccountUpdateRequest
 import com.piashcse.feature.b2b.B2bService
@@ -244,8 +247,29 @@ class B2bIntegrationTest {
             val order = OrderDAO.findById(fulfilled.orderId!!)!!
             assertEquals(buyerId, order.userId.value)
             assertEquals("210.00", order.total.toPlainString())
+            assertEquals(PaymentStatus.PENDING, order.paymentStatus)
         }
         assertEquals(1, kotlinx.coroutines.runBlocking { b2b.myPurchaseOrders(buyerId, 10, 0) }.data.size)
+
+        val invoice =
+            kotlinx.coroutines.runBlocking { b2b.myInvoices(buyerId, 10, 0) }.data
+                .first { it.purchaseOrderId == po.id }
+        assertEquals(B2bInvoiceStatus.PENDING, invoice.status)
+        assertEquals("210.00", invoice.amount)
+        assertEquals(fulfilled.orderId, invoice.orderId)
+
+        val dunning = kotlinx.coroutines.runBlocking { b2b.runDunning(currentUtc().plusDays(31)) }
+        assertTrue(dunning.reminded >= 1)
+        assertEquals(
+            B2bInvoiceStatus.OVERDUE,
+            kotlinx.coroutines.runBlocking { b2b.myInvoices(buyerId, 10, 0) }.data
+                .first { it.id == invoice.id }.status,
+        )
+        val paid = kotlinx.coroutines.runBlocking { b2b.markInvoicePaid(invoice.id, "wire-123") }
+        assertEquals(B2bInvoiceStatus.PAID, paid.status)
+        transaction {
+            assertEquals(PaymentStatus.COMPLETED, OrderDAO.findById(fulfilled.orderId!!)!!.paymentStatus)
+        }
         assertEquals(1, kotlinx.coroutines.runBlocking { b2b.sellerPurchaseOrders(sellerUserId, 10, 0) }.data.size)
         assertEquals(1, kotlinx.coroutines.runBlocking { b2b.adminAccounts(null, 10, 0) }.data.size)
     }

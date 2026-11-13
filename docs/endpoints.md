@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 348  
+**Operations:** 353  
 **Tags:** 35  
 **Base path:** `/api/v1` unless noted otherwise
 
@@ -506,13 +506,18 @@ document served by Swagger UI.
 | `POST` | `/api/v1/b2b/quotes/{id}/accept` | Accept a quote and create a PO | Authenticated |
 | `GET` | `/api/v1/b2b/purchase-orders` | List my purchase orders | Authenticated |
 | `GET` | `/api/v1/b2b/purchase-orders/{id}` | Get a purchase order | Authenticated |
+| `GET` | `/api/v1/b2b/invoices` | List my B2B invoices | Authenticated |
 | `GET` | `/api/v1/seller/b2b/quotes` | Seller: list quote requests | Seller |
 | `PUT` | `/api/v1/seller/b2b/quotes/{id}` | Seller: price/send/reject a quote | Seller |
 | `GET` | `/api/v1/seller/b2b/purchase-orders` | Seller: list purchase orders | Seller |
+| `GET` | `/api/v1/seller/b2b/invoices` | Seller: list B2B invoices | Seller |
 | `POST` | `/api/v1/seller/b2b/purchase-orders/{id}/fulfill` | Seller: fulfill a purchase order | Seller |
 | `GET` | `/api/v1/admin/b2b/accounts` | Admin: list B2B accounts | Admin |
 | `PUT` | `/api/v1/admin/b2b/accounts/{userId}` | Admin: approve/update credit terms | Admin |
 | `GET` | `/api/v1/admin/b2b/purchase-orders` | Admin: list purchase orders | Admin |
+| `GET` | `/api/v1/admin/b2b/invoices` | Admin: list B2B invoices | Admin |
+| `POST` | `/api/v1/admin/b2b/invoices/{id}/pay` | Admin: mark a B2B invoice paid | Admin |
+| `POST` | `/api/v1/admin/b2b/invoices/run-dunning` | Admin: send B2B invoice reminders | Admin |
 
 ## Omnichannel
 
