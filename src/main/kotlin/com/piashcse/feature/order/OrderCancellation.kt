@@ -9,6 +9,8 @@ import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.database.entities.OrderItemTable
 import com.piashcse.database.entities.OrderStatusHistoryDAO
 import com.piashcse.database.entities.OrderTable
+import com.piashcse.database.entities.PaymentDAO
+import com.piashcse.database.entities.PaymentTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ReservationStatus
@@ -26,6 +28,8 @@ import com.piashcse.database.entities.restoreStockFor
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.utils.extension.entityID
+import com.piashcse.utils.validator.ValidationException
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import java.math.BigDecimal
@@ -43,13 +47,17 @@ object OrderCancellation {
         notes: String?,
         changedBy: String?,
     ) {
+        val captured =
+            PaymentDAO.find {
+                (PaymentTable.orderId eq order.id) and (PaymentTable.status eq PaymentStatus.COMPLETED)
+            }.fold(BigDecimal.ZERO) { acc, payment -> acc.add(payment.amount) }
+        if (captured > BigDecimal.ZERO) {
+            throw ValidationException("Orders with captured payments must be refunded, not canceled")
+        }
         order.status = OrderStatus.CANCELED
         order.canceledDate = currentUtc()
         if (!notes.isNullOrBlank()) {
             order.notes = listOfNotNull(order.notes?.takeIf { it.isNotBlank() }, notes).joinToString("\n")
-        }
-        if (order.paymentStatus == PaymentStatus.COMPLETED) {
-            order.paymentStatus = PaymentStatus.REFUNDED
         }
 
         OrderStatusHistoryDAO.new {
@@ -68,7 +76,11 @@ object OrderCancellation {
                 emptyMap()
             }
         orderItems.forEach { orderItem ->
-            products[orderItem.productId.value]?.restoreStockFor(orderItem.variantId?.value, orderItem.quantity)
+            products[orderItem.productId.value]?.restoreStockFor(
+                orderItem.variantId?.value,
+                orderItem.quantity,
+                order.pickupWarehouseId?.value,
+            )
             products[orderItem.productId.value]?.removeSales(orderItem.quantity)
         }
 

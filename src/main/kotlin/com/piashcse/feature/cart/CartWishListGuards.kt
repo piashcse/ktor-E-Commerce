@@ -49,6 +49,9 @@ fun requireCartSelection(
     val stock =
         if (variant == null) product.effectiveStock() else product.effectiveStockFor(variant.id.value)
     if (quantity > stock) throw ValidationException(Message.Validation.insufficientStock(product.name, stock))
+    if (quantity < product.minOrderQuantity) {
+        throw ValidationException("Minimum order quantity for ${product.name} is ${product.minOrderQuantity}")
+    }
     return product to variant
 }
 

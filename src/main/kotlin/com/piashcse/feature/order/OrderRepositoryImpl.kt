@@ -91,6 +91,11 @@ class OrderRepositoryImpl(
         sequenceNumber: Int,
     ) = "ORD-$datePrefix-${sequenceNumber.toString().padStart(4, '0')}-${UUID.randomUUID().toString().take(8).uppercase()}"
 
+    private fun parseOrderStatus(raw: String): OrderStatus =
+        runCatching { OrderStatus.valueOf(raw.trim().uppercase()) }.getOrElse {
+            throw ValidationException(Message.Errors.invalidParameter("status", raw))
+        }
+
     private fun logStatusChange(
         orderId: String,
         status: OrderStatus,
@@ -140,12 +145,16 @@ class OrderRepositoryImpl(
             if (coupon.usageCount >= limit) throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
         }
 
-        // Per-user limit (default 1) is enforced against the usage ledger.
+        // Per-user limit is enforced against distinct checkouts. Split orders
+        // create one row per shop but share a checkout reference.
         if (userId != null) {
             val usedByUser =
                 CouponUsageDAO.find {
                     (CouponUsageTable.couponId eq coupon.id) and (CouponUsageTable.userId eq userId.entityID(UserTable))
-                }.count()
+                }.toList()
+                    .map { it.checkoutReference ?: it.id.value }
+                    .distinct()
+                    .size
             if (usedByUser >= coupon.perUserLimit) throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
         }
 
@@ -175,10 +184,40 @@ class OrderRepositoryImpl(
         return Money.scale2(discount.min(orderAmount).max(BigDecimal.ZERO))
     }
 
+    private fun couponMatches(
+        product: ProductDAO,
+        coupon: CouponDAO,
+    ): Boolean =
+        (coupon.shopId?.value == null || product.shopId?.value == coupon.shopId?.value) &&
+            (coupon.categoryId?.value == null || product.categoryId.value == coupon.categoryId?.value)
+
+    private fun unitPriceUsd(
+        product: ProductDAO,
+        variant: ProductVariantDAO?,
+    ): BigDecimal = variant?.effectivePrice ?: product.discountPrice ?: product.price
+
+    /**
+     * USD subtotal of cart lines the coupon actually applies to. A shop- or
+     * category-scoped coupon must never discount unrelated lines.
+     */
+    private fun couponEligibleUsd(
+        coupon: CouponDAO,
+        items: List<CartItemDAO>,
+        products: Map<String, ProductDAO>,
+        variants: Map<String, ProductVariantDAO>,
+    ): BigDecimal =
+        items.fold(BigDecimal.ZERO) { acc, item ->
+            val product = products[item.productId.value] ?: return@fold acc
+            if (!couponMatches(product, coupon)) return@fold acc
+            val variant = item.variantId?.value?.let { variants[it] }
+            acc.add(Money.unitTotal(unitPriceUsd(product, variant), item.quantity))
+        }.let { Money.scale2(it) }
+
     private fun consumeCoupon(
         coupon: CouponDAO,
         userId: String,
         orders: List<OrderDAO>,
+        checkoutReference: String,
     ) {
         // One usage row per split order and one usageCount increment per row keeps
         // usageCount == ledger size, so limits and reversal stay consistent.
@@ -189,6 +228,7 @@ class OrderRepositoryImpl(
                 this.userId = userId.entityID(UserTable)
                 this.orderId = order.id
                 this.usedAt = currentUtc()
+                this.checkoutReference = checkoutReference
             }
         }
     }
@@ -234,10 +274,11 @@ class OrderRepositoryImpl(
         val responses =
             retryQuery {
                 existingOrderResponses(userId, idempotencyKey) ?: run {
+                    val checkoutReference = UUID.randomUUID().toString()
                     val context = loadCheckoutContext(userId, checkoutRequest)
                     val quote = createOrders(context, userId, checkoutRequest, currency, fxRate)
                     if (checkoutRequest.couponCode != null) {
-                        applyCoupon(checkoutRequest.couponCode, quote, context, userId, fxRate)
+                        applyCoupon(checkoutRequest.couponCode, quote, context, userId, fxRate, checkoutReference)
                     } else {
                         promotionService.evaluateTx(quote.totalUsdSubTotal)?.let { promotion ->
                             applyPromotion(quote, promotion, fxRate)
@@ -430,6 +471,7 @@ class OrderRepositoryImpl(
         var shopTax = BigDecimal.ZERO
         var shopExclusiveTax = BigDecimal.ZERO
         var allDigital = true
+        var allFreeShipping = true
         val businessTaxId = checkoutRequest.businessTaxId
 
         val order =
@@ -486,6 +528,7 @@ class OrderRepositoryImpl(
             // Product prices are stored in USD; persist the order-currency unit
             // price so refunds and payouts use the same unit as the order.
             if (!product.isDigital) allDigital = false
+            if (!product.isDigital && !product.freeShipping) allFreeShipping = false
             val unitPriceUsd = variant?.effectivePrice ?: product.discountPrice ?: product.price
             val unitPrice = Money.scale2(unitPriceUsd.multiply(fxRate))
             val itemTotal = Money.unitTotal(unitPrice, cartItem.quantity)
@@ -549,7 +592,7 @@ class OrderRepositoryImpl(
         val scaledSubTotal = Money.scale2(shopSubTotal)
         val tax = Money.scale2(shopTax)
         val ship =
-            if (allDigital || context.pickupWarehouse != null) {
+            if (allDigital || context.pickupWarehouse != null || allFreeShipping) {
                 BigDecimal.ZERO.setScale(2)
             } else {
                 Money.scale2(context.shippingMethod.price.multiply(fxRate))
@@ -568,6 +611,9 @@ class OrderRepositoryImpl(
         variantsMap: Map<String, ProductVariantDAO>,
     ): ProductVariantDAO? {
         if (product.status != ProductStatus.ACTIVE) throw ValidationException(Message.Products.OUT_OF_STOCK)
+        if (cartItem.quantity < product.minOrderQuantity) {
+            throw ValidationException("Minimum order quantity for ${product.name} is ${product.minOrderQuantity}")
+        }
         val variant = cartItem.variantId?.value?.let { id -> variantsMap[id] ?: id.throwNotFound("Variant") }
         if (variant != null && variant.productId.value != product.id.value) {
             throw ValidationException("Variant does not belong to product ${product.name}")
@@ -589,6 +635,7 @@ class OrderRepositoryImpl(
         context: CheckoutContext,
         userId: String,
         fxRate: BigDecimal,
+        checkoutReference: String,
     ) {
         // Coupon thresholds/value are USD-denominated; discounts are converted
         // to the order currency before being applied.
@@ -601,12 +648,31 @@ class OrderRepositoryImpl(
                 shopIds = context.itemsByShop.keys,
                 categoryIds = context.productsMap.values.map { it.categoryId.value }.toSet(),
             )
-        val discountUsd = calculateCouponDiscount(coupon, quote.totalUsdSubTotal)
-        consumeCoupon(coupon, userId, quote.orders)
-        val totalSubTotal = quote.orders.fold(BigDecimal.ZERO) { acc, order -> acc.add(order.subTotal) }
+        val eligibleUsd =
+            couponEligibleUsd(coupon, context.cartItems, context.productsMap, context.variantsMap)
+        if (eligibleUsd <= BigDecimal.ZERO) {
+            throw ValidationException("Coupon is not valid for the products in this order")
+        }
+        if (eligibleUsd < coupon.minOrderAmount) {
+            throw ValidationException(Message.Orders.couponMinOrderAmount(coupon.minOrderAmount.toPlainString()))
+        }
+        val discountUsd = calculateCouponDiscount(coupon, eligibleUsd)
+        consumeCoupon(coupon, userId, quote.orders, checkoutReference)
+        val eligibleByOrder =
+            quote.orders.associate { order ->
+                val orderItems = context.itemsByShop[order.shopId?.value].orEmpty()
+                order.id.value to couponEligibleUsd(coupon, orderItems, context.productsMap, context.variantsMap)
+            }
+        val totalEligible = eligibleByOrder.values.fold(BigDecimal.ZERO) { acc, amount -> acc.add(amount) }
         val discount = Money.scale2(discountUsd.multiply(fxRate))
         quote.orders.forEach { order ->
-            val orderDiscount = Money.proportionalSplit(discount, order.subTotal, totalSubTotal)
+            val orderEligible = eligibleByOrder[order.id.value] ?: BigDecimal.ZERO
+            val orderDiscount =
+                if (totalEligible > BigDecimal.ZERO) {
+                    Money.proportionalSplit(discount, orderEligible, totalEligible)
+                } else {
+                    BigDecimal.ZERO.setScale(2)
+                }
             order.discountAmount = orderDiscount
             order.couponCode = code
             order.total = Money.scale2(order.total.subtract(orderDiscount))
@@ -669,8 +735,11 @@ class OrderRepositoryImpl(
         creditUsd?.let {
             val capped = it.min(remainingUsd)
             if (capped > BigDecimal.ZERO) {
-                walletUsd = walletUsd.add(loyaltyService.redeemCreditTx(userId, capped, referenceId))
-                remainingUsd = remainingUsd.subtract(walletUsd).max(BigDecimal.ZERO)
+                val redeemedCredit = loyaltyService.redeemCreditTx(userId, capped, referenceId)
+                walletUsd = walletUsd.add(redeemedCredit)
+                // Subtract only the credit just redeemed. Subtracting the
+                // cumulative walletUsd would double-count the points above.
+                remainingUsd = remainingUsd.subtract(redeemedCredit).max(BigDecimal.ZERO)
             }
         }
 
@@ -711,6 +780,9 @@ class OrderRepositoryImpl(
                     } else {
                         BigDecimal.ZERO
                     }
+                // Persist the line-level share so order/item responses and
+                // downstream settlement do not report a zero discount.
+                item.discountAmount = discountShare
                 val taxable = item.total.subtract(discountShare).max(BigDecimal.ZERO)
                 val amounts =
                     taxService.apply(
@@ -853,16 +925,19 @@ class OrderRepositoryImpl(
             var totalItems = 0
             cartItems.forEach { totalItems += it.quantity }
 
-            val shopCount = cartItems.mapNotNull { productsMap[it.productId.value]?.shopId?.value }.distinct().size
-
             val subUsd = PricingService.subtotal(cartItems.map { unitPriceUsd(it) to it.quantity })
             val sub = Money.scale2(subUsd.multiply(fxRate))
-            val allDigital = cartItems.all { productsMap[it.productId.value]?.isDigital == true }
+            val physicalProducts =
+                cartItems.mapNotNull { productsMap[it.productId.value] }.filter { !it.isDigital }
+            val shopsWithShipping =
+                physicalProducts
+                    .groupBy { it.shopId?.value }
+                    .count { (_, products) -> products.any { !it.freeShipping } }
             val ship =
-                if (allDigital || pickup) {
+                if (pickup || physicalProducts.isEmpty() || shopsWithShipping == 0) {
                     BigDecimal.ZERO.setScale(2)
                 } else {
-                    Money.scale2(PricingService.shipping(shippingMethod!!.price, shopCount).multiply(fxRate))
+                    Money.scale2(PricingService.shipping(shippingMethod!!.price, shopsWithShipping).multiply(fxRate))
                 }
             var tax = BigDecimal.ZERO
             var exclusiveTax = BigDecimal.ZERO
@@ -925,6 +1000,7 @@ class OrderRepositoryImpl(
                 }
             }
 
+            var eligibleCouponProductIds: Set<String>? = null
             checkoutRequest.couponCode?.let {
                 val coupon =
                     validateCoupon(
@@ -934,7 +1010,20 @@ class OrderRepositoryImpl(
                         shopIds = productsMap.values.mapNotNull { product -> product.shopId?.value }.toSet(),
                         categoryIds = productsMap.values.map { product -> product.categoryId.value }.toSet(),
                     )
-                val discountUsd = calculateCouponDiscount(coupon, subUsd)
+                val eligibleUsd = couponEligibleUsd(coupon, cartItems, productsMap, variantsMap)
+                if (eligibleUsd <= BigDecimal.ZERO) {
+                    throw ValidationException("Coupon is not valid for the products in this cart")
+                }
+                if (eligibleUsd < coupon.minOrderAmount) {
+                    throw ValidationException(Message.Orders.couponMinOrderAmount(coupon.minOrderAmount.toPlainString()))
+                }
+                eligibleCouponProductIds =
+                    cartItems
+                        .mapNotNull { item -> productsMap[item.productId.value] }
+                        .filter { product -> couponMatches(product, coupon) }
+                        .map { product -> product.id.value }
+                        .toSet()
+                val discountUsd = calculateCouponDiscount(coupon, eligibleUsd)
                 val discount = Money.scale2(discountUsd.multiply(fxRate))
                 val total = Money.scale2(sub.add(ship).add(exclusiveTax).subtract(discount).max(BigDecimal.ZERO))
                 response =
@@ -980,14 +1069,28 @@ class OrderRepositoryImpl(
             // Coupons/promotions reduce the taxable base; refresh line tax and totals.
             val discountAmount = BigDecimal(response.discountAmount)
             if (discountAmount > BigDecimal.ZERO) {
+                val eligibleIds = eligibleCouponProductIds
+                val discountBase =
+                    if (eligibleIds == null) {
+                        sub
+                    } else {
+                        taxLines
+                            .filter { it.productId in eligibleIds }
+                            .fold(BigDecimal.ZERO) { acc, line -> acc.add(BigDecimal(line.grossAmount)) }
+                    }
                 var recalculatedTax = BigDecimal.ZERO
                 var recalculatedExclusive = BigDecimal.ZERO
                 taxLines =
                     taxLines.map { line ->
+                        if (eligibleIds != null && line.productId !in eligibleIds) {
+                            recalculatedTax = recalculatedTax.add(BigDecimal(line.taxAmount))
+                            if (!line.inclusive) recalculatedExclusive = recalculatedExclusive.add(BigDecimal(line.taxAmount))
+                            return@map line
+                        }
                         val gross = BigDecimal(line.grossAmount)
                         val share =
-                            if (sub > BigDecimal.ZERO) {
-                                Money.proportionalSplit(discountAmount, gross, sub)
+                            if (discountBase > BigDecimal.ZERO) {
+                                Money.proportionalSplit(discountAmount, gross, discountBase)
                             } else {
                                 BigDecimal.ZERO
                             }
@@ -1017,6 +1120,19 @@ class OrderRepositoryImpl(
                                     .add(BigDecimal(response.shippingCost))
                                     .add(recalculatedExclusive),
                             ).toPlainString(),
+                        // Re-format after the post-discount tax/total recalculation so
+                        // formatted fields never disagree with numeric fields.
+                        formattedTax = i18n.formatMoney(recalculatedTax, currency, locale),
+                        formattedTotal =
+                            i18n.formatMoney(
+                                Money.scale2(
+                                    sub.subtract(discountAmount).max(BigDecimal.ZERO)
+                                        .add(BigDecimal(response.shippingCost))
+                                        .add(recalculatedExclusive),
+                                ),
+                                currency,
+                                locale,
+                            ),
                     )
             }
             response
@@ -1062,7 +1178,7 @@ class OrderRepositoryImpl(
             val order =
                 OrderDAO.find {
                     (OrderTable.orderNumber eq orderNumber) and
-                        (OrderTable.contactEmail eq email.trim().lowercase())
+                        (OrderTable.contactEmail.lowerCase() eq email.trim().lowercase())
                 }.firstOrNull() ?: return@query null
             order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
         }
@@ -1209,7 +1325,7 @@ class OrderRepositoryImpl(
             val shopId = seller.shopId ?: throw ValidationException(Message.Orders.NO_SHOP_ASSOCIATED)
 
             val query = OrderTable.selectAll().andWhere { OrderTable.shopId eq shopId }
-            status?.let { query.andWhere { OrderTable.status eq OrderStatus.valueOf(it.uppercase()) } }
+            status?.let { query.andWhere { OrderTable.status eq parseOrderStatus(it) } }
             query.orderBy(OrderTable.createdAt to SortOrder.DESC).toOrdersPaginated(limit, offset)
         }
 
@@ -1222,7 +1338,7 @@ class OrderRepositoryImpl(
     ): PaginatedResponse<OrderResponse> =
         query {
             val query = OrderTable.selectAll()
-            status?.let { query.andWhere { OrderTable.status eq OrderStatus.valueOf(it.uppercase()) } }
+            status?.let { query.andWhere { OrderTable.status eq parseOrderStatus(it) } }
             startDate?.let { query.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
             endDate?.let { query.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
             query.orderBy(OrderTable.createdAt to SortOrder.DESC).toOrdersPaginated(limit, offset)

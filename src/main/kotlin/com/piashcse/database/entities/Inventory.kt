@@ -123,11 +123,15 @@ fun ProductDAO.restoreStock(quantity: Int) = restoreStockFor(null, quantity)
 fun ProductDAO.restoreStockFor(
     variantId: String?,
     quantity: Int,
+    warehouseId: String? = null,
 ) {
     val allRows = inventories(forUpdate = true)
+    val matching = allRows.filter { it.variantId?.value == variantId }
     val inv =
-        allRows.filter { it.variantId?.value == variantId }.firstOrNull()
-            ?: throw ValidationException(Message.Inventory.NOT_FOUND)
+        (
+            warehouseId?.let { id -> matching.firstOrNull { it.warehouseId.value == id } }
+                ?: matching.firstOrNull()
+        ) ?: throw ValidationException(Message.Inventory.NOT_FOUND)
     inv.stockQuantity += quantity
     inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
     syncProductStatus(allRows.sumOf { it.stockQuantity })

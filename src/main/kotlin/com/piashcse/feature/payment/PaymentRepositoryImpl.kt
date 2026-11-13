@@ -35,6 +35,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 
 /**
@@ -53,6 +54,7 @@ class PaymentRepositoryImpl(
     private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
     private val subscriptionBilling: SubscriptionBillingService = SubscriptionBillingService(digitalDelivery),
 ) : PaymentRepository {
+    private val log = LoggerFactory.getLogger(PaymentRepositoryImpl::class.java)
     private val gatewayBreaker = CircuitBreaker("payment-gateway", failureThreshold = 5, cooldownMs = 30_000)
 
     private fun Throwable.isUniqueViolation(): Boolean =
@@ -150,8 +152,8 @@ class PaymentRepositoryImpl(
                 ?: paymentRequest.orderId.throwNotFound("Order")
 
         if (order.userId.value != callerUserId) throw ForbiddenException(Message.Errors.FORBIDDEN)
-        if (order.status == OrderStatus.CANCELED || order.status == OrderStatus.RECEIVED) {
-            throw ValidationException(Message.Payments.CANNOT_PAY_CANCELED)
+        if (order.status !in listOf(OrderStatus.PENDING, OrderStatus.CONFIRMED)) {
+            throw ValidationException("Order is not payable in status ${order.status}")
         }
         if (order.paymentStatus == PaymentStatus.COMPLETED || order.paymentStatus == PaymentStatus.REFUNDED) {
             throw ValidationException(Message.Payments.ALREADY_PAID)
@@ -241,53 +243,75 @@ class PaymentRepositoryImpl(
             throw ValidationException(charge.message ?: Message.Payments.GATEWAY_FAILED)
         }
 
-        return retryQuery {
-            // Re-lock and re-validate: the order may have changed while the gateway ran.
-            val snapshot = loadPayableOrder(paymentRequest, callerUserId, forUpdate = true)
-            val order =
-                OrderDAO.find { OrderTable.id eq snapshot.orderId }.firstOrNull()
-                    ?: paymentRequest.orderId.throwNotFound("Order")
+        return try {
+            retryQuery {
+                // Re-lock and re-validate: the order may have changed while the gateway ran.
+                val snapshot = loadPayableOrder(paymentRequest, callerUserId, forUpdate = true)
+                val order =
+                    OrderDAO.find { OrderTable.id eq snapshot.orderId }.firstOrNull()
+                        ?: paymentRequest.orderId.throwNotFound("Order")
 
-            val payment =
-                try {
-                    PaymentDAO.new {
-                        this.orderId = order.id
-                        this.userId = order.userId
-                        this.amount = paymentRequest.amount
-                        this.currency = order.currency
-                        this.paymentMethod = paymentRequest.paymentMethod
-                        this.transactionId = charge.gatewayTransactionId ?: paymentRequest.transactionId
-                        this.idempotencyKey = paymentRequest.idempotencyKey
-                        this.provider = gateway.provider
-                        this.providerReference = charge.gatewayTransactionId
-                        this.clientSecret = charge.clientSecret
-                        this.nextActionUrl = charge.nextActionUrl
-                        this.scaStatus = charge.scaStatus
-                        this.providerStatus = charge.providerStatus
-                        this.status = if (charge.captured) PaymentStatus.COMPLETED else PaymentStatus.PENDING
+                val payment =
+                    try {
+                        PaymentDAO.new {
+                            this.orderId = order.id
+                            this.userId = order.userId
+                            this.amount = paymentRequest.amount
+                            this.currency = order.currency
+                            this.paymentMethod = paymentRequest.paymentMethod
+                            this.transactionId = charge.gatewayTransactionId ?: paymentRequest.transactionId
+                            this.idempotencyKey = paymentRequest.idempotencyKey
+                            this.provider = gateway.provider
+                            this.providerReference = charge.gatewayTransactionId
+                            this.clientSecret = charge.clientSecret
+                            this.nextActionUrl = charge.nextActionUrl
+                            this.scaStatus = charge.scaStatus
+                            this.providerStatus = charge.providerStatus
+                            this.status = if (charge.captured) PaymentStatus.COMPLETED else PaymentStatus.PENDING
+                        }
+                    } catch (e: Exception) {
+                        // Idempotency / transaction-id race: return the winner idempotently.
+                        if (e.isUniqueViolation()) {
+                            paymentRequest.idempotencyKey
+                                ?.let { key -> findExistingByIdempotencyKey(key, callerUserId) }
+                                ?.let { return@retryQuery it.toPaymentResponse() }
+                            paymentRequest.transactionId
+                                ?.let { tx -> findPaymentByTxForCaller(tx, callerUserId) }
+                                ?.let { return@retryQuery it.toPaymentResponse() }
+                        }
+                        throw e
                     }
-                } catch (e: Exception) {
-                    // Idempotency / transaction-id race: return the winner idempotently.
-                    if (e.isUniqueViolation()) {
-                        paymentRequest.idempotencyKey
-                            ?.let { key -> findExistingByIdempotencyKey(key, callerUserId) }
-                            ?.let { return@retryQuery it.toPaymentResponse() }
-                        paymentRequest.transactionId
-                            ?.let { tx -> findPaymentByTxForCaller(tx, callerUserId) }
-                            ?.let { return@retryQuery it.toPaymentResponse() }
-                    }
-                    throw e
+                fraudService.recordRisk(
+                    payment,
+                    risk.copy(avsStatus = charge.avsStatus, cvvStatus = charge.cvvStatus),
+                )
+
+                AppMetrics.paymentsCreated.increment()
+                if (payment.status == PaymentStatus.COMPLETED) {
+                    completeOrderIfFullyPaid(order, payment)
                 }
-            fraudService.recordRisk(
-                payment,
-                risk.copy(avsStatus = charge.avsStatus, cvvStatus = charge.cvvStatus),
-            )
-
-            AppMetrics.paymentsCreated.increment()
-            if (payment.status == PaymentStatus.COMPLETED) {
-                completeOrderIfFullyPaid(order, payment)
+                payment.toPaymentResponse()
             }
-            payment.toPaymentResponse()
+        } catch (e: Exception) {
+            // The gateway has already captured money. If the post-charge
+            // transaction fails (order changed, stock, DB race), compensating the
+            // charge is the only way to avoid an orphan payment.
+            val reference = charge.gatewayTransactionId
+            if (charge.captured && reference != null) {
+                runCatching {
+                    gatewayBreaker.execute {
+                        gateway.refund(
+                            providerReference = reference,
+                            amount = paymentRequest.amount,
+                            currency = payable.currency,
+                            idempotencyKey = "compensate:${paymentRequest.orderId}:$reference",
+                        )
+                    }
+                }.onFailure {
+                    log.error("Failed to compensate charge $reference for order ${paymentRequest.orderId}", it)
+                }
+            }
+            throw e
         }
     }
 

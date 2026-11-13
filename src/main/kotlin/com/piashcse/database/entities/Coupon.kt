@@ -49,6 +49,9 @@ object CouponUsageTable : BaseIdTable("coupon_usage") {
     val orderId = reference("order_id", OrderTable.id).nullable()
     val usedAt = datetime("used_at").clientDefault { currentUtc() }
 
+    /** Groups split-order usage rows from one checkout for per-user limits. */
+    val checkoutReference = varchar("checkout_reference", 64).nullable()
+
     init {
         uniqueIndex(customIndexName = "coupon_usage_coupon_user_order_unique", couponId, userId, orderId)
     }
@@ -61,4 +64,5 @@ class CouponUsageDAO(id: EntityID<String>) : BaseEntity(id, CouponUsageTable) {
     var userId by CouponUsageTable.userId
     var orderId by CouponUsageTable.orderId
     var usedAt by CouponUsageTable.usedAt
+    var checkoutReference by CouponUsageTable.checkoutReference
 }
