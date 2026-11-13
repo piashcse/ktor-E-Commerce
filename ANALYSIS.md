@@ -279,6 +279,7 @@ com.<org>.<app>
 | `fix/12-subscriptions-payouts` | `fix/11-privacy-notifications` | autonomous daily subscription billing worker, per-currency payout balances and currency-aware requests | compile + payout/subscription/after-sales tests |
 | `fix/13-cart-tax-dashboard` | `fix/12-subscriptions-payouts` | cart estimate uses `TaxService`/default address instead of hardcoded 5%, seller dashboard top products | compile + dashboard/commerce/pricing tests |
 | `fix/14-b2b-kyc` | `fix/13-cart-tax-dashboard` | B2B PO cancellation and invoice void endpoints, dunning email outbox events, KYC document/bank verification prerequisites | compile + B2B/KYC tests |
+| `fix/15-shipment-webhook` | `fix/14-b2b-kyc` | carrier webhook failures return 5xx so carriers retry | compile + shipment tests |
 
 > The checkbox statuses above are the **target** end state. Several items remain partial or open; see section 7.
 
@@ -288,5 +289,5 @@ com.<org>.<app>
 - **Orders/money:** tax-inclusive checkout-summary reconciliation, money-as-`BigDecimal` in filters.
 - **Refunds/payouts:** wallet/gift restoration on partial refunds, partial payout withdrawals (currently full-balance only), subscription proration/plan changes.
 - **Platform:** SMS/push providers, analytics user linkage, policy version consent snapshots.
-- **Marketplace edges:** B2B tax/delivery address/credit notes, POS card processing (now rejected explicitly), drawer refund accounting, shipment rate validation/cancel/label refund/webhook ack semantics, RMA replacement creation, seller support routes.
+- **Marketplace edges:** B2B tax/delivery address/credit notes, POS card processing (now rejected explicitly), drawer refund accounting, shipment rate validation/cancel/label refund, RMA replacement creation, seller support routes.
 - **Refactor:** full package rename (`audit_log`, `refund_request`, `review_rating`, `product_category`, …), `PayoutStatus` enum, god-class decomposition (`OrderRepositoryImpl`, `B2bService`, `OmnichannelService`), DTO relocation, raw-JDBC replacement, `Instant`/`timestamptz` migration.
