@@ -41,6 +41,30 @@ its own branch so it can be reviewed and merged as an independent PR.
 
 ---
 
+## Post-audit hardening
+
+| Area | Status | Notes |
+|---|---|---|
+| Financial correctness (wallet, tax, refunds, lifecycle reversals) | ✅ | Covered by audit + lifecycle branches |
+| Subscription renewal charging/dunning/webhooks | ✅ | Stored payment methods, retries, grace/expiry |
+| B2B net-terms invoices/dunning/settlement | ✅ | Invoice generated on PO fulfillment |
+| Digital download signing | ✅ | Short-lived HMAC URLs |
+| Data retention enforcement | ✅ | Daily purge job for analytics/webhooks/carts/entitlements/support |
+| Analytics consent/bot filtering | ✅ | Public ingestion policy |
+| Webhook inspection/replay | ✅ | Payment + carrier admin tooling |
+| Admin/support audit coverage | ✅ | Shared audit publisher |
+| POS cash drawer, receipts and Z-report | ✅ | Session reconciliation + printable HTML |
+| Support SLA/CSAT/attachments | ✅ | Deadlines, satisfaction, private images |
+| WebAuthn challenge sharing, step-up and UV policy | ✅ | Multi-node challenge store + re-auth |
+| WebAuthn attestation verification | ⏸ | RP policy/deployment-specific |
+| Digital DRM/watermarking/license seats | ⏸ | Requires external DRM/licensing provider |
+| POS offline mode | ⏸ | Client/store connectivity feature |
+| Alert rules/dashboards | ⏸ | Metrics exist; deployment-specific dashboards |
+| `OrderRepositoryImpl`/`AuthRoutes` split | ⏸ | Maintainability, no correctness gap |
+| Full fixture isolation | 🚧 | Newer suites scope assertions to unique IDs |
+
+---
+
 ## Implemented baseline
 
 The following are already production-grade and should not be rebuilt:
@@ -122,8 +146,10 @@ The following are already production-grade and should not be rebuilt:
 
 ### 11. Identity hardening
 - TOTP MFA setup/enable/disable and login enforcement (done)
-- Social login (planned)
-- Passkeys/WebAuthn (planned)
+- Google social login and account linking (done)
+- Passkeys/WebAuthn registration/login with durable single-use challenges (done)
+- Step-up password/MFA re-auth for passkey changes and optional UV enforcement (done)
+- Attestation statement verification remains deployment/RP-specific
 
 ---
 

@@ -660,9 +660,13 @@ curl -X POST 'http://localhost:8080/api/v1/auth/passkeys/register/options' \
   "clientDataJson": "base64url-client-data",
   "publicKey": "base64-spki-public-key",
   "name": "Laptop",
-  "transports": ["internal"]
+  "transports": ["internal"],
+  "password": "current-password"
 }
 ```
+
+Passkey registration and deletion require step-up re-authentication. Supply the current password,
+or the current TOTP `mfaCode` when MFA is enabled. Accounts with MFA must supply a valid MFA code.
 
 3. Start login (public):
 
@@ -690,6 +694,8 @@ Validation:
 - ceremony type (`webauthn.create` / `webauthn.get`) and origin must match
 - ES256 signatures are verified against the stored SPKI public key
 - credentials are scoped to the owning user
+- when `WEBAUTHN_REQUIRE_UV=true`, the authenticator must assert user verification (UV)
+- passkey changes require recent password/MFA re-authentication
 
 Configuration:
 
@@ -698,11 +704,23 @@ GOOGLE_CLIENT_ID=
 WEBAUTHN_RP_ID=localhost
 WEBAUTHN_RP_NAME=Ktor E-Commerce
 WEBAUTHN_ORIGIN=http://localhost:3000
+WEBAUTHN_REQUIRE_UV=false
+```
+
+Delete a passkey with a step-up body:
+
+```bash
+curl -X DELETE 'http://localhost:8080/api/v1/auth/passkeys/<id>' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"password":"current-password"}'
 ```
 
 Passkey login returns the same access/refresh token pair as password login. When the account has
 TOTP MFA enabled, `mfaCode` is required. The authenticator RP-ID hash, user-presence flag and
-signature counter are validated; a counter regression is rejected.
+signature counter are validated; a counter regression is rejected. Attestation statement
+verification is intentionally left to the relying-party deployment; this API stores the registered
+SPKI key and verifies assertions.
 
 ---
 

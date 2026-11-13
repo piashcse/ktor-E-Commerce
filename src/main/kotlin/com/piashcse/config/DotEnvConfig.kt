@@ -33,6 +33,7 @@ object DotEnvConfig {
     val webauthnRpId: String get() = DotEnv.get("WEBAUTHN_RP_ID", "localhost")
     val webauthnRpName: String get() = DotEnv.get("WEBAUTHN_RP_NAME", "Ktor E-Commerce")
     val webauthnOrigin: String get() = DotEnv.get("WEBAUTHN_ORIGIN", "http://localhost:3000")
+    val webauthnRequireUv: Boolean get() = DotEnv.getBoolean("WEBAUTHN_REQUIRE_UV", false)
 
     /** Pretty JSON is opt-in (dev only) because it increases payload size and CPU. */
     val jsonPrettyPrint: Boolean get() = DotEnv.getBoolean("JSON_PRETTY_PRINT", false)

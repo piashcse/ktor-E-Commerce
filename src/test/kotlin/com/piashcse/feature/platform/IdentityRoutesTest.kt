@@ -94,7 +94,7 @@ class IdentityRoutesTest {
                 PasskeyCredentialResponse("pk-1", "cred-1", "Laptop", null, 0, null, null)
             coEvery { passkeys.list("user-1") } returns
                 listOf(PasskeyCredentialResponse("pk-1", "cred-1", "Laptop", null, 0, null, null))
-            coEvery { passkeys.delete("user-1", "pk-1") } returns true
+            coEvery { passkeys.delete("user-1", "pk-1", any()) } returns true
             setup()
             val options =
                 client.post("/api/v1/auth/passkeys/register/options") {
@@ -106,7 +106,7 @@ class IdentityRoutesTest {
                     header(HttpHeaders.Authorization, authHeader())
                     contentType(ContentType.Application.Json)
                     setBody(
-                        """{"credentialId":"cred-1","clientDataJson":"x","publicKey":"y","name":"Laptop"}""",
+                        """{"credentialId":"cred-1","clientDataJson":"x","publicKey":"y","name":"Laptop","password":"secret"}""",
                     )
                 }
             assertEquals(HttpStatusCode.OK, registered.status)
@@ -119,6 +119,8 @@ class IdentityRoutesTest {
             val deleted =
                 client.delete("/api/v1/auth/passkeys/pk-1") {
                     header(HttpHeaders.Authorization, authHeader())
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"password":"secret"}""")
                 }
             assertEquals(HttpStatusCode.OK, deleted.status)
         }

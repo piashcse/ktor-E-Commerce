@@ -244,6 +244,15 @@ class AuthRepositoryImpl : AuthRepository {
             UserDAO.findById(userId)
         }
 
+    override suspend fun verifyUserPassword(
+        userId: String,
+        rawPassword: String,
+    ): Boolean =
+        query {
+            val user = UserDAO.findById(userId) ?: return@query false
+            verifyPassword(rawPassword, user.password)
+        }
+
     override suspend fun getRegistrationOtp(userId: String): String? =
         query {
             UserDAO.findById(userId)?.otpCode

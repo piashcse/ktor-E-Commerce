@@ -25,6 +25,12 @@ interface AuthRepository {
 
     suspend fun findUserById(userId: String): UserDAO?
 
+    /** Verifies a user's current password for sensitive step-up operations. */
+    suspend fun verifyUserPassword(
+        userId: String,
+        rawPassword: String,
+    ): Boolean
+
     suspend fun findResetUserByEmail(
         email: String,
         userTypeStr: String,
