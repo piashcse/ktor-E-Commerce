@@ -57,7 +57,7 @@ class BlocklistEntryDAO(id: EntityID<String>) : BaseEntity(id, BlocklistEntryTab
     var isActive by BlocklistEntryTable.isActive
     var expiresAt by BlocklistEntryTable.expiresAt
 
-    fun isLive(): Boolean = isActive && (expiresAt == null || expiresAt!!.isAfter(currentUtc()))
+    fun isLive(): Boolean = isActive && (expiresAt?.isAfter(currentUtc()) ?: true)
 }
 
 /** Immutable decision history for each payment; also carries AVS/CVV results. */

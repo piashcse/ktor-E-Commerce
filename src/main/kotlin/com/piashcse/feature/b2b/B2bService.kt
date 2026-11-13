@@ -36,6 +36,7 @@ import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.event.SendEmailEvent
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.service.AppMetrics
+import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
@@ -61,7 +62,6 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.util.UUID
 
 @Serializable
@@ -421,7 +421,7 @@ class B2bService {
                 quote.total = Money.scale2(storedTotal)
             }
             request.notes?.let { quote.notes = it }
-            request.validUntil?.let { quote.validUntil = parseDate(it) }
+            request.validUntil?.let { quote.validUntil = DateTimes.parseFlexible(it, "validUntil") }
             quote.status = request.status
             quote.respondedAt = currentUtc()
             quote.toResponse()
@@ -436,7 +436,7 @@ class B2bService {
             val quote = B2bQuoteDAO.findById(quoteId) ?: quoteId.throwNotFound("Quote")
             if (quote.buyerUserId.value != buyerUserId) throw ForbiddenException("Quote belongs to another buyer")
             if (quote.status != B2bQuoteStatus.SENT) throw ValidationException("Only SENT quotes can be accepted")
-            if (quote.validUntil != null && quote.validUntil!!.isBefore(currentUtc())) {
+            if (quote.validUntil?.isBefore(currentUtc()) == true) {
                 quote.status = B2bQuoteStatus.EXPIRED
                 throw ValidationException("Quote has expired")
             }
@@ -799,11 +799,6 @@ class B2bService {
 
     private fun generateInvoiceNumber(): String =
         "INV-${currentUtc().toLocalDate().toString().replace("-", "")}-${UUID.randomUUID().toString().take(6).uppercase()}"
-
-    private fun parseDate(value: String): LocalDateTime =
-        runCatching { LocalDateTime.parse(value) }
-            .recoverCatching { OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime() }
-            .getOrElse { throw ValidationException("Invalid date: $value") }
 
     private fun B2bAccountDAO.toAccountResponse() =
         B2bAccountResponse(

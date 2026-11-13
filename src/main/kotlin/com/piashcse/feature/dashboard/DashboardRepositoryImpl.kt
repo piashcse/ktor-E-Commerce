@@ -4,6 +4,7 @@ import com.piashcse.constants.*
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.model.response.*
+import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
@@ -21,24 +22,6 @@ import java.time.format.DateTimeFormatter
 private val DFMT = DateTimeFormatter.ISO_DATE
 
 class DashboardRepositoryImpl : DashboardRepository {
-    private fun toUsd(
-        amount: BigDecimal,
-        fxRate: BigDecimal,
-    ): BigDecimal =
-        if (fxRate <= BigDecimal.ZERO) {
-            BigDecimal.ZERO.setScale(2)
-        } else {
-            amount.divide(fxRate, 2, java.math.RoundingMode.HALF_UP)
-        }
-
-    private fun parseDate(
-        value: String,
-        field: String,
-    ): LocalDate =
-        runCatching { LocalDate.parse(value, DFMT) }.getOrElse {
-            throw ValidationException("Invalid $field: $value (expected yyyy-MM-dd)")
-        }
-
     override suspend fun getDashboardStats() =
         query {
             val today = currentUtc().toLocalDate().atStartOfDay()
@@ -51,12 +34,12 @@ class DashboardRepositoryImpl : DashboardRepository {
                     }.toList()
             val totalRevenue =
                 paidOrders.fold(BigDecimal.ZERO) { acc, row ->
-                    acc.add(toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
+                    acc.add(Money.toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
                 }
             val todayRevenue =
                 paidOrders.filter { it[OrderTable.createdAt] >= today }
                     .fold(BigDecimal.ZERO) { acc, row ->
-                        acc.add(toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
+                        acc.add(Money.toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
                     }
 
             DashboardStatsResponse(
@@ -111,9 +94,9 @@ class DashboardRepositoryImpl : DashboardRepository {
     ) = query {
         val now = currentUtc()
         val start =
-            startDate?.let { parseDate(it, "startDate").atStartOfDay() }
+            startDate?.let { DateTimes.parseLocalDate(it, "startDate").atStartOfDay() }
                 ?: now.withDayOfMonth(1).toLocalDate().atStartOfDay()
-        val end = endDate?.let { parseDate(it, "endDate").atTime(LocalTime.MAX) } ?: now
+        val end = endDate?.let { DateTimes.parseLocalDate(it, "endDate").atTime(LocalTime.MAX) } ?: now
 
         val rangeRows =
             OrderTable.selectAll().where {
@@ -124,7 +107,7 @@ class DashboardRepositoryImpl : DashboardRepository {
             }.toList()
         val totalRevenue =
             rangeRows.fold(BigDecimal.ZERO) { acc, row ->
-                acc.add(toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
+                acc.add(Money.toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
             }
         val orderCount = rangeRows.size.toLong()
         val avg = Money.average(totalRevenue, orderCount)
@@ -137,7 +120,7 @@ class DashboardRepositoryImpl : DashboardRepository {
                 .map { date ->
                     val dayTotal =
                         (byDay[date] ?: emptyList()).fold(BigDecimal.ZERO) { acc, row ->
-                            acc.add(toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
+                            acc.add(Money.toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
                         }
                     mapOf("date" to date.format(DFMT), "revenue" to Money.str(dayTotal))
                 }.toList()
@@ -232,7 +215,7 @@ class DashboardRepositoryImpl : DashboardRepository {
                     .mapValues { (_, rows) ->
                         rows.fold(BigDecimal.ZERO) { acc, row ->
                             val net = row[OrderItemTable.total].subtract(row[OrderItemTable.discountAmount])
-                            acc.add(toUsd(net.max(BigDecimal.ZERO), row[OrderTable.fxRate]))
+                            acc.add(Money.toUsd(net.max(BigDecimal.ZERO), row[OrderTable.fxRate]))
                         }
                     }
 
@@ -286,12 +269,12 @@ class DashboardRepositoryImpl : DashboardRepository {
                 }.toList()
             val totalRevenue =
                 sellerPaidOrders.fold(BigDecimal.ZERO) { acc, row ->
-                    acc.add(toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
+                    acc.add(Money.toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
                 }
             val todayRevenue =
                 sellerPaidOrders.filter { it[OrderTable.createdAt] >= today }
                     .fold(BigDecimal.ZERO) { acc, row ->
-                        acc.add(toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
+                        acc.add(Money.toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
                     }
 
             val customers =
@@ -334,7 +317,7 @@ class DashboardRepositoryImpl : DashboardRepository {
                         .mapValues { (_, rows) ->
                             rows.fold(BigDecimal.ZERO) { acc, row ->
                                 val net = row[OrderItemTable.total].subtract(row[OrderItemTable.discountAmount])
-                                acc.add(toUsd(net.max(BigDecimal.ZERO), row[OrderTable.fxRate]))
+                                acc.add(Money.toUsd(net.max(BigDecimal.ZERO), row[OrderTable.fxRate]))
                             }
                         }
                 }

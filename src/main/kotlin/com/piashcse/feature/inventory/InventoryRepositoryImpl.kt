@@ -26,10 +26,6 @@ class InventoryRepositoryImpl : InventoryRepository {
         private const val DEFAULT_MAX_STOCK = 1000
     }
 
-    private fun requireSellerShopId(actorUserId: String): String =
-        requireSellerByUserId(actorUserId).shopId?.value
-            ?: throw ForbiddenException(Message.Orders.NO_SHOP_ASSOCIATED)
-
     private fun requireOwnedProduct(
         actorUserId: String,
         productId: String,

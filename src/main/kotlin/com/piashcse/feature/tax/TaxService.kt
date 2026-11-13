@@ -13,6 +13,7 @@ import com.piashcse.database.entities.TaxZoneDAO
 import com.piashcse.database.entities.TaxZoneTable
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.isLive
+import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
@@ -33,8 +34,6 @@ import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
 
 @Serializable
 data class TaxRuleRequest(
@@ -416,7 +415,7 @@ class TaxService {
                 reason = request.reason
                 certificateUrl = request.certificateUrl
                 isActive = request.isActive
-                expiresAt = parseDate(request.expiresAt)
+                expiresAt = DateTimes.parseFlexibleOrNull(request.expiresAt, "expiresAt")
             }.toResponse()
         }
 
@@ -461,13 +460,6 @@ class TaxService {
         if (!TaxClassDAO.find { TaxClassTable.id eq taxClassId.entityID(TaxClassTable) }.any()) {
             throw ValidationException("Tax class not found")
         }
-    }
-
-    private fun parseDate(value: String?): LocalDateTime? {
-        if (value.isNullOrBlank()) return null
-        return runCatching { LocalDateTime.parse(value) }
-            .recoverCatching { OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime() }
-            .getOrElse { throw ValidationException("Invalid expiresAt: $value") }
     }
 
     private fun TaxRuleDAO.toResponse() =

@@ -12,6 +12,7 @@ import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
@@ -28,11 +29,8 @@ import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
-import java.math.RoundingMode
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.OffsetDateTime
 
 @Serializable
 data class AnalyticsEventRequest(
@@ -167,7 +165,7 @@ class AnalyticsService {
                     this.value = event.value
                     this.currency = event.currency?.uppercase()
                     this.metadata = event.metadata
-                    this.occurredAt = event.occurredAt?.let(::parseDate) ?: now
+                    this.occurredAt = DateTimes.parseFlexibleOrNull(event.occurredAt, "occurredAt") ?: now
                 }
             }
             AnalyticsIngestResponse(accepted = events.size)
@@ -267,7 +265,7 @@ class AnalyticsService {
                 }.map { (key, group) ->
                     val revenueUsd =
                         group.fold(BigDecimal.ZERO) { acc, order ->
-                            acc.add(toUsd(order.total, order.fxRate))
+                            acc.add(Money.toUsd(order.total, order.fxRate))
                         }
                     AttributionRow(
                         source = key.first,
@@ -302,11 +300,13 @@ class AnalyticsService {
                 }.toList()
             val views =
                 events.filter { it[AnalyticsEventTable.eventType] == AnalyticsEventType.PRODUCT_VIEW }
-                    .groupBy { it[AnalyticsEventTable.productId]!!.value }
+                    .mapNotNull { row -> row[AnalyticsEventTable.productId]?.value?.let { it to row } }
+                    .groupBy({ it.first }, { it.second })
                     .mapValues { (_, rows) -> rows.map { it[AnalyticsEventTable.sessionId] }.toSet().size.toLong() }
             val carts =
                 events.filter { it[AnalyticsEventTable.eventType] == AnalyticsEventType.ADD_TO_CART }
-                    .groupBy { it[AnalyticsEventTable.productId]!!.value }
+                    .mapNotNull { row -> row[AnalyticsEventTable.productId]?.value?.let { it to row } }
+                    .groupBy({ it.first }, { it.second })
                     .mapValues { (_, rows) -> rows.map { it[AnalyticsEventTable.sessionId] }.toSet().size.toLong() }
 
             val purchases = mutableMapOf<String, Long>()
@@ -320,7 +320,7 @@ class AnalyticsService {
                 OrderItemDAO.itemsForOrder(order.id).forEach { item ->
                     val key = item.productId.value
                     purchases[key] = (purchases[key] ?: 0L) + item.quantity
-                    revenue[key] = (revenue[key] ?: BigDecimal.ZERO).add(toUsd(item.total, order.fxRate))
+                    revenue[key] = (revenue[key] ?: BigDecimal.ZERO).add(Money.toUsd(item.total, order.fxRate))
                 }
             }
 
@@ -350,30 +350,13 @@ class AnalyticsService {
     ): Pair<LocalDateTime, LocalDateTime> {
         val now = currentUtc()
 
-        fun parse(
-            value: String,
-            field: String,
-        ): LocalDate =
-            runCatching { LocalDate.parse(value) }.getOrElse {
-                throw ValidationException("Invalid $field: $value (expected yyyy-MM-dd)")
-            }
         val start =
-            startDate?.let { parse(it, "startDate").atStartOfDay() }
+            startDate?.let { DateTimes.parseLocalDate(it, "startDate").atStartOfDay() }
                 ?: now.minusDays(30).toLocalDate().atStartOfDay()
-        val end = endDate?.let { parse(it, "endDate").atTime(LocalTime.MAX) } ?: now
+        val end = endDate?.let { DateTimes.parseLocalDate(it, "endDate").atTime(LocalTime.MAX) } ?: now
         if (start.isAfter(end)) throw ValidationException("startDate must be before endDate")
         return start to end
     }
-
-    private fun parseDate(value: String): LocalDateTime =
-        runCatching { LocalDateTime.parse(value) }
-            .recoverCatching { OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime() }
-            .getOrElse { throw ValidationException("Invalid occurredAt: $value") }
-
-    private fun toUsd(
-        amount: BigDecimal,
-        fxRate: BigDecimal,
-    ): BigDecimal = if (fxRate <= BigDecimal.ZERO) BigDecimal.ZERO.setScale(2) else amount.divide(fxRate, 2, RoundingMode.HALF_UP)
 
     private fun percentage(
         part: Long,

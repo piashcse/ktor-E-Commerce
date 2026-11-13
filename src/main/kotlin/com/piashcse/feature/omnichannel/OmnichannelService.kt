@@ -257,7 +257,7 @@ class OmnichannelService(
             val warehouse = resolvePosWarehouse(shopId.value, request.warehouseId, session)
             val catalog = loadPosCatalog(shopId.value, request.items)
             val customer = resolvePosCustomer(request.customerEmail)
-            completePosSale(seller, shopId.value, request, session, warehouse, catalog, customer)
+            completePosSale(shopId.value, request, session, warehouse, catalog, customer)
         }
 
     private data class PosCatalog(
@@ -355,7 +355,6 @@ class OmnichannelService(
     }
 
     private fun completePosSale(
-        seller: com.piashcse.database.entities.SellerDAO,
         shopId: String,
         request: PosSaleRequest,
         session: PosSessionDAO?,
@@ -420,7 +419,7 @@ class OmnichannelService(
                 it[productId] = product.id
                 it[variantId] = variant?.id
                 it[variantName] = variant?.name
-                it[OrderItemTable.shopId] = seller.shopId!!
+                it[OrderItemTable.shopId] = shopId.entityID(ShopTable)
                 it[quantity] = item.quantity
                 it[price] = unit
                 it[OrderItemTable.total] = lineTotal
@@ -706,10 +705,14 @@ class OmnichannelService(
         supportsPickup = supportsPickup,
         supportsPos = supportsPos,
         distanceKm =
-            if (latitude != null && longitude != null && this.latitude != null && this.longitude != null) {
-                haversineKm(latitude, longitude, this.latitude!!.toDouble(), this.longitude!!.toDouble())
-            } else {
-                null
+            run {
+                val storeLat = this.latitude
+                val storeLon = this.longitude
+                if (latitude != null && longitude != null && storeLat != null && storeLon != null) {
+                    haversineKm(latitude, longitude, storeLat.toDouble(), storeLon.toDouble())
+                } else {
+                    null
+                }
             },
     )
 

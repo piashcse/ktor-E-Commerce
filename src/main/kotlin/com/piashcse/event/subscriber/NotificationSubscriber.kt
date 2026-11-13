@@ -1,5 +1,6 @@
 package com.piashcse.event.subscriber
 
+import com.piashcse.constants.PayoutStatus
 import com.piashcse.database.entities.AuditLogDAO
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.ProductDAO
@@ -232,7 +233,7 @@ class NotificationSubscriber(
                     commissionRate = effectiveRate
                     payoutAmount = netSubTotal.subtract(commission)
                     currency = order.currency
-                    status = "PENDING"
+                    status = PayoutStatus.PENDING.name
                 }
                 Unit
             }

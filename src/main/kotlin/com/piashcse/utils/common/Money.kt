@@ -64,4 +64,15 @@ object Money {
 
     /** Render for API responses: `scale2().toPlainString()`. */
     fun str(value: BigDecimal): String = scale2(value).toPlainString()
+
+    /** Normalize an amount in an order currency to USD using its FX rate. */
+    fun toUsd(
+        amount: BigDecimal,
+        fxRate: BigDecimal,
+    ): BigDecimal =
+        if (fxRate <= BigDecimal.ZERO) {
+            BigDecimal.ZERO.setScale(2)
+        } else {
+            amount.divide(fxRate, 2, RoundingMode.HALF_UP)
+        }
 }

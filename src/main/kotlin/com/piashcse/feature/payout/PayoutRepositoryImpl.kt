@@ -2,6 +2,7 @@ package com.piashcse.feature.payout
 
 import com.piashcse.constants.KycStatus
 import com.piashcse.constants.OrderStatus
+import com.piashcse.constants.PayoutStatus
 import com.piashcse.constants.ShopStatus
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderTable
@@ -78,13 +79,13 @@ class PayoutRepositoryImpl : PayoutRepository {
             val availableRows =
                 SellerPayoutDAO.find {
                     (SellerPayoutTable.sellerId eq seller.id) and
-                        (SellerPayoutTable.status eq "PENDING") and
+                        (SellerPayoutTable.status eq PayoutStatus.PENDING.name) and
                         (SellerPayoutTable.requestedAt.isNull())
                 }.toList()
             val pendingRows =
                 SellerPayoutDAO.find {
                     (SellerPayoutTable.sellerId eq seller.id) and
-                        (SellerPayoutTable.status inList listOf("REQUESTED", "APPROVED"))
+                        (SellerPayoutTable.status inList listOf(PayoutStatus.REQUESTED.name, PayoutStatus.APPROVED.name))
                 }.toList()
             val byCurrency =
                 availableRows
@@ -144,9 +145,9 @@ class PayoutRepositoryImpl : PayoutRepository {
                 grossSales = Money.str(payouts.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.subTotal) }),
                 commission = Money.str(payouts.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.commissionAmount) }),
                 netPayout = Money.str(payouts.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }),
-                paid = Money.str(sum(setOf("PAID"))),
-                pending = Money.str(sum(setOf("PENDING", "REQUESTED", "APPROVED"))),
-                available = Money.str(sum(setOf("PENDING"))),
+                paid = Money.str(sum(setOf(PayoutStatus.PAID.name))),
+                pending = Money.str(sum(setOf(PayoutStatus.PENDING.name, PayoutStatus.REQUESTED.name, PayoutStatus.APPROVED.name))),
+                available = Money.str(sum(setOf(PayoutStatus.PENDING.name))),
                 taxCollected = Money.str(tax),
                 rowCount = payouts.size,
                 rows =
@@ -197,20 +198,20 @@ class PayoutRepositoryImpl : PayoutRepository {
         actorId: String?,
     ) = query {
         val payout = SellerPayoutDAO.findById(payoutId) ?: payoutId.throwNotFound("Payout")
-        if (payout.status == "PAID") return@query payout.toResponse()
-        if (payout.status != "APPROVED") {
+        if (payout.status == PayoutStatus.PAID.name) return@query payout.toResponse()
+        if (payout.status != PayoutStatus.APPROVED.name) {
             throw ValidationException("Payout must be approved before it can be paid (current: ${payout.status})")
         }
-        payout.status = "PAID"
+        payout.status = PayoutStatus.PAID.name
         payout.paidAt = currentUtc()
         AppMetrics.payoutsPaid.increment()
         payout.payoutRequestId?.let { requestId ->
             val remaining =
                 SellerPayoutDAO.find {
-                    (SellerPayoutTable.payoutRequestId eq requestId) and (SellerPayoutTable.status neq "PAID")
+                    (SellerPayoutTable.payoutRequestId eq requestId) and (SellerPayoutTable.status neq PayoutStatus.PAID.name)
                 }.count()
             if (remaining == 0L) {
-                PayoutRequestDAO.findById(requestId.value)?.status = "PAID"
+                PayoutRequestDAO.findById(requestId.value)?.status = PayoutStatus.PAID.name
             }
         }
         if (!actorId.isNullOrBlank()) {
@@ -258,7 +259,7 @@ class PayoutRepositoryImpl : PayoutRepository {
             val available =
                 SellerPayoutDAO.find {
                     (SellerPayoutTable.sellerId eq seller.id) and
-                        (SellerPayoutTable.status eq "PENDING") and
+                        (SellerPayoutTable.status eq PayoutStatus.PENDING.name) and
                         (SellerPayoutTable.requestedAt.isNull())
                 }.forUpdate()
                     .orderBy(SellerPayoutTable.createdAt to SortOrder.ASC)
@@ -292,7 +293,7 @@ class PayoutRepositoryImpl : PayoutRepository {
                         this.idempotencyKey = requestKey
                         this.amount = amount
                         this.currency = currency
-                        this.status = "REQUESTED"
+                        this.status = PayoutStatus.REQUESTED.name
                     }
                 } catch (e: Exception) {
                     // Unique (seller, key) race: return the winner's rows.
@@ -318,7 +319,7 @@ class PayoutRepositoryImpl : PayoutRepository {
                 if (covered >= amount) break
                 row.requestedAt = now
                 row.payoutRequestId = request.id
-                row.status = "REQUESTED"
+                row.status = PayoutStatus.REQUESTED.name
                 row.currency = currency
                 row.rejectedAt = null
                 claimed.add(row)
@@ -331,14 +332,14 @@ class PayoutRepositoryImpl : PayoutRepository {
     override suspend fun approvePayout(payoutId: String) =
         query {
             val payout = SellerPayoutDAO.findById(payoutId) ?: payoutId.throwNotFound("Payout")
-            if (payout.status == "APPROVED") return@query payout.toResponse()
-            if (payout.status != "REQUESTED") {
+            if (payout.status == PayoutStatus.APPROVED.name) return@query payout.toResponse()
+            if (payout.status != PayoutStatus.REQUESTED.name) {
                 throw ValidationException("Payout $payoutId cannot be approved from status ${payout.status}")
             }
-            payout.status = "APPROVED"
+            payout.status = PayoutStatus.APPROVED.name
             payout.approvedAt = currentUtc()
             payout.payoutRequestId?.let { requestId ->
-                PayoutRequestDAO.findById(requestId.value)?.status = "APPROVED"
+                PayoutRequestDAO.findById(requestId.value)?.status = PayoutStatus.APPROVED.name
             }
             payout.toResponse()
         }
@@ -346,13 +347,13 @@ class PayoutRepositoryImpl : PayoutRepository {
     override suspend fun rejectPayout(payoutId: String) =
         query {
             val payout = SellerPayoutDAO.findById(payoutId) ?: payoutId.throwNotFound("Payout")
-            if (payout.status == "REJECTED") return@query payout.toResponse()
-            if (payout.status !in listOf("REQUESTED", "APPROVED")) {
+            if (payout.status == PayoutStatus.REJECTED.name) return@query payout.toResponse()
+            if (payout.status !in listOf(PayoutStatus.REQUESTED.name, PayoutStatus.APPROVED.name)) {
                 throw ValidationException("Payout $payoutId cannot be rejected from status ${payout.status}")
             }
             val requestId = payout.payoutRequestId
             payout.rejectedAt = currentUtc()
-            payout.status = "PENDING"
+            payout.status = PayoutStatus.PENDING.name
             payout.requestedAt = null
             payout.approvedAt = null
             payout.payoutRequestId = null
@@ -362,7 +363,7 @@ class PayoutRepositoryImpl : PayoutRepository {
                         (SellerPayoutTable.payoutRequestId eq requestId) and
                             (SellerPayoutTable.id neq payout.id)
                     }.count()
-                if (remaining == 0L) PayoutRequestDAO.findById(requestId.value)?.status = "REJECTED"
+                if (remaining == 0L) PayoutRequestDAO.findById(requestId.value)?.status = PayoutStatus.REJECTED.name
             }
             payout.toResponse()
         }

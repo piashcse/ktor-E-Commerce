@@ -97,7 +97,7 @@ class GiftCardDAO(id: EntityID<String>) : BaseEntity(id, GiftCardTable) {
     fun isUsable(): Boolean =
         status == GiftCardStatus.ACTIVE &&
             balance > BigDecimal.ZERO &&
-            (expiresAt == null || expiresAt!!.isAfter(currentUtc()))
+            (expiresAt?.isAfter(currentUtc()) ?: true)
 }
 
 object GiftCardRedemptionTable : BaseIdTable("gift_card_redemption") {

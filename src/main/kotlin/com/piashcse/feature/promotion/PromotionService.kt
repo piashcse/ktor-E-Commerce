@@ -8,6 +8,7 @@ import com.piashcse.database.entities.PromotionUsageDAO
 import com.piashcse.database.entities.PromotionUsageTable
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
@@ -27,8 +28,6 @@ import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
 
 @Serializable
 data class PromotionRequest(
@@ -102,7 +101,7 @@ class PromotionService {
                     (PromotionTable.minOrderAmount lessEq amountUsd)
             }.orderBy(PromotionTable.priority to org.jetbrains.exposed.v1.core.SortOrder.DESC)
                 .orderBy(PromotionTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.ASC)
-                .firstOrNull { it.usageLimit == null || it.usageCount < it.usageLimit!! }
+                .firstOrNull { it.usageLimit?.let { limit -> it.usageCount < limit } ?: true }
                 ?: return null
 
         val discount =
@@ -135,7 +134,7 @@ class PromotionService {
             PromotionDAO.find { PromotionTable.id eq promotionId }
                 .forUpdate()
                 .firstOrNull() ?: return
-        if (promotion.usageLimit == null || promotion.usageCount < promotion.usageLimit!!) {
+        if (promotion.usageLimit?.let { promotion.usageCount < it } ?: true) {
             promotion.usageCount++
         }
         orderIds.forEach { orderId ->
@@ -187,8 +186,8 @@ class PromotionService {
 
     suspend fun create(request: PromotionRequest): PromotionResponse =
         query {
-            val startsAt = parseDate(request.startsAt, "startsAt")
-            val endsAt = parseDate(request.endsAt, "endsAt")
+            val startsAt = DateTimes.parseFlexible(request.startsAt, "startsAt")
+            val endsAt = DateTimes.parseFlexible(request.endsAt, "endsAt")
             if (startsAt.isAfter(endsAt)) throw ValidationException("startsAt must be before endsAt")
             PromotionDAO.new {
                 name = request.name
@@ -210,8 +209,8 @@ class PromotionService {
     ): PromotionResponse =
         query {
             val promotion = PromotionDAO.findById(id) ?: id.throwNotFound("Promotion")
-            val startsAt = parseDate(request.startsAt, "startsAt")
-            val endsAt = parseDate(request.endsAt, "endsAt")
+            val startsAt = DateTimes.parseFlexible(request.startsAt, "startsAt")
+            val endsAt = DateTimes.parseFlexible(request.endsAt, "endsAt")
             if (startsAt.isAfter(endsAt)) throw ValidationException("startsAt must be before endsAt")
             promotion.apply {
                 name = request.name
@@ -234,14 +233,6 @@ class PromotionService {
             promotion.isActive = false
             true
         }
-
-    private fun parseDate(
-        value: String,
-        field: String,
-    ): LocalDateTime =
-        runCatching { LocalDateTime.parse(value) }
-            .recoverCatching { OffsetDateTime.parse(value).atZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDateTime() }
-            .getOrElse { throw ValidationException("Invalid $field: $value") }
 
     private fun PromotionDAO.toResponse() =
         PromotionResponse(

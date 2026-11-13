@@ -114,7 +114,7 @@ class UserAuthenticationService(
             }
         val mfaValid =
             !user.mfaEnabled ||
-                (matchedStep != null && (user.mfaLastUsedStep == null || matchedStep > user.mfaLastUsedStep!!))
+                (matchedStep != null && matchedStep > (user.mfaLastUsedStep ?: Long.MIN_VALUE))
         if (mfaValid && matchedStep != null) {
             // Persist in a repository transaction: mutating the DAO returned by
             // findUserByEmailAndType after its transaction closes throws in Exposed.

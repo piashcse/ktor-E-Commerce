@@ -3,6 +3,7 @@ package com.piashcse.feature.refund_request
 import com.piashcse.constants.Message
 import com.piashcse.constants.PaymentMethod
 import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.PayoutStatus
 import com.piashcse.constants.RefundMethod
 import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
@@ -224,7 +225,7 @@ class RefundRequestRepositoryImpl(
                 payout.commissionAmount = payout.commissionAmount.subtract(commissionShare).max(BigDecimal.ZERO)
                 totalCommissionReversed = totalCommissionReversed.add(commissionShare)
                 if (payout.payoutAmount.compareTo(BigDecimal.ZERO) == 0) {
-                    payout.status = "REFUNDED"
+                    payout.status = PayoutStatus.REFUNDED.name
                 }
             }
             seller.totalSales = seller.totalSales.subtract(refundAmount).max(BigDecimal.ZERO)
@@ -294,7 +295,9 @@ class RefundRequestRepositoryImpl(
                         .add(request.refundShippingAmount ?: refund.shippingRefund)
                         .add(request.refundTaxAmount ?: refund.taxRefund)
                 ProviderRefundPlan(
-                    providerReference = payment.providerReference!!,
+                    providerReference =
+                        payment.providerReference
+                            ?: throw ValidationException("Completed payment has no provider reference"),
                     amount = amount,
                     currency = order.currency,
                 )

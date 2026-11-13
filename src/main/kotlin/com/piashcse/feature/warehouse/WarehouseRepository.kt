@@ -6,9 +6,8 @@ import com.piashcse.database.entities.WarehouseTable
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
-import com.piashcse.utils.extension.requireSellerByUserId
+import com.piashcse.utils.extension.requireSellerShopId
 import com.piashcse.utils.extension.throwNotFound
-import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
@@ -148,11 +147,6 @@ class WarehouseRepository {
                     code = "DEFAULT"
                 }
         }
-
-    private fun requireSellerShopId(userId: String): String {
-        val seller = requireSellerByUserId(userId)
-        return seller.shopId?.value ?: throw ForbiddenException("Seller has no shop")
-    }
 
     private fun WarehouseDAO.toResponse() =
         WarehouseResponse(

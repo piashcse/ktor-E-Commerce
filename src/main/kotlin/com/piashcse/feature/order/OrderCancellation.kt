@@ -2,6 +2,7 @@ package com.piashcse.feature.order
 
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentStatus
+import com.piashcse.constants.PayoutStatus
 import com.piashcse.database.entities.CouponDAO
 import com.piashcse.database.entities.CouponUsageTable
 import com.piashcse.database.entities.OrderDAO
@@ -120,8 +121,8 @@ object OrderCancellation {
 
     private fun reverseSellerPayout(order: OrderDAO) {
         SellerPayoutDAO.find { SellerPayoutTable.orderId eq order.id }.forEach { payout ->
-            if (payout.status != "PAID") {
-                payout.status = "REFUNDED"
+            if (payout.status != PayoutStatus.PAID.name) {
+                payout.status = PayoutStatus.REFUNDED.name
             }
         }
     }
