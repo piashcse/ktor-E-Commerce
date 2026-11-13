@@ -278,55 +278,58 @@ fun Route.authRoutes() {
 private fun Route.mfaRoutes() {
     val mfaService: MfaService by inject()
     val authRepo: AuthRepository by inject()
-    /**
-     * Start MFA setup (authenticated + password re-authentication)
-     */
-    post("mfa/setup") {
-        val body = call.receive<MfaSetupRequest>()
-        if (!authRepo.verifyUserPassword(call.currentUserId, body.password)) {
-            throw ValidationException("Invalid password")
+    // Step-up endpoints are brute-force targets; keep them on the auth limiter.
+    authRateLimit {
+        /**
+         * Start MFA setup (authenticated + password re-authentication)
+         */
+        post("mfa/setup") {
+            val body = call.receive<MfaSetupRequest>()
+            if (!authRepo.verifyUserPassword(call.currentUserId, body.password)) {
+                throw ValidationException("Invalid password")
+            }
+            call.respondOk(mfaService.setup(call.currentUserId))
+        }.describe {
+            summary = "Start MFA setup"
+            description = "Password re-authentication is required; returns a TOTP secret and otpauth URL"
+            requestBody { jsonBody<MfaSetupRequest>() }
+            responses { ok<MfaSetupResponse>("MFA setup") }
         }
-        call.respondOk(mfaService.setup(call.currentUserId))
-    }.describe {
-        summary = "Start MFA setup"
-        description = "Password re-authentication is required; returns a TOTP secret and otpauth URL"
-        requestBody { jsonBody<MfaSetupRequest>() }
-        responses { ok<MfaSetupResponse>("MFA setup") }
-    }
 
-    /**
-     * Enable MFA after verifying a TOTP code. Password re-authentication prevents a
-     * stolen access token from enrolling an attacker-controlled authenticator.
-     */
-    post("mfa/enable") {
-        val body = call.receive<MfaCodeRequest>()
-        val password = body.password?.takeIf { it.isNotBlank() } ?: throw ValidationException("Password is required")
-        if (!authRepo.verifyUserPassword(call.currentUserId, password)) {
-            throw ValidationException("Invalid password")
+        /**
+         * Enable MFA after verifying a TOTP code. Password re-authentication prevents a
+         * stolen access token from enrolling an attacker-controlled authenticator.
+         */
+        post("mfa/enable") {
+            val body = call.receive<MfaCodeRequest>()
+            val password = body.password?.takeIf { it.isNotBlank() } ?: throw ValidationException("Password is required")
+            if (!authRepo.verifyUserPassword(call.currentUserId, password)) {
+                throw ValidationException("Invalid password")
+            }
+            mfaService.enable(call.currentUserId, body.code)
+            call.respondOk(MessageResponse("MFA enabled"))
+        }.describe {
+            summary = "Enable MFA"
+            requestBody { jsonBody<MfaCodeRequest>() }
+            responses {
+                ok<MessageResponse>("MFA enabled")
+                standardErrors()
+            }
         }
-        mfaService.enable(call.currentUserId, body.code)
-        call.respondOk(MessageResponse("MFA enabled"))
-    }.describe {
-        summary = "Enable MFA"
-        requestBody { jsonBody<MfaCodeRequest>() }
-        responses {
-            ok<MessageResponse>("MFA enabled")
-            standardErrors()
-        }
-    }
 
-    /**
-     * Disable MFA after verifying a TOTP code
-     */
-    post("mfa/disable") {
-        mfaService.disable(call.currentUserId, call.receive<MfaCodeRequest>().code)
-        call.respondOk(MessageResponse("MFA disabled"))
-    }.describe {
-        summary = "Disable MFA"
-        requestBody { jsonBody<MfaCodeRequest>() }
-        responses {
-            ok<MessageResponse>("MFA disabled")
-            standardErrors()
+        /**
+         * Disable MFA after verifying a TOTP code
+         */
+        post("mfa/disable") {
+            mfaService.disable(call.currentUserId, call.receive<MfaCodeRequest>().code)
+            call.respondOk(MessageResponse("MFA disabled"))
+        }.describe {
+            summary = "Disable MFA"
+            requestBody { jsonBody<MfaCodeRequest>() }
+            responses {
+                ok<MessageResponse>("MFA disabled")
+                standardErrors()
+            }
         }
     }
 }
