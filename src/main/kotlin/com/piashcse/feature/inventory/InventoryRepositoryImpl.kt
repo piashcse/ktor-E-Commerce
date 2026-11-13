@@ -91,7 +91,7 @@ class InventoryRepositoryImpl : InventoryRepository {
         inventoryRequest: InventoryRequest,
         actorUserId: String,
     ): InventoryResponse =
-        query {
+        retryQuery {
             inventoryRequest.productId.requireNotBlank("Product ID")
             inventoryRequest.shopId.requireNotBlank("Shop ID")
             if (inventoryRequest.stockQuantity < 0) throw ValidationException(Message.Inventory.NEGATIVE_STOCK)
@@ -121,7 +121,7 @@ class InventoryRepositoryImpl : InventoryRepository {
                         (InventoryTable.shopId eq inventoryRequest.shopId) and
                         (InventoryTable.warehouseId eq warehouse.id) and
                         variantOp(inventoryRequest.variantId)
-                }.firstOrNull()
+                }.forUpdate().firstOrNull()
 
             val previousStock = existing?.stockQuantity ?: 0
             val inventory =

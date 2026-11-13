@@ -593,7 +593,15 @@ class ProductRepositoryImpl : ProductRepository {
         limit: Int? = null,
     ): PaginatedResponse<ProductResponse> =
         query {
-            val statusCondition = condition and (ProductTable.status eq ProductStatus.ACTIVE)
+            val approvedShops = approvedShopIds()
+            if (approvedShops.isEmpty()) {
+                return@query PaginatedResponse(emptyList(), PaginationMetadata(0, limit ?: 0, 0))
+            }
+            val statusCondition =
+                condition and
+                    (ProductTable.status eq ProductStatus.ACTIVE) and
+                    ProductTable.deletedAt.isNull() and
+                    (ProductTable.shopId inList approvedShops)
             val count = ProductDAO.count(statusCondition)
             val products =
                 ProductDAO.find(statusCondition)

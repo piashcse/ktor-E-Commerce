@@ -104,7 +104,6 @@ class PolicyRepositoryImpl : PolicyRepository {
             val policyDocument =
                 PolicyDocumentDAO.find {
                     (PolicyDocumentTable.type eq type) and
-                        (PolicyDocumentTable.isActive eq true) and
                         (PolicyDocumentTable.effectiveDate lessEq currentUtc())
                 }.orderBy(PolicyDocumentTable.effectiveDate to SortOrder.DESC)
                     .firstOrNull() ?: throw ValidationException(Message.Policy.noActivePolicy(type.name))

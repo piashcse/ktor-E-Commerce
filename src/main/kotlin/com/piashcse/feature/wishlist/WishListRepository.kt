@@ -55,6 +55,7 @@ interface WishListRepository {
         userId: String,
         productId: String,
         quantity: Int = 1,
+        variantId: String? = null,
     ): Cart
 
     suspend fun isProductInWishList(

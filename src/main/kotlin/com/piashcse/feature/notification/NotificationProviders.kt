@@ -78,7 +78,7 @@ class PushNotificationProvider : NotificationProvider {
 
 /**
  * Delivers every event to the in-app inbox and to the user's preferred extra
- * channel. EMAIL is the default extra channel to preserve existing behavior.
+ * channel. IN_APP is the default so the API-reported default and delivery agree.
  */
 class NotificationDispatcher(
     private val preferences: NotificationPreferencesService = NotificationPreferencesService(),
@@ -93,7 +93,7 @@ class NotificationDispatcher(
 
     suspend fun dispatch(
         message: NotificationMessage,
-        defaultChannel: String = "EMAIL",
+        defaultChannel: String = "IN_APP",
     ) {
         providers["IN_APP"]?.send(message)
         val channel = preferences.resolve(message.userId, message.eventType) ?: defaultChannel

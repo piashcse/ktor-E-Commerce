@@ -1,6 +1,7 @@
 package com.piashcse.feature.wishlist
 
 import com.piashcse.constants.Message
+import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.*
 import com.piashcse.feature.cart.requireProduct
 import com.piashcse.feature.cart.requireProductWithStock
@@ -14,6 +15,7 @@ import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
@@ -24,6 +26,9 @@ class WishListRepositoryImpl : WishListRepository {
     ): WishList =
         query {
             val product = requireProduct(productId, "ProductResponse")
+            if (product.deletedAt != null || product.status != ProductStatus.ACTIVE) {
+                throw ValidationException("Cannot add an inactive product to the wishlist")
+            }
 
             val existing =
                 WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
@@ -47,7 +52,11 @@ class WishListRepositoryImpl : WishListRepository {
         query {
             WishListTable.innerJoin(ProductTable)
                 .selectAll()
-                .andWhere { WishListTable.userId eq userId }
+                .andWhere {
+                    (WishListTable.userId eq userId) and
+                        (ProductTable.status eq ProductStatus.ACTIVE) and
+                        ProductTable.deletedAt.isNull()
+                }
                 .paginateWithPreload(
                     limit,
                     offset,
@@ -73,6 +82,7 @@ class WishListRepositoryImpl : WishListRepository {
         userId: String,
         productId: String,
         quantity: Int,
+        variantId: String?,
     ): Cart =
         query {
             if (quantity <= 0) {
@@ -80,10 +90,23 @@ class WishListRepositoryImpl : WishListRepository {
                     Message.Validation.notPositive("Quantity"),
                 )
             }
+            val product = requireProduct(productId, "ProductResponse")
+            if (product.deletedAt != null || product.status != ProductStatus.ACTIVE) {
+                throw ValidationException("Cannot move an inactive product to the cart")
+            }
             val item = requireWishlistItem(userId, productId)
-            val existing = CartItemDAO.find { CartItemTable.userId eq userId and (CartItemTable.productId eq productId) }.singleOrNull()
+            val variantFilter =
+                if (variantId == null) {
+                    CartItemTable.variantId.isNull()
+                } else {
+                    CartItemTable.variantId eq variantId.entityID(ProductVariantTable)
+                }
+            val existing =
+                CartItemDAO.find {
+                    (CartItemTable.userId eq userId) and (CartItemTable.productId eq productId) and variantFilter
+                }.singleOrNull()
             val requestedQuantity = (existing?.quantity ?: 0) + quantity
-            requireProductWithStock(productId, requestedQuantity, "ProductResponse")
+            requireProductWithStock(productId, requestedQuantity, "ProductResponse", variantId = variantId)
 
             val cart =
                 if (existing != null) {
@@ -93,6 +116,7 @@ class WishListRepositoryImpl : WishListRepository {
                     CartItemDAO.new {
                         this.userId = userId.entityID(UserTable)
                         this.productId = productId.entityID(ProductTable)
+                        this.variantId = variantId?.entityID(ProductVariantTable)
                         this.quantity = requestedQuantity
                     }.toCartResponse()
                 }
