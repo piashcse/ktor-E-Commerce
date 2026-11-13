@@ -30,6 +30,7 @@ class PermissionsTest {
                 "seller@example.com",
                 "SELLER",
                 scopes = setOf(Permission.ORDER_MANAGE.name),
+                isApiKey = true,
             )
         assertTrue(scoped.hasPermission(Permission.ORDER_MANAGE))
         assertFalse(scoped.hasPermission(Permission.PAYOUT_MANAGE))

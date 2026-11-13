@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 
 private lateinit var hikariDataSource: HikariDataSource
 private var readHikariDataSource: HikariDataSource? = null
@@ -34,7 +35,12 @@ fun configureDatabase() {
     // migrate() validates already-applied migrations itself; calling validate()
     // first fails on a fresh database because no history exists yet.
     flyway.migrate()
-    Database.connect(hikariDataSource)
+    val primary = Database.connect(hikariDataSource)
+    // Exposed registers databases in a deque and `transaction {}` falls back to
+    // `databases.first()` when no default is set. Connecting the read replica
+    // second would therefore make it the implicit primary for every unqualified
+    // transaction. Pin the default to the primary before registering the replica.
+    TransactionManager.defaultDatabase = primary
 
     DotEnvConfig.dbReadUrl?.takeIf { it.isNotBlank() }?.let { readUrl ->
         val readDs =

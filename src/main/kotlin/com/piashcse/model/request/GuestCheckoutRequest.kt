@@ -38,6 +38,8 @@ data class GuestCheckoutRequest(
     val currency: String = "USD",
     val notes: String? = null,
     val idempotencyKey: String? = null,
+    /** Explicit acceptance when policy consent is enforced. */
+    val consentAccepted: Boolean = false,
     val items: List<GuestCheckoutItem>,
 ) {
     init {

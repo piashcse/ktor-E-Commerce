@@ -180,15 +180,17 @@ class TaxService {
         businessTaxId: String?,
         country: String?,
     ): Boolean {
+        // Exemptions are account-bound. A client-supplied business tax ID must
+        // never grant exemption on its own: otherwise anyone who knows a
+        // reseller's ID can check out tax-free.
+        if (userId == null) return false
         val normalized = country?.uppercase()
         return TaxExemptionDAO.find { TaxExemptionTable.isActive eq true }
             .firstOrNull { exemption ->
                 exemption.isLive() &&
                     (exemption.country == null || exemption.country == normalized) &&
-                    (
-                        (userId != null && exemption.userId?.value == userId) ||
-                            (businessTaxId != null && exemption.businessTaxId == businessTaxId)
-                    )
+                    exemption.userId?.value == userId &&
+                    (businessTaxId == null || exemption.businessTaxId == null || exemption.businessTaxId == businessTaxId)
             } != null
     }
 

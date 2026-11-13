@@ -116,7 +116,9 @@ class UserAuthenticationService(
             !user.mfaEnabled ||
                 (matchedStep != null && (user.mfaLastUsedStep == null || matchedStep > user.mfaLastUsedStep!!))
         if (mfaValid && matchedStep != null) {
-            user.mfaLastUsedStep = matchedStep
+            // Persist in a repository transaction: mutating the DAO returned by
+            // findUserByEmailAndType after its transaction closes throws in Exposed.
+            authRepo.recordMfaStep(user.id.value, matchedStep)
         }
         if (!mfaValid) {
             val attemptCount = authRepo.recordFailedAttempt(loginRequest.email, userTypeEnum, ipAddress)

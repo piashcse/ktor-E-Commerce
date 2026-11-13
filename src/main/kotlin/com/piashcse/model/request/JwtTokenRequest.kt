@@ -9,8 +9,10 @@ data class JwtTokenRequest(
     val userId: String,
     val email: String,
     val userType: String,
-    /** API-key scopes; empty means the role's default permissions apply. */
+    /** API-key scopes; empty means no scoped access (never role defaults). */
     val scopes: Set<String> = emptySet(),
+    /** Distinguishes API-key principals from JWT sessions. */
+    val isApiKey: Boolean = false,
 ) : Principal {
     /**
      * Check if current user has access to a specific role (with hierarchy)
@@ -73,10 +75,12 @@ data class JwtTokenRequest(
      */
     fun hasPermission(permission: Permission): Boolean {
         val role = getUserType() ?: return false
-        return if (scopes.isEmpty()) {
-            permission in role.defaultPermissions()
-        } else {
+        return if (isApiKey) {
+            // API keys are restricted to explicit scopes. An empty scope list
+            // grants nothing; it must never fall back to role defaults.
             permission.name in scopes
+        } else {
+            permission in role.defaultPermissions()
         }
     }
 }
