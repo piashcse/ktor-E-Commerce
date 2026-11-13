@@ -155,6 +155,10 @@ fun Route.b2bSellerPurchaseOrderRoutes() {
         post("{id}/fulfill") {
             call.respondOk(service.fulfill(call.currentUserId, call.requirePathParameter("id")))
         }.describe { summary = "Seller: mark a purchase order fulfilled" }
+
+        post("{id}/cancel") {
+            call.respondOk(service.cancelPurchaseOrder(call.currentUserId, call.requirePathParameter("id")))
+        }.describe { summary = "Seller: cancel an open purchase order" }
     }
 }
 
@@ -186,6 +190,10 @@ fun Route.b2bAdminRoutes() {
             val reference = call.request.queryParameters["providerReference"]
             call.respondOk(service.markInvoicePaid(call.requirePathParameter("id"), reference, call.currentUserId))
         }.describe { summary = "Admin: mark a B2B invoice paid" }
+
+        post("invoices/{id}/void") {
+            call.respondOk(service.voidInvoice(call.requirePathParameter("id"), call.currentUserId))
+        }.describe { summary = "Admin: void an unpaid B2B invoice" }
 
         put("accounts/{userId}") {
             call.respondOk(
