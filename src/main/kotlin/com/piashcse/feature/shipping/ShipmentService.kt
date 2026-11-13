@@ -291,7 +291,11 @@ class ShipmentService(
                 record.error = "No matching shipment for ${event.trackingNumber ?: event.eventType}"
                 record.processedAt = currentUtc()
             }
-            CarrierWebhookResult(true, message = "Webhook processed")
+            val accepted = applied || record.status == WebhookEventStatus.IGNORED
+            CarrierWebhookResult(
+                accepted = accepted,
+                message = if (accepted) "Webhook processed" else "Webhook processing failed; retry",
+            )
         }
     }
 

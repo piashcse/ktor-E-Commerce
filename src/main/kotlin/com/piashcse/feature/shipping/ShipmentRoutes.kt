@@ -10,7 +10,9 @@ import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.*
+import io.ktor.server.response.respond
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
@@ -72,7 +74,13 @@ fun Route.shipmentRoutes() {
             call.request.headers["X-Carrier-Signature"]
                 ?: call.request.headers["X-Webhook-Signature"]
         val result = service.handleWebhook(provider, call.receiveText(), signature)
-        call.respondOk(MessageResponse(result.message))
+        if (result.accepted) {
+            call.respondOk(MessageResponse(result.message))
+        } else {
+            // 5xx tells the carrier to retry; 200 would permanently drop a
+            // transient failure.
+            call.respond(HttpStatusCode.InternalServerError, MessageResponse(result.message))
+        }
     }.describe {
         summary = "Carrier tracking webhook"
         description = "Verifies the carrier signature and applies tracking status idempotently"
