@@ -79,8 +79,7 @@ class PayoutRepositoryImpl : PayoutRepository {
                 SellerPayoutDAO.find {
                     (SellerPayoutTable.sellerId eq seller.id) and
                         (SellerPayoutTable.status eq "PENDING") and
-                        (SellerPayoutTable.requestedAt.isNull()) and
-                        (SellerPayoutTable.rejectedAt.isNull())
+                        (SellerPayoutTable.requestedAt.isNull())
                 }.toList()
             val pendingRows =
                 SellerPayoutDAO.find {
@@ -117,6 +116,9 @@ class PayoutRepositoryImpl : PayoutRepository {
             val tax =
                 OrderDAO.find {
                     (OrderTable.shopId eq seller.shopId) and (OrderTable.status neq OrderStatus.CANCELED)
+                }.filter { order ->
+                    (fromDate == null || !order.createdAt.isBefore(fromDate.atStartOfDay())) &&
+                        (toDate == null || !order.createdAt.isAfter(toDate.atTime(java.time.LocalTime.MAX)))
                 }.fold(BigDecimal.ZERO) { acc, order ->
                     acc.add(order.taxAmount)
                 }
@@ -244,8 +246,7 @@ class PayoutRepositoryImpl : PayoutRepository {
                 SellerPayoutDAO.find {
                     (SellerPayoutTable.sellerId eq seller.id) and
                         (SellerPayoutTable.status eq "PENDING") and
-                        (SellerPayoutTable.requestedAt.isNull()) and
-                        (SellerPayoutTable.rejectedAt.isNull())
+                        (SellerPayoutTable.requestedAt.isNull())
                 }.forUpdate().orderBy(SellerPayoutTable.createdAt to SortOrder.ASC).toList()
 
             val currencies = available.map { it.currency }.distinct()
@@ -257,6 +258,14 @@ class PayoutRepositoryImpl : PayoutRepository {
             val balance = available.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }
             if (balance <= BigDecimal.ZERO) throw ValidationException("No available payout balance to request")
             if (amount > balance) throw ValidationException("Requested amount exceeds available payout balance")
+            // Payout rows are order-level and cannot be split safely without a
+            // separate request-line table. Require a full withdrawal so a request
+            // can never pay out more than the seller asked for.
+            if (amount.compareTo(balance) != 0) {
+                throw ValidationException(
+                    "Payout requests must withdraw the full available balance (${balance.toPlainString()})",
+                )
+            }
 
             val request =
                 try {
@@ -293,6 +302,7 @@ class PayoutRepositoryImpl : PayoutRepository {
                 row.payoutRequestId = request.id
                 row.status = "REQUESTED"
                 row.currency = currency
+                row.rejectedAt = null
                 claimed.add(row)
                 covered = covered.add(row.payoutAmount)
             }

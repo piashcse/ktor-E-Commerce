@@ -50,7 +50,7 @@ class RefundRequestRepositoryImpl(
         val status: String?,
     )
 
-    private fun liveStatuses() = listOf(RefundStatus.PENDING, RefundStatus.APPROVED, RefundStatus.SHIPPED, RefundStatus.REFUNDED)
+    private fun liveStatuses() = listOf(RefundStatus.PENDING, RefundStatus.APPROVED, RefundStatus.SHIPPED)
 
     private fun eventFor(
         refund: RefundRequestDAO,
@@ -109,6 +109,17 @@ class RefundRequestRepositoryImpl(
                 }.firstOrNull()
             if (existingRefund != null) {
                 throw ValidationException(Message.Refunds.ALREADY_EXISTS)
+            }
+            val alreadyRefundedQuantity =
+                RefundRequestDAO.find {
+                    (RefundRequestTable.orderItemId eq orderItem.id) and
+                        (RefundRequestTable.status eq RefundStatus.REFUNDED)
+                }.fold(0) { acc, row -> acc + row.quantity }
+            if (alreadyRefundedQuantity + request.quantity > orderItem.quantity) {
+                throw ValidationException(
+                    "Refund quantity exceeds the remaining ordered quantity " +
+                        "(${orderItem.quantity - alreadyRefundedQuantity})",
+                )
             }
 
             val refundRequest =
@@ -205,7 +216,10 @@ class RefundRequestRepositoryImpl(
                 // Use the rate snapshot from the original payout; current rules may have changed.
                 val rate = payout.commissionRate ?: fallbackRate
                 val commissionShare = Money.commission(refundAmount, rate)
-                payout.payoutAmount = payout.payoutAmount.subtract(refundAmount).max(BigDecimal.ZERO)
+                // The seller only loses the net share of the refunded item; the
+                // platform returns its commission on that portion.
+                val netRefund = refundAmount.subtract(commissionShare).max(BigDecimal.ZERO)
+                payout.payoutAmount = payout.payoutAmount.subtract(netRefund).max(BigDecimal.ZERO)
                 payout.commissionAmount = payout.commissionAmount.subtract(commissionShare).max(BigDecimal.ZERO)
                 totalCommissionReversed = totalCommissionReversed.add(commissionShare)
                 if (payout.payoutAmount.compareTo(BigDecimal.ZERO) == 0) {
@@ -260,6 +274,11 @@ class RefundRequestRepositoryImpl(
                         ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
                 val maxRefundAmount = maxRefundableAmount(order, orderItem, refund.quantity)
                 validateRefundAmounts(order, orderItem, refund.quantity, request, maxRefundAmount)
+                if (request.refundAmount == null && refund.refundAmount == null) {
+                    // Fail before the provider call: updateRefundStatus would
+                    // otherwise reject the same request after money has moved.
+                    throw ValidationException(Message.Refunds.REFUND_AMOUNT_REQUIRED)
+                }
 
                 val payment =
                     PaymentDAO.find {
@@ -369,8 +388,14 @@ class RefundRequestRepositoryImpl(
         maxRefundAmount: BigDecimal,
     ) {
         request.refundShippingAmount?.let { amount ->
-            if (amount < BigDecimal.ZERO || amount > order.shippingCost) {
-                throw ValidationException("Shipping refund cannot exceed the order shipping cost")
+            val alreadyRefundedShipping =
+                RefundRequestDAO.find {
+                    (RefundRequestTable.orderId eq order.id) and
+                        (RefundRequestTable.status eq RefundStatus.REFUNDED)
+                }.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.shippingRefund) }
+            val remainingShipping = order.shippingCost.subtract(alreadyRefundedShipping).max(BigDecimal.ZERO)
+            if (amount < BigDecimal.ZERO || amount > remainingShipping) {
+                throw ValidationException("Shipping refund cannot exceed the remaining order shipping cost")
             }
         }
         request.refundTaxAmount?.let { amount ->

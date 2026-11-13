@@ -70,7 +70,8 @@ data class RmaResponse(
 )
 
 class RmaService {
-    private fun activeStatuses() = listOf(RmaStatus.REQUESTED, RmaStatus.APPROVED, RmaStatus.IN_TRANSIT, RmaStatus.RECEIVED)
+    private fun activeStatuses() =
+        listOf(RmaStatus.REQUESTED, RmaStatus.APPROVED, RmaStatus.IN_TRANSIT, RmaStatus.RECEIVED, RmaStatus.COMPLETED)
 
     private fun enqueueStatusChange(
         rma: RmaDAO,
@@ -266,17 +267,30 @@ class RmaService {
                                             )
                                     )
                             }.firstOrNull()
-                        val refund =
-                            existingRefund ?: RefundRequestDAO.new {
-                                this.orderItemId = item.id
-                                this.userId = rma.userId
-                                this.orderId = rma.orderId
-                                this.reason = rma.reason
-                                this.currency = order.currency
-                                this.quantity = rma.quantity
-                                this.status = RefundStatus.PENDING
-                            }
-                        rma.refundRequestId = refund.id
+                        if (existingRefund == null) {
+                            // Create the refund and leave the RMA open at RECEIVED.
+                            // Calling COMPLETED again after the refund settles closes it.
+                            val refund =
+                                RefundRequestDAO.new {
+                                    this.orderItemId = item.id
+                                    this.userId = rma.userId
+                                    this.orderId = rma.orderId
+                                    this.reason = rma.reason
+                                    this.currency = order.currency
+                                    this.quantity = rma.quantity
+                                    this.status = RefundStatus.PENDING
+                                }
+                            rma.refundRequestId = refund.id
+                            rma.status = RmaStatus.RECEIVED
+                            enqueueStatusChange(rma, fromStatus, rma.status)
+                            return@query rma.toResponse()
+                        }
+                        if (existingRefund.status != RefundStatus.REFUNDED) {
+                            throw ValidationException(
+                                "Refund ${existingRefund.id.value} is still ${existingRefund.status}; settle it before completing the RMA",
+                            )
+                        }
+                        rma.refundRequestId = existingRefund.id
                     } else {
                         val replacementId =
                             request.replacementOrderId
