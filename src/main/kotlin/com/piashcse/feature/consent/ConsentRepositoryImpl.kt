@@ -35,6 +35,10 @@ class ConsentRepositoryImpl : ConsentRepository {
 
     private fun truncateUserAgent(userAgent: String?): String? = userAgent?.take(200)
 
+    private fun sha256(value: String): String =
+        MessageDigest.getInstance("SHA-256").digest(value.toByteArray())
+            .joinToString("") { byte -> "%02x".format(byte) }
+
     override suspend fun recordConsent(
         userId: String,
         consentRequest: PolicyConsentRequest,
@@ -66,6 +70,8 @@ class ConsentRepositoryImpl : ConsentRepository {
                     consentDate = currentUtc()
                     ipAddress = hashIp(consentRequest.ipAddress)
                     userAgent = truncateUserAgent(consentRequest.userAgent)
+                    policyVersion = policy.version
+                    policyContentHash = sha256(policy.content)
                 }
 
             EventBus.publishAdminAction(

@@ -1031,6 +1031,7 @@ class OrderRepositoryImpl(
                     subTotal = sub.toPlainString(),
                     shippingCost = ship.toPlainString(),
                     taxAmount = tax.toPlainString(),
+                    taxInclusive = taxLines.any { it.inclusive },
                     total = Money.scale2(sub.add(ship).add(exclusiveTax)).toPlainString(),
                     itemCount = totalItems,
                     currency = currency,

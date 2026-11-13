@@ -22,6 +22,8 @@ data class CheckoutSummaryResponse(
     val formattedTax: String? = null,
     val formattedDiscount: String? = null,
     val formattedTotal: String? = null,
+    /** True when taxAmount is already included in subTotal rather than added on top. */
+    val taxInclusive: Boolean = false,
 )
 
 @Serializable
