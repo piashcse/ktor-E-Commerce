@@ -23,6 +23,9 @@ object DotEnvConfig {
     // Encryption key for TOTP secrets at rest (falls back to JWT_SECRET in dev).
     val mfaEncryptionKey: String get() = DotEnv.get("MFA_ENCRYPTION_KEY", "")
 
+    // Signing key for short-lived digital download URLs.
+    val digitalUrlSecret: String get() = DotEnv.get("DIGITAL_URL_SECRET", "")
+
     // Social login
     val googleClientId: String get() = DotEnv.get("GOOGLE_CLIENT_ID", "")
 

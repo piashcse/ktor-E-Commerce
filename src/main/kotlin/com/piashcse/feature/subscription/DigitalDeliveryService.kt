@@ -1,5 +1,6 @@
 package com.piashcse.feature.subscription
 
+import com.piashcse.config.DotEnvConfig
 import com.piashcse.constants.SubscriptionStatus
 import com.piashcse.database.entities.DigitalEntitlementDAO
 import com.piashcse.database.entities.DigitalEntitlementTable
@@ -18,7 +19,11 @@ import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import java.security.MessageDigest
+import java.util.HexFormat
 import java.util.UUID
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 @Serializable
 data class DigitalLibraryItem(
@@ -38,13 +43,17 @@ data class DigitalLibraryItem(
 
 @Serializable
 data class DigitalDownloadResponse(
+    /** Short-lived signed URL; the underlying asset URL is never exposed. */
     val downloadUrl: String,
     val fileName: String?,
     val remainingDownloads: Int,
+    val expiresAt: String? = null,
 )
 
 /** Grants and serves access to digital products. */
-class DigitalDeliveryService {
+class DigitalDeliveryService(
+    private val signingSecret: String = DotEnvConfig.digitalUrlSecret.ifBlank { DotEnvConfig.jwtSecret },
+) {
     /** Must run inside the payment transaction after the order is fully paid. */
     fun grantForOrderTx(order: OrderDAO) {
         val items = OrderItemDAO.itemsForOrder(order.id)
@@ -137,12 +146,52 @@ class DigitalDeliveryService {
             }
             entitlement.downloadCount += 1
             AppMetrics.digitalDownloads.increment()
+            val expires = currentUtc().plusMinutes(5)
+            val expiresEpoch = expires.toEpochSecond(java.time.ZoneOffset.UTC)
+            val signature = sign(token, expiresEpoch)
             DigitalDownloadResponse(
-                downloadUrl = entitlement.downloadUrl,
+                downloadUrl =
+                    "${DotEnvConfig.publicBaseUrl}/api/v1/library/asset" +
+                        "?token=${encode(token)}&expires=$expiresEpoch&signature=$signature",
                 fileName = entitlement.fileName,
                 remainingDownloads = (entitlement.maxDownloads - entitlement.downloadCount).coerceAtLeast(0),
+                expiresAt = expires.toUtcString(),
             )
         }
+
+    /** Validates a short-lived signed URL and returns the asset location for redirect. */
+    suspend fun asset(
+        token: String,
+        expires: Long,
+        signature: String,
+    ): String =
+        query {
+            if (expires < currentUtc().toEpochSecond(java.time.ZoneOffset.UTC)) {
+                throw ValidationException("Download link has expired")
+            }
+            val expected = sign(token, expires)
+            if (!MessageDigest.isEqual(expected.toByteArray(), signature.toByteArray())) {
+                throw ValidationException("Invalid download signature")
+            }
+            val entitlement =
+                DigitalEntitlementDAO.find { DigitalEntitlementTable.downloadToken eq token }
+                    .firstOrNull() ?: token.throwNotFound("Download")
+            if (!entitlement.isActive() || !subscriptionActive(entitlement.subscriptionId?.value)) {
+                throw ValidationException("Download is expired or has reached its limit")
+            }
+            entitlement.downloadUrl
+        }
+
+    private fun sign(
+        token: String,
+        expires: Long,
+    ): String {
+        val mac = Mac.getInstance("HmacSHA256")
+        mac.init(SecretKeySpec(signingSecret.toByteArray(), "HmacSHA256"))
+        return HexFormat.of().formatHex(mac.doFinal("$token:$expires".toByteArray()))
+    }
+
+    private fun encode(value: String): String = java.net.URLEncoder.encode(value, java.nio.charset.StandardCharsets.UTF_8)
 
     private fun subscriptionActive(subscriptionId: String?): Boolean {
         if (subscriptionId == null) return true

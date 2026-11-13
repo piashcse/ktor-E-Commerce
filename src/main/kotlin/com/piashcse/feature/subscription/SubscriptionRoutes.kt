@@ -14,8 +14,10 @@ import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.NotFoundException
+import com.piashcse.utils.validator.ValidationException
 import io.ktor.server.request.receive
 import io.ktor.server.request.requirePathParameter
+import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
@@ -125,6 +127,23 @@ fun Route.subscriptionAdminRoutes() {
 /** Customer digital library. */
 fun Route.digitalLibraryRoutes() {
     val deliveries: DigitalDeliveryService by inject()
+
+    get("asset") {
+        val token =
+            call.request.queryParameters["token"]
+                ?: throw ValidationException("token is required")
+        val expires =
+            call.request.queryParameters["expires"]?.toLongOrNull()
+                ?: throw ValidationException("expires is required")
+        val signature =
+            call.request.queryParameters["signature"]
+                ?: throw ValidationException("signature is required")
+        call.respondRedirect(deliveries.asset(token, expires, signature), permanent = false)
+    }.describe {
+        summary = "Resolve a short-lived digital download link"
+        description = "Validates the signed expiry and redirects to the asset"
+    }
+
     requireRole {
         get {
             call.respondOk(deliveries.library(call.currentUserId))

@@ -188,6 +188,19 @@ class SubscriptionIntegrationTest {
         val download = kotlinx.coroutines.runBlocking { deliveries.download(token, customerId) }
         assertEquals(49, download.remainingDownloads)
         assertEquals("pack-$suffix.zip", download.fileName)
+        assertTrue(download.downloadUrl.contains("/api/v1/library/asset"))
+        val signed = java.net.URI(download.downloadUrl)
+        val params =
+            signed.query.split("&").associate {
+                val (key, value) = it.split("=", limit = 2)
+                key to java.net.URLDecoder.decode(value, java.nio.charset.StandardCharsets.UTF_8)
+            }
+        assertEquals(
+            "https://downloads.example/$suffix.zip",
+            kotlinx.coroutines.runBlocking {
+                deliveries.asset(params.getValue("token"), params.getValue("expires").toLong(), params.getValue("signature"))
+            },
+        )
 
         // Payment for a one-off digital order grants a second entitlement.
         transaction {

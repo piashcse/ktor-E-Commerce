@@ -88,6 +88,7 @@ class B2bQuoteItemDAO(id: EntityID<String>) : BaseEntity(id, B2bQuoteItemTable) 
 
 object B2bPurchaseOrderTable : BaseIdTable("b2b_purchase_order") {
     val quoteId = reference("quote_id", B2bQuoteTable.id).uniqueIndex()
+    val orderId = reference("order_id", OrderTable.id).nullable()
     val buyerUserId = reference("buyer_user_id", UserTable.id).index()
     val sellerId = reference("seller_id", SellerTable.id).index()
     val shopId = reference("shop_id", ShopTable.id).nullable()
@@ -105,6 +106,7 @@ class B2bPurchaseOrderDAO(id: EntityID<String>) : BaseEntity(id, B2bPurchaseOrde
     companion object : BaseEntityClass<B2bPurchaseOrderDAO>(B2bPurchaseOrderTable, B2bPurchaseOrderDAO::class.java)
 
     var quoteId by B2bPurchaseOrderTable.quoteId
+    var orderId by B2bPurchaseOrderTable.orderId
     var buyerUserId by B2bPurchaseOrderTable.buyerUserId
     var sellerId by B2bPurchaseOrderTable.sellerId
     var shopId by B2bPurchaseOrderTable.shopId
