@@ -32,4 +32,4 @@ fun CartItemDAO.toCartItemSummary(
     variantName = variant?.name,
 )
 
-fun WishListDAO.toWishListResponse(product: ProductResponse? = null) = WishList(product)
+fun WishlistDAO.toWishlistResponse(product: ProductResponse? = null) = Wishlist(product)

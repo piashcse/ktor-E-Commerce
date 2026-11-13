@@ -94,8 +94,8 @@ import com.piashcse.feature.support.SupportService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.feature.warehouse.WarehouseRepository
 import com.piashcse.feature.webhook.WebhookAdminService
-import com.piashcse.feature.wishlist.WishListRepository
-import com.piashcse.feature.wishlist.WishListRepositoryImpl
+import com.piashcse.feature.wishlist.WishlistRepository
+import com.piashcse.feature.wishlist.WishlistRepositoryImpl
 import com.piashcse.service.FxService
 import com.piashcse.service.UploadService
 import org.koin.dsl.module
@@ -174,7 +174,7 @@ val serviceModule =
         single<ShippingMethodRepository> { ShippingMethodRepositoryImpl() }
         single<ShopRepository> { ShopRepositoryImpl() }
         single<ShopCategoryRepository> { ShopCategoryRepositoryImpl() }
-        single<WishListRepository> { WishListRepositoryImpl() }
+        single<WishlistRepository> { WishlistRepositoryImpl() }
         single { WarehouseRepository() }
 
         // Services with business logic

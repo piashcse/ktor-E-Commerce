@@ -10,8 +10,8 @@ import com.piashcse.database.entities.ShippingMethodDAO
 import com.piashcse.database.entities.ShopCategoryDAO
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
-import com.piashcse.database.entities.WishListDAO
-import com.piashcse.database.entities.WishListTable
+import com.piashcse.database.entities.WishlistDAO
+import com.piashcse.database.entities.WishlistTable
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
@@ -166,7 +166,7 @@ class PostgresIntegrationTest {
                 stockQuantity = 10
             }
 
-            WishListDAO.new {
+            WishlistDAO.new {
                 userId = user.id
                 productId = product.id
             }
@@ -177,7 +177,7 @@ class PostgresIntegrationTest {
         // the duplicate must fail in its own transaction, never persist.
         assertFailsWith<Exception> {
             transaction {
-                WishListDAO.new {
+                WishlistDAO.new {
                     userId = sliceUserId
                     productId = sliceProductId
                 }
@@ -185,7 +185,7 @@ class PostgresIntegrationTest {
         }
         transaction {
             assertTrue(
-                WishListDAO.find { WishListTable.userId eq sliceUserId }.count() == 1L,
+                WishlistDAO.find { WishlistTable.userId eq sliceUserId }.count() == 1L,
                 "Wishlist slice missing",
             )
             assertTrue(ProductDAO.findById(sliceProductId.value) != null, "Product reread failed")

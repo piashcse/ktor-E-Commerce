@@ -16,8 +16,8 @@ import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.UserTable
-import com.piashcse.database.entities.WishListDAO
-import com.piashcse.database.entities.WishListTable
+import com.piashcse.database.entities.WishlistDAO
+import com.piashcse.database.entities.WishlistTable
 import com.piashcse.mapper.toProductResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.service.Cache
@@ -160,7 +160,7 @@ class RecommendationService(
                             .toSet()
                     }
                 val cartIds = CartItemDAO.find { CartItemTable.userId eq userId }.map { it.productId.value }.toSet()
-                val wishlistIds = WishListDAO.find { WishListTable.userId eq userId }.map { it.productId.value }.toSet()
+                val wishlistIds = WishlistDAO.find { WishlistTable.userId eq userId }.map { it.productId.value }.toSet()
                 val signalIds = (purchased + cartIds + wishlistIds).filter { it.isNotBlank() }.distinct()
                 val weights =
                     if (signalIds.isEmpty()) {

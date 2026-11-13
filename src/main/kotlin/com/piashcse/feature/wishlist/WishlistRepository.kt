@@ -1,11 +1,11 @@
 package com.piashcse.feature.wishlist
 
 import com.piashcse.database.entities.Cart
-import com.piashcse.database.entities.WishList
+import com.piashcse.database.entities.Wishlist
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
 
-interface WishListRepository {
+interface WishlistRepository {
     /**
      * Adds a product to the user's wish list.
      *
@@ -13,10 +13,10 @@ interface WishListRepository {
      * @param productId The unique identifier of the product to add.
      * @return The updated wish list entry.
      */
-    suspend fun addToWishList(
+    suspend fun addToWishlist(
         userId: String,
         productId: String,
-    ): WishList
+    ): Wishlist
 
     /**
      * Retrieves a list of products from the user's wish list.
@@ -26,7 +26,7 @@ interface WishListRepository {
      * @param offset The number of products to skip.
      * @return A list of products in the user's wish list.
      */
-    suspend fun getWishList(
+    suspend fun getWishlist(
         userId: String,
         limit: Int,
         offset: Int,
@@ -39,7 +39,7 @@ interface WishListRepository {
      * @param productId The unique identifier of the product to remove.
      * @return The removed product.
      */
-    suspend fun removeFromWishList(
+    suspend fun removeFromWishlist(
         userId: String,
         productId: String,
     ): ProductResponse
@@ -58,7 +58,7 @@ interface WishListRepository {
         variantId: String? = null,
     ): Cart
 
-    suspend fun isProductInWishList(
+    suspend fun isProductInWishlist(
         userId: String,
         productId: String,
     ): Boolean

@@ -14,8 +14,8 @@ import com.piashcse.feature.payment.paymentAdminRoutes
 import com.piashcse.feature.payment.paymentRoutes
 import com.piashcse.feature.refund_request.RefundRequestRepository
 import com.piashcse.feature.refund_request.refundRequestRoutes
-import com.piashcse.feature.wishlist.WishListRepository
-import com.piashcse.feature.wishlist.wishListRoutes
+import com.piashcse.feature.wishlist.WishlistRepository
+import com.piashcse.feature.wishlist.wishlistRoutes
 import com.piashcse.model.response.CartSummaryResponse
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.model.response.PaymentResponse
@@ -136,12 +136,12 @@ class CartRoutesTest {
 }
 
 class WishlistRoutesTest {
-    private val repo: WishListRepository = mockk()
+    private val repo: WishlistRepository = mockk()
 
     private fun ApplicationTestBuilder.setup() {
         application {
-            installTestInfra(module { single<WishListRepository> { repo } })
-            routing { route("/api/v1/wishlists") { wishListRoutes() } }
+            installTestInfra(module { single<WishlistRepository> { repo } })
+            routing { route("/api/v1/wishlists") { wishlistRoutes() } }
         }
     }
 
@@ -156,7 +156,7 @@ class WishlistRoutesTest {
     @Test
     fun `check product happy path returns 200`() =
         testApplication {
-            coEvery { repo.isProductInWishList(any(), any()) } returns true
+            coEvery { repo.isProductInWishlist(any(), any()) } returns true
             setup()
             val res =
                 client.get("/api/v1/wishlists/check?productId=p-1") {
@@ -169,7 +169,7 @@ class WishlistRoutesTest {
     @Test
     fun `get wishlist happy path returns 200`() =
         testApplication {
-            coEvery { repo.getWishList(any(), any(), any()) } returns
+            coEvery { repo.getWishlist(any(), any(), any()) } returns
                 PaginatedResponse(emptyList(), PaginationMetadata(0, 20, 0))
             setup()
             val res =

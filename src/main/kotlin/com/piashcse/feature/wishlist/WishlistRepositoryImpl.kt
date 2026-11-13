@@ -8,7 +8,7 @@ import com.piashcse.feature.cart.requireProductWithStock
 import com.piashcse.feature.cart.requireWishlistItem
 import com.piashcse.mapper.toCartResponse
 import com.piashcse.mapper.toProductResponse
-import com.piashcse.mapper.toWishListResponse
+import com.piashcse.mapper.toWishlistResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
@@ -19,11 +19,11 @@ import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
-class WishListRepositoryImpl : WishListRepository {
-    override suspend fun addToWishList(
+class WishlistRepositoryImpl : WishlistRepository {
+    override suspend fun addToWishlist(
         userId: String,
         productId: String,
-    ): WishList =
+    ): Wishlist =
         query {
             val product = requireProduct(productId, "ProductResponse")
             if (product.deletedAt != null || product.status != ProductStatus.ACTIVE) {
@@ -31,29 +31,29 @@ class WishListRepositoryImpl : WishListRepository {
             }
 
             val existing =
-                WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
+                WishlistDAO.find { WishlistTable.userId eq userId and (WishlistTable.productId eq productId) }
                     .firstOrNull()
 
             if (existing == null) {
-                WishListDAO.new {
+                WishlistDAO.new {
                     this.userId = userId.entityID(UserTable)
                     this.productId = productId.entityID(ProductTable)
-                }.toWishListResponse(product.toProductResponse())
+                }.toWishlistResponse(product.toProductResponse())
             } else {
                 throw productId.throwConflict("ProductResponse")
             }
         }
 
-    override suspend fun getWishList(
+    override suspend fun getWishlist(
         userId: String,
         limit: Int,
         offset: Int,
     ): PaginatedResponse<ProductResponse> =
         query {
-            WishListTable.innerJoin(ProductTable)
+            WishlistTable.innerJoin(ProductTable)
                 .selectAll()
                 .andWhere {
-                    (WishListTable.userId eq userId) and
+                    (WishlistTable.userId eq userId) and
                         (ProductTable.status eq ProductStatus.ACTIVE) and
                         ProductTable.deletedAt.isNull()
                 }
@@ -67,14 +67,14 @@ class WishListRepositoryImpl : WishListRepository {
                 }
         }
 
-    override suspend fun removeFromWishList(
+    override suspend fun removeFromWishlist(
         userId: String,
         productId: String,
     ): ProductResponse =
         query {
-            val wishListItem = requireWishlistItem(userId, productId)
+            val wishlistItem = requireWishlistItem(userId, productId)
             val product = requireProduct(productId, "ProductResponse").toProductResponse()
-            wishListItem.delete()
+            wishlistItem.delete()
             product
         }
 
@@ -124,12 +124,12 @@ class WishListRepositoryImpl : WishListRepository {
             cart
         }
 
-    override suspend fun isProductInWishList(
+    override suspend fun isProductInWishlist(
         userId: String,
         productId: String,
     ): Boolean =
         query {
-            !WishListDAO.find { WishListTable.userId eq userId and (WishListTable.productId eq productId) }
+            !WishlistDAO.find { WishlistTable.userId eq userId and (WishlistTable.productId eq productId) }
                 .empty()
         }
 }

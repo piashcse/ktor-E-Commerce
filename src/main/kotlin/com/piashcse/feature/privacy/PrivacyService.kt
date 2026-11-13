@@ -143,7 +143,7 @@ class PrivacyService {
 
             // Remove self-service data.
             CartItemDAO.find { CartItemTable.userId eq user.id }.forEach { it.delete() }
-            WishListDAO.find { WishListTable.userId eq user.id }.forEach { it.delete() }
+            WishlistDAO.find { WishlistTable.userId eq user.id }.forEach { it.delete() }
             ShippingAddressDAO.find { ShippingAddressTable.userId eq user.id }.forEach { it.delete() }
             PolicyConsentDAO.find { PolicyConsentTable.userId eq user.id }.forEach { it.delete() }
             ReviewHelpfulVoteDAO.find { ReviewHelpfulVoteTable.userId eq user.id }.forEach { it.delete() }

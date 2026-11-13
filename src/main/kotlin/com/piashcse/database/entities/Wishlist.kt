@@ -7,7 +7,7 @@ import com.piashcse.model.response.ProductResponse
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 
-object WishListTable : BaseIdTable("wishlist") {
+object WishlistTable : BaseIdTable("wishlist") {
     val userId = reference("user_id", UserTable.id).index()
     val productId = reference("product_id", ProductTable.id)
 
@@ -16,12 +16,12 @@ object WishListTable : BaseIdTable("wishlist") {
     }
 }
 
-class WishListDAO(id: EntityID<String>) : BaseEntity(id, WishListTable) {
-    companion object : BaseEntityClass<WishListDAO>(WishListTable, WishListDAO::class.java)
+class WishlistDAO(id: EntityID<String>) : BaseEntity(id, WishlistTable) {
+    companion object : BaseEntityClass<WishlistDAO>(WishlistTable, WishlistDAO::class.java)
 
-    var userId by WishListTable.userId
-    var productId by WishListTable.productId
+    var userId by WishlistTable.userId
+    var productId by WishlistTable.productId
 }
 
 @Serializable
-data class WishList(val product: ProductResponse? = null)
+data class Wishlist(val product: ProductResponse? = null)

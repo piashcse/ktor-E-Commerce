@@ -258,3 +258,27 @@ com.<org>.<app>
 11. Notification preferences.
 12. Catalog/shipping/B2B/subscriptions/POS/GDPR.
 13. Refactoring and renaming.
+
+---
+
+## 6. Implementation Branches (this pass)
+
+| Branch | Base | Scope shipped | Verified |
+|---|---|---|---|
+| `fix/01-security-auth` | `master` | MFA-step transaction, API-key scope fail-closed, social pre-hijack, email-case lockout, bearer parsing, MFA password step-up, guest consent, tax exemption, privacy route role, read-replica default DB | `compileKotlin`, `compileTestKotlin`, auth/permission/MFA/guest tests |
+| `fix/02-commerce-money` | `fix/01-security-auth` | wallet double-subtract, scoped coupon math, per-checkout coupon usage ref, shipping/free-shipping summary parity, line discount persistence, stale formatted fields, payment compensations, paid-cancel guard, warehouse-aware restore, transient retry, guest email lookup, order status validation | compile + commerce/product tests |
+| `fix/03-refunds-payouts` | `fix/02-commerce-money` | provider refund pre-validation, cumulative shipping cap, partial-quantity refunds, net-of-commission payout reduction, payout rejection recovery, statement tax period, RMA completion ordering, subscription client-reference activation removal | compile + subscription/RMA/payment/tax tests |
+| `fix/04-catalog-platform` | `fix/03-refunds-payouts` | public feed visibility, inventory lock/retry, wishlist variant support, stock-alert variant uniqueness, notification defaults/cleanup, policy effective-date, fraud threshold/FX/refund exclusion, chargeback validation, dashboard FX/top revenue, analytics consent default | compile + catalog/platform tests |
+| `fix/05-infra-ops` | `fix/04-catalog-platform` | claim-safe outbox, EventBus lifecycle, AsyncWorker channel lifecycle, SMTP timeouts, header-only image dimension guard, health checks, log redaction, cache invalidation removal, dead-letter/passkey cleanup, env/compose/CI hardening | compile + outbox/service tests |
+| `refactor/06-wishlist-naming` | `fix/05-infra-ops` | `WishList*` → `Wishlist*` across entities, API, mappers and tests | compile + wishlist/commerce tests |
+
+> The checkbox statuses above are the **target** end state. Several items remain partial or open; see section 7.
+
+## 7. Remaining Work (not shipped in this pass)
+
+- **Auth/session:** refresh-rotation atomicity, access-token `jti`/version revocation, passkey base64url challenge, encrypted OTP storage, step-up rate limits, enumeration-resistant responses.
+- **Orders/money:** split-order wallet/gift reference allocation (still uses first order), promotion usage reversal, one tax engine for cart summary, tax-inclusive invoice/summary reconciliation, offset-to-UTC normalization, money-as-`BigDecimal` in filters.
+- **Refunds/payouts:** wallet/gift restoration on partial refunds, multi-currency payout balances, partial payout withdrawals (currently full-balance only), subscription billing scheduler and self-serve PENDING activation, digital `maxDownloads` enforcement.
+- **Platform:** notification `/send` dispatcher bypass, SMS/push providers, back-in-stock `isActive` check, seller dashboard top products, analytics funnel units/user linkage, complete GDPR export/erase, policy version consent snapshots.
+- **Marketplace edges:** B2B payment ledger/payout/digital delivery/tax/address/reminders, POS idempotency/card processing/drawer refunds, shipment idempotency/rate validation/status monotonicity, RMA replacement creation, KYC document validation, seller support routes, label cancel/refund.
+- **Refactor:** full package rename (`audit_log`, `refund_request`, `review_rating`, `product_category`, …), `PayoutStatus` enum, god-class decomposition (`OrderRepositoryImpl`, `B2bService`, `OmnichannelService`), DTO relocation, raw-JDBC replacement, `Instant`/`timestamptz` migration.
