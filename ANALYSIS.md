@@ -271,6 +271,7 @@ com.<org>.<app>
 | `fix/04-catalog-platform` | `fix/03-refunds-payouts` | public feed visibility, inventory lock/retry, wishlist variant support, stock-alert variant uniqueness, notification defaults/cleanup, policy effective-date, fraud threshold/FX/refund exclusion, chargeback validation, dashboard FX/top revenue, analytics consent default | compile + catalog/platform tests |
 | `fix/05-infra-ops` | `fix/04-catalog-platform` | claim-safe outbox, EventBus lifecycle, AsyncWorker channel lifecycle, SMTP timeouts, header-only image dimension guard, health checks, log redaction, cache invalidation removal, dead-letter/passkey cleanup, env/compose/CI hardening | compile + outbox/service tests |
 | `refactor/06-wishlist-naming` | `fix/05-infra-ops` | `WishList*` → `Wishlist*` across entities, API, mappers and tests | compile + wishlist/commerce tests |
+| `fix/07-marketplace-money` | `refactor/06-wishlist-naming` | B2B invoice payment ledger/payout/digital, B2B credit exposure and re-pricing, POS idempotency and card guard, shipment idempotency/duplicate-line/status monotonicity, digital download quota | compile + B2B/omnichannel/shipment/subscription/notification tests |
 
 > The checkbox statuses above are the **target** end state. Several items remain partial or open; see section 7.
 
@@ -278,7 +279,7 @@ com.<org>.<app>
 
 - **Auth/session:** refresh-rotation atomicity, access-token `jti`/version revocation, passkey base64url challenge, encrypted OTP storage, step-up rate limits, enumeration-resistant responses.
 - **Orders/money:** split-order wallet/gift reference allocation (still uses first order), promotion usage reversal, one tax engine for cart summary, tax-inclusive invoice/summary reconciliation, offset-to-UTC normalization, money-as-`BigDecimal` in filters.
-- **Refunds/payouts:** wallet/gift restoration on partial refunds, multi-currency payout balances, partial payout withdrawals (currently full-balance only), subscription billing scheduler and self-serve PENDING activation, digital `maxDownloads` enforcement.
-- **Platform:** notification `/send` dispatcher bypass, SMS/push providers, back-in-stock `isActive` check, seller dashboard top products, analytics funnel units/user linkage, complete GDPR export/erase, policy version consent snapshots.
-- **Marketplace edges:** B2B payment ledger/payout/digital delivery/tax/address/reminders, POS idempotency/card processing/drawer refunds, shipment idempotency/rate validation/status monotonicity, RMA replacement creation, KYC document validation, seller support routes, label cancel/refund.
+- **Refunds/payouts:** wallet/gift restoration on partial refunds, multi-currency payout balances, partial payout withdrawals (currently full-balance only), subscription billing scheduler and self-serve PENDING activation.
+- **Platform:** notification `/send` still does not invoke external providers, SMS/push providers, back-in-stock `isActive` check, seller dashboard top products, analytics funnel units/user linkage, complete GDPR export/erase, policy version consent snapshots.
+- **Marketplace edges:** B2B PO cancel/VOID/credit notes/tax/address/reminders, POS card processing (now rejected explicitly), drawer refund accounting, shipment rate validation/cancel/label refund/webhook ack semantics, RMA replacement creation, KYC document validation, seller support routes.
 - **Refactor:** full package rename (`audit_log`, `refund_request`, `review_rating`, `product_category`, …), `PayoutStatus` enum, god-class decomposition (`OrderRepositoryImpl`, `B2bService`, `OmnichannelService`), DTO relocation, raw-JDBC replacement, `Instant`/`timestamptz` migration.
