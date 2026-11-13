@@ -43,8 +43,18 @@ class AuthRepositoryImpl : AuthRepository {
         userId: String,
         email: String,
         userType: String,
+    ): TokenPair =
+        query {
+            val tokenVersion = UserDAO.findById(userId)?.tokenVersion ?: 0
+            newTokenPair(userId, email, userType, tokenVersion)
+        }
+
+    private fun newTokenPair(
+        userId: String,
+        email: String,
+        userType: String,
+        tokenVersion: Int,
     ): TokenPair {
-        val tokenVersion = query { UserDAO.findById(userId)?.tokenVersion ?: 0 }
         val accessToken = JwtConfig.tokenProvider(JwtTokenRequest(userId, email, userType), tokenVersion)
         return TokenPair(accessToken = accessToken, refreshToken = UUID.randomUUID().toString(), expiresIn = 900)
     }
@@ -57,15 +67,20 @@ class AuthRepositoryImpl : AuthRepository {
     override suspend fun storeRefreshToken(
         userId: String,
         refreshToken: String,
+    ) = query {
+        storeRefreshTokenTx(userId, refreshToken)
+    }
+
+    private fun storeRefreshTokenTx(
+        userId: String,
+        refreshToken: String,
     ) {
         val tokenHash = hashRefreshToken(refreshToken)
         val expiresAt = Instant.now().plusSeconds(AppConstants.Authentication.REFRESH_TOKEN_EXPIRY_SECONDS)
-        query {
-            RefreshTokenDAO.new {
-                this.userId = userId.entityID(UserTable)
-                this.tokenHash = tokenHash
-                this.expiresAt = expiresAt
-            }
+        RefreshTokenDAO.new {
+            this.userId = userId.entityID(UserTable)
+            this.tokenHash = tokenHash
+            this.expiresAt = expiresAt
         }
     }
 
@@ -498,35 +513,31 @@ class AuthRepositoryImpl : AuthRepository {
 
     // ── Token refresh ─────────────────────────────────────────────────────
 
-    override suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair {
-        val tokenHash = hashRefreshToken(request.refreshToken)
-        // Single transaction with row-level lock to prevent concurrent reuse.
-        val userSnapshot =
-            query {
-                val storedToken =
-                    RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.forUpdate().singleOrNull()
-                        ?: throw NotFoundException(Message.Auth.INVALID_REFRESH_TOKEN)
+    override suspend fun refreshAccessToken(request: RefreshTokenRequest): TokenPair =
+        query {
+            val tokenHash = hashRefreshToken(request.refreshToken)
+            val storedToken =
+                RefreshTokenDAO.find { RefreshTokenTable.tokenHash eq tokenHash }.forUpdate().singleOrNull()
+                    ?: throw NotFoundException(Message.Auth.INVALID_REFRESH_TOKEN)
 
-                if (!storedToken.isValid) {
-                    // Reuse detection: suspected theft — revoke entire token family so the rotated session dies too.
-                    runCatching { revokeAllUserTokensTx(storedToken.userId.value) }
-                    storedToken.revokedAt = Instant.now()
-                    throw NotFoundException(Message.Auth.TOKEN_EXPIRED)
-                }
-
-                val user = UserDAO.findById(storedToken.userId.value) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
-
-                if (!user.isActive) throw ValidationException(Message.Auth.ACCOUNT_DEACTIVATED)
-                if (!user.isVerified) throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)
-
+            if (!storedToken.isValid) {
+                // Reuse detection: suspected theft — revoke entire token family.
+                runCatching { revokeAllUserTokensTx(storedToken.userId.value) }
                 storedToken.revokedAt = Instant.now()
-                Triple(user.id.value, user.email, user.userType.name)
+                throw NotFoundException(Message.Auth.TOKEN_EXPIRED)
             }
 
-        val newTokenPair = generateTokenPair(userSnapshot.first, userSnapshot.second, userSnapshot.third)
-        storeRefreshToken(userSnapshot.first, newTokenPair.refreshToken)
-        return newTokenPair
-    }
+            val user = UserDAO.findById(storedToken.userId.value) ?: throw NotFoundException(Message.Errors.NOT_FOUND)
+            if (!user.isActive) throw ValidationException(Message.Auth.ACCOUNT_DEACTIVATED)
+            if (!user.isVerified) throw ValidationException(Message.Auth.ACCOUNT_NOT_VERIFIED)
+
+            // Rotate old + persist replacement in the same transaction so a
+            // concurrent password reset cannot leave a freshly minted token live.
+            storedToken.revokedAt = Instant.now()
+            val newTokenPair = newTokenPair(user.id.value, user.email, user.userType.name, user.tokenVersion)
+            storeRefreshTokenTx(user.id.value, newTokenPair.refreshToken)
+            newTokenPair
+        }
 
     // ── Logout / Blacklist ────────────────────────────────────────────────
 
