@@ -102,6 +102,9 @@ class DigitalDeliveryService(
             }.firstOrNull()
         if (existing != null) {
             existing.expiresAt = subscription.currentPeriodEnd
+            // A renewal starts a fresh download quota.
+            existing.downloadCount = 0
+            existing.maxDownloads = 50
             return
         }
         DigitalEntitlementDAO.new {
@@ -151,8 +154,6 @@ class DigitalDeliveryService(
             if (!entitlement.isActive() || !subscriptionActive(entitlement.subscriptionId?.value)) {
                 throw ValidationException("Download is expired or has reached its limit")
             }
-            entitlement.downloadCount += 1
-            AppMetrics.digitalDownloads.increment()
             val expires = currentUtc().plusMinutes(5)
             val expiresEpoch = expires.toEpochSecond(java.time.ZoneOffset.UTC)
             val signature = sign(token, expiresEpoch)
@@ -182,10 +183,14 @@ class DigitalDeliveryService(
             }
             val entitlement =
                 DigitalEntitlementDAO.find { DigitalEntitlementTable.downloadToken eq token }
+                    .forUpdate()
                     .firstOrNull() ?: token.throwNotFound("Download")
             if (!entitlement.isActive() || !subscriptionActive(entitlement.subscriptionId?.value)) {
                 throw ValidationException("Download is expired or has reached its limit")
             }
+            // The actual asset fetch consumes the quota; minting the URL does not.
+            entitlement.downloadCount += 1
+            AppMetrics.digitalDownloads.increment()
             entitlement.downloadUrl
         }
 

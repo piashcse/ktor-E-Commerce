@@ -355,6 +355,16 @@ class ShipmentService(
             } ?: return false
 
         if (shipment.status == ShipmentStatus.DELIVERED) return true
+        // Keep happy-path statuses monotonic. Terminal exceptions may still
+        // override (carrier reports a return/failure after transit).
+        val rank =
+            mapOf(
+                ShipmentStatus.PENDING to 0,
+                ShipmentStatus.LABEL_PURCHASED to 1,
+                ShipmentStatus.IN_TRANSIT to 2,
+                ShipmentStatus.DELIVERED to 3,
+            )
+        if (status in rank && (rank[shipment.status] ?: -1) > (rank[status] ?: -1)) return true
         shipment.status = status
         if (status == ShipmentStatus.DELIVERED) {
             shipment.deliveredAt = currentUtc()
@@ -403,17 +413,20 @@ class ShipmentService(
             if (requested.isEmpty()) {
                 remaining.filterValues { it > 0 }.map { Allocation(it.key, it.value) }
             } else {
-                requested.map { line ->
-                    if (line.quantity <= 0) throw ValidationException("Shipment quantity must be positive")
+                // Merge duplicate lines first; two 5-unit lines against 5
+                // remaining must fail before a label is purchased.
+                val merged = requested.groupBy { it.orderItemId }.map { (id, lines) -> id to lines.sumOf { it.quantity } }
+                merged.map { (orderItemId, quantity) ->
+                    if (quantity <= 0) throw ValidationException("Shipment quantity must be positive")
                     val available =
-                        remaining[line.orderItemId]
-                            ?: throw ValidationException("Order item ${line.orderItemId} is not part of this order")
-                    if (line.quantity > available) {
+                        remaining[orderItemId]
+                            ?: throw ValidationException("Order item $orderItemId is not part of this order")
+                    if (quantity > available) {
                         throw ValidationException(
-                            "Cannot ship ${line.quantity} of ${line.orderItemId}; only $available remaining",
+                            "Cannot ship $quantity of $orderItemId; only $available remaining",
                         )
                     }
-                    Allocation(line.orderItemId, line.quantity)
+                    Allocation(orderItemId, quantity)
                 }
             }
         if (allocation.isEmpty()) throw ValidationException("All order items have already shipped")
