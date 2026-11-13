@@ -248,188 +248,226 @@ class OmnichannelService(
         query {
             val seller = requireSellerByUserId(sellerUserId)
             val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
-            request.idempotencyKey?.takeIf { it.isNotBlank() }?.let { key ->
-                OrderDAO.find {
-                    (OrderTable.shopId eq shopId) and
-                        (OrderTable.fulfillmentType eq FulfillmentType.POS) and
-                        (OrderTable.idempotencyKey eq key)
-                }.firstOrNull()?.let { return@query it.toOrderResponse() }
-            }
-            val session =
-                request.posSessionId?.takeIf { it.isNotBlank() }?.let { sessionId ->
-                    val row =
-                        PosSessionDAO.find {
-                            (PosSessionTable.id eq sessionId.entityID(PosSessionTable)) and
-                                (PosSessionTable.shopId eq shopId)
-                        }.forUpdate().firstOrNull() ?: throw ValidationException("POS session not found")
-                    if (row.status != PosSessionStatus.OPEN) throw ValidationException("POS session is closed")
-                    row
-                }
-            val warehouseId = request.warehouseId?.takeIf { it.isNotBlank() } ?: session?.warehouseId?.value
-            val warehouse =
-                warehouseId?.let { id ->
-                    val row =
-                        WarehouseDAO.findById(id)
-                            ?: throw ValidationException("Warehouse not found")
-                    if (row.shopId.value != shopId.value) throw ForbiddenException("Warehouse belongs to another shop")
-                    if (!row.supportsPos) throw ValidationException("Warehouse does not support POS")
-                    row
-                }
-            val products =
-                ProductDAO.find {
-                    ProductTable.id.inList(request.items.map { it.productId.entityID(ProductTable) })
-                }.associateBy { it.id.value }
-            if (products.size != request.items.map { it.productId }.distinct().size) {
-                throw ValidationException("One or more products were not found")
-            }
-            if (products.values.any { it.shopId?.value != shopId.value }) {
-                throw ValidationException("All POS items must belong to the seller's shop")
-            }
-            val variantIds = request.items.mapNotNull { it.variantId }.distinct()
-            val variants =
-                if (variantIds.isEmpty()) {
-                    emptyMap()
-                } else {
-                    ProductVariantDAO.find {
-                        ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) }
-                    }.associateBy { it.id.value }
-                }
-            request.items.forEach { item ->
-                item.variantId?.let { id ->
-                    val variant = variants[id] ?: throw ValidationException("Variant not found: $id")
-                    if (variant.productId.value != item.productId) {
-                        throw ValidationException("Variant does not belong to product ${item.productId}")
-                    }
-                }
-            }
-
-            val customerEmail = request.customerEmail?.takeIf { it.isNotBlank() }?.trim()?.lowercase()
-            val customer =
-                customerEmail?.let {
-                    UserDAO.find {
-                        (UserTable.email eq it) and (UserTable.userType eq com.piashcse.constants.UserType.CUSTOMER)
-                    }.firstOrNull()
-                } ?: UserDAO.new {
-                    email = customerEmail ?: "pos-${UUID.randomUUID()}@local"
-                    userType = com.piashcse.constants.UserType.CUSTOMER
-                    password = "!"
-                    isVerified = customerEmail != null
-                    isGuest = customerEmail == null
-                }
-
-            val orderNumber =
-                "POS-${LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)}-${UUID.randomUUID().toString().take(6).uppercase()}"
-            var subtotal = BigDecimal.ZERO
-            var totalTax = BigDecimal.ZERO
-            var exclusiveTax = BigDecimal.ZERO
-            val order =
-                OrderDAO.new {
-                    userId = customer.id
-                    this.shopId = shopId
-                    this.orderNumber = orderNumber
-                    status = OrderStatus.PAID
-                    paymentStatus = PaymentStatus.COMPLETED
-                    subTotal = BigDecimal.ZERO
-                    shippingCost = BigDecimal.ZERO
-                    taxAmount = BigDecimal.ZERO
-                    this.total = BigDecimal.ZERO
-                    currency = "USD"
-                    fxRate = BigDecimal.ONE
-                    shippingMethod = "POS"
-                    fulfillmentType = FulfillmentType.POS
-                    paymentMethod = request.paymentMethod
-                    this.posSessionId = session?.id
-                    notes = "In-store sale"
-                }
-
-            request.items.forEach { item ->
-                val product = products.getValue(item.productId)
-                val variant = item.variantId?.let { variants[it] }
-                val unit = Money.scale2(variant?.effectivePrice ?: product.discountPrice ?: product.price)
-                val lineTotal = Money.scale2(unit.multiply(BigDecimal(item.quantity)))
-                if (warehouse != null) {
-                    product.decrementStockAt(warehouse.id.value, variant?.id?.value, item.quantity)
-                } else {
-                    if (variant == null) {
-                        product.decrementStock(
-                            item.quantity,
-                        )
-                    } else {
-                        product.decrementStockFor(variant.id.value, item.quantity)
-                    }
-                }
-                product.addSales(item.quantity)
-                val quote =
-                    taxService.resolve(
-                        country = warehouse?.country ?: "US",
-                        region = null,
-                        categoryId = product.categoryId.value,
-                        taxClassId = product.taxClassId?.value,
-                        userId = customer.id.value,
-                        businessTaxId = null,
-                    )
-                val amounts = taxService.apply(lineTotal, quote)
-                subtotal = subtotal.add(lineTotal)
-                totalTax = totalTax.add(amounts.tax)
-                if (!quote.inclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
-                OrderItemTable.insert {
-                    it[orderId] = order.id
-                    it[productId] = product.id
-                    it[variantId] = variant?.id
-                    it[variantName] = variant?.name
-                    it[OrderItemTable.shopId] = seller.shopId!!
-                    it[quantity] = item.quantity
-                    it[price] = unit
-                    it[OrderItemTable.total] = lineTotal
-                    it[productName] = product.name
-                    it[sku] = product.sku
-                    it[isDigital] = product.isDigital
-                    it[discountAmount] = BigDecimal.ZERO
-                    it[taxAmount] = amounts.tax
-                    it[taxRate] = quote.rate
-                    it[taxInclusive] = quote.inclusive
-                    it[taxClassId] = quote.taxClassId?.entityID(com.piashcse.database.entities.TaxClassTable)
-                }
-            }
-            order.subTotal = Money.scale2(subtotal)
-            order.taxAmount = Money.scale2(totalTax)
-            order.total = Money.scale2(subtotal.add(exclusiveTax))
-
-            val payment =
-                PaymentDAO.new {
-                    this.orderId = order.id
-                    this.userId = customer.id
-                    amount = order.total
-                    currency = "USD"
-                    status = PaymentStatus.COMPLETED
-                    paymentMethod = request.paymentMethod
-                    transactionId = "POS-${order.id.value}"
-                    provider = com.piashcse.constants.PaymentProvider.MANUAL
-                    providerStatus = "pos"
-                    scaStatus = com.piashcse.constants.ScaStatus.NOT_REQUIRED
-                }
-            session?.let {
-                if (request.paymentMethod == PaymentMethod.COD) {
-                    it.cashSales = Money.scale2(it.cashSales.add(order.total))
-                } else {
-                    it.cardSales = Money.scale2(it.cardSales.add(order.total))
-                }
-            }
-            loyaltyService.earnForPaidOrderTx(customer.id.value, order.id.value, order.total)
-            OutboxPublisher.enqueueTx(
-                "PAYMENT",
-                payment.id.value,
-                PaymentCompletedEvent(
-                    paymentId = payment.id.value,
-                    orderId = order.id.value,
-                    userId = customer.id.value,
-                    email = customer.email,
-                    amount = payment.amount,
-                ),
-            )
-            digitalDelivery.grantForOrderTx(order)
-            order.toOrderResponse()
+            findIdempotentPosSale(shopId.value, request.idempotencyKey)?.let { return@query it.toOrderResponse() }
+            val session = resolvePosSession(shopId.value, request.posSessionId)
+            val warehouse = resolvePosWarehouse(shopId.value, request.warehouseId, session)
+            val catalog = loadPosCatalog(shopId.value, request.items)
+            val customer = resolvePosCustomer(request.customerEmail)
+            completePosSale(seller, shopId.value, request, session, warehouse, catalog, customer)
         }
+
+    private data class PosCatalog(
+        val products: Map<String, ProductDAO>,
+        val variants: Map<String, ProductVariantDAO>,
+    )
+
+    private fun findIdempotentPosSale(
+        shopId: String,
+        key: String?,
+    ): OrderDAO? =
+        key?.takeIf { it.isNotBlank() }?.let {
+            OrderDAO.find {
+                (OrderTable.shopId eq shopId.entityID(com.piashcse.database.entities.ShopTable)) and
+                    (OrderTable.fulfillmentType eq FulfillmentType.POS) and
+                    (OrderTable.idempotencyKey eq it)
+            }.firstOrNull()
+        }
+
+    private fun resolvePosSession(
+        shopId: String,
+        sessionId: String?,
+    ): PosSessionDAO? =
+        sessionId?.takeIf { it.isNotBlank() }?.let {
+            val row =
+                PosSessionDAO.find {
+                    (PosSessionTable.id eq it.entityID(PosSessionTable)) and
+                        (PosSessionTable.shopId eq shopId.entityID(com.piashcse.database.entities.ShopTable))
+                }.forUpdate().firstOrNull() ?: throw ValidationException("POS session not found")
+            if (row.status != PosSessionStatus.OPEN) throw ValidationException("POS session is closed")
+            row
+        }
+
+    private fun resolvePosWarehouse(
+        shopId: String,
+        warehouseId: String?,
+        session: PosSessionDAO?,
+    ): WarehouseDAO? {
+        val resolvedId = warehouseId?.takeIf { it.isNotBlank() } ?: session?.warehouseId?.value
+        return resolvedId?.let { id ->
+            val row = WarehouseDAO.findById(id) ?: throw ValidationException("Warehouse not found")
+            if (row.shopId.value != shopId) throw ForbiddenException("Warehouse belongs to another shop")
+            if (!row.supportsPos) throw ValidationException("Warehouse does not support POS")
+            row
+        }
+    }
+
+    private fun loadPosCatalog(
+        shopId: String,
+        items: List<PosSaleItem>,
+    ): PosCatalog {
+        val products =
+            ProductDAO.find {
+                ProductTable.id.inList(items.map { it.productId.entityID(ProductTable) })
+            }.associateBy { it.id.value }
+        if (products.size != items.map { it.productId }.distinct().size) {
+            throw ValidationException("One or more products were not found")
+        }
+        if (products.values.any { it.shopId?.value != shopId }) {
+            throw ValidationException("All POS items must belong to the seller's shop")
+        }
+        val variantIds = items.mapNotNull { it.variantId }.distinct()
+        val variants =
+            if (variantIds.isEmpty()) {
+                emptyMap()
+            } else {
+                ProductVariantDAO.find {
+                    ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) }
+                }.associateBy { it.id.value }
+            }
+        items.forEach { item ->
+            item.variantId?.let { id ->
+                val variant = variants[id] ?: throw ValidationException("Variant not found: $id")
+                if (variant.productId.value != item.productId) {
+                    throw ValidationException("Variant does not belong to product ${item.productId}")
+                }
+            }
+        }
+        return PosCatalog(products, variants)
+    }
+
+    private fun resolvePosCustomer(customerEmail: String?): UserDAO {
+        val email = customerEmail?.takeIf { it.isNotBlank() }?.trim()?.lowercase()
+        return email?.let {
+            UserDAO.find {
+                (UserTable.email eq it) and (UserTable.userType eq com.piashcse.constants.UserType.CUSTOMER)
+            }.firstOrNull()
+        } ?: UserDAO.new {
+            this.email = email ?: "pos-${UUID.randomUUID()}@local"
+            userType = com.piashcse.constants.UserType.CUSTOMER
+            password = "!"
+            isVerified = email != null
+            isGuest = email == null
+        }
+    }
+
+    private fun completePosSale(
+        seller: com.piashcse.database.entities.SellerDAO,
+        shopId: String,
+        request: PosSaleRequest,
+        session: PosSessionDAO?,
+        warehouse: WarehouseDAO?,
+        catalog: PosCatalog,
+        customer: UserDAO,
+    ): OrderResponse {
+        val orderNumber =
+            "POS-${LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)}-${UUID.randomUUID().toString().take(6).uppercase()}"
+        var subtotal = BigDecimal.ZERO
+        var totalTax = BigDecimal.ZERO
+        var exclusiveTax = BigDecimal.ZERO
+        val order =
+            OrderDAO.new {
+                userId = customer.id
+                this.shopId = shopId.entityID(com.piashcse.database.entities.ShopTable)
+                this.orderNumber = orderNumber
+                status = OrderStatus.PAID
+                paymentStatus = PaymentStatus.COMPLETED
+                subTotal = BigDecimal.ZERO
+                shippingCost = BigDecimal.ZERO
+                taxAmount = BigDecimal.ZERO
+                this.total = BigDecimal.ZERO
+                currency = "USD"
+                fxRate = BigDecimal.ONE
+                shippingMethod = "POS"
+                fulfillmentType = FulfillmentType.POS
+                paymentMethod = request.paymentMethod
+                this.posSessionId = session?.id
+                notes = "In-store sale"
+            }
+
+        request.items.forEach { item ->
+            val product = catalog.products.getValue(item.productId)
+            val variant = item.variantId?.let { catalog.variants[it] }
+            val unit = Money.scale2(variant?.effectivePrice ?: product.discountPrice ?: product.price)
+            val lineTotal = Money.scale2(unit.multiply(BigDecimal(item.quantity)))
+            if (warehouse != null) {
+                product.decrementStockAt(warehouse.id.value, variant?.id?.value, item.quantity)
+            } else if (variant == null) {
+                product.decrementStock(item.quantity)
+            } else {
+                product.decrementStockFor(variant.id.value, item.quantity)
+            }
+            product.addSales(item.quantity)
+            val quote =
+                taxService.resolve(
+                    country = warehouse?.country ?: "US",
+                    region = null,
+                    categoryId = product.categoryId.value,
+                    taxClassId = product.taxClassId?.value,
+                    userId = customer.id.value,
+                    businessTaxId = null,
+                )
+            val amounts = taxService.apply(lineTotal, quote)
+            subtotal = subtotal.add(lineTotal)
+            totalTax = totalTax.add(amounts.tax)
+            if (!quote.inclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
+            OrderItemTable.insert {
+                it[orderId] = order.id
+                it[productId] = product.id
+                it[variantId] = variant?.id
+                it[variantName] = variant?.name
+                it[OrderItemTable.shopId] = seller.shopId!!
+                it[quantity] = item.quantity
+                it[price] = unit
+                it[OrderItemTable.total] = lineTotal
+                it[productName] = product.name
+                it[sku] = product.sku
+                it[isDigital] = product.isDigital
+                it[discountAmount] = BigDecimal.ZERO
+                it[taxAmount] = amounts.tax
+                it[taxRate] = quote.rate
+                it[taxInclusive] = quote.inclusive
+                it[taxClassId] = quote.taxClassId?.entityID(com.piashcse.database.entities.TaxClassTable)
+            }
+        }
+        order.subTotal = Money.scale2(subtotal)
+        order.taxAmount = Money.scale2(totalTax)
+        order.total = Money.scale2(subtotal.add(exclusiveTax))
+
+        val payment =
+            PaymentDAO.new {
+                this.orderId = order.id
+                this.userId = customer.id
+                amount = order.total
+                currency = "USD"
+                status = PaymentStatus.COMPLETED
+                paymentMethod = request.paymentMethod
+                transactionId = "POS-${order.id.value}"
+                provider = com.piashcse.constants.PaymentProvider.MANUAL
+                providerStatus = "pos"
+                scaStatus = com.piashcse.constants.ScaStatus.NOT_REQUIRED
+            }
+        session?.let {
+            if (request.paymentMethod == PaymentMethod.COD) {
+                it.cashSales = Money.scale2(it.cashSales.add(order.total))
+            } else {
+                it.cardSales = Money.scale2(it.cardSales.add(order.total))
+            }
+        }
+        loyaltyService.earnForPaidOrderTx(customer.id.value, order.id.value, order.total)
+        OutboxPublisher.enqueueTx(
+            "PAYMENT",
+            payment.id.value,
+            PaymentCompletedEvent(
+                paymentId = payment.id.value,
+                orderId = order.id.value,
+                userId = customer.id.value,
+                email = customer.email,
+                amount = payment.amount,
+            ),
+        )
+        digitalDelivery.grantForOrderTx(order)
+        return order.toOrderResponse()
+    }
 
     suspend fun openPosSession(
         sellerUserId: String,
