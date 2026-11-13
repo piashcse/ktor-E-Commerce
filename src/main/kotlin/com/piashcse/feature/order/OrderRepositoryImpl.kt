@@ -710,13 +710,14 @@ class OrderRepositoryImpl(
         val giftCode = request.giftCardCode?.takeIf { it.isNotBlank() }
         if (points == 0 && creditUsd == null && giftCode == null) return
 
-        val total = quote.orders.fold(BigDecimal.ZERO) { acc, order -> acc.add(order.total) }
+        val orders = quote.orders
+        val total = orders.fold(BigDecimal.ZERO) { acc, order -> acc.add(order.total) }
         if (total <= BigDecimal.ZERO) return
-        val referenceId = quote.orders.first().id.value
         val totalUsd = total.divide(fxRate, 2, RoundingMode.HALF_UP)
         var remainingUsd = totalUsd
 
-        // Cap every redemption before debiting it; never burn points/credit that cannot be applied.
+        // Cap every redemption before debiting it; never burn points/credit that
+        // cannot be applied.
         val pointsToRedeem =
             if (points > 0) {
                 points.coerceAtMost(
@@ -725,42 +726,89 @@ class OrderRepositoryImpl(
             } else {
                 0
             }
-        var walletUsd =
-            if (pointsToRedeem > 0) {
-                loyaltyService.redeemPointsTx(userId, pointsToRedeem, referenceId)
-            } else {
-                BigDecimal.ZERO
-            }
-        remainingUsd = remainingUsd.subtract(walletUsd).max(BigDecimal.ZERO)
-        creditUsd?.let {
-            val capped = it.min(remainingUsd)
-            if (capped > BigDecimal.ZERO) {
-                val redeemedCredit = loyaltyService.redeemCreditTx(userId, capped, referenceId)
-                walletUsd = walletUsd.add(redeemedCredit)
-                // Subtract only the credit just redeemed. Subtracting the
-                // cumulative walletUsd would double-count the points above.
-                remainingUsd = remainingUsd.subtract(redeemedCredit).max(BigDecimal.ZERO)
-            }
+        val pointsUsd =
+            BigDecimal(pointsToRedeem)
+                .divide(BigDecimal(100), 4, RoundingMode.HALF_UP)
+        remainingUsd = remainingUsd.subtract(pointsUsd).max(BigDecimal.ZERO)
+        val creditToRedeem = creditUsd?.min(remainingUsd)?.max(BigDecimal.ZERO) ?: BigDecimal.ZERO
+        remainingUsd = remainingUsd.subtract(creditToRedeem).max(BigDecimal.ZERO)
+        val giftBudgetUsd = remainingUsd
+
+        // Allocate redemptions per order so cancelling one split order reverses
+        // only that order's share instead of the whole checkout.
+        var pointsLeft = pointsToRedeem
+        var creditLeft = creditToRedeem
+        var giftLeft = giftBudgetUsd
+        val walletUsdByOrder = mutableMapOf<String, BigDecimal>()
+        val giftUsdByOrder = mutableMapOf<String, BigDecimal>()
+        orders.forEachIndexed { index, order ->
+            val last = index == orders.lastIndex
+            val pointsShare =
+                if (last) {
+                    pointsLeft
+                } else if (total > BigDecimal.ZERO) {
+                    BigDecimal(pointsToRedeem)
+                        .multiply(order.total)
+                        .divide(total, 0, RoundingMode.DOWN)
+                        .toInt()
+                } else {
+                    0
+                }
+            val redeemedPoints =
+                if (pointsShare > 0) {
+                    loyaltyService.redeemPointsTx(userId, pointsShare, order.id.value)
+                } else {
+                    BigDecimal.ZERO
+                }
+            pointsLeft = (pointsLeft - pointsShare).coerceAtLeast(0)
+
+            val creditShare =
+                if (last) {
+                    creditLeft
+                } else {
+                    Money.proportionalSplit(creditToRedeem, order.total, total)
+                }
+            val redeemedCredit =
+                if (creditShare > BigDecimal.ZERO) {
+                    loyaltyService.redeemCreditTx(userId, creditShare, order.id.value)
+                } else {
+                    BigDecimal.ZERO
+                }
+            creditLeft = creditLeft.subtract(redeemedCredit).max(BigDecimal.ZERO)
+
+            val giftShare =
+                if (last) {
+                    giftLeft
+                } else {
+                    Money.proportionalSplit(giftBudgetUsd, order.total, total)
+                }
+            val redeemedGift =
+                giftCode?.let {
+                    loyaltyService.redeemGiftCardTx(it, userId, order.id.value, giftShare)
+                } ?: BigDecimal.ZERO
+            giftLeft = giftLeft.subtract(redeemedGift).max(BigDecimal.ZERO)
+
+            walletUsdByOrder[order.id.value] = redeemedPoints.add(redeemedCredit)
+            giftUsdByOrder[order.id.value] = redeemedGift
         }
 
-        val giftUsd =
-            giftCode?.let {
-                loyaltyService.redeemGiftCardTx(it, userId, quote.orders.first().id.value, remainingUsd)
-            } ?: BigDecimal.ZERO
-
-        val walletTotal = walletUsd.multiply(fxRate).min(total)
-        val giftTotal = giftUsd.multiply(fxRate).min(total.subtract(walletTotal))
-        quote.orders.forEach { order ->
-            val walletShare = Money.proportionalSplit(walletTotal, order.total, total).min(order.total)
-            order.walletDiscount = walletShare
-            order.total = Money.scale2(order.total.subtract(walletShare))
-            val giftShare = Money.proportionalSplit(giftTotal, order.total.add(walletShare), total).min(order.total)
-            order.giftCardDiscount = giftShare
+        orders.forEach { order ->
+            val walletTotal = walletUsdByOrder[order.id.value].orZero().multiply(fxRate).min(order.total)
+            order.walletDiscount = walletTotal
+            order.total = Money.scale2(order.total.subtract(walletTotal))
+            val giftTotal =
+                giftUsdByOrder[order.id.value]
+                    .orZero()
+                    .multiply(fxRate)
+                    .min(order.total.subtract(walletTotal).max(BigDecimal.ZERO))
+            order.giftCardDiscount = giftTotal
             order.giftCardCode = giftCode
-            order.total = Money.scale2(order.total.subtract(giftShare))
-            order.discountAmount = Money.scale2(order.discountAmount.add(walletShare).add(giftShare))
+            order.total = Money.scale2(order.total.subtract(giftTotal))
+            order.discountAmount = Money.scale2(order.discountAmount.add(walletTotal).add(giftTotal))
         }
     }
+
+    private fun BigDecimal?.orZero(): BigDecimal = this ?: BigDecimal.ZERO
 
     /**
      * Recomputes line tax on the post-coupon/post-promotion taxable amount.
