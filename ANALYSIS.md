@@ -282,14 +282,15 @@ com.<org>.<app>
 | `fix/15-shipment-webhook` | `fix/14-b2b-kyc` | carrier webhook failures return 5xx so carriers retry | compile + shipment tests |
 | `fix/16-passkey-mfa` | `fix/15-shipment-webhook` | MFA step-up rate limiting, base64url WebAuthn challenges | compile + auth/passkey/MFA tests |
 | `fix/17-refresh-rotation` | `fix/16-passkey-mfa` | refresh-token revocation and replacement persisted in one transaction | compile + auth/identity tests |
+| `fix/18-consent-tax-evidence` | `fix/17-refresh-rotation` | consent snapshots accepted policy version/hash, checkout summary exposes `taxInclusive` | compile + consent/policy/order tests |
 
 > The checkbox statuses above are the **target** end state. Several items remain partial or open; see section 7.
 
 ## 7. Remaining Work (not shipped in this pass)
 
 - **Auth/session:** encrypted OTP storage, enumeration-resistant responses.
-- **Orders/money:** tax-inclusive checkout-summary reconciliation, money-as-`BigDecimal` in filters.
+- **Orders/money:** money-as-`BigDecimal` in filters.
 - **Refunds/payouts:** wallet/gift restoration on partial refunds, partial payout withdrawals (currently full-balance only), subscription proration/plan changes.
-- **Platform:** SMS/push providers, analytics user linkage, policy version consent snapshots.
+- **Platform:** SMS/push providers, analytics user linkage.
 - **Marketplace edges:** B2B tax/delivery address/credit notes, POS card processing (now rejected explicitly), drawer refund accounting, shipment rate validation/cancel/label refund, RMA replacement creation, seller support routes.
 - **Refactor:** full package rename (`audit_log`, `refund_request`, `review_rating`, `product_category`, …), `PayoutStatus` enum, god-class decomposition (`OrderRepositoryImpl`, `B2bService`, `OmnichannelService`), DTO relocation, raw-JDBC replacement, `Instant`/`timestamptz` migration.

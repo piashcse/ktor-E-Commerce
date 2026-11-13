@@ -17,6 +17,10 @@ object PolicyConsentTable : BaseIdTable("policy_consents") {
     val userAgent = varchar("user_agent", 255).nullable()
     val revokedAt = datetime("revoked_at").nullable()
 
+    /** Snapshot of the accepted policy so later edits do not rewrite consent evidence. */
+    val policyVersion = varchar("policy_version", 50).nullable()
+    val policyContentHash = varchar("policy_content_hash", 64).nullable()
+
     override val primaryKey = PrimaryKey(id)
 }
 
@@ -32,4 +36,6 @@ class PolicyConsentDAO(id: EntityID<String>) : BaseEntity(id, PolicyConsentTable
     var ipAddress by PolicyConsentTable.ipAddress
     var userAgent by PolicyConsentTable.userAgent
     var revokedAt by PolicyConsentTable.revokedAt
+    var policyVersion by PolicyConsentTable.policyVersion
+    var policyContentHash by PolicyConsentTable.policyContentHash
 }

@@ -28,4 +28,6 @@ fun PolicyConsentDAO.toPolicyConsentResponse() =
         ipAddress,
         userAgent,
         revokedAt?.toUtcString(),
+        policyVersion,
+        policyContentHash,
     )

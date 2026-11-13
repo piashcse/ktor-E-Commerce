@@ -14,4 +14,6 @@ data class UserPolicyConsentResponse(
     val ipAddress: String?,
     val userAgent: String?,
     val revokedAt: String? = null,
+    val policyVersion: String? = null,
+    val policyContentHash: String? = null,
 )
