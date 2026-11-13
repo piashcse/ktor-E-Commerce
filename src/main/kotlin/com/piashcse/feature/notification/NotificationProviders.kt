@@ -96,6 +96,14 @@ class NotificationDispatcher(
         defaultChannel: String = "IN_APP",
     ) {
         providers["IN_APP"]?.send(message)
+        dispatchExternal(message, defaultChannel)
+    }
+
+    /** Sends only the user's preferred extra channel (no duplicate in-app row). */
+    suspend fun dispatchExternal(
+        message: NotificationMessage,
+        defaultChannel: String = "IN_APP",
+    ) {
         val channel = preferences.resolve(message.userId, message.eventType) ?: defaultChannel
         if (channel != "IN_APP") {
             providers[channel]?.send(message)

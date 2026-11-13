@@ -25,6 +25,7 @@ import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.core.neq
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -203,13 +204,17 @@ class AnalyticsService {
                 if (trackedSessions.isEmpty()) {
                     0L
                 } else {
-                    OrderTable.selectAll().where {
-                        (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
-                            (OrderTable.status neq OrderStatus.CANCELED) and
-                            (OrderTable.createdAt greaterEq start) and
-                            (OrderTable.createdAt lessEq end) and
-                            (OrderTable.attributionSessionId inList trackedSessions)
-                    }.count()
+                    OrderTable.select(OrderTable.attributionSessionId)
+                        .where {
+                            (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
+                                (OrderTable.status neq OrderStatus.CANCELED) and
+                                (OrderTable.createdAt greaterEq start) and
+                                (OrderTable.createdAt lessEq end) and
+                                (OrderTable.attributionSessionId inList trackedSessions)
+                        }
+                        .mapNotNull { it[OrderTable.attributionSessionId] }
+                        .distinct()
+                        .size.toLong()
                 }
 
             val counts =
