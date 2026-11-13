@@ -8,7 +8,9 @@ import com.piashcse.database.entities.DigitalEntitlementTable
 import com.piashcse.database.entities.LoginAttemptTable
 import com.piashcse.database.entities.NotificationTable
 import com.piashcse.database.entities.OtpAttemptTable
+import com.piashcse.database.entities.OutboxDeadLetterTable
 import com.piashcse.database.entities.OutboxTable
+import com.piashcse.database.entities.PasskeyChallengeTable
 import com.piashcse.database.entities.PaymentWebhookEventTable
 import com.piashcse.database.entities.RefreshTokenTable
 import com.piashcse.database.entities.SupportTicketTable
@@ -20,6 +22,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.less
+import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.slf4j.LoggerFactory
@@ -94,7 +97,16 @@ object MaintenanceCleanup {
 
             NotificationTable.deleteWhere {
                 (NotificationTable.isRead eq true) and
-                    (NotificationTable.createdAt less nowLocal.minusDays(90))
+                    (NotificationTable.type neq "NOTIFICATION_PREFS") and
+                    (NotificationTable.createdAt less nowLocal.minusDays(365))
+            }
+
+            OutboxDeadLetterTable.deleteWhere {
+                OutboxDeadLetterTable.createdAt less nowLocal.minusDays(90)
+            }
+
+            PasskeyChallengeTable.deleteWhere {
+                PasskeyChallengeTable.expiresAt less nowLocal
             }
 
             var purged = 0

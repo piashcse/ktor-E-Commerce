@@ -60,8 +60,8 @@ data class AnalyticsEventRequest(
 @Serializable
 data class AnalyticsBatchRequest(
     val events: List<AnalyticsEventRequest>,
-    /** Explicit consent flag; ingestion is skipped when false. */
-    val consent: Boolean = true,
+    /** Explicit consent flag; ingestion is skipped when false/omitted. */
+    val consent: Boolean = false,
 ) {
     init {
         if (events.isEmpty()) throw ValidationException("At least one event is required")

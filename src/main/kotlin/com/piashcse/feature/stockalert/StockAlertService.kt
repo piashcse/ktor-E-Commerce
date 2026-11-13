@@ -14,6 +14,7 @@ import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNull
 
 @Serializable
 data class StockAlertRequest(
@@ -49,19 +50,29 @@ class StockAlertService {
             }
 
             val userEntityId = userId.entityID(UserTable)
+            val variantEntityId =
+                request.variantId?.entityID(com.piashcse.database.entities.ProductVariantTable)
             val existing =
                 StockAlertDAO.find {
-                    (StockAlertTable.userId eq userEntityId) and (StockAlertTable.productId eq product.id)
+                    (StockAlertTable.userId eq userEntityId) and
+                        (StockAlertTable.productId eq product.id) and
+                        (
+                            if (variantEntityId == null) {
+                                StockAlertTable.variantId.isNull()
+                            } else {
+                                StockAlertTable.variantId eq variantEntityId
+                            }
+                        )
                 }.firstOrNull()
 
             val alert =
                 existing?.apply {
-                    variantId = request.variantId?.entityID(com.piashcse.database.entities.ProductVariantTable)
+                    variantId = variantEntityId
                     notifiedAt = null
                 } ?: StockAlertDAO.new {
                     this.userId = userEntityId
                     this.productId = product.id
-                    variantId = request.variantId?.entityID(com.piashcse.database.entities.ProductVariantTable)
+                    variantId = variantEntityId
                 }
             alert.toResponse()
         }

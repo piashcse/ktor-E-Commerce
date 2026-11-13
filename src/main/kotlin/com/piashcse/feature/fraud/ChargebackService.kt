@@ -75,6 +75,9 @@ class ChargebackService {
     suspend fun create(request: ChargebackRequest): ChargebackResponse =
         query {
             val payment = PaymentDAO.findById(request.paymentId) ?: request.paymentId.throwNotFound("Payment")
+            val amount = request.amount ?: payment.amount
+            if (amount <= BigDecimal.ZERO) throw ValidationException("Chargeback amount must be positive")
+            if (amount > payment.amount) throw ValidationException("Chargeback amount cannot exceed the payment amount")
             request.providerDisputeId?.takeIf { it.isNotBlank() }?.let { disputeId ->
                 if (ChargebackDAO.find { ChargebackTable.providerDisputeId eq disputeId }.any()) {
                     throw ValidationException("Chargeback already recorded for dispute $disputeId")
@@ -84,7 +87,7 @@ class ChargebackService {
                 this.paymentId = payment.id
                 this.orderId = payment.orderId
                 this.providerDisputeId = request.providerDisputeId?.takeIf { it.isNotBlank() }
-                this.amount = request.amount ?: payment.amount
+                this.amount = amount
                 this.currency = payment.currency
                 this.status = ChargebackStatus.OPEN
                 this.reason = request.reason

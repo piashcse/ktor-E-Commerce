@@ -8,6 +8,7 @@ import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -28,6 +29,14 @@ class DashboardRepositoryImpl : DashboardRepository {
             BigDecimal.ZERO.setScale(2)
         } else {
             amount.divide(fxRate, 2, java.math.RoundingMode.HALF_UP)
+        }
+
+    private fun parseDate(
+        value: String,
+        field: String,
+    ): LocalDate =
+        runCatching { LocalDate.parse(value, DFMT) }.getOrElse {
+            throw ValidationException("Invalid $field: $value (expected yyyy-MM-dd)")
         }
 
     override suspend fun getDashboardStats() =
@@ -102,9 +111,9 @@ class DashboardRepositoryImpl : DashboardRepository {
     ) = query {
         val now = currentUtc()
         val start =
-            startDate?.let { LocalDate.parse(it, DFMT).atStartOfDay() }
+            startDate?.let { parseDate(it, "startDate").atStartOfDay() }
                 ?: now.withDayOfMonth(1).toLocalDate().atStartOfDay()
-        val end = endDate?.let { LocalDate.parse(it, DFMT).atTime(LocalTime.MAX) } ?: now
+        val end = endDate?.let { parseDate(it, "endDate").atTime(LocalTime.MAX) } ?: now
 
         val rangeRows =
             OrderTable.selectAll().where {
@@ -140,7 +149,11 @@ class DashboardRepositoryImpl : DashboardRepository {
         query {
             val ordersQuery =
                 if (status != null) {
-                    OrderTable.selectAll().where { OrderTable.status eq OrderStatus.valueOf(status.uppercase()) }
+                    val parsed =
+                        runCatching { OrderStatus.valueOf(status.trim().uppercase()) }.getOrElse {
+                            throw ValidationException("Invalid status: $status")
+                        }
+                    OrderTable.selectAll().where { OrderTable.status eq parsed }
                 } else {
                     OrderTable.selectAll()
                 }
@@ -203,15 +216,25 @@ class DashboardRepositoryImpl : DashboardRepository {
             val productIds = topProducts.map { it.id }
             val revenueByProduct =
                 (OrderItemTable innerJoin OrderTable)
-                    .select(OrderItemTable.productId, OrderItemTable.total.sum())
+                    .select(
+                        OrderItemTable.productId,
+                        OrderItemTable.total,
+                        OrderItemTable.discountAmount,
+                        OrderTable.fxRate,
+                    )
                     .where {
                         (OrderItemTable.productId inList productIds) and
                             (OrderTable.status neq OrderStatus.CANCELED) and
                             (OrderTable.paymentStatus eq PaymentStatus.COMPLETED)
                     }
-                    .groupBy(OrderItemTable.productId)
                     .toList()
-                    .associate { row -> row[OrderItemTable.productId].value to (row[OrderItemTable.total.sum()] ?: BigDecimal.ZERO) }
+                    .groupBy { it[OrderItemTable.productId].value }
+                    .mapValues { (_, rows) ->
+                        rows.fold(BigDecimal.ZERO) { acc, row ->
+                            val net = row[OrderItemTable.total].subtract(row[OrderItemTable.discountAmount])
+                            acc.add(toUsd(net.max(BigDecimal.ZERO), row[OrderTable.fxRate]))
+                        }
+                    }
 
             val inventoryMap =
                 if (productIds.isNotEmpty()) {

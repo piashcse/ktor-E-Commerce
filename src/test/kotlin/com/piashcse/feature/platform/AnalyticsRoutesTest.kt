@@ -52,7 +52,7 @@ class AnalyticsRoutesTest {
             val res =
                 client.post("/api/v1/analytics/events") {
                     contentType(ContentType.Application.Json)
-                    setBody("""{"events":[{"eventType":"PAGE_VIEW","sessionId":"s-1","path":"/"}]}""")
+                    setBody("""{"consent":true,"events":[{"eventType":"PAGE_VIEW","sessionId":"s-1","path":"/"}]}""")
                 }
             assertEquals(HttpStatusCode.OK, res.status)
             assertContains(res.bodyAsText(), "\"accepted\": 1")

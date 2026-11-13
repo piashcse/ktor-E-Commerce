@@ -4,6 +4,8 @@ import com.piashcse.constants.AvsResult
 import com.piashcse.constants.BlocklistType
 import com.piashcse.constants.CvvResult
 import com.piashcse.constants.FraudMetric
+import com.piashcse.constants.OrderStatus
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.RiskAction
 import com.piashcse.constants.RiskDecision
 import com.piashcse.database.entities.BlocklistEntryDAO
@@ -33,6 +35,7 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
@@ -54,7 +57,7 @@ data class FraudRuleRequest(
             buildList {
                 if (name.isBlank()) add(FieldViolation("name", "Rule name is required"))
                 if (windowMinutes <= 0) add(FieldViolation("windowMinutes", "Window must be positive"))
-                if (threshold < BigDecimal.ZERO) add(FieldViolation("threshold", "Threshold cannot be negative"))
+                if (threshold <= BigDecimal.ZERO) add(FieldViolation("threshold", "Threshold must be positive"))
             }
         if (violations.isNotEmpty()) throw FieldValidationException(violations)
     }
@@ -155,8 +158,8 @@ class FraudService {
                 .sortedByDescending { it.priority }
         rules.forEach { rule ->
             val value = metricValue(rule.metric, rule.windowMinutes, context)
-            if (value >= rule.threshold) {
-                reasons += "${rule.name}: ${rule.metric} $value >= ${rule.threshold.toPlainString()}"
+            if (value > rule.threshold) {
+                reasons += "${rule.name}: ${rule.metric} $value > ${rule.threshold.toPlainString()}"
                 when (rule.action) {
                     RiskAction.BLOCK -> {
                         decision = RiskDecision.BLOCK
@@ -313,13 +316,23 @@ class FraudService {
             FraudMetric.ORDER_AMOUNT ->
                 OrderDAO.find {
                     (OrderTable.userId eq context.userId.entityID(com.piashcse.database.entities.UserTable)) and
-                        (OrderTable.createdAt greaterEq since)
-                }.fold(BigDecimal.ZERO) { acc, order -> acc.add(order.total) }
+                        (OrderTable.createdAt greaterEq since) and
+                        (OrderTable.status neq OrderStatus.CANCELED)
+                }.fold(BigDecimal.ZERO) { acc, order ->
+                    val usd =
+                        if (order.fxRate > BigDecimal.ZERO) {
+                            order.total.divide(order.fxRate, 2, java.math.RoundingMode.HALF_UP)
+                        } else {
+                            order.total
+                        }
+                    acc.add(usd)
+                }
             FraudMetric.PAYMENT_ATTEMPTS ->
                 BigDecimal(
                     PaymentDAO.find {
                         (PaymentTable.userId eq context.userId.entityID(com.piashcse.database.entities.UserTable)) and
-                            (PaymentTable.createdAt greaterEq since)
+                            (PaymentTable.createdAt greaterEq since) and
+                            (PaymentTable.status neq PaymentStatus.REFUNDED)
                     }.count(),
                 )
         }
