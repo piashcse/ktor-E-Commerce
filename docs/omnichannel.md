@@ -133,6 +133,8 @@ Completion sets `pickupStatus = PICKED_UP`, the order status to `RECEIVED`, and 
 | `GET` | `/api/v1/seller/pos/sessions` | List drawer sessions |
 | `POST` | `/api/v1/seller/pos/sessions/open` | Open a drawer session |
 | `POST` | `/api/v1/seller/pos/sessions/{id}/close` | Count cash and close |
+| `GET` | `/api/v1/seller/pos/sales/{id}/receipt` | Printable sale receipt |
+| `GET` | `/api/v1/seller/pos/sessions/{id}/report` | Printable session/Z report |
 
 Open:
 
@@ -157,3 +159,5 @@ Close:
 - Cash sales (`COD`) and card sales are accumulated separately.
 - Closing records `expectedCash = openingFloat + cashSales`, `countedCash` and `variance`.
 - Sessions remain available for POS history/export.
+- Receipts and session reports are returned as printable HTML (`text/html`) and only for the
+  seller's own shop.

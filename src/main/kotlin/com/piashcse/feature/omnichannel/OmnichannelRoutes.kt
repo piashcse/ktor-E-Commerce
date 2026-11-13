@@ -10,8 +10,10 @@ import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.paginateQueryParams
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
+import io.ktor.http.ContentType
 import io.ktor.server.request.receive
 import io.ktor.server.request.requirePathParameter
+import io.ktor.server.response.respondText
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
@@ -75,6 +77,13 @@ fun Route.posSellerRoutes() {
         call.respondOk(service.posSales(call.currentUserId, limit, offset))
     }.describe { summary = "Seller: list POS sales" }
 
+    get("{id}/receipt") {
+        call.respondText(
+            service.posReceipt(call.currentUserId, call.requirePathParameter("id")),
+            ContentType.Text.Html,
+        )
+    }.describe { summary = "Seller: printable POS receipt" }
+
     writeRateLimit {
         post {
             call.respondCreated(service.posSale(call.currentUserId, call.receive<PosSaleRequest>()))
@@ -93,6 +102,13 @@ fun Route.posSessionSellerRoutes() {
         val (limit, offset) = call.paginateQueryParams()
         call.respondOk(service.posSessions(call.currentUserId, limit, offset))
     }.describe { summary = "Seller: list POS cash-drawer sessions" }
+
+    get("{id}/report") {
+        call.respondText(
+            service.posSessionReport(call.currentUserId, call.requirePathParameter("id")),
+            ContentType.Text.Html,
+        )
+    }.describe { summary = "Seller: printable POS session report" }
 
     writeRateLimit {
         post("open") {
