@@ -103,6 +103,12 @@ class KycService {
             if (seller.kycStatus != KycStatus.PENDING) {
                 throw ValidationException("Only PENDING KYC submissions can be verified")
             }
+            if (seller.kycDocumentUrl.isNullOrBlank()) {
+                throw ValidationException("A KYC document is required before verification")
+            }
+            if (seller.bankAccountNumber.isNullOrBlank() || seller.bankName.isNullOrBlank()) {
+                throw ValidationException("Bank account details are required before verification")
+            }
             seller.kycStatus = KycStatus.VERIFIED
             seller.kycVerifiedAt = currentUtc()
             seller.kycRejectionReason = null

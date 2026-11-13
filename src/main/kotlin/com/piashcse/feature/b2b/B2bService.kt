@@ -33,6 +33,7 @@ import com.piashcse.database.entities.decrementStock
 import com.piashcse.event.AdminAudit
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PaymentCompletedEvent
+import com.piashcse.event.SendEmailEvent
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
@@ -587,6 +588,46 @@ class B2bService {
             po.toResponse()
         }
 
+    suspend fun cancelPurchaseOrder(
+        sellerUserId: String,
+        poId: String,
+    ): PurchaseOrderResponse =
+        query {
+            val seller = requireSellerByUserId(sellerUserId)
+            val po =
+                B2bPurchaseOrderDAO.find { B2bPurchaseOrderTable.id eq poId.entityID(B2bPurchaseOrderTable) }
+                    .forUpdate()
+                    .firstOrNull() ?: poId.throwNotFound("Purchase order")
+            if (po.sellerId.value != seller.id.value) throw ForbiddenException("Purchase order belongs to another seller")
+            if (po.status != PurchaseOrderStatus.OPEN) {
+                throw ValidationException("Only OPEN purchase orders can be canceled")
+            }
+            po.status = PurchaseOrderStatus.CANCELED
+            po.canceledAt = currentUtc()
+            po.toResponse()
+        }
+
+    suspend fun voidInvoice(
+        invoiceId: String,
+        actorUserId: String? = null,
+    ): B2bInvoiceResponse =
+        query {
+            val invoice =
+                B2bInvoiceDAO.find { B2bInvoiceTable.id eq invoiceId.entityID(B2bInvoiceTable) }
+                    .forUpdate()
+                    .firstOrNull() ?: invoiceId.throwNotFound("B2B invoice")
+            if (invoice.status == B2bInvoiceStatus.PAID) {
+                throw ValidationException("Paid invoices cannot be voided")
+            }
+            if (invoice.status == B2bInvoiceStatus.VOID) return@query invoice.toResponse()
+            invoice.status = B2bInvoiceStatus.VOID
+            invoice.nextReminderAt = null
+            actorUserId?.let {
+                AdminAudit.publish(it, "B2B_INVOICE_VOIDED", "B2B_INVOICE", invoice.id.value, "Invoice voided")
+            }
+            invoice.toResponse()
+        }
+
     suspend fun myInvoices(
         buyerUserId: String,
         limit: Int,
@@ -698,6 +739,19 @@ class B2bService {
                 invoice.reminderCount += 1
                 invoice.lastReminderAt = now
                 invoice.nextReminderAt = now.plusDays(7)
+                UserDAO.findById(invoice.buyerUserId.value)?.email?.takeIf { it.isNotBlank() }?.let { email ->
+                    OutboxPublisher.enqueueTx(
+                        "B2B_INVOICE",
+                        invoice.id.value,
+                        SendEmailEvent(
+                            to = email,
+                            subject = "Invoice ${invoice.invoiceNumber} is overdue",
+                            body =
+                                "Invoice ${invoice.invoiceNumber} for ${invoice.amount.toPlainString()} " +
+                                    "${invoice.currency} was due on ${invoice.dueDate}. Please arrange payment.",
+                        ),
+                    )
+                }
             }
             actorUserId?.let {
                 AdminAudit.publish(it, "B2B_DUNNING_RUN", "B2B_INVOICE", null, "Reminded ${due.size}")
