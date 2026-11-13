@@ -2,6 +2,7 @@ package com.piashcse.feature.cart
 
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
+import com.piashcse.feature.tax.TaxService
 import com.piashcse.mapper.toCartItemSummary
 import com.piashcse.mapper.toCartResponse
 import com.piashcse.mapper.toProductResponse
@@ -12,6 +13,7 @@ import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
+import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
@@ -19,8 +21,11 @@ import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import java.math.BigDecimal
 
 class CartRepositoryImpl : CartRepository {
+    private val taxService = TaxService()
+
     private fun requireCartParams(
         userId: String,
         productId: String,
@@ -249,8 +254,35 @@ class CartRepositoryImpl : CartRepository {
 
             val lines = items.map { Money.of(it.price) to it.quantity }
             val subtotal = PricingService.subtotal(lines)
-            val tax = PricingService.tax(subtotal)
-            val total = Money.scale2(subtotal.add(tax))
+            // Use the same tax engine as checkout, keyed to the user's default
+            // address when available. With no address it falls back to the
+            // configured default tax rule instead of a second hardcoded rate.
+            val address =
+                ShippingAddressDAO.find { ShippingAddressTable.userId eq userId.entityID(UserTable) }
+                    .orderBy(ShippingAddressTable.isDefault to SortOrder.DESC)
+                    .firstOrNull()
+            var tax = BigDecimal.ZERO
+            var exclusiveTax = BigDecimal.ZERO
+            cartItems.forEach { cartItem ->
+                val product = products[cartItem.productId.value] ?: return@forEach
+                val variant = cartItem.variantId?.value?.let { variantsById[it] }
+                val unitPrice = variant?.effectivePrice ?: product.discountPrice ?: product.price
+                val lineTotal = Money.unitTotal(unitPrice, cartItem.quantity)
+                val quote =
+                    taxService.resolve(
+                        country = address?.country.orEmpty(),
+                        region = address?.state,
+                        categoryId = product.categoryId.value,
+                        taxClassId = product.taxClassId?.value,
+                        userId = userId,
+                    )
+                val amounts = taxService.apply(lineTotal, quote)
+                tax = tax.add(amounts.tax)
+                if (!quote.inclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
+            }
+            tax = Money.scale2(tax)
+            exclusiveTax = Money.scale2(exclusiveTax)
+            val total = Money.scale2(subtotal.add(exclusiveTax))
             CartSummaryResponse(
                 items = items,
                 subtotal = subtotal.toPlainString(),

@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
     val users: Map<String, Long>,
     val products: Map<String, Long>,
     val shops: Map<String, Long>,
+    val topProducts: List<TopProductResponse> = emptyList(),
 )
 
 @Serializable data class RevenueStatsResponse(
