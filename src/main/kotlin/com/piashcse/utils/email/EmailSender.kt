@@ -51,6 +51,10 @@ object EmailSender {
                         isSSLOnConnect = DotEnvConfig.emailSslEnabled
                         isStartTLSEnabled = !DotEnvConfig.emailSslEnabled
                         isStartTLSRequired = !DotEnvConfig.emailSslEnabled
+                        // A hung SMTP server must not block the single EventBus
+                        // collector forever; fail and let retry/dead-letter handle it.
+                        setSocketTimeout(10_000)
+                        setSocketConnectionTimeout(10_000)
                         setFrom(fromEmail)
                         this.subject = subject
                         setMsg(body)

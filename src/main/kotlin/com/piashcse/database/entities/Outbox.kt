@@ -13,6 +13,9 @@ object OutboxTable : BaseIdTable("outbox") {
     val payload = text("payload")
     val publishedAt = datetime("published_at").nullable()
     val attempts = integer("attempts").default(0)
+
+    /** Set while a poller is delivering; expires so a crashed poller can be recovered. */
+    val claimedAt = datetime("claimed_at").nullable()
 }
 
 class OutboxDAO(id: EntityID<String>) : BaseEntity(id, OutboxTable) {
@@ -24,4 +27,5 @@ class OutboxDAO(id: EntityID<String>) : BaseEntity(id, OutboxTable) {
     var payload by OutboxTable.payload
     var publishedAt by OutboxTable.publishedAt
     var attempts by OutboxTable.attempts
+    var claimedAt by OutboxTable.claimedAt
 }

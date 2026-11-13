@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # dependency-submission needs write access
+      contents: read
     services:
       postgres:
         image: postgres:16
@@ -108,7 +108,7 @@ jobs:
         with:
           image-ref: ktor-ecom:ci
           format: table
-          exit-code: '0'
+          exit-code: '1'
           ignore-unfixed: true
           vuln-type: os,library
           severity: CRITICAL,HIGH

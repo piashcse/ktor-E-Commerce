@@ -22,7 +22,6 @@ import com.piashcse.plugin.ok
 import com.piashcse.plugin.searchRateLimit
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.plugin.standardErrors
-import com.piashcse.service.CacheService
 import com.piashcse.service.UploadService
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.*
@@ -80,7 +79,6 @@ fun Route.productRoutes() {
         get("{id}") {
             val productId = call.requirePathParameter("id")
             productRepo.incrementViewCount(productId)
-            CacheService.cache.invalidate("products:detail:$productId")
             call.respondOk(translations.localize(productCatalogService.getProductDetail(productId), call.locale))
         }.describe {
             summary = "Get product detail"

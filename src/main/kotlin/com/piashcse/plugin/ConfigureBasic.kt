@@ -193,6 +193,7 @@ private fun Application.configureCallLogging() {
             "otp",
             "secret",
             "authorization",
+            "signature",
             "email",
             "phone",
             "mobile",
@@ -208,7 +209,10 @@ private fun Application.configureCallLogging() {
             val status = call.response.status()
             val httpMethod = call.request.httpMethod.value
             val userAgent = call.request.headers["User-Agent"]?.logSafe()
-            val path = call.request.path().logSafe()
+            val path =
+                call.request.path().let { raw ->
+                    if (raw.startsWith("/api/v1/library/")) "/api/v1/library/[REDACTED]" else raw
+                }.logSafe()
             val queryParams =
                 call.request.queryParameters.entries()
                     .joinToString(", ") { (key, values) ->
