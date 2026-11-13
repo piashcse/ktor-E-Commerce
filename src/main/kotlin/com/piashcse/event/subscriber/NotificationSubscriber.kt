@@ -205,8 +205,15 @@ class NotificationSubscriber(
                             (SellerPayoutTable.orderId eq order.id)
                     }.firstOrNull() != null
                 if (exists) return@query
-                // Seller is paid on the net product amount after coupon discounts.
-                val netSubTotal = order.subTotal.subtract(order.discountAmount).max(java.math.BigDecimal.ZERO)
+                // Seller is paid on the net product amount after seller-funded
+                // discounts only. Wallet points/credit and gift cards are
+                // platform payment instruments; they must not reduce seller pay.
+                val sellerFundedDiscount =
+                    order.discountAmount
+                        .subtract(order.walletDiscount)
+                        .subtract(order.giftCardDiscount)
+                        .max(java.math.BigDecimal.ZERO)
+                val netSubTotal = order.subTotal.subtract(sellerFundedDiscount).max(java.math.BigDecimal.ZERO)
                 val commission = CommissionService().commissionForOrderTx(order, seller)
                 val effectiveRate =
                     if (netSubTotal > java.math.BigDecimal.ZERO) {

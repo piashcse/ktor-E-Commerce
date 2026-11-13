@@ -207,12 +207,13 @@ class SubscriptionService(
             if (existing != null) throw ValidationException("You already have an active subscription for this plan")
             val start = currentUtc()
             val end = periodEnd(start.plusDays(plan.trialDays.toLong()), plan.interval)
-            val paid = !request.paymentReference.isNullOrBlank()
+            // Never activate from a client-supplied reference. Admin activation
+            // (or a verified provider webhook) is the only path to PAID.
             val subscription =
                 SubscriptionDAO.new {
                     this.userId = userId.entityID(com.piashcse.database.entities.UserTable)
                     this.planId = plan.id
-                    this.status = if (paid) SubscriptionStatus.ACTIVE else SubscriptionStatus.PENDING
+                    this.status = SubscriptionStatus.PENDING
                     this.startedAt = start
                     this.currentPeriodStart = start
                     this.currentPeriodEnd = end
@@ -225,13 +226,12 @@ class SubscriptionService(
                 this.subscriptionId = subscription.id
                 this.amount = plan.price
                 this.currency = plan.currency
-                this.status = if (paid) InvoiceStatus.PAID else InvoiceStatus.PENDING
+                this.status = InvoiceStatus.PENDING
                 this.periodStart = start
                 this.periodEnd = end
                 this.providerReference = request.paymentReference
-                this.paidAt = if (paid) start else null
+                this.paidAt = null
             }
-            if (paid) digitalDelivery.grantSubscriptionTx(userId, plan.productId.value, subscription.id.value)
             AppMetrics.subscriptionsCreated.increment()
             subscription.toResponse(plan)
         }
