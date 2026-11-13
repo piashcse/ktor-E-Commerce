@@ -93,6 +93,7 @@ import com.piashcse.feature.subscription.SubscriptionService
 import com.piashcse.feature.support.SupportService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.feature.warehouse.WarehouseRepository
+import com.piashcse.feature.webhook.WebhookAdminService
 import com.piashcse.feature.wishlist.WishListRepository
 import com.piashcse.feature.wishlist.WishListRepositoryImpl
 import com.piashcse.service.FxService
@@ -161,6 +162,7 @@ val serviceModule =
         single { FraudService() }
         single { ChargebackService() }
         single<PaymentRepository> { PaymentRepositoryImpl(get(), get(), get(), get(), get()) }
+        single { WebhookAdminService(get(), get()) }
         single<PolicyRepository> { PolicyRepositoryImpl() }
         single<ProductRepository> { ProductRepositoryImpl() }
         single<ProductCategoryRepository> { ProductCategoryRepositoryImpl() }

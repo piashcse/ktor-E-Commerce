@@ -3,6 +3,7 @@ package com.piashcse.feature.payment
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.utils.common.PaginatedResponse
+import kotlinx.serialization.Serializable
 
 interface PaymentRepository {
     /**
@@ -61,8 +62,18 @@ interface PaymentRepository {
         payload: String,
         signature: String?,
     ): WebhookResult
+
+    /**
+     * Admin replay of a stored payment webhook. The payload was signature-verified when it
+     * was received, so replay applies it directly and records the outcome.
+     */
+    suspend fun replayWebhook(
+        eventId: String,
+        actorUserId: String,
+    ): WebhookResult
 }
 
+@Serializable
 data class WebhookResult(
     val accepted: Boolean,
     val duplicate: Boolean = false,

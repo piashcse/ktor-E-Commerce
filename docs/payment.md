@@ -311,6 +311,25 @@ captured. `BLOCK` payments cannot be released.
 
 ---
 
+## Webhook inspection and replay
+
+**`GET /api/v1/admin/webhooks?source=PAYMENT&status=FAILED`**
+
+Lists stored payment and carrier webhook events. Filters: `source` (`PAYMENT`/`CARRIER`), `status`
+(`RECEIVED`/`PROCESSED`/`IGNORED`/`FAILED`), `limit`, `offset`.
+
+**`POST /api/v1/admin/webhooks/payments/{id}/replay`**
+
+Replays a stored payment payload. Because the payload was signature-verified on receipt, replay
+applies it directly, updates the inbox status/error and writes an audit entry. Use this for provider
+outages or ignored events after the original delivery.
+
+**`POST /api/v1/admin/webhooks/carriers/{id}/replay`**
+
+Same flow for carrier tracking payloads.
+
+---
+
 ## Payment Status Values
 
 ### Common Payment Status Values

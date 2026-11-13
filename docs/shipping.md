@@ -121,6 +121,14 @@ Rules:
 
 ---
 
+## Admin webhook replay
+
+- `GET /api/v1/admin/webhooks?source=CARRIER&status=FAILED`
+- `POST /api/v1/admin/webhooks/carriers/{id}/replay`
+
+Stored carrier payloads can be re-applied after fixing a mapping/outage. Replay updates the inbox
+row and writes an audit entry; it does not require the original signature.
+
 ## 4. Tracking webhook
 
 **`POST /api/v1/shipments/webhook/{provider}`**

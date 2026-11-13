@@ -113,6 +113,7 @@ import com.piashcse.feature.tax.taxClassAdminRoutes
 import com.piashcse.feature.tax.taxExemptionAdminRoutes
 import com.piashcse.feature.tax.taxZoneAdminRoutes
 import com.piashcse.feature.warehouse.warehouseSellerRoutes
+import com.piashcse.feature.webhook.webhookAdminRoutes
 import com.piashcse.feature.wishlist.wishListRoutes
 import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.common.MessageResponse
@@ -318,6 +319,7 @@ private fun Route.adminRoutes() {
             route("dashboard") { dashboardAdminRoutes() }.describe { tag(ApiTags.DASHBOARD) }
             route("analytics") { analyticsAdminRoutes() }.describe { tag(ApiTags.ANALYTICS) }
             route("audit-logs") { auditLogAdminRoutes() }.describe { tag(ApiTags.AUDIT_LOG) }
+            route("webhooks") { webhookAdminRoutes() }.describe { tag(ApiTags.PAYMENT) }
             route("payouts") { payoutAdminRoutes() }.describe { tag(ApiTags.PAYOUT) }
             route("fx-rates") { fxAdminRoutes() }.describe { tag(ApiTags.FX) }
             route("tax-rules") { taxAdminRoutes() }.describe { tag(ApiTags.TAX) }

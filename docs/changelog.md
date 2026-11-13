@@ -56,6 +56,7 @@ hide:
   automatic expiry with entitlement revocation, and webhook-driven invoice activation.
 - Integration assertions now scope admin account/ticket checks to the test's unique identifiers
   instead of relying on global row counts.
+- Added admin webhook inbox inspection and replay for payment/carrier events, with audit logging.
 - POS cash-drawer sessions (`V53`): open/close a drawer per shop, link sales to a session,
   accumulate cash/card totals and reconcile expected cash against the counted amount.
 - Audit logging now covers B2B account/invoice actions, subscription plan/billing actions and
@@ -119,7 +120,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (357 operations total).
+  (360 operations total).
 
 ### Fixed
 

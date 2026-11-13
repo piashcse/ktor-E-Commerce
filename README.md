@@ -7044,6 +7044,75 @@ http://localhost:8080/api/v1/seller/dashboard
 ### AUDIT LOG
 
 <details>
+<summary> <code>GET</code> <code>/api/v1/admin/webhooks</code></summary>
+
+### Description
+Admin: list stored payment/carrier webhook events. Optional `source` and `status` filters.
+
+### Curl
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/webhooks?source=PAYMENT&status=FAILED' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/webhooks?source=PAYMENT&status=FAILED&limit=20&offset=0
+```
+
+### Response
+```json
+{"data":[{"id":"wh-1","source":"PAYMENT","eventId":"evt-1","status":"FAILED"}]}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/webhooks/payments/{id}/replay</code></summary>
+
+### Description
+Admin: replay a stored payment webhook payload.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/webhooks/payments/wh-uuid/replay' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/webhooks/payments/{id}/replay
+```
+
+### Response
+```json
+{"accepted":true,"duplicate":false,"message":"Webhook replayed"}
+```
+</details>
+<details>
+<summary> <code>POST</code> <code>/api/v1/admin/webhooks/carriers/{id}/replay</code></summary>
+
+### Description
+Admin: replay a stored carrier tracking webhook payload.
+
+### Curl
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/webhooks/carriers/wh-uuid/replay' \
+  -H 'accept: application/json' \  -H 'Authorization: Bearer <admin-token>'
+```
+
+### Request URL
+```text
+http://localhost:8080/api/v1/admin/webhooks/carriers/{id}/replay
+```
+
+### Response
+```json
+{"accepted":true,"duplicate":false,"message":"Carrier webhook replayed"}
+```
+</details>
+<details>
 <summary> <code>GET</code> <code>/api/v1/admin/audit-logs</code></summary>
 
 ### Description

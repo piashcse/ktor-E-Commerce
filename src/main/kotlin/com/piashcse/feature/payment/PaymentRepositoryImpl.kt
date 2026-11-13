@@ -8,6 +8,7 @@ import com.piashcse.constants.ScaStatus
 import com.piashcse.constants.WebhookEventStatus
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.event.AdminAudit
 import com.piashcse.event.EventBus
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.PaymentCompletedEvent
@@ -479,6 +480,49 @@ class PaymentRepositoryImpl(
             GatewayEventType.UNKNOWN -> false
         }
     }
+
+    override suspend fun replayWebhook(
+        eventId: String,
+        actorUserId: String,
+    ): WebhookResult =
+        query {
+            val record =
+                PaymentWebhookEventDAO.find {
+                    PaymentWebhookEventTable.id eq eventId.entityID(PaymentWebhookEventTable)
+                }.forUpdate().firstOrNull() ?: eventId.throwNotFound("Webhook event")
+            val event =
+                runCatching { gateway.parseWebhook(record.payload) }
+                    .getOrElse { error ->
+                        record.status = WebhookEventStatus.FAILED
+                        record.error = error.message ?: "Invalid stored webhook payload"
+                        record.processedAt = currentUtc()
+                        AdminAudit.publish(
+                            actorUserId,
+                            "WEBHOOK_REPLAY_FAILED",
+                            "PAYMENT_WEBHOOK",
+                            eventId,
+                            record.error,
+                        )
+                        return@query WebhookResult(false, message = "Invalid stored webhook payload")
+                    }
+            val applied = applyWebhookEvent(event)
+            record.status =
+                if (applied) {
+                    WebhookEventStatus.PROCESSED
+                } else {
+                    WebhookEventStatus.IGNORED
+                }
+            record.error = if (applied) null else "No matching payment/refund for ${event.type}"
+            record.processedAt = currentUtc()
+            AdminAudit.publish(
+                actorUserId,
+                "WEBHOOK_REPLAYED",
+                "PAYMENT_WEBHOOK",
+                eventId,
+                "${event.type}: ${record.status}",
+            )
+            WebhookResult(true, message = "Webhook replayed")
+        }
 
     override suspend fun getPaymentById(
         paymentId: String,
