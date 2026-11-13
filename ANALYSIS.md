@@ -284,6 +284,7 @@ com.<org>.<app>
 | `fix/17-refresh-rotation` | `fix/16-passkey-mfa` | refresh-token revocation and replacement persisted in one transaction | compile + auth/identity tests |
 | `fix/18-consent-tax-evidence` | `fix/17-refresh-rotation` | consent snapshots accepted policy version/hash, checkout summary exposes `taxInclusive` | compile + consent/policy/order tests |
 | `refactor/19-shared-helpers` | `master` | unified `DateTimes.parseFlexible/parseLocalDate`, `Money.toUsd`, typed `PayoutStatus`, replaced 10 duplicate parsers and magic payout strings | compile + full `./gradlew test` |
+| `refactor/20-null-safety` | `master` | removed all `!!` assertions in production code, centralized `requireSellerShopId`, explicit nullable lookups, Gradle memory settings | compile + full `./gradlew test` |
 
 > The checkbox statuses above are the **target** end state. Several items remain partial or open; see section 7.
 
