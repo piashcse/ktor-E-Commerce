@@ -116,7 +116,7 @@ class SupportRoutesTest {
     fun `admin replies internally and updates status`() =
         testApplication {
             coEvery { service.adminReply("admin-1", "ticket-1", any()) } returns ticket()
-            coEvery { service.adminUpdate("ticket-1", any()) } returns summary().copy(status = TicketStatus.RESOLVED)
+            coEvery { service.adminUpdate("ticket-1", any(), "admin-1") } returns summary().copy(status = TicketStatus.RESOLVED)
             setup()
             val reply =
                 client.post("/api/v1/admin/support/tickets/ticket-1/messages") {

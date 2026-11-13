@@ -116,6 +116,18 @@ curl -X 'GET' \
 }
 ```
 
+## Covered administrative actions
+
+Recent flows now emit explicit audit entries in addition to the existing user/shop/payment/refund
+coverage:
+
+- B2B account approval/terms changes, invoice settlement and dunning runs
+- Subscription plan create/update/deactivate, activation and billing runs
+- Support ticket assignment/status/priority updates, admin replies and internal notes
+- Payment confirmation and fraud-review release
+
+Use the `action`, `resourceType` and `resourceId` filters to trace a specific workflow.
+
 ---
 
 ## Error Handling

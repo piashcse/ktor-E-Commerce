@@ -191,8 +191,8 @@ class B2bRoutesTest {
     @Test
     fun `admin marks invoice paid and runs dunning`() =
         testApplication {
-            coEvery { service.markInvoicePaid("invoice-1", "wire-1") } returns invoice().copy(status = B2bInvoiceStatus.PAID)
-            coEvery { service.runDunning(any()) } returns B2bDunningResponse(1)
+            coEvery { service.markInvoicePaid("invoice-1", "wire-1", "admin-1") } returns invoice().copy(status = B2bInvoiceStatus.PAID)
+            coEvery { service.runDunning(any(), "admin-1") } returns B2bDunningResponse(1)
             setup()
             val paid =
                 client.post("/api/v1/admin/b2b/invoices/invoice-1/pay?providerReference=wire-1") {

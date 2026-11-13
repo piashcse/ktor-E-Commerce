@@ -68,7 +68,7 @@ fun Route.subscriptionPlanAdminRoutes() {
 
     adminWriteRateLimit {
         post {
-            call.respondCreated(service.createPlan(call.receive<SubscriptionPlanRequest>()))
+            call.respondCreated(service.createPlan(call.receive<SubscriptionPlanRequest>(), call.currentUserId))
         }.describe {
             summary = "Create a subscription plan"
             requestBody { jsonBody<SubscriptionPlanRequest>() }
@@ -77,7 +77,7 @@ fun Route.subscriptionPlanAdminRoutes() {
 
         put("{id}") {
             call.respondOk(
-                service.updatePlan(call.requirePathParameter("id"), call.receive<SubscriptionPlanRequest>()),
+                service.updatePlan(call.requirePathParameter("id"), call.receive<SubscriptionPlanRequest>(), call.currentUserId),
             )
         }.describe {
             summary = "Update a subscription plan"
@@ -87,7 +87,7 @@ fun Route.subscriptionPlanAdminRoutes() {
 
         delete("{id}") {
             val id = call.requirePathParameter("id")
-            if (!service.deletePlan(id)) throw NotFoundException("Subscription plan not found")
+            if (!service.deletePlan(id, call.currentUserId)) throw NotFoundException("Subscription plan not found")
             call.respondOk(MessageResponse("Subscription plan deactivated"))
         }.describe { summary = "Deactivate a subscription plan" }
     }
@@ -103,7 +103,7 @@ fun Route.subscriptionAdminRoutes() {
 
     adminWriteRateLimit {
         post("run-billing") {
-            call.respondOk(service.runBilling())
+            call.respondOk(service.runBilling(actorUserId = call.currentUserId))
         }.describe {
             summary = "Create renewal invoices for due subscriptions"
             description = "Creates pending invoices, marks subscriptions PAST_DUE and cancels at period end"
@@ -114,6 +114,7 @@ fun Route.subscriptionAdminRoutes() {
                 service.activate(
                     call.requirePathParameter("id"),
                     call.receive<ActivateSubscriptionRequest>().paymentReference,
+                    call.currentUserId,
                 ),
             )
         }.describe {

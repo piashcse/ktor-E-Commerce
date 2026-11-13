@@ -11,6 +11,7 @@ import com.piashcse.database.entities.SubscriptionPlanDAO
 import com.piashcse.database.entities.SubscriptionPlanTable
 import com.piashcse.database.entities.SubscriptionTable
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.event.AdminAudit
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
@@ -133,7 +134,10 @@ class SubscriptionService(
                 .toPaginatedResponse(limit, offset) { SubscriptionPlanDAO.wrapRow(it).toPlanResponse() }
         }
 
-    suspend fun createPlan(request: SubscriptionPlanRequest): SubscriptionPlanResponse =
+    suspend fun createPlan(
+        request: SubscriptionPlanRequest,
+        actorUserId: String? = null,
+    ): SubscriptionPlanResponse =
         query {
             ProductDAO.findById(request.productId) ?: request.productId.throwNotFound("Product")
             SubscriptionPlanDAO.new {
@@ -145,12 +149,17 @@ class SubscriptionService(
                 currency = request.currency.uppercase()
                 trialDays = request.trialDays
                 isActive = request.isActive
+            }.also {
+                actorUserId?.let { actor ->
+                    AdminAudit.publish(actor, "SUBSCRIPTION_PLAN_CREATED", "SUBSCRIPTION_PLAN", it.id.value, it.name)
+                }
             }.toPlanResponse()
         }
 
     suspend fun updatePlan(
         id: String,
         request: SubscriptionPlanRequest,
+        actorUserId: String? = null,
     ): SubscriptionPlanResponse =
         query {
             ProductDAO.findById(request.productId) ?: request.productId.throwNotFound("Product")
@@ -164,13 +173,21 @@ class SubscriptionService(
                 currency = request.currency.uppercase()
                 trialDays = request.trialDays
                 isActive = request.isActive
+            }.also {
+                actorUserId?.let { actor ->
+                    AdminAudit.publish(actor, "SUBSCRIPTION_PLAN_UPDATED", "SUBSCRIPTION_PLAN", it.id.value, it.name)
+                }
             }.toPlanResponse()
         }
 
-    suspend fun deletePlan(id: String): Boolean =
+    suspend fun deletePlan(
+        id: String,
+        actorUserId: String? = null,
+    ): Boolean =
         query {
             val plan = SubscriptionPlanDAO.findById(id) ?: return@query false
             plan.isActive = false
+            actorUserId?.let { AdminAudit.publish(it, "SUBSCRIPTION_PLAN_DEACTIVATED", "SUBSCRIPTION_PLAN", id, plan.name) }
             true
         }
 
@@ -231,6 +248,7 @@ class SubscriptionService(
     suspend fun activate(
         subscriptionId: String,
         paymentReference: String,
+        actorUserId: String? = null,
     ): SubscriptionResponse =
         query {
             if (paymentReference.isBlank()) throw ValidationException("paymentReference is required")
@@ -245,6 +263,15 @@ class SubscriptionService(
                     .firstOrNull() ?: throw ValidationException("No pending invoice for this subscription")
             if (!billing.applyPaidInvoiceTx(invoice.id.value, paymentReference)) {
                 throw ValidationException("Invoice is already paid")
+            }
+            actorUserId?.let {
+                AdminAudit.publish(
+                    it,
+                    "SUBSCRIPTION_ACTIVATED",
+                    "SUBSCRIPTION",
+                    subscription.id.value,
+                    "Reference $paymentReference",
+                )
             }
             val plan = SubscriptionPlanDAO.findById(subscription.planId.value)
             subscription.toResponse(plan)
@@ -283,8 +310,21 @@ class SubscriptionService(
      * period. Without a stored payment method the invoice remains pending for manual
      * collection.
      */
-    suspend fun runBilling(now: LocalDateTime = currentUtc()): BillingRunResponse {
+    suspend fun runBilling(
+        now: LocalDateTime = currentUtc(),
+        actorUserId: String? = null,
+    ): BillingRunResponse {
         val result = billing.run(now)
+        actorUserId?.let {
+            AdminAudit.publish(
+                it,
+                "SUBSCRIPTION_BILLING_RUN",
+                "SUBSCRIPTION",
+                null,
+                "Created ${result.invoicesCreated}, paid ${result.invoicesPaid}, " +
+                    "failed ${result.paymentFailures}, expired ${result.expired}",
+            )
+        }
         return BillingRunResponse(
             invoicesCreated = result.invoicesCreated,
             canceled = result.canceled,
