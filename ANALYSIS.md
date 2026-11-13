@@ -273,12 +273,13 @@ com.<org>.<app>
 | `refactor/06-wishlist-naming` | `fix/05-infra-ops` | `WishList*` → `Wishlist*` across entities, API, mappers and tests | compile + wishlist/commerce tests |
 | `fix/07-marketplace-money` | `refactor/06-wishlist-naming` | B2B invoice payment ledger/payout/digital, B2B credit exposure and re-pricing, POS idempotency and card guard, shipment idempotency/duplicate-line/status monotonicity, digital download quota | compile + B2B/omnichannel/shipment/subscription/notification tests |
 | `fix/08-split-order-wallet` | `fix/07-marketplace-money` | wallet/credit/gift redemptions allocated per split order so cancellation/refund reverses only that order's share | compile + commerce/order/loyalty tests |
+| `fix/09-access-token-version` | `fix/08-split-order-wallet` | per-user token version claim; password change/reset increments it and rejects older access tokens | compile + auth/identity/MFA tests |
 
 > The checkbox statuses above are the **target** end state. Several items remain partial or open; see section 7.
 
 ## 7. Remaining Work (not shipped in this pass)
 
-- **Auth/session:** refresh-rotation atomicity, access-token `jti`/version revocation, passkey base64url challenge, encrypted OTP storage, step-up rate limits, enumeration-resistant responses.
+- **Auth/session:** refresh-rotation atomicity, passkey base64url challenge, encrypted OTP storage, step-up rate limits, enumeration-resistant responses.
 - **Orders/money:** promotion usage reversal, one tax engine for cart summary, tax-inclusive invoice/summary reconciliation, offset-to-UTC normalization, money-as-`BigDecimal` in filters.
 - **Refunds/payouts:** wallet/gift restoration on partial refunds, multi-currency payout balances, partial payout withdrawals (currently full-balance only), subscription billing scheduler and self-serve PENDING activation.
 - **Platform:** notification `/send` still does not invoke external providers, SMS/push providers, back-in-stock `isActive` check, seller dashboard top products, analytics funnel units/user linkage, complete GDPR export/erase, policy version consent snapshots.

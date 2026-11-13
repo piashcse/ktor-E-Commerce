@@ -44,6 +44,7 @@ fun Application.configureAuth() {
                 val userId = credential.payload.getClaim("userId").asString()
                 val email = credential.payload.getClaim("email").asString()
                 val userTypeStr = credential.payload.getClaim("userType").asString()
+                val tokenVersion = credential.payload.getClaim("tokenVersion").asInt() ?: 0
 
                 if (UserType.fromString(userTypeStr) == null || userId.isBlank()) {
                     authLog.warn("Invalid claims in JWT payload (userId=$userId, userType=$userTypeStr)")
@@ -62,8 +63,12 @@ fun Application.configureAuth() {
                     authLog.warn("Blacklisted token rejected (from database)")
                     return@validate null
                 }
-                if (dbUser?.isActiveAndVerified() != true) {
+                if (dbUser == null || !dbUser.isActiveAndVerified()) {
                     authLog.warn("JWT rejected: user missing, inactive, or unverified")
+                    return@validate null
+                }
+                if (dbUser.tokenVersion != tokenVersion) {
+                    authLog.warn("JWT rejected: credential version is stale (password changed/reset)")
                     return@validate null
                 }
 
