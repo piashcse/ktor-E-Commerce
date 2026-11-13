@@ -54,6 +54,7 @@ hide:
 - Subscription recurring billing (`V50`): stored provider customer/payment-method references,
   off-session renewal charges, idempotent per-period invoices, retry/backoff dunning, grace periods,
   automatic expiry with entitlement revocation, and webhook-driven invoice activation.
+- Analytics ingestion now honors an explicit consent flag and filters bot/crawler user agents.
 - Daily retention enforcement now purges old webhook inbox rows, analytics events, expired digital
   entitlements, idle carts and closed support tickets, with a purged-row metric.
 - B2B net-terms invoices (`V51`): invoice generation on PO fulfillment, buyer/seller/admin invoice

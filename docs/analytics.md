@@ -11,6 +11,7 @@ conversion reporting.
 
 ```json
 {
+  "consent": true,
   "events": [
     {
       "eventType": "PRODUCT_VIEW",
@@ -40,6 +41,10 @@ Event types:
 
 `sessions` are distinct `sessionId` values, so multiple events from one visitor count once per
 funnel stage.
+
+Ingestion is skipped when `consent` is `false` or the request is identified as bot/crawler traffic
+(common bot user agents). Rejected events return `{ "accepted": 0, "rejected": N }` so storefronts
+can treat this as a successful no-op.
 
 ## Funnel
 

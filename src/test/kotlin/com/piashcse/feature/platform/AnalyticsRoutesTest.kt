@@ -59,6 +59,34 @@ class AnalyticsRoutesTest {
         }
 
     @Test
+    fun `events are rejected without consent`() =
+        testApplication {
+            setup()
+            val res =
+                client.post("/api/v1/analytics/events") {
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"consent":false,"events":[{"eventType":"PAGE_VIEW","sessionId":"s-1"}]}""")
+                }
+            assertEquals(HttpStatusCode.OK, res.status)
+            assertContains(res.bodyAsText(), "\"accepted\": 0")
+            assertContains(res.bodyAsText(), "\"rejected\": 1")
+        }
+
+    @Test
+    fun `bot traffic is rejected`() =
+        testApplication {
+            setup()
+            val res =
+                client.post("/api/v1/analytics/events") {
+                    header(HttpHeaders.UserAgent, "Googlebot/2.1")
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"events":[{"eventType":"PAGE_VIEW","sessionId":"s-1"}]}""")
+                }
+            assertEquals(HttpStatusCode.OK, res.status)
+            assertContains(res.bodyAsText(), "\"rejected\": 1")
+        }
+
+    @Test
     fun `admin reads the funnel`() =
         testApplication {
             coEvery { service.funnel(null, null) } returns funnel()
