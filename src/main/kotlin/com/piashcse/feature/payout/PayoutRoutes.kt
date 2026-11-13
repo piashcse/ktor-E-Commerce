@@ -70,7 +70,7 @@ fun Route.payoutSellerRoutes() {
         }.describe { summary = "Seller: export statement CSV" }
         post("request") {
             val body = call.receive<PayoutRequest>()
-            call.respondCreated(repo.requestPayout(call.currentUserId, body.amount, call.idempotencyKey()))
+            call.respondCreated(repo.requestPayout(call.currentUserId, body.amount, call.idempotencyKey(), body.currency))
         }.describe {
             summary = "Seller: request payout"
             description = "Requires VERIFIED KYC; supports Idempotency-Key"

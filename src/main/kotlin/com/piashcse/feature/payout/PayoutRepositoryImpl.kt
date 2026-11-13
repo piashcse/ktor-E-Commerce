@@ -86,10 +86,21 @@ class PayoutRepositoryImpl : PayoutRepository {
                     (SellerPayoutTable.sellerId eq seller.id) and
                         (SellerPayoutTable.status inList listOf("REQUESTED", "APPROVED"))
                 }.toList()
+            val byCurrency =
+                availableRows
+                    .groupBy { it.currency }
+                    .mapValues { (_, rows) ->
+                        rows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }.toPlainString()
+                    }
+            val primaryCurrency =
+                byCurrency.keys.firstOrNull()
+                    ?: pendingRows.firstOrNull()?.currency
+                    ?: "USD"
             PayoutBalanceResponse(
-                available = availableRows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }.toPlainString(),
-                currency = availableRows.firstOrNull()?.currency ?: pendingRows.firstOrNull()?.currency ?: "USD",
+                available = byCurrency[primaryCurrency] ?: "0.00",
+                currency = primaryCurrency,
                 pendingRequestAmount = pendingRows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }.toPlainString(),
+                balances = byCurrency,
             )
         }
 
@@ -218,6 +229,7 @@ class PayoutRepositoryImpl : PayoutRepository {
         sellerUserId: String,
         amount: BigDecimal,
         requestKey: String?,
+        currency: String?,
     ): List<PayoutResponse> =
         retryQuery {
             val seller = requireActiveSeller(sellerUserId)
@@ -242,18 +254,24 @@ class PayoutRepositoryImpl : PayoutRepository {
                 }
             }
 
+            val normalizedCurrency = currency?.takeIf { it.isNotBlank() }?.uppercase()
             val available =
                 SellerPayoutDAO.find {
                     (SellerPayoutTable.sellerId eq seller.id) and
                         (SellerPayoutTable.status eq "PENDING") and
                         (SellerPayoutTable.requestedAt.isNull())
-                }.forUpdate().orderBy(SellerPayoutTable.createdAt to SortOrder.ASC).toList()
+                }.forUpdate()
+                    .orderBy(SellerPayoutTable.createdAt to SortOrder.ASC)
+                    .toList()
+                    .filter { normalizedCurrency == null || it.currency.equals(normalizedCurrency, ignoreCase = true) }
 
             val currencies = available.map { it.currency }.distinct()
             if (currencies.size > 1) {
-                throw ValidationException("Cannot combine payouts in different currencies: ${currencies.joinToString()}")
+                throw ValidationException(
+                    "Multiple currencies available (${currencies.joinToString()}); specify a currency",
+                )
             }
-            val currency = currencies.firstOrNull() ?: "USD"
+            val currency = currencies.firstOrNull() ?: normalizedCurrency ?: "USD"
 
             val balance = available.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }
             if (balance <= BigDecimal.ZERO) throw ValidationException("No available payout balance to request")
