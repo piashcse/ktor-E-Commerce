@@ -31,6 +31,21 @@ import java.time.Instant
 @Serializable
 data class ShipOrderRequest(val trackingNumber: String)
 
+@Serializable
+data class OrderMilestone(
+    val key: String,
+    val label: String,
+    val occurredAt: String? = null,
+)
+
+@Serializable
+data class OrderTimelineResponse(
+    val orderNumber: String,
+    val status: OrderStatus,
+    val trackingNumber: String? = null,
+    val milestones: List<OrderMilestone>,
+)
+
 /**
  * Order-related routes for customers and sellers.
  */
@@ -59,6 +74,39 @@ fun Route.orderRoutes() {
             responses {
                 ok<OrderResponse>("Order")
                 standardErrors()
+            }
+        }
+
+        /**
+         * Public order timeline for guest tracking.
+         */
+        get("track/timeline") {
+            val order =
+                orderRepo.getOrderForGuest(
+                    call.requireQueryParameter("orderNumber"),
+                    call.requireQueryParameter("email"),
+                ) ?: throw NotFoundException(Message.Orders.NOT_FOUND)
+            call.respondOk(
+                OrderTimelineResponse(
+                    orderNumber = order.orderNumber,
+                    status = order.status,
+                    trackingNumber = order.trackingNumber,
+                    milestones =
+                        listOf(
+                            OrderMilestone("PLACED", "Order placed", order.createdAt?.toString()),
+                            OrderMilestone("SHIPPED", "Shipped", order.shippingDate?.toString()),
+                            OrderMilestone("DELIVERED", "Delivered", order.deliveredDate?.toString()),
+                            OrderMilestone("COMPLETED", "Completed", order.completedDate?.toString()),
+                            OrderMilestone("CANCELED", "Canceled", order.canceledDate?.toString()),
+                        ),
+                ),
+            )
+        }.describe {
+            summary = "Guest order timeline"
+            description = "Milestone dates for the tracking page"
+            parameters {
+                query("orderNumber") { required = true }
+                query("email") { required = true }
             }
         }
 
