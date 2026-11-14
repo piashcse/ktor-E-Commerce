@@ -26,6 +26,7 @@ import com.piashcse.model.response.RefundRequestResponse
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
@@ -525,6 +526,9 @@ class RefundRequestRepositoryImpl(
             val seller = requireSellerByUserId(sellerUserId)
             val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
             val orderIds = OrderDAO.find { OrderTable.shopId eq shopId }.map { it.id }
+            if (orderIds.isEmpty()) {
+                return@query PaginatedResponse(emptyList(), PaginationMetadata(0, limit, offset))
+            }
             RefundRequestTable.selectAll()
                 .where { RefundRequestTable.orderId inList orderIds }
                 .also { query ->
