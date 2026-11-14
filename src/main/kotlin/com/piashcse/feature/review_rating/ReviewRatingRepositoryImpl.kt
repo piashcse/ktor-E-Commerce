@@ -19,7 +19,9 @@ import com.piashcse.database.entities.ReviewRatingTable
 import com.piashcse.database.entities.UserTable
 import com.piashcse.mapper.toReviewRatingResponse
 import com.piashcse.model.request.ReviewRatingRequest
+import com.piashcse.model.response.RatingBucket
 import com.piashcse.model.response.ReviewRatingResponse
+import com.piashcse.model.response.ReviewSummaryResponse
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
@@ -49,6 +51,30 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
             product.totalReviews = reviews.size
         }
     }
+
+    override suspend fun getReviewSummary(productId: String): ReviewSummaryResponse =
+        query {
+            val reviews =
+                ReviewRatingDAO.find {
+                    (ReviewRatingTable.productId eq productId) and
+                        (ReviewRatingTable.status eq ReviewStatus.ACTIVE)
+                }.toList()
+            val counts = reviews.groupingBy { it.rating }.eachCount()
+            val average =
+                if (reviews.isEmpty()) {
+                    0.0
+                } else {
+                    BigDecimal(reviews.sumOf { it.rating })
+                        .divide(BigDecimal(reviews.size), 2, java.math.RoundingMode.HALF_UP)
+                        .toDouble()
+                }
+            ReviewSummaryResponse(
+                productId = productId,
+                total = reviews.size,
+                average = average,
+                buckets = (5 downTo 1).map { RatingBucket(it, counts[it] ?: 0) },
+            )
+        }
 
     private fun imagesFor(reviewIds: List<EntityID<String>>): Map<String, List<String>> {
         if (reviewIds.isEmpty()) return emptyMap()

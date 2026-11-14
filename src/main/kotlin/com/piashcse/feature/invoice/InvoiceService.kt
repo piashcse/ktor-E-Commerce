@@ -3,6 +3,7 @@ package com.piashcse.feature.invoice
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
+import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.utils.common.DateTimes.toUtcString
@@ -10,6 +11,7 @@ import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.requireOrderAccess
 import com.piashcse.utils.extension.throwNotFound
+import org.jetbrains.exposed.v1.core.*
 
 /**
  * Printable order documents. The response is self-contained HTML so the client can
@@ -20,18 +22,32 @@ class InvoiceService {
         orderId: String,
         callerId: String,
         userType: UserType,
+    ): String = query { renderInvoice(loadOrder(orderId, callerId, userType)) }
+
+    /** Guest invoice lookup by order number + checkout email (no account required). */
+    suspend fun invoiceForGuest(
+        orderNumber: String,
+        email: String,
     ): String =
         query {
-            val order = loadOrder(orderId, callerId, userType)
-            val items = OrderItemDAO.itemsForOrder(order.id)
-            val hasInclusiveTax = items.any { it.taxInclusive }
-            val shopName = order.shopId?.value?.let { ShopDAO.findById(it)?.name }
-            val email = order.contactEmail ?: UserDAO.findById(order.userId.value)?.email
+            val order =
+                OrderDAO.find {
+                    (OrderTable.orderNumber eq orderNumber) and
+                        (OrderTable.contactEmail.lowerCase() eq email.trim().lowercase())
+                }.firstOrNull() ?: orderNumber.throwNotFound("Order")
+            renderInvoice(order)
+        }
 
-            page(
-                title = "Invoice ${order.orderNumber}",
-                body =
-                    """
+    private fun renderInvoice(order: OrderDAO): String {
+        val items = OrderItemDAO.itemsForOrder(order.id)
+        val hasInclusiveTax = items.any { it.taxInclusive }
+        val shopName = order.shopId?.value?.let { ShopDAO.findById(it)?.name }
+        val email = order.contactEmail ?: UserDAO.findById(order.userId.value)?.email
+
+        return page(
+            title = "Invoice ${order.orderNumber}",
+            body =
+                """
                     <header>
                       <h1>Invoice</h1>
                       <p class="muted">${escape(order.orderNumber)} · ${escape(order.createdAt.toUtcString())}</p>
@@ -60,32 +76,32 @@ class InvoiceService {
                       </thead>
                       <tbody>
                         ${items.joinToString("") { item ->
-                        """
-                        <tr>
-                          <td>${escape(item.productName ?: item.productId.value)}${item.variantName?.let { " (${escape(it)})" } ?: ""}</td>
-                          <td>${escape(item.sku ?: "—")}</td>
-                          <td class="num">${item.quantity}</td>
-                          <td class="num">${escape(Money.str(item.price))}</td>
-                          <td class="num">${escape(Money.str(item.total))}</td>
-                        </tr>
-                        """.trimIndent()
-                    }}
+                    """
+                    <tr>
+                      <td>${escape(item.productName ?: item.productId.value)}${item.variantName?.let { " (${escape(it)})" } ?: ""}</td>
+                      <td>${escape(item.sku ?: "—")}</td>
+                      <td class="num">${item.quantity}</td>
+                      <td class="num">${escape(Money.str(item.price))}</td>
+                      <td class="num">${escape(Money.str(item.total))}</td>
+                    </tr>
+                    """.trimIndent()
+                }}
                       </tbody>
                     </table>
                     <section class="totals">
                       <p><span>Subtotal${if (hasInclusiveTax) " (incl. tax)" else ""}</span><span>${escape(
-                        Money.str(order.subTotal),
-                    )} ${escape(order.currency)}</span></p>
+                    Money.str(order.subTotal),
+                )} ${escape(order.currency)}</span></p>
                       <p><span>Discount</span><span>-${escape(Money.str(order.discountAmount))} ${escape(order.currency)}</span></p>
                       <p><span>Shipping</span><span>${escape(Money.str(order.shippingCost))} ${escape(order.currency)}</span></p>
                       <p><span>${if (hasInclusiveTax) "Included tax" else "Tax"}</span><span>${escape(
-                        Money.str(order.taxAmount),
-                    )} ${escape(order.currency)}</span></p>
+                    Money.str(order.taxAmount),
+                )} ${escape(order.currency)}</span></p>
                       <p class="grand"><span>Total</span><span>${escape(Money.str(order.total))} ${escape(order.currency)}</span></p>
                     </section>
-                    """.trimIndent(),
-            )
-        }
+                """.trimIndent(),
+        )
+    }
 
     suspend fun packingSlip(
         orderId: String,

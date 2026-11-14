@@ -42,6 +42,14 @@ fun Route.reviewRatingRoutes() {
         call.respondOk(reviewRatingRepo.getReviewRating(productId, limit, offset))
     }.describe { summary = "Retrieve reviews and ratings for a specific product" }
 
+    /**
+     * Aggregate rating distribution for a product.
+     */
+    get("summary") {
+        val productId = call.requireQueryParameter("productId")
+        call.respondOk(reviewRatingRepo.getReviewSummary(productId))
+    }.describe { summary = "Rating distribution for a product" }
+
     customerAuth {
         writeRateLimit {
             /**
