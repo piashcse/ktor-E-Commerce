@@ -77,7 +77,7 @@ data class UserResponse(
     val id: String,
     val email: String,
     val isVerified: Boolean?,
-    var userType: UserType,
+    val userType: UserType,
     val isActive: Boolean,
     val mfaEnabled: Boolean = false,
     val createdAt: @Contextual LocalDateTime?,
