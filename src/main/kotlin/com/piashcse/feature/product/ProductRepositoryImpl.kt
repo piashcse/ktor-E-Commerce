@@ -65,8 +65,14 @@ class ProductRepositoryImpl : ProductRepository {
         filter.categoryId?.let { andWhere { ProductTable.categoryId eq it.entityID(ProductCategoryTable) } }
         filter.subCategoryId?.let { andWhere { ProductTable.subCategoryId eq it.entityID(ProductSubCategoryTable) } }
         filter.brandId?.let { andWhere { ProductTable.brandId eq it.entityID(BrandTable) } }
+        filter.shopId?.let { andWhere { ProductTable.shopId eq it.entityID(ShopTable) } }
         filter.minPrice?.let { andWhere { ProductTable.price greaterEq Money.of(it) } }
         filter.maxPrice?.let { andWhere { ProductTable.price lessEq Money.of(it) } }
+        filter.minRating?.let { andWhere { ProductTable.rating greaterEq BigDecimal.valueOf(it) } }
+        filter.freeShipping?.let { andWhere { ProductTable.freeShipping eq it } }
+        if (filter.inStockOnly == true) {
+            andWhere { ProductTable.status eq ProductStatus.ACTIVE }
+        }
         val sortOrder = if (filter.sortOrder?.lowercase() == "asc") SortOrder.ASC else SortOrder.DESC
         when (filter.sortBy?.lowercase()) {
             "price" -> orderBy(ProductTable.price to sortOrder)
@@ -86,20 +92,21 @@ class ProductRepositoryImpl : ProductRepository {
     ): PaginatedResponse<ProductResponse> {
         val (totalCount, rows) = query.toPaginatedList(limit, offset) { it }
         val data =
-            withPreloadedImages(rows) { row, images ->
+            withPreloadedImages(rows) { row, images, stock ->
                 val product = ProductDAO.wrapRow(row)
-                product.toProductResponse(images[product.id.value])
+                product.toProductResponse(images[product.id.value], stockQuantity = stock[product.id.value] ?: 0)
             }
         return PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
     }
 
     private fun withPreloadedImages(
         rows: List<ResultRow>,
-        mapper: (ResultRow, Map<String, List<String>>) -> ProductResponse,
+        mapper: (ResultRow, Map<String, List<String>>, Map<String, Int>) -> ProductResponse,
     ): List<ProductResponse> {
         val productIds = rows.map { ProductDAO.wrapRow(it).id }
         val imagesMap = ProductImageDAO.imagesForProducts(productIds)
-        return rows.map { mapper(it, imagesMap) }
+        val stockMap = stockByProductIds(productIds.map { it.value })
+        return rows.map { mapper(it, imagesMap, stockMap) }
     }
 
     private fun Query.applyRelevanceSort(sortOrder: SortOrder): Query {
@@ -167,7 +174,7 @@ class ProductRepositoryImpl : ProductRepository {
                     maximumStockLevel = 1000
                     status = InventoryStatus.fromStockLevel(productRequest.stockQuantity, 10)
                 }
-                product.toProductResponse()
+                product.toProductResponse(stockQuantity = productRequest.stockQuantity)
             }
         }
 
@@ -204,7 +211,9 @@ class ProductRepositoryImpl : ProductRepository {
                 updateProduct.digitalAssetUrl?.let { digitalAssetUrl = it.takeIf { value -> value.isNotBlank() } }
                 updateProduct.digitalFileName?.let { digitalFileName = it.takeIf { value -> value.isNotBlank() } }
                 if (updateProduct.images.isNotEmpty()) setImages(updateProduct.images)
-            }.toProductResponse()
+            }.toProductResponse(
+                stockQuantity = stockByProductIds(listOf(product.id.value))[product.id.value] ?: 0,
+            )
         }
 
     override suspend fun getProducts(filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> =
@@ -215,7 +224,8 @@ class ProductRepositoryImpl : ProductRepository {
             }
             toProductPaginatedResponse(
                 ProductTable.selectAll().andWhere {
-                    (ProductTable.status eq ProductStatus.ACTIVE) and
+                    (ProductTable.status inList listOf(ProductStatus.ACTIVE, ProductStatus.OUT_OF_STOCK)) and
+                        ProductTable.deletedAt.isNull() and
                         (ProductTable.shopId inList approvedShops)
                 }.applyProductFilters(filter),
                 filter.limit,
@@ -238,7 +248,9 @@ class ProductRepositoryImpl : ProductRepository {
             }
             toProductPaginatedResponse(
                 ProductTable.selectAll().andWhere {
-                    (ProductTable.shopId eq shopId) and (ProductTable.status eq ProductStatus.ACTIVE)
+                    (ProductTable.shopId eq shopId) and
+                        (ProductTable.status inList listOf(ProductStatus.ACTIVE, ProductStatus.OUT_OF_STOCK)) and
+                        ProductTable.deletedAt.isNull()
                 }.applyProductFilters(filter),
                 filter.limit,
                 filter.offset,
@@ -269,13 +281,13 @@ class ProductRepositoryImpl : ProductRepository {
                     productId.throwNotFound("ProductResponse")
                 }
             }
+            val variantRows =
+                ProductVariantDAO.find { ProductVariantTable.productId eq product.id }
+                    .orderBy(ProductVariantTable.sortOrder to SortOrder.ASC)
+                    .toList()
             product.toProductResponse(
-                variants =
-                    variantResponses(
-                        ProductVariantDAO.find { ProductVariantTable.productId eq product.id }
-                            .orderBy(ProductVariantTable.sortOrder to SortOrder.ASC)
-                            .toList(),
-                    ),
+                variants = variantResponses(variantRows, stockByVariantIds(variantRows.map { it.id.value })),
+                stockQuantity = stockByProductIds(listOf(product.id.value))[product.id.value] ?: 0,
             )
         }
 
@@ -325,9 +337,9 @@ class ProductRepositoryImpl : ProductRepository {
             val orderedRows = productIds.mapNotNull { rowsById[it] }
 
             val products =
-                withPreloadedImages(orderedRows) { row, images ->
+                withPreloadedImages(orderedRows) { row, images, stock ->
                     val product = ProductDAO.wrapRow(row)
-                    product.toProductResponse(images[product.id.value])
+                    product.toProductResponse(images[product.id.value], stockQuantity = stock[product.id.value] ?: 0)
                 }
 
             val facets = buildFacets(searchRequest.name, searchRequest, useFuzzy)
@@ -386,8 +398,19 @@ class ProductRepositoryImpl : ProductRepository {
         val dir = if (request.sortOrder?.lowercase() == "asc") "ASC" else "DESC"
         val threshold = 0.15
 
-        val whereClauses = mutableListOf("p.status = ?")
-        val whereParams = mutableListOf<Any>(ProductStatus.ACTIVE.name)
+        // Sold-out products stay discoverable so shoppers can request a restock
+        // alert; `inStockOnly` narrows the listing to purchasable rows.
+        val whereClauses = mutableListOf<String>()
+        val whereParams = mutableListOf<Any>()
+        if (request.inStockOnly == true) {
+            whereClauses.add("p.status = ?")
+            whereParams.add(ProductStatus.ACTIVE.name)
+        } else {
+            whereClauses.add("p.status IN (?, ?)")
+            whereParams.add(ProductStatus.ACTIVE.name)
+            whereParams.add(ProductStatus.OUT_OF_STOCK.name)
+        }
+        whereClauses.add("p.deleted_at IS NULL")
         whereClauses.add("p.shop_id IN (SELECT id FROM shop WHERE status = 'APPROVED')")
 
         if (useTrigram) {
@@ -427,10 +450,6 @@ class ProductRepositoryImpl : ProductRepository {
             whereClauses.add("p.rating >= ?")
             whereParams.add(request.minRating)
         }
-        if (request.inStockOnly == true) {
-            whereClauses.add("EXISTS (SELECT 1 FROM inventory i WHERE i.product_id = p.id AND i.stock_quantity > 0)")
-        }
-
         val whereSql = whereClauses.joinToString(" AND ")
 
         val isRelevance = request.sortBy?.lowercase() !in listOf("price", "newest", "best-selling", "top-rated")
@@ -532,7 +551,13 @@ class ProductRepositoryImpl : ProductRepository {
         }
 
         val extraSql = if (extraClauses.isNotEmpty()) " AND ${extraClauses.joinToString(" AND ")}" else ""
-        val baseWhere = "p.status = '$statusName' AND $matchClause$extraSql"
+        val statusSql =
+            if (request.inStockOnly == true) {
+                "p.status = '$statusName'"
+            } else {
+                "p.status IN ('$statusName', '${ProductStatus.OUT_OF_STOCK.name}')"
+            }
+        val baseWhere = "$statusSql AND p.deleted_at IS NULL AND $matchClause$extraSql"
 
         val categorySql =
             """
@@ -609,7 +634,11 @@ class ProductRepositoryImpl : ProductRepository {
                     .also { if (limit != null) it.limit(limit) }
                     .toList()
             val imagesMap = if (products.isNotEmpty()) ProductImageDAO.imagesForProducts(products.map { it.id }) else emptyMap()
-            val data = products.map { it.toProductResponse(imagesMap[it.id.value]) }
+            val stockMap = stockByProductIds(products.map { it.id.value })
+            val data =
+                products.map {
+                    it.toProductResponse(imagesMap[it.id.value], stockQuantity = stockMap[it.id.value] ?: 0)
+                }
             PaginatedResponse(data, PaginationMetadata(count, limit ?: data.size, 0))
         }
 }

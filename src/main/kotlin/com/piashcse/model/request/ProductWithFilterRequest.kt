@@ -14,6 +14,11 @@ data class ProductWithFilterRequest(
     val categoryId: String?,
     val subCategoryId: String?,
     val brandId: String?,
+    /** Restrict to one seller's shop (shop storefronts). */
+    val shopId: String? = null,
+    val minRating: Double? = null,
+    val inStockOnly: Boolean? = null,
+    val freeShipping: Boolean? = null,
     // sortBy: price, createdAt, name, best-selling, top-rated, relevance; sortOrder: asc, desc
     val sortBy: String? = null,
     val sortOrder: String? = "desc",

@@ -2,6 +2,7 @@ package com.piashcse.feature.cart
 
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
+import com.piashcse.feature.config.StorefrontSettings
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.mapper.toCartItemSummary
 import com.piashcse.mapper.toCartResponse
@@ -282,13 +283,51 @@ class CartRepositoryImpl : CartRepository {
             }
             tax = Money.scale2(tax)
             exclusiveTax = Money.scale2(exclusiveTax)
-            val total = Money.scale2(subtotal.add(exclusiveTax))
+
+            // Shipping estimate: cheapest method × number of shops that still
+            // need shipping, waived once the platform threshold is reached.
+            val physicalShops =
+                products.values
+                    .filter { !it.isDigital }
+                    .groupBy { it.shopId?.value }
+                    .count { (_, shopProducts) -> shopProducts.any { !it.freeShipping } }
+            val cheapestMethod = ShippingMethodDAO.all().minByOrNull { it.price }
+            val freeShipping = StorefrontSettings.freeShippingReached(subtotal)
+            val shippingUsd =
+                if (freeShipping || physicalShops == 0 || cheapestMethod == null) {
+                    BigDecimal.ZERO.setScale(2)
+                } else {
+                    Money.scale2(cheapestMethod.price.multiply(BigDecimal(physicalShops)))
+                }
+            val total = Money.scale2(subtotal.add(exclusiveTax).add(shippingUsd))
+
+            val shopSummaries =
+                items
+                    .groupBy { it.shopId }
+                    .map { (shopId, shopItems) ->
+                        com.piashcse.model.response.CartShopSummary(
+                            shopId = shopId,
+                            shopName = shopItems.firstOrNull()?.shopName,
+                            subtotal =
+                                Money.scale2(
+                                    shopItems.fold(BigDecimal.ZERO) { acc, item ->
+                                        acc.add(Money.of(item.price).multiply(BigDecimal(item.quantity)))
+                                    },
+                                ).toPlainString(),
+                            itemCount = shopItems.sumOf { it.quantity },
+                        )
+                    }
+
             CartSummaryResponse(
                 items = items,
                 subtotal = subtotal.toPlainString(),
                 estimatedTax = tax.toPlainString(),
                 itemCount = cartItems.sumOf { it.quantity },
                 total = total.toPlainString(),
+                estimatedShipping = shippingUsd.toPlainString(),
+                freeShippingThreshold = Money.str(StorefrontSettings.freeShippingThreshold),
+                freeShippingRemaining = Money.str(StorefrontSettings.freeShippingRemaining(subtotal)),
+                shops = shopSummaries,
             )
         }
 }

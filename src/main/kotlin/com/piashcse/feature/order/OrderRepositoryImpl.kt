@@ -6,6 +6,7 @@ import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.OrderPlacedEvent
 import com.piashcse.event.OrderStatusChangedEvent
 import com.piashcse.event.OutboxPublisher
+import com.piashcse.feature.config.StorefrontSettings
 import com.piashcse.feature.i18n.I18nService
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.promotion.PromotionMatch
@@ -445,6 +446,13 @@ class OrderRepositoryImpl(
     ): CheckoutQuote {
         val today = LocalDate.now(ZoneOffset.UTC).format(DateTimeFormatter.BASIC_ISO_DATE)
         var totalUsdSubTotal = BigDecimal.ZERO
+        val cartUsdSubtotal =
+            context.cartItems.fold(BigDecimal.ZERO) { acc, cartItem ->
+                val product = context.productsMap[cartItem.productId.value] ?: return@fold acc
+                val variant = resolveCheckoutVariant(product, cartItem, context.variantsMap)
+                acc.add(Money.unitTotal(unitPriceUsd(product, variant), cartItem.quantity))
+            }
+        val freeShippingByThreshold = StorefrontSettings.freeShippingReached(cartUsdSubtotal)
         val orders = mutableListOf<OrderDAO>()
         context.itemsByShop.entries.forEachIndexed { index, (shopId, items) ->
             val (order, shopUsdSubTotal) =
@@ -458,6 +466,7 @@ class OrderRepositoryImpl(
                     currency,
                     fxRate,
                     today,
+                    freeShippingByThreshold,
                 )
             totalUsdSubTotal = totalUsdSubTotal.add(shopUsdSubTotal)
             orders.add(order)
@@ -475,6 +484,7 @@ class OrderRepositoryImpl(
         currency: String,
         fxRate: BigDecimal,
         today: String,
+        freeShippingByThreshold: Boolean,
     ): Pair<OrderDAO, BigDecimal> {
         var shopSubTotal = BigDecimal.ZERO
         var shopUsdSubTotal = BigDecimal.ZERO
@@ -602,7 +612,7 @@ class OrderRepositoryImpl(
         val scaledSubTotal = Money.scale2(shopSubTotal)
         val tax = Money.scale2(shopTax)
         val ship =
-            if (allDigital || context.pickupWarehouse != null || allFreeShipping) {
+            if (allDigital || context.pickupWarehouse != null || allFreeShipping || freeShippingByThreshold) {
                 BigDecimal.ZERO.setScale(2)
             } else {
                 Money.scale2(context.shippingMethod.price.multiply(fxRate))
@@ -994,7 +1004,11 @@ class OrderRepositoryImpl(
                     .groupBy { it.shopId?.value }
                     .count { (_, products) -> products.any { !it.freeShipping } }
             val ship =
-                if (pickup || physicalProducts.isEmpty() || shopsWithShipping == 0) {
+                if (pickup ||
+                    physicalProducts.isEmpty() ||
+                    shopsWithShipping == 0 ||
+                    StorefrontSettings.freeShippingReached(subUsd)
+                ) {
                     BigDecimal.ZERO.setScale(2)
                 } else {
                     val method =
@@ -1064,36 +1078,49 @@ class OrderRepositoryImpl(
             }
 
             var eligibleCouponProductIds: Set<String>? = null
-            checkoutRequest.couponCode?.let {
-                val coupon =
-                    validateCoupon(
-                        it,
-                        subUsd,
-                        userId = userId,
-                        shopIds = productsMap.values.mapNotNull { product -> product.shopId?.value }.toSet(),
-                        categoryIds = productsMap.values.map { product -> product.categoryId.value }.toSet(),
-                    )
-                val eligibleUsd = couponEligibleUsd(coupon, cartItems, productsMap, variantsMap)
-                if (eligibleUsd <= BigDecimal.ZERO) {
-                    throw ValidationException("Coupon is not valid for the products in this cart")
+            checkoutRequest.couponCode?.let { code ->
+                // A mistyped promo code must never blank the whole totals panel:
+                // report validity inline and keep the undiscounted totals.
+                try {
+                    val coupon =
+                        validateCoupon(
+                            code,
+                            subUsd,
+                            userId = userId,
+                            shopIds = productsMap.values.mapNotNull { product -> product.shopId?.value }.toSet(),
+                            categoryIds = productsMap.values.map { product -> product.categoryId.value }.toSet(),
+                        )
+                    val eligibleUsd = couponEligibleUsd(coupon, cartItems, productsMap, variantsMap)
+                    if (eligibleUsd <= BigDecimal.ZERO) {
+                        throw ValidationException("Coupon is not valid for the products in this cart")
+                    }
+                    if (eligibleUsd < coupon.minOrderAmount) {
+                        throw ValidationException(Message.Orders.couponMinOrderAmount(coupon.minOrderAmount.toPlainString()))
+                    }
+                    eligibleCouponProductIds =
+                        cartItems
+                            .mapNotNull { item -> productsMap[item.productId.value] }
+                            .filter { product -> couponMatches(product, coupon) }
+                            .map { product -> product.id.value }
+                            .toSet()
+                    val discountUsd = calculateCouponDiscount(coupon, eligibleUsd)
+                    val discount = Money.scale2(discountUsd.multiply(fxRate))
+                    val total = Money.scale2(sub.add(ship).add(exclusiveTax).subtract(discount).max(BigDecimal.ZERO))
+                    response =
+                        response.copy(
+                            couponCode = code,
+                            couponValid = true,
+                            discountAmount = discount.toPlainString(),
+                            total = total.toPlainString(),
+                        )
+                } catch (error: ValidationException) {
+                    response =
+                        response.copy(
+                            couponCode = code,
+                            couponValid = false,
+                            couponError = error.message ?: "Coupon is not valid",
+                        )
                 }
-                if (eligibleUsd < coupon.minOrderAmount) {
-                    throw ValidationException(Message.Orders.couponMinOrderAmount(coupon.minOrderAmount.toPlainString()))
-                }
-                eligibleCouponProductIds =
-                    cartItems
-                        .mapNotNull { item -> productsMap[item.productId.value] }
-                        .filter { product -> couponMatches(product, coupon) }
-                        .map { product -> product.id.value }
-                        .toSet()
-                val discountUsd = calculateCouponDiscount(coupon, eligibleUsd)
-                val discount = Money.scale2(discountUsd.multiply(fxRate))
-                val total = Money.scale2(sub.add(ship).add(exclusiveTax).subtract(discount).max(BigDecimal.ZERO))
-                response =
-                    response.copy(
-                        discountAmount = discount.toPlainString(),
-                        total = total.toPlainString(),
-                    )
             }
             val preview =
                 loyaltyService.redemptionPreviewTx(
@@ -1123,6 +1150,10 @@ class OrderRepositoryImpl(
             response =
                 response.copy(
                     locale = locale,
+                    freeShippingThreshold =
+                        Money.scale2(StorefrontSettings.freeShippingThreshold.multiply(fxRate)).toPlainString(),
+                    freeShippingRemaining =
+                        Money.scale2(StorefrontSettings.freeShippingRemaining(subUsd).multiply(fxRate)).toPlainString(),
                     formattedSubTotal = i18n.formatMoney(BigDecimal(response.subTotal), currency, locale),
                     formattedShipping = i18n.formatMoney(BigDecimal(response.shippingCost), currency, locale),
                     formattedTax = i18n.formatMoney(BigDecimal(response.taxAmount), currency, locale),

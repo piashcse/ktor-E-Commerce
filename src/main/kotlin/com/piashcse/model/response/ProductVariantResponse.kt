@@ -19,6 +19,8 @@ data class ProductVariantResponse(
     val status: ProductStatus = ProductStatus.ACTIVE,
     val isDefault: Boolean = false,
     val sortOrder: Int = 0,
+    val stockQuantity: Int = 0,
+    val inStock: Boolean = true,
     val options: List<ProductVariantOptionResponse> = emptyList(),
 )
 

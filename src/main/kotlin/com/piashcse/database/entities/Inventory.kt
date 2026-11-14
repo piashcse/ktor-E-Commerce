@@ -8,10 +8,12 @@ import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import com.piashcse.utils.common.Money
+import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.math.BigDecimal
 
@@ -183,4 +185,32 @@ class InventoryDAO(id: EntityID<String>) : BaseEntity(id, InventoryTable) {
     var maximumStockLevel by InventoryTable.maximumStockLevel
     var status by InventoryTable.status
     var lastRestocked by InventoryTable.lastRestocked
+}
+
+/**
+ * Aggregated availability for many products in a single query. Used by catalog
+ * cards so stock badges never trigger an N+1 query per row.
+ */
+fun stockByProductIds(productIds: Collection<String>): Map<String, Int> {
+    if (productIds.isEmpty()) return emptyMap()
+    val rows =
+        InventoryDAO.find {
+            InventoryTable.productId inList productIds.distinct().map { it.entityID(ProductTable) }
+        }
+    return rows.groupBy { it.productId.value }.mapValues { (_, stockRows) ->
+        stockRows.sumOf { it.stockQuantity }
+    }
+}
+
+/** Aggregated availability per variant in a single query. */
+fun stockByVariantIds(variantIds: Collection<String>): Map<String, Int> {
+    if (variantIds.isEmpty()) return emptyMap()
+    val rows =
+        InventoryDAO.find {
+            InventoryTable.variantId inList variantIds.distinct().map { it.entityID(ProductVariantTable) }
+        }
+    return rows
+        .mapNotNull { row -> row.variantId?.value?.let { it to row.stockQuantity } }
+        .groupBy({ it.first }, { it.second })
+        .mapValues { (_, quantities) -> quantities.sum() }
 }

@@ -1,5 +1,6 @@
 package com.piashcse.model.request
 
+import com.piashcse.constants.Localization
 import com.piashcse.constants.PaymentMethod
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.isEmail
@@ -39,6 +40,10 @@ data class GuestCheckoutRequest(
     val currency: String = "USD",
     val notes: String? = null,
     val idempotencyKey: String? = null,
+    /** Checkout locale used for totals and transactional email. */
+    val locale: String = Localization.DEFAULT_LOCALE,
+    /** Optional first-touch attribution captured by the storefront. */
+    val attribution: CheckoutAttribution? = null,
     /** Explicit acceptance when policy consent is enforced. */
     val consentAccepted: Boolean = false,
     val items: List<GuestCheckoutItem>,

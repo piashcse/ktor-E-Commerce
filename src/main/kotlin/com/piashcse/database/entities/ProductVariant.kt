@@ -66,24 +66,28 @@ class ProductVariantDAO(id: EntityID<String>) : BaseEntity(id, ProductVariantTab
             }.sortedBy { it.optionName }
     }
 
-    fun toResponse(options: List<ProductVariantOptionResponse> = optionValues()) =
-        ProductVariantResponse(
-            id = id.value,
-            productId = productId.value,
-            sku = sku,
-            name = name,
-            price = price.toPlainString(),
-            discountPrice = discountPrice?.toPlainString(),
-            discountPercentage = discountPercentage?.toDouble(),
-            barcode = barcode,
-            weight = weight?.toDouble(),
-            dimensions = dimensions,
-            imageUrl = imageUrl,
-            status = status,
-            isDefault = isDefault,
-            sortOrder = sortOrder,
-            options = options,
-        )
+    fun toResponse(
+        options: List<ProductVariantOptionResponse> = optionValues(),
+        stockQuantity: Int? = null,
+    ) = ProductVariantResponse(
+        id = id.value,
+        productId = productId.value,
+        sku = sku,
+        name = name,
+        price = price.toPlainString(),
+        discountPrice = discountPrice?.toPlainString(),
+        discountPercentage = discountPercentage?.toDouble(),
+        barcode = barcode,
+        weight = weight?.toDouble(),
+        dimensions = dimensions,
+        imageUrl = imageUrl,
+        status = status,
+        isDefault = isDefault,
+        sortOrder = sortOrder,
+        stockQuantity = stockQuantity ?: 0,
+        inStock = stockQuantity?.let { it > 0 } ?: (status == ProductStatus.ACTIVE),
+        options = options,
+    )
 }
 
 /** Option dimension for a product, e.g. "Size" or "Color". */
@@ -147,7 +151,10 @@ class ProductVariantOptionDAO(id: EntityID<String>) : BaseEntity(id, ProductVari
  * Bulk variant mapping. Loads all option links/values in five queries instead
  * of one option query per variant, preserving the input order.
  */
-fun variantResponses(variants: List<ProductVariantDAO>): List<ProductVariantResponse> {
+fun variantResponses(
+    variants: List<ProductVariantDAO>,
+    stockByVariant: Map<String, Int> = emptyMap(),
+): List<ProductVariantResponse> {
     if (variants.isEmpty()) return emptyList()
     val variantIds = variants.map { it.id }
     val links =
@@ -175,7 +182,9 @@ fun variantResponses(variants: List<ProductVariantDAO>): List<ProductVariantResp
                     ProductVariantOptionResponse(option.id.value, option.name, value.id.value, value.value)
                 }.sortedBy { it.optionName }
         }
-    return variants.map { it.toResponse(optionsByVariant[it.id.value].orEmpty()) }
+    return variants.map {
+        it.toResponse(optionsByVariant[it.id.value].orEmpty(), stockByVariant[it.id.value])
+    }
 }
 
 /** Bulk option mapping; loads all values in one query. */
