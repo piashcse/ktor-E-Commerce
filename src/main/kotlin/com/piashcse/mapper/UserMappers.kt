@@ -12,6 +12,7 @@ fun UserDAO.toUserResponse() =
         isVerified,
         userType,
         isActive,
+        mfaEnabled,
         createdAt,
         updatedAt,
     )

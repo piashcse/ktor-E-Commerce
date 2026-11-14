@@ -156,13 +156,16 @@ fun Route.checkoutRoutes() {
             val (limit, offset) = call.paginateQueryParams()
             call.respondOk(shippingAddressRepo.getShippingAddresses(call.currentUserId, limit, offset))
         }.describe { summary = "List shipping addresses" }
+    }
 
-        /**
-         * Retrieve all available shipping methods
-         */
-        get("shipping-method") {
-            val (limit, offset) = call.paginateQueryParams()
-            call.respondOk(shippingMethodRepo.getShippingMethods(limit, offset))
-        }.describe { summary = "List shipping methods" }
+    /**
+     * Public shipping methods so guest checkout can choose one before authenticating.
+     */
+    get("shipping-method") {
+        val (limit, offset) = call.paginateQueryParams()
+        call.respondOk(shippingMethodRepo.getShippingMethods(limit, offset))
+    }.describe {
+        summary = "List shipping methods"
+        description = "Public; required for guest checkout"
     }
 }

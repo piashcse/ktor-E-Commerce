@@ -79,6 +79,7 @@ data class UserResponse(
     val isVerified: Boolean?,
     var userType: UserType,
     val isActive: Boolean,
+    val mfaEnabled: Boolean = false,
     val createdAt: @Contextual LocalDateTime?,
     val updatedAt: @Contextual LocalDateTime?,
 )
