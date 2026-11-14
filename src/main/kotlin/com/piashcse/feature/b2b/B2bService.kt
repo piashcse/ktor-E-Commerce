@@ -83,7 +83,20 @@ data class B2bAccountUpdateRequest(
     val status: B2bAccountStatus? = null,
     @Contextual val creditLimit: BigDecimal? = null,
     val paymentTermsDays: Int? = null,
-)
+) {
+    init {
+        val violations =
+            buildList {
+                creditLimit?.let {
+                    if (it < BigDecimal.ZERO) add(FieldViolation("creditLimit", "Credit limit cannot be negative"))
+                }
+                paymentTermsDays?.let {
+                    if (it !in 0..365) add(FieldViolation("paymentTermsDays", "Payment terms must be between 0 and 365 days"))
+                }
+            }
+        if (violations.isNotEmpty()) throw FieldValidationException(violations)
+    }
+}
 
 @Serializable
 data class B2bAccountResponse(
@@ -275,7 +288,7 @@ class B2bService {
                 account.creditLimit = it
             }
             request.paymentTermsDays?.let {
-                if (it <= 0) throw ValidationException("Payment terms must be positive")
+                if (it !in 0..365) throw ValidationException("Payment terms must be between 0 and 365 days")
                 account.paymentTermsDays = it
             }
             request.status?.let {

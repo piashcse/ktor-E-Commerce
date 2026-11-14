@@ -2,6 +2,7 @@ package com.piashcse.feature.platform
 
 import com.piashcse.constants.CouponDiscountType
 import com.piashcse.constants.PolicyType
+import com.piashcse.feature.b2b.B2bAccountUpdateRequest
 import com.piashcse.model.request.CouponRequest
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.InventoryRequest
@@ -258,5 +259,18 @@ class PlatformValidationTest {
         assertFailsWith<FieldValidationException> {
             RegisterRequest("user@example.com", "Password1!", "ADMIN")
         }
+    }
+
+    // ─── B2B account terms ───────────────────────────────────────────
+
+    @Test
+    fun `b2b credit terms reject negative values`() {
+        assertFailsWith<FieldValidationException> {
+            B2bAccountUpdateRequest(creditLimit = BigDecimal("-1.00"))
+        }
+        assertFailsWith<FieldValidationException> {
+            B2bAccountUpdateRequest(paymentTermsDays = 366)
+        }
+        assertEquals(30, B2bAccountUpdateRequest(paymentTermsDays = 30).paymentTermsDays)
     }
 }

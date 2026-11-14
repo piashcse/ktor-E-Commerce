@@ -202,9 +202,18 @@ class SubscriptionService(
                 SubscriptionDAO.find {
                     (SubscriptionTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable)) and
                         (SubscriptionTable.planId eq plan.id) and
-                        (SubscriptionTable.status eq SubscriptionStatus.ACTIVE)
+                        (
+                            SubscriptionTable.status inList
+                                listOf(
+                                    SubscriptionStatus.PENDING,
+                                    SubscriptionStatus.ACTIVE,
+                                    SubscriptionStatus.PAST_DUE,
+                                )
+                        )
                 }.firstOrNull()
-            if (existing != null) throw ValidationException("You already have an active subscription for this plan")
+            if (existing != null) {
+                throw ValidationException("You already have a pending or active subscription for this plan")
+            }
             val start = currentUtc()
             val end = periodEnd(start.plusDays(plan.trialDays.toLong()), plan.interval)
             // Never activate from a client-supplied reference. Admin activation
