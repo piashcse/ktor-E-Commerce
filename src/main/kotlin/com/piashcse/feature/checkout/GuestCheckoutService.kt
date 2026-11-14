@@ -8,6 +8,7 @@ import com.piashcse.constants.UserType
 import com.piashcse.database.entities.CartItemDAO
 import com.piashcse.database.entities.CartItemTable
 import com.piashcse.database.entities.ProductDAO
+import com.piashcse.database.entities.ProductVariantDAO
 import com.piashcse.database.entities.ShippingAddressDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserProfileDAO
@@ -76,9 +77,23 @@ class GuestCheckoutService(
                     if (product.status != ProductStatus.ACTIVE) {
                         throw ValidationException(Message.Products.OUT_OF_STOCK)
                     }
+                    val variant =
+                        item.variantId?.takeIf { it.isNotBlank() }?.let { variantId ->
+                            val row =
+                                ProductVariantDAO.findById(variantId)
+                                    ?: variantId.throwNotFound("Product variant")
+                            if (row.productId.value != product.id.value) {
+                                throw ValidationException("Variant does not belong to this product")
+                            }
+                            if (row.status != ProductStatus.ACTIVE) {
+                                throw ValidationException(Message.Products.OUT_OF_STOCK)
+                            }
+                            row
+                        }
                     CartItemDAO.new {
                         userId = guest.id
                         productId = product.id
+                        this.variantId = variant?.id
                         quantity = item.quantity
                     }
                 }
