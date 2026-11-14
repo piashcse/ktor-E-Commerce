@@ -2,6 +2,7 @@
 
 package com.piashcse.feature.payment
 
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.customerOnlyAuth
@@ -11,6 +12,7 @@ import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey
 import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
@@ -77,6 +79,14 @@ fun Route.paymentRoutes() {
  */
 fun Route.paymentAdminRoutes() {
     val paymentRepo: PaymentRepository by inject()
+    get {
+        val (limit, offset) = call.paginateQueryParams()
+        val status = call.request.queryParameters["status"]?.parseEnum<PaymentStatus>("payment status")
+        call.respondOk(paymentRepo.listPayments(status, limit, offset))
+    }.describe {
+        summary = "Admin - List payments"
+        description = "Optional status filter; client secrets are never returned"
+    }
     adminWriteRateLimit {
         /**
          * Admin - confirm a pending payment as completed

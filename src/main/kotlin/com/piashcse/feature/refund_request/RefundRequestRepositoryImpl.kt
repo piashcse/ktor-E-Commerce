@@ -514,4 +514,39 @@ class RefundRequestRepositoryImpl(
             eventFor(refundReq, RefundStatus.APPROVED.name, RefundStatus.SHIPPED.name)
             refundReq.toRefundRequestResponse()
         }
+
+    override suspend fun listForSeller(
+        sellerUserId: String,
+        status: RefundStatus?,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<RefundRequestResponse> =
+        query {
+            val seller = requireSellerByUserId(sellerUserId)
+            val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
+            val orderIds = OrderDAO.find { OrderTable.shopId eq shopId }.map { it.id }
+            RefundRequestTable.selectAll()
+                .where { RefundRequestTable.orderId inList orderIds }
+                .also { query ->
+                    status?.let { query.andWhere { RefundRequestTable.status eq it } }
+                }.orderBy(RefundRequestTable.createdAt to SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) {
+                    RefundRequestDAO.wrapRow(it).toRefundRequestResponse()
+                }
+        }
+
+    override suspend fun listAll(
+        status: RefundStatus?,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<RefundRequestResponse> =
+        query {
+            RefundRequestTable.selectAll()
+                .also { query ->
+                    status?.let { query.andWhere { RefundRequestTable.status eq it } }
+                }.orderBy(RefundRequestTable.createdAt to SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) {
+                    RefundRequestDAO.wrapRow(it).toRefundRequestResponse()
+                }
+        }
 }

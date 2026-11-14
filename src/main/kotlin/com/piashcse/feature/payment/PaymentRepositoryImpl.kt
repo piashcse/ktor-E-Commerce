@@ -584,4 +584,19 @@ class PaymentRepositoryImpl(
                     PaymentDAO.wrapRow(it).toPaymentResponse().copy(clientSecret = null)
                 }
         }
+
+    override suspend fun listPayments(
+        status: PaymentStatus?,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<PaymentResponse> =
+        query {
+            PaymentTable.selectAll()
+                .also { query ->
+                    status?.let { query.andWhere { PaymentTable.status eq it } }
+                }.orderBy(PaymentTable.createdAt to SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) {
+                    PaymentDAO.wrapRow(it).toPaymentResponse().copy(clientSecret = null)
+                }
+        }
 }
