@@ -4,12 +4,14 @@ package com.piashcse.feature.refund_request
 
 import com.piashcse.config.DotEnvConfig
 import com.piashcse.constants.Message
+import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.customerAuth
+import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.plugin.writeRateLimit
@@ -122,6 +124,16 @@ fun Route.refundRequestRoutes() {
  */
 fun Route.refundSellerRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
+    generalRateLimit {
+        get {
+            val (limit, offset) = call.paginateQueryParams()
+            val status = call.request.queryParameters["status"]?.parseEnum<RefundStatus>("refund status")
+            call.respondOk(refundRequestRepo.listForSeller(call.currentUserId, status, limit, offset))
+        }.describe {
+            summary = "Seller - List refund requests"
+            description = "Optional status filter; scoped to the seller's shop"
+        }
+    }
     sellerWriteRateLimit {
         /**
          * Seller - Update refund request status
@@ -144,6 +156,14 @@ fun Route.refundSellerRoutes() {
  */
 fun Route.refundAdminRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
+    get {
+        val (limit, offset) = call.paginateQueryParams()
+        val status = call.request.queryParameters["status"]?.parseEnum<RefundStatus>("refund status")
+        call.respondOk(refundRequestRepo.listAll(status, limit, offset))
+    }.describe {
+        summary = "Admin - List refund requests"
+        description = "Optional status filter across all shops"
+    }
     adminWriteRateLimit {
         /**
          * Admin - Update refund status
