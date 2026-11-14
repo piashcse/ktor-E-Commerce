@@ -171,6 +171,12 @@ class SellerToolsIntegrationTest {
             1,
             kotlinx.coroutines.runBlocking { tools.reviewsForSeller(sellerId, 10, 0) }.data.size,
         )
+        // Regression: resolving the seller outside a transaction used to throw
+        // "No transaction in context" for the authenticated seller route.
+        assertEquals(
+            1,
+            kotlinx.coroutines.runBlocking { tools.reviewsForSellerUser(sellerUserId, 10, 0) }.data.size,
+        )
         kotlinx.coroutines.runBlocking { tools.updateReviewStatus(review.id, ReviewStatus.HIDDEN) }
         assertEquals("0.00", transaction { ShopDAO.findById(shopId)!!.rating.toPlainString() })
 

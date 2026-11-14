@@ -6,6 +6,7 @@ package com.piashcse.feature.consent
 
 import com.piashcse.constants.PolicyType
 import com.piashcse.constants.UserType
+import com.piashcse.feature.policy.PolicyRepository
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
@@ -25,11 +26,28 @@ import org.koin.ktor.ext.inject
 @Serializable
 data class ConsentCheckResponse(val hasConsented: Boolean)
 
+@Serializable
+data class RequiredPolicyResponse(
+    val type: String,
+    val policyId: String,
+    val title: String,
+    val version: String,
+    val effectiveDate: String,
+    val hasConsented: Boolean,
+)
+
+@Serializable
+data class ConsentRequirementsResponse(
+    val required: List<RequiredPolicyResponse>,
+    val complete: Boolean,
+)
+
 /**
  * Routes for managing user policy consents.
  */
 fun Route.consentRoutes() {
     val consentRepo: ConsentRepository by inject()
+    val policyRepo: PolicyRepository by inject()
     customerAuth {
         writeRateLimit {
             /**
@@ -49,6 +67,37 @@ fun Route.consentRoutes() {
     }
 
     requireRole(UserType.CUSTOMER, UserType.ADMIN) {
+        /**
+         * Policies that currently require consent, with this user's status.
+         * Declared before the {policyType} route so "requirements" is not parsed as a type.
+         */
+        get("requirements") {
+            val required =
+                PolicyType.entries
+                    .filter { it.requiresConsent }
+                    .mapNotNull { type ->
+                        runCatching { policyRepo.getPolicyByType(type) }.getOrNull()?.let { policy ->
+                            RequiredPolicyResponse(
+                                type = type.name,
+                                policyId = policy.id,
+                                title = policy.title,
+                                version = policy.version,
+                                effectiveDate = policy.effectiveDate,
+                                hasConsented = consentRepo.hasUserConsented(call.currentUserId, type),
+                            )
+                        }
+                    }
+            call.respondOk(
+                ConsentRequirementsResponse(
+                    required = required,
+                    complete = required.all { it.hasConsented },
+                ),
+            )
+        }.describe {
+            summary = "Policies requiring consent"
+            description = "Active policies plus this user's consent status"
+        }
+
         /**
          * Retrieve all consent records for the authenticated user
          */

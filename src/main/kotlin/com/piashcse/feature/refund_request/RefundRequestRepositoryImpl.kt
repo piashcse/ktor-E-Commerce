@@ -26,6 +26,7 @@ import com.piashcse.model.response.RefundRequestResponse
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
@@ -513,5 +514,43 @@ class RefundRequestRepositoryImpl(
             refundReq.status = RefundStatus.SHIPPED
             eventFor(refundReq, RefundStatus.APPROVED.name, RefundStatus.SHIPPED.name)
             refundReq.toRefundRequestResponse()
+        }
+
+    override suspend fun listForSeller(
+        sellerUserId: String,
+        status: RefundStatus?,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<RefundRequestResponse> =
+        query {
+            val seller = requireSellerByUserId(sellerUserId)
+            val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
+            val orderIds = OrderDAO.find { OrderTable.shopId eq shopId }.map { it.id }
+            if (orderIds.isEmpty()) {
+                return@query PaginatedResponse(emptyList(), PaginationMetadata(0, limit, offset))
+            }
+            RefundRequestTable.selectAll()
+                .where { RefundRequestTable.orderId inList orderIds }
+                .also { query ->
+                    status?.let { query.andWhere { RefundRequestTable.status eq it } }
+                }.orderBy(RefundRequestTable.createdAt to SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) {
+                    RefundRequestDAO.wrapRow(it).toRefundRequestResponse()
+                }
+        }
+
+    override suspend fun listAll(
+        status: RefundStatus?,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<RefundRequestResponse> =
+        query {
+            RefundRequestTable.selectAll()
+                .also { query ->
+                    status?.let { query.andWhere { RefundRequestTable.status eq it } }
+                }.orderBy(RefundRequestTable.createdAt to SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) {
+                    RefundRequestDAO.wrapRow(it).toRefundRequestResponse()
+                }
         }
 }

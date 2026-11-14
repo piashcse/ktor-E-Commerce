@@ -15,6 +15,7 @@ import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
@@ -145,19 +146,60 @@ class SellerToolsService {
     ): PaginatedResponse<SellerReviewResponse> =
         query {
             val seller = SellerDAO.findById(sellerId) ?: sellerId.throwNotFound("Seller")
-            SellerReviewTable.selectAll()
-                .where {
-                    (SellerReviewTable.sellerId eq seller.id) and
-                        (SellerReviewTable.status eq ReviewStatus.ACTIVE)
-                }.orderBy(SellerReviewTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) { SellerReviewDAO.wrapRow(it).toResponse() }
+            reviewsForSellerTx(seller.id.value, limit, offset)
         }
 
     suspend fun reviewsForSellerUser(
         sellerUserId: String,
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<SellerReviewResponse> = reviewsForSeller(requireSellerByUserId(sellerUserId).id.value, limit, offset)
+    ): PaginatedResponse<SellerReviewResponse> =
+        query {
+            // DAO lookups require an active Exposed transaction; resolving the seller
+            // before opening one resulted in "No transaction in context" (500s).
+            val seller = requireSellerByUserId(sellerUserId)
+            reviewsForSellerTx(seller.id.value, limit, offset)
+        }
+
+    private fun reviewsForSellerTx(
+        sellerId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<SellerReviewResponse> =
+        SellerReviewTable.selectAll()
+            .where {
+                (SellerReviewTable.sellerId eq sellerId.entityID(SellerTable)) and
+                    (SellerReviewTable.status eq ReviewStatus.ACTIVE)
+            }.orderBy(SellerReviewTable.createdAt to SortOrder.DESC)
+            .toPaginatedResponse(limit, offset) { SellerReviewDAO.wrapRow(it).toResponse() }
+
+    /** Public shop reviews, exposed so the storefront can show seller reputation. */
+    suspend fun reviewsForShop(
+        shopId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<SellerReviewResponse> =
+        query {
+            SellerReviewTable.selectAll()
+                .where {
+                    (SellerReviewTable.shopId eq shopId.entityID(ShopTable)) and
+                        (SellerReviewTable.status eq ReviewStatus.ACTIVE)
+                }.orderBy(SellerReviewTable.createdAt to SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) { SellerReviewDAO.wrapRow(it).toResponse() }
+        }
+
+    /** The signed-in customer's own seller reviews. */
+    suspend fun reviewsForUser(
+        userId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<SellerReviewResponse> =
+        query {
+            SellerReviewTable.selectAll()
+                .where { SellerReviewTable.userId eq userId.entityID(UserTable) }
+                .orderBy(SellerReviewTable.createdAt to SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) { SellerReviewDAO.wrapRow(it).toResponse() }
+        }
 
     suspend fun adminReviews(
         status: ReviewStatus?,

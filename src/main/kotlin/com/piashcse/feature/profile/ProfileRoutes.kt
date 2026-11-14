@@ -4,6 +4,7 @@ package com.piashcse.feature.profile
 
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.plugin.customerOnlyAuth
+import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
@@ -32,22 +33,34 @@ fun Route.profileRoutes() {
              * Update the authenticated user's profile information
              */
             put {
+                // Prefer a JSON body; keep query parameters working for older clients.
+                val body = runCatching { call.receive<UserProfileRequest>() }.getOrNull()
+
+                fun value(
+                    fromBody: String?,
+                    query: String,
+                ): String? = fromBody ?: call.parameters[query]
+
                 val params =
                     UserProfileRequest(
-                        firstName = call.parameters["firstName"],
-                        lastName = call.parameters["lastName"],
-                        mobile = call.parameters["mobile"],
-                        faxNumber = call.parameters["faxNumber"],
-                        streetAddress = call.parameters["streetAddress"],
-                        city = call.parameters["city"],
-                        identificationType = call.parameters["identificationType"],
-                        identificationNo = call.parameters["identificationNo"],
-                        occupation = call.parameters["occupation"],
-                        postCode = call.parameters["postCode"],
-                        gender = call.parameters["gender"],
+                        firstName = value(body?.firstName, "firstName"),
+                        lastName = value(body?.lastName, "lastName"),
+                        mobile = value(body?.mobile, "mobile"),
+                        faxNumber = value(body?.faxNumber, "faxNumber"),
+                        streetAddress = value(body?.streetAddress, "streetAddress"),
+                        city = value(body?.city, "city"),
+                        identificationType = value(body?.identificationType, "identificationType"),
+                        identificationNo = value(body?.identificationNo, "identificationNo"),
+                        occupation = value(body?.occupation, "occupation"),
+                        postCode = value(body?.postCode, "postCode"),
+                        gender = value(body?.gender, "gender"),
                     )
                 call.respondOk(userProfileService.updateProfile(call.currentUserId, params))
-            }.describe { summary = "Update the authenticated user's profile information" }
+            }.describe {
+                summary = "Update the authenticated user's profile information"
+                description = "Accepts a JSON body (preferred) or query parameters (legacy)"
+                requestBody { jsonBody<UserProfileRequest>() }
+            }
 
             /**
              * Upload a profile image

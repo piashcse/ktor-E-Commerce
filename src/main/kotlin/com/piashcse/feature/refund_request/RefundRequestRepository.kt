@@ -1,5 +1,6 @@
 package com.piashcse.feature.refund_request
 
+import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
@@ -18,6 +19,21 @@ interface RefundRequestRepository {
         orderId: String,
         userId: String,
         userType: UserType,
+        limit: Int = 20,
+        offset: Int = 0,
+    ): PaginatedResponse<RefundRequestResponse>
+
+    /** Seller queue for refunds belonging to their shop. */
+    suspend fun listForSeller(
+        sellerUserId: String,
+        status: RefundStatus?,
+        limit: Int = 20,
+        offset: Int = 0,
+    ): PaginatedResponse<RefundRequestResponse>
+
+    /** Admin queue across all shops. */
+    suspend fun listAll(
+        status: RefundStatus?,
         limit: Int = 20,
         offset: Int = 0,
     ): PaginatedResponse<RefundRequestResponse>

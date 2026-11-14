@@ -34,6 +34,14 @@ fun Route.policyRoutes() {
  */
 fun Route.policyAdminRoutes() {
     val policyRepo: PolicyRepository by inject()
+    get {
+        val (limit, offset) = call.paginateQueryParams()
+        val type = call.request.queryParameters["type"]?.parseEnum<PolicyType>("policy type")
+        call.respondOk(policyRepo.getAllPolicies(type, limit, offset))
+    }.describe {
+        summary = "Admin - List policy documents"
+        description = "Optional type filter; newest versions first"
+    }
     adminWriteRateLimit {
         /**
          * Admin - Create a new policy document or new version

@@ -1,5 +1,6 @@
 package com.piashcse.feature.payment
 
+import com.piashcse.constants.PaymentStatus
 import com.piashcse.model.request.PaymentRequest
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.utils.common.PaginatedResponse
@@ -49,6 +50,13 @@ interface PaymentRepository {
     suspend fun getPaymentsByOrderId(
         orderId: String,
         callerUserId: String,
+        limit: Int = 20,
+        offset: Int = 0,
+    ): PaginatedResponse<PaymentResponse>
+
+    /** Admin payment queue with optional status filter; client secrets are omitted. */
+    suspend fun listPayments(
+        status: PaymentStatus?,
         limit: Int = 20,
         offset: Int = 0,
     ): PaginatedResponse<PaymentResponse>

@@ -36,7 +36,23 @@ fun Route.sellerPublicRoutes() {
 /** Customer creates a seller review after delivery. */
 fun Route.sellerReviewRoutes() {
     val service: SellerToolsService by inject()
+    get {
+        val (limit, offset) = call.paginateQueryParams()
+        val shopId =
+            call.request.queryParameters["shopId"]?.takeIf { it.isNotBlank() }
+                ?: throw com.piashcse.utils.validator.ValidationException("shopId is required")
+        call.respondOk(service.reviewsForShop(shopId, limit, offset))
+    }.describe {
+        summary = "List active seller reviews for a shop"
+        description = "Public shop reputation; requires shopId"
+    }
+
     customerOnlyAuth {
+        get("mine") {
+            val (limit, offset) = call.paginateQueryParams()
+            call.respondOk(service.reviewsForUser(call.currentUserId, limit, offset))
+        }.describe { summary = "List my seller reviews" }
+
         post {
             call.respondCreated(service.createReview(call.currentUserId, call.receive<SellerReviewRequest>()))
         }.describe {
