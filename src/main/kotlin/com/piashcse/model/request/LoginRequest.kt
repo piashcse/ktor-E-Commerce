@@ -1,10 +1,11 @@
 package com.piashcse.model.request
 
+import com.piashcse.constants.Message
 import com.piashcse.constants.UserType
+import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Serializable
 import org.valiktor.functions.hasSize
 import org.valiktor.functions.isEmail
-import org.valiktor.functions.isIn
 import org.valiktor.functions.isNotNull
 import org.valiktor.validate
 
@@ -20,12 +21,9 @@ data class LoginRequest(
             validate(LoginRequest::email).isNotNull().isEmail()
             validate(LoginRequest::password).isNotNull().hasSize(8, 64)
             validate(LoginRequest::userType).isNotNull()
-                .isIn(
-                    UserType.SUPER_ADMIN.name.lowercase(),
-                    UserType.ADMIN.name.lowercase(),
-                    UserType.SELLER.name.lowercase(),
-                    UserType.CUSTOMER.name.lowercase(),
-                )
+        }
+        if (UserType.fromString(userType) == null) {
+            throw ValidationException(Message.Validation.INVALID_USER_TYPE)
         }
     }
 }

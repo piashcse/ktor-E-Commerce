@@ -5,7 +5,9 @@ import com.piashcse.constants.PolicyType
 import com.piashcse.model.request.CouponRequest
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.InventoryRequest
+import com.piashcse.model.request.LoginRequest
 import com.piashcse.model.request.PolicyConsentRequest
+import com.piashcse.model.request.RegisterRequest
 import com.piashcse.model.request.ShippingMethodRequest
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.utils.validator.FieldValidationException
@@ -240,5 +242,21 @@ class PlatformValidationTest {
             )
         assertEquals("John", req.firstName)
         assertNull(req.lastName)
+    }
+
+    // ─── auth request casing ─────────────────────────────────────────
+
+    @Test
+    fun `login user type is case insensitive`() {
+        LoginRequest("user@example.com", "Password1!", "CUSTOMER")
+        LoginRequest("user@example.com", "Password1!", " seller ")
+    }
+
+    @Test
+    fun `register rejects admin and accepts uppercase customer`() {
+        RegisterRequest("user@example.com", "Password1!", "CUSTOMER")
+        assertFailsWith<FieldValidationException> {
+            RegisterRequest("user@example.com", "Password1!", "ADMIN")
+        }
     }
 }

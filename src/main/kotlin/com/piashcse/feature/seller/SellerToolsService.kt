@@ -145,19 +145,32 @@ class SellerToolsService {
     ): PaginatedResponse<SellerReviewResponse> =
         query {
             val seller = SellerDAO.findById(sellerId) ?: sellerId.throwNotFound("Seller")
-            SellerReviewTable.selectAll()
-                .where {
-                    (SellerReviewTable.sellerId eq seller.id) and
-                        (SellerReviewTable.status eq ReviewStatus.ACTIVE)
-                }.orderBy(SellerReviewTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) { SellerReviewDAO.wrapRow(it).toResponse() }
+            reviewsForSellerTx(seller.id.value, limit, offset)
         }
 
     suspend fun reviewsForSellerUser(
         sellerUserId: String,
         limit: Int,
         offset: Int,
-    ): PaginatedResponse<SellerReviewResponse> = reviewsForSeller(requireSellerByUserId(sellerUserId).id.value, limit, offset)
+    ): PaginatedResponse<SellerReviewResponse> =
+        query {
+            // DAO lookups require an active Exposed transaction; resolving the seller
+            // before opening one resulted in "No transaction in context" (500s).
+            val seller = requireSellerByUserId(sellerUserId)
+            reviewsForSellerTx(seller.id.value, limit, offset)
+        }
+
+    private fun reviewsForSellerTx(
+        sellerId: String,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<SellerReviewResponse> =
+        SellerReviewTable.selectAll()
+            .where {
+                (SellerReviewTable.sellerId eq sellerId.entityID(SellerTable)) and
+                    (SellerReviewTable.status eq ReviewStatus.ACTIVE)
+            }.orderBy(SellerReviewTable.createdAt to SortOrder.DESC)
+            .toPaginatedResponse(limit, offset) { SellerReviewDAO.wrapRow(it).toResponse() }
 
     suspend fun adminReviews(
         status: ReviewStatus?,

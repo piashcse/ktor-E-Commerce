@@ -85,6 +85,21 @@ class ProfileRoutesTest {
         }
 
     @Test
+    fun `update profile accepts a JSON body`() =
+        testApplication {
+            coEvery { repo.updateProfile("user-1", any()) } returns sample().copy(firstName = "Body")
+            setup()
+            val res =
+                client.put("/api/v1/profile") {
+                    header(HttpHeaders.Authorization, authHeader(userType = "CUSTOMER"))
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"firstName":"Body","lastName":"Doe"}""")
+                }
+            assertEquals(HttpStatusCode.OK, res.status)
+            assertContains(res.bodyAsText(), "Body")
+        }
+
+    @Test
     fun `update profile without token returns 401`() =
         testApplication {
             setup()

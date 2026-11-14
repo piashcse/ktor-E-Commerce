@@ -532,6 +532,6 @@ enum class UserType {
     fun hasExactRole(role: UserType): Boolean = this == role
 
     companion object {
-        fun fromString(role: String): UserType? = values().find { it.name.equals(role, ignoreCase = true) }
+        fun fromString(role: String): UserType? = values().find { it.name.equals(role.trim(), ignoreCase = true) }
     }
 }
