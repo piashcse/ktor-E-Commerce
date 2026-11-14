@@ -216,20 +216,20 @@ class ProductRepositoryImpl : ProductRepository {
             )
         }
 
-    override suspend fun getProducts(filter: ProductWithFilterRequest): PaginatedResponse<ProductResponse> =
+    override suspend fun getProducts(productQuery: ProductWithFilterRequest): PaginatedResponse<ProductResponse> =
         readQuery {
             val approvedShops = approvedShopIds()
             if (approvedShops.isEmpty()) {
-                return@readQuery PaginatedResponse(emptyList(), PaginationMetadata(0, filter.limit, filter.offset))
+                return@readQuery PaginatedResponse(emptyList(), PaginationMetadata(0, productQuery.limit, productQuery.offset))
             }
             toProductPaginatedResponse(
                 ProductTable.selectAll().andWhere {
                     (ProductTable.status inList listOf(ProductStatus.ACTIVE, ProductStatus.OUT_OF_STOCK)) and
                         ProductTable.deletedAt.isNull() and
                         (ProductTable.shopId inList approvedShops)
-                }.applyProductFilters(filter),
-                filter.limit,
-                filter.offset,
+                }.applyProductFilters(productQuery),
+                productQuery.limit,
+                productQuery.offset,
             )
         }
 
@@ -239,35 +239,36 @@ class ProductRepositoryImpl : ProductRepository {
 
     override suspend fun getProductsByShop(
         shopId: String,
-        filter: ProductWithFilterRequest,
+        productQuery: ProductWithFilterRequest,
     ): PaginatedResponse<ProductResponse> =
         query {
             val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
             if (shop.status != com.piashcse.constants.ShopStatus.APPROVED) {
-                return@query PaginatedResponse(emptyList(), PaginationMetadata(0, filter.limit, filter.offset))
+                return@query PaginatedResponse(emptyList(), PaginationMetadata(0, productQuery.limit, productQuery.offset))
             }
             toProductPaginatedResponse(
                 ProductTable.selectAll().andWhere {
                     (ProductTable.shopId eq shopId) and
                         (ProductTable.status inList listOf(ProductStatus.ACTIVE, ProductStatus.OUT_OF_STOCK)) and
                         ProductTable.deletedAt.isNull()
-                }.applyProductFilters(filter),
-                filter.limit,
-                filter.offset,
+                }.applyProductFilters(productQuery),
+                productQuery.limit,
+                productQuery.offset,
             )
         }
 
     override suspend fun getProductsByUser(
         userId: String,
-        filter: ProductWithFilterRequest,
+        productQuery: ProductWithFilterRequest,
     ): PaginatedResponse<ProductResponse> =
         query {
             toProductPaginatedResponse(
                 ProductTable.selectAll().andWhere {
-                    (ProductTable.userId eq userId) and (ProductTable.status eq ProductStatus.ACTIVE)
-                }.applyProductFilters(filter),
-                filter.limit,
-                filter.offset,
+                    (ProductTable.userId eq userId) and
+                        ProductTable.deletedAt.isNull()
+                }.applyProductFilters(productQuery),
+                productQuery.limit,
+                productQuery.offset,
             )
         }
 
@@ -316,17 +317,17 @@ class ProductRepositoryImpl : ProductRepository {
             productId
         }
 
-    override suspend fun searchProduct(searchRequest: ProductSearchRequest): SearchResponse =
+    override suspend fun searchProduct(productQuery: ProductSearchRequest): SearchResponse =
         query {
-            val useFuzzy = searchRequest.useFuzzy != false && searchRequest.name.length >= 3
+            val useFuzzy = productQuery.useFuzzy != false && productQuery.name.length >= 3
 
-            val (productIds, totalCount) = querySearchIds(searchRequest, useFuzzy)
+            val (productIds, totalCount) = querySearchIds(productQuery, useFuzzy)
 
             if (productIds.isEmpty()) {
-                val facets = buildFacets(searchRequest.name, searchRequest, useFuzzy)
+                val facets = buildFacets(productQuery.name, productQuery, useFuzzy)
                 return@query SearchResponse(
                     products = emptyList(),
-                    metadata = PaginationMetadata(0, searchRequest.limit, searchRequest.offset),
+                    metadata = PaginationMetadata(0, productQuery.limit, productQuery.offset),
                     facets = facets,
                 )
             }
@@ -342,11 +343,11 @@ class ProductRepositoryImpl : ProductRepository {
                     product.toProductResponse(images[product.id.value], stockQuantity = stock[product.id.value] ?: 0)
                 }
 
-            val facets = buildFacets(searchRequest.name, searchRequest, useFuzzy)
+            val facets = buildFacets(productQuery.name, productQuery, useFuzzy)
 
             SearchResponse(
                 products = products,
-                metadata = PaginationMetadata(totalCount.toLong(), searchRequest.limit, searchRequest.offset),
+                metadata = PaginationMetadata(totalCount.toLong(), productQuery.limit, productQuery.offset),
                 facets = facets,
             )
         }
@@ -515,13 +516,13 @@ class ProductRepositoryImpl : ProductRepository {
                 "(similarity(p.name, ?) > ? OR similarity(COALESCE(p.description, ''), ?) > ? " +
                     "OR p.search_vector @@ websearch_to_tsquery('english', ?))"
             } else {
-                "(p.name LIKE ? OR p.description LIKE ? OR p.search_vector @@ websearch_to_tsquery('english', ?))"
+                "(p.name ILIKE ? OR p.description ILIKE ? OR p.search_vector @@ websearch_to_tsquery('english', ?))"
             }
         val matchParams =
             if (useTrigram && term.length >= 3) {
                 listOf<Any>(term, 0.15, term, 0.15, term)
             } else {
-                listOf<Any>("%${term.replace("'", "''")}%", "%${term.replace("'", "''")}%", term)
+                listOf<Any>("%$term%", "%$term%", term)
             }
 
         val extraClauses = mutableListOf<String>()
@@ -557,7 +558,9 @@ class ProductRepositoryImpl : ProductRepository {
             } else {
                 "p.status IN ('$statusName', '${ProductStatus.OUT_OF_STOCK.name}')"
             }
-        val baseWhere = "$statusSql AND p.deleted_at IS NULL AND $matchClause$extraSql"
+        val baseWhere =
+            "$statusSql AND p.deleted_at IS NULL " +
+                "AND p.shop_id IN (SELECT id FROM shop WHERE status = 'APPROVED') AND $matchClause$extraSql"
 
         val categorySql =
             """
