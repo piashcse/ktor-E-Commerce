@@ -1095,41 +1095,7 @@ class OrderRepositoryImpl(
                         total = total.toPlainString(),
                     )
             }
-            val preview =
-                loyaltyService.redemptionPreviewTx(
-                    userId = userId,
-                    points = checkoutRequest.usePoints,
-                    walletCreditUsd = checkoutRequest.walletCredit,
-                    giftCardCode = checkoutRequest.giftCardCode,
-                )
-            val responseTotal = BigDecimal(response.total)
-            val totalUsd = responseTotal.divide(fxRate, 2, RoundingMode.HALF_UP)
-            val walletUsd = preview.pointsUsd.add(preview.creditUsd).min(totalUsd)
-            val giftUsd = preview.giftCardUsd.min(totalUsd.subtract(walletUsd).max(BigDecimal.ZERO))
-            val walletDiscount = Money.scale2(walletUsd.multiply(fxRate)).min(responseTotal)
-            val giftDiscount = Money.scale2(giftUsd.multiply(fxRate)).min(responseTotal.subtract(walletDiscount))
-            response =
-                response.copy(
-                    walletDiscount = walletDiscount.toPlainString(),
-                    giftCardDiscount = giftDiscount.toPlainString(),
-                    total =
-                        Money.scale2(
-                            responseTotal.subtract(walletDiscount).subtract(giftDiscount).max(BigDecimal.ZERO),
-                        ).toPlainString(),
-                    pointsBalance = preview.pointsAvailable,
-                    storeCreditBalance = preview.creditAvailable.toPlainString(),
-                )
-            val locale = com.piashcse.constants.Localization.normalize(checkoutRequest.locale)
-            response =
-                response.copy(
-                    locale = locale,
-                    formattedSubTotal = i18n.formatMoney(BigDecimal(response.subTotal), currency, locale),
-                    formattedShipping = i18n.formatMoney(BigDecimal(response.shippingCost), currency, locale),
-                    formattedTax = i18n.formatMoney(BigDecimal(response.taxAmount), currency, locale),
-                    formattedDiscount = i18n.formatMoney(BigDecimal(response.discountAmount), currency, locale),
-                    formattedTotal = i18n.formatMoney(BigDecimal(response.total), currency, locale),
-                )
-            // Coupons/promotions reduce the taxable base; refresh line tax and totals.
+            // Coupons/promotions reduce the taxable base; refresh line tax and totals before wallet/gift-card redemptions.
             val discountAmount = BigDecimal(response.discountAmount)
             if (discountAmount > BigDecimal.ZERO) {
                 val eligibleIds = eligibleCouponProductIds
@@ -1183,21 +1149,42 @@ class OrderRepositoryImpl(
                                     .add(BigDecimal(response.shippingCost))
                                     .add(recalculatedExclusive),
                             ).toPlainString(),
-                        // Re-format after the post-discount tax/total recalculation so
-                        // formatted fields never disagree with numeric fields.
-                        formattedTax = i18n.formatMoney(recalculatedTax, currency, locale),
-                        formattedTotal =
-                            i18n.formatMoney(
-                                Money.scale2(
-                                    sub.subtract(discountAmount).max(BigDecimal.ZERO)
-                                        .add(BigDecimal(response.shippingCost))
-                                        .add(recalculatedExclusive),
-                                ),
-                                currency,
-                                locale,
-                            ),
                     )
             }
+            val preview =
+                loyaltyService.redemptionPreviewTx(
+                    userId = userId,
+                    points = checkoutRequest.usePoints,
+                    walletCreditUsd = checkoutRequest.walletCredit,
+                    giftCardCode = checkoutRequest.giftCardCode,
+                )
+            val responseTotal = BigDecimal(response.total)
+            val totalUsd = responseTotal.divide(fxRate, 2, RoundingMode.HALF_UP)
+            val walletUsd = preview.pointsUsd.add(preview.creditUsd).min(totalUsd)
+            val giftUsd = preview.giftCardUsd.min(totalUsd.subtract(walletUsd).max(BigDecimal.ZERO))
+            val walletDiscount = Money.scale2(walletUsd.multiply(fxRate)).min(responseTotal)
+            val giftDiscount = Money.scale2(giftUsd.multiply(fxRate)).min(responseTotal.subtract(walletDiscount))
+            response =
+                response.copy(
+                    walletDiscount = walletDiscount.toPlainString(),
+                    giftCardDiscount = giftDiscount.toPlainString(),
+                    total =
+                        Money.scale2(
+                            responseTotal.subtract(walletDiscount).subtract(giftDiscount).max(BigDecimal.ZERO),
+                        ).toPlainString(),
+                    pointsBalance = preview.pointsAvailable,
+                    storeCreditBalance = preview.creditAvailable.toPlainString(),
+                )
+            val locale = com.piashcse.constants.Localization.normalize(checkoutRequest.locale)
+            response =
+                response.copy(
+                    locale = locale,
+                    formattedSubTotal = i18n.formatMoney(BigDecimal(response.subTotal), currency, locale),
+                    formattedShipping = i18n.formatMoney(BigDecimal(response.shippingCost), currency, locale),
+                    formattedTax = i18n.formatMoney(BigDecimal(response.taxAmount), currency, locale),
+                    formattedDiscount = i18n.formatMoney(BigDecimal(response.discountAmount), currency, locale),
+                    formattedTotal = i18n.formatMoney(BigDecimal(response.total), currency, locale),
+                )
             response
         }
     }

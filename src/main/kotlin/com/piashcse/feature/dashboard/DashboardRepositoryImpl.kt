@@ -369,11 +369,15 @@ class DashboardRepositoryImpl : DashboardRepository {
                     ),
                 products =
                     mapOf(
-                        "total" to ProductTable.selectAll().where { ProductTable.shopId inList sellerShopIds }.count(),
+                        "total" to
+                            ProductTable.selectAll().where {
+                                (ProductTable.shopId inList sellerShopIds) and ProductTable.deletedAt.isNull()
+                            }.count(),
                         "outOfStock" to
                             ProductTable.selectAll().where {
                                 (ProductTable.shopId inList sellerShopIds) and
-                                    (ProductTable.status eq ProductStatus.OUT_OF_STOCK)
+                                    (ProductTable.status eq ProductStatus.OUT_OF_STOCK) and
+                                    ProductTable.deletedAt.isNull()
                             }.count(),
                         "lowStock" to
                             InventoryTable.selectAll().where {

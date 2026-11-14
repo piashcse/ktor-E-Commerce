@@ -165,7 +165,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                     it.rating = rating
                     recalculateProductRating(it.productId.value)
                     it.toResponseWithImages()
-                } ?: review.throwNotFound("Review")
+                } ?: reviewId.throwNotFound("Review")
         }
 
     override suspend fun markHelpful(

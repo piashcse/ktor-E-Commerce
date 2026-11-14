@@ -181,13 +181,18 @@ class InventoryRepositoryImpl : InventoryRepository {
                 inventoryQuery.orderBy(InventoryTable.createdAt to SortOrder.ASC).firstOrNull()
                     ?: productId.throwNotFound("Inventory")
 
-            if (quantity <= 0) throw ValidationException(Message.Inventory.quantityNotPositive(operation))
-            if (operation.lowercase() !in listOf("add", "subtract", "set")) {
+            val normalizedOp = operation.lowercase()
+            if (normalizedOp !in listOf("add", "subtract", "set")) {
                 throw ValidationException(Message.Inventory.invalidOperation(operation))
+            }
+            if (normalizedOp == "set") {
+                if (quantity < 0) throw ValidationException(Message.Inventory.quantityNotPositive(operation))
+            } else if (quantity <= 0) {
+                throw ValidationException(Message.Inventory.quantityNotPositive(operation))
             }
 
             val newStock =
-                when (operation.lowercase()) {
+                when (normalizedOp) {
                     "add" -> inventory.stockQuantity + quantity
                     "subtract" -> {
                         if (inventory.stockQuantity < quantity) {

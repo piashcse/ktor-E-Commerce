@@ -49,9 +49,13 @@ class SocialAuthService(
         if (user.mfaEnabled) {
             val secret = user.mfaSecret ?: throw ValidationException("MFA is not configured")
             if (mfaCode.isNullOrBlank()) throw com.piashcse.utils.validator.MfaRequiredException()
-            if (!mfaService.verifyStoredSecret(secret, mfaCode)) {
+            val matchedStep =
+                mfaService.verifyStoredStep(secret, mfaCode)
+                    ?: throw com.piashcse.utils.validator.InvalidMfaCodeException()
+            if (matchedStep <= (user.mfaLastUsedStep ?: Long.MIN_VALUE)) {
                 throw com.piashcse.utils.validator.InvalidMfaCodeException()
             }
+            authRepo.recordMfaStep(user.id.value, matchedStep)
         }
         if (user.socialSubject == null || !user.isVerified) {
             query {
