@@ -7,6 +7,9 @@ import com.piashcse.constants.PolicyType
 import com.piashcse.feature.consent.ConsentRepository
 import com.piashcse.feature.featureflag.FeatureFlags
 import com.piashcse.feature.order.OrderRepository
+import com.piashcse.feature.payment.PaymentGateway
+import com.piashcse.feature.payment.availablePaymentMethods
+import com.piashcse.feature.payment.isMethodAllowed
 import com.piashcse.feature.shipping_address.ShippingAddressRepository
 import com.piashcse.feature.shipping_method.ShippingMethodRepository
 import com.piashcse.model.request.CheckoutRequest
@@ -40,6 +43,16 @@ fun Route.checkoutRoutes() {
     val consentRepo: ConsentRepository by inject()
     val guestCheckoutService: GuestCheckoutService by inject()
     val featureFlags: FeatureFlags by inject()
+    val gateway: PaymentGateway by inject()
+
+    fun requireSupportedPayment(method: com.piashcse.constants.PaymentMethod?) {
+        if (!gateway.isMethodAllowed(method)) {
+            throw ValidationException(
+                "Payment method $method is not available. Choose one of: " +
+                    gateway.availablePaymentMethods().joinToString(),
+            )
+        }
+    }
 
     suspend fun consentRequired(): Boolean =
         DotEnv.getBoolean("REQUIRE_POLICY_CONSENT", false) || featureFlags.isEnabled("require_policy_consent")
@@ -65,12 +78,25 @@ fun Route.checkoutRoutes() {
             if (consentRequired() && !body.consentAccepted) {
                 throw ValidationException("Explicit policy consent is required for guest checkout")
             }
+            requireSupportedPayment(body.paymentMethod)
             call.respondCreated(guestCheckoutService.placeOrder(body))
         }.describe {
             summary = "Guest checkout"
             description = "Feature-flagged; creates/claims a guest account and places the order"
             requestBody { jsonBody<GuestCheckoutRequest>() }
             responses { created<List<OrderResponse>>("Orders created") }
+        }
+
+        /**
+         * Server-side quote for the guest checkout page (tax, shipping, coupon).
+         */
+        post("guest/summary") {
+            call.respondOk(guestCheckoutService.quote(call.receive<GuestCheckoutRequest>()))
+        }.describe {
+            summary = "Guest checkout quote"
+            description = "Totals, tax, cheapest shipping and coupon validity before an order exists"
+            requestBody { jsonBody<GuestCheckoutRequest>() }
+            responses { ok<CheckoutSummaryResponse>("Checkout totals") }
         }
     }
     customerOnlyAuth {
@@ -139,6 +165,7 @@ fun Route.checkoutRoutes() {
             post("place-order") {
                 val body = call.receive<CheckoutRequest>()
                 val key = call.idempotencyKey(body.idempotencyKey)
+                requireSupportedPayment(body.paymentMethod)
                 requireConfiguredConsents(call.currentUserId)
                 call.respondCreated(orderRepo.placeOrder(call.currentUserId, body.copy(idempotencyKey = key)))
             }.describe {

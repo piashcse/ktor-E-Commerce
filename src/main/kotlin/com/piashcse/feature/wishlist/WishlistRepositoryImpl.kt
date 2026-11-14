@@ -15,6 +15,7 @@ import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -38,7 +39,11 @@ class WishlistRepositoryImpl : WishlistRepository {
                 WishlistDAO.new {
                     this.userId = userId.entityID(UserTable)
                     this.productId = productId.entityID(ProductTable)
-                }.toWishlistResponse(product.toProductResponse())
+                }.toWishlistResponse(
+                    product.toProductResponse(
+                        stockQuantity = stockByProductIds(listOf(product.id.value))[product.id.value] ?: 0,
+                    ),
+                )
             } else {
                 throw productId.throwConflict("ProductResponse")
             }
@@ -54,7 +59,7 @@ class WishlistRepositoryImpl : WishlistRepository {
                 .selectAll()
                 .andWhere {
                     (WishlistTable.userId eq userId) and
-                        (ProductTable.status eq ProductStatus.ACTIVE) and
+                        (ProductTable.status inList listOf(ProductStatus.ACTIVE, ProductStatus.OUT_OF_STOCK)) and
                         ProductTable.deletedAt.isNull()
                 }
                 .paginateWithPreload(
@@ -63,7 +68,10 @@ class WishlistRepositoryImpl : WishlistRepository {
                     rowMapper = { ProductDAO.wrapRow(it) },
                 ) { products ->
                     val images = ProductImageDAO.imagesForProducts(products.map { it.id })
-                    products.map { it.toProductResponse(images[it.id.value]) }
+                    val stock = stockByProductIds(products.map { it.id.value })
+                    products.map {
+                        it.toProductResponse(images[it.id.value], stockQuantity = stock[it.id.value] ?: 0)
+                    }
                 }
         }
 
@@ -73,7 +81,10 @@ class WishlistRepositoryImpl : WishlistRepository {
     ): ProductResponse =
         query {
             val wishlistItem = requireWishlistItem(userId, productId)
-            val product = requireProduct(productId, "ProductResponse").toProductResponse()
+            val product =
+                requireProduct(productId, "ProductResponse").toProductResponse(
+                    stockQuantity = stockByProductIds(listOf(productId))[productId] ?: 0,
+                )
             wishlistItem.delete()
             product
         }
@@ -131,5 +142,12 @@ class WishlistRepositoryImpl : WishlistRepository {
         query {
             !WishlistDAO.find { WishlistTable.userId eq userId and (WishlistTable.productId eq productId) }
                 .empty()
+        }
+
+    override suspend fun productIds(userId: String): List<String> =
+        query {
+            WishlistDAO.find { WishlistTable.userId eq userId }
+                .map { it.productId.value }
+                .distinct()
         }
 }

@@ -122,6 +122,10 @@ fun ApplicationCall.productWithFilterRequest(defaultPerPage: Int = AppConstants.
         categoryId = request.queryParameters["categoryId"],
         subCategoryId = request.queryParameters["subCategoryId"],
         brandId = request.queryParameters["brandId"],
+        shopId = request.queryParameters["shopId"],
+        minRating = request.queryParameters["minRating"]?.toDoubleOrNull(),
+        inStockOnly = request.queryParameters["inStockOnly"]?.toBooleanStrictOrNull(),
+        freeShipping = request.queryParameters["freeShipping"]?.toBooleanStrictOrNull(),
         sortBy = request.queryParameters["sortBy"],
         sortOrder = request.queryParameters["sortOrder"],
     )

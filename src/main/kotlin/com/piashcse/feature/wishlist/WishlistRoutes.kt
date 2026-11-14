@@ -67,6 +67,16 @@ fun Route.wishlistRoutes() {
                 val productId = call.requireQueryParameter("productId")
                 call.respondOk(wishlistRepo.isProductInWishlist(call.currentUserId, productId))
             }.describe { summary = "Check if a specific product is in the user's wishlist" }
+
+            /**
+             * Batched wishlist state for product grids.
+             */
+            get("ids") {
+                call.respondOk(wishlistRepo.productIds(call.currentUserId))
+            }.describe {
+                summary = "List wishlisted product IDs"
+                description = "One call to hydrate wishlist buttons across a product grid"
+            }
         }
     }
 }

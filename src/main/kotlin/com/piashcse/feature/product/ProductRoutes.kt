@@ -173,6 +173,8 @@ fun Route.productRoutes() {
                     sortBy = call.request.queryParameters["sortBy"] ?: "relevance",
                     sortOrder = call.request.queryParameters["sortOrder"] ?: "desc",
                     useFuzzy = call.request.queryParameters["useFuzzy"]?.toBooleanStrictOrNull() ?: true,
+                    inStockOnly = call.request.queryParameters["inStockOnly"]?.toBooleanStrictOrNull(),
+                    minRating = call.request.queryParameters["minRating"]?.toDoubleOrNull(),
                 )
             val result = productCatalogService.searchProduct(queryParams)
             call.respondOk(result.copy(products = translations.localizeAll(result.products, call.locale)))

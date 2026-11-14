@@ -3,6 +3,7 @@ package com.piashcse.feature.review_rating
 import com.piashcse.constants.ReviewStatus
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.model.response.ReviewRatingResponse
+import com.piashcse.model.response.ReviewSummaryResponse
 import com.piashcse.utils.common.PaginatedResponse
 
 interface ReviewRatingRepository {
@@ -11,6 +12,9 @@ interface ReviewRatingRepository {
         limit: Int,
         offset: Int = 0,
     ): PaginatedResponse<ReviewRatingResponse>
+
+    /** Aggregate rating distribution for a product, regardless of pagination. */
+    suspend fun getReviewSummary(productId: String): ReviewSummaryResponse
 
     suspend fun addReviewRating(
         userId: String,

@@ -34,5 +34,8 @@ data class ProductResponse(
     val rating: Double = 0.0,
     val totalReviews: Int = 0,
     val totalSales: Int = 0,
+    /** Units available across every warehouse (all variants when the product has variants). */
+    val stockQuantity: Int = 0,
+    val inStock: Boolean = true,
     val variants: List<ProductVariantResponse> = emptyList(),
 )

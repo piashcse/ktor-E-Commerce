@@ -1,5 +1,6 @@
 package com.piashcse.mapper
 
+import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.model.response.ProductVariantResponse
@@ -8,6 +9,7 @@ import com.piashcse.utils.common.Money
 fun ProductDAO.toProductResponse(
     images: List<String>? = null,
     variants: List<ProductVariantResponse> = emptyList(),
+    stockQuantity: Int? = null,
 ) = ProductResponse(
     id = id.value,
     userId = userId.value,
@@ -38,5 +40,7 @@ fun ProductDAO.toProductResponse(
     rating = rating.toDouble(),
     totalReviews = totalReviews,
     totalSales = totalSales,
+    stockQuantity = stockQuantity ?: 0,
+    inStock = stockQuantity?.let { it > 0 } ?: (status != ProductStatus.OUT_OF_STOCK),
     variants = variants,
 )

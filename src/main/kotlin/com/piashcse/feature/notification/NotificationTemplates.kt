@@ -10,7 +10,12 @@ object NotificationTemplates {
     fun orderPlaced(
         orderNumber: String,
         total: String,
-    ) = Content("Order $orderNumber placed", "Your order total is $total. We will notify you when it ships.")
+        trackingUrl: String? = null,
+    ) = Content(
+        "Order $orderNumber placed",
+        "Your order total is $total. We will notify you when it ships." +
+            (trackingUrl?.let { "\n\nTrack your order: $it" } ?: ""),
+    )
 
     fun paymentCompleted(
         amount: String,
@@ -35,6 +40,7 @@ object NotificationTemplates {
         orderNumber: String,
         status: String,
         trackingNumber: String? = null,
+        trackingUrl: String? = null,
     ): Content {
         val title =
             when (status) {
@@ -52,9 +58,18 @@ object NotificationTemplates {
                 "CANCELED" -> "Your order $orderNumber was canceled."
                 else -> "Your order $orderNumber is now $status."
             }
-        return Content(title, body)
+        return Content(
+            title,
+            body + (trackingUrl?.let { "\n\nView your order: $it" } ?: ""),
+        )
     }
 
-    fun backInStock(productName: String) =
-        Content("$productName is back in stock", "$productName is available again. Order it before it sells out.")
+    fun backInStock(
+        productName: String,
+        productUrl: String? = null,
+    ) = Content(
+        "$productName is back in stock",
+        "$productName is available again. Order it before it sells out." +
+            (productUrl?.let { "\n\nBuy it now: $it" } ?: ""),
+    )
 }

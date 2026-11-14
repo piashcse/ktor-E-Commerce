@@ -21,6 +21,7 @@ import org.koin.ktor.ext.inject
  */
 fun Route.shopRoutes() {
     val shopRepo: ShopRepository by inject()
+    val productRepo: com.piashcse.feature.product.ProductRepository by inject()
     /**
      * Retrieve detailed information about a specific shop
      */
@@ -30,6 +31,24 @@ fun Route.shopRoutes() {
         if (shop.status != ShopStatus.APPROVED) throw NotFoundException(Message.Shops.NOT_FOUND)
         call.respondOk(shop)
     }.describe { summary = "Retrieve detailed information about a specific shop" }
+
+    /**
+     * Paginated product listing for one shop storefront.
+     */
+    get("/{id}/products") {
+        val shopId = call.requirePathParameter("id")
+        val shop = shopRepo.getShopById(shopId) ?: throw NotFoundException(Message.Shops.NOT_FOUND)
+        if (shop.status != ShopStatus.APPROVED) throw NotFoundException(Message.Shops.NOT_FOUND)
+        call.respondOk(
+            productRepo.getProductsByShop(
+                shopId,
+                call.productWithFilterRequest(defaultPerPage = 12),
+            ),
+        )
+    }.describe {
+        summary = "List products for a shop"
+        description = "Paginated, filterable storefront listing scoped to one approved shop"
+    }
 
     /**
      * Retrieve public shops with filters (public)

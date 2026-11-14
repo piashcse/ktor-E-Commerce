@@ -18,6 +18,7 @@ import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.WishlistDAO
 import com.piashcse.database.entities.WishlistTable
+import com.piashcse.database.entities.stockByProductIds
 import com.piashcse.mapper.toProductResponse
 import com.piashcse.model.response.ProductResponse
 import com.piashcse.service.Cache
@@ -265,7 +266,8 @@ class RecommendationService(
                 .associateBy { it.id.value }
         val ordered = ids.mapNotNull { products[it] }
         val images = ProductImageDAO.imagesForProducts(ordered.map { it.id })
-        return ordered.map { it.toProductResponse(images[it.id.value]) }
+        val stock = stockByProductIds(ordered.map { it.id.value })
+        return ordered.map { it.toProductResponse(images[it.id.value], stockQuantity = stock[it.id.value] ?: 0) }
     }
 
     private fun validProducts(products: List<ProductDAO>): List<ProductDAO> {

@@ -16,6 +16,12 @@ data class CheckoutSummaryResponse(
     val giftCardDiscount: String = "0.00",
     val pointsBalance: Int = 0,
     val storeCreditBalance: String = "0.00",
+    /** Coupon applied to this quote; invalid codes are reported, not thrown. */
+    val couponCode: String? = null,
+    val couponValid: Boolean? = null,
+    val couponError: String? = null,
+    val freeShippingThreshold: String = "75.00",
+    val freeShippingRemaining: String = "0.00",
     val locale: String = "en",
     val formattedSubTotal: String? = null,
     val formattedShipping: String? = null,

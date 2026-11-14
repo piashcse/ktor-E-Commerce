@@ -62,4 +62,7 @@ interface WishlistRepository {
         userId: String,
         productId: String,
     ): Boolean
+
+    /** All wishlisted product IDs, so storefront cards can hydrate hearts in one call. */
+    suspend fun productIds(userId: String): List<String>
 }

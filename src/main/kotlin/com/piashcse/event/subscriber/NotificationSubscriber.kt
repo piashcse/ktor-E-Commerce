@@ -29,6 +29,7 @@ import com.piashcse.event.UserRegisteredEvent
 import com.piashcse.feature.notification.NotificationDispatcher
 import com.piashcse.feature.notification.NotificationMessage
 import com.piashcse.feature.notification.NotificationTemplates
+import com.piashcse.feature.notification.StorefrontLinks
 import com.piashcse.feature.seller.CommissionService
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
@@ -49,7 +50,12 @@ class NotificationSubscriber(
     private fun messageFor(event: DomainEvent): NotificationMessage? =
         when (event) {
             is OrderPlacedEvent -> {
-                val content = NotificationTemplates.orderPlaced(event.orderNumber, Money.str(event.total))
+                val content =
+                    NotificationTemplates.orderPlaced(
+                        event.orderNumber,
+                        Money.str(event.total),
+                        StorefrontLinks.orderTracking(event.orderNumber, event.email),
+                    )
                 NotificationMessage(
                     userId = event.userId,
                     email = event.email,
@@ -66,6 +72,7 @@ class NotificationSubscriber(
                         event.orderNumber,
                         event.toStatus,
                         event.trackingNumber,
+                        StorefrontLinks.orderTracking(event.orderNumber, event.email),
                     )
                 NotificationMessage(
                     userId = event.userId,
@@ -170,7 +177,11 @@ class NotificationSubscriber(
                         }
                 }.toList()
             }
-        val content = NotificationTemplates.backInStock(product.name)
+        val content =
+            NotificationTemplates.backInStock(
+                product.name,
+                StorefrontLinks.product(product.id.value),
+            )
         alerts.forEach { alert ->
             val user = query { UserDAO.findById(alert.userId.value) } ?: return@forEach
             if (!user.isActive) return@forEach
