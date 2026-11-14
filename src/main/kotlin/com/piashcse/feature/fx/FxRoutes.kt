@@ -31,6 +31,17 @@ data class FxRateResponse(
     val effectiveAt: String,
 )
 
+/** Public FX rates for storefront currency selection. */
+fun Route.fxPublicRoutes() {
+    val fxService: FxService by inject()
+    get {
+        call.respondOk(fxService.listRates())
+    }.describe {
+        summary = "List FX rates"
+        description = "Public target-currency rates applied to checkout totals"
+    }
+}
+
 /** Admin FX-rate management so multi-currency checkout is operable without SQL. */
 fun Route.fxAdminRoutes() {
     val fxService: FxService by inject()

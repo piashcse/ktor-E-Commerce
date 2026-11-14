@@ -26,6 +26,7 @@ import com.piashcse.feature.cms.cmsRoutes
 import com.piashcse.feature.cms.seoAdminRoutes
 import com.piashcse.feature.cms.seoRoutes
 import com.piashcse.feature.cms.seoSiteRoutes
+import com.piashcse.feature.config.configRoutes
 import com.piashcse.feature.consent.consentAdminRoutes
 import com.piashcse.feature.consent.consentRoutes
 import com.piashcse.feature.coupon.couponAdminRoutes
@@ -37,6 +38,7 @@ import com.piashcse.feature.fraud.chargebackAdminRoutes
 import com.piashcse.feature.fraud.fraudAdminRoutes
 import com.piashcse.feature.fraud.paymentRiskAdminRoutes
 import com.piashcse.feature.fx.fxAdminRoutes
+import com.piashcse.feature.fx.fxPublicRoutes
 import com.piashcse.feature.i18n.i18nRoutes
 import com.piashcse.feature.i18n.productTranslationAdminRoutes
 import com.piashcse.feature.inventory.inventoryAdminRoutes
@@ -112,6 +114,7 @@ import com.piashcse.feature.tax.taxAdminRoutes
 import com.piashcse.feature.tax.taxClassAdminRoutes
 import com.piashcse.feature.tax.taxExemptionAdminRoutes
 import com.piashcse.feature.tax.taxZoneAdminRoutes
+import com.piashcse.feature.user.adminUserRoutes
 import com.piashcse.feature.warehouse.warehouseSellerRoutes
 import com.piashcse.feature.webhook.webhookAdminRoutes
 import com.piashcse.feature.wishlist.wishlistRoutes
@@ -220,6 +223,8 @@ private fun Route.customerRoutes() {
     route("wallet") { walletRoutes() }.describe { tag(ApiTags.LOYALTY) }
     route("referrals") { referralRoutes() }.describe { tag(ApiTags.LOYALTY) }
     route("i18n") { i18nRoutes() }.describe { tag(ApiTags.LOCALIZATION) }
+    route("config") { configRoutes() }.describe { tag(ApiTags.CONTENT) }
+    route("fx-rates") { fxPublicRoutes() }.describe { tag(ApiTags.FX) }
     route("analytics") { analyticsRoutes() }.describe { tag(ApiTags.ANALYTICS) }
     route("sellers") { sellerPublicRoutes() }.describe { tag(ApiTags.SELLER) }
     route("seller-reviews") { sellerReviewRoutes() }.describe { tag(ApiTags.SELLER) }
@@ -278,6 +283,7 @@ private fun Route.adminRoutes() {
     route("admin") {
         adminAuth {
             route("auth") { authAdminRoutes() }.describe { tag(ApiTags.AUTH) }
+            route("users") { adminUserRoutes() }.describe { tag(ApiTags.AUTH) }
             route("brands") { brandAdminRoutes() }.describe { tag(ApiTags.BRAND) }
             route("product-categories") { productCategoryAdminRoutes() }.describe { tag(ApiTags.PRODUCT_CATEGORY) }
             route("product-subcategories") { productSubCategoryAdminRoutes() }.describe { tag(ApiTags.PRODUCT_SUB_CATEGORY) }

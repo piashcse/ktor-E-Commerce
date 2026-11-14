@@ -24,8 +24,12 @@ fun Route.storeLocatorRoutes() {
     get {
         call.respondOk(
             service.stores(
-                latitude = call.request.queryParameters["lat"]?.toDoubleOrNull(),
-                longitude = call.request.queryParameters["lng"]?.toDoubleOrNull(),
+                latitude =
+                    (call.request.queryParameters["lat"] ?: call.request.queryParameters["latitude"])
+                        ?.toDoubleOrNull(),
+                longitude =
+                    (call.request.queryParameters["lng"] ?: call.request.queryParameters["longitude"])
+                        ?.toDoubleOrNull(),
                 radiusKm = call.request.queryParameters["radiusKm"]?.toDoubleOrNull(),
                 limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20,
             ),

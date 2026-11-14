@@ -9,10 +9,13 @@ import com.piashcse.model.response.UserProfileResponse
 import com.piashcse.plugin.BigDecimalSerializer
 import com.piashcse.plugin.LocalDateSerializer
 import com.piashcse.plugin.LocalDateTimeSerializer
+import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -60,6 +63,21 @@ class ContractSerializationTest {
         val profile = json.decodeFromString<UserProfileResponse>(body)
         assertNotNull(profile.dateOfBirth)
         assertTrue(json.encodeToString(profile).contains("2000-01-02"))
+    }
+
+    @Test
+    fun `pagination metadata always encodes computed fields`() {
+        val response =
+            PaginatedResponse(
+                data = listOf("a", "b"),
+                metadata = PaginationMetadata(totalCount = 12, limit = 2, offset = 2),
+            )
+        val body = json.encodeToString(response)
+        assertContains(body, "\"page\":2")
+        assertContains(body, "\"perPage\":2")
+        assertContains(body, "\"totalPages\":6")
+        assertContains(body, "\"hasNext\":true")
+        assertContains(body, "\"hasPrev\":true")
     }
 
     @Test
