@@ -3,8 +3,8 @@
 package com.piashcse.feature.privacy
 
 import com.piashcse.plugin.requireRole
-import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.receive
 import io.ktor.server.routing.*
@@ -29,7 +29,7 @@ fun Route.privacyRoutes() {
         post("erase") {
             val body = call.receive<EraseAccountRequest>()
             privacyService.erase(call.currentUserId, body.password)
-            call.respondOk(MessageResponse("Account erased and anonymized"))
+            call.respondDeleted("Account erased and anonymized")
         }.describe { summary = "Erase/anonymize the authenticated account (password required)" }
     }
 }

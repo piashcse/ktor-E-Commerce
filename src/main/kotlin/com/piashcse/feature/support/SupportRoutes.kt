@@ -13,7 +13,7 @@ import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.standardErrors
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -37,7 +37,7 @@ fun Route.supportRoutes() {
     val service: SupportService by inject()
     requireRole {
         get {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(service.myTickets(call.currentUserId, limit, offset))
         }.describe { summary = "List my support tickets" }
 
@@ -126,7 +126,7 @@ fun Route.supportRoutes() {
 fun Route.supportAdminRoutes() {
     val service: SupportService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         val status = call.request.queryParameters["status"]?.parseEnum<TicketStatus>("ticket status")
         val priority = call.request.queryParameters["priority"]?.parseEnum<TicketPriority>("ticket priority")
         call.respondOk(

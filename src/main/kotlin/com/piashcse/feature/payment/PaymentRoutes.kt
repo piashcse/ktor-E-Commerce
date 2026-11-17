@@ -7,13 +7,13 @@ import com.piashcse.model.request.PaymentRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.writeRateLimit
-import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondMessage
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
@@ -36,7 +36,7 @@ fun Route.paymentRoutes() {
             call.request.headers["Stripe-Signature"]
                 ?: call.request.headers["X-Webhook-Signature"]
         val result = paymentRepo.handleWebhook(provider, call.receiveText(), signature)
-        call.respondOk(MessageResponse(result.message))
+        call.respondMessage(result.message)
     }.describe {
         summary = "Payment provider webhook"
         description = "Verifies the provider signature and applies payment/refund state changes idempotently"
@@ -67,7 +67,7 @@ fun Route.paymentRoutes() {
          */
         get("order/{orderId}") {
             val orderId = call.requirePathParameter("orderId")
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(paymentRepo.getPaymentsByOrderId(orderId, call.currentUserId, limit, offset))
         }.describe { summary = "Retrieve all payments for a specific order" }
     }
@@ -80,7 +80,7 @@ fun Route.paymentRoutes() {
 fun Route.paymentAdminRoutes() {
     val paymentRepo: PaymentRepository by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         val status = call.request.queryParameters["status"]?.parseEnum<PaymentStatus>("payment status")
         call.respondOk(paymentRepo.listPayments(status, limit, offset))
     }.describe {

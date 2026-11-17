@@ -6,7 +6,7 @@ import com.piashcse.constants.Localization
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
-import com.piashcse.utils.common.MessageResponse
+import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.NotFoundException
 import io.ktor.server.request.receive
@@ -59,7 +59,7 @@ fun Route.productTranslationAdminRoutes() {
             if (!translations.delete(productId, locale)) {
                 throw NotFoundException("Translation not found")
             }
-            call.respondOk(MessageResponse("Translation deleted"))
+            call.respondDeleted("Translation deleted")
         }.describe { summary = "Delete a product translation" }
     }
 }

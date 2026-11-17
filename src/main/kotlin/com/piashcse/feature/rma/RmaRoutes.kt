@@ -11,7 +11,7 @@ import com.piashcse.plugin.ok
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.requireUserType
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -66,7 +66,7 @@ fun Route.rmaRoutes() {
         }
 
         get {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(service.getUserRmas(call.currentUserId, limit, offset))
         }.describe {
             summary = "List my RMAs"
@@ -78,7 +78,7 @@ fun Route.rmaRoutes() {
 fun Route.rmaSellerRoutes() {
     val service: RmaService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.getSellerRmas(call.currentUserId, limit, offset))
     }.describe {
         summary = "Seller: list RMAs"
@@ -107,7 +107,7 @@ fun Route.rmaSellerRoutes() {
 fun Route.rmaAdminRoutes() {
     val service: RmaService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.getAdminRmas(limit, offset, call.request.queryParameters["status"]))
     }.describe {
         summary = "Admin: list RMAs"

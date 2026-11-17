@@ -1,5 +1,7 @@
 @file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
 
+@file:Suppress("MatchingDeclarationName")
+
 package com.piashcse.feature.user
 
 import com.piashcse.constants.Permission
@@ -8,7 +10,7 @@ import com.piashcse.database.entities.UserTable
 import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.requirePermission
 import com.piashcse.utils.common.DateTimes.toUtcString
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.extension.toPaginatedResponse
@@ -39,7 +41,7 @@ fun Route.adminUserRoutes() {
     requirePermission(Permission.USER_MANAGE) {
         generalRateLimit {
             get {
-                val (limit, offset) = call.paginateQueryParams()
+                val (limit, offset) = call.pageRequest()
                 val search = call.request.queryParameters["query"]?.trim()?.lowercase()
                 val userType =
                     call.request.queryParameters["userType"]?.parseEnum<UserType>("userType")

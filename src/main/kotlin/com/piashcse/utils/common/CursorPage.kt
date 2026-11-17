@@ -1,5 +1,6 @@
 package com.piashcse.utils.common
 
+import com.piashcse.constants.AppConstants
 import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.Column
@@ -62,7 +63,7 @@ fun <T> Query.cursorPage(
     id: Column<EntityID<String>>,
     mapper: (ResultRow) -> T,
 ): CursorPage<T> {
-    val pageSize = limit.coerceIn(1, 100)
+    val pageSize = limit.coerceIn(1, AppConstants.Pagination.MAX_LIMIT)
     val key =
         cursor?.let { CursorCodec.decode(it) ?: throw ValidationException("Invalid pagination cursor") }
 

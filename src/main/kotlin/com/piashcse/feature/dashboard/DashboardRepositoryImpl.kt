@@ -9,6 +9,7 @@ import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.readQuery
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.*
 import org.jetbrains.exposed.v1.jdbc.select
@@ -23,11 +24,11 @@ private val DFMT = DateTimeFormatter.ISO_DATE
 
 class DashboardRepositoryImpl : DashboardRepository {
     override suspend fun getDashboardStats() =
-        query {
+        readQuery {
             val today = currentUtc().toLocalDate().atStartOfDay()
 
             val paidOrders =
-                OrderTable.selectAll()
+                OrderTable.select(OrderTable.total, OrderTable.fxRate, OrderTable.createdAt)
                     .where {
                         (OrderTable.status neq OrderStatus.CANCELED) and
                             (OrderTable.paymentStatus eq PaymentStatus.COMPLETED)
@@ -91,7 +92,7 @@ class DashboardRepositoryImpl : DashboardRepository {
     override suspend fun getRevenueStats(
         startDate: String?,
         endDate: String?,
-    ) = query {
+    ) = readQuery {
         val now = currentUtc()
         val start =
             startDate?.let { DateTimes.parseLocalDate(it, "startDate").atStartOfDay() }
@@ -244,13 +245,13 @@ class DashboardRepositoryImpl : DashboardRepository {
         }
 
     override suspend fun getSellerStats(sellerUserId: String) =
-        query {
+        readQuery {
             val shopIds =
                 SellerDAO.find { SellerTable.userId eq sellerUserId }
                     .mapNotNull { it.shopId?.value }
                     .distinct()
             if (shopIds.isEmpty()) {
-                return@query DashboardStatsResponse(
+                return@readQuery DashboardStatsResponse(
                     revenue = mapOf("total" to "0.00", "today" to "0.00"),
                     orders = mapOf("total" to 0L, "today" to 0L, "pending" to 0L, "canceled" to 0L),
                     users = mapOf("total" to 0L, "today" to 0L, "sellers" to 0L),

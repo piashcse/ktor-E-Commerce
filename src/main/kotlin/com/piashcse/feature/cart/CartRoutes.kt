@@ -11,7 +11,7 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
@@ -84,7 +84,7 @@ fun Route.cartRoutes() {
          */
         generalRateLimit {
             get {
-                val (limit, offset) = call.paginateQueryParams()
+                val (limit, offset) = call.pageRequest()
                 call.respondOk(cartRepo.getCartItems(call.currentUserId, limit, offset))
             }.describe { summary = "Get cart" }
 

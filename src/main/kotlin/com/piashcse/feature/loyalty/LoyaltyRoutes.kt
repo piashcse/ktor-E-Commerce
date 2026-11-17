@@ -8,10 +8,10 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.standardErrors
-import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondMessage
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.receive
 import io.ktor.server.request.requirePathParameter
@@ -34,7 +34,7 @@ fun Route.walletRoutes() {
         }
 
         get("ledger") {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(loyalty.ledger(call.currentUserId, limit, offset))
         }.describe { summary = "List my wallet ledger" }
 
@@ -69,7 +69,7 @@ fun Route.referralRoutes() {
 fun Route.giftCardAdminRoutes() {
     val loyalty: LoyaltyService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(loyalty.listGiftCards(limit, offset))
     }.describe { summary = "List gift cards" }
 
@@ -87,7 +87,7 @@ fun Route.giftCardAdminRoutes() {
             if (!loyalty.voidGiftCard(id)) {
                 throw com.piashcse.utils.validator.NotFoundException("Gift card not found")
             }
-            call.respondOk(MessageResponse("Gift card voided"))
+            call.respondMessage("Gift card voided")
         }.describe { summary = "Void a gift card" }
     }
 }

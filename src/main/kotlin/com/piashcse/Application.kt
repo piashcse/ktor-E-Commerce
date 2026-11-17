@@ -8,6 +8,7 @@ import com.piashcse.event.subscriber.AuditLogSubscriber
 import com.piashcse.event.subscriber.EmailSubscriber
 import com.piashcse.event.subscriber.NotificationSubscriber
 import com.piashcse.feature.audit_log.AuditLogRepository
+import com.piashcse.feature.subscription.SubscriptionService
 import com.piashcse.plugin.*
 import com.piashcse.service.AsyncWorker
 import com.piashcse.service.MaintenanceCleanup
@@ -39,6 +40,7 @@ fun Application.configureAll() {
     installRequestTracing()
     configureKoin()
     configureAuth()
+    install(AdminAuditPlugin)
     configureRateLimiting()
     configureSwagger()
     configureStatusPage()
@@ -52,7 +54,7 @@ fun Application.configureAll() {
     AsyncWorker.start(this)
     StockReservationCleanup.start(this)
     MaintenanceCleanup.start(this)
-    SubscriptionBillingWorker.start(this)
+    SubscriptionBillingWorker.start(this, get<SubscriptionService>())
     @Suppress("DEPRECATION")
     environment.monitor.subscribe(ApplicationStopping) {
         // Stop producers and consumers before tearing down the datasource.

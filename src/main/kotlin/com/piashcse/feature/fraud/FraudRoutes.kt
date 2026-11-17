@@ -9,8 +9,10 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondDeleted
+import com.piashcse.utils.extension.respondMessage
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.NotFoundException
 import io.ktor.server.request.receive
@@ -32,7 +34,7 @@ fun Route.fraudAdminRoutes() {
     }.describe { summary = "List blocklist entries" }
 
     get("high-risk") {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(fraudService.listHighRisk(limit, offset))
     }.describe {
         summary = "List payments flagged for review or blocked"
@@ -61,7 +63,7 @@ fun Route.fraudAdminRoutes() {
         delete("rules/{id}") {
             val id = call.requirePathParameter("id")
             if (!fraudService.deleteRule(id)) throw NotFoundException("Fraud rule not found")
-            call.respondOk(MessageResponse("Fraud rule deleted"))
+            call.respondDeleted("Fraud rule deleted")
         }.describe { summary = "Delete a fraud velocity rule" }
 
         post("blocklist") {
@@ -75,7 +77,7 @@ fun Route.fraudAdminRoutes() {
         delete("blocklist/{id}") {
             val id = call.requirePathParameter("id")
             if (!fraudService.deleteBlocklistEntry(id)) throw NotFoundException("Blocklist entry not found")
-            call.respondOk(MessageResponse("Blocklist entry deleted"))
+            call.respondDeleted("Blocklist entry deleted")
         }.describe { summary = "Delete a blocklist entry" }
     }
 }
@@ -87,7 +89,7 @@ fun Route.paymentRiskAdminRoutes() {
         post("{id}/risk") {
             val id = call.requirePathParameter("id")
             fraudService.recordRiskResult(id, call.receive<RiskResultRequest>())
-            call.respondOk(MessageResponse("Payment risk result recorded"))
+            call.respondMessage("Payment risk result recorded")
         }.describe {
             summary = "Record AVS/CVV results for a payment"
             requestBody { jsonBody<RiskResultRequest>() }
@@ -101,7 +103,7 @@ fun Route.chargebackAdminRoutes() {
     val chargebackService: ChargebackService by inject()
 
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(chargebackService.list(limit, offset))
     }.describe { summary = "List chargebacks" }
 

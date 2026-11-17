@@ -4,7 +4,6 @@ import com.piashcse.constants.KycStatus
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PayoutStatus
 import com.piashcse.constants.ShopStatus
-import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PayoutRequestDAO
 import com.piashcse.database.entities.PayoutRequestTable
@@ -18,8 +17,7 @@ import com.piashcse.event.EventBus
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
-import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.common.PaginationMetadata
+import com.piashcse.utils.common.emptyPage
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.requireSellerByUserId
 import com.piashcse.utils.extension.retryQuery
@@ -37,6 +35,7 @@ import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.andWhere
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 
@@ -112,8 +111,16 @@ class PayoutRepositoryImpl : PayoutRepository {
     ): SellerStatementResponse =
         query {
             val seller = requireActiveSeller(sellerUserId)
-            val fromDate = from?.takeIf { it.isNotBlank() }?.let { java.time.LocalDate.parse(it) }
-            val toDate = to?.takeIf { it.isNotBlank() }?.let { java.time.LocalDate.parse(it) }
+            val fromDate =
+                from?.takeIf { it.isNotBlank() }?.let {
+                    runCatching { java.time.LocalDate.parse(it) }
+                        .getOrElse { throw ValidationException("Invalid from date: $it") }
+                }
+            val toDate =
+                to?.takeIf { it.isNotBlank() }?.let {
+                    runCatching { java.time.LocalDate.parse(it) }
+                        .getOrElse { throw ValidationException("Invalid to date: $it") }
+                }
             if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
                 throw ValidationException("from must be before to")
             }
@@ -125,14 +132,18 @@ class PayoutRepositoryImpl : PayoutRepository {
                     .toList()
                     .map { SellerPayoutDAO.wrapRow(it) }
 
+            val taxQuery =
+                OrderTable.select(OrderTable.taxAmount).apply {
+                    andWhere {
+                        (OrderTable.shopId eq seller.shopId) and
+                            (OrderTable.status neq OrderStatus.CANCELED)
+                    }
+                    fromDate?.let { date -> andWhere { OrderTable.createdAt greaterEq date.atStartOfDay() } }
+                    toDate?.let { date -> andWhere { OrderTable.createdAt lessEq date.atTime(java.time.LocalTime.MAX) } }
+                }
             val tax =
-                OrderDAO.find {
-                    (OrderTable.shopId eq seller.shopId) and (OrderTable.status neq OrderStatus.CANCELED)
-                }.filter { order ->
-                    (fromDate == null || !order.createdAt.isBefore(fromDate.atStartOfDay())) &&
-                        (toDate == null || !order.createdAt.isAfter(toDate.atTime(java.time.LocalTime.MAX)))
-                }.fold(BigDecimal.ZERO) { acc, order ->
-                    acc.add(order.taxAmount)
+                taxQuery.fold(BigDecimal.ZERO) { acc, row ->
+                    acc.add(row[OrderTable.taxAmount])
                 }
 
             fun sum(statuses: Set<String>) =
@@ -173,7 +184,7 @@ class PayoutRepositoryImpl : PayoutRepository {
     ) = query {
         val sellerIds = sellerIdsFor(sellerUserId)
         if (sellerIds.isEmpty()) {
-            return@query PaginatedResponse(emptyList(), PaginationMetadata(0, limit, offset))
+            return@query emptyPage(limit, offset)
         }
         SellerPayoutTable.selectAll().andWhere { SellerPayoutTable.sellerId inList sellerIds }
             .orderBy(SellerPayoutTable.createdAt to SortOrder.DESC)

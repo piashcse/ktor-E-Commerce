@@ -131,12 +131,18 @@ class ApiKeyService {
             if (key.expiresAt?.isBefore(currentUtc()) == true) return@query null
             val user = UserDAO.findById(key.userId.value) ?: return@query null
             if (!user.isActiveAndVerified()) return@query null
-            key.lastUsedAt = currentUtc()
+            val now = currentUtc()
+            if (key.lastUsedAt == null || key.lastUsedAt!!.isBefore(now.minusMinutes(5))) {
+                key.lastUsedAt = now
+            }
+            // A key can outlive a role change. Only keep scopes the current role
+            // still permits; demotion must never preserve elevated access.
+            val allowed = user.userType.defaultPermissions().map { it.name }.toSet()
             JwtTokenRequest(
                 userId = user.id.value,
                 email = user.email,
                 userType = user.userType.name,
-                scopes = key.scopes.split(',').filter { it.isNotBlank() }.toSet(),
+                scopes = key.scopes.split(',').filter { it.isNotBlank() && it in allowed }.toSet(),
                 isApiKey = true,
             )
         }

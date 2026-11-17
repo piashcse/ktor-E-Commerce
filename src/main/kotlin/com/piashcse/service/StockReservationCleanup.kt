@@ -3,11 +3,13 @@ package com.piashcse.service
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.database.entities.OrderDAO
+import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.ReservationStatus
 import com.piashcse.database.entities.StockReservationDAO
 import com.piashcse.database.entities.StockReservationTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.feature.order.OrderCancellation
+import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import kotlinx.coroutines.*
 import org.jetbrains.exposed.v1.core.and
@@ -38,20 +40,32 @@ object StockReservationCleanup {
 
     private suspend fun releaseExpired() =
         query {
-            // FOR UPDATE serializes cleanup across instances. Rows are re-evaluated
-            // after the lock, so a second instance will not double-restore stock.
-            val expired =
+            // Identify candidates first, then lock the order before its reservations.
+            // This matches the cancellation lock order and avoids deadlocks.
+            val candidates =
                 StockReservationDAO.find {
                     (StockReservationTable.status eq ReservationStatus.ACTIVE) and
                         (StockReservationTable.expiresAt less currentUtc())
-                }.forUpdate().toList()
+                }.map { it.orderId.value }
+                    .toSet()
 
-            if (expired.isEmpty()) return@query
+            if (candidates.isEmpty()) return@query
 
-            log.info("Releasing ${expired.size} expired reservation(s)")
+            candidates.forEach { orderId ->
+                val order =
+                    OrderDAO.find { OrderTable.id eq orderId.entityID(OrderTable) }
+                        .forUpdate()
+                        .firstOrNull()
+                        ?: return@forEach
+                val reservations =
+                    StockReservationDAO.find {
+                        (StockReservationTable.orderId eq order.id) and
+                            (StockReservationTable.status eq ReservationStatus.ACTIVE) and
+                            (StockReservationTable.expiresAt less currentUtc())
+                    }.forUpdate().toList()
+                if (reservations.isEmpty()) return@forEach
 
-            expired.groupBy { it.orderId.value }.forEach { (orderId, reservations) ->
-                val order = OrderDAO.findById(orderId) ?: return@forEach
+                log.info("Releasing ${reservations.size} expired reservation(s)")
                 when {
                     order.paymentStatus == PaymentStatus.COMPLETED -> {
                         // Paid order: stock is legitimately consumed; keep the reservation finalized.

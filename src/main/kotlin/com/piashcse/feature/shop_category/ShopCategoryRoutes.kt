@@ -4,7 +4,7 @@ package com.piashcse.feature.shop_category
 
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.utils.extension.nameFromBodyOrQuery
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
@@ -22,7 +22,7 @@ fun Route.shopCategoryRoutes() {
      * Retrieve a paginated list of all shop categories
      */
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(shopCategoryRepo.getCategories(limit, offset))
     }.describe { summary = "Retrieve a paginated list of all shop categories" }
 }

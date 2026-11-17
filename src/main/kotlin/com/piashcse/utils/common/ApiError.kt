@@ -21,7 +21,18 @@ data class ApiError(
     val type: String? = null,
     val title: String? = null,
     val status: Int? = null,
-)
+) {
+    companion object {
+        /** Build the canonical error envelope with RFC 9457 aliases filled in. */
+        fun of(
+            message: String,
+            code: String = "BAD_REQUEST",
+            status: HttpStatusCode = HttpStatusCode.BadRequest,
+            requestId: String? = null,
+            errors: List<FieldError>? = null,
+        ): ApiError = ApiError(message, code, errors, requestId, code, message, status.value)
+    }
+}
 
 /**
  * Structured field-level validation error (only for validation failures).
@@ -34,15 +45,7 @@ data class FieldError(
 
 /** Convert any AppException → (HttpStatusCode, ApiError) pair. Pass call.requestId() to correlate. */
 fun AppException.toErrorResponse(requestId: String? = null): Pair<HttpStatusCode, ApiError> =
-    code to
-        ApiError(
-            message = message ?: "Unknown error",
-            code = errorCode,
-            requestId = requestId,
-            type = errorCode,
-            title = message,
-            status = code.value,
-        )
+    code to ApiError.of(message ?: "Unknown error", errorCode, code, requestId)
 
 /** Standard success message envelope — replaces ad-hoc mapOf("message" to ...) for OpenAPI schema. */
 @Serializable

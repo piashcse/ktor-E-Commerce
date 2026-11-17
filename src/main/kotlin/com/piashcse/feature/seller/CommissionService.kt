@@ -6,6 +6,7 @@ import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.database.entities.ProductCategoryTable
 import com.piashcse.database.entities.ProductDAO
+import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopTable
@@ -22,6 +23,7 @@ import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -70,21 +72,32 @@ class CommissionService {
     fun resolveRateTx(
         seller: SellerDAO,
         categoryId: String? = null,
+    ): BigDecimal =
+        resolveRateFromRules(
+            seller,
+            categoryId,
+            CommissionRuleDAO.find { CommissionRuleTable.isActive eq true }.toList(),
+        )
+
+    private fun resolveRateFromRules(
+        seller: SellerDAO,
+        categoryId: String?,
+        rules: List<CommissionRuleDAO>,
     ): BigDecimal {
-        val candidates =
-            CommissionRuleDAO.find { CommissionRuleTable.isActive eq true }
+        val best =
+            rules
+                .asSequence()
                 .filter { rule ->
                     val sellerOk = rule.sellerId == null || rule.sellerId?.value == seller.id.value
                     val shopOk = rule.shopId == null || rule.shopId?.value == seller.shopId?.value
                     val categoryOk = rule.categoryId == null || rule.categoryId?.value == categoryId
                     sellerOk && shopOk && categoryOk
                 }
-        val best =
-            candidates.maxWithOrNull(
-                compareBy<CommissionRuleDAO> { specificity(it) }
-                    .thenBy { it.priority }
-                    .thenBy { it.createdAt },
-            )
+                .maxWithOrNull(
+                    compareBy<CommissionRuleDAO> { specificity(it) }
+                        .thenBy { it.priority }
+                        .thenBy { it.createdAt },
+                )
         return best?.rate ?: seller.commissionRate
     }
 
@@ -95,7 +108,19 @@ class CommissionService {
     ): BigDecimal {
         val items = OrderItemDAO.itemsForOrder(order.id)
         if (items.isEmpty()) return BigDecimal.ZERO.setScale(2)
-        val netTotal = order.subTotal.subtract(order.discountAmount).max(BigDecimal.ZERO)
+        // Inclusive tax is already inside the line total; exclusive tax is not.
+        // Strip inclusive tax once so commission and payout share one base.
+        val productIds = items.map { it.productId }.distinct()
+        val products = ProductDAO.find { ProductTable.id inList productIds }.associateBy { it.id.value }
+        val rules = CommissionRuleDAO.find { CommissionRuleTable.isActive eq true }.toList()
+        val inclusiveTax =
+            items.filter { it.taxInclusive }
+                .fold(BigDecimal.ZERO) { acc, item -> acc.add(item.taxAmount) }
+        val netTotal =
+            order.subTotal
+                .subtract(order.discountAmount)
+                .subtract(inclusiveTax)
+                .max(BigDecimal.ZERO)
         val commission =
             items.fold(BigDecimal.ZERO) { acc, item ->
                 val discountShare =
@@ -105,9 +130,11 @@ class CommissionService {
                         BigDecimal.ZERO
                     }
                 // Commission applies to the pre-tax merchandise amount.
-                val net = item.total.subtract(item.taxAmount).subtract(discountShare).max(BigDecimal.ZERO)
-                val categoryId = ProductDAO.findById(item.productId.value)?.categoryId?.value
-                acc.add(Money.commission(net, resolveRateTx(seller, categoryId)))
+                val netMerchandise =
+                    if (item.taxInclusive) item.total.subtract(item.taxAmount) else item.total
+                val net = netMerchandise.subtract(discountShare).max(BigDecimal.ZERO)
+                val categoryId = products[item.productId.value]?.categoryId?.value
+                acc.add(Money.commission(net, resolveRateFromRules(seller, categoryId, rules)))
             }
         return Money.scale2(commission).max(BigDecimal.ZERO).min(netTotal)
     }

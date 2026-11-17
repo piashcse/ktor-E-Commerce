@@ -1,5 +1,7 @@
 @file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
 
+@file:Suppress("MatchingDeclarationName")
+
 package com.piashcse.feature.config
 
 import com.piashcse.config.DotEnv

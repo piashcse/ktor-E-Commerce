@@ -9,10 +9,10 @@ import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.created
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
-import com.piashcse.utils.common.MessageResponse
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondMessage
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.NotFoundException
 import io.ktor.http.ContentType
@@ -27,7 +27,7 @@ import org.koin.ktor.ext.inject
 fun Route.cmsRoutes() {
     val service: CmsService by inject()
     get("pages") {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.publicPages(limit, offset))
     }.describe { summary = "List published CMS pages" }
 
@@ -40,7 +40,7 @@ fun Route.cmsRoutes() {
 fun Route.cmsAdminRoutes() {
     val service: CmsService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         val status = call.request.queryParameters["status"]?.parseEnum<CmsPageStatus>("page status")
         call.respondOk(service.adminPages(status, limit, offset))
     }.describe { summary = "Admin: list CMS pages" }
@@ -65,7 +65,7 @@ fun Route.cmsAdminRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             if (!service.archive(id)) throw NotFoundException("Page not found")
-            call.respondOk(MessageResponse("Page archived"))
+            call.respondMessage("Page archived")
         }.describe { summary = "Admin: archive a CMS page" }
     }
 }

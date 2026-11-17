@@ -6,6 +6,7 @@ package com.piashcse.feature.order
 import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.UserType
+import com.piashcse.feature.invoice.InvoiceService
 import com.piashcse.model.request.CancelOrderRequest
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.plugin.adminWriteRateLimit
@@ -18,15 +19,14 @@ import com.piashcse.plugin.standardErrors
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.NotFoundException
-import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.ContentType
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.*
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
-import java.time.Instant
 
 @Serializable
 data class ShipOrderRequest(val trackingNumber: String)
@@ -46,87 +46,31 @@ data class OrderTimelineResponse(
     val milestones: List<OrderMilestone>,
 )
 
+private fun ApplicationCall.guestOrderCredentials(): Pair<String, String> =
+    requireQueryParameter("orderNumber") to requireQueryParameter("email")
+
+private fun OrderResponse.toTimeline(): OrderTimelineResponse =
+    OrderTimelineResponse(
+        orderNumber = orderNumber,
+        status = status,
+        trackingNumber = trackingNumber,
+        milestones =
+            listOf(
+                OrderMilestone("PLACED", "Order placed", createdAt?.toString()),
+                OrderMilestone("SHIPPED", "Shipped", shippingDate?.toString()),
+                OrderMilestone("DELIVERED", "Delivered", deliveredDate?.toString()),
+                OrderMilestone("COMPLETED", "Completed", completedDate?.toString()),
+                OrderMilestone("CANCELED", "Canceled", canceledDate?.toString()),
+            ),
+    )
+
 /**
  * Order-related routes for customers and sellers.
  */
 fun Route.orderRoutes() {
     val orderRepo: OrderRepository by inject()
-    val invoiceService: com.piashcse.feature.invoice.InvoiceService by inject()
 
-    generalRateLimit {
-        /**
-         * Public guest order tracking by order number + checkout email
-         */
-        get("track") {
-            val orderNumber = call.requireQueryParameter("orderNumber")
-            val email = call.requireQueryParameter("email")
-            val order =
-                orderRepo.getOrderForGuest(orderNumber, email)
-                    ?: throw NotFoundException(Message.Orders.NOT_FOUND)
-            call.respondOk(order)
-        }.describe {
-            summary = "Guest order tracking"
-            description = "Lookup by order number + checkout email"
-            parameters {
-                query("orderNumber") { required = true }
-                query("email") { required = true }
-            }
-            responses {
-                ok<OrderResponse>("Order")
-                standardErrors()
-            }
-        }
-
-        /**
-         * Public order timeline for guest tracking.
-         */
-        get("track/timeline") {
-            val order =
-                orderRepo.getOrderForGuest(
-                    call.requireQueryParameter("orderNumber"),
-                    call.requireQueryParameter("email"),
-                ) ?: throw NotFoundException(Message.Orders.NOT_FOUND)
-            call.respondOk(
-                OrderTimelineResponse(
-                    orderNumber = order.orderNumber,
-                    status = order.status,
-                    trackingNumber = order.trackingNumber,
-                    milestones =
-                        listOf(
-                            OrderMilestone("PLACED", "Order placed", order.createdAt?.toString()),
-                            OrderMilestone("SHIPPED", "Shipped", order.shippingDate?.toString()),
-                            OrderMilestone("DELIVERED", "Delivered", order.deliveredDate?.toString()),
-                            OrderMilestone("COMPLETED", "Completed", order.completedDate?.toString()),
-                            OrderMilestone("CANCELED", "Canceled", order.canceledDate?.toString()),
-                        ),
-                ),
-            )
-        }.describe {
-            summary = "Guest order timeline"
-            description = "Milestone dates for the tracking page"
-            parameters {
-                query("orderNumber") { required = true }
-                query("email") { required = true }
-            }
-        }
-
-        /**
-         * Public printable invoice for a guest order (order number + checkout email).
-         */
-        get("track/invoice") {
-            val orderNumber = call.requireQueryParameter("orderNumber")
-            val email = call.requireQueryParameter("email")
-            val html = invoiceService.invoiceForGuest(orderNumber, email)
-            call.respondText(html, ContentType.Text.Html)
-        }.describe {
-            summary = "Guest order invoice"
-            description = "Printable HTML invoice without requiring an account"
-            parameters {
-                query("orderNumber") { required = true }
-                query("email") { required = true }
-            }
-        }
-    }
+    guestOrderTrackingRoutes()
 
     customerOnlyAuth {
         generalRateLimit {
@@ -134,23 +78,42 @@ fun Route.orderRoutes() {
              * Retrieve all orders for the authenticated customer
              */
             get {
-                val (limit, offset) = call.paginateQueryParams()
-                call.respondOk(orderRepo.getOrders(call.currentUserId, limit, offset))
+                val (limit, offset) = call.pageRequest()
+                val status = call.request.queryParameters["status"]
+                call.respondOk(orderRepo.getOrders(call.currentUserId, limit, offset, status))
             }.describe { summary = "List my orders" }
 
             /**
              * Keyset-paginated order history (`cursor` + `limit`)
              */
             get("cursor") {
-                val (limit, _) = call.paginateQueryParams()
+                val cursor = call.cursorRequest()
                 call.respondOk(
                     orderRepo.getOrdersCursor(
                         call.currentUserId,
-                        limit,
-                        call.request.queryParameters["cursor"],
+                        cursor.limit,
+                        cursor.cursor,
                     ),
                 )
             }.describe { summary = "Cursor-paginated order history" }
+        }
+    }
+
+    requireRole(UserType.CUSTOMER, UserType.SELLER, UserType.ADMIN, UserType.SUPER_ADMIN) {
+        generalRateLimit {
+            /**
+             * Retrieve a single order by ID (customer owner, shop seller, or admin)
+             */
+            get("{id}") {
+                val id = call.requirePathParameter("id")
+                call.respondOk(orderRepo.getOrderById(id, call.currentUserId, call.requireUserType()))
+            }.describe {
+                summary = "Get order by ID"
+                responses {
+                    ok<OrderResponse>("Order")
+                    standardErrors()
+                }
+            }
         }
     }
 
@@ -217,6 +180,60 @@ fun Route.orderRoutes() {
     }
 }
 
+/** Public guest order tracking, timeline and printable invoice. */
+private fun Route.guestOrderTrackingRoutes() {
+    val orderRepo: OrderRepository by inject()
+    val invoiceService: InvoiceService by inject()
+    generalRateLimit {
+        get("track") {
+            val (orderNumber, email) = call.guestOrderCredentials()
+            val order =
+                orderRepo.getOrderForGuest(orderNumber, email)
+                    ?: throw NotFoundException(Message.Orders.NOT_FOUND)
+            call.respondOk(order)
+        }.describe {
+            summary = "Guest order tracking"
+            description = "Lookup by order number + checkout email"
+            parameters {
+                query("orderNumber") { required = true }
+                query("email") { required = true }
+            }
+            responses {
+                ok<OrderResponse>("Order")
+                standardErrors()
+            }
+        }
+
+        get("track/timeline") {
+            val (orderNumber, email) = call.guestOrderCredentials()
+            val order =
+                orderRepo.getOrderForGuest(orderNumber, email)
+                    ?: throw NotFoundException(Message.Orders.NOT_FOUND)
+            call.respondOk(order.toTimeline())
+        }.describe {
+            summary = "Guest order timeline"
+            description = "Milestone dates for the tracking page"
+            parameters {
+                query("orderNumber") { required = true }
+                query("email") { required = true }
+            }
+        }
+
+        get("track/invoice") {
+            val (orderNumber, email) = call.guestOrderCredentials()
+            val html = invoiceService.invoiceForGuest(orderNumber, email)
+            call.respondText(html, ContentType.Text.Html)
+        }.describe {
+            summary = "Guest order invoice"
+            description = "Printable HTML invoice without requiring an account"
+            parameters {
+                query("orderNumber") { required = true }
+                query("email") { required = true }
+            }
+        }
+    }
+}
+
 /**
  * Seller order management routes.
  */
@@ -228,12 +245,19 @@ fun Route.orderSellerRoutes() {
      */
     generalRateLimit {
         get {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             val status = call.request.queryParameters["status"]
             call.respondOk(orderRepo.getSellerOrders(call.currentUserId, limit, offset, status))
         }.describe {
             summary = "Seller: list orders"
             description = "Optional status filter"
+        }
+
+        get("{id}") {
+            val id = call.requirePathParameter("id")
+            call.respondOk(orderRepo.getOrderById(id, call.currentUserId, call.requireUserType()))
+        }.describe {
+            summary = "Seller: get order by ID"
         }
     }
 }
@@ -285,25 +309,22 @@ fun Route.orderAdminRoutes() {
      */
     generalRateLimit {
         get {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             val status = call.request.queryParameters["status"]
-            val startDate =
-                call.request.queryParameters["startDate"]?.let { raw ->
-                    runCatching { Instant.parse(raw) }.getOrElse {
-                        throw ValidationException(Message.Errors.invalidParameter("startDate", raw))
-                    }
-                }
-            val endDate =
-                call.request.queryParameters["endDate"]?.let { raw ->
-                    runCatching { Instant.parse(raw) }.getOrElse {
-                        throw ValidationException(Message.Errors.invalidParameter("endDate", raw))
-                    }
-                }
+            val startDate = call.queryInstant("startDate")
+            val endDate = call.queryInstant("endDate")
 
             call.respondOk(orderRepo.getAdminOrders(limit, offset, status, startDate, endDate))
         }.describe {
             summary = "Admin: list orders"
             description = "Status and date-range filters"
+        }
+
+        get("{id}") {
+            val id = call.requirePathParameter("id")
+            call.respondOk(orderRepo.getOrderById(id, call.currentUserId, call.requireUserType()))
+        }.describe {
+            summary = "Admin: get order by ID"
         }
     }
 }

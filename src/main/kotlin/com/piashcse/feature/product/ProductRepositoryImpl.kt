@@ -19,6 +19,7 @@ import com.piashcse.model.response.SuggestionItem
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
+import com.piashcse.utils.common.emptyPage
 import com.piashcse.utils.db.bindParams
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ForbiddenException
@@ -70,6 +71,17 @@ class ProductRepositoryImpl : ProductRepository {
         filter.maxPrice?.let { andWhere { ProductTable.price lessEq Money.of(it) } }
         filter.minRating?.let { andWhere { ProductTable.rating greaterEq BigDecimal.valueOf(it) } }
         filter.freeShipping?.let { andWhere { ProductTable.freeShipping eq it } }
+        filter.onSale?.let { onSale ->
+            andWhere {
+                if (onSale) {
+                    ProductTable.discountPrice.isNotNull()
+                } else {
+                    ProductTable.discountPrice.isNull()
+                }
+            }
+        }
+        filter.hotDeal?.let { andWhere { ProductTable.hotDeal eq it } }
+        filter.featured?.let { andWhere { ProductTable.featured eq it } }
         if (filter.inStockOnly == true) {
             andWhere { ProductTable.status eq ProductStatus.ACTIVE }
         }
@@ -140,6 +152,10 @@ class ProductRepositoryImpl : ProductRepository {
                 subCategoryId = productRequest.subCategoryId?.let { it.entityID(ProductSubCategoryTable) }
                 brandId = productRequest.brandId?.let { it.entityID(BrandTable) }
                 sku = productRequest.productCode?.takeIf { it.isNotBlank() } ?: generateSKU(productRequest.name)
+                barcode = productRequest.barcode?.takeIf { it.isNotBlank() }
+                weight = productRequest.weight?.let { BigDecimal.valueOf(it) }
+                dimensions = productRequest.dimensions?.takeIf { it.isNotBlank() }
+                minOrderQuantity = productRequest.minOrderQuantity.coerceAtLeast(1)
                 name = productRequest.name
                 description = productRequest.description
                 price = Money.scale2(productRequest.price)
@@ -194,6 +210,11 @@ class ProductRepositoryImpl : ProductRepository {
                 brandId = updateProduct.brandId?.let { it.entityID(BrandTable) } ?: brandId
                 name = updateProduct.name ?: name
                 description = updateProduct.description ?: description
+                updateProduct.productCode?.let { sku = it.takeIf { value -> value.isNotBlank() } ?: sku }
+                updateProduct.barcode?.let { barcode = it.takeIf { value -> value.isNotBlank() } }
+                updateProduct.weight?.let { weight = BigDecimal.valueOf(it) }
+                updateProduct.dimensions?.let { dimensions = it.takeIf { value -> value.isNotBlank() } }
+                updateProduct.minOrderQuantity?.let { minOrderQuantity = it.coerceAtLeast(1) }
                 price = updateProduct.price?.let { Money.scale2(it) } ?: price
                 discountPrice =
                     when {
@@ -220,7 +241,7 @@ class ProductRepositoryImpl : ProductRepository {
         readQuery {
             val approvedShops = approvedShopIds()
             if (approvedShops.isEmpty()) {
-                return@readQuery PaginatedResponse(emptyList(), PaginationMetadata(0, productQuery.limit, productQuery.offset))
+                return@readQuery emptyPage(productQuery.limit, productQuery.offset)
             }
             toProductPaginatedResponse(
                 ProductTable.selectAll().andWhere {
@@ -244,7 +265,7 @@ class ProductRepositoryImpl : ProductRepository {
         query {
             val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
             if (shop.status != com.piashcse.constants.ShopStatus.APPROVED) {
-                return@query PaginatedResponse(emptyList(), PaginationMetadata(0, productQuery.limit, productQuery.offset))
+                return@query emptyPage(productQuery.limit, productQuery.offset)
             }
             toProductPaginatedResponse(
                 ProductTable.selectAll().andWhere {
@@ -623,7 +644,7 @@ class ProductRepositoryImpl : ProductRepository {
         query {
             val approvedShops = approvedShopIds()
             if (approvedShops.isEmpty()) {
-                return@query PaginatedResponse(emptyList(), PaginationMetadata(0, limit ?: 0, 0))
+                return@query emptyPage(limit ?: 0)
             }
             val statusCondition =
                 condition and

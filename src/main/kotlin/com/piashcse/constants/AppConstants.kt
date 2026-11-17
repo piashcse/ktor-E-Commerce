@@ -26,6 +26,9 @@ object AppConstants {
         const val DEFAULT_LIMIT = 20
         const val MAX_LIMIT = 100
         const val DEFAULT_OFFSET = 0
+
+        /** Cap to prevent deep-offset scans from becoming a DoS vector. */
+        const val MAX_OFFSET = 10_000
     }
 
     object Products {

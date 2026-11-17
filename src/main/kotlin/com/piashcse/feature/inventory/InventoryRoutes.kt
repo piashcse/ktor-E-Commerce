@@ -10,7 +10,7 @@ import com.piashcse.plugin.ok
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.service.CatalogCache
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.MissingParameterException
@@ -107,7 +107,7 @@ fun Route.inventorySellerRoutes() {
      */
     get("/shop/{shopId}") {
         val shopId = call.requirePathParameter("shopId")
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(inventoryRepo.getInventoryByShop(call.currentUserId, shopId, limit, offset))
     }.describe { summary = "List shop inventory" }
 
@@ -116,7 +116,7 @@ fun Route.inventorySellerRoutes() {
      *
      */
     get("/low-stock") {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(inventoryRepo.getLowStockProducts(call.currentUserId, limit, offset))
     }.describe { summary = "List low-stock inventory" }
 }
@@ -131,7 +131,7 @@ fun Route.inventoryAdminRoutes() {
      *
      */
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(inventoryRepo.getAllInventory(limit, offset, call.request.queryParameters["shopId"]))
     }.describe {
         summary = "Admin: list inventory"

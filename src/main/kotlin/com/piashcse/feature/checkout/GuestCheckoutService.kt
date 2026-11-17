@@ -7,6 +7,8 @@ import com.piashcse.constants.ProductStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.CartItemDAO
 import com.piashcse.database.entities.CartItemTable
+import com.piashcse.database.entities.CouponDAO
+import com.piashcse.database.entities.CouponTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.ProductVariantDAO
@@ -16,15 +18,20 @@ import com.piashcse.database.entities.ShippingMethodDAO
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserProfileDAO
 import com.piashcse.database.entities.UserTable
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.feature.config.StorefrontSettings
-import com.piashcse.feature.coupon.CouponRepository
+import com.piashcse.feature.coupon.CouponLine
+import com.piashcse.feature.coupon.CouponRules
+import com.piashcse.feature.coupon.toSnapshot
 import com.piashcse.feature.order.OrderRepository
+import com.piashcse.feature.promotion.PromotionService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.GuestCheckoutRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.service.FxService
+import com.piashcse.service.PricingService
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
@@ -33,7 +40,6 @@ import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import java.math.BigDecimal
-import java.time.LocalDateTime
 import java.util.UUID
 
 /**
@@ -48,10 +54,36 @@ import java.util.UUID
  */
 class GuestCheckoutService(
     private val orderRepository: OrderRepository,
-    private val couponRepository: CouponRepository,
 ) {
     private val taxService = TaxService()
     private val fxService = FxService()
+    private val promotionService = PromotionService()
+
+    private data class CouponQuote(
+        val discount: BigDecimal,
+        val error: String?,
+    )
+
+    /** Uses the same coupon rules as signed-in checkout; invalid codes are reported, not thrown. */
+    private fun couponQuote(
+        code: String,
+        lines: List<CouponLine>,
+        fxRate: BigDecimal,
+    ): CouponQuote {
+        val coupon =
+            CouponDAO.find { CouponTable.code eq CouponRules.normalize(code) }.firstOrNull()
+                ?: return CouponQuote(BigDecimal.ZERO.setScale(2), Message.Orders.INVALID_COUPON)
+        val snapshot = coupon.toSnapshot()
+        val eligibleUsd = CouponRules.eligibleSubtotalUsd(snapshot, lines)
+        val error =
+            CouponRules.rejection(snapshot, currentUtc())
+                ?: CouponRules.eligibilityError(snapshot, eligibleUsd)
+        return if (error != null) {
+            CouponQuote(BigDecimal.ZERO.setScale(2), error)
+        } else {
+            CouponQuote(Money.scale2(CouponRules.discountUsd(snapshot, eligibleUsd).multiply(fxRate)), null)
+        }
+    }
 
     /**
      * Server-side quote for the guest checkout page so the total shown before
@@ -62,7 +94,6 @@ class GuestCheckoutService(
         val currency = request.currency.uppercase()
         val fxRate = fxService.rateTo(currency)
         val couponCode = request.couponCode?.trim()?.takeIf { it.isNotBlank() }
-        val coupon = couponCode?.let { couponRepository.getCouponByCode(it) }
 
         return query {
             val products =
@@ -87,8 +118,8 @@ class GuestCheckoutService(
             var tax = BigDecimal.ZERO
             var exclusiveTax = BigDecimal.ZERO
             var itemCount = 0
-            val shops = mutableSetOf<String>()
             val shopsWithShipping = mutableSetOf<String>()
+            val couponLines = mutableListOf<CouponLine>()
 
             request.items.forEach { item ->
                 val product =
@@ -104,16 +135,22 @@ class GuestCheckoutService(
                 if (variant != null && variant.productId.value != product.id.value) {
                     throw ValidationException("Variant does not belong to this product")
                 }
-                val unitUsd = variant?.effectivePrice ?: product.discountPrice ?: product.price
-                val lineUsd = Money.unitTotal(unitUsd, item.quantity)
-                subtotalUsd = subtotalUsd.add(lineUsd)
+                val unitUsd = PricingService.unitPriceUsd(product, variant)
+                subtotalUsd = subtotalUsd.add(Money.unitTotal(unitUsd, item.quantity))
                 itemCount += item.quantity
                 product.shopId?.value?.let { shopId ->
-                    shops.add(shopId)
                     if (!product.isDigital && !product.freeShipping) shopsWithShipping.add(shopId)
                 }
+                couponLines +=
+                    CouponLine(
+                        productShopId = product.shopId?.value,
+                        productCategoryId = product.categoryId.value,
+                        unitPriceUsd = unitUsd,
+                        quantity = item.quantity,
+                    )
 
-                val line = Money.scale2(lineUsd.multiply(fxRate))
+                // Convert the unit price first so the quote matches the persisted order line.
+                val line = Money.unitTotal(Money.scale2(unitUsd.multiply(fxRate)), item.quantity)
                 subTotal = subTotal.add(line)
                 val taxQuote =
                     taxService.resolve(
@@ -127,42 +164,27 @@ class GuestCheckoutService(
                 if (!taxQuote.inclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
             }
 
-            val shippingUsd =
+            var shipping =
                 if (shopsWithShipping.isEmpty() || StorefrontSettings.freeShippingReached(subtotalUsd)) {
                     BigDecimal.ZERO.setScale(2)
                 } else {
-                    Money.scale2(shippingMethod.price.multiply(BigDecimal(shopsWithShipping.size)))
+                    Money.scale2(
+                        shippingMethod.price
+                            .multiply(BigDecimal(shopsWithShipping.size))
+                            .multiply(fxRate),
+                    )
                 }
-            val shipping = Money.scale2(shippingUsd.multiply(fxRate))
 
             var discount = BigDecimal.ZERO.setScale(2)
             var couponError: String? = null
             if (couponCode != null) {
-                val now = LocalDateTime.now()
-                couponError =
-                    when {
-                        coupon == null || !coupon.isActive -> "Coupon not found or inactive"
-                        now.isBefore(LocalDateTime.parse(coupon.startDate)) -> "Coupon is not active yet"
-                        now.isAfter(LocalDateTime.parse(coupon.endDate)) -> "Coupon has expired"
-                        coupon.usageLimit != null && coupon.usageCount >= coupon.usageLimit -> "Coupon usage limit reached"
-                        BigDecimal(coupon.minOrderAmount) > subtotalUsd ->
-                            "Coupon requires a minimum order of ${coupon.minOrderAmount}"
-                        coupon.shopId != null && coupon.shopId !in shops -> "Coupon is not valid for these shops"
-                        coupon.categoryId != null &&
-                            products.values.none { it.categoryId.value == coupon.categoryId } ->
-                            "Coupon is not valid for these products"
-                        else -> null
-                    }
-                if (couponError == null && coupon != null) {
-                    val eligibleUsd = subtotalUsd
-                    val raw =
-                        when (coupon.discountType) {
-                            com.piashcse.constants.CouponDiscountType.PERCENTAGE ->
-                                Money.percentOf(eligibleUsd, BigDecimal(coupon.discountValue))
-                            com.piashcse.constants.CouponDiscountType.FIXED -> Money.scale2(BigDecimal(coupon.discountValue))
-                        }
-                    val capped = coupon.maxDiscountAmount?.let { raw.min(BigDecimal(it)) } ?: raw
-                    discount = Money.scale2(capped.min(eligibleUsd).multiply(fxRate))
+                val quote = couponQuote(couponCode, couponLines, fxRate)
+                discount = quote.discount
+                couponError = quote.error
+            } else {
+                promotionService.evaluateTx(subtotalUsd)?.let { promotion ->
+                    if (promotion.freeShipping) shipping = BigDecimal.ZERO.setScale(2)
+                    discount = Money.scale2(promotion.discount.multiply(fxRate))
                 }
             }
 

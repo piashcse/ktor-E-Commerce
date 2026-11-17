@@ -26,7 +26,7 @@ import com.piashcse.model.response.RefundRequestResponse
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.common.PaginationMetadata
+import com.piashcse.utils.common.emptyPage
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
@@ -325,6 +325,7 @@ class RefundRequestRepositoryImpl(
                     ?: throw ValidationException(Message.Refunds.NOT_FOUND)
 
             requireRefundActor(refundReq, userId)
+            if (request.status == RefundStatus.REFUNDED) requireRefundMoneyAuthority(userId)
             if (!canTransitionTo(refundReq.status, request.status)) {
                 throw ValidationException(Message.Refunds.invalidTransition(refundReq.status.name, request.status.name))
             }
@@ -361,6 +362,13 @@ class RefundRequestRepositoryImpl(
             if (request.status == RefundStatus.REJECTED) AppMetrics.refundsRejected.increment()
             eventFor(refundReq, fromStatus.name, request.status.name)
             refundReq.toRefundRequestResponse()
+        }
+    }
+
+    private fun requireRefundMoneyAuthority(userId: String) {
+        val user = UserDAO.findById(userId) ?: throw ValidationException(Message.Errors.NOT_FOUND)
+        if (user.userType == UserType.SELLER) {
+            throw ForbiddenException("Only an administrator can mark a refund as paid")
         }
     }
 
@@ -527,7 +535,7 @@ class RefundRequestRepositoryImpl(
             val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
             val orderIds = OrderDAO.find { OrderTable.shopId eq shopId }.map { it.id }
             if (orderIds.isEmpty()) {
-                return@query PaginatedResponse(emptyList(), PaginationMetadata(0, limit, offset))
+                return@query emptyPage(limit, offset)
             }
             RefundRequestTable.selectAll()
                 .where { RefundRequestTable.orderId inList orderIds }

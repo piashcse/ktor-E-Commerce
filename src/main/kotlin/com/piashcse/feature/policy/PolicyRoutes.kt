@@ -6,7 +6,7 @@ import com.piashcse.constants.PolicyType
 import com.piashcse.model.request.CreatePolicyRequest
 import com.piashcse.model.request.UpdatePolicyRequest
 import com.piashcse.plugin.adminWriteRateLimit
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -35,7 +35,7 @@ fun Route.policyRoutes() {
 fun Route.policyAdminRoutes() {
     val policyRepo: PolicyRepository by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         val type = call.request.queryParameters["type"]?.parseEnum<PolicyType>("policy type")
         call.respondOk(policyRepo.getAllPolicies(type, limit, offset))
     }.describe {
@@ -85,7 +85,7 @@ fun Route.policyAdminRoutes() {
      */
     get("{policyType}/history") {
         val policyType = call.requirePathParameter("policyType").parseEnum<PolicyType>("policy type")
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(policyRepo.getAllPolicies(policyType, limit, offset))
     }.describe { summary = "Admin - Retrieve all versions of a specific policy type" }
 }

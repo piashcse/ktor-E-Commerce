@@ -16,6 +16,7 @@ import com.piashcse.utils.common.DateTimes
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.readQuery
 import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
@@ -175,29 +176,28 @@ class AnalyticsService {
         startDate: String?,
         endDate: String?,
     ): FunnelResponse =
-        query {
+        readQuery {
             val (start, end) = range(startDate, endDate)
-            val events =
-                AnalyticsEventTable.selectAll().where {
-                    (AnalyticsEventTable.occurredAt greaterEq start) and
-                        (AnalyticsEventTable.occurredAt lessEq end)
-                }.toList()
+
+            fun sessionsFor(type: AnalyticsEventType): Set<String> =
+                AnalyticsEventTable.select(AnalyticsEventTable.sessionId)
+                    .withDistinct()
+                    .where {
+                        (AnalyticsEventTable.occurredAt greaterEq start) and
+                            (AnalyticsEventTable.occurredAt lessEq end) and
+                            (AnalyticsEventTable.eventType eq type)
+                    }
+                    .map { it[AnalyticsEventTable.sessionId] }
+                    .toSet()
+
             val sessions =
                 mapOf(
-                    AnalyticsEventType.PAGE_VIEW to
-                        events.filter { it[AnalyticsEventTable.eventType] == AnalyticsEventType.PAGE_VIEW }
-                            .map { it[AnalyticsEventTable.sessionId] }.toSet(),
-                    AnalyticsEventType.PRODUCT_VIEW to
-                        events.filter { it[AnalyticsEventTable.eventType] == AnalyticsEventType.PRODUCT_VIEW }
-                            .map { it[AnalyticsEventTable.sessionId] }.toSet(),
-                    AnalyticsEventType.ADD_TO_CART to
-                        events.filter { it[AnalyticsEventTable.eventType] == AnalyticsEventType.ADD_TO_CART }
-                            .map { it[AnalyticsEventTable.sessionId] }.toSet(),
-                    AnalyticsEventType.CHECKOUT_START to
-                        events.filter { it[AnalyticsEventTable.eventType] == AnalyticsEventType.CHECKOUT_START }
-                            .map { it[AnalyticsEventTable.sessionId] }.toSet(),
+                    AnalyticsEventType.PAGE_VIEW to sessionsFor(AnalyticsEventType.PAGE_VIEW),
+                    AnalyticsEventType.PRODUCT_VIEW to sessionsFor(AnalyticsEventType.PRODUCT_VIEW),
+                    AnalyticsEventType.ADD_TO_CART to sessionsFor(AnalyticsEventType.ADD_TO_CART),
+                    AnalyticsEventType.CHECKOUT_START to sessionsFor(AnalyticsEventType.CHECKOUT_START),
                 )
-            val trackedSessions = events.map { it[AnalyticsEventTable.sessionId] }.toSet()
+            val trackedSessions = sessions.values.flatten().toSet()
             val purchases =
                 if (trackedSessions.isEmpty()) {
                     0L
@@ -246,33 +246,40 @@ class AnalyticsService {
         startDate: String?,
         endDate: String?,
     ): AttributionResponse =
-        query {
+        readQuery {
             val (start, end) = range(startDate, endDate)
             val orders =
-                OrderTable.selectAll().where {
-                    (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
-                        (OrderTable.status neq OrderStatus.CANCELED) and
-                        (OrderTable.createdAt greaterEq start) and
-                        (OrderTable.createdAt lessEq end)
-                }.map { OrderDAO.wrapRow(it) }
+                OrderTable
+                    .select(
+                        OrderTable.attributionSource,
+                        OrderTable.attributionMedium,
+                        OrderTable.attributionCampaign,
+                        OrderTable.total,
+                        OrderTable.fxRate,
+                    ).where {
+                        (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
+                            (OrderTable.status neq OrderStatus.CANCELED) and
+                            (OrderTable.createdAt greaterEq start) and
+                            (OrderTable.createdAt lessEq end)
+                    }.toList()
             val rows =
                 orders.groupBy {
                     Triple(
-                        it.attributionSource ?: "direct",
-                        it.attributionMedium ?: "none",
-                        it.attributionCampaign ?: "none",
+                        it[OrderTable.attributionSource] ?: "direct",
+                        it[OrderTable.attributionMedium] ?: "none",
+                        it[OrderTable.attributionCampaign] ?: "none",
                     )
                 }.map { (key, group) ->
                     val revenueUsd =
                         group.fold(BigDecimal.ZERO) { acc, order ->
-                            acc.add(Money.toUsd(order.total, order.fxRate))
+                            acc.add(Money.toUsd(order[OrderTable.total], order[OrderTable.fxRate]))
                         }
                     AttributionRow(
                         source = key.first,
                         medium = key.second,
                         campaign = key.third,
                         orders = group.size.toLong(),
-                        revenue = Money.str(group.fold(BigDecimal.ZERO) { acc, order -> acc.add(order.total) }),
+                        revenue = Money.str(group.fold(BigDecimal.ZERO) { acc, order -> acc.add(order[OrderTable.total]) }),
                         revenueUsd = Money.str(revenueUsd),
                     )
                 }.sortedByDescending { it.revenueUsd.toBigDecimalOrNull() ?: BigDecimal.ZERO }
@@ -290,14 +297,19 @@ class AnalyticsService {
         endDate: String?,
         limit: Int,
     ): ProductFunnelResponse =
-        query {
+        readQuery {
             val (start, end) = range(startDate, endDate)
             val events =
-                AnalyticsEventTable.selectAll().where {
-                    (AnalyticsEventTable.occurredAt greaterEq start) and
-                        (AnalyticsEventTable.occurredAt lessEq end) and
-                        (AnalyticsEventTable.productId.isNotNull())
-                }.toList()
+                AnalyticsEventTable
+                    .select(
+                        AnalyticsEventTable.productId,
+                        AnalyticsEventTable.eventType,
+                        AnalyticsEventTable.sessionId,
+                    ).where {
+                        (AnalyticsEventTable.occurredAt greaterEq start) and
+                            (AnalyticsEventTable.occurredAt lessEq end) and
+                            (AnalyticsEventTable.productId.isNotNull())
+                    }.toList()
             val views =
                 events.filter { it[AnalyticsEventTable.eventType] == AnalyticsEventType.PRODUCT_VIEW }
                     .mapNotNull { row -> row[AnalyticsEventTable.productId]?.value?.let { it to row } }

@@ -7,8 +7,10 @@ import com.piashcse.model.request.CouponRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
+import com.piashcse.utils.extension.queryBooleanOrNull
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.NotFoundException
 import io.ktor.http.*
@@ -63,7 +65,7 @@ fun Route.couponAdminRoutes() {
             if (!couponRepo.deleteCoupon(id)) {
                 throw NotFoundException(Message.Coupons.NOT_FOUND)
             }
-            call.respondOk(com.piashcse.utils.common.MessageResponse("Coupon deleted successfully"))
+            call.respondDeleted("Coupon deleted successfully")
         }.describe { summary = "Admin - Delete a coupon" }
     }
 
@@ -72,8 +74,8 @@ fun Route.couponAdminRoutes() {
      *
      */
     get {
-        val (limit, offset) = call.paginateQueryParams(defaultPerPage = 10)
-        val active = call.request.queryParameters["active"]?.toBooleanStrictOrNull()
+        val (limit, offset) = call.pageRequest(defaultPerPage = 10)
+        val active = call.queryBooleanOrNull("active")
         call.respondOk(
             couponRepo.getCoupons(
                 limit = limit,

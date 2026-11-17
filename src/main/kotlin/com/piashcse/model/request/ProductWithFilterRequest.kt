@@ -19,6 +19,9 @@ data class ProductWithFilterRequest(
     val minRating: Double? = null,
     val inStockOnly: Boolean? = null,
     val freeShipping: Boolean? = null,
+    val onSale: Boolean? = null,
+    val hotDeal: Boolean? = null,
+    val featured: Boolean? = null,
     // sortBy: price, createdAt, name, best-selling, top-rated, relevance; sortOrder: asc, desc
     val sortBy: String? = null,
     val sortOrder: String? = "desc",

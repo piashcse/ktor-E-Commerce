@@ -181,7 +181,7 @@ val serviceModule =
         single { ProfileService(get()) }
         single { PrivacyService() }
         single { ApiKeyService() }
-        single { GuestCheckoutService(get(), get()) }
+        single { GuestCheckoutService(get()) }
         single { RmaService() }
         single { KycService() }
         single { InvoiceService() }

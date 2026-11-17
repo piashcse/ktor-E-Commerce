@@ -18,6 +18,10 @@ data class ProductRequest(
     val name: String,
     val description: String,
     val productCode: String? = null,
+    val barcode: String? = null,
+    val weight: Double? = null,
+    val dimensions: String? = null,
+    val minOrderQuantity: Int = 1,
     val stockQuantity: Int = 0,
     @Contextual val price: BigDecimal,
     @Contextual val discountPrice: BigDecimal? = null,
@@ -38,6 +42,7 @@ data class ProductRequest(
             validate(ProductRequest::description).isNotNull().isNotEmpty()
             validate(ProductRequest::price).isNotNull().isGreaterThan(BigDecimal.ZERO)
             validate(ProductRequest::stockQuantity).isGreaterThan(-1)
+            validate(ProductRequest::minOrderQuantity).isGreaterThan(0)
         }
         validateDiscountPrice(price, discountPrice)
     }
