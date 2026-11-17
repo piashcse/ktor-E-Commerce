@@ -23,6 +23,7 @@ import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.core.lowerCase
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 @Serializable
 data class AdminUserSummaryResponse(
@@ -46,26 +47,30 @@ fun Route.adminUserRoutes() {
                 val userType =
                     call.request.queryParameters["userType"]?.parseEnum<UserType>("userType")
 
-                UserTable.selectAll()
-                    .also { query ->
-                        if (!search.isNullOrBlank()) {
-                            val pattern = "%$search%"
-                            query.andWhere { UserTable.email.lowerCase() like pattern }
-                        }
-                        userType?.let { query.andWhere { UserTable.userType eq it } }
-                        query.orderBy(UserTable.createdAt to SortOrder.DESC)
-                    }.toPaginatedResponse(limit, offset) { row ->
-                        AdminUserSummaryResponse(
-                            id = row[UserTable.id].value,
-                            email = row[UserTable.email],
-                            userType = row[UserTable.userType],
-                            isVerified = row[UserTable.isVerified],
-                            isActive = row[UserTable.isActive],
-                            mfaEnabled = row[UserTable.mfaEnabled],
-                            isGuest = row[UserTable.isGuest],
-                            createdAt = row[UserTable.createdAt].toUtcString(),
-                        )
-                    }.let { call.respondOk(it) }
+                val result =
+                    transaction {
+                        UserTable.selectAll()
+                            .also { query ->
+                                if (!search.isNullOrBlank()) {
+                                    val pattern = "%$search%"
+                                    query.andWhere { UserTable.email.lowerCase() like pattern }
+                                }
+                                userType?.let { query.andWhere { UserTable.userType eq it } }
+                                query.orderBy(UserTable.createdAt to SortOrder.DESC)
+                            }.toPaginatedResponse(limit, offset) { row ->
+                                AdminUserSummaryResponse(
+                                    id = row[UserTable.id].value,
+                                    email = row[UserTable.email],
+                                    userType = row[UserTable.userType],
+                                    isVerified = row[UserTable.isVerified],
+                                    isActive = row[UserTable.isActive],
+                                    mfaEnabled = row[UserTable.mfaEnabled],
+                                    isGuest = row[UserTable.isGuest],
+                                    createdAt = row[UserTable.createdAt].toUtcString(),
+                                )
+                            }
+                    }
+                call.respondOk(result)
             }.describe {
                 summary = "Admin: search users"
                 description = "Filter by email substring and user type; returns account state"
