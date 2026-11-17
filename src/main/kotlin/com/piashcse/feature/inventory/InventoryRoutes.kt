@@ -11,6 +11,7 @@ import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.service.CatalogCache
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.pageRequest
+import com.piashcse.utils.extension.queryBoolean
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.MissingParameterException
@@ -108,8 +109,20 @@ fun Route.inventorySellerRoutes() {
     get("/shop/{shopId}") {
         val shopId = call.requirePathParameter("shopId")
         val (limit, offset) = call.pageRequest()
-        call.respondOk(inventoryRepo.getInventoryByShop(call.currentUserId, shopId, limit, offset))
-    }.describe { summary = "List shop inventory" }
+        call.respondOk(
+            inventoryRepo.getInventoryByShop(
+                call.currentUserId,
+                shopId,
+                call.request.queryParameters["q"],
+                call.queryBoolean("lowStock"),
+                limit,
+                offset,
+            ),
+        )
+    }.describe {
+        summary = "List shop inventory"
+        description = "Optional q (product name/SKU) and lowStock=true filters"
+    }
 
     /**
      * Seller - Retrieve items with stock below a threshold
@@ -132,9 +145,17 @@ fun Route.inventoryAdminRoutes() {
      */
     get {
         val (limit, offset) = call.pageRequest()
-        call.respondOk(inventoryRepo.getAllInventory(limit, offset, call.request.queryParameters["shopId"]))
+        call.respondOk(
+            inventoryRepo.getAllInventory(
+                limit,
+                offset,
+                call.request.queryParameters["shopId"],
+                call.request.queryParameters["q"],
+                call.queryBoolean("lowStock"),
+            ),
+        )
     }.describe {
         summary = "Admin: list inventory"
-        description = "Optional shop filter"
+        description = "Optional shopId, q (product name/SKU) and lowStock filters"
     }
 }

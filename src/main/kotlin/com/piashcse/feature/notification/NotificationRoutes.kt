@@ -157,3 +157,27 @@ fun Route.notificationRoutes() {
         }
     }
 }
+
+/** Seller-consolidated alias: `/seller/notifications/send`. */
+fun Route.sellerNotificationRoutes() {
+    val repo: NotificationRepository by inject()
+    writeRateLimit {
+        post("send") {
+            val body = call.receive<SendNotificationRequest>()
+            call.respondCreated(
+                repo.send(
+                    actorUserId = call.currentUserId,
+                    actorType = call.getCurrentUserType(),
+                    userId = body.userId,
+                    title = body.title,
+                    body = body.body,
+                    channel = body.channel,
+                    type = body.type,
+                ),
+            )
+        }.describe {
+            summary = "Seller: notify one of my customers"
+            requestBody { jsonBody<SendNotificationRequest>() }
+        }
+    }
+}

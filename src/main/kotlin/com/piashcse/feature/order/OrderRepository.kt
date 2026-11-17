@@ -123,6 +123,9 @@ interface OrderRepository {
         limit: Int,
         offset: Int,
         status: String?,
+        query: String? = null,
+        from: Instant? = null,
+        to: Instant? = null,
     ): PaginatedResponse<OrderResponse>
 
     /**
@@ -141,5 +144,6 @@ interface OrderRepository {
         status: String?,
         startDate: Instant?,
         endDate: Instant?,
+        query: String? = null,
     ): PaginatedResponse<OrderResponse>
 }

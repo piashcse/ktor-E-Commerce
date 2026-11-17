@@ -22,6 +22,8 @@ data class OrderResponse(
     val total: String,
     val currency: String = "USD",
     val status: OrderStatus,
+    val allowedActions: List<String> = emptyList(),
+    val nextStatuses: List<String> = emptyList(),
     val paymentStatus: PaymentStatus? = null,
     val couponCode: String? = null,
     val paymentMethod: PaymentMethod? = null,

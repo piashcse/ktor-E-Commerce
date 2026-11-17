@@ -17,6 +17,7 @@ object SellerPayoutTable : BaseIdTable("seller_payout") {
     val status = varchar("status", 20).default("PENDING").index()
     val paidAt = datetime("paid_at").nullable()
     val payoutRequestId = reference("payout_request_id", PayoutRequestTable.id).nullable().index()
+    val rejectionReason = text("rejection_reason").nullable()
 
     // Payout request lifecycle (V17): there is no status enum, so the REQUESTED /
     // APPROVED states reuse PENDING plus timestamps — requestedAt set = REQUESTED,
@@ -49,6 +50,7 @@ class SellerPayoutDAO(id: EntityID<String>) : BaseEntity(id, SellerPayoutTable) 
     var status by SellerPayoutTable.status
     var paidAt by SellerPayoutTable.paidAt
     var payoutRequestId by SellerPayoutTable.payoutRequestId
+    var rejectionReason by SellerPayoutTable.rejectionReason
     var requestedAt by SellerPayoutTable.requestedAt
     var approvedAt by SellerPayoutTable.approvedAt
     var rejectedAt by SellerPayoutTable.rejectedAt

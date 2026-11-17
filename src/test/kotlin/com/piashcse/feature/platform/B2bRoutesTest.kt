@@ -178,7 +178,7 @@ class B2bRoutesTest {
     @Test
     fun `seller lists invoices`() =
         testApplication {
-            coEvery { service.sellerInvoices("seller-user", 20, 0) } returns
+            coEvery { service.sellerInvoices("seller-user", null, 20, 0) } returns
                 PaginatedResponse(listOf(invoice()), PaginationMetadata(1, 10, 0))
             setup()
             val res =

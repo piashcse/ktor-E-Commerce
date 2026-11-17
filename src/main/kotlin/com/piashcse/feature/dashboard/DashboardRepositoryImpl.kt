@@ -43,49 +43,45 @@ class DashboardRepositoryImpl : DashboardRepository {
                         acc.add(Money.toUsd(row[OrderTable.total], row[OrderTable.fxRate]))
                     }
 
+            val orderTotal = OrderTable.selectAll().count()
+            val orderToday = OrderTable.selectAll().where { OrderTable.createdAt greaterEq today }.count()
+            val orderPending = OrderTable.selectAll().where { OrderTable.status eq OrderStatus.PENDING }.count()
+            val orderCanceled = OrderTable.selectAll().where { OrderTable.status eq OrderStatus.CANCELED }.count()
+            val unfulfilled = OrderTable.selectAll().where { OrderTable.status eq OrderStatus.PAID }.count()
+            val userTotal = UserTable.selectAll().where { UserTable.isActive eq true }.count()
+            val userToday =
+                UserTable.selectAll().where {
+                    (UserTable.isActive eq true) and (UserTable.createdAt greaterEq today)
+                }.count()
+            val sellerTotal =
+                UserTable.selectAll().where {
+                    (UserTable.isActive eq true) and (UserTable.userType eq UserType.SELLER)
+                }.count()
+            val productTotal = ProductTable.selectAll().where { ProductTable.deletedAt.isNull() }.count()
+            val outOfStock =
+                ProductTable.selectAll().where {
+                    (ProductTable.deletedAt.isNull()) and (ProductTable.status eq ProductStatus.OUT_OF_STOCK)
+                }.count()
+            val lowStock = InventoryTable.selectAll().where { InventoryTable.status eq InventoryStatus.LOW_STOCK }.count()
+            val shopTotal = ShopTable.selectAll().count()
+            val pendingShops = ShopTable.selectAll().where { ShopTable.status eq ShopStatus.PENDING }.count()
             DashboardStatsResponse(
-                revenue =
-                    mapOf(
-                        "total" to Money.str(totalRevenue),
-                        "today" to Money.str(todayRevenue),
-                    ),
+                revenue = mapOf("total" to Money.str(totalRevenue), "today" to Money.str(todayRevenue)),
                 orders =
                     mapOf(
-                        "total" to OrderTable.selectAll().count(),
-                        "today" to OrderTable.selectAll().where { OrderTable.createdAt greaterEq today }.count(),
-                        "pending" to OrderTable.selectAll().where { OrderTable.status eq OrderStatus.PENDING }.count(),
-                        "canceled" to OrderTable.selectAll().where { OrderTable.status eq OrderStatus.CANCELED }.count(),
+                        "total" to orderTotal,
+                        "today" to orderToday,
+                        "pending" to orderPending,
+                        "canceled" to orderCanceled,
                     ),
-                users =
-                    mapOf(
-                        "total" to UserTable.selectAll().where { UserTable.isActive eq true }.count(),
-                        "today" to
-                            UserTable.selectAll().where {
-                                (UserTable.isActive eq true) and (UserTable.createdAt greaterEq today)
-                            }.count(),
-                        "sellers" to
-                            UserTable.selectAll().where {
-                                (UserTable.isActive eq true) and (UserTable.userType eq UserType.SELLER)
-                            }.count(),
-                    ),
-                products =
-                    mapOf(
-                        "total" to ProductTable.selectAll().where { ProductTable.deletedAt.isNull() }.count(),
-                        "outOfStock" to
-                            ProductTable.selectAll().where {
-                                (ProductTable.deletedAt.isNull()) and
-                                    (ProductTable.status eq ProductStatus.OUT_OF_STOCK)
-                            }.count(),
-                        "lowStock" to InventoryTable.selectAll().where { InventoryTable.status eq InventoryStatus.LOW_STOCK }.count(),
-                    ),
-                shops =
-                    mapOf(
-                        "total" to ShopTable.selectAll().count(),
-                        "pendingApproval" to
-                            ShopTable.selectAll().where {
-                                ShopTable.status eq ShopStatus.PENDING
-                            }.count(),
-                    ),
+                users = mapOf("total" to userTotal, "today" to userToday, "sellers" to sellerTotal),
+                products = mapOf("total" to productTotal, "outOfStock" to outOfStock, "lowStock" to lowStock),
+                shops = mapOf("total" to shopTotal, "pendingApproval" to pendingShops),
+                revenueStats = DashboardRevenueStats(Money.str(totalRevenue), Money.str(todayRevenue)),
+                orderStats = DashboardOrderStats(orderTotal, orderToday, orderPending, orderCanceled, unfulfilled),
+                userStats = DashboardUserStats(userTotal, userToday, sellerTotal),
+                productStats = DashboardProductStats(productTotal, outOfStock, lowStock),
+                shopStats = DashboardShopStats(shopTotal, pendingShops),
             )
         }
 
@@ -244,6 +240,9 @@ class DashboardRepositoryImpl : DashboardRepository {
             }
         }
 
+    // Dashboard aggregates intentionally run in one read transaction; splitting the
+    // query block would fragment the snapshot used by the seller console.
+    @Suppress("LongMethod")
     override suspend fun getSellerStats(sellerUserId: String) =
         readQuery {
             val shopIds =
@@ -344,6 +343,71 @@ class DashboardRepositoryImpl : DashboardRepository {
                     )
                 }
 
+            val sellerOrderTotal = OrderTable.selectAll().where { OrderTable.shopId inList sellerShopIds }.count()
+            val sellerOrderToday =
+                OrderTable.selectAll().where {
+                    (OrderTable.shopId inList sellerShopIds) and (OrderTable.createdAt greaterEq today)
+                }.count()
+            val sellerOrderPending =
+                OrderTable.selectAll().where {
+                    (OrderTable.shopId inList sellerShopIds) and (OrderTable.status eq OrderStatus.PENDING)
+                }.count()
+            val sellerOrderCanceled =
+                OrderTable.selectAll().where {
+                    (OrderTable.shopId inList sellerShopIds) and (OrderTable.status eq OrderStatus.CANCELED)
+                }.count()
+            val sellerUnfulfilled =
+                OrderTable.selectAll().where {
+                    (OrderTable.shopId inList sellerShopIds) and (OrderTable.status eq OrderStatus.PAID)
+                }.count()
+            val sellerProductTotal =
+                ProductTable.selectAll().where {
+                    (ProductTable.shopId inList sellerShopIds) and ProductTable.deletedAt.isNull()
+                }.count()
+            val sellerOutOfStock =
+                ProductTable.selectAll().where {
+                    (ProductTable.shopId inList sellerShopIds) and
+                        (ProductTable.status eq ProductStatus.OUT_OF_STOCK) and ProductTable.deletedAt.isNull()
+                }.count()
+            val sellerLowStock =
+                InventoryTable.selectAll().where {
+                    (InventoryTable.shopId inList sellerShopIds) and (InventoryTable.status eq InventoryStatus.LOW_STOCK)
+                }.count()
+            val sellerIdList = SellerDAO.find { SellerTable.shopId inList sellerShopIds }.map { it.id }
+            val pendingRefunds =
+                if (sellerIdList.isEmpty()) {
+                    0L
+                } else {
+                    val sellerOrderIds = OrderDAO.find { OrderTable.shopId inList sellerShopIds }.map { it.id }
+                    RefundRequestDAO.find {
+                        (RefundRequestTable.orderId inList sellerOrderIds) and (RefundRequestTable.status eq RefundStatus.PENDING)
+                    }.count()
+                }
+            val pendingRmas =
+                RmaDAO.find {
+                    (RmaTable.shopId inList sellerShopIds) and (RmaTable.status eq RmaStatus.REQUESTED)
+                }.count()
+            val unreadReviews =
+                SellerReviewDAO.find {
+                    (SellerReviewTable.shopId inList sellerShopIds) and (SellerReviewTable.status eq ReviewStatus.ACTIVE)
+                }.count()
+            val payoutRows =
+                if (sellerIdList.isEmpty()) {
+                    emptyList()
+                } else {
+                    SellerPayoutDAO.find {
+                        (SellerPayoutTable.sellerId inList sellerIdList) and
+                            (SellerPayoutTable.status eq PayoutStatus.PENDING.name) and
+                            SellerPayoutTable.requestedAt.isNull()
+                    }.toList()
+                }
+            val availablePayout = payoutRows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }
+            val sellerRecord = SellerDAO.find { SellerTable.userId eq sellerUserId.entityID(UserTable) }.firstOrNull()
+            val shopRecord = shopIds.firstOrNull()?.let { ShopDAO.findById(it) }
+            val pendingSellerShops =
+                ShopTable.selectAll().where {
+                    (ShopTable.id inList sellerShopIds) and (ShopTable.status eq ShopStatus.PENDING)
+                }.count()
             DashboardStatsResponse(
                 revenue = mapOf("total" to Money.str(totalRevenue), "today" to Money.str(todayRevenue)),
                 orders =
@@ -395,6 +459,29 @@ class DashboardRepositoryImpl : DashboardRepository {
                             }.count(),
                     ),
                 topProducts = sellerTopResponses,
+                revenueStats = DashboardRevenueStats(Money.str(totalRevenue), Money.str(todayRevenue)),
+                orderStats =
+                    DashboardOrderStats(
+                        sellerOrderTotal,
+                        sellerOrderToday,
+                        sellerOrderPending,
+                        sellerOrderCanceled,
+                        sellerUnfulfilled,
+                    ),
+                userStats = DashboardUserStats(customers.size.toLong(), todayCustomers.size.toLong(), sellerIdList.size.toLong()),
+                productStats = DashboardProductStats(sellerProductTotal, sellerOutOfStock, sellerLowStock),
+                shopStats = DashboardShopStats(shopIds.size.toLong(), pendingSellerShops),
+                sellerExtras =
+                    SellerDashboardExtras(
+                        kycStatus = sellerRecord?.kycStatus?.name,
+                        shopStatus = shopRecord?.status?.name,
+                        availablePayout = Money.str(availablePayout),
+                        payoutCurrency = payoutRows.firstOrNull()?.currency ?: "USD",
+                        pendingRefunds = pendingRefunds,
+                        pendingRmas = pendingRmas,
+                        activeReviews = unreadReviews,
+                        unfulfilledOrders = sellerUnfulfilled,
+                    ),
             )
         }
 
@@ -424,5 +511,173 @@ class DashboardRepositoryImpl : DashboardRepository {
                     )
                 }
             (orders + users).sortedByDescending { it.createdAt }.take(max)
+        }
+
+    override suspend fun getAdminQueues() =
+        readQuery {
+            fun oldest(
+                column: org.jetbrains.exposed.v1.core.Column<*>,
+                query: org.jetbrains.exposed.v1.jdbc.Query,
+            ): String? =
+                query.orderBy(column to SortOrder.ASC)
+                    .limit(1)
+                    .firstOrNull()
+                    ?.let { row -> (row[column] as? java.time.LocalDateTime)?.toUtcString() }
+
+            val pendingShops = ShopTable.selectAll().where { ShopTable.status eq ShopStatus.PENDING }
+            val pendingKyc = SellerTable.selectAll().where { SellerTable.kycStatus eq KycStatus.PENDING }
+            val requestedPayouts = PayoutRequestTable.selectAll().where { PayoutRequestTable.status eq PayoutStatus.REQUESTED.name }
+            val pendingRefunds = RefundRequestTable.selectAll().where { RefundRequestTable.status eq RefundStatus.PENDING }
+            val requestedRmas = RmaTable.selectAll().where { RmaTable.status eq RmaStatus.REQUESTED }
+            val openDisputes =
+                SellerDisputeTable.selectAll().where {
+                    SellerDisputeTable.status inList listOf(DisputeStatus.OPEN, DisputeStatus.UNDER_REVIEW)
+                }
+            val chargebacks =
+                ChargebackTable.selectAll().where {
+                    ChargebackTable.status inList listOf(ChargebackStatus.OPEN, ChargebackStatus.UNDER_REVIEW)
+                }
+            val failedWebhooks =
+                PaymentWebhookEventTable.selectAll().where { PaymentWebhookEventTable.status eq WebhookEventStatus.FAILED }
+            val deadLetters = OutboxDeadLetterTable.selectAll()
+            val lowStock = InventoryTable.selectAll().where { InventoryTable.status eq InventoryStatus.LOW_STOCK }
+
+            WorkQueuesResponse(
+                listOf(
+                    WorkQueueItem(
+                        "shops",
+                        "Pending shop approvals",
+                        pendingShops.count(),
+                        oldest(ShopTable.createdAt, pendingShops),
+                        "/admin/shops/status?status=PENDING",
+                    ),
+                    WorkQueueItem(
+                        "kyc",
+                        "Pending KYC reviews",
+                        pendingKyc.count(),
+                        oldest(SellerTable.kycSubmittedAt, pendingKyc),
+                        "/admin/sellers?status=PENDING",
+                    ),
+                    WorkQueueItem(
+                        "payouts",
+                        "Requested payouts",
+                        requestedPayouts.count(),
+                        oldest(PayoutRequestTable.createdAt, requestedPayouts),
+                        "/admin/payouts/requests?status=REQUESTED",
+                    ),
+                    WorkQueueItem(
+                        "refunds",
+                        "Pending refunds",
+                        pendingRefunds.count(),
+                        oldest(RefundRequestTable.createdAt, pendingRefunds),
+                        "/admin/refund-requests?status=PENDING",
+                    ),
+                    WorkQueueItem(
+                        "rmas",
+                        "Requested returns",
+                        requestedRmas.count(),
+                        oldest(RmaTable.createdAt, requestedRmas),
+                        "/admin/rma-requests?status=REQUESTED",
+                    ),
+                    WorkQueueItem(
+                        "disputes",
+                        "Open disputes",
+                        openDisputes.count(),
+                        oldest(SellerDisputeTable.createdAt, openDisputes),
+                        "/admin/disputes?status=OPEN",
+                    ),
+                    WorkQueueItem(
+                        "chargebacks",
+                        "Open chargebacks",
+                        chargebacks.count(),
+                        oldest(ChargebackTable.evidenceDueAt, chargebacks),
+                        "/admin/chargebacks?status=OPEN",
+                    ),
+                    WorkQueueItem(
+                        "webhooks",
+                        "Failed webhooks",
+                        failedWebhooks.count(),
+                        oldest(PaymentWebhookEventTable.receivedAt, failedWebhooks),
+                        "/admin/webhooks?status=FAILED",
+                    ),
+                    WorkQueueItem(
+                        "outbox",
+                        "Dead letters",
+                        deadLetters.count(),
+                        oldest(OutboxDeadLetterTable.createdAt, deadLetters),
+                        "/admin/outbox/dead-letters",
+                    ),
+                    WorkQueueItem(
+                        "inventory",
+                        "Low-stock items",
+                        lowStock.count(),
+                        oldest(InventoryTable.updatedAt, lowStock),
+                        "/admin/inventories?lowStock=true",
+                    ),
+                ),
+            )
+        }
+
+    override suspend fun getSellerReadiness(sellerUserId: String) =
+        readQuery {
+            val seller = SellerDAO.find { SellerTable.userId eq sellerUserId.entityID(UserTable) }.firstOrNull()
+            if (seller == null) {
+                return@readQuery SellerReadinessResponse(
+                    shopStatus = null,
+                    kycStatus = KycStatus.NOT_SUBMITTED.name,
+                    payoutEligible = false,
+                    payoutBlockedReason = "No seller profile",
+                    missingRequirements = listOf("SELLER_PROFILE"),
+                    nextAction = "REGISTER_AS_SELLER",
+                )
+            }
+            val shop = seller.shopId?.let { ShopDAO.findById(it.value) }
+            val payoutRows =
+                SellerPayoutDAO.find {
+                    (SellerPayoutTable.sellerId eq seller.id) and
+                        (SellerPayoutTable.status eq PayoutStatus.PENDING.name) and
+                        SellerPayoutTable.requestedAt.isNull()
+                }.toList()
+            val available = payoutRows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }
+            val shopApproved = shop?.status == ShopStatus.APPROVED
+            val kycVerified = seller.kycStatus == KycStatus.VERIFIED
+            val missing =
+                buildList {
+                    if (shop == null) add("SHOP")
+                    if (shop?.status == ShopStatus.PENDING) add("SHOP_APPROVAL")
+                    if (shop?.status == ShopStatus.REJECTED) add("SHOP_FIX_REJECTION")
+                    if (seller.kycStatus == KycStatus.NOT_SUBMITTED) add("KYC_SUBMISSION")
+                    if (seller.kycStatus == KycStatus.REJECTED) add("KYC_FIX_REJECTION")
+                    if (seller.kycDocumentUrl.isNullOrBlank()) add("KYC_DOCUMENT")
+                    if (seller.bankAccountNumber.isNullOrBlank() || seller.bankName.isNullOrBlank()) add("BANK_DETAILS")
+                }
+            val nextAction =
+                when {
+                    shop == null -> "CREATE_SHOP"
+                    shop.status == ShopStatus.REJECTED -> "FIX_SHOP_REJECTION"
+                    shop.status == ShopStatus.PENDING -> "AWAIT_SHOP_APPROVAL"
+                    seller.kycStatus in listOf(KycStatus.NOT_SUBMITTED, KycStatus.REJECTED) -> "SUBMIT_KYC"
+                    seller.kycStatus == KycStatus.PENDING -> "AWAIT_KYC_APPROVAL"
+                    !shopApproved || !kycVerified -> "CONTACT_SUPPORT"
+                    else -> null
+                }
+            SellerReadinessResponse(
+                shopStatus = shop?.status?.name,
+                kycStatus = seller.kycStatus.name,
+                payoutEligible = shopApproved && kycVerified,
+                payoutBlockedReason =
+                    when {
+                        !shopApproved -> "Shop is not approved"
+                        !kycVerified -> "KYC is not verified"
+                        else -> null
+                    },
+                availablePayout = Money.str(available),
+                currency = payoutRows.firstOrNull()?.currency ?: "USD",
+                missingRequirements = missing.distinct(),
+                nextAction = nextAction,
+                shopRejectionReason = shop?.rejectionReason,
+                shopSuspendedReason = shop?.suspendedReason,
+                kycRejectionReason = seller.kycRejectionReason,
+            )
         }
 }

@@ -3,6 +3,8 @@
 package com.piashcse.feature.b2b
 
 import com.piashcse.constants.B2bAccountStatus
+import com.piashcse.constants.B2bInvoiceStatus
+import com.piashcse.constants.PurchaseOrderStatus
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.created
 import com.piashcse.plugin.jsonBody
@@ -139,7 +141,8 @@ fun Route.b2bSellerInvoiceRoutes() {
     val service: B2bService by inject()
     get {
         val (limit, offset) = call.pageRequest()
-        call.respondOk(service.sellerInvoices(call.currentUserId, limit, offset))
+        val status = call.request.queryParameters["status"]?.parseEnum<B2bInvoiceStatus>("invoice status")
+        call.respondOk(service.sellerInvoices(call.currentUserId, status, limit, offset))
     }.describe { summary = "Seller: list B2B invoices" }
 }
 
@@ -148,7 +151,8 @@ fun Route.b2bSellerPurchaseOrderRoutes() {
     val service: B2bService by inject()
     get {
         val (limit, offset) = call.pageRequest()
-        call.respondOk(service.sellerPurchaseOrders(call.currentUserId, limit, offset))
+        val status = call.request.queryParameters["status"]?.parseEnum<PurchaseOrderStatus>("purchase order status")
+        call.respondOk(service.sellerPurchaseOrders(call.currentUserId, status, limit, offset))
     }.describe { summary = "Seller: list purchase orders" }
 
     writeRateLimit {
@@ -173,12 +177,14 @@ fun Route.b2bAdminRoutes() {
 
     get("purchase-orders") {
         val (limit, offset) = call.pageRequest()
-        call.respondOk(service.adminPurchaseOrders(limit, offset))
+        val status = call.request.queryParameters["status"]?.parseEnum<PurchaseOrderStatus>("purchase order status")
+        call.respondOk(service.adminPurchaseOrders(status, limit, offset))
     }.describe { summary = "Admin: list B2B purchase orders" }
 
     get("invoices") {
         val (limit, offset) = call.pageRequest()
-        call.respondOk(service.adminInvoices(limit, offset))
+        val status = call.request.queryParameters["status"]?.parseEnum<B2bInvoiceStatus>("invoice status")
+        call.respondOk(service.adminInvoices(status, limit, offset))
     }.describe { summary = "Admin: list B2B invoices" }
 
     adminWriteRateLimit {

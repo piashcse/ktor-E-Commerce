@@ -1,11 +1,13 @@
 package com.piashcse.event.subscriber
 
 import com.piashcse.constants.PayoutStatus
+import com.piashcse.constants.UserType
 import com.piashcse.database.entities.AuditLogDAO
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductVariantTable
+import com.piashcse.database.entities.RefundRequestDAO
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerPayoutDAO
 import com.piashcse.database.entities.SellerPayoutTable
@@ -18,13 +20,20 @@ import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.AdminActionEvent
 import com.piashcse.event.BackInStockEvent
+import com.piashcse.event.DisputeCreatedEvent
 import com.piashcse.event.DomainEvent
+import com.piashcse.event.KycStatusChangedEvent
+import com.piashcse.event.LowStockEvent
 import com.piashcse.event.OrderPlacedEvent
 import com.piashcse.event.OrderStatusChangedEvent
 import com.piashcse.event.PaymentCompletedEvent
+import com.piashcse.event.PayoutStatusChangedEvent
+import com.piashcse.event.ProductReviewCreatedEvent
 import com.piashcse.event.RefundStatusChangedEvent
 import com.piashcse.event.RmaStatusChangedEvent
+import com.piashcse.event.SellerReviewCreatedEvent
 import com.piashcse.event.SendEmailEvent
+import com.piashcse.event.ShopStatusChangedEvent
 import com.piashcse.event.Subscriber
 import com.piashcse.event.UserRegisteredEvent
 import com.piashcse.feature.notification.NotificationDispatcher
@@ -100,7 +109,7 @@ class NotificationSubscriber(
             }
             is RefundStatusChangedEvent -> {
                 val content =
-                    NotificationTemplates.refundStatusChanged(event.refundId, event.fromStatus, event.toStatus)
+                    NotificationTemplates.refundStatusChanged(event.refundId, event.fromStatus, event.toStatus, event.reason)
                 NotificationMessage(
                     userId = event.userId,
                     email = event.email,
@@ -112,7 +121,13 @@ class NotificationSubscriber(
                 )
             }
             is RmaStatusChangedEvent -> {
-                val content = NotificationTemplates.rmaStatusChanged(event.rmaId, event.fromStatus, event.toStatus)
+                val content =
+                    NotificationTemplates.rmaStatusChanged(
+                        event.rmaId,
+                        event.fromStatus,
+                        event.toStatus,
+                        event.note,
+                    )
                 NotificationMessage(
                     userId = event.userId,
                     email = event.email,
@@ -136,8 +151,209 @@ class NotificationSubscriber(
                 )
             }
             is SendEmailEvent, is AdminActionEvent -> null
+            is SellerReviewCreatedEvent,
+            is ProductReviewCreatedEvent,
+            is DisputeCreatedEvent,
+            is LowStockEvent,
+            is KycStatusChangedEvent,
+            is ShopStatusChangedEvent,
+            is PayoutStatusChangedEvent,
+            -> null
             // Back-in-stock fans out to many subscribers and is handled in onEvent.
             is BackInStockEvent -> null
+        }
+
+    private suspend fun messagesFor(event: DomainEvent): List<NotificationMessage> {
+        val messages = mutableListOf<NotificationMessage>()
+        messageFor(event)?.let { messages += it }
+        messages += sellerMessagesFor(event)
+        messages += adminAlertMessagesFor(event)
+        return messages
+    }
+
+    private fun NotificationTemplates.Content.toMessage(
+        userId: String,
+        email: String?,
+        eventType: String,
+        resourceType: String,
+        resourceId: String?,
+    ) = NotificationMessage(userId, email, eventType, title, body, resourceType, resourceId)
+
+    private suspend fun sellerMessagesFor(event: DomainEvent): List<NotificationMessage> {
+        val messages = mutableListOf<NotificationMessage>()
+        when (event) {
+            is OrderPlacedEvent -> {
+                sellerForShop(event.shopId)?.let { (userId, email) ->
+                    val content = NotificationTemplates.sellerNewOrder(event.orderNumber, Money.str(event.total))
+                    messages += content.toMessage(userId, email, "SELLER_ORDER_PLACED", "ORDER", event.orderId)
+                }
+            }
+            is PaymentCompletedEvent -> {
+                val order = query { OrderDAO.findById(event.orderId) }
+                sellerForShop(order?.shopId?.value)?.let { (userId, email) ->
+                    val content = NotificationTemplates.sellerOrderPaid(order?.orderNumber.orEmpty())
+                    messages += content.toMessage(userId, email, "SELLER_ORDER_PAID", "PAYMENT", event.paymentId)
+                }
+            }
+            is OrderStatusChangedEvent -> {
+                if (event.toStatus == "CANCELED") {
+                    val shopId = query { OrderDAO.findById(event.orderId)?.shopId?.value }
+                    sellerForShop(shopId)?.let { (userId, email) ->
+                        val content = NotificationTemplates.sellerOrderCanceled(event.orderNumber)
+                        messages += content.toMessage(userId, email, "SELLER_ORDER_CANCELED", "ORDER", event.orderId)
+                    }
+                }
+            }
+            is RefundStatusChangedEvent -> {
+                val shopId =
+                    query {
+                        RefundRequestDAO.findById(event.refundId)
+                            ?.let { refund -> OrderDAO.findById(refund.orderId.value)?.shopId?.value }
+                    }
+                sellerForShop(shopId)?.let { (userId, email) ->
+                    val content = NotificationTemplates.sellerRefundUpdate(event.orderId, event.toStatus, event.reason)
+                    messages += content.toMessage(userId, email, "SELLER_REFUND_${event.toStatus}", "REFUND", event.refundId)
+                }
+            }
+            is RmaStatusChangedEvent -> {
+                val shopId = query { OrderDAO.findById(event.orderId)?.shopId?.value }
+                sellerForShop(shopId)?.let { (userId, email) ->
+                    val content = NotificationTemplates.sellerRmaUpdate(event.orderId, event.toStatus, event.note)
+                    messages += content.toMessage(userId, email, "SELLER_RMA_${event.toStatus}", "RMA", event.rmaId)
+                }
+            }
+            is SellerReviewCreatedEvent -> {
+                recipientForSellerId(event.sellerId)?.let { (userId, email) ->
+                    val content = NotificationTemplates.sellerReview(event.rating, event.comment)
+                    messages += content.toMessage(userId, email, "SELLER_REVIEW", "REVIEW", event.reviewId)
+                }
+            }
+            is ProductReviewCreatedEvent -> {
+                val shopId = query { ProductDAO.findById(event.productId)?.shopId?.value }
+                sellerForShop(shopId)?.let { (userId, email) ->
+                    val content = NotificationTemplates.sellerReview(event.rating, event.comment)
+                    messages += content.toMessage(userId, email, "PRODUCT_REVIEW", "REVIEW", event.reviewId)
+                }
+            }
+            is LowStockEvent -> {
+                sellerForShop(event.shopId)?.let { (userId, email) ->
+                    messages +=
+                        NotificationMessage(
+                            userId,
+                            email,
+                            "LOW_STOCK",
+                            "Low stock alert",
+                            "Product ${event.productId} has ${event.stockQuantity} units left.",
+                            "PRODUCT",
+                            event.productId,
+                        )
+                }
+            }
+            is DisputeCreatedEvent -> {
+                event.sellerId?.let { sellerId ->
+                    recipientForSellerId(sellerId)?.let { (userId, email) ->
+                        val content = NotificationTemplates.disputeCreated(event.disputeId, event.subject)
+                        messages += content.toMessage(userId, email, "DISPUTE_CREATED", "DISPUTE", event.disputeId)
+                    }
+                }
+            }
+            is KycStatusChangedEvent -> {
+                recipientForUserId(event.userId)?.let { (userId, email) ->
+                    val content = NotificationTemplates.kycStatus(event.status, event.reason)
+                    messages += content.toMessage(userId, email, "KYC_${event.status}", "KYC", event.sellerId)
+                }
+            }
+            is ShopStatusChangedEvent -> {
+                recipientForUserId(event.userId)?.let { (userId, email) ->
+                    val content = NotificationTemplates.shopStatus(event.status, event.reason)
+                    messages += content.toMessage(userId, email, "SHOP_${event.status}", "SHOP", event.shopId)
+                }
+            }
+            is PayoutStatusChangedEvent -> {
+                recipientForUserId(event.userId)?.let { (userId, email) ->
+                    val content =
+                        NotificationTemplates.payoutStatus(
+                            event.status,
+                            Money.str(event.amount),
+                            event.currency,
+                            event.reason,
+                        )
+                    messages += content.toMessage(userId, email, "PAYOUT_${event.status}", "PAYOUT", event.payoutRequestId)
+                }
+            }
+            else -> Unit
+        }
+        return messages
+    }
+
+    private suspend fun adminAlertMessagesFor(event: DomainEvent): List<NotificationMessage> =
+        when (event) {
+            is KycStatusChangedEvent ->
+                if (event.status == "PENDING") {
+                    adminMessages("New KYC submission", "Seller ${event.sellerId} submitted KYC for review.", "KYC", event.sellerId)
+                } else {
+                    emptyList()
+                }
+            is ShopStatusChangedEvent ->
+                if (event.status == "PENDING") {
+                    adminMessages("New shop application", "Shop ${event.shopId} is awaiting approval.", "SHOP", event.shopId)
+                } else {
+                    emptyList()
+                }
+            is PayoutStatusChangedEvent ->
+                if (event.status == "REQUESTED") {
+                    adminMessages(
+                        "New payout request",
+                        "${event.currency} ${Money.str(event.amount)} requested by seller ${event.sellerId}.",
+                        "PAYOUT",
+                        event.payoutRequestId,
+                    )
+                } else {
+                    emptyList()
+                }
+            is DisputeCreatedEvent -> adminMessages("New dispute", event.subject, "DISPUTE", event.disputeId)
+            is RefundStatusChangedEvent ->
+                if (event.toStatus == "PENDING") {
+                    adminMessages("New refund request", "Refund ${event.refundId} is awaiting review.", "REFUND", event.refundId)
+                } else {
+                    emptyList()
+                }
+            is RmaStatusChangedEvent ->
+                if (event.toStatus == "REQUESTED") {
+                    adminMessages("New return request", "RMA ${event.rmaId} is awaiting review.", "RMA", event.rmaId)
+                } else {
+                    emptyList()
+                }
+            else -> emptyList()
+        }
+
+    private suspend fun sellerForShop(shopId: String?): Pair<String, String?>? {
+        if (shopId == null) return null
+        return query {
+            SellerDAO.find { SellerTable.shopId eq shopId.entityID(ShopTable) }.firstOrNull()
+        }?.let { recipientForUserId(it.userId.value) }
+    }
+
+    private suspend fun recipientForSellerId(sellerId: String): Pair<String, String?>? =
+        query { SellerDAO.findById(sellerId)?.userId?.value }?.let { recipientForUserId(it) }
+
+    private suspend fun recipientForUserId(userId: String): Pair<String, String?>? =
+        query {
+            UserDAO.findById(userId)?.takeIf { it.isActive }?.let { it.id.value to it.email }
+        }
+
+    private suspend fun adminMessages(
+        title: String,
+        body: String,
+        resourceType: String,
+        resourceId: String?,
+    ): List<NotificationMessage> =
+        query {
+            UserDAO.find {
+                (UserTable.userType inList listOf(UserType.ADMIN, UserType.SUPER_ADMIN)) and (UserTable.isActive eq true)
+            }.map { user ->
+                NotificationMessage(user.id.value, user.email, "ADMIN_QUEUE", title, body, resourceType, resourceId)
+            }
         }
 
     override suspend fun onEvent(event: DomainEvent) {
@@ -149,16 +365,15 @@ class NotificationSubscriber(
         // the non-fatal notification try/catch below.
         if (event is PaymentCompletedEvent) {
             try {
-                dispatcher.dispatch(messageFor(event) ?: return)
+                messagesFor(event).forEach { dispatcher.dispatch(it) }
             } catch (e: Exception) {
                 log.error("Notification dispatch failed for ${event::class.simpleName}", e)
             }
             captureSellerPayout(event)
             return
         }
-        val message = messageFor(event) ?: return
         try {
-            dispatcher.dispatch(message)
+            messagesFor(event).forEach { dispatcher.dispatch(it) }
         } catch (e: Exception) {
             log.error("Notification dispatch failed for ${event::class.simpleName}", e)
         }

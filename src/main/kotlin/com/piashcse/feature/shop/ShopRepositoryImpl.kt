@@ -7,9 +7,11 @@ import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopCategoryTable
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.ShopTable
+import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
+import com.piashcse.event.ShopStatusChangedEvent
 import com.piashcse.mapper.toShopResponse
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
@@ -23,6 +25,9 @@ import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.like
+import org.jetbrains.exposed.v1.core.lowerCase
 import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -31,50 +36,55 @@ class ShopRepositoryImpl : ShopRepository {
     override suspend fun createShop(
         userId: String,
         shopRequest: ShopRequest,
-    ): ShopResponse =
-        query {
-            val seller =
-                try {
-                    requireSellerByUserId(userId)
-                } catch (e: ForbiddenException) {
-                    throw NotFoundException(e.message ?: Message.Errors.SELLER_REQUIRED)
+    ): ShopResponse {
+        val response =
+            query {
+                val seller =
+                    try {
+                        requireSellerByUserId(userId)
+                    } catch (e: ForbiddenException) {
+                        throw NotFoundException(e.message ?: Message.Errors.SELLER_REQUIRED)
+                    }
+
+                val existingShop =
+                    ShopDAO.find {
+                        ShopTable.userId eq userId
+                    }.firstOrNull()
+
+                if (existingShop != null) {
+                    throw ConflictException(Message.Shops.ALREADY_EXISTS)
                 }
 
-            val existingShop =
-                ShopDAO.find {
-                    ShopTable.userId eq userId
-                }.firstOrNull()
+                ShopCategoryTable.selectAll().andWhere { ShopCategoryTable.id eq shopRequest.categoryId.entityID(ShopCategoryTable) }
+                    .firstOrNull() ?: throw NotFoundException("Shop category not found")
 
-            if (existingShop != null) {
-                throw ConflictException(Message.Shops.ALREADY_EXISTS)
-            }
+                val shop =
+                    ShopDAO.new {
+                        this.userId = userId.entityID(UserTable)
+                        categoryId = shopRequest.categoryId.entityID(ShopCategoryTable)
+                        name = shopRequest.name
+                        description = shopRequest.description
+                        address = shopRequest.address
+                        phone = shopRequest.phone
+                        email = shopRequest.email
+                        logo = shopRequest.logo
+                        coverImage = shopRequest.coverImage
+                        status = ShopStatus.PENDING
+                    }
 
-            ShopCategoryTable.selectAll().andWhere { ShopCategoryTable.id eq shopRequest.categoryId.entityID(ShopCategoryTable) }
-                .firstOrNull() ?: throw NotFoundException("Shop category not found")
-
-            val shop =
-                ShopDAO.new {
-                    this.userId = userId.entityID(UserTable)
-                    categoryId = shopRequest.categoryId.entityID(ShopCategoryTable)
-                    name = shopRequest.name
-                    description = shopRequest.description
-                    address = shopRequest.address
-                    phone = shopRequest.phone
-                    email = shopRequest.email
-                    logo = shopRequest.logo
-                    coverImage = shopRequest.coverImage
-                    status = ShopStatus.PENDING
+                seller.shopId = shop.id
+                com.piashcse.database.entities.WarehouseDAO.new {
+                    shopId = shop.id
+                    name = "Default"
+                    code = "DEFAULT"
                 }
 
-            seller.shopId = shop.id
-            com.piashcse.database.entities.WarehouseDAO.new {
-                shopId = shop.id
-                name = "Default"
-                code = "DEFAULT"
+                shop.toShopResponse(includeInternal = true)
+            }.also { response ->
+                EventBus.publish(ShopStatusChangedEvent(response.id, userId, ShopStatus.PENDING.name))
             }
-
-            shop.toShopResponse()
-        }
+        return response
+    }
 
     override suspend fun updateShop(
         userId: String,
@@ -98,7 +108,7 @@ class ShopRepositoryImpl : ShopRepository {
                 coverImage = shopRequest.coverImage ?: coverImage
             }
 
-            shop.toShopResponse()
+            shop.toShopResponse(includeInternal = true)
         }
 
     override suspend fun getShopById(shopId: String): ShopResponse? =
@@ -111,7 +121,7 @@ class ShopRepositoryImpl : ShopRepository {
         userId: String,
         limit: Int,
         offset: Int,
-    ) = shopPaginatedQuery(limit, offset) { andWhere { ShopTable.userId eq userId } }
+    ) = shopPaginatedQuery(limit, offset, includeInternal = true) { andWhere { ShopTable.userId eq userId } }
 
     override suspend fun getShops(
         status: String?,
@@ -156,19 +166,54 @@ class ShopRepositoryImpl : ShopRepository {
         status: ShopStatus,
         limit: Int,
         offset: Int,
-    ) = shopPaginatedQuery(limit, offset) { andWhere { ShopTable.status eq status } }
+    ) = shopPaginatedQuery(limit, offset, includeInternal = true) { andWhere { ShopTable.status eq status } }
+
+    override suspend fun getAllShops(
+        status: ShopStatus?,
+        search: String?,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<ShopResponse> =
+        query {
+            val shops = ShopTable.selectAll()
+            status?.let { shops.andWhere { ShopTable.status eq it } }
+            search?.takeIf { it.isNotBlank() }?.let { term ->
+                val pattern = "%${term.trim().lowercase()}%"
+                shops.andWhere { ShopTable.name.lowerCase() like pattern }
+            }
+            val (total, rows) =
+                shops.orderBy(ShopTable.createdAt to SortOrder.DESC)
+                    .toPaginatedList(limit, offset) { ShopDAO.wrapRow(it) }
+            val sellers =
+                SellerDAO.find { SellerTable.shopId inList rows.map { it.id } }
+                    .associateBy { it.shopId?.value }
+            val users =
+                UserDAO.find {
+                    UserTable.id inList sellers.values.map { it.userId }.distinct()
+                }.associateBy { it.id.value }
+            PaginatedResponse(
+                rows.map { shop ->
+                    val seller = sellers[shop.id.value]
+                    shop.toShopResponse(users[seller?.userId?.value]?.email, seller?.kycStatus, includeInternal = true)
+                },
+                com.piashcse.utils.common.PaginationMetadata(total, limit, offset),
+            )
+        }
 
     private suspend fun shopPaginatedQuery(
         limit: Int,
         offset: Int,
         orderBy: Pair<Column<*>, SortOrder>? = null,
+        includeInternal: Boolean = false,
         filter: Query.() -> Unit,
     ): PaginatedResponse<ShopResponse> =
         query {
             val q = ShopTable.selectAll()
             q.filter()
             q.also { orderBy?.let { (col, dir) -> q.orderBy(col to dir) } }
-                .toPaginatedResponse(limit, offset) { ShopDAO.wrapRow(it).toShopResponse() }
+                .toPaginatedResponse(limit, offset) {
+                    ShopDAO.wrapRow(it).toShopResponse(includeInternal = includeInternal)
+                }
         }
 
     private suspend fun setShopStatus(
@@ -179,25 +224,38 @@ class ShopRepositoryImpl : ShopRepository {
         actorRole: String?,
         requiredCurrent: Set<ShopStatus>,
         target: ShopStatus,
+        reason: String? = null,
         sellerUpdate: ((SellerDAO) -> Unit)? = null,
     ): ShopResponse {
+        var ownerUserId: String? = null
         val response =
             query {
                 val shop = ShopDAO.findById(shopId) ?: shopId.throwNotFound("Shop")
+                ownerUserId = shop.userId.value
                 if (shop.status !in requiredCurrent) {
-                    throw ValidationException(
+                    throw ConflictException(
                         "Cannot $action a shop in ${shop.status} status",
                     )
                 }
                 shop.status = target
+                when (target) {
+                    ShopStatus.REJECTED -> shop.rejectionReason = reason?.takeIf { it.isNotBlank() }
+                    ShopStatus.SUSPENDED -> shop.suspendedReason = reason?.takeIf { it.isNotBlank() }
+                    ShopStatus.APPROVED -> {
+                        shop.rejectionReason = null
+                        shop.suspendedReason = null
+                    }
+                    else -> Unit
+                }
                 if (sellerUpdate != null) {
                     SellerDAO.find { SellerTable.shopId eq shop.id }.firstOrNull()?.let(sellerUpdate)
                 }
-                shop.toShopResponse()
+                shop.toShopResponse(includeInternal = true)
             }
         if (actorId != null) {
             EventBus.publishAdminAction(Triple(actorId, actorEmail.orEmpty(), actorRole ?: "ADMIN"), action, "SHOP", shopId)
         }
+        ownerUserId?.let { EventBus.publish(ShopStatusChangedEvent(shopId, it, target.name, reason)) }
         return response
     }
 
@@ -224,6 +282,7 @@ class ShopRepositoryImpl : ShopRepository {
         actorId: String?,
         actorEmail: String?,
         actorRole: String?,
+        reason: String?,
     ) = setShopStatus(
         shopId,
         "SHOP_REJECT",
@@ -232,6 +291,7 @@ class ShopRepositoryImpl : ShopRepository {
         actorRole,
         requiredCurrent = setOf(ShopStatus.PENDING),
         target = ShopStatus.REJECTED,
+        reason = reason,
     ) { seller -> seller.status = ShopStatus.REJECTED }
 
     override suspend fun suspendShop(
@@ -239,6 +299,7 @@ class ShopRepositoryImpl : ShopRepository {
         actorId: String?,
         actorEmail: String?,
         actorRole: String?,
+        reason: String?,
     ) = setShopStatus(
         shopId,
         "SHOP_SUSPEND",
@@ -247,6 +308,7 @@ class ShopRepositoryImpl : ShopRepository {
         actorRole,
         requiredCurrent = setOf(ShopStatus.APPROVED),
         target = ShopStatus.SUSPENDED,
+        reason = reason,
     ) { seller ->
         seller.status = ShopStatus.SUSPENDED
         seller.suspendedAt = currentUtc()

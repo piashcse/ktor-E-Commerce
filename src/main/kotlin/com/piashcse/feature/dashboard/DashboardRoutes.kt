@@ -2,6 +2,10 @@
 
 package com.piashcse.feature.dashboard
 
+import com.piashcse.model.response.DashboardStatsResponse
+import com.piashcse.model.response.SellerReadinessResponse
+import com.piashcse.model.response.WorkQueuesResponse
+import com.piashcse.plugin.ok
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.queryLimit
 import com.piashcse.utils.extension.respondOk
@@ -16,7 +20,10 @@ fun Route.dashboardAdminRoutes() {
      */
     get {
         call.respondOk(repo.getDashboardStats())
-    }.describe { summary = "Get summary dashboard stats (revenue, orders, users, products, shops)" }
+    }.describe {
+        summary = "Get summary dashboard stats (revenue, orders, users, products, shops)"
+        responses { ok<DashboardStatsResponse>("Dashboard summary") }
+    }
 
     /**
      * Get detailed revenue stats with optional date range and daily breakdown
@@ -61,5 +68,29 @@ fun Route.dashboardSellerRoutes() {
     }.describe {
         summary = "Seller dashboard"
         description = "Sales, orders, stock and top products"
+    }
+}
+
+/** Seller onboarding/payout readiness in one call. */
+fun Route.sellerReadinessRoutes() {
+    val repo: DashboardRepository by inject()
+    get {
+        call.respondOk(repo.getSellerReadiness(call.currentUserId))
+    }.describe {
+        summary = "Seller readiness"
+        description = "Shop approval, KYC, payout eligibility and the next required action"
+        responses { ok<SellerReadinessResponse>("Seller readiness") }
+    }
+}
+
+/** Aggregated actionable admin queues. */
+fun Route.adminQueueRoutes() {
+    val repo: DashboardRepository by inject()
+    get {
+        call.respondOk(repo.getAdminQueues())
+    }.describe {
+        summary = "Admin work queues"
+        description = "Counts and oldest item for every actionable admin queue"
+        responses { ok<WorkQueuesResponse>("Admin queues") }
     }
 }

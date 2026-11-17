@@ -51,6 +51,8 @@ interface InventoryRepository {
     suspend fun getInventoryByShop(
         actorUserId: String,
         shopId: String,
+        search: String? = null,
+        lowStockOnly: Boolean = false,
         limit: Int = 20,
         offset: Int = 0,
     ): PaginatedResponse<InventoryResponse>
@@ -62,5 +64,7 @@ interface InventoryRepository {
         limit: Int = 20,
         offset: Int = 0,
         shopId: String? = null,
+        search: String? = null,
+        lowStockOnly: Boolean = false,
     ): PaginatedResponse<InventoryResponse>
 }

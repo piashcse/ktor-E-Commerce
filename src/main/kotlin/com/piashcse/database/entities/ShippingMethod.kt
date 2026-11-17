@@ -10,6 +10,9 @@ object ShippingMethodTable : BaseIdTable("shipping_method") {
     val type = varchar("type", 50).nullable() // e.g., Standard, Express
     val price = decimal("price", 10, 2)
     val deliveryTime = varchar("delivery_time", 50).nullable() // e.g., 3-5 days
+
+    /** Null for platform-wide methods; set for seller-specific rates. */
+    val shopId = reference("shop_id", ShopTable.id).nullable().index()
 }
 
 class ShippingMethodDAO(id: EntityID<String>) : BaseEntity(id, ShippingMethodTable) {
@@ -19,4 +22,5 @@ class ShippingMethodDAO(id: EntityID<String>) : BaseEntity(id, ShippingMethodTab
     var type by ShippingMethodTable.type
     var price by ShippingMethodTable.price
     var deliveryTime by ShippingMethodTable.deliveryTime
+    var shopId by ShippingMethodTable.shopId
 }

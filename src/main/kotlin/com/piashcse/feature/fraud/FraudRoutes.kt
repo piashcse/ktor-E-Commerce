@@ -2,6 +2,7 @@
 
 package com.piashcse.feature.fraud
 
+import com.piashcse.constants.ChargebackStatus
 import com.piashcse.model.response.PaymentResponse
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.created
@@ -10,7 +11,10 @@ import com.piashcse.plugin.ok
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.pageRequest
+import com.piashcse.utils.extension.parseEnum
+import com.piashcse.utils.extension.queryInstant
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondCsv
 import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondMessage
 import com.piashcse.utils.extension.respondOk
@@ -19,6 +23,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
+import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
 
 /** Admin velocity rules, blocklists and high-risk payment feed. */
@@ -98,14 +103,73 @@ fun Route.paymentRiskAdminRoutes() {
     }
 }
 
+@Serializable
+data class ChargebackEvidenceRequest(val evidenceUrl: String)
+
 /** Admin chargeback/dispute workflow. */
 fun Route.chargebackAdminRoutes() {
     val chargebackService: ChargebackService by inject()
 
     get {
         val (limit, offset) = call.pageRequest()
-        call.respondOk(chargebackService.list(limit, offset))
-    }.describe { summary = "List chargebacks" }
+        val status = call.request.queryParameters["status"]?.parseEnum<ChargebackStatus>("chargeback status")
+        call.respondOk(
+            chargebackService.list(
+                limit,
+                offset,
+                status,
+                call.queryInstant("dueBefore"),
+                call.queryInstant("openedFrom"),
+                call.queryInstant("openedTo"),
+            ),
+        )
+    }.describe {
+        summary = "List chargebacks"
+        description = "Status, evidence-due and opened-date filters; sorted by evidence due date"
+        responses { ok<PaginatedResponse<ChargebackResponse>>("Chargebacks") }
+    }
+
+    get("export") {
+        call.respondCsv(
+            "chargebacks.csv",
+            listOf(
+                "id",
+                "payment_id",
+                "order_id",
+                "provider_dispute_id",
+                "amount",
+                "currency",
+                "status",
+                "reason",
+                "evidence_due_at",
+                "opened_at",
+            ),
+            fetch = { limit, offset ->
+                chargebackService.list(
+                    limit,
+                    offset,
+                    call.request.queryParameters["status"]?.parseEnum<ChargebackStatus>("chargeback status"),
+                    call.queryInstant("dueBefore"),
+                    call.queryInstant("openedFrom"),
+                    call.queryInstant("openedTo"),
+                ).data
+            },
+            row = {
+                listOf(
+                    it.id,
+                    it.paymentId,
+                    it.orderId,
+                    it.providerDisputeId.orEmpty(),
+                    it.amount,
+                    it.currency,
+                    it.status,
+                    it.reason.orEmpty(),
+                    it.evidenceDueAt.orEmpty(),
+                    it.openedAt,
+                )
+            },
+        )
+    }.describe { summary = "Export chargebacks CSV" }
 
     get("{id}") {
         call.respondOk(chargebackService.get(call.requirePathParameter("id")))
@@ -127,6 +191,15 @@ fun Route.chargebackAdminRoutes() {
         }.describe {
             summary = "Update a chargeback status/outcome"
             requestBody { jsonBody<ChargebackUpdateRequest>() }
+            responses { ok<ChargebackResponse>("Chargeback updated") }
+        }
+
+        post("{id}/evidence") {
+            val body = call.receive<ChargebackEvidenceRequest>()
+            call.respondOk(chargebackService.attachEvidence(call.requirePathParameter("id"), body.evidenceUrl))
+        }.describe {
+            summary = "Attach evidence to a chargeback"
+            requestBody { jsonBody<ChargebackEvidenceRequest>() }
             responses { ok<ChargebackResponse>("Chargeback updated") }
         }
     }

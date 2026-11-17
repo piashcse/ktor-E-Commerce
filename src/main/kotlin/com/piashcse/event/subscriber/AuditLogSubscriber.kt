@@ -9,8 +9,24 @@ class AuditLogSubscriber(
 ) : Subscriber {
     private val log = LoggerFactory.getLogger(AuditLogSubscriber::class.java)
 
+    private fun isExtendedEvent(event: DomainEvent): Boolean =
+        when (event) {
+            is SellerReviewCreatedEvent,
+            is ProductReviewCreatedEvent,
+            is DisputeCreatedEvent,
+            is KycStatusChangedEvent,
+            is ShopStatusChangedEvent,
+            is PayoutStatusChangedEvent,
+            -> true
+            else -> false
+        }
+
     override suspend fun onEvent(event: DomainEvent) {
         try {
+            if (isExtendedEvent(event)) {
+                auditExtended(event)
+                return
+            }
             when (event) {
                 is OrderPlacedEvent ->
                     auditLogRepository.log(
@@ -87,9 +103,83 @@ class AuditLogSubscriber(
                     )
                 is SendEmailEvent -> Unit
                 is BackInStockEvent -> Unit
+                is LowStockEvent -> Unit
+                is SellerReviewCreatedEvent,
+                is ProductReviewCreatedEvent,
+                is DisputeCreatedEvent,
+                is KycStatusChangedEvent,
+                is ShopStatusChangedEvent,
+                is PayoutStatusChangedEvent,
+                -> Unit
             }
         } catch (e: Exception) {
             log.error("Failed to write audit log for event ${event::class.simpleName}", e)
+        }
+    }
+
+    private suspend fun auditExtended(event: DomainEvent) {
+        when (event) {
+            is SellerReviewCreatedEvent ->
+                auditLogRepository.log(
+                    actorId = event.userId,
+                    actorEmail = "",
+                    actorRole = "CUSTOMER",
+                    action = "SELLER_REVIEW_CREATED",
+                    resourceType = "SELLER_REVIEW",
+                    resourceId = event.reviewId,
+                    details = "Rating ${event.rating}",
+                )
+            is ProductReviewCreatedEvent ->
+                auditLogRepository.log(
+                    actorId = event.userId,
+                    actorEmail = "",
+                    actorRole = "CUSTOMER",
+                    action = "PRODUCT_REVIEW_CREATED",
+                    resourceType = "PRODUCT_REVIEW",
+                    resourceId = event.reviewId,
+                    details = "Product ${event.productId}, rating ${event.rating}",
+                )
+            is DisputeCreatedEvent ->
+                auditLogRepository.log(
+                    actorId = event.userId,
+                    actorEmail = "",
+                    actorRole = "CUSTOMER",
+                    action = "DISPUTE_CREATED",
+                    resourceType = "DISPUTE",
+                    resourceId = event.disputeId,
+                    details = event.subject,
+                )
+            is KycStatusChangedEvent ->
+                auditLogRepository.log(
+                    actorId = event.userId,
+                    actorEmail = "",
+                    actorRole = "SELLER",
+                    action = "KYC_${event.status}",
+                    resourceType = "KYC",
+                    resourceId = event.sellerId,
+                    details = event.reason,
+                )
+            is ShopStatusChangedEvent ->
+                auditLogRepository.log(
+                    actorId = event.userId,
+                    actorEmail = "",
+                    actorRole = "SELLER",
+                    action = "SHOP_${event.status}",
+                    resourceType = "SHOP",
+                    resourceId = event.shopId,
+                    details = event.reason,
+                )
+            is PayoutStatusChangedEvent ->
+                auditLogRepository.log(
+                    actorId = event.userId,
+                    actorEmail = "",
+                    actorRole = "SELLER",
+                    action = "PAYOUT_${event.status}",
+                    resourceType = "PAYOUT",
+                    resourceId = event.payoutRequestId,
+                    details = "${event.currency} ${event.amount.toPlainString()}" + (event.reason?.let { " - $it" } ?: ""),
+                )
+            else -> Unit
         }
     }
 }

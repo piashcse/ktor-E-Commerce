@@ -1,7 +1,9 @@
 package com.piashcse.feature.webhook
 
 import com.piashcse.constants.WebhookEventStatus
+import com.piashcse.database.entities.CarrierWebhookEventDAO
 import com.piashcse.database.entities.CarrierWebhookEventTable
+import com.piashcse.database.entities.PaymentWebhookEventDAO
 import com.piashcse.database.entities.PaymentWebhookEventTable
 import com.piashcse.feature.payment.PaymentRepository
 import com.piashcse.feature.payment.WebhookResult
@@ -11,6 +13,7 @@ import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
+import com.piashcse.utils.extension.throwNotFound
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
@@ -32,6 +35,7 @@ data class WebhookEventResponse(
     val eventType: String,
     val status: WebhookEventStatus,
     val error: String?,
+    val payload: String? = null,
     val receivedAt: String?,
     val processedAt: String?,
 )
@@ -117,6 +121,46 @@ class WebhookAdminService(
         eventId: String,
         actorUserId: String,
     ): WebhookResult = payments.replayWebhook(eventId, actorUserId)
+
+    suspend fun get(
+        id: String,
+        source: WebhookSource? = null,
+    ): WebhookEventResponse =
+        query {
+            if (source == null || source == WebhookSource.PAYMENT) {
+                PaymentWebhookEventDAO.findById(id)?.let { row ->
+                    return@query WebhookEventResponse(
+                        id = row.id.value,
+                        source = WebhookSource.PAYMENT,
+                        provider = row.provider.name,
+                        eventId = row.eventId,
+                        eventType = row.eventType,
+                        status = row.status,
+                        error = row.error,
+                        payload = row.payload,
+                        receivedAt = row.receivedAt.toUtcString(),
+                        processedAt = row.processedAt?.toUtcString(),
+                    )
+                }
+            }
+            if (source == null || source == WebhookSource.CARRIER) {
+                CarrierWebhookEventDAO.findById(id)?.let { row ->
+                    return@query WebhookEventResponse(
+                        id = row.id.value,
+                        source = WebhookSource.CARRIER,
+                        provider = row.provider,
+                        eventId = row.eventId,
+                        eventType = row.eventType,
+                        status = row.status,
+                        error = row.error,
+                        payload = row.payload,
+                        receivedAt = row.receivedAt.toUtcString(),
+                        processedAt = row.processedAt?.toUtcString(),
+                    )
+                }
+            }
+            throw id.throwNotFound("Webhook event")
+        }
 
     suspend fun replayCarrier(
         eventId: String,

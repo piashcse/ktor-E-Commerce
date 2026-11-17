@@ -98,6 +98,7 @@ object ChargebackTable : BaseIdTable("chargeback") {
     val reason = text("reason").nullable()
     val outcome = text("outcome").nullable()
     val evidenceDueAt = datetime("evidence_due_at").nullable()
+    val evidenceUrl = text("evidence_url").nullable()
     val openedAt = datetime("opened_at").clientDefault { currentUtc() }
     val resolvedAt = datetime("resolved_at").nullable()
 }
@@ -114,6 +115,7 @@ class ChargebackDAO(id: EntityID<String>) : BaseEntity(id, ChargebackTable) {
     var reason by ChargebackTable.reason
     var outcome by ChargebackTable.outcome
     var evidenceDueAt by ChargebackTable.evidenceDueAt
+    var evidenceUrl by ChargebackTable.evidenceUrl
     var openedAt by ChargebackTable.openedAt
     var resolvedAt by ChargebackTable.resolvedAt
 }

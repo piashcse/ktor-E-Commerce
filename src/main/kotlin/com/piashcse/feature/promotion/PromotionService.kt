@@ -6,6 +6,7 @@ import com.piashcse.database.entities.PromotionDAO
 import com.piashcse.database.entities.PromotionTable
 import com.piashcse.database.entities.PromotionUsageDAO
 import com.piashcse.database.entities.PromotionUsageTable
+import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.utils.common.DateTimes
@@ -24,7 +25,9 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
+import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
@@ -41,6 +44,8 @@ data class PromotionRequest(
     val isActive: Boolean = true,
     val priority: Int = 0,
     val usageLimit: Int? = null,
+    /** Null for platform-wide promotions; sellers must set their own shop. */
+    val shopId: String? = null,
 ) {
     init {
         val violations =
@@ -76,6 +81,7 @@ data class PromotionResponse(
     val priority: Int,
     val usageLimit: Int?,
     val usageCount: Int,
+    val shopId: String? = null,
     val createdAt: String?,
 )
 
@@ -90,15 +96,27 @@ data class PromotionMatch(
 
 class PromotionService {
     /** Must be called inside a DB transaction (checkout pricing path). */
-    fun evaluateTx(amountUsd: BigDecimal): PromotionMatch? {
+    fun evaluateTx(
+        amountUsd: BigDecimal,
+        shopIds: Set<String>? = null,
+    ): PromotionMatch? {
         if (amountUsd <= BigDecimal.ZERO) return null
         val now = currentUtc()
+        val sellerShopId = shopIds?.takeIf { it.size == 1 }?.first()
+        val scopeCondition =
+            if (sellerShopId == null) {
+                PromotionTable.shopId.isNull()
+            } else {
+                PromotionTable.shopId.isNull() or
+                    (PromotionTable.shopId eq sellerShopId.entityID(ShopTable))
+            }
         val promotion =
             PromotionDAO.find {
                 (PromotionTable.isActive eq true) and
                     (PromotionTable.startsAt lessEq now) and
                     (PromotionTable.endsAt greaterEq now) and
-                    (PromotionTable.minOrderAmount lessEq amountUsd)
+                    (PromotionTable.minOrderAmount lessEq amountUsd) and
+                    scopeCondition
             }.orderBy(PromotionTable.priority to org.jetbrains.exposed.v1.core.SortOrder.DESC)
                 .orderBy(PromotionTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.ASC)
                 .firstOrNull { it.usageLimit?.let { limit -> it.usageCount < limit } ?: true }
@@ -200,15 +218,20 @@ class PromotionService {
                 isActive = request.isActive
                 priority = request.priority
                 usageLimit = request.usageLimit
+                shopId = request.shopId?.takeIf { it.isNotBlank() }?.entityID(ShopTable)
             }.toResponse()
         }
 
     suspend fun update(
         id: String,
         request: PromotionRequest,
+        requiredShopId: String? = null,
     ): PromotionResponse =
         query {
             val promotion = PromotionDAO.findById(id) ?: id.throwNotFound("Promotion")
+            if (requiredShopId != null && promotion.shopId?.value != requiredShopId) {
+                throw com.piashcse.utils.validator.ForbiddenException("Promotion belongs to another shop")
+            }
             val startsAt = DateTimes.parseFlexible(request.startsAt, "startsAt")
             val endsAt = DateTimes.parseFlexible(request.endsAt, "endsAt")
             if (startsAt.isAfter(endsAt)) throw ValidationException("startsAt must be before endsAt")
@@ -223,16 +246,52 @@ class PromotionService {
                 isActive = request.isActive
                 priority = request.priority
                 usageLimit = request.usageLimit
+                shopId = request.shopId?.takeIf { it.isNotBlank() }?.entityID(ShopTable) ?: shopId
             }.toResponse()
         }
 
-    suspend fun delete(id: String): Boolean =
+    suspend fun delete(
+        id: String,
+        requiredShopId: String? = null,
+    ): Boolean =
         query {
             val promotion = PromotionDAO.findById(id) ?: return@query false
+            if (requiredShopId != null && promotion.shopId?.value != requiredShopId) {
+                throw com.piashcse.utils.validator.ForbiddenException("Promotion belongs to another shop")
+            }
             // Preserve usage history; retiring is safer than hard delete.
             promotion.isActive = false
             true
         }
+
+    suspend fun listForShop(
+        shopId: String,
+        active: Boolean?,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<PromotionResponse> =
+        query {
+            val q = PromotionTable.selectAll().andWhere { PromotionTable.shopId eq shopId.entityID(ShopTable) }
+            active?.let { q.andWhere { PromotionTable.isActive eq it } }
+            q.orderBy(PromotionTable.priority to org.jetbrains.exposed.v1.core.SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) { PromotionDAO.wrapRow(it).toResponse() }
+        }
+
+    suspend fun createForShop(
+        shopId: String,
+        request: PromotionRequest,
+    ): PromotionResponse = create(request.copy(shopId = shopId))
+
+    suspend fun updateForShop(
+        shopId: String,
+        id: String,
+        request: PromotionRequest,
+    ): PromotionResponse = update(id, request.copy(shopId = shopId), requiredShopId = shopId)
+
+    suspend fun deleteForShop(
+        shopId: String,
+        id: String,
+    ): Boolean = delete(id, requiredShopId = shopId)
 
     private fun PromotionDAO.toResponse() =
         PromotionResponse(
@@ -248,6 +307,7 @@ class PromotionService {
             priority = priority,
             usageLimit = usageLimit,
             usageCount = usageCount,
+            shopId = shopId?.value,
             createdAt = createdAt.toUtcString(),
         )
 }

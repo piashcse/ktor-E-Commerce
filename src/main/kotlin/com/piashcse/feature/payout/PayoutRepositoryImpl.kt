@@ -4,6 +4,7 @@ import com.piashcse.constants.KycStatus
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.PayoutStatus
 import com.piashcse.constants.ShopStatus
+import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.PayoutRequestDAO
 import com.piashcse.database.entities.PayoutRequestTable
@@ -12,17 +13,24 @@ import com.piashcse.database.entities.SellerPayoutDAO
 import com.piashcse.database.entities.SellerPayoutTable
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
+import com.piashcse.event.PayoutStatusChangedEvent
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
+import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.common.emptyPage
+import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.requireSellerByUserId
 import com.piashcse.utils.extension.retryQuery
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.toPaginatedList
 import com.piashcse.utils.extension.toPaginatedResponse
+import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
@@ -33,6 +41,7 @@ import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.select
@@ -40,23 +49,57 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 
 class PayoutRepositoryImpl : PayoutRepository {
-    private fun SellerPayoutDAO.toResponse() =
-        PayoutResponse(
-            id = id.value,
-            sellerId = sellerId.value,
-            orderId = orderId.value,
-            subTotal = subTotal.toPlainString(),
-            commissionAmount = commissionAmount.toPlainString(),
-            payoutAmount = payoutAmount.toPlainString(),
-            currency = currency,
-            status = status,
-            payoutRequestId = payoutRequestId?.value,
-            requestedAt = requestedAt?.toUtcString(),
-            approvedAt = approvedAt?.toUtcString(),
-            rejectedAt = rejectedAt?.toUtcString(),
-            paidAt = paidAt?.toUtcString(),
-            createdAt = createdAt.toUtcString(),
-        )
+    private fun SellerPayoutDAO.toResponse(
+        orderNumbers: Map<String, String> = emptyMap(),
+        sellerEmails: Map<String, String> = emptyMap(),
+    ) = PayoutResponse(
+        id = id.value,
+        sellerId = sellerId.value,
+        orderId = orderId.value,
+        subTotal = subTotal.toPlainString(),
+        commissionAmount = commissionAmount.toPlainString(),
+        payoutAmount = payoutAmount.toPlainString(),
+        currency = currency,
+        status = status,
+        payoutRequestId = payoutRequestId?.value,
+        rejectionReason = rejectionReason,
+        orderNumber = orderNumbers[orderId.value],
+        sellerEmail = sellerEmails[sellerId.value],
+        allowedActions =
+            when (status) {
+                PayoutStatus.REQUESTED.name -> listOf("APPROVE", "REJECT")
+                PayoutStatus.APPROVED.name -> listOf("PAY", "REJECT")
+                else -> emptyList()
+            },
+        requestedAt = requestedAt?.toUtcString(),
+        approvedAt = approvedAt?.toUtcString(),
+        rejectedAt = rejectedAt?.toUtcString(),
+        paidAt = paidAt?.toUtcString(),
+        createdAt = createdAt.toUtcString(),
+    )
+
+    private fun enrichPayouts(
+        page: PaginatedResponse<PayoutResponse>,
+        includeSellerEmail: Boolean,
+    ): PaginatedResponse<PayoutResponse> {
+        if (page.data.isEmpty()) return page
+        val orderNumbers =
+            OrderDAO.find { OrderTable.id inList page.data.map { it.orderId }.distinct().map { it.entityID(OrderTable) } }
+                .associate { it.id.value to it.orderNumber }
+        val sellerEmails =
+            if (includeSellerEmail) {
+                val sellerIds = page.data.map { it.sellerId }.distinct().map { it.entityID(SellerTable) }
+                val sellerUsers =
+                    SellerDAO.find { SellerTable.id inList sellerIds }
+                        .associate { it.id.value to it.userId.value }
+                UserDAO.find { UserTable.id inList sellerUsers.values.distinct().map { it.entityID(UserTable) } }
+                    .associate { it.id.value to it.email }
+                    .let { emails -> sellerUsers.mapValues { (_, userId) -> emails[userId].orEmpty() } }
+            } else {
+                emptyMap()
+            }
+        return page.copy(data = page.data.map { it.copy(orderNumber = orderNumbers[it.orderId], sellerEmail = sellerEmails[it.sellerId]) })
+    }
 
     private fun sellerIdsFor(sellerUserId: String): List<EntityID<String>> =
         SellerDAO.find { SellerTable.userId eq sellerUserId }.map { it.id }
@@ -181,27 +224,262 @@ class PayoutRepositoryImpl : PayoutRepository {
         sellerUserId: String,
         limit: Int,
         offset: Int,
+        status: PayoutStatus?,
+        from: java.time.LocalDate?,
+        to: java.time.LocalDate?,
     ) = query {
         val sellerIds = sellerIdsFor(sellerUserId)
         if (sellerIds.isEmpty()) {
             return@query emptyPage(limit, offset)
         }
-        SellerPayoutTable.selectAll().andWhere { SellerPayoutTable.sellerId inList sellerIds }
-            .orderBy(SellerPayoutTable.createdAt to SortOrder.DESC)
-            .toPaginatedResponse(limit, offset) { SellerPayoutDAO.wrapRow(it).toResponse() }
+        val page =
+            SellerPayoutTable.selectAll().andWhere { SellerPayoutTable.sellerId inList sellerIds }
+                .also { q ->
+                    status?.let { q.andWhere { SellerPayoutTable.status eq it.name } }
+                    from?.let { date -> q.andWhere { SellerPayoutTable.createdAt greaterEq date.atStartOfDay() } }
+                    to?.let { date -> q.andWhere { SellerPayoutTable.createdAt lessEq date.atTime(java.time.LocalTime.MAX) } }
+                    q.orderBy(SellerPayoutTable.createdAt to SortOrder.DESC)
+                }.toPaginatedResponse(limit, offset) { SellerPayoutDAO.wrapRow(it).toResponse() }
+        enrichPayouts(page, includeSellerEmail = false)
     }
 
     override suspend fun allPayouts(
         limit: Int,
         offset: Int,
-        status: String?,
+        status: PayoutStatus?,
+        sellerQuery: String?,
+        from: java.time.LocalDate?,
+        to: java.time.LocalDate?,
     ) = query {
-        SellerPayoutTable.selectAll()
-            .also { q ->
-                status?.let { q.andWhere { SellerPayoutTable.status eq it.uppercase() } }
-                q.orderBy(SellerPayoutTable.createdAt to SortOrder.DESC)
+        val sellerIds =
+            sellerQuery?.takeIf { it.isNotBlank() }?.let { query ->
+                val userIds =
+                    UserDAO.find { UserTable.email like "%${query.trim().lowercase()}%" }
+                        .map { it.id }
+                if (userIds.isEmpty()) {
+                    emptyList()
+                } else {
+                    SellerDAO.find { SellerTable.userId inList userIds }.map { it.id }
+                }
             }
-            .toPaginatedResponse(limit, offset) { SellerPayoutDAO.wrapRow(it).toResponse() }
+        if (sellerIds != null && sellerIds.isEmpty()) {
+            return@query emptyPage(limit, offset)
+        }
+        val page =
+            SellerPayoutTable.selectAll()
+                .also { q ->
+                    status?.let { q.andWhere { SellerPayoutTable.status eq it.name } }
+                    sellerIds?.let { q.andWhere { SellerPayoutTable.sellerId inList it } }
+                    from?.let { date -> q.andWhere { SellerPayoutTable.createdAt greaterEq date.atStartOfDay() } }
+                    to?.let { date -> q.andWhere { SellerPayoutTable.createdAt lessEq date.atTime(java.time.LocalTime.MAX) } }
+                    q.orderBy(SellerPayoutTable.createdAt to SortOrder.DESC)
+                }.toPaginatedResponse(limit, offset) { SellerPayoutDAO.wrapRow(it).toResponse() }
+        enrichPayouts(page, includeSellerEmail = true)
+    }
+
+    private fun PayoutRequestDAO.toResponse(
+        sellerEmails: Map<String, String> = emptyMap(),
+        rowCount: Int = 0,
+    ) = PayoutRequestResponse(
+        id = id.value,
+        sellerId = sellerId.value,
+        sellerEmail = sellerEmails[sellerId.value],
+        amount = amount.toPlainString(),
+        currency = currency,
+        status = status,
+        rejectionReason = rejectionReason,
+        rowCount = rowCount,
+        allowedActions =
+            when (status) {
+                PayoutStatus.REQUESTED.name -> listOf("APPROVE", "REJECT")
+                PayoutStatus.APPROVED.name -> listOf("PAY", "REJECT")
+                else -> emptyList()
+            },
+        createdAt = createdAt.toUtcString(),
+    )
+
+    private fun payoutRequestResponses(
+        requests: List<PayoutRequestDAO>,
+        includeSellerEmail: Boolean,
+    ): List<PayoutRequestResponse> {
+        if (requests.isEmpty()) return emptyList()
+        val counts =
+            SellerPayoutDAO.find {
+                SellerPayoutTable.payoutRequestId inList requests.map { it.id }
+            }.groupingBy { it.payoutRequestId?.value }.eachCount()
+        val emails =
+            if (includeSellerEmail) {
+                val sellerUsers =
+                    SellerDAO.find { SellerTable.id inList requests.map { it.sellerId }.distinct() }
+                        .associate { it.id.value to it.userId.value }
+                UserDAO.find { UserTable.id inList sellerUsers.values.distinct().map { it.entityID(UserTable) } }
+                    .associate { it.id.value to it.email }
+                    .let { byUser -> sellerUsers.mapValues { (_, userId) -> byUser[userId].orEmpty() } }
+            } else {
+                emptyMap()
+            }
+        return requests.map { it.toResponse(emails, counts[it.id.value] ?: 0) }
+    }
+
+    override suspend fun sellerPayoutRequests(
+        sellerUserId: String,
+        status: PayoutStatus?,
+        limit: Int,
+        offset: Int,
+    ) = query {
+        val sellerIds = sellerIdsFor(sellerUserId)
+        if (sellerIds.isEmpty()) {
+            return@query emptyPage(limit, offset)
+        }
+        val (total, rows) =
+            PayoutRequestTable.selectAll()
+                .andWhere { PayoutRequestTable.sellerId inList sellerIds }
+                .also { q ->
+                    status?.let { q.andWhere { PayoutRequestTable.status eq it.name } }
+                    q.orderBy(PayoutRequestTable.createdAt to SortOrder.DESC)
+                }.toPaginatedList(limit, offset) { PayoutRequestDAO.wrapRow(it) }
+        PaginatedResponse(payoutRequestResponses(rows, includeSellerEmail = false), PaginationMetadata(total, limit, offset))
+    }
+
+    override suspend fun allPayoutRequests(
+        status: PayoutStatus?,
+        sellerQuery: String?,
+        limit: Int,
+        offset: Int,
+    ) = query {
+        val sellerIds =
+            sellerQuery?.takeIf { it.isNotBlank() }?.let { query ->
+                val userIds =
+                    UserDAO.find { UserTable.email like "%${query.trim().lowercase()}%" }
+                        .map { it.id }
+                if (userIds.isEmpty()) emptyList() else SellerDAO.find { SellerTable.userId inList userIds }.map { it.id }
+            }
+        if (sellerIds != null && sellerIds.isEmpty()) {
+            return@query emptyPage(limit, offset)
+        }
+        val (total, rows) =
+            PayoutRequestTable.selectAll()
+                .also { q ->
+                    status?.let { q.andWhere { PayoutRequestTable.status eq it.name } }
+                    sellerIds?.let { q.andWhere { PayoutRequestTable.sellerId inList it } }
+                    q.orderBy(PayoutRequestTable.createdAt to SortOrder.DESC)
+                }.toPaginatedList(limit, offset) { PayoutRequestDAO.wrapRow(it) }
+        PaginatedResponse(payoutRequestResponses(rows, includeSellerEmail = true), PaginationMetadata(total, limit, offset))
+    }
+
+    private suspend fun transitionRequest(
+        requestId: String,
+        target: PayoutStatus,
+        reason: String? = null,
+    ): PayoutRequestResponse {
+        val response =
+            query {
+                val request =
+                    PayoutRequestDAO.find { PayoutRequestTable.id eq requestId.entityID(PayoutRequestTable) }
+                        .forUpdate()
+                        .firstOrNull() ?: requestId.throwNotFound("Payout request")
+                val current = request.status
+                if (current == target.name) return@query payoutRequestResponses(listOf(request), includeSellerEmail = true).single()
+                val allowed =
+                    when (current) {
+                        PayoutStatus.REQUESTED.name -> setOf(PayoutStatus.APPROVED.name, PayoutStatus.REJECTED.name)
+                        PayoutStatus.APPROVED.name -> setOf(PayoutStatus.PAID.name, PayoutStatus.REJECTED.name)
+                        else -> emptySet()
+                    }
+                if (target.name !in allowed) {
+                    throw ConflictException("Payout request $requestId cannot change from $current to ${target.name}")
+                }
+                val now = currentUtc()
+                val rows =
+                    SellerPayoutDAO.find { SellerPayoutTable.payoutRequestId eq request.id }
+                        .forUpdate()
+                        .toList()
+                request.status = target.name
+                request.rejectionReason = if (target == PayoutStatus.REJECTED) reason?.takeIf { it.isNotBlank() } else null
+                rows.forEach { row ->
+                    when (target) {
+                        PayoutStatus.APPROVED -> {
+                            row.status = PayoutStatus.APPROVED.name
+                            row.approvedAt = now
+                        }
+                        PayoutStatus.PAID -> {
+                            row.status = PayoutStatus.PAID.name
+                            row.paidAt = now
+                        }
+                        PayoutStatus.REJECTED -> {
+                            // Release the rows back to the seller's available balance.
+                            row.rejectionReason = reason?.takeIf { it.isNotBlank() }
+                            row.rejectedAt = now
+                            row.status = PayoutStatus.PENDING.name
+                            row.requestedAt = null
+                            row.approvedAt = null
+                            row.payoutRequestId = null
+                        }
+                        else -> Unit
+                    }
+                }
+                if (target == PayoutStatus.PAID) AppMetrics.payoutsPaid.increment()
+                payoutRequestResponses(listOf(request), includeSellerEmail = true).single()
+            }
+        publishPayoutEvent(response)
+        return response
+    }
+
+    private fun publishPayoutEvent(response: PayoutRequestResponse) {
+        val sellerUserId = SellerDAO.findById(response.sellerId)?.userId?.value ?: return
+        EventBus.publish(
+            PayoutStatusChangedEvent(
+                payoutRequestId = response.id,
+                sellerId = response.sellerId,
+                userId = sellerUserId,
+                status = response.status,
+                amount = response.amount.toBigDecimal(),
+                currency = response.currency,
+                reason = response.rejectionReason,
+            ),
+        )
+    }
+
+    override suspend fun approvePayoutRequest(requestId: String): PayoutRequestResponse =
+        transitionRequest(requestId, PayoutStatus.APPROVED)
+
+    override suspend fun rejectPayoutRequest(
+        requestId: String,
+        reason: String?,
+    ): PayoutRequestResponse = transitionRequest(requestId, PayoutStatus.REJECTED, reason)
+
+    override suspend fun payPayoutRequest(requestId: String): PayoutRequestResponse = transitionRequest(requestId, PayoutStatus.PAID)
+
+    override suspend fun sellerPayoutRequestDetail(
+        sellerUserId: String,
+        requestId: String,
+    ): PayoutRequestDetailResponse =
+        query {
+            val request = PayoutRequestDAO.findById(requestId) ?: requestId.throwNotFound("Payout request")
+            if (request.sellerId !in sellerIdsFor(sellerUserId)) {
+                throw ForbiddenException("Payout request belongs to another seller")
+            }
+            buildRequestDetail(request)
+        }
+
+    override suspend fun adminPayoutRequestDetail(requestId: String): PayoutRequestDetailResponse =
+        query {
+            val request = PayoutRequestDAO.findById(requestId) ?: requestId.throwNotFound("Payout request")
+            buildRequestDetail(request)
+        }
+
+    private fun buildRequestDetail(request: PayoutRequestDAO): PayoutRequestDetailResponse {
+        val rows = SellerPayoutDAO.find { SellerPayoutTable.payoutRequestId eq request.id }.toList()
+        val page =
+            PaginatedResponse(
+                rows.map { it.toResponse() },
+                PaginationMetadata(rows.size.toLong(), rows.size.coerceAtLeast(1), 0),
+            )
+        val enriched = enrichPayouts(page, includeSellerEmail = true)
+        return PayoutRequestDetailResponse(
+            payoutRequestResponses(listOf(request), includeSellerEmail = true).single(),
+            enriched.data,
+        )
     }
 
     override suspend fun markPaid(
@@ -211,7 +489,7 @@ class PayoutRepositoryImpl : PayoutRepository {
         val payout = SellerPayoutDAO.findById(payoutId) ?: payoutId.throwNotFound("Payout")
         if (payout.status == PayoutStatus.PAID.name) return@query payout.toResponse()
         if (payout.status != PayoutStatus.APPROVED.name) {
-            throw ValidationException("Payout must be approved before it can be paid (current: ${payout.status})")
+            throw ConflictException("Payout must be approved before it can be paid (current: ${payout.status})")
         }
         payout.status = PayoutStatus.PAID.name
         payout.paidAt = currentUtc()
@@ -338,6 +616,19 @@ class PayoutRepositoryImpl : PayoutRepository {
             }
             AppMetrics.payoutsRequested.increment()
             claimed.map { it.toResponse() }
+        }.also { rows ->
+            val first = rows.firstOrNull() ?: return@also
+            val sellerUserId = SellerDAO.findById(first.sellerId)?.userId?.value ?: return@also
+            EventBus.publish(
+                PayoutStatusChangedEvent(
+                    payoutRequestId = first.payoutRequestId.orEmpty(),
+                    sellerId = first.sellerId,
+                    userId = sellerUserId,
+                    status = PayoutStatus.REQUESTED.name,
+                    amount = rows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount.toBigDecimal()) },
+                    currency = first.currency,
+                ),
+            )
         }
 
     override suspend fun approvePayout(payoutId: String) =
@@ -345,7 +636,7 @@ class PayoutRepositoryImpl : PayoutRepository {
             val payout = SellerPayoutDAO.findById(payoutId) ?: payoutId.throwNotFound("Payout")
             if (payout.status == PayoutStatus.APPROVED.name) return@query payout.toResponse()
             if (payout.status != PayoutStatus.REQUESTED.name) {
-                throw ValidationException("Payout $payoutId cannot be approved from status ${payout.status}")
+                throw ConflictException("Payout $payoutId cannot be approved from status ${payout.status}")
             }
             payout.status = PayoutStatus.APPROVED.name
             payout.approvedAt = currentUtc()
@@ -355,27 +646,30 @@ class PayoutRepositoryImpl : PayoutRepository {
             payout.toResponse()
         }
 
-    override suspend fun rejectPayout(payoutId: String) =
-        query {
-            val payout = SellerPayoutDAO.findById(payoutId) ?: payoutId.throwNotFound("Payout")
-            if (payout.status == PayoutStatus.REJECTED.name) return@query payout.toResponse()
-            if (payout.status !in listOf(PayoutStatus.REQUESTED.name, PayoutStatus.APPROVED.name)) {
-                throw ValidationException("Payout $payoutId cannot be rejected from status ${payout.status}")
-            }
-            val requestId = payout.payoutRequestId
-            payout.rejectedAt = currentUtc()
-            payout.status = PayoutStatus.PENDING.name
-            payout.requestedAt = null
-            payout.approvedAt = null
-            payout.payoutRequestId = null
-            if (requestId != null) {
-                val remaining =
-                    SellerPayoutDAO.find {
-                        (SellerPayoutTable.payoutRequestId eq requestId) and
-                            (SellerPayoutTable.id neq payout.id)
-                    }.count()
-                if (remaining == 0L) PayoutRequestDAO.findById(requestId.value)?.status = PayoutStatus.REJECTED.name
-            }
-            payout.toResponse()
+    override suspend fun rejectPayout(
+        payoutId: String,
+        reason: String?,
+    ) = query {
+        val payout = SellerPayoutDAO.findById(payoutId) ?: payoutId.throwNotFound("Payout")
+        if (payout.status == PayoutStatus.REJECTED.name) return@query payout.toResponse()
+        if (payout.status !in listOf(PayoutStatus.REQUESTED.name, PayoutStatus.APPROVED.name)) {
+            throw ConflictException("Payout $payoutId cannot be rejected from status ${payout.status}")
         }
+        val requestId = payout.payoutRequestId
+        payout.rejectedAt = currentUtc()
+        payout.rejectionReason = reason?.takeIf { it.isNotBlank() }
+        payout.status = PayoutStatus.PENDING.name
+        payout.requestedAt = null
+        payout.approvedAt = null
+        payout.payoutRequestId = null
+        if (requestId != null) {
+            val remaining =
+                SellerPayoutDAO.find {
+                    (SellerPayoutTable.payoutRequestId eq requestId) and
+                        (SellerPayoutTable.id neq payout.id)
+                }.count()
+            if (remaining == 0L) PayoutRequestDAO.findById(requestId.value)?.status = PayoutStatus.REJECTED.name
+        }
+        payout.toResponse()
+    }
 }

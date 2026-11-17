@@ -82,6 +82,7 @@ data class RmaStatusChangedEvent(
     val email: String,
     val fromStatus: String,
     val toStatus: String,
+    val note: String? = null,
     override val occurredAt: @Contextual LocalDateTime = currentUtc(),
     override val requestId: String? = null,
 ) : DomainEvent()
@@ -107,6 +108,82 @@ data class RefundStatusChangedEvent(
     val email: String,
     val fromStatus: String,
     val toStatus: String,
+    val reason: String? = null,
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
+    override val requestId: String? = null,
+) : DomainEvent()
+
+@Serializable
+data class SellerReviewCreatedEvent(
+    val reviewId: String,
+    val sellerId: String,
+    val userId: String,
+    val rating: Int,
+    val comment: String? = null,
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
+    override val requestId: String? = null,
+) : DomainEvent()
+
+@Serializable
+data class ProductReviewCreatedEvent(
+    val reviewId: String,
+    val productId: String,
+    val userId: String,
+    val rating: Int,
+    val comment: String? = null,
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
+    override val requestId: String? = null,
+) : DomainEvent()
+
+@Serializable
+data class LowStockEvent(
+    val productId: String,
+    val variantId: String? = null,
+    val shopId: String?,
+    val stockQuantity: Int,
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
+    override val requestId: String? = null,
+) : DomainEvent()
+
+@Serializable
+data class DisputeCreatedEvent(
+    val disputeId: String,
+    val sellerId: String?,
+    val userId: String,
+    val subject: String,
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
+    override val requestId: String? = null,
+) : DomainEvent()
+
+@Serializable
+data class KycStatusChangedEvent(
+    val sellerId: String,
+    val userId: String,
+    val status: String,
+    val reason: String? = null,
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
+    override val requestId: String? = null,
+) : DomainEvent()
+
+@Serializable
+data class ShopStatusChangedEvent(
+    val shopId: String,
+    val userId: String,
+    val status: String,
+    val reason: String? = null,
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
+    override val requestId: String? = null,
+) : DomainEvent()
+
+@Serializable
+data class PayoutStatusChangedEvent(
+    val payoutRequestId: String,
+    val sellerId: String,
+    val userId: String,
+    val status: String,
+    val amount: @Contextual BigDecimal,
+    val currency: String = "USD",
+    val reason: String? = null,
     override val occurredAt: @Contextual LocalDateTime = currentUtc(),
     override val requestId: String? = null,
 ) : DomainEvent()

@@ -190,9 +190,9 @@ fun Route.checkoutRoutes() {
      */
     get("shipping-method") {
         val (limit, offset) = call.pageRequest()
-        call.respondOk(shippingMethodRepo.getShippingMethods(limit, offset))
+        call.respondOk(shippingMethodRepo.getShippingMethods(limit, offset, call.request.queryParameters["shopId"]))
     }.describe {
         summary = "List shipping methods"
-        description = "Public; required for guest checkout"
+        description = "Public; optional shopId returns platform-wide + that shop's rates"
     }
 }

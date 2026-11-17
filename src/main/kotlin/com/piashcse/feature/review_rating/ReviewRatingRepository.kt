@@ -54,5 +54,13 @@ interface ReviewRatingRepository {
     suspend fun moderateReview(
         reviewId: String,
         status: ReviewStatus,
+        reason: String? = null,
+    ): ReviewRatingResponse
+
+    /** Seller reply for a review on one of their products. */
+    suspend fun replyAsSeller(
+        userId: String,
+        reviewId: String,
+        reply: String,
     ): ReviewRatingResponse
 }

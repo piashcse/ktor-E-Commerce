@@ -16,6 +16,7 @@ object PayoutRequestTable : BaseIdTable("payout_request") {
     val amount = decimal("amount", 12, 2)
     val currency = varchar("currency", 3).default("USD")
     val status = varchar("status", 20).default("REQUESTED").index()
+    val rejectionReason = text("rejection_reason").nullable()
 
     init {
         index(customIndexName = "payout_request_seller_idx", isUnique = false, sellerId)
@@ -30,4 +31,5 @@ class PayoutRequestDAO(id: EntityID<String>) : BaseEntity(id, PayoutRequestTable
     var amount by PayoutRequestTable.amount
     var currency by PayoutRequestTable.currency
     var status by PayoutRequestTable.status
+    var rejectionReason by PayoutRequestTable.rejectionReason
 }

@@ -1,17 +1,24 @@
 package com.piashcse.feature.kyc
 
 import com.piashcse.constants.KycStatus
+import com.piashcse.database.entities.KycStatusHistoryDAO
+import com.piashcse.database.entities.KycStatusHistoryTable
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.event.EventBus
+import com.piashcse.event.KycStatusChangedEvent
+import com.piashcse.model.request.BulkResultResponse
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.paginateWithPreload
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.requireSellerByUserId
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
@@ -48,6 +55,15 @@ data class SellerKycResponse(
     val shopStatus: String?,
 )
 
+@Serializable
+data class KycHistoryResponse(
+    val id: String,
+    val status: KycStatus,
+    val reason: String?,
+    val actorId: String?,
+    val createdAt: String,
+)
+
 class KycService {
     suspend fun get(sellerUserId: String): SellerKycResponse =
         query {
@@ -57,28 +73,39 @@ class KycService {
     suspend fun submit(
         sellerUserId: String,
         request: SellerKycSubmitRequest,
-    ): SellerKycResponse =
-        query {
-            val seller = requireSellerByUserId(sellerUserId)
-            if (seller.kycStatus == KycStatus.VERIFIED) {
-                throw ValidationException("KYC is already verified")
+    ): SellerKycResponse {
+        val response =
+            query {
+                val seller = requireSellerByUserId(sellerUserId)
+                if (seller.kycStatus == KycStatus.VERIFIED) {
+                    throw ConflictException("KYC is already verified")
+                }
+                if (request.businessName.isNullOrBlank() && request.documentUrl.isNullOrBlank()) {
+                    throw ValidationException("Provide business details or a KYC document")
+                }
+                request.businessName?.let { seller.businessName = it }
+                request.businessRegistrationNumber?.let { seller.businessRegistrationNumber = it }
+                request.taxId?.let { seller.taxId = it }
+                request.bankAccountNumber?.let { seller.bankAccountNumber = it }
+                request.bankName?.let { seller.bankName = it }
+                request.bankRoutingNumber?.let { seller.bankRoutingNumber = it }
+                request.documentUrl?.let { seller.kycDocumentUrl = it }
+                if (seller.kycDocumentUrl.isNullOrBlank()) {
+                    throw ValidationException("A KYC document is required before review")
+                }
+                if (seller.bankAccountNumber.isNullOrBlank() || seller.bankName.isNullOrBlank()) {
+                    throw ValidationException("Bank account details are required before review")
+                }
+                seller.kycStatus = KycStatus.PENDING
+                seller.kycSubmittedAt = currentUtc()
+                seller.kycVerifiedAt = null
+                seller.kycRejectionReason = null
+                recordHistory(seller, KycStatus.PENDING, actorId = sellerUserId)
+                seller.toResponse()
             }
-            if (request.businessName.isNullOrBlank() && request.documentUrl.isNullOrBlank()) {
-                throw ValidationException("Provide business details or a KYC document")
-            }
-            request.businessName?.let { seller.businessName = it }
-            request.businessRegistrationNumber?.let { seller.businessRegistrationNumber = it }
-            request.taxId?.let { seller.taxId = it }
-            request.bankAccountNumber?.let { seller.bankAccountNumber = it }
-            request.bankName?.let { seller.bankName = it }
-            request.bankRoutingNumber?.let { seller.bankRoutingNumber = it }
-            request.documentUrl?.let { seller.kycDocumentUrl = it }
-            seller.kycStatus = KycStatus.PENDING
-            seller.kycSubmittedAt = currentUtc()
-            seller.kycVerifiedAt = null
-            seller.kycRejectionReason = null
-            seller.toResponse()
-        }
+        EventBus.publish(KycStatusChangedEvent(response.sellerId, response.userId, response.kycStatus.name))
+        return response
+    }
 
     suspend fun list(
         status: KycStatus?,
@@ -97,39 +124,111 @@ class KycService {
                 }
         }
 
-    suspend fun verify(sellerId: String): SellerKycResponse =
-        query {
-            val seller = SellerDAO.findById(sellerId) ?: sellerId.throwNotFound("Seller")
-            if (seller.kycStatus != KycStatus.PENDING) {
-                throw ValidationException("Only PENDING KYC submissions can be verified")
+    suspend fun verify(
+        sellerId: String,
+        actorId: String? = null,
+    ): SellerKycResponse {
+        val response =
+            query {
+                val seller = SellerDAO.findById(sellerId) ?: sellerId.throwNotFound("Seller")
+                if (seller.kycStatus != KycStatus.PENDING) {
+                    throw ConflictException("Only PENDING KYC submissions can be verified")
+                }
+                if (seller.kycDocumentUrl.isNullOrBlank()) {
+                    throw ValidationException("A KYC document is required before verification")
+                }
+                if (seller.bankAccountNumber.isNullOrBlank() || seller.bankName.isNullOrBlank()) {
+                    throw ValidationException("Bank account details are required before verification")
+                }
+                seller.kycStatus = KycStatus.VERIFIED
+                seller.kycVerifiedAt = currentUtc()
+                seller.kycRejectionReason = null
+                recordHistory(seller, KycStatus.VERIFIED, actorId = actorId)
+                seller.toResponse()
             }
-            if (seller.kycDocumentUrl.isNullOrBlank()) {
-                throw ValidationException("A KYC document is required before verification")
-            }
-            if (seller.bankAccountNumber.isNullOrBlank() || seller.bankName.isNullOrBlank()) {
-                throw ValidationException("Bank account details are required before verification")
-            }
-            seller.kycStatus = KycStatus.VERIFIED
-            seller.kycVerifiedAt = currentUtc()
-            seller.kycRejectionReason = null
-            seller.toResponse()
-        }
+        EventBus.publish(KycStatusChangedEvent(response.sellerId, response.userId, response.kycStatus.name))
+        return response
+    }
 
     suspend fun reject(
         sellerId: String,
         reason: String,
-    ): SellerKycResponse =
-        query {
-            if (reason.isBlank()) throw ValidationException("Rejection reason is required")
-            val seller = SellerDAO.findById(sellerId) ?: sellerId.throwNotFound("Seller")
-            if (seller.kycStatus != KycStatus.PENDING) {
-                throw ValidationException("Only PENDING KYC submissions can be rejected")
+        actorId: String? = null,
+    ): SellerKycResponse {
+        val response =
+            query {
+                if (reason.isBlank()) throw ValidationException("Rejection reason is required")
+                val seller = SellerDAO.findById(sellerId) ?: sellerId.throwNotFound("Seller")
+                if (seller.kycStatus != KycStatus.PENDING) {
+                    throw ConflictException("Only PENDING KYC submissions can be rejected")
+                }
+                seller.kycStatus = KycStatus.REJECTED
+                seller.kycRejectionReason = reason
+                seller.kycVerifiedAt = null
+                recordHistory(seller, KycStatus.REJECTED, reason, actorId)
+                seller.toResponse()
             }
-            seller.kycStatus = KycStatus.REJECTED
-            seller.kycRejectionReason = reason
-            seller.kycVerifiedAt = null
-            seller.toResponse()
+        EventBus.publish(
+            KycStatusChangedEvent(response.sellerId, response.userId, response.kycStatus.name, reason),
+        )
+        return response
+    }
+
+    suspend fun bulkVerify(
+        sellerIds: List<String>,
+        actorId: String? = null,
+    ): BulkResultResponse {
+        val failed = sellerIds.filter { runCatching { verify(it, actorId) }.isFailure }
+        return BulkResultResponse.of(sellerIds.size, failed)
+    }
+
+    suspend fun bulkReject(
+        sellerIds: List<String>,
+        reason: String,
+        actorId: String? = null,
+    ): BulkResultResponse {
+        val failed = sellerIds.filter { runCatching { reject(it, reason, actorId) }.isFailure }
+        return BulkResultResponse.of(sellerIds.size, failed)
+    }
+
+    private fun recordHistory(
+        seller: SellerDAO,
+        status: KycStatus,
+        reason: String? = null,
+        actorId: String? = null,
+    ) {
+        KycStatusHistoryDAO.new {
+            this.sellerId = seller.id
+            this.status = status
+            this.reason = reason
+            this.actorId = actorId?.entityID(UserTable)
         }
+    }
+
+    suspend fun history(sellerUserId: String): List<KycHistoryResponse> =
+        query {
+            val seller = requireSellerByUserId(sellerUserId)
+            KycStatusHistoryDAO.find { KycStatusHistoryTable.sellerId eq seller.id }
+                .orderBy(KycStatusHistoryTable.createdAt to SortOrder.DESC)
+                .map { it.toHistoryResponse() }
+        }
+
+    suspend fun adminHistory(sellerId: String): List<KycHistoryResponse> =
+        query {
+            KycStatusHistoryDAO.find {
+                KycStatusHistoryTable.sellerId eq sellerId.entityID(SellerTable)
+            }.orderBy(KycStatusHistoryTable.createdAt to SortOrder.DESC)
+                .map { it.toHistoryResponse() }
+        }
+
+    private fun KycStatusHistoryDAO.toHistoryResponse() =
+        KycHistoryResponse(
+            id = id.value,
+            status = status,
+            reason = reason,
+            actorId = actorId?.value,
+            createdAt = createdAt.toUtcString(),
+        )
 
     private fun SellerDAO.toResponse(email: String? = UserDAO.findById(userId.value)?.email) =
         SellerKycResponse(

@@ -3,6 +3,8 @@
 package com.piashcse.feature.review_rating
 
 import com.piashcse.constants.ReviewStatus
+import com.piashcse.model.request.BulkIdsRequest
+import com.piashcse.model.request.BulkResultResponse
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.customerAuth
@@ -14,6 +16,7 @@ import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondCsv
 import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
@@ -26,7 +29,10 @@ import org.koin.ktor.ext.inject
 data class ReviewImagesRequest(val images: List<String>)
 
 @Serializable
-data class ReviewModerationRequest(val status: ReviewStatus)
+data class ReviewModerationRequest(
+    val status: ReviewStatus,
+    val reason: String? = null,
+)
 
 /**
  * Product review and rating routes.
@@ -119,11 +125,35 @@ fun Route.reviewAdminRoutes() {
         summary = "Admin: list reviews"
         description = "Optional status filter"
     }
+    get("export") {
+        call.respondCsv(
+            "reviews.csv",
+            listOf("id", "user_id", "product_id", "rating", "status", "title", "created_at"),
+            fetch = { limit, offset ->
+                reviewRatingRepo.getReviews(
+                    call.request.queryParameters["status"]?.parseEnum<ReviewStatus>("status"),
+                    limit,
+                    offset,
+                ).data
+            },
+            row = {
+                listOf(
+                    it.id,
+                    it.userId,
+                    it.productId,
+                    it.rating,
+                    it.status,
+                    it.title.orEmpty(),
+                    it.createdAt.orEmpty(),
+                )
+            },
+        )
+    }.describe { summary = "Admin: export reviews CSV" }
     adminWriteRateLimit {
         put("{id}/status") {
             val id = call.requirePathParameter("id")
             val body = call.receive<ReviewModerationRequest>()
-            val result = reviewRatingRepo.moderateReview(id, body.status)
+            val result = reviewRatingRepo.moderateReview(id, body.status, body.reason)
             CatalogCache.invalidate()
             call.respondOk(result)
         }.describe {
@@ -131,6 +161,17 @@ fun Route.reviewAdminRoutes() {
             description = "Set ACTIVE, HIDDEN or FLAGGED"
             requestBody { jsonBody<ReviewModerationRequest>() }
             responses { ok<com.piashcse.model.response.ReviewRatingResponse>("Updated review") }
+        }
+
+        post("bulk/status") {
+            val status = call.requireQueryParameter("status").parseEnum<ReviewStatus>("status")
+            val body = call.receive<BulkIdsRequest>()
+            val failed = body.ids.filter { runCatching { reviewRatingRepo.moderateReview(it, status, body.reason) }.isFailure }
+            CatalogCache.invalidate()
+            call.respondOk(BulkResultResponse.of(body.ids.size, failed))
+        }.describe {
+            summary = "Admin: bulk moderate reviews"
+            requestBody { jsonBody<BulkIdsRequest>() }
         }
     }
 }

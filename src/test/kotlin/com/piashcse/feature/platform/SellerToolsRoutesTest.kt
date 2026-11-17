@@ -37,7 +37,8 @@ class SellerToolsRoutesTest {
     private val tools: SellerToolsService = mockk()
     private val commission: CommissionService = mockk()
 
-    private fun review() = SellerReviewResponse("rev-1", "seller-1", "shop-1", "user-1", "order-1", 5, "Great", ReviewStatus.ACTIVE, null)
+    private fun review() =
+        SellerReviewResponse("rev-1", "seller-1", "shop-1", "user-1", "order-1", 5, "Great", ReviewStatus.ACTIVE, createdAt = null)
 
     private fun dispute() =
         DisputeResponse(

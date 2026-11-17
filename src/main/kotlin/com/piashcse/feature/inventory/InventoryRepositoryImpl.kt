@@ -4,6 +4,8 @@ import com.piashcse.constants.InventoryStatus
 import com.piashcse.constants.Message
 import com.piashcse.database.entities.*
 import com.piashcse.event.BackInStockEvent
+import com.piashcse.event.EventBus
+import com.piashcse.event.LowStockEvent
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.mapper.toInventoryResponse
 import com.piashcse.model.request.InventoryRequest
@@ -15,8 +17,12 @@ import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.core.like
+import org.jetbrains.exposed.v1.core.lowerCase
+import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
@@ -137,6 +143,17 @@ class InventoryRepositoryImpl : InventoryRepository {
                     status = InventoryStatus.fromStockLevel(inventoryRequest.stockQuantity, minimumStockLevel)
                 }
             enqueueBackInStock(product.id.value, inventoryRequest.variantId, previousStock, inventory.stockQuantity)
+            val previousStatus = InventoryStatus.fromStockLevel(previousStock, inventory.minimumStockLevel)
+            if (inventory.status.needsAttention && inventory.status != previousStatus) {
+                EventBus.publish(
+                    LowStockEvent(
+                        product.id.value,
+                        inventory.variantId?.value,
+                        inventory.shopId.value,
+                        inventory.stockQuantity,
+                    ),
+                )
+            }
             inventory.toInventoryResponse()
         }
 
@@ -150,7 +167,7 @@ class InventoryRepositoryImpl : InventoryRepository {
             requireVariant(product.id.value, variantId)
             InventoryDAO.find {
                 (InventoryTable.productId eq productId) and variantOp(variantId)
-            }.firstOrNull()?.toInventoryResponse()
+            }.firstOrNull()?.toInventoryResponse(product.name, product.sku)
         }
 
     override suspend fun updateStock(
@@ -212,6 +229,17 @@ class InventoryRepositoryImpl : InventoryRepository {
             inventory.stockQuantity = newStock
             inventory.status = InventoryStatus.fromStockLevel(newStock, inventory.minimumStockLevel)
             enqueueBackInStock(product.id.value, inventory.variantId?.value, previousStock, newStock)
+            val previousStatus = InventoryStatus.fromStockLevel(previousStock, inventory.minimumStockLevel)
+            if (inventory.status.needsAttention && inventory.status != previousStatus) {
+                EventBus.publish(
+                    LowStockEvent(
+                        product.id.value,
+                        inventory.variantId?.value,
+                        inventory.shopId.value,
+                        newStock,
+                    ),
+                )
+            }
             inventory.toInventoryResponse()
         }
 
@@ -227,28 +255,71 @@ class InventoryRepositoryImpl : InventoryRepository {
                 .andWhere { InventoryTable.stockQuantity lessEq InventoryTable.minimumStockLevel }
                 .orderBy(InventoryTable.stockQuantity to SortOrder.ASC)
                 .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).toInventoryResponse() }
+                .let { enrichInventoryPage(it) }
         }
 
     override suspend fun getInventoryByShop(
         actorUserId: String,
         shopId: String,
+        search: String?,
+        lowStockOnly: Boolean,
         limit: Int,
         offset: Int,
     ): PaginatedResponse<InventoryResponse> =
         query {
             if (requireSellerShopId(actorUserId) != shopId) throw ForbiddenException(Message.Errors.FORBIDDEN)
-            InventoryTable.selectAll().andWhere { InventoryTable.shopId eq shopId }
+            val matchingProductIds = matchingProductIds(search) ?: return@query com.piashcse.utils.common.emptyPage(limit, offset)
+            InventoryTable.selectAll()
+                .andWhere { InventoryTable.shopId eq shopId }
+                .also { q ->
+                    matchingProductIds?.let { q.andWhere { InventoryTable.productId inList it } }
+                    if (lowStockOnly) q.andWhere { InventoryTable.stockQuantity lessEq InventoryTable.minimumStockLevel }
+                }
+                .orderBy(InventoryTable.stockQuantity to SortOrder.ASC)
                 .toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).toInventoryResponse() }
+                .let { enrichInventoryPage(it) }
         }
 
     override suspend fun getAllInventory(
         limit: Int,
         offset: Int,
         shopId: String?,
+        search: String?,
+        lowStockOnly: Boolean,
     ): PaginatedResponse<InventoryResponse> =
         query {
+            val matchingProductIds = matchingProductIds(search) ?: return@query com.piashcse.utils.common.emptyPage(limit, offset)
             val baseQuery = InventoryTable.selectAll()
             shopId?.let { baseQuery.andWhere { InventoryTable.shopId eq it } }
+            matchingProductIds?.let { baseQuery.andWhere { InventoryTable.productId inList it } }
+            if (lowStockOnly) {
+                baseQuery.andWhere { InventoryTable.stockQuantity lessEq InventoryTable.minimumStockLevel }
+            }
             baseQuery.toPaginatedResponse(limit, offset) { InventoryDAO.wrapRow(it).toInventoryResponse() }
+                .let { enrichInventoryPage(it) }
         }
+
+    /** Null means no search term; empty list means the term matched nothing. */
+    private fun matchingProductIds(search: String?): List<org.jetbrains.exposed.v1.core.dao.id.EntityID<String>>? {
+        val term = search?.trim()?.takeIf { it.isNotBlank() } ?: return null
+        val pattern = "%${term.lowercase()}%"
+        return ProductDAO.find {
+            (ProductTable.name.lowerCase() like pattern) or (ProductTable.sku.lowerCase() like pattern)
+        }.map { it.id }
+    }
+
+    private fun enrichInventoryPage(page: PaginatedResponse<InventoryResponse>): PaginatedResponse<InventoryResponse> {
+        if (page.data.isEmpty()) return page
+        val products =
+            ProductDAO.find {
+                ProductTable.id inList page.data.map { it.productId }.distinct().map { it.entityID(ProductTable) }
+            }.associateBy { it.id.value }
+        return page.copy(
+            data =
+                page.data.map {
+                    val product = products[it.productId]
+                    it.copy(productName = product?.name, sku = product?.sku)
+                },
+        )
+    }
 }
