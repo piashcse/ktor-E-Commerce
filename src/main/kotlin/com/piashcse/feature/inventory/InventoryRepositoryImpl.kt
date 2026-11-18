@@ -268,7 +268,7 @@ class InventoryRepositoryImpl : InventoryRepository {
     ): PaginatedResponse<InventoryResponse> =
         query {
             if (requireSellerShopId(actorUserId) != shopId) throw ForbiddenException(Message.Errors.FORBIDDEN)
-            val matchingProductIds = matchingProductIds(search) ?: return@query com.piashcse.utils.common.emptyPage(limit, offset)
+            val matchingProductIds = matchingProductIds(search)
             InventoryTable.selectAll()
                 .andWhere { InventoryTable.shopId eq shopId }
                 .also { q ->
@@ -288,7 +288,7 @@ class InventoryRepositoryImpl : InventoryRepository {
         lowStockOnly: Boolean,
     ): PaginatedResponse<InventoryResponse> =
         query {
-            val matchingProductIds = matchingProductIds(search) ?: return@query com.piashcse.utils.common.emptyPage(limit, offset)
+            val matchingProductIds = matchingProductIds(search)
             val baseQuery = InventoryTable.selectAll()
             shopId?.let { baseQuery.andWhere { InventoryTable.shopId eq it } }
             matchingProductIds?.let { baseQuery.andWhere { InventoryTable.productId inList it } }
