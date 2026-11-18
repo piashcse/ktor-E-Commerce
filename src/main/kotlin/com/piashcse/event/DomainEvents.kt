@@ -146,6 +146,15 @@ data class LowStockEvent(
 ) : DomainEvent()
 
 @Serializable
+data class ReviewReplyEvent(
+    val reviewId: String,
+    val customerUserId: String,
+    val sellerReply: String,
+    override val occurredAt: @Contextual LocalDateTime = currentUtc(),
+    override val requestId: String? = null,
+) : DomainEvent()
+
+@Serializable
 data class DisputeCreatedEvent(
     val disputeId: String,
     val sellerId: String?,

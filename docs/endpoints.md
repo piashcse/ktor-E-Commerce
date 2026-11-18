@@ -3,8 +3,10 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 366  
-**Tags:** 35  
+**Operations:** 383
+
+**Tags:** 47
+
 **Base path:** `/api/v1` unless noted otherwise
 
 > The live contract is available at `/swagger` and `/swagger/documentation.yaml`.
@@ -15,6 +17,7 @@ document served by Swagger UI.
 | Tag | Operations |
 |---|---:|
 | [Auth](#auth) | 21 |
+| [RBAC](#rbac) | 16 |
 | [Profile](#profile) | 3 |
 | [Shop](#shop) | 13 |
 | [Shop Category](#shop-category) | 4 |
@@ -28,28 +31,28 @@ document served by Swagger UI.
 | [Cart](#cart) | 6 |
 | [Checkout](#checkout) | 8 |
 | [Order](#order) | 13 |
-| [Payment](#payment) | 5 |
+| [Payment](#payment) | 9 |
 | [Coupon](#coupon) | 9 |
 | [Shipping Method](#shipping-method) | 4 |
 | [Shipment](#shipment) | 5 |
 | [Inventory](#inventory) | 6 |
 | [Warehouse](#warehouse) | 4 |
-| [Refund](#refund) | 8 |
+| [Refund](#refund) | 9 |
 | [RMA](#rma) | 8 |
 | [Notification](#notification) | 10 |
 | [KYC](#kyc) | 5 |
 | [Payout](#payout) | 10 |
 | [Tax](#tax) | 16 |
-| [Fraud](#fraud) | 13 |
+| [Fraud](#fraud) | 14 |
 | [Loyalty](#loyalty) | 9 |
 | [Localization](#localization) | 5 |
 | [Analytics](#analytics) | 4 |
 | [Seller Tools](#seller-tools) | 14 |
-| [Subscription](#subscription) | 13 |
-| [B2B](#b2b) | 15 |
-| [Omnichannel](#omnichannel) | 6 |
-| [CMS & SEO](#cms--seo) | 10 |
-| [Support](#support) | 9 |
+| [Subscription](#subscription) | 15 |
+| [B2B](#b2b) | 20 |
+| [Omnichannel](#omnichannel) | 11 |
+| [CMS & SEO](#cms-seo) | 10 |
+| [Support](#support) | 13 |
 | [FX](#fx) | 2 |
 | [API Keys](#api-keys) | 3 |
 | [Feature Flags](#feature-flags) | 2 |
@@ -65,9 +68,9 @@ document served by Swagger UI.
 
 | Method | Endpoint | Description | Access |
 |---|---|---|---|
-| `PUT` | `/api/v1/admin/auth/{userId}/activate` | Admin - activate a user account | Admin |
-| `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Admin - Change user type | Admin |
-| `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Admin - Deactivate a user account | Admin |
+| `PUT` | `/api/v1/admin/auth/{userId}/activate` | Admin - activate a user account | Admin (`user:manage`) |
+| `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Admin - change account type | Admin (`user:manage`) |
+| `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Admin - deactivate a user account | Admin (`user:manage`) |
 | `PUT` | `/api/v1/auth/change-password` | Change password for authenticated user | Authenticated |
 | `POST` | `/api/v1/auth/forgot-password` | Request password reset OTP | Public |
 | `POST` | `/api/v1/auth/login` | Login | Public |
@@ -86,6 +89,27 @@ document served by Swagger UI.
 | `POST` | `/api/v1/auth/mfa/enable` | Enable TOTP MFA | Authenticated |
 | `POST` | `/api/v1/auth/mfa/disable` | Disable TOTP MFA | Authenticated |
 | `POST` | `/api/v1/auth/reset-password` | Reset password with OTP | Public |
+
+## RBAC
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/api/v1/admin/rbac/permissions` | Admin: list the permission catalog | Admin (`role:manage`) |
+| `GET` | `/api/v1/admin/rbac/roles` | Admin: list platform and shop roles | Admin (`role:manage`) |
+| `POST` | `/api/v1/admin/rbac/roles` | Admin: create a custom role | Admin (`role:manage`) |
+| `GET` | `/api/v1/admin/rbac/roles/{id}` | Admin: get a role with its permissions | Admin (`role:manage`) |
+| `PUT` | `/api/v1/admin/rbac/roles/{id}` | Admin: update a role's name/description | Admin (`role:manage`) |
+| `DELETE` | `/api/v1/admin/rbac/roles/{id}` | Admin: delete a custom role | Admin (`role:manage`) |
+| `PUT` | `/api/v1/admin/rbac/roles/{id}/permissions` | Admin: replace a role's permissions | Admin (`role:manage`) |
+| `GET` | `/api/v1/admin/rbac/users/{id}/roles` | Admin: get a user's roles and effective permissions | Admin (`role:manage`) |
+| `PUT` | `/api/v1/admin/rbac/users/{id}/roles` | Admin: replace a user's platform roles | Admin (`role:manage`) |
+| `GET` | `/api/v1/admin/rbac/users/{id}/effective-permissions` | Admin: inspect a user's effective permissions | Admin (`role:manage`) |
+| `GET` | `/api/v1/seller/members` | Seller: list shop staff | Seller owner |
+| `POST` | `/api/v1/seller/members/invite` | Seller: invite a staff member | Seller owner |
+| `PUT` | `/api/v1/seller/members/{id}/roles` | Seller: replace a member's roles | Seller owner |
+| `DELETE` | `/api/v1/seller/members/{id}` | Seller: remove a member | Seller owner |
+| `GET` | `/api/v1/me/permissions` | Current user's roles, memberships and effective permissions | Authenticated |
+| `POST` | `/api/v1/invitations/accept` | Accept a shop staff invitation | Authenticated |
 
 ## Profile
 
@@ -329,6 +353,7 @@ document served by Swagger UI.
 | `GET` | `/api/v1/refund-requests/order/{orderId}` | Get refund requests for an order | Authenticated |
 | `GET` | `/api/v1/refund-requests/{id}` | Get refund request details | Authenticated |
 | `GET` | `/api/v1/refund-requests/{id}/evidence/{fileName}` | Get private refund evidence for an authorized refund request | Authenticated |
+| `POST` | `/api/v1/refund-requests/{id}/evidence` | Upload private refund evidence | Authenticated |
 | `POST` | `/api/v1/refund-requests/{id}/ship` | Mark an approved refund as shipped | Authenticated |
 | `POST` | `/api/v1/refund-requests/{orderId}` | Create a refund request for an order item | Authenticated |
 | `PUT` | `/api/v1/seller/refund-requests/{id}/status` | Seller - Update refund request status | Seller |
@@ -424,6 +449,7 @@ document served by Swagger UI.
 | `POST` | `/api/v1/admin/chargebacks` | Record a chargeback | Admin |
 | `GET` | `/api/v1/admin/chargebacks/{id}` | Retrieve a chargeback | Admin |
 | `PUT` | `/api/v1/admin/chargebacks/{id}` | Update chargeback status/outcome | Admin |
+| `POST` | `/api/v1/admin/chargebacks/{id}/evidence` | Attach evidence to a chargeback | Admin |
 
 ## Loyalty
 

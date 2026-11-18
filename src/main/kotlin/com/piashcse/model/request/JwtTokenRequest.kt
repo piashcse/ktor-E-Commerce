@@ -9,6 +9,14 @@ data class JwtTokenRequest(
     val userId: String,
     val email: String,
     val userType: String,
+    /**
+     * Effective permission codes resolved from the database. `null` keeps the
+     * legacy role-default fallback for callers that construct a principal
+     * directly (tests, older code paths); an empty set means "no permissions".
+     */
+    val permissions: Set<String>? = null,
+    /** Authorization snapshot version; cache keys must include it. */
+    val authzVersion: Int = 0,
     /** API-key scopes; empty means no scoped access (never role defaults). */
     val scopes: Set<String> = emptySet(),
     /** Distinguishes API-key principals from JWT sessions. */
@@ -71,16 +79,18 @@ data class JwtTokenRequest(
 
     /**
      * Check if the principal has a specific permission. API-key principals are
-     * restricted to their explicit scopes; JWT sessions use role defaults.
+     * restricted to their explicit scopes; JWT sessions use the resolved
+     * effective permission set, falling back to role defaults only when no
+     * snapshot was supplied.
      */
     fun hasPermission(permission: Permission): Boolean {
-        val role = getUserType() ?: return false
-        return if (isApiKey) {
-            // API keys are restricted to explicit scopes. An empty scope list
-            // grants nothing; it must never fall back to role defaults.
-            permission.name in scopes
-        } else {
-            permission in role.defaultPermissions()
+        val code = permission.code
+        if (isApiKey) {
+            // API keys historically stored enum names; accept both forms.
+            return permission.name in scopes || code in scopes
         }
+        permissions?.let { return code in it || permission.name in it }
+        val role = getUserType() ?: return false
+        return permission in role.defaultPermissions()
     }
 }

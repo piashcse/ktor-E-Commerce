@@ -51,6 +51,12 @@ hide:
 
 ### Added
 
+- Unified RBAC (`V66`, `V67`): database-backed permissions and roles, platform role assignment,
+  effective-permission resolution with `authz_version` caching, shop memberships and
+  invitations, `/me/permissions`, and admin role CRUD. Admin route groups, mixed
+  customer/seller/admin routes, notifications, invoices, shipments and B2B admin routes now
+  enforce explicit permissions. See [Users, Roles & Permissions](rbac.md).
+- Endpoint index and README now document 383 operations, including the RBAC and seller membership APIs.
 - Subscription recurring billing (`V50`): stored provider customer/payment-method references,
   off-session renewal charges, idempotent per-period invoices, retry/backoff dunning, grace periods,
   automatic expiry with entitlement revocation, and webhook-driven invoice activation.
@@ -127,7 +133,7 @@ hide:
   MFA enabled receive `401 MFA_REQUIRED` when the code is missing and `401 INVALID_MFA_CODE` when it
   is wrong. Bad codes count toward the existing lockout policy.
 - Endpoint index and README now document the MFA and payment-webhook operations
-  (366 operations total).
+  (366 operations total at the time).
 
 ### Fixed
 
@@ -153,7 +159,7 @@ hide:
 - `TaxService`, `FxService` and `FeatureFlags` are injectable classes instead of global objects.
 - OpenAPI: standardized error responses on auth/order/product/checkout routes; license corrected to
   Apache-2.0; added `LICENSE`.
-- Docs: added a generated **Complete API Endpoint Index** (`docs/endpoints.md`, 206 operations),
+- Docs: added a generated **Complete API Endpoint Index** (`docs/endpoints.md`, 206 operations at the time),
   refreshed per-module tables (FX, inventory, payment, payouts, KYC, policies/consent, products,
   variants, refunds, reviews, dashboard, shops, wishlist), and corrected stale paths/request fields.
 - README: every operation now has the same `<details>` block format (Description, Curl,

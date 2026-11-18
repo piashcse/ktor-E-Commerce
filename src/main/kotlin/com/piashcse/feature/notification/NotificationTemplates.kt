@@ -123,6 +123,8 @@ object NotificationTemplates {
         reason: String? = null,
     ) = Content("Payout $status", "$currency $amount payout is $status." + (reason?.let { " Reason: $it" } ?: ""))
 
+    fun reviewReply(reply: String) = Content("Seller replied to your review", reply)
+
     fun adminQueue(
         title: String,
         detail: String,

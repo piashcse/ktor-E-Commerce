@@ -39,7 +39,7 @@ fun Route.profileRoutes() {
                 fun value(
                     fromBody: String?,
                     query: String,
-                ): String? = fromBody ?: call.parameters[query]
+                ): String? = fromBody ?: call.request.queryParameters[query]
 
                 val params =
                     UserProfileRequest(

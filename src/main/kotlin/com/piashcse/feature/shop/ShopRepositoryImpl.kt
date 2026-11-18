@@ -1,11 +1,16 @@
 package com.piashcse.feature.shop
 
+import com.piashcse.constants.MembershipStatus
 import com.piashcse.constants.Message
+import com.piashcse.constants.RbacDefaults
 import com.piashcse.constants.ShopStatus
+import com.piashcse.database.entities.AuthRoleTable
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopCategoryTable
 import com.piashcse.database.entities.ShopDAO
+import com.piashcse.database.entities.ShopMemberDAO
+import com.piashcse.database.entities.ShopMemberRoleTable
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
@@ -30,6 +35,7 @@ import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.core.lowerCase
 import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
+import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 class ShopRepositoryImpl : ShopRepository {
@@ -77,6 +83,19 @@ class ShopRepositoryImpl : ShopRepository {
                     shopId = shop.id
                     name = "Default"
                     code = "DEFAULT"
+                }
+                // Every shop has an owner membership from the moment it exists.
+                val member =
+                    ShopMemberDAO.new {
+                        shopId = shop.id
+                        this.userId = userId.entityID(UserTable)
+                        status = MembershipStatus.ACTIVE
+                        isOwner = true
+                        joinedAt = currentUtc()
+                    }
+                ShopMemberRoleTable.insert {
+                    it[ShopMemberRoleTable.memberId] = member.id
+                    it[ShopMemberRoleTable.roleId] = RbacDefaults.SHOP_OWNER_ROLE_ID.entityID(AuthRoleTable)
                 }
 
                 shop.toShopResponse(includeInternal = true)

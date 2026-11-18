@@ -2,8 +2,10 @@
 
 package com.piashcse.feature.shipping
 
+import com.piashcse.constants.Permission
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
+import com.piashcse.plugin.requireAdminPermission
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.standardErrors
 import com.piashcse.utils.common.MessageResponse
@@ -26,6 +28,7 @@ fun Route.orderShipmentRoutes() {
          * Return live carrier rates for the order's destination and parcels.
          */
         post("{id}/shipping-quotes") {
+            call.requireAdminPermission(Permission.ORDER_MANAGE)
             val body = call.receive<ShipmentQuoteRequest>()
             call.respondOk(service.quote(call.requirePathParameter("id"), call.currentUserId, body))
         }.describe {
@@ -41,6 +44,7 @@ fun Route.orderShipmentRoutes() {
          * List shipments/parcels for an order.
          */
         get("{id}/shipments") {
+            call.requireAdminPermission(Permission.ORDER_MANAGE)
             call.respondOk(service.list(call.requirePathParameter("id"), call.currentUserId))
         }.describe { summary = "List order shipments" }
 
@@ -48,6 +52,7 @@ fun Route.orderShipmentRoutes() {
          * Purchase a carrier label and allocate order lines to the parcel.
          */
         post("{id}/shipments") {
+            call.requireAdminPermission(Permission.ORDER_MANAGE)
             val body = call.receive<PurchaseShipmentRequest>()
             call.respondCreated(service.purchaseLabel(call.requirePathParameter("id"), call.currentUserId, body))
         }.describe {
@@ -92,6 +97,7 @@ fun Route.shipmentRoutes() {
          * Retrieve one shipment by ID.
          */
         get("{id}") {
+            call.requireAdminPermission(Permission.ORDER_MANAGE)
             call.respondOk(service.get(call.requirePathParameter("id"), call.currentUserId))
         }.describe { summary = "Retrieve a shipment" }
     }

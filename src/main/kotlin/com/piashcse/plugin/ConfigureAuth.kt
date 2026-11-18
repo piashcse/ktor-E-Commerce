@@ -7,6 +7,7 @@ import com.piashcse.database.entities.BlacklistedTokenTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.feature.apikey.ApiKeyService
 import com.piashcse.feature.auth.JwtConfig
+import com.piashcse.feature.rbac.RbacService
 import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.service.CacheService
 import com.piashcse.utils.extension.bearerToken
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory
 private val authLog = LoggerFactory.getLogger("com.piashcse.plugin.ConfigureAuth")
 
 fun Application.configureAuth() {
+    val rbac = RbacService()
     install(Authentication) {
         bearer(AppConstants.Authentication.API_KEY_AUTHENTICATOR) {
             realm = "ecom-api"
@@ -80,7 +82,14 @@ fun Application.configureAuth() {
 
                 // Use DB role, not token claim — promotions/demotions apply immediately,
                 // stale 15-min tokens cannot retain old privileges.
-                JwtTokenRequest(userId, dbUser.email, dbUser.userType.name)
+                val permissions = rbac.permissionsForUser(dbUser)
+                JwtTokenRequest(
+                    userId = userId,
+                    email = dbUser.email,
+                    userType = dbUser.userType.name,
+                    permissions = permissions,
+                    authzVersion = dbUser.authzVersion,
+                )
             }
         }
     }

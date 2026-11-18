@@ -3,11 +3,13 @@ package com.piashcse.feature.auth
 import at.favre.lib.crypto.bcrypt.BCrypt
 import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
+import com.piashcse.constants.RbacDefaults
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.*
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
+import com.piashcse.feature.rbac.RbacService
 import com.piashcse.model.request.*
 import com.piashcse.model.response.RegistrationResult
 import com.piashcse.model.response.ResetResult
@@ -619,6 +621,16 @@ class AuthRepositoryImpl : AuthRepository {
         targetUserId: String,
         newUserType: UserType,
     ): Boolean {
+        val defaultRole =
+            when (newUserType) {
+                UserType.ADMIN -> RbacDefaults.ADMIN_ROLE_ID
+                UserType.SUPER_ADMIN -> RbacDefaults.SUPER_ADMIN_ROLE_ID
+                else -> null
+            }
+        val rbac = RbacService()
+        if (defaultRole != null && !rbac.canGrantRole(currentUserId, defaultRole)) {
+            throw ValidationException(Message.Auth.insufficientPermissions("grant $newUserType"))
+        }
         val actor =
             withUsers(currentUserId, targetUserId, "change user type to $newUserType") { currentUser, targetUser ->
                 if (currentUser.id == targetUser.id) {
@@ -637,6 +649,9 @@ class AuthRepositoryImpl : AuthRepository {
                 Triple(currentUser.id.value, currentUser.email, currentUser.userType.name)
             }
         EventBus.publishAdminAction(actor, "USER_CHANGE_TYPE", "USER", targetUserId, "Changed to $newUserType")
+        // Keep the RBAC assignment in sync with the account type. Clearing is
+        // allowed for non-admin targets; assigning is restricted to ADMIN.
+        rbac.setUserRoles(currentUserId, targetUserId, listOfNotNull(defaultRole))
         return true
     }
 

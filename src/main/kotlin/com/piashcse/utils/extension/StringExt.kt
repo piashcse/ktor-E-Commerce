@@ -31,6 +31,9 @@ fun String.requireNotBlank(fieldName: String) {
 
 fun String.entityID(table: IdTable<String>) = EntityID(this, table)
 
+/** Maps a list of string ids to Exposed EntityIDs without repeating `.map { it.entityID(...) }`. */
+fun Iterable<String>.entityIDs(table: IdTable<String>): List<EntityID<String>> = map { it.entityID(table) }
+
 /** Shared catalog-name validation (Brand/Category/ShopCategory): blank + 255 backstop. */
 fun String.requireValidName(
     resourceName: String,

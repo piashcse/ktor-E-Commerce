@@ -20,6 +20,7 @@ import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.EventBus
 import com.piashcse.event.ProductReviewCreatedEvent
+import com.piashcse.event.ReviewReplyEvent
 import com.piashcse.mapper.toReviewRatingResponse
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.model.response.RatingBucket
@@ -31,10 +32,12 @@ import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.count
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.jdbc.andWhere
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 
@@ -64,13 +67,15 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
 
     override suspend fun getReviewSummary(productId: String): ReviewSummaryResponse =
         query {
-            val counts =
-                (1..5).associateWith { rating ->
-                    ReviewRatingDAO.find {
-                        (ReviewRatingTable.productId eq productId) and
-                            (ReviewRatingTable.status eq ReviewStatus.ACTIVE) and
-                            (ReviewRatingTable.rating eq rating)
-                    }.count().toInt()
+            val counts = (1..5).associateWith { 0 }.toMutableMap()
+            ReviewRatingTable
+                .select(ReviewRatingTable.rating, ReviewRatingTable.id.count())
+                .where {
+                    (ReviewRatingTable.productId eq productId) and
+                        (ReviewRatingTable.status eq ReviewStatus.ACTIVE)
+                }.groupBy(ReviewRatingTable.rating)
+                .forEach { row ->
+                    counts[row[ReviewRatingTable.rating]] = row[ReviewRatingTable.id.count()].toInt()
                 }
             val total = counts.values.sum()
             val weighted = counts.entries.sumOf { (rating, count) -> rating * count }
@@ -114,7 +119,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                     .toPaginatedList(limit, offset) { ReviewRatingDAO.wrapRow(it) }
             val images = imagesFor(rows.map { it.id })
             PaginatedResponse(
-                rows.map { it.toReviewRatingResponse(images[it.id.value].orEmpty()) },
+                rows.map { it.toReviewRatingResponse(images[it.id.value].orEmpty(), includeUserId = false) },
                 com.piashcse.utils.common.PaginationMetadata(totalCount, limit, offset),
             )
         }
@@ -227,6 +232,7 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
     ): ReviewRatingResponse =
         query {
             val r = ReviewRatingDAO.findById(reviewId) ?: reviewId.throwNotFound("Review")
+            if (r.userId.value == userId) throw ValidationException("You cannot vote on your own review")
             val existingVote =
                 ReviewHelpfulVoteDAO.find {
                     (ReviewHelpfulVoteTable.reviewId eq r.id) and (ReviewHelpfulVoteTable.userId eq userId.entityID(UserTable))
@@ -292,17 +298,21 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
         userId: String,
         reviewId: String,
         reply: String,
-    ): ReviewRatingResponse =
-        query {
-            val review = ReviewRatingDAO.findById(reviewId) ?: reviewId.throwNotFound("Review")
-            val product = ProductDAO.findById(review.productId.value) ?: throw ValidationException(Message.Products.NOT_FOUND)
-            val shopId = product.shopId?.value ?: throw ForbiddenException("Product has no shop")
-            val seller = requireSellerByUserId(userId)
-            if (!sellerOwnsShop(seller, shopId)) throw ForbiddenException(Message.Products.NOT_SHOP_OWNER)
-            review.sellerReply = reply.trim()
-            review.sellerRepliedAt = currentUtc()
-            review.toResponseWithImages()
-        }
+    ): ReviewRatingResponse {
+        val response =
+            query {
+                val review = ReviewRatingDAO.findById(reviewId) ?: reviewId.throwNotFound("Review")
+                val product = ProductDAO.findById(review.productId.value) ?: throw ValidationException(Message.Products.NOT_FOUND)
+                val shopId = product.shopId?.value ?: throw ForbiddenException("Product has no shop")
+                val seller = requireSellerByUserId(userId)
+                if (!sellerOwnsShop(seller, shopId)) throw ForbiddenException(Message.Products.NOT_SHOP_OWNER)
+                review.sellerReply = reply.trim()
+                review.sellerRepliedAt = currentUtc()
+                review.toResponseWithImages()
+            }
+        response.userId?.let { EventBus.publish(ReviewReplyEvent(response.id, it, response.sellerReply.orEmpty())) }
+        return response
+    }
 
     override suspend fun deleteReviewRating(
         userId: String,

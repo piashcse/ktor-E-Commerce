@@ -2,7 +2,9 @@
 
 package com.piashcse.feature.invoice
 
+import com.piashcse.constants.Permission
 import com.piashcse.constants.UserType
+import com.piashcse.plugin.requireAdminPermission
 import com.piashcse.plugin.requireRole
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.requireUserType
@@ -18,6 +20,7 @@ fun Route.orderDocumentRoutes() {
     val service: InvoiceService by inject()
     requireRole(UserType.CUSTOMER, UserType.SELLER, UserType.ADMIN, UserType.SUPER_ADMIN) {
         get("{id}/invoice") {
+            call.requireAdminPermission(Permission.ORDER_MANAGE)
             val html =
                 service.invoice(
                     call.requirePathParameter("id"),
@@ -31,6 +34,7 @@ fun Route.orderDocumentRoutes() {
         }
 
         get("{id}/packing-slip") {
+            call.requireAdminPermission(Permission.ORDER_MANAGE)
             val html =
                 service.packingSlip(
                     call.requirePathParameter("id"),

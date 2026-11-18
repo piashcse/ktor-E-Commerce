@@ -7,6 +7,7 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.UserType
 import com.piashcse.feature.invoice.InvoiceService
+import com.piashcse.mapper.toPublicTrackingResponse
 import com.piashcse.model.request.CancelOrderRequest
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.plugin.adminWriteRateLimit
@@ -14,7 +15,7 @@ import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
-import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.requireRoleExact
 import com.piashcse.plugin.standardErrors
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.*
@@ -79,8 +80,17 @@ fun Route.orderRoutes() {
              */
             get {
                 val (limit, offset) = call.pageRequest()
-                val status = call.request.queryParameters["status"]
-                call.respondOk(orderRepo.getOrders(call.currentUserId, limit, offset, status))
+                call.respondOk(
+                    orderRepo.getOrders(
+                        call.currentUserId,
+                        limit,
+                        offset,
+                        call.request.queryParameters["status"],
+                        call.request.queryParameters["q"],
+                        call.queryInstant("from"),
+                        call.queryInstant("to"),
+                    ),
+                )
             }.describe { summary = "List my orders" }
 
             /**
@@ -99,10 +109,11 @@ fun Route.orderRoutes() {
         }
     }
 
-    requireRole(UserType.CUSTOMER, UserType.SELLER, UserType.ADMIN, UserType.SUPER_ADMIN) {
+    requireRoleExact(UserType.CUSTOMER, UserType.SELLER) {
         generalRateLimit {
             /**
-             * Retrieve a single order by ID (customer owner, shop seller, or admin)
+             * Retrieve a single order by ID (customer owner or shop seller).
+             * Admins use the permission-gated admin order routes instead.
              */
             get("{id}") {
                 val id = call.requirePathParameter("id")
@@ -117,7 +128,7 @@ fun Route.orderRoutes() {
         }
     }
 
-    requireRole(UserType.CUSTOMER, UserType.SELLER) {
+    requireRoleExact(UserType.CUSTOMER, UserType.SELLER) {
         writeRateLimit {
             /**
              * Update order status (Customer - CANCELED/RECEIVED, Seller - CONFIRMED/DELIVERED)
@@ -190,16 +201,16 @@ private fun Route.guestOrderTrackingRoutes() {
             val order =
                 orderRepo.getOrderForGuest(orderNumber, email)
                     ?: throw NotFoundException(Message.Orders.NOT_FOUND)
-            call.respondOk(order)
+            call.respondOk(order.toPublicTrackingResponse())
         }.describe {
             summary = "Guest order tracking"
-            description = "Lookup by order number + checkout email"
+            description = "Lookup by order number + checkout email; returns a privacy-safe view"
             parameters {
                 query("orderNumber") { required = true }
                 query("email") { required = true }
             }
             responses {
-                ok<OrderResponse>("Order")
+                ok<com.piashcse.model.response.PublicOrderTrackingResponse>("Order tracking")
                 standardErrors()
             }
         }

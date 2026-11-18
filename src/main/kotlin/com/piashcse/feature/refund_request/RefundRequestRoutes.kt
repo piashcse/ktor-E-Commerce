@@ -4,6 +4,7 @@ package com.piashcse.feature.refund_request
 
 import com.piashcse.config.DotEnvConfig
 import com.piashcse.constants.Message
+import com.piashcse.constants.Permission
 import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
 import com.piashcse.model.request.BulkIdsRequest
@@ -12,13 +13,16 @@ import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
 import com.piashcse.plugin.adminWriteRateLimit
-import com.piashcse.plugin.customerAuth
+import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.jsonBody
+import com.piashcse.plugin.requireAdminPermission
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.plugin.writeRateLimit
+import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.extension.receiveSingleImage
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
@@ -34,7 +38,7 @@ import java.io.File
  */
 fun Route.refundRequestRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
-    customerAuth {
+    customerOnlyAuth {
         writeRateLimit {
             /**
              * Create a refund request for an order item
@@ -57,6 +61,22 @@ fun Route.refundRequestRoutes() {
                     refundRequestRepo.shipRefund(call.requirePathParameter("id"), call.receive<ShipRefundRequest>(), call.currentUserId),
                 )
             }.describe { summary = "Mark an approved refund as shipped" }
+
+            post("{id}/evidence") {
+                val refundId = call.requirePathParameter("id")
+                refundRequestRepo.getRefundById(refundId, call.currentUserId, UserType.CUSTOMER)
+                    ?: throw NotFoundException(Message.Refunds.NOT_FOUND)
+                val imageUrl =
+                    call.receiveSingleImage(
+                        purpose = "refund evidence",
+                        upload = { file, _ -> UploadService.uploadRefundImage(file) },
+                        publicUrl = UploadService::getRefundImageUrl,
+                    )
+                call.respondCreated(refundRequestRepo.addRefundEvidence(refundId, call.currentUserId, imageUrl))
+            }.describe {
+                summary = "Upload private evidence for a refund request"
+                description = "Up to 8 images; served only through the authenticated evidence route"
+            }
         }
     }
 
@@ -65,6 +85,7 @@ fun Route.refundRequestRoutes() {
          * Get private refund evidence for an authorized refund request
          */
         get("{id}/evidence/{fileName}") {
+            call.requireAdminPermission(Permission.REFUND_MANAGE)
             val refundId = call.requirePathParameter("id")
             val fileName = call.requirePathParameter("fileName")
             if (fileName.contains('/') || fileName.contains('\\') || fileName.contains("..")) {
@@ -91,6 +112,7 @@ fun Route.refundRequestRoutes() {
          * Get refund requests for an order
          */
         get("order/{orderId}") {
+            call.requireAdminPermission(Permission.REFUND_MANAGE)
             val (limit, offset) = call.pageRequest()
             call.respondOk(
                 refundRequestRepo.getRefundsByOrderId(
@@ -107,6 +129,7 @@ fun Route.refundRequestRoutes() {
          * Get refund request details
          */
         get("{id}") {
+            call.requireAdminPermission(Permission.REFUND_MANAGE)
             val refundRequest =
                 refundRequestRepo.getRefundById(
                     call.requirePathParameter("id"),

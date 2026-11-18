@@ -30,6 +30,7 @@ import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.event.PayoutStatusChangedEvent
 import com.piashcse.event.ProductReviewCreatedEvent
 import com.piashcse.event.RefundStatusChangedEvent
+import com.piashcse.event.ReviewReplyEvent
 import com.piashcse.event.RmaStatusChangedEvent
 import com.piashcse.event.SellerReviewCreatedEvent
 import com.piashcse.event.SendEmailEvent
@@ -153,6 +154,7 @@ class NotificationSubscriber(
             is SendEmailEvent, is AdminActionEvent -> null
             is SellerReviewCreatedEvent,
             is ProductReviewCreatedEvent,
+            is ReviewReplyEvent,
             is DisputeCreatedEvent,
             is LowStockEvent,
             is KycStatusChangedEvent,
@@ -179,6 +181,9 @@ class NotificationSubscriber(
         resourceId: String?,
     ) = NotificationMessage(userId, email, eventType, title, body, resourceType, resourceId)
 
+    // Flat event fan-out is intentionally centralized so notification copy and
+    // routing stay in one place; splitting it would hide the event matrix.
+    @Suppress("CyclomaticComplexMethod")
     private suspend fun sellerMessagesFor(event: DomainEvent): List<NotificationMessage> {
         val messages = mutableListOf<NotificationMessage>()
         when (event) {
@@ -233,6 +238,12 @@ class NotificationSubscriber(
                 sellerForShop(shopId)?.let { (userId, email) ->
                     val content = NotificationTemplates.sellerReview(event.rating, event.comment)
                     messages += content.toMessage(userId, email, "PRODUCT_REVIEW", "REVIEW", event.reviewId)
+                }
+            }
+            is ReviewReplyEvent -> {
+                recipientForUserId(event.customerUserId)?.let { (userId, email) ->
+                    val content = NotificationTemplates.reviewReply(event.sellerReply)
+                    messages += content.toMessage(userId, email, "REVIEW_REPLY", "REVIEW", event.reviewId)
                 }
             }
             is LowStockEvent -> {

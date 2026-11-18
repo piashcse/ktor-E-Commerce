@@ -62,4 +62,11 @@ interface RefundRequestRepository {
         request: ShipRefundRequest,
         userId: String,
     ): RefundRequestResponse
+
+    /** Appends a private evidence image URL to an open refund request. */
+    suspend fun addRefundEvidence(
+        refundId: String,
+        userId: String,
+        imageUrl: String,
+    ): RefundRequestResponse
 }

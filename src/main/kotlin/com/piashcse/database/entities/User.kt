@@ -32,6 +32,9 @@ object UserTable : BaseIdTable("user") {
     /** Incremented on credential changes; access tokens carrying an older version are rejected. */
     val tokenVersion = integer("token_version").default(0)
 
+    /** Incremented on role/permission changes; cached authorization state is keyed by it. */
+    val authzVersion = integer("authz_version").default(0)
+
     init {
         uniqueIndex("email_userType_idx", email, userType)
     }
@@ -56,6 +59,7 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     var socialSubject by UserTable.socialSubject
     var mfaLastUsedStep by UserTable.mfaLastUsedStep
     var tokenVersion by UserTable.tokenVersion
+    var authzVersion by UserTable.authzVersion
 
     /**
      * Get the seller information if the user is a seller

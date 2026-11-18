@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ReviewRatingResponse(
     val id: String,
-    val userId: String,
+    /** Hidden on public review feeds to avoid publishing reviewer identifiers. */
+    val userId: String? = null,
     val productId: String,
     val reviewText: String,
     val rating: Int,

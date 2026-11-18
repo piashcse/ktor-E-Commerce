@@ -106,6 +106,7 @@ class AuditLogSubscriber(
                 is LowStockEvent -> Unit
                 is SellerReviewCreatedEvent,
                 is ProductReviewCreatedEvent,
+                is ReviewReplyEvent,
                 is DisputeCreatedEvent,
                 is KycStatusChangedEvent,
                 is ShopStatusChangedEvent,

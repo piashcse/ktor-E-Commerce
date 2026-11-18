@@ -37,11 +37,8 @@ fun Route.stockAlertRoutes() {
 
             delete("{productId}") {
                 val removed = service.unsubscribe(call.currentUserId, call.requirePathParameter("productId"))
-                if (!removed) {
-                    call.respondOk(com.piashcse.utils.common.MessageResponse("No alert found"))
-                } else {
-                    call.respondDeleted("Back-in-stock alert removed")
-                }
+                if (!removed) throw com.piashcse.utils.validator.NotFoundException("Back-in-stock alert not found")
+                call.respondDeleted("Back-in-stock alert removed")
             }.describe { summary = "Remove a back-in-stock alert" }
         }
     }

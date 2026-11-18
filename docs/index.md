@@ -24,9 +24,15 @@ document as Swagger UI.
 
 ### 1. Role-Based Access Control
 
-- **Customer Role**: Shoppers with basic access to browse and make purchases.
-- **Seller Role**: Vendors can list products and manage their inventory.
-- **Admin Role**: Administrators have full control over the platform.
+- **Account types**: Customer, Seller and Admin. `SUPER_ADMIN` is retained as a legacy value mapped to the platform super-admin role.
+- **Database-backed roles**: create custom roles, assign permissions and edit role bundles without a deploy.
+- **Scoped permissions**: platform roles (`GLOBAL`) and shop roles (`SHOP`) with `resource:action` codes.
+- **Seller staff**: shop memberships and invitations with owner, manager, catalog, fulfillment, inventory, finance, support, analyst, warehouse and POS roles.
+- **Effective permissions**: `GET /api/v1/me/permissions` returns roles, memberships and resolved permissions for UI rendering.
+- **Least privilege**: admin routes require explicit permissions; mixed customer/seller/admin routes guard admin access separately.
+- **Audit**: role, permission and membership changes are audited and bump `authz_version` to invalidate cached permissions.
+
+See [Users, Roles & Permissions](rbac.md) for the model, permission catalog and API.
 
 ### 2. User Accounts and Authentication
 

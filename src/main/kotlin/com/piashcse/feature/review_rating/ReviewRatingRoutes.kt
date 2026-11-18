@@ -7,7 +7,7 @@ import com.piashcse.model.request.BulkIdsRequest
 import com.piashcse.model.request.BulkResultResponse
 import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.plugin.adminWriteRateLimit
-import com.piashcse.plugin.customerAuth
+import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.writeRateLimit
@@ -27,6 +27,12 @@ import org.koin.ktor.ext.inject
 
 @Serializable
 data class ReviewImagesRequest(val images: List<String>)
+
+@Serializable
+data class ReviewUpdateRequest(
+    val review: String,
+    val rating: Int,
+)
 
 @Serializable
 data class ReviewModerationRequest(
@@ -56,7 +62,7 @@ fun Route.reviewRatingRoutes() {
         call.respondOk(reviewRatingRepo.getReviewSummary(productId))
     }.describe { summary = "Rating distribution for a product" }
 
-    customerAuth {
+    customerOnlyAuth {
         writeRateLimit {
             /**
              * Submit a new review and rating for a product
@@ -72,12 +78,16 @@ fun Route.reviewRatingRoutes() {
              */
             put("{id}") {
                 val id = call.requirePathParameter("id")
-                val review = call.requireQueryParameter("review")
-                val rating = call.requireQueryParameter("rating")
-                val result = reviewRatingRepo.updateReviewRating(call.currentUserId, id, review, rating.toInt())
+                val body = runCatching { call.receive<ReviewUpdateRequest>() }.getOrNull()
+                val review = body?.review ?: call.requireQueryParameter("review")
+                val rating = body?.rating ?: call.requireQueryParameter("rating").toInt()
+                val result = reviewRatingRepo.updateReviewRating(call.currentUserId, id, review, rating)
                 CatalogCache.invalidate()
                 call.respondOk(result)
-            }.describe { summary = "Update an existing review and rating" }
+            }.describe {
+                summary = "Update an existing review and rating"
+                requestBody { jsonBody<ReviewUpdateRequest>() }
+            }
 
             put("{id}/images") {
                 val id = call.requirePathParameter("id")

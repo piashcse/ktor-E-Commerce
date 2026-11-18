@@ -325,6 +325,24 @@ class RefundRequestRepositoryImpl(
         return ProviderRefundResult(result.providerRefundId, result.status)
     }
 
+    override suspend fun addRefundEvidence(
+        refundId: String,
+        userId: String,
+        imageUrl: String,
+    ): RefundRequestResponse =
+        query {
+            val refund = RefundRequestDAO.findById(refundId) ?: throw ValidationException(Message.Refunds.NOT_FOUND)
+            if (refund.userId.value != userId) throw ForbiddenException(Message.Errors.FORBIDDEN)
+            if (refund.status !in listOf(RefundStatus.PENDING, RefundStatus.APPROVED)) {
+                throw ValidationException("Evidence can only be added before the refund is resolved")
+            }
+            val existing = refund.images?.takeIf { it.isNotBlank() }?.split(",")?.toMutableList() ?: mutableListOf()
+            if (imageUrl !in existing) existing.add(imageUrl)
+            if (existing.size > 8) throw ValidationException("At most 8 evidence images are allowed")
+            refund.images = existing.joinToString(",")
+            refund.toRefundRequestResponse()
+        }
+
     override suspend fun updateRefundStatus(
         refundId: String,
         request: UpdateRefundStatusRequest,
