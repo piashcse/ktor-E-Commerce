@@ -9,6 +9,7 @@ import com.piashcse.mapper.toPolicyConsentResponse
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.model.response.UserPolicyConsentResponse
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.sha256Hex
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.requireNotBlank
@@ -23,21 +24,12 @@ import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
-import java.security.MessageDigest
 
 class ConsentRepositoryImpl : ConsentRepository {
     // PII minimization: store only a sha256 prefix of the IP and a truncated UA.
-    private fun hashIp(ipAddress: String?): String? =
-        ipAddress?.takeIf { it.isNotBlank() }?.let {
-            MessageDigest.getInstance("SHA-256").digest(it.toByteArray())
-                .joinToString("") { byte -> "%02x".format(byte) }.take(16)
-        }
+    private fun hashIp(ipAddress: String?): String? = ipAddress?.takeIf { it.isNotBlank() }?.let { sha256Hex(it).take(16) }
 
     private fun truncateUserAgent(userAgent: String?): String? = userAgent?.take(200)
-
-    private fun sha256(value: String): String =
-        MessageDigest.getInstance("SHA-256").digest(value.toByteArray())
-            .joinToString("") { byte -> "%02x".format(byte) }
 
     override suspend fun recordConsent(
         userId: String,
@@ -71,7 +63,7 @@ class ConsentRepositoryImpl : ConsentRepository {
                     ipAddress = hashIp(consentRequest.ipAddress)
                     userAgent = truncateUserAgent(consentRequest.userAgent)
                     policyVersion = policy.version
-                    policyContentHash = sha256(policy.content)
+                    policyContentHash = sha256Hex(policy.content)
                 }
 
             EventBus.publishAdminAction(

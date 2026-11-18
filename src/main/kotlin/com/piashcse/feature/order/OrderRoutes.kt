@@ -15,7 +15,7 @@ import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
-import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.requireRoleExact
 import com.piashcse.plugin.standardErrors
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.*
@@ -109,10 +109,11 @@ fun Route.orderRoutes() {
         }
     }
 
-    requireRole(UserType.CUSTOMER, UserType.SELLER, UserType.ADMIN, UserType.SUPER_ADMIN) {
+    requireRoleExact(UserType.CUSTOMER, UserType.SELLER) {
         generalRateLimit {
             /**
-             * Retrieve a single order by ID (customer owner, shop seller, or admin)
+             * Retrieve a single order by ID (customer owner or shop seller).
+             * Admins use the permission-gated admin order routes instead.
              */
             get("{id}") {
                 val id = call.requirePathParameter("id")
@@ -127,7 +128,7 @@ fun Route.orderRoutes() {
         }
     }
 
-    requireRole(UserType.CUSTOMER, UserType.SELLER) {
+    requireRoleExact(UserType.CUSTOMER, UserType.SELLER) {
         writeRateLimit {
             /**
              * Update order status (Customer - CANCELED/RECEIVED, Seller - CONFIRMED/DELIVERED)

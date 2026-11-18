@@ -32,6 +32,7 @@ nav:
   - API Reference:
       - Endpoint Index (all): endpoints.md
       - Auth: auth.md
+      - Users, Roles & Permissions: rbac.md
       - Profile: profile.md
       - Shop Category: shop-category.md
       - Shop: shop.md

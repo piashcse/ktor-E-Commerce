@@ -66,6 +66,8 @@ import com.piashcse.feature.profile.ProfileRepository
 import com.piashcse.feature.profile.ProfileRepositoryImpl
 import com.piashcse.feature.profile.ProfileService
 import com.piashcse.feature.promotion.PromotionService
+import com.piashcse.feature.rbac.RbacService
+import com.piashcse.feature.rbac.ShopMembershipService
 import com.piashcse.feature.recommendation.RecommendationService
 import com.piashcse.feature.refund_request.RefundRequestRepository
 import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
@@ -181,6 +183,8 @@ val serviceModule =
         single { ProfileService(get()) }
         single { PrivacyService() }
         single { ApiKeyService() }
+        single { RbacService() }
+        single { ShopMembershipService() }
         single { GuestCheckoutService(get()) }
         single { RmaService() }
         single { KycService() }

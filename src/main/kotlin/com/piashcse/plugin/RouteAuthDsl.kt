@@ -7,6 +7,7 @@ import com.piashcse.constants.UserType
 import com.piashcse.constants.defaultPermissions
 import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.utils.common.ApiError
+import com.piashcse.utils.validator.ForbiddenException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -46,10 +47,9 @@ val RoleAuthorizationPlugin =
             val hasAccess =
                 allowedRoles.any { role ->
                     if (principal.isApiKey) {
-                        // API keys are scope-bound. Require the full default scope
-                        // set of a role before allowing role-gated routes; narrow
-                        // keys must use explicit permission routes.
-                        principal.scopes.containsAll(role.defaultPermissions().map { it.name })
+                        // API keys are scope-bound. Require the role's full default
+                        // scope set; stored scopes may be legacy enum names or codes.
+                        role.defaultPermissions().all { it.code in principal.scopes || it.name in principal.scopes }
                     } else if (exact) {
                         principal.getUserType()?.hasExactRole(role) == true
                     } else {
@@ -188,9 +188,21 @@ fun Route.customerAuth(build: Route.() -> Unit) = requireRole(UserType.CUSTOMER,
 /** Strict customer-only scope: CUSTOMER role exactly — sellers/admins are denied. */
 fun Route.customerOnlyAuth(build: Route.() -> Unit) = requireRoleExact(UserType.CUSTOMER, build = build)
 
-fun Route.sellerAuth(build: Route.() -> Unit) = requireRole(UserType.SELLER, build = build)
+fun Route.sellerAuth(build: Route.() -> Unit) = requireRoleExact(UserType.SELLER, build = build)
 
 fun Route.adminAuth(build: Route.() -> Unit) = requireRole(UserType.ADMIN, UserType.SUPER_ADMIN, build = build)
+
+/**
+ * Mixed-role routes (customer/seller self-service plus admin support) must not
+ * let a narrowly-scoped admin bypass the permission gate. Call this at the top
+ * of a handler that also accepts admins.
+ */
+fun ApplicationCall.requireAdminPermission(permission: Permission) {
+    val principal = principal<JwtTokenRequest>() ?: return
+    if (principal.getUserType()?.isAdminOrHigher == true && !principal.hasPermission(permission)) {
+        throw ForbiddenException("Permission Denied: missing ${permission.code}")
+    }
+}
 
 // Rate Limit DSL helpers
 fun Route.writeRateLimit(build: Route.() -> Unit) {

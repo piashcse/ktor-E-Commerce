@@ -1,6 +1,7 @@
 package com.piashcse.feature.shipping
 
 import com.piashcse.constants.ShipmentStatus
+import com.piashcse.utils.common.sha256Hex
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Contextual
@@ -330,7 +331,6 @@ class ShippoCarrierGateway(
             return HexFormat.of().formatHex(mac.doFinal(payload.toByteArray(StandardCharsets.UTF_8)))
         }
 
-        fun sha256(payload: String): String =
-            HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(payload.toByteArray(StandardCharsets.UTF_8)))
+        fun sha256(payload: String): String = sha256Hex(payload)
     }
 }

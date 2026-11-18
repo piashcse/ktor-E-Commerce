@@ -5,33 +5,47 @@ package com.piashcse.constants
 import kotlinx.serialization.Serializable
 
 /**
- * Fine-grained permissions for admin/seller operations. Role defaults are used
- * for JWT sessions; API keys may carry a narrower subset via [scopes].
+ * Coarse route-level permissions. Each value carries the stable `resource:action`
+ * code stored in the RBAC catalog; custom roles may grant codes that do not have
+ * an enum constant yet.
+ *
+ * Role defaults are only a migration fallback. Runtime authorization resolves
+ * the effective permission set from the database (see `RbacService`).
  */
 @Serializable
-enum class Permission {
-    USER_MANAGE,
-    CATALOG_MANAGE,
-    ORDER_MANAGE,
-    PAYMENT_MANAGE,
-    REFUND_MANAGE,
-    PAYOUT_MANAGE,
-    COUPON_MANAGE,
-    SHOP_MANAGE,
-    INVENTORY_MANAGE,
-    POLICY_MANAGE,
-    DASHBOARD_VIEW,
-    AUDIT_VIEW,
-    NOTIFICATION_SEND,
-    TAX_MANAGE,
-    FX_MANAGE,
-    OUTBOX_MANAGE,
-    API_KEY_MANAGE,
-    FEATURE_FLAG_MANAGE,
+enum class Permission(val code: String) {
+    USER_MANAGE("user:manage"),
+    CATALOG_MANAGE("catalog:manage"),
+    ORDER_MANAGE("order:manage"),
+    PAYMENT_MANAGE("payment:manage"),
+    REFUND_MANAGE("refund:manage"),
+    PAYOUT_MANAGE("payout:manage"),
+    COUPON_MANAGE("coupon:manage"),
+    SHOP_MANAGE("shop:manage"),
+    INVENTORY_MANAGE("inventory:manage"),
+    POLICY_MANAGE("policy:manage"),
+    DASHBOARD_VIEW("dashboard:read"),
+    AUDIT_VIEW("audit:read"),
+    NOTIFICATION_SEND("notification:send"),
+    TAX_MANAGE("tax:manage"),
+    FX_MANAGE("fx:manage"),
+    OUTBOX_MANAGE("outbox:manage"),
+    API_KEY_MANAGE("api_key:manage"),
+    FEATURE_FLAG_MANAGE("feature_flag:manage"),
+    ROLE_MANAGE("role:manage"),
+    SUPPORT_MANAGE("support:manage"),
+    FRAUD_MANAGE("fraud:manage"),
+    CMS_MANAGE("cms:manage"),
+    SUBSCRIPTION_MANAGE("subscription:manage"),
+    REVIEW_MANAGE("review:manage"),
+    SHIPPING_MANAGE("shipping:manage"),
+    B2B_MANAGE("b2b:manage"),
     ;
 
     companion object {
-        fun fromString(value: String): Permission? = values().find { it.name.equals(value, ignoreCase = true) }
+        /** Accepts either the enum name (legacy API keys) or the stable code. */
+        fun fromString(value: String): Permission? =
+            entries.find { it.name.equals(value, ignoreCase = true) || it.code.equals(value, ignoreCase = true) }
     }
 }
 

@@ -2,11 +2,12 @@
 
 package com.piashcse.feature.notification
 
-import com.piashcse.constants.UserType
+import com.piashcse.constants.Permission
 import com.piashcse.plugin.created
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
+import com.piashcse.plugin.requirePermission
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
@@ -99,7 +100,7 @@ fun Route.notificationRoutes() {
             responses { ok<MarkAllReadResponse>("Number marked read") }
         }
     }
-    requireRole(UserType.ADMIN, UserType.SUPER_ADMIN, UserType.SELLER) {
+    requirePermission(Permission.NOTIFICATION_SEND) {
         writeRateLimit {
             post("send") {
                 val body = call.receive<SendNotificationRequest>()

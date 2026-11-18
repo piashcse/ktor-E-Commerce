@@ -9,7 +9,7 @@ import com.piashcse.constants.UserType
 import com.piashcse.feature.policy.PolicyRepository
 import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.plugin.customerAuth
-import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.requireRoleExact
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
@@ -67,7 +67,7 @@ fun Route.consentRoutes() {
         }
     }
 
-    requireRole(UserType.CUSTOMER, UserType.ADMIN) {
+    requireRoleExact(UserType.CUSTOMER) {
         /**
          * Policies that currently require consent, with this user's status.
          * Declared before the {policyType} route so "requirements" is not parsed as a type.

@@ -1,20 +1,21 @@
 package com.piashcse.feature.apikey
 
 import com.piashcse.constants.Permission
-import com.piashcse.constants.defaultPermissions
 import com.piashcse.database.entities.ApiKeyDAO
 import com.piashcse.database.entities.ApiKeyTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.feature.rbac.RbacService
 import com.piashcse.model.request.JwtTokenRequest
 import com.piashcse.utils.common.DateTimes.toUtcString
+import com.piashcse.utils.common.sha256Hex
+import com.piashcse.utils.common.toHex
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
 import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
-import java.security.MessageDigest
 import java.security.SecureRandom
 import java.time.LocalDateTime
 
@@ -50,57 +51,54 @@ data class ApiKeyResponse(
 
 class ApiKeyService {
     private val random = SecureRandom()
-
-    private fun sha256(value: String): String =
-        MessageDigest.getInstance("SHA-256")
-            .digest(value.toByteArray())
-            .joinToString("") { "%02x".format(it) }
+    private val rbac = RbacService()
 
     suspend fun create(
         userId: String,
         request: ApiKeyCreateRequest,
-    ): ApiKeyCreatedResponse =
-        query {
-            if (request.name.isBlank()) throw ValidationException("API key name is required")
-            val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
-            val allowed = user.userType.defaultPermissions()
-            // Omit scopes to inherit the role defaults. An explicit empty list
-            // means "no scopes" and must not fail open to all permissions.
-            val requested = request.scopes?.toSet() ?: allowed
-            val invalid = requested - allowed
-            if (invalid.isNotEmpty()) {
-                throw ValidationException(
-                    "Requested scopes exceed the ${user.userType} role: ${invalid.joinToString { it.name }}",
-                )
+    ): ApiKeyCreatedResponse {
+        if (request.name.isBlank()) throw ValidationException("API key name is required")
+        val user = query { UserDAO.findById(userId) ?: userId.throwNotFound("User") }
+        val allowed = rbac.permissionsForUser(user)
+        // Omit scopes to inherit the effective permission set. An explicit empty
+        // list means "no scopes" and must not fail open.
+        val requested = request.scopes?.toSet() ?: Permission.entries.filter { it.code in allowed }.toSet()
+        val invalid = requested.filter { it.code !in allowed && it.name !in allowed }
+        if (invalid.isNotEmpty()) {
+            throw ValidationException(
+                "Requested scopes exceed the ${user.userType} role: ${invalid.joinToString { it.name }}",
+            )
+        }
+        val expiresAt =
+            request.expiresAt?.let {
+                runCatching { LocalDateTime.parse(it) }
+                    .getOrElse { throw ValidationException("Invalid expiresAt: $it") }
             }
-            val expiresAt =
-                request.expiresAt?.let {
-                    runCatching { LocalDateTime.parse(it) }
-                        .getOrElse { throw ValidationException("Invalid expiresAt: $it") }
-                }
-            if (expiresAt != null && !expiresAt.isAfter(currentUtc())) {
-                throw ValidationException("expiresAt must be in the future")
-            }
+        if (expiresAt != null && !expiresAt.isAfter(currentUtc())) {
+            throw ValidationException("expiresAt must be in the future")
+        }
 
-            val raw = "ek_" + ByteArray(32).also { random.nextBytes(it) }.joinToString("") { "%02x".format(it) }
-            val dao =
+        val raw = "ek_" + ByteArray(32).also { random.nextBytes(it) }.toHex()
+        val dao =
+            query {
                 ApiKeyDAO.new {
                     this.userId = user.id
                     this.name = request.name
-                    keyHash = sha256(raw)
+                    keyHash = sha256Hex(raw)
                     prefix = raw.take(12)
                     scopes = requested.joinToString(",") { it.name }
                     this.expiresAt = expiresAt
                 }
-            ApiKeyCreatedResponse(
-                id = dao.id.value,
-                name = dao.name,
-                prefix = dao.prefix,
-                scopes = requested.map { it.name },
-                key = raw,
-                createdAt = dao.createdAt.toUtcString(),
-            )
-        }
+            }
+        return ApiKeyCreatedResponse(
+            id = dao.id.value,
+            name = dao.name,
+            prefix = dao.prefix,
+            scopes = requested.map { it.name },
+            key = raw,
+            createdAt = dao.createdAt.toUtcString(),
+        )
+    }
 
     suspend fun list(userId: String): List<ApiKeyResponse> =
         query {
@@ -121,31 +119,43 @@ class ApiKeyService {
         }
 
     /** Resolves an `ek_...` token to the same principal shape used by JWT routes. */
-    suspend fun authenticate(rawKey: String): JwtTokenRequest? =
-        query {
-            if (!rawKey.startsWith("ek_")) return@query null
-            val key =
-                ApiKeyDAO.find {
-                    (ApiKeyTable.keyHash eq sha256(rawKey)) and (ApiKeyTable.isActive eq true)
-                }.firstOrNull() ?: return@query null
-            if (key.expiresAt?.isBefore(currentUtc()) == true) return@query null
-            val user = UserDAO.findById(key.userId.value) ?: return@query null
-            if (!user.isActiveAndVerified()) return@query null
-            val now = currentUtc()
-            if (key.lastUsedAt == null || key.lastUsedAt!!.isBefore(now.minusMinutes(5))) {
-                key.lastUsedAt = now
-            }
-            // A key can outlive a role change. Only keep scopes the current role
-            // still permits; demotion must never preserve elevated access.
-            val allowed = user.userType.defaultPermissions().map { it.name }.toSet()
-            JwtTokenRequest(
-                userId = user.id.value,
-                email = user.email,
-                userType = user.userType.name,
-                scopes = key.scopes.split(',').filter { it.isNotBlank() && it in allowed }.toSet(),
-                isApiKey = true,
-            )
-        }
+    suspend fun authenticate(rawKey: String): JwtTokenRequest? {
+        if (!rawKey.startsWith("ek_")) return null
+        val resolved =
+            query {
+                val key =
+                    ApiKeyDAO.find {
+                        (ApiKeyTable.keyHash eq sha256Hex(rawKey)) and (ApiKeyTable.isActive eq true)
+                    }.firstOrNull() ?: return@query null
+                if (key.expiresAt?.isBefore(currentUtc()) == true) return@query null
+                val user = UserDAO.findById(key.userId.value) ?: return@query null
+                if (!user.isActiveAndVerified()) return@query null
+                val now = currentUtc()
+                if (key.lastUsedAt == null || key.lastUsedAt!!.isBefore(now.minusMinutes(5))) {
+                    key.lastUsedAt = now
+                }
+                key to user
+            } ?: return null
+
+        val (key, user) = resolved
+        val allowed = rbac.permissionsForUser(user)
+        // A key can outlive a role change. Keep only scopes the current effective
+        // permissions still allow; demotion must never preserve elevated access.
+        val scopes =
+            key.scopes.split(',')
+                .filter { it.isNotBlank() }
+                .filter { it in allowed || Permission.fromString(it)?.code in allowed }
+                .toSet()
+        return JwtTokenRequest(
+            userId = user.id.value,
+            email = user.email,
+            userType = user.userType.name,
+            permissions = allowed,
+            authzVersion = user.authzVersion,
+            scopes = scopes,
+            isApiKey = true,
+        )
+    }
 
     private fun ApiKeyDAO.toResponse() =
         ApiKeyResponse(
