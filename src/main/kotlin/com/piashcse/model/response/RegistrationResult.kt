@@ -1,6 +1,7 @@
 package com.piashcse.model.response
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 sealed class RegistrationResult {
     abstract val message: String
@@ -10,6 +11,7 @@ sealed class RegistrationResult {
         val id: String,
         val email: String,
         override val message: String,
+        @Transient val otp: String? = null,
     ) : RegistrationResult()
 
     @Serializable
@@ -17,5 +19,6 @@ sealed class RegistrationResult {
         val id: String,
         val email: String,
         override val message: String,
+        @Transient val otp: String? = null,
     ) : RegistrationResult()
 }

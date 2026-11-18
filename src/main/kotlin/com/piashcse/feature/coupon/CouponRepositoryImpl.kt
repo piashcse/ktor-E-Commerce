@@ -12,6 +12,7 @@ import com.piashcse.event.EventBus
 import com.piashcse.model.request.CouponRequest
 import com.piashcse.model.response.CouponResponse
 import com.piashcse.utils.common.DateTimes
+import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
@@ -140,7 +141,7 @@ class CouponRepositoryImpl : CouponRepository {
             true
         }
 
-    private fun normalizeCode(code: String): String = code.trim().uppercase()
+    private fun normalizeCode(code: String): String = CouponRules.normalize(code)
 
     private fun validateCouponRequest(
         request: CouponRequest,
@@ -169,9 +170,9 @@ class CouponRepositoryImpl : CouponRepository {
             id = id.value,
             code = code,
             discountType = discountType,
-            discountValue = discountValue.toPlainString(),
-            minOrderAmount = minOrderAmount.toPlainString(),
-            maxDiscountAmount = maxDiscountAmount?.toPlainString(),
+            discountValue = Money.str(discountValue),
+            minOrderAmount = Money.str(minOrderAmount),
+            maxDiscountAmount = maxDiscountAmount?.let { Money.str(it) },
             startDate = startDate.toString(),
             endDate = endDate.toString(),
             usageLimit = usageLimit,

@@ -64,6 +64,12 @@ class AuthRepositoryImpl : AuthRepository {
         return md.digest(token.toByteArray()).joinToString("") { "%02x".format(it) }
     }
 
+    /** OTPs are bearer secrets; only their digest is persisted. */
+    private fun hashOtp(otp: String): String {
+        val md = MessageDigest.getInstance("SHA-256")
+        return md.digest(otp.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
+    }
+
     override suspend fun storeRefreshToken(
         userId: String,
         refreshToken: String,
@@ -107,6 +113,11 @@ class AuthRepositoryImpl : AuthRepository {
     private fun revokeAllUserTokensTx(userId: String) {
         RefreshTokenDAO.find { RefreshTokenTable.userId eq userId.entityID(UserTable) }
             .forEach { it.revokedAt = Instant.now() }
+        // Role changes, password resets and deactivation must invalidate API keys
+        // as well; otherwise an old key keeps the previous role's access.
+        ApiKeyDAO.find {
+            (ApiKeyTable.userId eq userId.entityID(UserTable)) and (ApiKeyTable.isActive eq true)
+        }.forEach { it.isActive = false }
     }
 
     private fun registrationAttempt(
@@ -212,7 +223,7 @@ class AuthRepositoryImpl : AuthRepository {
                     if (existingUser.otpExpiry?.isAfter(currentUtc()) == true) {
                         throw ValidationException(Message.Auth.OTP_ALREADY_SENT)
                     }
-                    existingUser.otpCode = otp
+                    existingUser.otpCode = hashOtp(otp)
                     existingUser.otpExpiry = otpExpiryTime
                     // Security: the unverified row may have been created by an attacker
                     // with their own password (account pre-hijacking). Always replace it
@@ -221,13 +232,18 @@ class AuthRepositoryImpl : AuthRepository {
                     Triple(
                         existingUser.email,
                         otp,
-                        RegistrationResult.OtpResent(existingUser.id.value, existingUser.email, Message.Auth.OTP_SENT),
+                        RegistrationResult.OtpResent(
+                            existingUser.id.value,
+                            existingUser.email,
+                            Message.Auth.OTP_SENT,
+                            otp = otp,
+                        ),
                     )
                 } else {
                     val inserted =
                         UserDAO.new {
                             email = normalizedEmail
-                            otpCode = otp
+                            otpCode = hashOtp(otp)
                             otpExpiry = otpExpiryTime
                             password = hashPassword(registerRequest.password)
                             userType = userTypeEnum
@@ -239,7 +255,16 @@ class AuthRepositoryImpl : AuthRepository {
                             status = ShopStatus.PENDING
                         }
                     }
-                    Triple(inserted.email, otp, RegistrationResult.Created(inserted.id.value, normalizedEmail, Message.Auth.OTP_SENT))
+                    Triple(
+                        inserted.email,
+                        otp,
+                        RegistrationResult.Created(
+                            inserted.id.value,
+                            normalizedEmail,
+                            Message.Auth.OTP_SENT,
+                            otp = otp,
+                        ),
+                    )
                 }
             }
         return result
@@ -326,7 +351,7 @@ class AuthRepositoryImpl : AuthRepository {
                 entities.find { it.userType == type }
                     ?: throw NotFoundException(Message.Auth.userNotFoundForRole(forgotPasswordRequest.userType))
             val otp = generateOTP()
-            user.resetOtpCode = otp
+            user.resetOtpCode = hashOtp(otp)
             user.resetOtpExpiry = currentUtc().plusMinutes(AppConstants.OTP_EXPIRY_MINUTES)
             otp
         }
@@ -347,7 +372,7 @@ class AuthRepositoryImpl : AuthRepository {
                 return@query ResetResult.InvalidOrExpiredOtp
             }
 
-            if (!constantTimeEquals(user.resetOtpCode.orEmpty(), resetPasswordRequest.verificationCode)) {
+            if (!constantTimeEquals(user.resetOtpCode.orEmpty(), hashOtp(resetPasswordRequest.verificationCode))) {
                 val attemptRecord =
                     if (otpAttempt != null) {
                         otpAttempt.attemptCount = otpAttempt.attemptCount + 1
@@ -409,7 +434,7 @@ class AuthRepositoryImpl : AuthRepository {
                 attempt.lockedUntil = null
             }
             if (userEntity.otpExpiry?.isBefore(currentUtc()) != false ||
-                !constantTimeEquals(userEntity.otpCode.orEmpty(), otp)
+                !constantTimeEquals(userEntity.otpCode.orEmpty(), hashOtp(otp))
             ) {
                 recordLockedOtpFailure(userEntity, attempt)
                 return@query false

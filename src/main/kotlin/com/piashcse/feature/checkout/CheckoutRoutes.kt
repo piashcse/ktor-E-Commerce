@@ -26,7 +26,7 @@ import com.piashcse.plugin.standardErrors
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
@@ -180,7 +180,7 @@ fun Route.checkoutRoutes() {
          * Retrieve all shipping addresses for the authenticated user
          */
         get("shipping-address") {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(shippingAddressRepo.getShippingAddresses(call.currentUserId, limit, offset))
         }.describe { summary = "List shipping addresses" }
     }
@@ -189,7 +189,7 @@ fun Route.checkoutRoutes() {
      * Public shipping methods so guest checkout can choose one before authenticating.
      */
     get("shipping-method") {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(shippingMethodRepo.getShippingMethods(limit, offset))
     }.describe {
         summary = "List shipping methods"

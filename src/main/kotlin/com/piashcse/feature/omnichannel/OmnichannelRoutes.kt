@@ -7,7 +7,8 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
+import com.piashcse.utils.extension.queryLimit
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.http.ContentType
@@ -31,7 +32,7 @@ fun Route.storeLocatorRoutes() {
                     (call.request.queryParameters["lng"] ?: call.request.queryParameters["longitude"])
                         ?.toDoubleOrNull(),
                 radiusKm = call.request.queryParameters["radiusKm"]?.toDoubleOrNull(),
-                limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20,
+                limit = call.queryLimit(default = 20),
             ),
         )
     }.describe {
@@ -44,7 +45,7 @@ fun Route.storeLocatorRoutes() {
 fun Route.pickupSellerListRoutes() {
     val service: OmnichannelService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.pickupOrders(call.currentUserId, limit, offset))
     }.describe { summary = "Seller: list pickup orders" }
 }
@@ -77,7 +78,7 @@ fun Route.pickupActionRoutes() {
 fun Route.posSellerRoutes() {
     val service: OmnichannelService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.posSales(call.currentUserId, limit, offset))
     }.describe { summary = "Seller: list POS sales" }
 
@@ -103,7 +104,7 @@ fun Route.posSellerRoutes() {
 fun Route.posSessionSellerRoutes() {
     val service: OmnichannelService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.posSessions(call.currentUserId, limit, offset))
     }.describe { summary = "Seller: list POS cash-drawer sessions" }
 

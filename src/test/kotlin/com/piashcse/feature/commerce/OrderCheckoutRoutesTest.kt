@@ -20,6 +20,7 @@ import io.ktor.http.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import org.koin.dsl.module
 import kotlin.test.Test
@@ -152,6 +153,13 @@ class CheckoutRoutesTest {
                     single<com.piashcse.feature.consent.ConsentRepository> { mockk() }
                     single<com.piashcse.feature.checkout.GuestCheckoutService> { mockk() }
                     single { mockk<com.piashcse.feature.featureflag.FeatureFlags>(relaxed = true) }
+                    single {
+                        mockk<com.piashcse.feature.payment.PaymentGateway>(relaxed = true).also { gateway ->
+                            every { gateway.provider } returns
+                                com.piashcse.constants.PaymentProvider.MANUAL
+                            every { gateway.supports(any()) } returns true
+                        }
+                    }
                 },
             )
             routing { route("/api/v1/checkout") { checkoutRoutes() } }
@@ -195,7 +203,9 @@ class CheckoutRoutesTest {
                 client.post("/api/v1/checkout/place-order") {
                     header(HttpHeaders.Authorization, authHeader())
                     contentType(ContentType.Application.Json)
-                    setBody("""{"shippingAddressId":"a-1","shippingMethodId":"m-1"}""")
+                    setBody(
+                        """{"shippingAddressId":"a-1","shippingMethodId":"m-1","paymentMethod":"COD"}""",
+                    )
                 }
             assertEquals(HttpStatusCode.Created, res.status)
         }

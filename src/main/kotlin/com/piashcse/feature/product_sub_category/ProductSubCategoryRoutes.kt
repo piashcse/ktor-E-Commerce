@@ -5,7 +5,7 @@ package com.piashcse.feature.product_sub_category
 import com.piashcse.model.request.ProductSubCategoryRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.utils.extension.nameFromBodyOrQuery
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
@@ -24,7 +24,7 @@ fun Route.productSubCategoryRoutes() {
      */
     get {
         val categoryId = call.requireQueryParameter("categoryId")
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(subCategoryRepo.getProductSubCategory(categoryId, limit, offset))
     }.describe { summary = "Retrieve subcategories for a specific category" }
 }

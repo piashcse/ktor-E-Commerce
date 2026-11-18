@@ -7,7 +7,7 @@ import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.*
@@ -53,7 +53,7 @@ fun Route.wishlistRoutes() {
          */
         generalRateLimit {
             get {
-                val (limit, offset) = call.paginateQueryParams()
+                val (limit, offset) = call.pageRequest()
                 call.respondOk(wishlistRepo.getWishlist(call.currentUserId, limit, offset))
             }.describe {
                 summary = "List wishlist"

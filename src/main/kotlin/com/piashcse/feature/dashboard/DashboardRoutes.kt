@@ -3,6 +3,7 @@
 package com.piashcse.feature.dashboard
 
 import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.extension.queryLimit
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
@@ -42,14 +43,14 @@ fun Route.dashboardAdminRoutes() {
      * Get top-selling products sorted by sales volume
      */
     get("top-products") {
-        call.respondOk(repo.getTopProducts(call.queryParameters["limit"]?.toIntOrNull()))
+        call.respondOk(repo.getTopProducts(call.queryLimit(default = 10, max = 50)))
     }.describe { summary = "Get top-selling products sorted by sales volume" }
 
     /**
      * Get recent activity feed (orders + user registrations)
      */
     get("activity") {
-        call.respondOk(repo.getRecentActivity(call.queryParameters["limit"]?.toIntOrNull()))
+        call.respondOk(repo.getRecentActivity(call.queryLimit(default = 20, max = 50)))
     }.describe { summary = "Get recent activity feed (orders + user registrations)" }
 }
 

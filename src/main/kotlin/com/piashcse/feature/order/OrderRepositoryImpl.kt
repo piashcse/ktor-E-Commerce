@@ -7,10 +7,14 @@ import com.piashcse.event.OrderPlacedEvent
 import com.piashcse.event.OrderStatusChangedEvent
 import com.piashcse.event.OutboxPublisher
 import com.piashcse.feature.config.StorefrontSettings
+import com.piashcse.feature.coupon.CouponLine
+import com.piashcse.feature.coupon.CouponRules
+import com.piashcse.feature.coupon.toSnapshot
 import com.piashcse.feature.i18n.I18nService
 import com.piashcse.feature.loyalty.LoyaltyService
 import com.piashcse.feature.promotion.PromotionMatch
 import com.piashcse.feature.promotion.PromotionService
+import com.piashcse.feature.tax.TaxQuote
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.mapper.toOrderItemResponse
 import com.piashcse.mapper.toOrderResponse
@@ -60,10 +64,14 @@ class OrderRepositoryImpl(
     private fun Query.toOrdersPaginated(
         limit: Int,
         offset: Int,
+        includeSensitive: Boolean = true,
     ): PaginatedResponse<OrderResponse> {
         val (totalCount, rows) = toPaginatedList(limit, offset) { OrderDAO.wrapRow(it) }
         val itemsMap = loadItemsForOrders(rows)
-        val data = rows.map { order -> order.toOrderResponse(itemsMap[order.id.value]) }
+        val data =
+            rows.map { order ->
+                order.toOrderResponse(itemsMap[order.id.value], includeSensitive = includeSensitive)
+            }
         return PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
     }
 
@@ -119,100 +127,48 @@ class OrderRepositoryImpl(
         return "***" + digits.takeLast(4)
     }
 
-    private fun validateCoupon(
+    /**
+     * Loads and validates a coupon for the current pricing path. User/usage
+     * checks live in [CouponRules] so every checkout entry point agrees.
+     */
+    private fun loadCoupon(
         code: String,
-        orderAmount: BigDecimal,
         forUpdate: Boolean = false,
         userId: String? = null,
-        shopIds: Set<String> = emptySet(),
-        categoryIds: Set<String> = emptySet(),
     ): CouponDAO {
-        val normalizedCode = code.trim().uppercase()
-        val query = CouponDAO.find { CouponTable.code eq normalizedCode and (CouponTable.isActive eq true) }
+        val query = CouponDAO.find { (CouponTable.code eq CouponRules.normalize(code)) and (CouponTable.isActive eq true) }
         val coupon =
             (if (forUpdate) query.forUpdate() else query).firstOrNull()
                 ?: throw ValidationException(Message.Orders.INVALID_COUPON)
-
-        val now = currentUtc()
-        if (now.isBefore(coupon.startDate) || now.isAfter(coupon.endDate)) {
-            throw ValidationException(Message.Orders.COUPON_EXPIRED)
-        }
-
-        if (orderAmount < coupon.minOrderAmount) {
-            throw ValidationException(Message.Orders.couponMinOrderAmount(coupon.minOrderAmount.toPlainString()))
-        }
-
-        coupon.usageLimit?.let { limit ->
-            if (coupon.usageCount >= limit) throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
-        }
-
-        // Per-user limit is enforced against distinct checkouts. Split orders
-        // create one row per shop but share a checkout reference.
-        if (userId != null) {
-            val usedByUser =
+        val usedByUser =
+            userId?.let {
                 CouponUsageDAO.find {
-                    (CouponUsageTable.couponId eq coupon.id) and (CouponUsageTable.userId eq userId.entityID(UserTable))
+                    (CouponUsageTable.couponId eq coupon.id) and
+                        (CouponUsageTable.userId eq it.entityID(UserTable))
                 }.toList()
-                    .map { it.checkoutReference ?: it.id.value }
+                    .map { row -> row.checkoutReference ?: row.id.value }
                     .distinct()
                     .size
-            if (usedByUser >= coupon.perUserLimit) throw ValidationException(Message.Orders.COUPON_LIMIT_REACHED)
-        }
-
-        coupon.shopId?.value?.let { couponShop ->
-            if (shopIds.isNotEmpty() && couponShop !in shopIds) {
-                throw ValidationException("Coupon is not valid for the products in this order")
-            }
-        }
-        coupon.categoryId?.value?.let { couponCategory ->
-            if (categoryIds.isNotEmpty() && couponCategory !in categoryIds) {
-                throw ValidationException("Coupon is not valid for the product categories in this order")
-            }
-        }
-
+            } ?: 0
+        CouponRules.rejection(coupon.toSnapshot(), currentUtc(), usedByUser)?.let { throw ValidationException(it) }
         return coupon
     }
 
-    private fun calculateCouponDiscount(
-        coupon: CouponDAO,
-        orderAmount: BigDecimal,
-    ): BigDecimal {
-        val discount =
-            when (coupon.discountType) {
-                CouponDiscountType.PERCENTAGE -> Money.percentOf(orderAmount, coupon.discountValue)
-                CouponDiscountType.FIXED -> Money.scale2(coupon.discountValue)
-            }.let { raw -> coupon.maxDiscountAmount?.let { raw.min(it) } ?: raw }
-        return Money.scale2(discount.min(orderAmount).max(BigDecimal.ZERO))
-    }
-
-    private fun couponMatches(
-        product: ProductDAO,
-        coupon: CouponDAO,
-    ): Boolean =
-        (coupon.shopId?.value == null || product.shopId?.value == coupon.shopId?.value) &&
-            (coupon.categoryId?.value == null || product.categoryId.value == coupon.categoryId?.value)
-
-    private fun unitPriceUsd(
-        product: ProductDAO,
-        variant: ProductVariantDAO?,
-    ): BigDecimal = variant?.effectivePrice ?: product.discountPrice ?: product.price
-
-    /**
-     * USD subtotal of cart lines the coupon actually applies to. A shop- or
-     * category-scoped coupon must never discount unrelated lines.
-     */
-    private fun couponEligibleUsd(
-        coupon: CouponDAO,
+    private fun cartCouponLines(
         items: List<CartItemDAO>,
         products: Map<String, ProductDAO>,
         variants: Map<String, ProductVariantDAO>,
-    ): BigDecimal =
-        items.fold(BigDecimal.ZERO) { acc, item ->
-            val product = products[item.productId.value] ?: return@fold acc
-            if (!couponMatches(product, coupon)) return@fold acc
-            val variant = item.variantId?.value?.let { variants[it] }
-            acc.add(Money.unitTotal(unitPriceUsd(product, variant), item.quantity))
-        }.let { Money.scale2(it) }
+    ): List<CouponLine> =
+        items.mapNotNull { item ->
+            products[item.productId.value]?.let { product ->
+                CouponLine(
+                    productShopId = product.shopId?.value,
+                    productCategoryId = product.categoryId.value,
+                    unitPriceUsd = PricingService.unitPriceUsd(product, item.variantId?.value?.let(variants::get)),
+                    quantity = item.quantity,
+                )
+            }
+        }
 
     private fun consumeCoupon(
         coupon: CouponDAO,
@@ -238,6 +194,110 @@ class OrderRepositoryImpl(
         val name: String,
         val price: BigDecimal,
     )
+
+    private data class Fulfillment(
+        val pickupWarehouse: WarehouseDAO?,
+        val shippingAddress: ShippingAddressDAO?,
+        val shippingMethod: CheckoutShipping,
+        val fullAddress: String,
+        val contactEmail: String,
+        val taxCountry: String,
+        val taxRegion: String?,
+    )
+
+    /** Shared pickup/delivery resolution used by both order placement and preview. */
+    private fun resolveFulfillment(
+        userId: String,
+        checkoutRequest: CheckoutRequest,
+    ): Fulfillment {
+        val pickup = checkoutRequest.fulfillmentType == FulfillmentType.PICKUP
+        val pickupWarehouse =
+            if (pickup) {
+                val id =
+                    checkoutRequest.pickupWarehouseId?.takeIf { it.isNotBlank() }
+                        ?: throw ValidationException("pickupWarehouseId is required for pickup orders")
+                val warehouse =
+                    WarehouseDAO.findById(id)
+                        ?: throw ValidationException("Pickup location not found")
+                if (!warehouse.isActive || !warehouse.supportsPickup) {
+                    throw ValidationException("Pickup location is not available")
+                }
+                warehouse
+            } else {
+                null
+            }
+
+        val shippingAddress =
+            if (pickup) {
+                null
+            } else {
+                val address =
+                    ShippingAddressDAO.findById(
+                        checkoutRequest.shippingAddressId
+                            ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND),
+                    ) ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
+                if (address.userId.value != userId) {
+                    throw ValidationException(Message.Orders.SHIPPING_ADDRESS_UNAUTHORIZED)
+                }
+                address
+            }
+        val shippingMethod =
+            if (pickup) {
+                CheckoutShipping("PICKUP", BigDecimal.ZERO.setScale(2))
+            } else {
+                val method =
+                    ShippingMethodDAO.findById(
+                        checkoutRequest.shippingMethodId
+                            ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND),
+                    ) ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
+                CheckoutShipping(method.name, method.price)
+            }
+        val fullAddress =
+            if (pickupWarehouse != null) {
+                buildString {
+                    append("Pickup at ${pickupWarehouse.name}\n")
+                    append("${pickupWarehouse.address ?: ""}, ${pickupWarehouse.city ?: ""}\n")
+                    append(pickupWarehouse.country ?: "")
+                }
+            } else {
+                val address = shippingAddress ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
+                buildString {
+                    append("${address.firstName} ${address.lastName}\n")
+                    append("${address.streetAddress}, ${address.city}, ${address.state ?: ""}\n")
+                    append("${address.country}, ${address.zipCode}\n")
+                    append("Phone: ${maskPhone(address.phoneNumber)}")
+                }
+            }
+        val taxCountry =
+            pickupWarehouse?.country ?: shippingAddress?.country
+                ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
+        return Fulfillment(
+            pickupWarehouse = pickupWarehouse,
+            shippingAddress = shippingAddress,
+            shippingMethod = shippingMethod,
+            fullAddress = fullAddress,
+            contactEmail = shippingAddress?.email ?: UserDAO.findById(userId)?.email.orEmpty(),
+            taxCountry = taxCountry,
+            taxRegion = if (pickup) null else shippingAddress?.state,
+        )
+    }
+
+    private fun loadCartCatalog(cartItems: List<CartItemDAO>): Pair<Map<String, ProductDAO>, Map<String, ProductVariantDAO>> {
+        val productsMap =
+            ProductDAO.find {
+                ProductTable.id inList cartItems.map { it.productId.value }.distinct()
+            }.associateBy { it.id.value }
+        val variantIds = cartItems.mapNotNull { it.variantId?.value }.distinct()
+        val variantsMap =
+            if (variantIds.isNotEmpty()) {
+                ProductVariantDAO.find {
+                    ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) }
+                }.associateBy { it.id.value }
+            } else {
+                emptyMap()
+            }
+        return productsMap to variantsMap
+    }
 
     private data class CheckoutContext(
         val cartItems: List<CartItemDAO>,
@@ -328,64 +388,8 @@ class OrderRepositoryImpl(
         val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
         if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
 
-        val pickup = checkoutRequest.fulfillmentType == FulfillmentType.PICKUP
-        val pickupWarehouse =
-            if (pickup) {
-                val id =
-                    checkoutRequest.pickupWarehouseId?.takeIf { it.isNotBlank() }
-                        ?: throw ValidationException("pickupWarehouseId is required for pickup orders")
-                val warehouse =
-                    WarehouseDAO.findById(id)
-                        ?: throw ValidationException("Pickup location not found")
-                if (!warehouse.isActive || !warehouse.supportsPickup) {
-                    throw ValidationException("Pickup location is not available")
-                }
-                warehouse
-            } else {
-                null
-            }
-
-        val shippingAddress =
-            if (pickup) {
-                null
-            } else {
-                val address =
-                    ShippingAddressDAO.findById(
-                        checkoutRequest.shippingAddressId
-                            ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND),
-                    ) ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
-                if (address.userId.value != userId) {
-                    throw ValidationException(Message.Orders.SHIPPING_ADDRESS_UNAUTHORIZED)
-                }
-                address
-            }
-        val shippingMethod =
-            if (pickup) {
-                CheckoutShipping("PICKUP", BigDecimal.ZERO.setScale(2))
-            } else {
-                val method =
-                    ShippingMethodDAO.findById(
-                        checkoutRequest.shippingMethodId
-                            ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND),
-                    ) ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
-                CheckoutShipping(method.name, method.price)
-            }
-        val deliveryAddress =
-            shippingAddress ?: if (pickup) null else throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
-
-        val productsMap =
-            ProductDAO.find {
-                ProductTable.id inList cartItems.map { it.productId.value }.distinct()
-            }.associateBy { it.id.value }
-        val variantIds = cartItems.mapNotNull { it.variantId?.value }.distinct()
-        val variantsMap =
-            if (variantIds.isNotEmpty()) {
-                ProductVariantDAO.find {
-                    ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) }
-                }.associateBy { it.id.value }
-            } else {
-                emptyMap()
-            }
+        val fulfillment = resolveFulfillment(userId, checkoutRequest)
+        val (productsMap, variantsMap) = loadCartCatalog(cartItems)
 
         val itemsByShop =
             cartItems.groupBy {
@@ -393,44 +397,22 @@ class OrderRepositoryImpl(
                     ?: throw ValidationException(Message.Orders.productDoesNotBelongToShop(it.productId.value))
             }
         validateShopsApproved(itemsByShop.keys)
-        if (pickupWarehouse != null) {
+        fulfillment.pickupWarehouse?.let { warehouse ->
             if (itemsByShop.size != 1) throw ValidationException("Pickup orders must contain items from one shop")
-            if (pickupWarehouse.shopId.value != itemsByShop.keys.first()) {
+            if (warehouse.shopId.value != itemsByShop.keys.first()) {
                 throw ValidationException("Pickup location does not belong to the selling shop")
             }
         }
 
-        val fullAddress =
-            if (pickupWarehouse != null) {
-                buildString {
-                    append("Pickup at ${pickupWarehouse.name}\n")
-                    append("${pickupWarehouse.address ?: ""}, ${pickupWarehouse.city ?: ""}\n")
-                    append(pickupWarehouse.country ?: "")
-                }
-            } else {
-                val address = deliveryAddress ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
-                buildString {
-                    append("${address.firstName} ${address.lastName}\n")
-                    append("${address.streetAddress}, ${address.city}, ${address.state ?: ""}\n")
-                    append("${address.country}, ${address.zipCode}\n")
-                    append("Phone: ${maskPhone(address.phoneNumber)}")
-                }
-            }
-        val contactEmail = deliveryAddress?.email ?: UserDAO.findById(userId)?.email.orEmpty()
-        val taxCountry =
-            pickupWarehouse?.country ?: deliveryAddress?.country
-                ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
-        val taxRegion = if (pickupWarehouse != null) null else deliveryAddress?.state
-
         return CheckoutContext(
             cartItems = cartItems,
-            shippingAddress = shippingAddress,
-            contactEmail = contactEmail,
-            fullAddress = fullAddress,
-            shippingMethod = shippingMethod,
-            pickupWarehouse = pickupWarehouse,
-            taxCountry = taxCountry,
-            taxRegion = taxRegion,
+            shippingAddress = fulfillment.shippingAddress,
+            contactEmail = fulfillment.contactEmail,
+            fullAddress = fulfillment.fullAddress,
+            shippingMethod = fulfillment.shippingMethod,
+            pickupWarehouse = fulfillment.pickupWarehouse,
+            taxCountry = fulfillment.taxCountry,
+            taxRegion = fulfillment.taxRegion,
             productsMap = productsMap,
             variantsMap = variantsMap,
             itemsByShop = itemsByShop,
@@ -450,7 +432,7 @@ class OrderRepositoryImpl(
             context.cartItems.fold(BigDecimal.ZERO) { acc, cartItem ->
                 val product = context.productsMap[cartItem.productId.value] ?: return@fold acc
                 val variant = resolveCheckoutVariant(product, cartItem, context.variantsMap)
-                acc.add(Money.unitTotal(unitPriceUsd(product, variant), cartItem.quantity))
+                acc.add(Money.unitTotal(PricingService.unitPriceUsd(product, variant), cartItem.quantity))
             }
         val freeShippingByThreshold = StorefrontSettings.freeShippingReached(cartUsdSubtotal)
         val orders = mutableListOf<OrderDAO>()
@@ -474,6 +456,50 @@ class OrderRepositoryImpl(
         return CheckoutQuote(orders, totalUsdSubTotal)
     }
 
+    private fun createOrderShell(
+        context: CheckoutContext,
+        shopIdValue: String,
+        index: Int,
+        userId: String,
+        checkoutRequest: CheckoutRequest,
+        currency: String,
+        fxRate: BigDecimal,
+        today: String,
+    ): OrderDAO =
+        OrderDAO.new {
+            this.userId = userId.entityID(UserTable)
+            this.shopId = shopIdValue.entityID(ShopTable)
+            this.orderNumber = generateOrderNumber(today, index + 1)
+            this.idempotencyKey = checkoutRequest.idempotencyKey?.let { "$it:$shopIdValue" }
+            this.status = OrderStatus.PENDING
+            this.paymentStatus = PaymentStatus.PENDING
+            this.subTotal = BigDecimal.ZERO
+            this.shippingCost = BigDecimal.ZERO
+            this.shippingMethod = context.shippingMethod.name
+            this.total = BigDecimal.ZERO
+            this.shippingAddress = context.fullAddress
+            this.contactEmail = context.contactEmail
+            this.paymentMethod = checkoutRequest.paymentMethod
+            this.notes = checkoutRequest.notes
+            this.currency = currency
+            this.fxRate = fxRate
+            this.businessTaxId = checkoutRequest.businessTaxId
+            this.taxExempt = taxService.isExempt(userId, checkoutRequest.businessTaxId, context.taxCountry)
+            this.locale = com.piashcse.constants.Localization.normalize(checkoutRequest.locale)
+            this.fulfillmentType = checkoutRequest.fulfillmentType
+            this.pickupWarehouseId = context.pickupWarehouse?.id
+            if (context.pickupWarehouse != null) {
+                this.shippingMethod = "PICKUP"
+                this.pickupCode = generatePickupCode()
+                this.pickupStatus = com.piashcse.constants.PickupStatus.PENDING
+            }
+            this.attributionSessionId = checkoutRequest.attribution?.sessionId
+            this.attributionSource = checkoutRequest.attribution?.source
+            this.attributionMedium = checkoutRequest.attribution?.medium
+            this.attributionCampaign = checkoutRequest.attribution?.campaign
+            this.attributionReferrer = checkoutRequest.attribution?.referrer
+        }
+
     private fun createOrderForShop(
         context: CheckoutContext,
         shopIdValue: String,
@@ -494,40 +520,7 @@ class OrderRepositoryImpl(
         var allFreeShipping = true
         val businessTaxId = checkoutRequest.businessTaxId
 
-        val order =
-            OrderDAO.new {
-                this.userId = userId.entityID(UserTable)
-                this.shopId = shopIdValue.entityID(ShopTable)
-                this.orderNumber = generateOrderNumber(today, index + 1)
-                this.idempotencyKey = checkoutRequest.idempotencyKey?.let { "$it:$shopIdValue" }
-                this.status = OrderStatus.PENDING
-                this.paymentStatus = PaymentStatus.PENDING
-                this.subTotal = BigDecimal.ZERO
-                this.shippingCost = BigDecimal.ZERO
-                this.shippingMethod = context.shippingMethod.name
-                this.total = BigDecimal.ZERO
-                this.shippingAddress = context.fullAddress
-                this.contactEmail = context.contactEmail
-                this.paymentMethod = checkoutRequest.paymentMethod
-                this.notes = checkoutRequest.notes
-                this.currency = currency
-                this.fxRate = fxRate
-                this.businessTaxId = businessTaxId
-                this.taxExempt = taxService.isExempt(userId, businessTaxId, context.taxCountry)
-                this.locale = com.piashcse.constants.Localization.normalize(checkoutRequest.locale)
-                this.fulfillmentType = checkoutRequest.fulfillmentType
-                this.pickupWarehouseId = context.pickupWarehouse?.id
-                if (context.pickupWarehouse != null) {
-                    this.shippingMethod = "PICKUP"
-                    this.pickupCode = generatePickupCode()
-                    this.pickupStatus = com.piashcse.constants.PickupStatus.PENDING
-                }
-                this.attributionSessionId = checkoutRequest.attribution?.sessionId
-                this.attributionSource = checkoutRequest.attribution?.source
-                this.attributionMedium = checkoutRequest.attribution?.medium
-                this.attributionCampaign = checkoutRequest.attribution?.campaign
-                this.attributionReferrer = checkoutRequest.attribution?.referrer
-            }
+        val order = createOrderShell(context, shopIdValue, index, userId, checkoutRequest, currency, fxRate, today)
 
         items.forEach { cartItem ->
             val product =
@@ -549,7 +542,7 @@ class OrderRepositoryImpl(
             // price so refunds and payouts use the same unit as the order.
             if (!product.isDigital) allDigital = false
             if (!product.isDigital && !product.freeShipping) allFreeShipping = false
-            val unitPriceUsd = variant?.effectivePrice ?: product.discountPrice ?: product.price
+            val unitPriceUsd = PricingService.unitPriceUsd(product, variant)
             val unitPrice = Money.scale2(unitPriceUsd.multiply(fxRate))
             val itemTotal = Money.unitTotal(unitPrice, cartItem.quantity)
             shopUsdSubTotal = shopUsdSubTotal.add(Money.unitTotal(unitPriceUsd, cartItem.quantity))
@@ -659,29 +652,24 @@ class OrderRepositoryImpl(
     ) {
         // Coupon thresholds/value are USD-denominated; discounts are converted
         // to the order currency before being applied.
-        val coupon =
-            validateCoupon(
-                code,
-                quote.totalUsdSubTotal,
-                forUpdate = true,
-                userId = userId,
-                shopIds = context.itemsByShop.keys,
-                categoryIds = context.productsMap.values.map { it.categoryId.value }.toSet(),
-            )
+        val coupon = loadCoupon(code, forUpdate = true, userId = userId)
+        val snapshot = coupon.toSnapshot()
         val eligibleUsd =
-            couponEligibleUsd(coupon, context.cartItems, context.productsMap, context.variantsMap)
-        if (eligibleUsd <= BigDecimal.ZERO) {
-            throw ValidationException("Coupon is not valid for the products in this order")
-        }
-        if (eligibleUsd < coupon.minOrderAmount) {
-            throw ValidationException(Message.Orders.couponMinOrderAmount(coupon.minOrderAmount.toPlainString()))
-        }
-        val discountUsd = calculateCouponDiscount(coupon, eligibleUsd)
+            CouponRules.eligibleSubtotalUsd(
+                snapshot,
+                cartCouponLines(context.cartItems, context.productsMap, context.variantsMap),
+            )
+        CouponRules.eligibilityError(snapshot, eligibleUsd)?.let { throw ValidationException(it) }
+        val discountUsd = CouponRules.discountUsd(snapshot, eligibleUsd)
         consumeCoupon(coupon, userId, quote.orders, checkoutReference)
         val eligibleByOrder =
             quote.orders.associate { order ->
                 val orderItems = context.itemsByShop[order.shopId?.value].orEmpty()
-                order.id.value to couponEligibleUsd(coupon, orderItems, context.productsMap, context.variantsMap)
+                order.id.value to
+                    CouponRules.eligibleSubtotalUsd(
+                        snapshot,
+                        cartCouponLines(orderItems, context.productsMap, context.variantsMap),
+                    )
             }
         val totalEligible = eligibleByOrder.values.fold(BigDecimal.ZERO) { acc, amount -> acc.add(amount) }
         val discount = Money.scale2(discountUsd.multiply(fxRate))
@@ -917,6 +905,254 @@ class OrderRepositoryImpl(
         }
     }
 
+    private data class TaxPreview(
+        val tax: BigDecimal,
+        val exclusiveTax: BigDecimal,
+        val lines: List<TaxLineResponse>,
+    )
+
+    private data class CouponPreviewResult(
+        val response: CheckoutSummaryResponse,
+        val eligibleProductIds: Set<String>?,
+    )
+
+    private fun checkoutSubtotalUsd(context: CheckoutContext): BigDecimal =
+        PricingService.subtotal(
+            context.cartItems.map { cartItem ->
+                val product =
+                    context.productsMap[cartItem.productId.value]
+                        ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
+                val variant = cartItem.variantId?.value?.let(context.variantsMap::get)
+                PricingService.unitPriceUsd(product, variant) to cartItem.quantity
+            },
+        )
+
+    private fun checkoutShipping(
+        context: CheckoutContext,
+        subUsd: BigDecimal,
+        fxRate: BigDecimal,
+    ): BigDecimal {
+        val shopsWithShipping =
+            context.cartItems
+                .mapNotNull { context.productsMap[it.productId.value] }
+                .filter { !it.isDigital }
+                .groupBy { it.shopId?.value }
+                .count { (_, products) -> products.any { !it.freeShipping } }
+        return if (context.pickupWarehouse != null ||
+            shopsWithShipping == 0 ||
+            StorefrontSettings.freeShippingReached(subUsd)
+        ) {
+            BigDecimal.ZERO.setScale(2)
+        } else {
+            Money.scale2(PricingService.shipping(context.shippingMethod.price, shopsWithShipping).multiply(fxRate))
+        }
+    }
+
+    private fun checkoutTaxPreview(
+        context: CheckoutContext,
+        userId: String,
+        businessTaxId: String?,
+        fxRate: BigDecimal,
+    ): TaxPreview {
+        var tax = BigDecimal.ZERO
+        var exclusiveTax = BigDecimal.ZERO
+        val lines = mutableListOf<TaxLineResponse>()
+        context.cartItems.forEach { cartItem ->
+            val product =
+                context.productsMap[cartItem.productId.value]
+                    ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
+            val variant = cartItem.variantId?.value?.let(context.variantsMap::get)
+            val line =
+                Money.scale2(
+                    Money.unitTotal(PricingService.unitPriceUsd(product, variant), cartItem.quantity).multiply(fxRate),
+                )
+            val quote =
+                taxService.resolve(
+                    country = context.taxCountry,
+                    region = context.taxRegion,
+                    categoryId = product.categoryId.value,
+                    taxClassId = product.taxClassId?.value,
+                    userId = userId,
+                    businessTaxId = businessTaxId,
+                )
+            val amounts = taxService.apply(line, quote)
+            tax = tax.add(amounts.tax)
+            if (!quote.inclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
+            lines +=
+                TaxLineResponse(
+                    productId = product.id.value,
+                    taxClassId = quote.taxClassId,
+                    rate = quote.rate.toPlainString(),
+                    inclusive = quote.inclusive,
+                    netAmount = amounts.net.toPlainString(),
+                    taxAmount = amounts.tax.toPlainString(),
+                    grossAmount = amounts.gross.toPlainString(),
+                )
+        }
+        return TaxPreview(Money.scale2(tax), Money.scale2(exclusiveTax), lines)
+    }
+
+    private fun couponPreview(
+        response: CheckoutSummaryResponse,
+        code: String,
+        userId: String,
+        context: CheckoutContext,
+        sub: BigDecimal,
+        ship: BigDecimal,
+        exclusiveTax: BigDecimal,
+        fxRate: BigDecimal,
+    ): CouponPreviewResult {
+        // A mistyped promo code must never blank the whole totals panel:
+        // report validity inline and keep the undiscounted totals.
+        return try {
+            val snapshot = loadCoupon(code, userId = userId).toSnapshot()
+            val lines = cartCouponLines(context.cartItems, context.productsMap, context.variantsMap)
+            val eligibleUsd = CouponRules.eligibleSubtotalUsd(snapshot, lines)
+            CouponRules.eligibilityError(snapshot, eligibleUsd)?.let { throw ValidationException(it) }
+            val discount = Money.scale2(CouponRules.discountUsd(snapshot, eligibleUsd).multiply(fxRate))
+            val total = Money.scale2(sub.add(ship).add(exclusiveTax).subtract(discount).max(BigDecimal.ZERO))
+            val eligibleProductIds =
+                context.productsMap.values
+                    .filter { product ->
+                        CouponRules.matches(snapshot, product.shopId?.value, product.categoryId.value)
+                    }.map { product -> product.id.value }
+                    .toSet()
+            CouponPreviewResult(
+                response.copy(
+                    couponCode = code,
+                    couponValid = true,
+                    discountAmount = discount.toPlainString(),
+                    total = total.toPlainString(),
+                ),
+                eligibleProductIds,
+            )
+        } catch (error: ValidationException) {
+            CouponPreviewResult(
+                response.copy(
+                    couponCode = code,
+                    couponValid = false,
+                    couponError = error.message ?: "Coupon is not valid",
+                ),
+                null,
+            )
+        }
+    }
+
+    /** Coupons/promotions reduce the taxable base; refresh line tax before redemptions. */
+    private fun applyDiscountToTax(
+        response: CheckoutSummaryResponse,
+        taxLines: List<TaxLineResponse>,
+        eligibleProductIds: Set<String>?,
+        sub: BigDecimal,
+    ): CheckoutSummaryResponse {
+        val discount = BigDecimal(response.discountAmount)
+        if (discount <= BigDecimal.ZERO) return response
+        val discountBase =
+            if (eligibleProductIds == null) {
+                sub
+            } else {
+                taxLines
+                    .filter { it.productId in eligibleProductIds }
+                    .fold(BigDecimal.ZERO) { acc, line -> acc.add(BigDecimal(line.grossAmount)) }
+            }
+        var recalculatedTax = BigDecimal.ZERO
+        var recalculatedExclusive = BigDecimal.ZERO
+        val recalculatedLines =
+            taxLines.map { line ->
+                if (eligibleProductIds != null && line.productId !in eligibleProductIds) {
+                    recalculatedTax = recalculatedTax.add(BigDecimal(line.taxAmount))
+                    if (!line.inclusive) recalculatedExclusive = recalculatedExclusive.add(BigDecimal(line.taxAmount))
+                    return@map line
+                }
+                val gross = BigDecimal(line.grossAmount)
+                val share =
+                    if (discountBase > BigDecimal.ZERO) {
+                        Money.proportionalSplit(discount, gross, discountBase)
+                    } else {
+                        BigDecimal.ZERO
+                    }
+                val amounts =
+                    taxService.apply(
+                        gross.subtract(share).max(BigDecimal.ZERO),
+                        TaxQuote(
+                            rate = BigDecimal(line.rate),
+                            inclusive = line.inclusive,
+                            taxClassId = line.taxClassId,
+                        ),
+                    )
+                recalculatedTax = recalculatedTax.add(amounts.tax)
+                if (!line.inclusive) recalculatedExclusive = recalculatedExclusive.add(amounts.tax)
+                line.copy(
+                    netAmount = amounts.net.toPlainString(),
+                    taxAmount = amounts.tax.toPlainString(),
+                    grossAmount = amounts.gross.toPlainString(),
+                )
+            }
+        return response.copy(
+            taxAmount = Money.scale2(recalculatedTax).toPlainString(),
+            taxLines = recalculatedLines,
+            total =
+                Money.scale2(
+                    sub.subtract(discount).max(BigDecimal.ZERO)
+                        .add(BigDecimal(response.shippingCost))
+                        .add(recalculatedExclusive),
+                ).toPlainString(),
+        )
+    }
+
+    private fun applyWalletPreview(
+        response: CheckoutSummaryResponse,
+        request: CheckoutRequest,
+        userId: String,
+        fxRate: BigDecimal,
+    ): CheckoutSummaryResponse {
+        val preview =
+            loyaltyService.redemptionPreviewTx(
+                userId = userId,
+                points = request.usePoints,
+                walletCreditUsd = request.walletCredit,
+                giftCardCode = request.giftCardCode,
+            )
+        val responseTotal = BigDecimal(response.total)
+        val totalUsd = responseTotal.divide(fxRate, 2, RoundingMode.HALF_UP)
+        val walletUsd = preview.pointsUsd.add(preview.creditUsd).min(totalUsd)
+        val giftUsd = preview.giftCardUsd.min(totalUsd.subtract(walletUsd).max(BigDecimal.ZERO))
+        val walletDiscount = Money.scale2(walletUsd.multiply(fxRate)).min(responseTotal)
+        val giftDiscount = Money.scale2(giftUsd.multiply(fxRate)).min(responseTotal.subtract(walletDiscount))
+        return response.copy(
+            walletDiscount = walletDiscount.toPlainString(),
+            giftCardDiscount = giftDiscount.toPlainString(),
+            total =
+                Money.scale2(
+                    responseTotal.subtract(walletDiscount).subtract(giftDiscount).max(BigDecimal.ZERO),
+                ).toPlainString(),
+            pointsBalance = preview.pointsAvailable,
+            storeCreditBalance = preview.creditAvailable.toPlainString(),
+        )
+    }
+
+    private fun formatSummary(
+        response: CheckoutSummaryResponse,
+        currency: String,
+        checkoutRequest: CheckoutRequest,
+        fxRate: BigDecimal,
+        subUsd: BigDecimal,
+    ): CheckoutSummaryResponse {
+        val locale = com.piashcse.constants.Localization.normalize(checkoutRequest.locale)
+        return response.copy(
+            locale = locale,
+            freeShippingThreshold =
+                Money.scale2(StorefrontSettings.freeShippingThreshold.multiply(fxRate)).toPlainString(),
+            freeShippingRemaining =
+                Money.scale2(StorefrontSettings.freeShippingRemaining(subUsd).multiply(fxRate)).toPlainString(),
+            formattedSubTotal = i18n.formatMoney(BigDecimal(response.subTotal), currency, locale),
+            formattedShipping = i18n.formatMoney(BigDecimal(response.shippingCost), currency, locale),
+            formattedTax = i18n.formatMoney(BigDecimal(response.taxAmount), currency, locale),
+            formattedDiscount = i18n.formatMoney(BigDecimal(response.discountAmount), currency, locale),
+            formattedTotal = i18n.formatMoney(BigDecimal(response.total), currency, locale),
+        )
+    }
+
     override suspend fun getCheckoutSummary(
         userId: String,
         checkoutRequest: CheckoutRequest,
@@ -924,299 +1160,62 @@ class OrderRepositoryImpl(
         val currency = checkoutRequest.currency.uppercase()
         val fxRate = if (currency != "USD") fxService.rateTo(currency) else BigDecimal.ONE
         return query {
-            val cartItems = CartItemDAO.find { CartItemTable.userId eq userId }.toList()
-            if (cartItems.isEmpty()) throw ValidationException(Message.Cart.EMPTY_CART)
-
-            val pickup = checkoutRequest.fulfillmentType == FulfillmentType.PICKUP
-            val pickupWarehouse =
-                if (pickup) {
-                    val id =
-                        checkoutRequest.pickupWarehouseId?.takeIf { it.isNotBlank() }
-                            ?: throw ValidationException("pickupWarehouseId is required for pickup orders")
-                    val warehouse =
-                        WarehouseDAO.findById(id)
-                            ?: throw ValidationException("Pickup location not found")
-                    if (!warehouse.isActive || !warehouse.supportsPickup) {
-                        throw ValidationException("Pickup location is not available")
-                    }
-                    warehouse
-                } else {
-                    null
-                }
-            val shippingMethod =
-                if (pickup) {
-                    null
-                } else {
-                    ShippingMethodDAO.findById(
-                        checkoutRequest.shippingMethodId
-                            ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND),
-                    ) ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
-                }
-            val shippingAddress =
-                if (pickup) {
-                    null
-                } else {
-                    ShippingAddressDAO.findById(
-                        checkoutRequest.shippingAddressId
-                            ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND),
-                    ) ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
-                }
-            if (shippingAddress != null && shippingAddress.userId.value != userId) {
-                throw ValidationException(Message.Orders.SHIPPING_ADDRESS_UNAUTHORIZED)
-            }
-            val taxCountry =
-                pickupWarehouse?.country ?: shippingAddress?.country
-                    ?: throw ValidationException(Message.Orders.SHIPPING_ADDRESS_NOT_FOUND)
-            val taxRegion = if (pickupWarehouse != null) null else shippingAddress?.state
-
-            val productsMap =
-                ProductDAO.find {
-                    ProductTable.id inList cartItems.map { it.productId.value }.distinct()
-                }.associateBy { it.id.value }
-            val variantIds = cartItems.mapNotNull { it.variantId?.value }.distinct()
-            val variantsMap =
-                if (variantIds.isNotEmpty()) {
-                    ProductVariantDAO.find {
-                        ProductVariantTable.id inList variantIds.map { it.entityID(ProductVariantTable) }
-                    }.associateBy { it.id.value }
-                } else {
-                    emptyMap()
-                }
-
-            fun unitPriceUsd(cartItem: CartItemDAO): BigDecimal {
-                val product =
-                    productsMap[cartItem.productId.value]
-                        ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
-                return cartItem.variantId?.value?.let { variantsMap[it] }?.effectivePrice
-                    ?: product.discountPrice
-                    ?: product.price
-            }
-
-            var totalItems = 0
-            cartItems.forEach { totalItems += it.quantity }
-
-            val subUsd = PricingService.subtotal(cartItems.map { unitPriceUsd(it) to it.quantity })
+            val context = loadCheckoutContext(userId, checkoutRequest)
+            val subUsd = checkoutSubtotalUsd(context)
             val sub = Money.scale2(subUsd.multiply(fxRate))
-            val physicalProducts =
-                cartItems.mapNotNull { productsMap[it.productId.value] }.filter { !it.isDigital }
-            val shopsWithShipping =
-                physicalProducts
-                    .groupBy { it.shopId?.value }
-                    .count { (_, products) -> products.any { !it.freeShipping } }
-            val ship =
-                if (pickup ||
-                    physicalProducts.isEmpty() ||
-                    shopsWithShipping == 0 ||
-                    StorefrontSettings.freeShippingReached(subUsd)
-                ) {
-                    BigDecimal.ZERO.setScale(2)
-                } else {
-                    val method =
-                        shippingMethod ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
-                    Money.scale2(PricingService.shipping(method.price, shopsWithShipping).multiply(fxRate))
-                }
-            var tax = BigDecimal.ZERO
-            var exclusiveTax = BigDecimal.ZERO
-            var taxLines: List<TaxLineResponse> = mutableListOf()
-            cartItems.forEach { cartItem ->
-                val product =
-                    productsMap[cartItem.productId.value]
-                        ?: throw ValidationException(Message.Orders.PRODUCT_NOT_FOUND)
-                val line = Money.scale2(Money.unitTotal(unitPriceUsd(cartItem), cartItem.quantity).multiply(fxRate))
-                val quote =
-                    taxService.resolve(
-                        country = taxCountry,
-                        region = taxRegion,
-                        categoryId = product.categoryId.value,
-                        taxClassId = product.taxClassId?.value,
-                        userId = userId,
-                        businessTaxId = checkoutRequest.businessTaxId,
-                    )
-                val amounts = taxService.apply(line, quote)
-                tax = tax.add(amounts.tax)
-                if (!quote.inclusive) exclusiveTax = exclusiveTax.add(amounts.tax)
-                taxLines +=
-                    TaxLineResponse(
-                        productId = product.id.value,
-                        taxClassId = quote.taxClassId,
-                        rate = quote.rate.toPlainString(),
-                        inclusive = quote.inclusive,
-                        netAmount = amounts.net.toPlainString(),
-                        taxAmount = amounts.tax.toPlainString(),
-                        grossAmount = amounts.gross.toPlainString(),
-                    )
-            }
-            tax = Money.scale2(tax)
-            exclusiveTax = Money.scale2(exclusiveTax)
+            val ship = checkoutShipping(context, subUsd, fxRate)
+            val taxPreview = checkoutTaxPreview(context, userId, checkoutRequest.businessTaxId, fxRate)
 
             var response =
                 CheckoutSummaryResponse(
                     subTotal = sub.toPlainString(),
                     shippingCost = ship.toPlainString(),
-                    taxAmount = tax.toPlainString(),
-                    taxInclusive = taxLines.any { it.inclusive },
-                    total = Money.scale2(sub.add(ship).add(exclusiveTax)).toPlainString(),
-                    itemCount = totalItems,
+                    taxAmount = taxPreview.tax.toPlainString(),
+                    taxInclusive = taxPreview.lines.any { it.inclusive },
+                    total = Money.scale2(sub.add(ship).add(taxPreview.exclusiveTax)).toPlainString(),
+                    itemCount = context.cartItems.sumOf { it.quantity },
                     currency = currency,
-                    taxLines = taxLines,
+                    taxLines = taxPreview.lines,
                 )
 
-            if (checkoutRequest.couponCode == null) {
+            var eligibleCouponProductIds: Set<String>? = null
+            val couponCode = checkoutRequest.couponCode
+            if (couponCode == null) {
                 promotionService.evaluateTx(subUsd)?.let { promotion ->
                     val discount = Money.scale2(promotion.discount.multiply(fxRate))
-                    val shipping = if (promotion.freeShipping) BigDecimal.ZERO.setScale(2) else ship
+                    val discountedShipping = if (promotion.freeShipping) BigDecimal.ZERO.setScale(2) else ship
                     response =
                         response.copy(
-                            shippingCost = shipping.toPlainString(),
+                            shippingCost = discountedShipping.toPlainString(),
                             discountAmount = discount.toPlainString(),
                             total =
                                 Money.scale2(
-                                    sub.add(shipping).add(exclusiveTax).subtract(discount).max(BigDecimal.ZERO),
+                                    sub.add(discountedShipping)
+                                        .add(taxPreview.exclusiveTax)
+                                        .subtract(discount)
+                                        .max(BigDecimal.ZERO),
                                 ).toPlainString(),
                         )
                 }
+            } else {
+                val preview =
+                    couponPreview(
+                        response,
+                        couponCode,
+                        userId,
+                        context,
+                        sub,
+                        ship,
+                        taxPreview.exclusiveTax,
+                        fxRate,
+                    )
+                response = preview.response
+                eligibleCouponProductIds = preview.eligibleProductIds
             }
 
-            var eligibleCouponProductIds: Set<String>? = null
-            checkoutRequest.couponCode?.let { code ->
-                // A mistyped promo code must never blank the whole totals panel:
-                // report validity inline and keep the undiscounted totals.
-                try {
-                    val coupon =
-                        validateCoupon(
-                            code,
-                            subUsd,
-                            userId = userId,
-                            shopIds = productsMap.values.mapNotNull { product -> product.shopId?.value }.toSet(),
-                            categoryIds = productsMap.values.map { product -> product.categoryId.value }.toSet(),
-                        )
-                    val eligibleUsd = couponEligibleUsd(coupon, cartItems, productsMap, variantsMap)
-                    if (eligibleUsd <= BigDecimal.ZERO) {
-                        throw ValidationException("Coupon is not valid for the products in this cart")
-                    }
-                    if (eligibleUsd < coupon.minOrderAmount) {
-                        throw ValidationException(Message.Orders.couponMinOrderAmount(coupon.minOrderAmount.toPlainString()))
-                    }
-                    eligibleCouponProductIds =
-                        cartItems
-                            .mapNotNull { item -> productsMap[item.productId.value] }
-                            .filter { product -> couponMatches(product, coupon) }
-                            .map { product -> product.id.value }
-                            .toSet()
-                    val discountUsd = calculateCouponDiscount(coupon, eligibleUsd)
-                    val discount = Money.scale2(discountUsd.multiply(fxRate))
-                    val total = Money.scale2(sub.add(ship).add(exclusiveTax).subtract(discount).max(BigDecimal.ZERO))
-                    response =
-                        response.copy(
-                            couponCode = code,
-                            couponValid = true,
-                            discountAmount = discount.toPlainString(),
-                            total = total.toPlainString(),
-                        )
-                } catch (error: ValidationException) {
-                    response =
-                        response.copy(
-                            couponCode = code,
-                            couponValid = false,
-                            couponError = error.message ?: "Coupon is not valid",
-                        )
-                }
-            }
-            // Coupons/promotions reduce the taxable base; refresh line tax and totals before wallet/gift-card redemptions.
-            val discountAmount = BigDecimal(response.discountAmount)
-            if (discountAmount > BigDecimal.ZERO) {
-                val eligibleIds = eligibleCouponProductIds
-                val discountBase =
-                    if (eligibleIds == null) {
-                        sub
-                    } else {
-                        taxLines
-                            .filter { it.productId in eligibleIds }
-                            .fold(BigDecimal.ZERO) { acc, line -> acc.add(BigDecimal(line.grossAmount)) }
-                    }
-                var recalculatedTax = BigDecimal.ZERO
-                var recalculatedExclusive = BigDecimal.ZERO
-                taxLines =
-                    taxLines.map { line ->
-                        if (eligibleIds != null && line.productId !in eligibleIds) {
-                            recalculatedTax = recalculatedTax.add(BigDecimal(line.taxAmount))
-                            if (!line.inclusive) recalculatedExclusive = recalculatedExclusive.add(BigDecimal(line.taxAmount))
-                            return@map line
-                        }
-                        val gross = BigDecimal(line.grossAmount)
-                        val share =
-                            if (discountBase > BigDecimal.ZERO) {
-                                Money.proportionalSplit(discountAmount, gross, discountBase)
-                            } else {
-                                BigDecimal.ZERO
-                            }
-                        val amounts =
-                            taxService.apply(
-                                gross.subtract(share).max(BigDecimal.ZERO),
-                                com.piashcse.feature.tax.TaxQuote(
-                                    rate = BigDecimal(line.rate),
-                                    inclusive = line.inclusive,
-                                    taxClassId = line.taxClassId,
-                                ),
-                            )
-                        recalculatedTax = recalculatedTax.add(amounts.tax)
-                        if (!line.inclusive) recalculatedExclusive = recalculatedExclusive.add(amounts.tax)
-                        line.copy(
-                            netAmount = amounts.net.toPlainString(),
-                            taxAmount = amounts.tax.toPlainString(),
-                            grossAmount = amounts.gross.toPlainString(),
-                        )
-                    }
-                response =
-                    response.copy(
-                        taxAmount = Money.scale2(recalculatedTax).toPlainString(),
-                        total =
-                            Money.scale2(
-                                sub.subtract(discountAmount).max(BigDecimal.ZERO)
-                                    .add(BigDecimal(response.shippingCost))
-                                    .add(recalculatedExclusive),
-                            ).toPlainString(),
-                    )
-            }
-            val preview =
-                loyaltyService.redemptionPreviewTx(
-                    userId = userId,
-                    points = checkoutRequest.usePoints,
-                    walletCreditUsd = checkoutRequest.walletCredit,
-                    giftCardCode = checkoutRequest.giftCardCode,
-                )
-            val responseTotal = BigDecimal(response.total)
-            val totalUsd = responseTotal.divide(fxRate, 2, RoundingMode.HALF_UP)
-            val walletUsd = preview.pointsUsd.add(preview.creditUsd).min(totalUsd)
-            val giftUsd = preview.giftCardUsd.min(totalUsd.subtract(walletUsd).max(BigDecimal.ZERO))
-            val walletDiscount = Money.scale2(walletUsd.multiply(fxRate)).min(responseTotal)
-            val giftDiscount = Money.scale2(giftUsd.multiply(fxRate)).min(responseTotal.subtract(walletDiscount))
-            response =
-                response.copy(
-                    walletDiscount = walletDiscount.toPlainString(),
-                    giftCardDiscount = giftDiscount.toPlainString(),
-                    total =
-                        Money.scale2(
-                            responseTotal.subtract(walletDiscount).subtract(giftDiscount).max(BigDecimal.ZERO),
-                        ).toPlainString(),
-                    pointsBalance = preview.pointsAvailable,
-                    storeCreditBalance = preview.creditAvailable.toPlainString(),
-                )
-            val locale = com.piashcse.constants.Localization.normalize(checkoutRequest.locale)
-            response =
-                response.copy(
-                    locale = locale,
-                    freeShippingThreshold =
-                        Money.scale2(StorefrontSettings.freeShippingThreshold.multiply(fxRate)).toPlainString(),
-                    freeShippingRemaining =
-                        Money.scale2(StorefrontSettings.freeShippingRemaining(subUsd).multiply(fxRate)).toPlainString(),
-                    formattedSubTotal = i18n.formatMoney(BigDecimal(response.subTotal), currency, locale),
-                    formattedShipping = i18n.formatMoney(BigDecimal(response.shippingCost), currency, locale),
-                    formattedTax = i18n.formatMoney(BigDecimal(response.taxAmount), currency, locale),
-                    formattedDiscount = i18n.formatMoney(BigDecimal(response.discountAmount), currency, locale),
-                    formattedTotal = i18n.formatMoney(BigDecimal(response.total), currency, locale),
-                )
-            response
+            response = applyDiscountToTax(response, taxPreview.lines, eligibleCouponProductIds, sub)
+            response = applyWalletPreview(response, checkoutRequest, userId, fxRate)
+            formatSummary(response, currency, checkoutRequest, fxRate, subUsd)
         }
     }
 
@@ -1224,9 +1223,12 @@ class OrderRepositoryImpl(
         userId: String,
         limit: Int,
         offset: Int,
+        status: String?,
     ): PaginatedResponse<OrderResponse> =
         query {
-            OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
+            val query = OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
+            status?.let { query.andWhere { OrderTable.status eq parseOrderStatus(it) } }
+            query
                 .orderBy(OrderTable.createdAt to SortOrder.DESC)
                 .toOrdersPaginated(limit, offset)
         }
@@ -1261,7 +1263,25 @@ class OrderRepositoryImpl(
                     (OrderTable.orderNumber eq orderNumber) and
                         (OrderTable.contactEmail.lowerCase() eq email.trim().lowercase())
                 }.firstOrNull() ?: return@query null
-            order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
+            order.toOrderResponse(
+                OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
+                includeSensitive = false,
+            )
+        }
+
+    override suspend fun getOrderById(
+        orderId: String,
+        userId: String,
+        userType: UserType,
+    ): OrderResponse =
+        query {
+            orderId.requireNotBlank("Order ID")
+            val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
+            requireOrderAccess(order.userId.value, order.shopId?.value, userId, userType)
+            order.toOrderResponse(
+                OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
+                includeSensitive = userType == UserType.CUSTOMER,
+            )
         }
 
     override suspend fun updateOrderStatus(
@@ -1274,13 +1294,29 @@ class OrderRepositoryImpl(
                 userId.requireNotBlank("User ID")
                 orderId.requireNotBlank("Order ID")
 
-                val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
+                val order =
+                    OrderDAO.find { OrderTable.id eq orderId.entityID(OrderTable) }
+                        .forUpdate()
+                        .firstOrNull()
+                        ?: throw ValidationException(Message.Orders.NOT_FOUND)
                 val user = UserDAO.findById(userId) ?: throw ValidationException(Message.Errors.NOT_FOUND)
 
                 requireOrderAccess(order.userId.value, order.shopId?.value, userId, user.userType)
 
                 if (!OrderStatus.canTransitionTo(order.status, status)) {
                     throw ValidationException(Message.Orders.INVALID_STATUS)
+                }
+                if (status == OrderStatus.PAID) {
+                    val hasCompletedPayment =
+                        PaymentDAO.find {
+                            (PaymentTable.orderId eq order.id) and
+                                (PaymentTable.status eq PaymentStatus.COMPLETED)
+                        }.any()
+                    if (!hasCompletedPayment) {
+                        throw ValidationException(
+                            "Order cannot be marked paid without a completed payment record",
+                        )
+                    }
                 }
 
                 val fromStatus = order.status
@@ -1305,7 +1341,10 @@ class OrderRepositoryImpl(
                 if (status in setOf(OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.RECEIVED, OrderStatus.CANCELED)) {
                     enqueueStatusChanged(order, fromStatus, status, order.trackingNumber)
                 }
-                order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
+                order.toOrderResponse(
+                    OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
+                    includeSensitive = user.userType == UserType.CUSTOMER,
+                )
             }
         CatalogCache.invalidate()
         return result
@@ -1322,7 +1361,11 @@ class OrderRepositoryImpl(
                 orderId.requireNotBlank("Order ID")
                 if (reason.isBlank()) throw ValidationException(Message.Orders.CANCEL_REASON_REQUIRED)
 
-                val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
+                val order =
+                    OrderDAO.find { OrderTable.id eq orderId.entityID(OrderTable) }
+                        .forUpdate()
+                        .firstOrNull()
+                        ?: throw ValidationException(Message.Orders.NOT_FOUND)
 
                 requireOrderAccess(order.userId.value, order.shopId?.value, userId, userType)
                 if (!OrderStatus.canBeCanceled(order.status)) throw ValidationException(Message.Orders.CANNOT_CANCEL)
@@ -1330,7 +1373,10 @@ class OrderRepositoryImpl(
                 val fromStatus = order.status
                 applyOrderCancellation(order, notes = reason, changedBy = userId)
                 enqueueStatusChanged(order, fromStatus, OrderStatus.CANCELED)
-                order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
+                order.toOrderResponse(
+                    OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
+                    includeSensitive = userType == UserType.CUSTOMER,
+                )
             }
         CatalogCache.invalidate()
         return result
@@ -1344,7 +1390,11 @@ class OrderRepositoryImpl(
         trackingNumber.requireNotBlank("Tracking number")
         val result =
             query {
-                val order = OrderDAO.findById(orderId) ?: throw ValidationException(Message.Orders.NOT_FOUND)
+                val order =
+                    OrderDAO.find { OrderTable.id eq orderId.entityID(OrderTable) }
+                        .forUpdate()
+                        .firstOrNull()
+                        ?: throw ValidationException(Message.Orders.NOT_FOUND)
                 val user = UserDAO.findById(userId) ?: throw ValidationException(Message.Errors.NOT_FOUND)
                 requireOrderAccess(order.userId.value, order.shopId?.value, userId, user.userType)
                 if (!OrderStatus.canTransitionTo(order.status, OrderStatus.SHIPPED)) {
@@ -1356,7 +1406,10 @@ class OrderRepositoryImpl(
                 order.trackingNumber = trackingNumber
                 logStatusChange(order.id.value, OrderStatus.SHIPPED, "Shipped via $trackingNumber", userId)
                 enqueueStatusChanged(order, fromStatus, OrderStatus.SHIPPED, trackingNumber)
-                order.toOrderResponse(OrderItemDAO.itemsForOrder(order.id).toItemResponses())
+                order.toOrderResponse(
+                    OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
+                    includeSensitive = false,
+                )
             }
         CatalogCache.invalidate()
         return result
@@ -1407,7 +1460,9 @@ class OrderRepositoryImpl(
 
             val query = OrderTable.selectAll().andWhere { OrderTable.shopId eq shopId }
             status?.let { query.andWhere { OrderTable.status eq parseOrderStatus(it) } }
-            query.orderBy(OrderTable.createdAt to SortOrder.DESC).toOrdersPaginated(limit, offset)
+            query
+                .orderBy(OrderTable.createdAt to SortOrder.DESC)
+                .toOrdersPaginated(limit, offset, includeSensitive = false)
         }
 
     override suspend fun getAdminOrders(
@@ -1422,6 +1477,8 @@ class OrderRepositoryImpl(
             status?.let { query.andWhere { OrderTable.status eq parseOrderStatus(it) } }
             startDate?.let { query.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
             endDate?.let { query.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
-            query.orderBy(OrderTable.createdAt to SortOrder.DESC).toOrdersPaginated(limit, offset)
+            query
+                .orderBy(OrderTable.createdAt to SortOrder.DESC)
+                .toOrdersPaginated(limit, offset, includeSensitive = false)
         }
 }

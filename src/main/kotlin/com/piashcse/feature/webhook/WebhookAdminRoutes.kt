@@ -5,7 +5,7 @@ package com.piashcse.feature.webhook
 import com.piashcse.constants.WebhookEventStatus
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.requirePathParameter
@@ -17,7 +17,7 @@ fun Route.webhookAdminRoutes() {
     val service: WebhookAdminService by inject()
 
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         val source = call.request.queryParameters["source"]?.parseEnum<WebhookSource>("webhook source")
         val status = call.request.queryParameters["status"]?.parseEnum<WebhookEventStatus>("webhook status")
         call.respondOk(service.list(source, status, limit, offset))

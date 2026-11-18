@@ -45,6 +45,7 @@ interface OrderRepository {
         userId: String,
         limit: Int,
         offset: Int,
+        status: String? = null,
     ): PaginatedResponse<OrderResponse>
 
     /** Keyset-paginated customer orders; preferred for large histories. */
@@ -59,6 +60,15 @@ interface OrderRepository {
         orderNumber: String,
         email: String,
     ): OrderResponse?
+
+    /**
+     * Retrieves a single order by ID, enforcing access control for the caller.
+     */
+    suspend fun getOrderById(
+        orderId: String,
+        userId: String,
+        userType: UserType,
+    ): OrderResponse
 
     /**
      * Updates the status of an order.

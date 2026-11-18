@@ -12,7 +12,7 @@ import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.requireUserType
 import com.piashcse.utils.extension.respondOk
@@ -102,7 +102,7 @@ fun Route.consentRoutes() {
          * Retrieve all consent records for the authenticated user
          */
         get {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(consentRepo.getUserConsents(call.currentUserId, limit, offset))
         }.describe { summary = "Retrieve all consent records for the authenticated user" }
 
@@ -146,7 +146,7 @@ fun Route.consentAdminRoutes() {
     get {
         val userId = call.request.queryParameters["userId"]
         val policyType = call.request.queryParameters["policyType"]?.parseEnum<PolicyType>("policy type")
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(consentRepo.listConsentsByUser(userId, policyType, limit, offset))
     }.describe { summary = "Admin - Retrieve consent records filtered by user and/or policy type" }
 }

@@ -356,10 +356,12 @@ This API follows industry-standard patterns (Stripe, GitHub, OpenAI) for clean, 
 
 ### Pagination
 
-All collection-based endpoints support standardized pagination using `limit` and `offset` query parameters.
+All collection endpoints use the same offset pagination contract:
 
-- **`limit`**: Maximum number of items to return (default: 20, some endpoints default to 10)
-- **`offset`**: Number of items to skip (default: 0)
+- **`page`** (default: 1) and **`perPage`** (default: 20, max: 100) — preferred
+- **`limit`** (default: 20, max: 100) and **`offset`** (default: 0) — legacy alias
+- If `page`/`perPage` are present they take precedence over `limit`/`offset`.
+- Cursor feeds (`/orders/cursor`, `/notifications/cursor`) accept `cursor` + `limit` (or `perPage`).
 
 **Paginated Response Format:**
 ```json
@@ -371,10 +373,17 @@ All collection-based endpoints support standardized pagination using `limit` and
   "metadata": {
     "totalCount": 100,
     "limit": 20,
-    "offset": 0
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 5,
+    "hasNext": true,
+    "hasPrev": false
   }
 }
 ```
+
+Cursor feeds return `data`, `nextCursor`, `hasMore` and `limit` instead of offset metadata.
 
 ### Common Error Codes
 

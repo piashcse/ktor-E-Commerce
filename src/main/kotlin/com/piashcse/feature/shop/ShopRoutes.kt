@@ -54,7 +54,7 @@ fun Route.shopRoutes() {
      * Retrieve public shops with filters (public)
      */
     get("/public") {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(
             shopRepo.getShops(call.request.queryParameters["status"], call.request.queryParameters["category"], limit, offset),
         )
@@ -65,7 +65,7 @@ fun Route.shopRoutes() {
      */
     get("/category/{categoryId}") {
         val categoryId = call.requirePathParameter("categoryId")
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(shopRepo.getShopsByCategory(categoryId, limit, offset))
     }.describe { summary = "Retrieve shops by category (public)" }
 
@@ -73,7 +73,7 @@ fun Route.shopRoutes() {
      * Retrieve featured shops (public)
      */
     get("/featured") {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(shopRepo.getFeaturedShops(limit, offset))
     }.describe { summary = "Retrieve featured shops (public)" }
 }
@@ -122,7 +122,7 @@ fun Route.shopSellerRoutesV1() {
      *
      */
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(shopRepo.getShopsByUser(call.currentUserId, limit, offset))
     }.describe { summary = "Seller - Retrieve owned shops" }
 }
@@ -179,7 +179,7 @@ fun Route.shopAdminRoutes() {
      *
      */
     get("/status") {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(shopRepo.getShopsByStatus(call.requireQueryParameter("status").parseEnum<ShopStatus>("shop status"), limit, offset))
     }.describe { summary = "Admin - Retrieve shops filtered by status" }
 }

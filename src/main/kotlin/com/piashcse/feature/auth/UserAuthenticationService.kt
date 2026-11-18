@@ -40,9 +40,9 @@ class UserAuthenticationService(
                         userType = registerRequest.userType,
                     ),
                 )
-                sendRegistrationOtp(result.id, result.email)
+                sendRegistrationOtp(result.id, result.email, result.otp)
             }
-            is RegistrationResult.OtpResent -> sendRegistrationOtp(result.id, result.email)
+            is RegistrationResult.OtpResent -> sendRegistrationOtp(result.id, result.email, result.otp)
         }
         return result
     }
@@ -50,13 +50,14 @@ class UserAuthenticationService(
     private suspend fun sendRegistrationOtp(
         userId: String,
         email: String,
+        otp: String? = null,
     ) {
-        val otp = authRepo.getRegistrationOtp(userId)
+        val code = otp ?: authRepo.getRegistrationOtp(userId)
         EventBus.publish(
             SendEmailEvent(
                 to = email,
                 subject = AppConstants.SmtpServer.OTP_SUBJECT,
-                body = "Your verification code is: ${otp.orEmpty()}",
+                body = "Your verification code is: ${code.orEmpty()}",
             ),
         )
     }

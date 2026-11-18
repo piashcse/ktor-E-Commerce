@@ -19,6 +19,8 @@ import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.greater
+import org.jetbrains.exposed.v1.core.inList
 import java.security.MessageDigest
 import java.util.HexFormat
 import java.util.UUID
@@ -136,9 +138,35 @@ class DigitalDeliveryService(
 
     suspend fun library(userId: String): List<DigitalLibraryItem> =
         query {
-            DigitalEntitlementDAO.find {
-                DigitalEntitlementTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable)
-            }.map { it.toLibraryItem() }
+            val entitlements =
+                DigitalEntitlementDAO.find {
+                    DigitalEntitlementTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable)
+                }.toList()
+            val productIds = entitlements.map { it.productId }.distinct()
+            val products =
+                if (productIds.isEmpty()) {
+                    emptyMap()
+                } else {
+                    ProductDAO.find { com.piashcse.database.entities.ProductTable.id inList productIds }
+                        .associateBy { it.id.value }
+                }
+            val subscriptionIds = entitlements.mapNotNull { it.subscriptionId }.distinct()
+            val activeSubscriptions =
+                if (subscriptionIds.isEmpty()) {
+                    emptySet()
+                } else {
+                    SubscriptionDAO.find {
+                        (com.piashcse.database.entities.SubscriptionTable.id inList subscriptionIds) and
+                            (com.piashcse.database.entities.SubscriptionTable.status eq SubscriptionStatus.ACTIVE) and
+                            (com.piashcse.database.entities.SubscriptionTable.currentPeriodEnd greater currentUtc())
+                    }.map { it.id.value }.toSet()
+                }
+            entitlements.map {
+                it.toLibraryItem(
+                    products[it.productId.value],
+                    it.subscriptionId?.value?.let { id -> id in activeSubscriptions } ?: true,
+                )
+            }
         }
 
     suspend fun download(
@@ -211,9 +239,11 @@ class DigitalDeliveryService(
         return subscription.status == SubscriptionStatus.ACTIVE && subscription.currentPeriodEnd.isAfter(currentUtc())
     }
 
-    private fun DigitalEntitlementDAO.toLibraryItem(): DigitalLibraryItem {
-        val product = ProductDAO.findById(productId.value)
-        return DigitalLibraryItem(
+    private fun DigitalEntitlementDAO.toLibraryItem(
+        product: ProductDAO?,
+        subscriptionIsActive: Boolean,
+    ): DigitalLibraryItem =
+        DigitalLibraryItem(
             entitlementId = id.value,
             productId = productId.value,
             productName = product?.name ?: productId.value,
@@ -223,9 +253,8 @@ class DigitalDeliveryService(
             maxDownloads = maxDownloads,
             remainingDownloads = (maxDownloads - downloadCount).coerceAtLeast(0),
             expiresAt = expiresAt?.toUtcString(),
-            active = isActive() && subscriptionActive(subscriptionId?.value),
+            active = isActive() && subscriptionIsActive,
             grantedByOrder = orderId?.value,
             grantedBySubscription = subscriptionId?.value,
         )
-    }
 }

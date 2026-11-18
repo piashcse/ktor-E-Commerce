@@ -1,8 +1,8 @@
 package com.piashcse.feature.webhook
 
 import com.piashcse.constants.WebhookEventStatus
-import com.piashcse.database.entities.CarrierWebhookEventDAO
-import com.piashcse.database.entities.PaymentWebhookEventDAO
+import com.piashcse.database.entities.CarrierWebhookEventTable
+import com.piashcse.database.entities.PaymentWebhookEventTable
 import com.piashcse.feature.payment.PaymentRepository
 import com.piashcse.feature.payment.WebhookResult
 import com.piashcse.feature.shipping.CarrierWebhookResult
@@ -12,6 +12,10 @@ import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.query
 import kotlinx.serialization.Serializable
+import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.andWhere
+import org.jetbrains.exposed.v1.jdbc.selectAll
 
 @Serializable
 enum class WebhookSource {
@@ -44,45 +48,68 @@ class WebhookAdminService(
         offset: Int,
     ): PaginatedResponse<WebhookEventResponse> =
         query {
+            val fetch = (offset + limit).coerceAtLeast(limit)
+            val includePayment = source == null || source == WebhookSource.PAYMENT
+            val includeCarrier = source == null || source == WebhookSource.CARRIER
+
+            val paymentQuery =
+                PaymentWebhookEventTable.selectAll().apply {
+                    status?.let { value -> andWhere { PaymentWebhookEventTable.status eq value } }
+                }
+            val carrierQuery =
+                CarrierWebhookEventTable.selectAll().apply {
+                    status?.let { value -> andWhere { CarrierWebhookEventTable.status eq value } }
+                }
+
+            val paymentTotal = if (includePayment) paymentQuery.count() else 0L
+            val carrierTotal = if (includeCarrier) carrierQuery.count() else 0L
+
             val rows = mutableListOf<WebhookEventResponse>()
-            if (source == null || source == WebhookSource.PAYMENT) {
-                PaymentWebhookEventDAO.all()
-                    .filter { status == null || it.status == status }
-                    .mapTo(rows) {
+            if (includePayment) {
+                paymentQuery
+                    .orderBy(PaymentWebhookEventTable.receivedAt to SortOrder.DESC)
+                    .limit(fetch)
+                    .mapTo(rows) { row ->
                         WebhookEventResponse(
-                            id = it.id.value,
+                            id = row[PaymentWebhookEventTable.id].value,
                             source = WebhookSource.PAYMENT,
-                            provider = it.provider.name,
-                            eventId = it.eventId,
-                            eventType = it.eventType,
-                            status = it.status,
-                            error = it.error,
-                            receivedAt = it.receivedAt.toUtcString(),
-                            processedAt = it.processedAt?.toUtcString(),
+                            provider = row[PaymentWebhookEventTable.provider].name,
+                            eventId = row[PaymentWebhookEventTable.eventId],
+                            eventType = row[PaymentWebhookEventTable.eventType],
+                            status = row[PaymentWebhookEventTable.status],
+                            error = row[PaymentWebhookEventTable.error],
+                            receivedAt = row[PaymentWebhookEventTable.receivedAt].toUtcString(),
+                            processedAt = row[PaymentWebhookEventTable.processedAt]?.toUtcString(),
                         )
                     }
             }
-            if (source == null || source == WebhookSource.CARRIER) {
-                CarrierWebhookEventDAO.all()
-                    .filter { status == null || it.status == status }
-                    .mapTo(rows) {
+            if (includeCarrier) {
+                carrierQuery
+                    .orderBy(CarrierWebhookEventTable.receivedAt to SortOrder.DESC)
+                    .limit(fetch)
+                    .mapTo(rows) { row ->
                         WebhookEventResponse(
-                            id = it.id.value,
+                            id = row[CarrierWebhookEventTable.id].value,
                             source = WebhookSource.CARRIER,
-                            provider = it.provider,
-                            eventId = it.eventId,
-                            eventType = it.eventType,
-                            status = it.status,
-                            error = it.error,
-                            receivedAt = it.receivedAt.toUtcString(),
-                            processedAt = it.processedAt?.toUtcString(),
+                            provider = row[CarrierWebhookEventTable.provider],
+                            eventId = row[CarrierWebhookEventTable.eventId],
+                            eventType = row[CarrierWebhookEventTable.eventType],
+                            status = row[CarrierWebhookEventTable.status],
+                            error = row[CarrierWebhookEventTable.error],
+                            receivedAt = row[CarrierWebhookEventTable.receivedAt].toUtcString(),
+                            processedAt = row[CarrierWebhookEventTable.processedAt]?.toUtcString(),
                         )
                     }
             }
             val sorted = rows.sortedByDescending { it.receivedAt.orEmpty() }
             PaginatedResponse(
                 data = sorted.drop(offset).take(limit),
-                metadata = PaginationMetadata(totalCount = sorted.size.toLong(), limit = limit, offset = offset),
+                metadata =
+                    PaginationMetadata(
+                        totalCount = paymentTotal + carrierTotal,
+                        limit = limit,
+                        offset = offset,
+                    ),
             )
         }
 

@@ -16,9 +16,11 @@ import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
+import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.throwNotFound
+import com.piashcse.utils.extension.toPaginatedList
 import com.piashcse.utils.extension.toPaginatedResponse
 import com.piashcse.utils.validator.FieldValidationException
 import com.piashcse.utils.validator.FieldViolation
@@ -247,11 +249,12 @@ class SubscriptionService(
 
     suspend fun mySubscriptions(userId: String): List<SubscriptionResponse> =
         query {
-            SubscriptionDAO.find { SubscriptionTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable) }
-                .map { subscription ->
-                    val plan = SubscriptionPlanDAO.findById(subscription.planId.value)
-                    subscription.toResponse(plan)
-                }
+            val subscriptions =
+                SubscriptionDAO.find {
+                    SubscriptionTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable)
+                }.toList()
+            val plans = plansFor(subscriptions)
+            subscriptions.map { it.toResponse(plans[it.planId.value]) }
         }
 
     suspend fun activate(
@@ -305,13 +308,23 @@ class SubscriptionService(
         offset: Int,
     ): PaginatedResponse<SubscriptionResponse> =
         query {
-            SubscriptionTable.selectAll()
-                .orderBy(SubscriptionTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) {
-                    val subscription = SubscriptionDAO.wrapRow(it)
-                    subscription.toResponse(SubscriptionPlanDAO.findById(subscription.planId.value))
-                }
+            val (total, rows) =
+                SubscriptionTable.selectAll()
+                    .orderBy(SubscriptionTable.createdAt to SortOrder.DESC)
+                    .toPaginatedList(limit, offset) { SubscriptionDAO.wrapRow(it) }
+            val plans = plansFor(rows)
+            PaginatedResponse(
+                data = rows.map { it.toResponse(plans[it.planId.value]) },
+                metadata = PaginationMetadata(total, limit, offset),
+            )
         }
+
+    private fun plansFor(subscriptions: List<SubscriptionDAO>): Map<String, SubscriptionPlanDAO> {
+        if (subscriptions.isEmpty()) return emptyMap()
+        val planIds = subscriptions.map { it.planId }.distinct()
+        return SubscriptionPlanDAO.find { SubscriptionPlanTable.id inList planIds }
+            .associateBy { it.id.value }
+    }
 
     /**
      * Renewal run for due subscriptions. Off-session charges paid via the configured

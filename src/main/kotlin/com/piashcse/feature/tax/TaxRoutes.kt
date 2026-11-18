@@ -8,6 +8,8 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondDeleted
+import com.piashcse.utils.extension.respondMessage
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.NotFoundException
 import io.ktor.server.request.receive
@@ -47,7 +49,7 @@ fun Route.taxAdminRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             if (!taxService.delete(id)) throw NotFoundException("Tax rule not found")
-            call.respondOk(MessageResponse("Tax rule deleted"))
+            call.respondDeleted("Tax rule deleted")
         }.describe { summary = "Delete tax rule" }
     }
 }
@@ -81,7 +83,7 @@ fun Route.taxClassAdminRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             if (!taxService.deleteClass(id)) throw NotFoundException("Tax class not found")
-            call.respondOk(MessageResponse("Tax class deleted"))
+            call.respondDeleted("Tax class deleted")
         }.describe { summary = "Delete a tax class" }
     }
 }
@@ -115,7 +117,7 @@ fun Route.taxZoneAdminRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             if (!taxService.deleteZone(id)) throw NotFoundException("Tax zone not found")
-            call.respondOk(MessageResponse("Tax zone deleted"))
+            call.respondDeleted("Tax zone deleted")
         }.describe { summary = "Delete a tax zone" }
     }
 }
@@ -139,7 +141,7 @@ fun Route.taxExemptionAdminRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             if (!taxService.deleteExemption(id)) throw NotFoundException("Tax exemption not found")
-            call.respondOk(MessageResponse("Tax exemption deleted"))
+            call.respondDeleted("Tax exemption deleted")
         }.describe { summary = "Delete a tax exemption" }
     }
 }
@@ -152,7 +154,7 @@ fun Route.productTaxClassAdminRoutes() {
             val productId = call.requirePathParameter("id")
             val body = call.receive<ProductTaxClassRequest>()
             taxService.assignProductTaxClass(productId, body.taxClassId)
-            call.respondOk(MessageResponse("Product tax class updated"))
+            call.respondMessage("Product tax class updated")
         }.describe {
             summary = "Assign a product tax class"
             requestBody { jsonBody<ProductTaxClassRequest>() }

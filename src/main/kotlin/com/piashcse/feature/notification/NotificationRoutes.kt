@@ -10,8 +10,9 @@ import com.piashcse.plugin.ok
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
+import com.piashcse.utils.extension.cursorRequest
 import com.piashcse.utils.extension.getCurrentUserType
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.queryBoolean
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -60,7 +61,7 @@ fun Route.notificationRoutes() {
     val prefService: NotificationPreferencesService by inject()
     customerAuth {
         get {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             val unreadOnly = call.queryBoolean("unreadOnly")
             call.respondOk(repo.list(call.currentUserId, limit, offset, unreadOnly))
         }.describe {
@@ -74,13 +75,13 @@ fun Route.notificationRoutes() {
             responses { ok<UnreadCountResponse>("Unread count") }
         }
         get("cursor") {
-            val (limit, _) = call.paginateQueryParams()
+            val cursor = call.cursorRequest()
             val unreadOnly = call.queryBoolean("unreadOnly")
             call.respondOk(
                 repo.listCursor(
                     call.currentUserId,
-                    limit,
-                    call.request.queryParameters["cursor"],
+                    cursor.limit,
+                    cursor.cursor,
                     unreadOnly,
                 ),
             )

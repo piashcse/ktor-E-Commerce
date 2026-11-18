@@ -30,13 +30,11 @@ val RoleAuthorizationPlugin =
             if (principal == null) {
                 call.respond(
                     HttpStatusCode.Unauthorized,
-                    ApiError(
+                    ApiError.of(
                         message = "Missing or invalid token",
                         code = "UNAUTHORIZED",
+                        status = HttpStatusCode.Unauthorized,
                         requestId = call.requestId(),
-                        type = "UNAUTHORIZED",
-                        title = "Missing or invalid token",
-                        status = HttpStatusCode.Unauthorized.value,
                     ),
                 )
                 return@on
@@ -61,13 +59,11 @@ val RoleAuthorizationPlugin =
             if (!hasAccess) {
                 call.respond(
                     HttpStatusCode.Forbidden,
-                    ApiError(
+                    ApiError.of(
                         message = "Permission Denied: Insufficient privileges",
                         code = "FORBIDDEN",
+                        status = HttpStatusCode.Forbidden,
                         requestId = call.requestId(),
-                        type = "FORBIDDEN",
-                        title = "Permission Denied: Insufficient privileges",
-                        status = HttpStatusCode.Forbidden.value,
                     ),
                 )
                 return@on
@@ -94,13 +90,11 @@ val PermissionAuthorizationPlugin =
             if (principal == null) {
                 call.respond(
                     HttpStatusCode.Unauthorized,
-                    ApiError(
+                    ApiError.of(
                         message = "Missing or invalid token",
                         code = "UNAUTHORIZED",
+                        status = HttpStatusCode.Unauthorized,
                         requestId = call.requestId(),
-                        type = "UNAUTHORIZED",
-                        title = "Missing or invalid token",
-                        status = HttpStatusCode.Unauthorized.value,
                     ),
                 )
                 return@on
@@ -109,13 +103,11 @@ val PermissionAuthorizationPlugin =
                 val message = "Permission Denied: missing ${required.joinToString { it.name }}"
                 call.respond(
                     HttpStatusCode.Forbidden,
-                    ApiError(
+                    ApiError.of(
                         message = message,
                         code = "FORBIDDEN",
+                        status = HttpStatusCode.Forbidden,
                         requestId = call.requestId(),
-                        type = "FORBIDDEN",
-                        title = message,
-                        status = HttpStatusCode.Forbidden.value,
                     ),
                 )
             }

@@ -22,7 +22,6 @@ import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.model.response.RatingBucket
 import com.piashcse.model.response.ReviewRatingResponse
 import com.piashcse.model.response.ReviewSummaryResponse
-import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ValidationException
@@ -37,40 +36,51 @@ import java.math.BigDecimal
 
 class ReviewRatingRepositoryImpl : ReviewRatingRepository {
     private fun recalculateProductRating(productId: String) {
-        val reviews =
-            ReviewRatingDAO.find {
-                (ReviewRatingTable.productId eq productId) and (ReviewRatingTable.status eq ReviewStatus.ACTIVE)
-            }.toList()
         val product = ProductDAO.findById(productId) ?: return
-        if (reviews.isEmpty()) {
+        val counts =
+            (1..5).associateWith { rating ->
+                ReviewRatingDAO.find {
+                    (ReviewRatingTable.productId eq productId) and
+                        (ReviewRatingTable.status eq ReviewStatus.ACTIVE) and
+                        (ReviewRatingTable.rating eq rating)
+                }.count().toInt()
+            }
+        val totalReviews = counts.values.sum()
+        if (totalReviews == 0) {
             product.rating = BigDecimal.ZERO
             product.totalReviews = 0
         } else {
-            val total = reviews.map { it.rating.toBigDecimal() }.reduce(BigDecimal::add)
-            product.rating = Money.average(total, reviews.size.toLong())
-            product.totalReviews = reviews.size
+            val weighted = counts.entries.sumOf { (rating, count) -> rating * count }
+            product.rating =
+                BigDecimal(weighted)
+                    .divide(BigDecimal(totalReviews), 2, java.math.RoundingMode.HALF_UP)
+            product.totalReviews = totalReviews
         }
     }
 
     override suspend fun getReviewSummary(productId: String): ReviewSummaryResponse =
         query {
-            val reviews =
-                ReviewRatingDAO.find {
-                    (ReviewRatingTable.productId eq productId) and
-                        (ReviewRatingTable.status eq ReviewStatus.ACTIVE)
-                }.toList()
-            val counts = reviews.groupingBy { it.rating }.eachCount()
+            val counts =
+                (1..5).associateWith { rating ->
+                    ReviewRatingDAO.find {
+                        (ReviewRatingTable.productId eq productId) and
+                            (ReviewRatingTable.status eq ReviewStatus.ACTIVE) and
+                            (ReviewRatingTable.rating eq rating)
+                    }.count().toInt()
+                }
+            val total = counts.values.sum()
+            val weighted = counts.entries.sumOf { (rating, count) -> rating * count }
             val average =
-                if (reviews.isEmpty()) {
+                if (total == 0) {
                     0.0
                 } else {
-                    BigDecimal(reviews.sumOf { it.rating })
-                        .divide(BigDecimal(reviews.size), 2, java.math.RoundingMode.HALF_UP)
+                    BigDecimal(weighted)
+                        .divide(BigDecimal(total), 2, java.math.RoundingMode.HALF_UP)
                         .toDouble()
                 }
             ReviewSummaryResponse(
                 productId = productId,
-                total = reviews.size,
+                total = total,
                 average = average,
                 buckets = (5 downTo 1).map { RatingBucket(it, counts[it] ?: 0) },
             )

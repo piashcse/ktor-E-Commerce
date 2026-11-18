@@ -9,7 +9,7 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.receive
@@ -45,7 +45,7 @@ fun Route.sellerKycRoutes() {
 fun Route.adminKycRoutes() {
     val service: KycService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         val status = call.request.queryParameters["status"]?.parseEnum<KycStatus>("kyc status")
         call.respondOk(service.list(status, limit, offset))
     }.describe {

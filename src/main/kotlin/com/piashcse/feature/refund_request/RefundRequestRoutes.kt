@@ -88,7 +88,7 @@ fun Route.refundRequestRoutes() {
          * Get refund requests for an order
          */
         get("order/{orderId}") {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(
                 refundRequestRepo.getRefundsByOrderId(
                     call.requirePathParameter("orderId"),
@@ -126,7 +126,7 @@ fun Route.refundSellerRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
     generalRateLimit {
         get {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             val status = call.request.queryParameters["status"]?.parseEnum<RefundStatus>("refund status")
             call.respondOk(refundRequestRepo.listForSeller(call.currentUserId, status, limit, offset))
         }.describe {
@@ -157,7 +157,7 @@ fun Route.refundSellerRoutes() {
 fun Route.refundAdminRoutes() {
     val refundRequestRepo: RefundRequestRepository by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         val status = call.request.queryParameters["status"]?.parseEnum<RefundStatus>("refund status")
         call.respondOk(refundRequestRepo.listAll(status, limit, offset))
     }.describe {
@@ -185,7 +185,7 @@ fun Route.refundAdminRoutes() {
      *
      */
     get("order/{orderId}") {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(
             refundRequestRepo.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, UserType.ADMIN, limit, offset),
         )

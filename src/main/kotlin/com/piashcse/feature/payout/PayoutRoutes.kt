@@ -7,13 +7,14 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.sellerAuth
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.request.requirePathParameter
 import io.ktor.server.response.*
+import io.ktor.server.response.respondTextWriter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
@@ -22,7 +23,7 @@ fun Route.payoutSellerRoutes() {
     val repo: PayoutRepository by inject()
     sellerAuth {
         get {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(repo.sellerPayouts(call.currentUserId, limit, offset))
         }.describe { summary = "Seller: list payouts" }
         get("balance") {
@@ -47,26 +48,24 @@ fun Route.payoutSellerRoutes() {
                     call.request.queryParameters["from"],
                     call.request.queryParameters["to"],
                 )
-            val csv =
-                buildString {
-                    appendLine("payout_id,order_id,sub_total,commission,payout,currency,status,created_at")
-                    statement.rows.forEach {
-                        appendLine(
-                            listOf(
-                                it.payoutId,
-                                it.orderId,
-                                it.subTotal,
-                                it.commissionAmount,
-                                it.payoutAmount,
-                                it.currency,
-                                it.status,
-                                it.createdAt,
-                            ).joinToString(","),
-                        )
-                    }
-                }
             call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"statement.csv\"")
-            call.respondText(csv, ContentType.parse("text/csv"))
+            call.respondTextWriter(ContentType.parse("text/csv")) {
+                write("payout_id,order_id,sub_total,commission,payout,currency,status,created_at\n")
+                statement.rows.forEach {
+                    write(
+                        listOf(
+                            it.payoutId,
+                            it.orderId,
+                            it.subTotal,
+                            it.commissionAmount,
+                            it.payoutAmount,
+                            it.currency,
+                            it.status,
+                            it.createdAt,
+                        ).joinToString(",") + "\n",
+                    )
+                }
+            }
         }.describe { summary = "Seller: export statement CSV" }
         post("request") {
             val body = call.receive<PayoutRequest>()
@@ -83,7 +82,7 @@ fun Route.payoutAdminRoutes() {
     val repo: PayoutRepository by inject()
     adminAuth {
         get {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(repo.allPayouts(limit, offset, call.request.queryParameters["status"]))
         }.describe { summary = "Admin: list payouts" }
         post("{id}/approve") {
@@ -102,26 +101,24 @@ fun Route.payoutAdminRoutes() {
         }.describe { summary = "Admin: mark payout paid" }
         get("export") {
             val data = repo.allPayouts(10000, 0, call.request.queryParameters["status"])
-            val csv =
-                buildString {
-                    appendLine("id,seller_id,order_id,sub_total,commission,payout,status,created_at")
-                    data.data.forEach {
-                        appendLine(
-                            listOf(
-                                it.id,
-                                it.sellerId,
-                                it.orderId,
-                                it.subTotal,
-                                it.commissionAmount,
-                                it.payoutAmount,
-                                it.status,
-                                it.createdAt,
-                            ).joinToString(","),
-                        )
-                    }
-                }
             call.response.header(HttpHeaders.ContentDisposition, "attachment; filename=\"payouts.csv\"")
-            call.respondText(csv, ContentType.parse("text/csv"))
+            call.respondTextWriter(ContentType.parse("text/csv")) {
+                write("id,seller_id,order_id,sub_total,commission,payout,status,created_at\n")
+                data.data.forEach {
+                    write(
+                        listOf(
+                            it.id,
+                            it.sellerId,
+                            it.orderId,
+                            it.subTotal,
+                            it.commissionAmount,
+                            it.payoutAmount,
+                            it.status,
+                            it.createdAt,
+                        ).joinToString(",") + "\n",
+                    )
+                }
+            }
         }.describe { summary = "Admin: export payouts CSV" }
     }
 }

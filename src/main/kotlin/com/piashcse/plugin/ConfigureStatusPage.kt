@@ -69,14 +69,12 @@ private suspend fun ApplicationCall.respondValidationError(exception: Constraint
             .map { FieldError(field = it.property, message = it.message) }
     respond(
         HttpStatusCode.BadRequest,
-        ApiError(
+        ApiError.of(
             message = "Validation failed",
             code = "VALIDATION_FAILED",
-            errors = fieldErrors,
+            status = HttpStatusCode.BadRequest,
             requestId = requestId(),
-            type = "VALIDATION_FAILED",
-            title = "Validation failed",
-            status = HttpStatusCode.BadRequest.value,
+            errors = fieldErrors,
         ),
     )
 }
@@ -87,14 +85,11 @@ private fun ApplicationCall.errorResponse(
     errorCode: String = "BAD_REQUEST",
 ): ApiError {
     val translated = i18n.translate(locale, message)
-    return ApiError(
+    return ApiError.of(
         message = translated,
         code = errorCode,
+        status = code,
         requestId = requestId(),
-        // Additive RFC 9457-style aliases; message/code remain the canonical fields.
-        type = errorCode,
-        title = translated,
-        status = code.value,
     )
 }
 

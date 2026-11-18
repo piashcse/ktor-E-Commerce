@@ -5,7 +5,7 @@ package com.piashcse.feature.product_category
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.nameFromBodyOrQuery
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.receiveSingleImage
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondDeleted
@@ -24,7 +24,7 @@ fun Route.productCategoryRoutes() {
      * Retrieve a paginated list of all product categories
      */
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(productCategoryRepo.getCategories(limit, offset))
     }.describe { summary = "Retrieve a paginated list of all product categories" }
 }

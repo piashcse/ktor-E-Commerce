@@ -15,13 +15,14 @@ object SubscriptionBillingWorker {
 
     fun start(
         scope: CoroutineScope,
+        subscriptionService: SubscriptionService,
         interval: Duration = Duration.ofHours(24),
     ) {
         if (job != null) return
         job =
             scope.launch(Dispatchers.IO) {
                 while (isActive) {
-                    runCatching { SubscriptionService().runBilling() }
+                    runCatching { subscriptionService.runBilling() }
                         .onFailure { log.error("Subscription billing run failed", it) }
                     delay(interval.toMillis())
                 }

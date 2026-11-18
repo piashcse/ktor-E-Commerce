@@ -8,10 +8,10 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.writeRateLimit
-import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondMessage
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
@@ -62,7 +62,7 @@ fun Route.subscriptionRoutes() {
 fun Route.subscriptionPlanAdminRoutes() {
     val service: SubscriptionService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.listPlans(limit, offset))
     }.describe { summary = "List subscription plans (admin)" }
 
@@ -88,7 +88,7 @@ fun Route.subscriptionPlanAdminRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             if (!service.deletePlan(id, call.currentUserId)) throw NotFoundException("Subscription plan not found")
-            call.respondOk(MessageResponse("Subscription plan deactivated"))
+            call.respondMessage("Subscription plan deactivated")
         }.describe { summary = "Deactivate a subscription plan" }
     }
 }
@@ -97,7 +97,7 @@ fun Route.subscriptionPlanAdminRoutes() {
 fun Route.subscriptionAdminRoutes() {
     val service: SubscriptionService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.adminSubscriptions(limit, offset))
     }.describe { summary = "List all subscriptions" }
 

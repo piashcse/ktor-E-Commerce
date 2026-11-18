@@ -6,7 +6,8 @@ import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.created
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
+import com.piashcse.utils.extension.queryBooleanOrNull
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
@@ -21,8 +22,8 @@ import org.koin.ktor.ext.inject
 fun Route.promotionAdminRoutes() {
     val service: PromotionService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
-        val active = call.request.queryParameters["active"]?.toBooleanStrictOrNull()
+        val (limit, offset) = call.pageRequest()
+        val active = call.queryBooleanOrNull("active")
         call.respondOk(service.list(active, limit, offset))
     }.describe { summary = "Admin: list promotions" }
 

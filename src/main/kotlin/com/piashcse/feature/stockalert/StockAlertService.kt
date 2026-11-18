@@ -82,12 +82,13 @@ class StockAlertService {
         productId: String,
     ): Boolean =
         query {
-            val alert =
+            val alerts =
                 StockAlertDAO.find {
                     (StockAlertTable.userId eq userId.entityID(UserTable)) and
                         (StockAlertTable.productId eq productId.entityID(com.piashcse.database.entities.ProductTable))
-                }.firstOrNull() ?: return@query false
-            alert.delete()
+                }.toList()
+            if (alerts.isEmpty()) return@query false
+            alerts.forEach { it.delete() }
             true
         }
 

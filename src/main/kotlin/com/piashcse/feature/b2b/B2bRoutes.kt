@@ -11,7 +11,7 @@ import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.standardErrors
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondOk
@@ -47,7 +47,7 @@ fun Route.b2bQuoteRoutes() {
     val service: B2bService by inject()
     requireRole {
         get {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(service.myQuotes(call.currentUserId, limit, offset))
         }.describe { summary = "List my B2B quotes" }
 
@@ -85,7 +85,7 @@ fun Route.b2bInvoiceRoutes() {
     val service: B2bService by inject()
     requireRole {
         get {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(service.myInvoices(call.currentUserId, limit, offset))
         }.describe { summary = "List my B2B invoices" }
     }
@@ -96,7 +96,7 @@ fun Route.b2bPurchaseOrderRoutes() {
     val service: B2bService by inject()
     requireRole {
         get {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(service.myPurchaseOrders(call.currentUserId, limit, offset))
         }.describe { summary = "List my purchase orders" }
 
@@ -110,7 +110,7 @@ fun Route.b2bPurchaseOrderRoutes() {
 fun Route.b2bSellerQuoteRoutes() {
     val service: B2bService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.sellerQuotes(call.currentUserId, limit, offset))
     }.describe { summary = "Seller: list B2B quote requests" }
 
@@ -138,7 +138,7 @@ fun Route.b2bSellerQuoteRoutes() {
 fun Route.b2bSellerInvoiceRoutes() {
     val service: B2bService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.sellerInvoices(call.currentUserId, limit, offset))
     }.describe { summary = "Seller: list B2B invoices" }
 }
@@ -147,7 +147,7 @@ fun Route.b2bSellerInvoiceRoutes() {
 fun Route.b2bSellerPurchaseOrderRoutes() {
     val service: B2bService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.sellerPurchaseOrders(call.currentUserId, limit, offset))
     }.describe { summary = "Seller: list purchase orders" }
 
@@ -166,18 +166,18 @@ fun Route.b2bSellerPurchaseOrderRoutes() {
 fun Route.b2bAdminRoutes() {
     val service: B2bService by inject()
     get("accounts") {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         val status = call.request.queryParameters["status"]?.parseEnum<B2bAccountStatus>("B2B account status")
         call.respondOk(service.adminAccounts(status, limit, offset))
     }.describe { summary = "Admin: list B2B accounts" }
 
     get("purchase-orders") {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.adminPurchaseOrders(limit, offset))
     }.describe { summary = "Admin: list B2B purchase orders" }
 
     get("invoices") {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.adminInvoices(limit, offset))
     }.describe { summary = "Admin: list B2B invoices" }
 

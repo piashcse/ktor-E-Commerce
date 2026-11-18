@@ -3,6 +3,7 @@
 package com.piashcse.plugin
 
 import com.piashcse.constants.AppConstants
+import com.piashcse.constants.Permission
 import com.piashcse.feature.analytics.analyticsAdminRoutes
 import com.piashcse.feature.analytics.analyticsRoutes
 import com.piashcse.feature.apikey.apiKeyRoutes
@@ -176,9 +177,10 @@ fun Application.configureRoute() {
             } else {
                 call.respond(
                     HttpStatusCode.ServiceUnavailable,
-                    ApiError(
+                    ApiError.of(
                         message = "Database unreachable",
                         code = "SERVICE_UNAVAILABLE",
+                        status = HttpStatusCode.ServiceUnavailable,
                         requestId = runCatching { call.requestId() }.getOrNull(),
                     ),
                 )
@@ -284,23 +286,43 @@ private fun Route.adminRoutes() {
         adminAuth {
             route("auth") { authAdminRoutes() }.describe { tag(ApiTags.AUTH) }
             route("users") { adminUserRoutes() }.describe { tag(ApiTags.AUTH) }
-            route("brands") { brandAdminRoutes() }.describe { tag(ApiTags.BRAND) }
-            route("product-categories") { productCategoryAdminRoutes() }.describe { tag(ApiTags.PRODUCT_CATEGORY) }
-            route("product-subcategories") { productSubCategoryAdminRoutes() }.describe { tag(ApiTags.PRODUCT_SUB_CATEGORY) }
-            route("shop-categories") { shopCategoryAdminRoutes() }.describe { tag(ApiTags.SHOP_CATEGORY) }
-            route("shops") { shopAdminRoutes() }.describe { tag(ApiTags.SHOP) }
-            route("sellers") { adminKycRoutes() }.describe { tag(ApiTags.KYC) }
-            route("products") {
-                productAdminRoutes()
-                productTaxClassAdminRoutes()
-                productTranslationAdminRoutes()
-            }.describe { tag(ApiTags.PRODUCT) }
-            route("inventories") { inventoryAdminRoutes() }.describe { tag(ApiTags.INVENTORY) }
-            route("orders") { orderAdminRoutes() }.describe { tag(ApiTags.ORDER) }
-            route("payments") {
-                paymentAdminRoutes()
-                paymentRiskAdminRoutes()
-            }.describe { tag(ApiTags.PAYMENT) }
+            requirePermission(Permission.CATALOG_MANAGE) {
+                route("brands") { brandAdminRoutes() }.describe { tag(ApiTags.BRAND) }
+            }
+            requirePermission(Permission.CATALOG_MANAGE) {
+                route("product-categories") { productCategoryAdminRoutes() }.describe { tag(ApiTags.PRODUCT_CATEGORY) }
+            }
+            requirePermission(Permission.CATALOG_MANAGE) {
+                route("product-subcategories") { productSubCategoryAdminRoutes() }.describe { tag(ApiTags.PRODUCT_SUB_CATEGORY) }
+            }
+            requirePermission(Permission.CATALOG_MANAGE) {
+                route("shop-categories") { shopCategoryAdminRoutes() }.describe { tag(ApiTags.SHOP_CATEGORY) }
+            }
+            requirePermission(Permission.SHOP_MANAGE) {
+                route("shops") { shopAdminRoutes() }.describe { tag(ApiTags.SHOP) }
+            }
+            requirePermission(Permission.SHOP_MANAGE) {
+                route("sellers") { adminKycRoutes() }.describe { tag(ApiTags.KYC) }
+            }
+            requirePermission(Permission.CATALOG_MANAGE) {
+                route("products") {
+                    productAdminRoutes()
+                    productTaxClassAdminRoutes()
+                    productTranslationAdminRoutes()
+                }.describe { tag(ApiTags.PRODUCT) }
+            }
+            requirePermission(Permission.INVENTORY_MANAGE) {
+                route("inventories") { inventoryAdminRoutes() }.describe { tag(ApiTags.INVENTORY) }
+            }
+            requirePermission(Permission.ORDER_MANAGE) {
+                route("orders") { orderAdminRoutes() }.describe { tag(ApiTags.ORDER) }
+            }
+            requirePermission(Permission.PAYMENT_MANAGE) {
+                route("payments") {
+                    paymentAdminRoutes()
+                    paymentRiskAdminRoutes()
+                }.describe { tag(ApiTags.PAYMENT) }
+            }
             route("fraud") { fraudAdminRoutes() }.describe { tag(ApiTags.FRAUD) }
             route("chargebacks") { chargebackAdminRoutes() }.describe { tag(ApiTags.FRAUD) }
             route("gift-cards") { giftCardAdminRoutes() }.describe { tag(ApiTags.LOYALTY) }
@@ -314,26 +336,50 @@ private fun Route.adminRoutes() {
             route("cms/pages") { cmsAdminRoutes() }.describe { tag(ApiTags.CONTENT) }
             route("seo") { seoAdminRoutes() }.describe { tag(ApiTags.CONTENT) }
             route("support/tickets") { supportAdminRoutes() }.describe { tag(ApiTags.SUPPORT) }
-            route("refund-requests") { refundAdminRoutes() }.describe { tag(ApiTags.REFUND) }
-            route("rma-requests") { rmaAdminRoutes() }.describe { tag(ApiTags.RMA) }
+            requirePermission(Permission.REFUND_MANAGE) {
+                route("refund-requests") { refundAdminRoutes() }.describe { tag(ApiTags.REFUND) }
+            }
+            requirePermission(Permission.REFUND_MANAGE) {
+                route("rma-requests") { rmaAdminRoutes() }.describe { tag(ApiTags.RMA) }
+            }
             route("policies") { policyAdminRoutes() }.describe { tag(ApiTags.POLICY) }
             route("policy-consents") { consentAdminRoutes() }.describe { tag(ApiTags.CONSENT) }
             route("shipping-methods") { shippingMethodAdminRoutes() }.describe { tag(ApiTags.SHIPPING_METHOD) }
-            route("coupons") { couponAdminRoutes() }.describe { tag(ApiTags.COUPON) }
-            route("promotions") { promotionAdminRoutes() }.describe { tag(ApiTags.COUPON) }
+            requirePermission(Permission.COUPON_MANAGE) {
+                route("coupons") { couponAdminRoutes() }.describe { tag(ApiTags.COUPON) }
+            }
+            requirePermission(Permission.COUPON_MANAGE) {
+                route("promotions") { promotionAdminRoutes() }.describe { tag(ApiTags.COUPON) }
+            }
             route("reviews") { reviewAdminRoutes() }.describe { tag(ApiTags.REVIEW) }
-            route("dashboard") { dashboardAdminRoutes() }.describe { tag(ApiTags.DASHBOARD) }
-            route("analytics") { analyticsAdminRoutes() }.describe { tag(ApiTags.ANALYTICS) }
-            route("audit-logs") { auditLogAdminRoutes() }.describe { tag(ApiTags.AUDIT_LOG) }
-            route("webhooks") { webhookAdminRoutes() }.describe { tag(ApiTags.PAYMENT) }
-            route("payouts") { payoutAdminRoutes() }.describe { tag(ApiTags.PAYOUT) }
-            route("fx-rates") { fxAdminRoutes() }.describe { tag(ApiTags.FX) }
-            route("tax-rules") { taxAdminRoutes() }.describe { tag(ApiTags.TAX) }
-            route("tax-classes") { taxClassAdminRoutes() }.describe { tag(ApiTags.TAX) }
-            route("tax-zones") { taxZoneAdminRoutes() }.describe { tag(ApiTags.TAX) }
-            route("tax-exemptions") { taxExemptionAdminRoutes() }.describe { tag(ApiTags.TAX) }
+            requirePermission(Permission.DASHBOARD_VIEW) {
+                route("dashboard") { dashboardAdminRoutes() }.describe { tag(ApiTags.DASHBOARD) }
+            }
+            requirePermission(Permission.DASHBOARD_VIEW) {
+                route("analytics") { analyticsAdminRoutes() }.describe { tag(ApiTags.ANALYTICS) }
+            }
+            requirePermission(Permission.AUDIT_VIEW) {
+                route("audit-logs") { auditLogAdminRoutes() }.describe { tag(ApiTags.AUDIT_LOG) }
+            }
+            requirePermission(Permission.PAYMENT_MANAGE) {
+                route("webhooks") { webhookAdminRoutes() }.describe { tag(ApiTags.PAYMENT) }
+            }
+            requirePermission(Permission.PAYOUT_MANAGE) {
+                route("payouts") { payoutAdminRoutes() }.describe { tag(ApiTags.PAYOUT) }
+            }
+            requirePermission(Permission.FX_MANAGE) {
+                route("fx-rates") { fxAdminRoutes() }.describe { tag(ApiTags.FX) }
+            }
+            requirePermission(Permission.TAX_MANAGE) {
+                route("tax-rules") { taxAdminRoutes() }.describe { tag(ApiTags.TAX) }
+                route("tax-classes") { taxClassAdminRoutes() }.describe { tag(ApiTags.TAX) }
+                route("tax-zones") { taxZoneAdminRoutes() }.describe { tag(ApiTags.TAX) }
+                route("tax-exemptions") { taxExemptionAdminRoutes() }.describe { tag(ApiTags.TAX) }
+            }
             route("feature-flags") { featureFlagRoutes() }.describe { tag(ApiTags.FEATURE_FLAGS) }
-            route("outbox") { outboxAdminRoutes() }.describe { tag(ApiTags.OUTBOX) }
+            requirePermission(Permission.OUTBOX_MANAGE) {
+                route("outbox") { outboxAdminRoutes() }.describe { tag(ApiTags.OUTBOX) }
+            }
         }
     }
 }

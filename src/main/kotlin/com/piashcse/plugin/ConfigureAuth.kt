@@ -33,13 +33,15 @@ fun Application.configureAuth() {
             realm = "ecom-api"
             validate { credential ->
                 val token = bearerToken()
-                if (token != null) {
-                    val cacheKey = "blacklisted_token:$token"
-                    if (CacheService.cache.get<Boolean>(cacheKey) == true) {
-                        authLog.warn("Blacklisted token rejected (from cache)")
-                        return@validate null
-                    }
+                val cacheKey = token?.let { "blacklisted_token:$it" }
+                val cachedBlacklist = cacheKey?.let { CacheService.cache.get<Boolean>(it) }
+                if (cachedBlacklist == true) {
+                    authLog.warn("Blacklisted token rejected (from cache)")
+                    return@validate null
                 }
+                // A negative cache is short (10s) so revocation propagates quickly
+                // while avoiding a blacklist-table lookup on every request.
+                val queryBlacklist = token != null && cachedBlacklist == null
 
                 val userId = credential.payload.getClaim("userId").asString()
                 val email = credential.payload.getClaim("email").asString()
@@ -54,11 +56,15 @@ fun Application.configureAuth() {
                 val (isBlacklisted, dbUser) =
                     query {
                         val blacklisted =
-                            token != null &&
+                            queryBlacklist &&
+                                token != null &&
                                 BlacklistedTokenDAO.find { BlacklistedTokenTable.token eq token }.firstOrNull() != null
                         val user = UserDAO.findById(userId)
                         blacklisted to user
                     }
+                if (cacheKey != null && queryBlacklist) {
+                    CacheService.cache.set(cacheKey, isBlacklisted, 10)
+                }
                 if (isBlacklisted) {
                     authLog.warn("Blacklisted token rejected (from database)")
                     return@validate null

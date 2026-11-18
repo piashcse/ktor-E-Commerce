@@ -2,11 +2,9 @@
 
 package com.piashcse.feature.audit_log
 
-import com.piashcse.utils.common.ApiError
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.respondOk
-import io.ktor.http.*
-import io.ktor.server.response.*
+import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
@@ -17,7 +15,7 @@ fun Route.auditLogAdminRoutes() {
      * Get paginated audit logs with optional filters
      */
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(
             repo.getAuditLogs(
                 limit,
@@ -35,12 +33,7 @@ fun Route.auditLogAdminRoutes() {
      * Get a single audit log entry by ID
      */
     get("{id}") {
-        val id =
-            call.pathParameters["id"]
-                ?: return@get call.respond(
-                    HttpStatusCode.BadRequest,
-                    ApiError(message = "Missing id", code = "MISSING_PARAMETER"),
-                )
+        val id = call.requirePathParameter("id")
         call.respondOk(repo.getAuditLogById(id))
     }.describe { summary = "Get a single audit log entry by ID" }
 }

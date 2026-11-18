@@ -9,6 +9,7 @@ import com.piashcse.database.entities.CarrierWebhookEventTable
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.database.entities.OrderItemTable
+import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.ShipmentDAO
 import com.piashcse.database.entities.ShipmentItemDAO
 import com.piashcse.database.entities.ShipmentItemTable
@@ -155,6 +156,7 @@ class ShipmentService(
         request: PurchaseShipmentRequest,
     ): ShipmentResponse {
         if (request.rateId.isBlank()) throw ValidationException("rateId is required")
+        val carrierProvider = carrier.provider
         request.idempotencyKey?.takeIf { it.isNotBlank() }?.let { key ->
             val replay =
                 query {
@@ -168,41 +170,61 @@ class ShipmentService(
                         (ShipmentTable.orderId eq order.id) and (ShipmentTable.idempotencyKey eq key)
                     }.firstOrNull()
                 }
-            if (replay != null) return query { replay.toResponse() }
+            if (replay != null && replay.status != ShipmentStatus.FAILED) {
+                return query { replay.toResponse() }
+            }
         }
-        val allocation = planAllocation(orderId, userId, request.items)
-        val label = carrier.purchaseLabel(CarrierLabelRequest(request.rateId, orderId))
+
+        // Reserve the allocation before calling the carrier. A PENDING shipment
+        // counts against shipped quantities, so concurrent purchases cannot
+        // allocate the same units; a carrier failure marks it FAILED and frees them.
+        val (shipment, allocation) =
+            query {
+                val finalAllocation = planAllocationTx(orderId, userId, request.items)
+                val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
+                val reservation =
+                    ShipmentDAO.new {
+                        this.orderId = order.id
+                        this.carrier = carrierProvider
+                        this.rateId = request.rateId
+                        this.idempotencyKey = request.idempotencyKey?.takeIf { it.isNotBlank() }
+                        this.status = ShipmentStatus.PENDING
+                        this.currency = order.currency
+                    }
+                finalAllocation.forEach { line ->
+                    ShipmentItemDAO.new {
+                        this.shipmentId = reservation.id
+                        this.orderItemId = line.orderItemId.entityID(OrderItemTable)
+                        this.quantity = line.quantity
+                    }
+                }
+                reservation to finalAllocation
+            }
+
+        val label =
+            try {
+                carrier.purchaseLabel(CarrierLabelRequest(request.rateId, orderId))
+            } catch (error: Exception) {
+                query { shipment.status = ShipmentStatus.FAILED }
+                throw error
+            }
         if (!label.success) {
+            query { shipment.status = ShipmentStatus.FAILED }
             throw ValidationException(label.message ?: "Carrier label purchase failed")
         }
+
         return query {
-            // Re-validate after the network call: another parcel may have shipped meanwhile.
-            val finalAllocation = planAllocationTx(orderId, userId, request.items)
             val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
             val now = currentUtc()
-            val carrierName = label.carrier ?: carrier.provider
-            val shipment =
-                ShipmentDAO.new {
-                    this.orderId = order.id
-                    this.carrier = carrierName
-                    this.service = label.service
-                    this.trackingNumber = label.trackingNumber
-                    this.labelUrl = label.labelUrl
-                    this.providerReference = label.providerReference
-                    this.idempotencyKey = request.idempotencyKey?.takeIf { it.isNotBlank() }
-                    this.rateId = request.rateId
-                    this.rateAmount = label.amount
-                    this.currency = label.currency
-                    this.status = ShipmentStatus.LABEL_PURCHASED
-                    this.shippedAt = now
-                }
-            finalAllocation.forEach { line ->
-                ShipmentItemDAO.new {
-                    this.shipmentId = shipment.id
-                    this.orderItemId = line.orderItemId.entityID(OrderItemTable)
-                    this.quantity = line.quantity
-                }
-            }
+            shipment.carrier = label.carrier ?: carrier.provider
+            shipment.service = label.service
+            shipment.trackingNumber = label.trackingNumber
+            shipment.labelUrl = label.labelUrl
+            shipment.providerReference = label.providerReference
+            shipment.rateAmount = label.amount
+            shipment.currency = label.currency
+            shipment.status = ShipmentStatus.LABEL_PURCHASED
+            shipment.shippedAt = now
             if (allUnitsShipped(order)) {
                 if (order.status == OrderStatus.PAID) {
                     val from = order.status
@@ -214,7 +236,7 @@ class ShipmentService(
                     label.trackingNumber?.let { order.trackingNumber = it }
                 }
             }
-            shipment.toResponse(finalAllocation)
+            shipment.toResponse(allocation)
         }
     }
 
@@ -263,17 +285,23 @@ class ShipmentService(
                     (CarrierWebhookEventTable.provider eq carrier.provider) and
                         (CarrierWebhookEventTable.eventId eq event.eventId)
                 }.firstOrNull()
-            if (existing != null) {
+            if (existing != null && existing.status != WebhookEventStatus.FAILED) {
                 return@query CarrierWebhookResult(true, duplicate = true, message = "Duplicate webhook ignored")
             }
             val record =
-                CarrierWebhookEventDAO.new {
-                    this.provider = carrier.provider
-                    this.eventId = event.eventId
-                    this.eventType = event.eventType
-                    this.payload = payload
-                    this.status = WebhookEventStatus.RECEIVED
-                }
+                existing
+                    ?: CarrierWebhookEventDAO.new {
+                        this.provider = carrier.provider
+                        this.eventId = event.eventId
+                        this.eventType = event.eventType
+                        this.payload = payload
+                        this.status = WebhookEventStatus.RECEIVED
+                    }
+            if (existing != null) {
+                record.status = WebhookEventStatus.RECEIVED
+                record.error = null
+                record.processedAt = null
+            }
             val applied =
                 try {
                     applyTrackingEvent(event)
@@ -397,7 +425,13 @@ class ShipmentService(
         userId: String,
         requested: List<ShipmentItemRequest>,
     ): List<Allocation> {
-        val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
+        // Lock the order before reading shipment quantities so concurrent label
+        // purchases cannot allocate the same units.
+        val order =
+            OrderDAO.find { OrderTable.id eq orderId.entityID(OrderTable) }
+                .forUpdate()
+                .firstOrNull()
+                ?: orderId.throwNotFound("Order")
         val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
         if (user.userType !in listOf(UserType.SELLER, UserType.ADMIN, UserType.SUPER_ADMIN)) {
             throw ForbiddenException("Only sellers and admins can purchase shipping labels")

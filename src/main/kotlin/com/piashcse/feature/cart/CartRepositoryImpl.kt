@@ -242,7 +242,7 @@ class CartRepositoryImpl : CartRepository {
                 cartItems.mapNotNull { cartItem ->
                     val product = products[cartItem.productId.value] ?: return@mapNotNull null
                     val variant = cartItem.variantId?.value?.let { variantsById[it] }
-                    val unitPrice = variant?.effectivePrice ?: product.discountPrice ?: product.price
+                    val unitPrice = PricingService.unitPriceUsd(product, variant)
                     cartItem.toCartItemSummary(
                         product = product,
                         unitPrice = unitPrice,
@@ -267,7 +267,7 @@ class CartRepositoryImpl : CartRepository {
             cartItems.forEach { cartItem ->
                 val product = products[cartItem.productId.value] ?: return@forEach
                 val variant = cartItem.variantId?.value?.let { variantsById[it] }
-                val unitPrice = variant?.effectivePrice ?: product.discountPrice ?: product.price
+                val unitPrice = PricingService.unitPriceUsd(product, variant)
                 val lineTotal = Money.unitTotal(unitPrice, cartItem.quantity)
                 val quote =
                     taxService.resolve(

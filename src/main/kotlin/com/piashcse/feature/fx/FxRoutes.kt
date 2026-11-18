@@ -6,7 +6,6 @@ import com.piashcse.database.entities.SupportedCurrencies
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.jsonBody
 import com.piashcse.service.FxService
-import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
@@ -52,11 +51,7 @@ fun Route.fxAdminRoutes() {
         put("{targetCurrency}") {
             val target = call.requirePathParameter("targetCurrency")
             if (target.uppercase() !in SupportedCurrencies.ALL) {
-                call.respond(
-                    HttpStatusCode.BadRequest,
-                    ApiError("Unsupported currency: $target", code = "VALIDATION_FAILED"),
-                )
-                return@put
+                throw ValidationException("Unsupported currency: $target")
             }
             val body = call.receive<FxRateRequest>()
             if (body.rate <= BigDecimal.ZERO) throw ValidationException("FX rate must be positive")

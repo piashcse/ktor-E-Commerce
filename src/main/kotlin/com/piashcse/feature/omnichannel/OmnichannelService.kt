@@ -34,10 +34,10 @@ import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.tax.TaxService
 import com.piashcse.mapper.toOrderResponse
 import com.piashcse.model.response.OrderResponse
+import com.piashcse.service.PricingService
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
-import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.requireSellerByUserId
@@ -53,10 +53,12 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 import kotlin.math.atan2
@@ -189,16 +191,15 @@ class OmnichannelService(
         query {
             val seller = requireSellerByUserId(sellerUserId)
             val shopId = seller.shopId?.value ?: throw ValidationException("Seller has no shop")
-            val rows =
-                OrderDAO.find {
+            OrderTable.selectAll()
+                .andWhere {
                     (OrderTable.shopId eq shopId.entityID(com.piashcse.database.entities.ShopTable)) and
                         (OrderTable.fulfillmentType eq FulfillmentType.PICKUP)
-                }.sortedByDescending { it.createdAt }
-            val page = rows.drop(offset).take(limit).map { it.toOrderResponse() }
-            PaginatedResponse(
-                data = page,
-                metadata = PaginationMetadata(totalCount = rows.size.toLong(), limit = limit, offset = offset),
-            )
+                }
+                .orderBy(OrderTable.createdAt to SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) {
+                    OrderDAO.wrapRow(it).toOrderResponse(includeSensitive = false)
+                }
         }
 
     suspend fun markReady(
@@ -216,7 +217,7 @@ class OmnichannelService(
                 throw ValidationException("Pickup order cannot be marked ready")
             }
             order.pickupStatus = PickupStatus.READY
-            order.toOrderResponse()
+            order.toOrderResponse(includeSensitive = false)
         }
 
     suspend fun completePickup(
@@ -239,7 +240,7 @@ class OmnichannelService(
             order.pickedUpAt = currentUtc()
             order.status = OrderStatus.RECEIVED
             order.completedDate = currentUtc()
-            order.toOrderResponse()
+            order.toOrderResponse(includeSensitive = false)
         }
 
     suspend fun posSale(
@@ -252,7 +253,7 @@ class OmnichannelService(
             if (request.paymentMethod in listOf(PaymentMethod.CREDIT_CARD, PaymentMethod.PAYPAL)) {
                 throw ValidationException("POS card/PayPal processing is not configured; use COD or bank transfer")
             }
-            findIdempotentPosSale(shopId.value, request.idempotencyKey)?.let { return@query it.toOrderResponse() }
+            findIdempotentPosSale(shopId.value, request.idempotencyKey)?.let { return@query it.toOrderResponse(includeSensitive = false) }
             val session = resolvePosSession(shopId.value, request.posSessionId)
             val warehouse = resolvePosWarehouse(shopId.value, request.warehouseId, session)
             val catalog = loadPosCatalog(shopId.value, request.items)
@@ -363,7 +364,9 @@ class OmnichannelService(
         customer: UserDAO,
     ): OrderResponse {
         val orderNumber =
-            "POS-${LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE)}-${UUID.randomUUID().toString().take(6).uppercase()}"
+            "POS-${LocalDate.now(
+                ZoneOffset.UTC,
+            ).format(DateTimeFormatter.BASIC_ISO_DATE)}-${UUID.randomUUID().toString().take(6).uppercase()}"
         var subtotal = BigDecimal.ZERO
         var totalTax = BigDecimal.ZERO
         var exclusiveTax = BigDecimal.ZERO
@@ -391,7 +394,7 @@ class OmnichannelService(
         request.items.forEach { item ->
             val product = catalog.products.getValue(item.productId)
             val variant = item.variantId?.let { catalog.variants[it] }
-            val unit = Money.scale2(variant?.effectivePrice ?: product.discountPrice ?: product.price)
+            val unit = Money.scale2(PricingService.unitPriceUsd(product, variant))
             val lineTotal = Money.scale2(unit.multiply(BigDecimal(item.quantity)))
             if (warehouse != null) {
                 product.decrementStockAt(warehouse.id.value, variant?.id?.value, item.quantity)
@@ -470,7 +473,7 @@ class OmnichannelService(
             ),
         )
         digitalDelivery.grantForOrderTx(order)
-        return order.toOrderResponse()
+        return order.toOrderResponse(includeSensitive = false)
     }
 
     suspend fun openPosSession(
@@ -658,15 +661,15 @@ class OmnichannelService(
         query {
             val seller = requireSellerByUserId(sellerUserId)
             val shopId = seller.shopId?.value ?: throw ValidationException("Seller has no shop")
-            val rows =
-                OrderDAO.find {
+            OrderTable.selectAll()
+                .andWhere {
                     (OrderTable.shopId eq shopId.entityID(com.piashcse.database.entities.ShopTable)) and
                         (OrderTable.fulfillmentType eq FulfillmentType.POS)
-                }.sortedByDescending { it.createdAt }
-            PaginatedResponse(
-                data = rows.drop(offset).take(limit).map { it.toOrderResponse() },
-                metadata = PaginationMetadata(totalCount = rows.size.toLong(), limit = limit, offset = offset),
-            )
+                }
+                .orderBy(OrderTable.createdAt to SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) {
+                    OrderDAO.wrapRow(it).toOrderResponse(includeSensitive = false)
+                }
         }
 
     private fun PosSessionDAO.toResponse() =

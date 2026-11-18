@@ -23,8 +23,8 @@ import com.piashcse.plugin.searchRateLimit
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.plugin.standardErrors
 import com.piashcse.service.UploadService
-import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.extension.respondDeleted
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
@@ -39,6 +39,7 @@ fun Route.productRoutes() {
     val variantService: ProductVariantService by inject()
     val recommendationService: RecommendationService by inject()
     val translations: ProductTranslationService by inject()
+    val cache = com.piashcse.service.CacheService.cache
 
     searchRateLimit {
         /**
@@ -61,7 +62,7 @@ fun Route.productRoutes() {
          */
         get("suggest") {
             val q = call.request.queryParameters["q"].orEmpty()
-            val limit = (call.queryInt("limit") ?: 5).coerceIn(1, 10)
+            val limit = call.queryLimit(default = 5, max = 10)
             call.respondOk(productRepo.getSuggestions(q, limit))
         }.describe {
             summary = "Product search suggestions"
@@ -78,7 +79,13 @@ fun Route.productRoutes() {
          */
         get("{id}") {
             val productId = call.requirePathParameter("id")
-            productRepo.incrementViewCount(productId)
+            // Count at most one view per IP/product per five minutes. The detail
+            // response itself is cached, so a write on every GET would defeat it.
+            val viewKey = "products:viewed:$productId:${call.clientIp}"
+            if (cache.get<Boolean>(viewKey) != true) {
+                productRepo.incrementViewCount(productId)
+                cache.set(viewKey, true, 300)
+            }
             call.respondOk(translations.localize(productCatalogService.getProductDetail(productId), call.locale))
         }.describe {
             summary = "Get product detail"
@@ -160,7 +167,7 @@ fun Route.productRoutes() {
          * Search for products by name with fuzzy matching, faceted aggregation, and ranking
          */
         get("search") {
-            val (limit, offset) = call.paginateQueryParams(defaultPerPage = 10)
+            val (limit, offset) = call.pageRequest(defaultPerPage = 10)
             val queryParams =
                 ProductSearchRequest(
                     limit = limit,
@@ -172,8 +179,8 @@ fun Route.productRoutes() {
                     brandId = call.request.queryParameters["brandId"],
                     sortBy = call.request.queryParameters["sortBy"] ?: "relevance",
                     sortOrder = call.request.queryParameters["sortOrder"] ?: "desc",
-                    useFuzzy = call.request.queryParameters["useFuzzy"]?.toBooleanStrictOrNull() ?: true,
-                    inStockOnly = call.request.queryParameters["inStockOnly"]?.toBooleanStrictOrNull(),
+                    useFuzzy = call.queryBooleanOrNull("useFuzzy") ?: true,
+                    inStockOnly = call.queryBooleanOrNull("inStockOnly"),
                     minRating = call.request.queryParameters["minRating"]?.toDoubleOrNull(),
                 )
             val result = productCatalogService.searchProduct(queryParams)
@@ -235,7 +242,7 @@ fun Route.productSellerRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             productCrudService.deleteProduct(call.currentUserId, id)
-            call.respondOk(MessageResponse("Product deleted successfully"))
+            call.respondDeleted("Product deleted successfully")
         }.describe {
             summary = "Delete product"
             description = "Soft-deletes the listing and preserves order history"
@@ -272,7 +279,7 @@ fun Route.productAdminRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             productCrudService.deleteProductAsAdmin(id)
-            call.respondOk(MessageResponse("Product deleted successfully"))
+            call.respondDeleted("Product deleted successfully")
         }.describe { summary = "Admin - Permanently delete any product" }
     }
 }
@@ -332,7 +339,7 @@ private fun Route.variantSellerRoutes() {
             call.requirePathParameter("id"),
             call.requirePathParameter("variantId"),
         )
-        call.respondOk(MessageResponse("Variant deleted successfully"))
+        call.respondDeleted("Variant deleted successfully")
     }.describe {
         summary = "Delete product variant"
         description = "Promotes another variant as default when needed"
@@ -391,7 +398,7 @@ private fun Route.variantSellerRoutes() {
             call.requirePathParameter("id"),
             call.requirePathParameter("optionId"),
         )
-        call.respondOk(MessageResponse("Option deleted successfully"))
+        call.respondDeleted("Option deleted successfully")
     }.describe {
         summary = "Delete option dimension"
         description = "Also removes its values and variant links"
@@ -432,6 +439,6 @@ private fun Route.variantSellerRoutes() {
             call.requirePathParameter("optionId"),
             call.requirePathParameter("valueId"),
         )
-        call.respondOk(MessageResponse("Option value deleted successfully"))
+        call.respondDeleted("Option value deleted successfully")
     }.describe { summary = "Delete option value" }
 }

@@ -3,7 +3,7 @@
 package com.piashcse.feature.outbox
 
 import com.piashcse.plugin.ok
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import io.ktor.server.request.requirePathParameter
@@ -32,7 +32,7 @@ fun Route.outboxAdminRoutes() {
     }
 
     get("dead-letters") {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.listDeadLetters(limit, offset))
     }.describe {
         summary = "List dead letters"

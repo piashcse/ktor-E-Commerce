@@ -11,11 +11,11 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.standardErrors
-import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.NotFoundException
 import io.ktor.server.request.receive
@@ -28,7 +28,7 @@ import org.koin.ktor.ext.inject
 fun Route.sellerPublicRoutes() {
     val service: SellerToolsService by inject()
     get("{id}/reviews") {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.reviewsForSeller(call.requirePathParameter("id"), limit, offset))
     }.describe { summary = "List active reviews for a seller" }
 }
@@ -37,7 +37,7 @@ fun Route.sellerPublicRoutes() {
 fun Route.sellerReviewRoutes() {
     val service: SellerToolsService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         val shopId =
             call.request.queryParameters["shopId"]?.takeIf { it.isNotBlank() }
                 ?: throw com.piashcse.utils.validator.ValidationException("shopId is required")
@@ -49,7 +49,7 @@ fun Route.sellerReviewRoutes() {
 
     customerOnlyAuth {
         get("mine") {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(service.reviewsForUser(call.currentUserId, limit, offset))
         }.describe { summary = "List my seller reviews" }
 
@@ -70,7 +70,7 @@ fun Route.sellerReviewRoutes() {
 fun Route.sellerOwnReviewRoutes() {
     val service: SellerToolsService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.reviewsForSellerUser(call.currentUserId, limit, offset))
     }.describe { summary = "Seller: list reviews received" }
 }
@@ -79,7 +79,7 @@ fun Route.sellerOwnReviewRoutes() {
 fun Route.sellerReviewAdminRoutes() {
     val service: SellerToolsService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         val status = call.request.queryParameters["status"]?.parseEnum<ReviewStatus>("review status")
         call.respondOk(service.adminReviews(status, limit, offset))
     }.describe { summary = "Admin: list seller reviews" }
@@ -101,7 +101,7 @@ fun Route.disputeRoutes() {
     val service: SellerToolsService by inject()
     requireRole {
         get {
-            val (limit, offset) = call.paginateQueryParams()
+            val (limit, offset) = call.pageRequest()
             call.respondOk(service.myDisputes(call.currentUserId, limit, offset))
         }.describe { summary = "List my disputes" }
 
@@ -122,7 +122,7 @@ fun Route.disputeRoutes() {
 fun Route.disputeAdminRoutes() {
     val service: SellerToolsService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         val status = call.request.queryParameters["status"]?.parseEnum<DisputeStatus>("dispute status")
         call.respondOk(service.adminDisputes(status, limit, offset))
     }.describe { summary = "Admin: list disputes" }
@@ -146,7 +146,7 @@ fun Route.disputeAdminRoutes() {
 fun Route.commissionAdminRoutes() {
     val service: CommissionService by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(service.list(limit, offset))
     }.describe { summary = "List commission rules" }
 
@@ -172,7 +172,7 @@ fun Route.commissionAdminRoutes() {
         delete("{id}") {
             val id = call.requirePathParameter("id")
             if (!service.delete(id)) throw NotFoundException("Commission rule not found")
-            call.respondOk(MessageResponse("Commission rule deleted"))
+            call.respondDeleted("Commission rule deleted")
         }.describe { summary = "Delete a commission rule" }
     }
 }

@@ -5,19 +5,25 @@ import com.piashcse.constants.AppConstants
 import com.piashcse.constants.Message
 import com.piashcse.model.request.NameRequest
 import com.piashcse.model.request.ProductWithFilterRequest
+import com.piashcse.utils.common.CursorRequest
 import com.piashcse.utils.common.MessageResponse
+import com.piashcse.utils.common.PageRequest
 import com.piashcse.utils.validator.ValidationException
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.receive
 import io.ktor.server.response.*
+import java.time.Instant
 
 suspend inline fun <reified T : Any> ApplicationCall.respondOk(data: T) = respond(HttpStatusCode.OK, data)
 
 suspend inline fun <reified T : Any> ApplicationCall.respondCreated(data: T) = respond(HttpStatusCode.Created, data)
 
 /** Standard delete acknowledgement so every module returns the same shape. */
-suspend fun ApplicationCall.respondDeleted(message: String) = respondOk(MessageResponse(message))
+suspend fun ApplicationCall.respondDeleted(message: String) = respondMessage(message)
+
+/** Standard success acknowledgement for actions that have no response body. */
+suspend fun ApplicationCall.respondMessage(message: String) = respondOk(MessageResponse(message))
 
 /**
  * Best-effort client IP.
@@ -55,46 +61,77 @@ fun ApplicationCall.bearerToken(): String? {
 }
 
 /** Typed query accessors: centralize parsing so routes stay one-liners. */
-fun ApplicationCall.queryInt(name: String): Int? = request.queryParameters[name]?.toIntOrNull()
+fun ApplicationCall.queryBooleanOrNull(name: String): Boolean? =
+    request.queryParameters[name]?.let { raw ->
+        raw.toBooleanStrictOrNull() ?: throw ValidationException(Message.Errors.invalidParameter(name, raw))
+    }
+
+/** ISO-8601 instant query param; malformed values surface as a validation error. */
+fun ApplicationCall.queryInstant(name: String): Instant? =
+    request.queryParameters[name]?.takeIf { it.isNotBlank() }?.let { raw ->
+        runCatching { Instant.parse(raw) }.getOrElse {
+            throw ValidationException(Message.Errors.invalidParameter(name, raw))
+        }
+    }
 
 fun ApplicationCall.queryBoolean(
     name: String,
     defaultValue: Boolean = false,
-): Boolean = request.queryParameters[name]?.toBooleanStrictOrNull() ?: defaultValue
+): Boolean = queryBooleanOrNull(name) ?: defaultValue
 
-fun ApplicationCall.paginateQueryParams(
+/**
+ * Normalized offset pagination.
+ *
+ * `page`/`perPage` take precedence when present; legacy `limit`/`offset` are
+ * still accepted. Malformed or out-of-range values fail with a validation error
+ * instead of silently falling back, so every route behaves identically.
+ */
+fun ApplicationCall.pageRequest(
     defaultPerPage: Int = AppConstants.Pagination.DEFAULT_LIMIT,
     defaultPage: Int = 1,
     maxPerPage: Int = AppConstants.Pagination.MAX_LIMIT,
-): Pair<Int, Int> {
-    fun parseParam(
-        name: String,
-        raw: String?,
-        default: Int,
-    ): Int =
-        when {
-            raw == null -> default
-            raw.toIntOrNull() != null -> raw.toInt()
-            else -> throw ValidationException(Message.Errors.invalidParameter(name, raw))
-        }
-
-    val perPage =
-        parseParam("perPage", request.queryParameters["perPage"], defaultPerPage)
-            .coerceAtMost(maxPerPage).coerceAtLeast(1)
-    val page = parseParam("page", request.queryParameters["page"], defaultPage).coerceAtLeast(1)
-
-    // Support legacy limit/offset params, but page/perPage take precedence
-    val legacyLimit = request.queryParameters["limit"]?.toIntOrNull()
-    val legacyOffset = request.queryParameters["offset"]?.toIntOrNull()
-    // Cap offset to prevent deep-offset DoS (large OFFSET scans).
-    val maxOffset = 10_000
-    return if (legacyLimit != null || legacyOffset != null) {
-        (legacyLimit ?: perPage).coerceAtMost(maxPerPage).coerceAtLeast(1) to
-            (legacyOffset ?: 0).coerceAtLeast(0).coerceAtMost(maxOffset)
-    } else {
-        perPage to ((page - 1) * perPage).coerceAtMost(maxOffset)
+): PageRequest {
+    val hasPageParams = request.queryParameters["page"] != null || request.queryParameters["perPage"] != null
+    if (hasPageParams) {
+        val perPage = intParam("perPage", defaultPerPage).coerceIn(1, maxPerPage)
+        val page = intParam("page", defaultPage).coerceAtLeast(1)
+        return PageRequest(
+            limit = perPage,
+            offset = (((page.toLong() - 1) * perPage).coerceIn(0, AppConstants.Pagination.MAX_OFFSET.toLong())).toInt(),
+        )
     }
+    return PageRequest(
+        limit = intParam("limit", defaultPerPage).coerceIn(1, maxPerPage),
+        offset =
+            intParam("offset", AppConstants.Pagination.DEFAULT_OFFSET)
+                .coerceIn(0, AppConstants.Pagination.MAX_OFFSET),
+    )
 }
+
+/** Keyset pagination request: `limit` (or `perPage`) plus an opaque `cursor`. */
+fun ApplicationCall.cursorRequest(
+    defaultLimit: Int = AppConstants.Pagination.DEFAULT_LIMIT,
+    maxLimit: Int = AppConstants.Pagination.MAX_LIMIT,
+): CursorRequest =
+    CursorRequest(
+        limit = pageRequest(defaultPerPage = defaultLimit, maxPerPage = maxLimit).limit,
+        cursor = request.queryParameters["cursor"]?.takeIf { it.isNotBlank() },
+    )
+
+/** Validated, clamped `limit` for non-paginated top-N endpoints. */
+fun ApplicationCall.queryLimit(
+    name: String = "limit",
+    default: Int = AppConstants.Pagination.DEFAULT_LIMIT,
+    max: Int = AppConstants.Pagination.MAX_LIMIT,
+): Int = intParam(name, default).coerceIn(1, max)
+
+private fun ApplicationCall.intParam(
+    name: String,
+    default: Int,
+): Int =
+    request.queryParameters[name]?.let { raw ->
+        raw.toIntOrNull() ?: throw ValidationException(Message.Errors.invalidParameter(name, raw))
+    } ?: default
 
 /**
  * Stripe-style idempotency key: `Idempotency-Key` header wins, body field is fallback.
@@ -113,10 +150,10 @@ suspend fun ApplicationCall.nameFromBodyOrQuery(): String =
         ?: throw ValidationException("name is required")
 
 fun ApplicationCall.productWithFilterRequest(defaultPerPage: Int = AppConstants.Pagination.DEFAULT_LIMIT): ProductWithFilterRequest {
-    val (perPage, offset) = paginateQueryParams(defaultPerPage)
+    val page = pageRequest(defaultPerPage)
     return ProductWithFilterRequest(
-        limit = perPage,
-        offset = offset,
+        limit = page.limit,
+        offset = page.offset,
         maxPrice = request.queryParameters["maxPrice"]?.toDoubleOrNull(),
         minPrice = request.queryParameters["minPrice"]?.toDoubleOrNull(),
         categoryId = request.queryParameters["categoryId"],
@@ -124,8 +161,11 @@ fun ApplicationCall.productWithFilterRequest(defaultPerPage: Int = AppConstants.
         brandId = request.queryParameters["brandId"],
         shopId = request.queryParameters["shopId"],
         minRating = request.queryParameters["minRating"]?.toDoubleOrNull(),
-        inStockOnly = request.queryParameters["inStockOnly"]?.toBooleanStrictOrNull(),
-        freeShipping = request.queryParameters["freeShipping"]?.toBooleanStrictOrNull(),
+        inStockOnly = queryBooleanOrNull("inStockOnly"),
+        freeShipping = queryBooleanOrNull("freeShipping"),
+        onSale = queryBooleanOrNull("onSale"),
+        hotDeal = queryBooleanOrNull("hotDeal"),
+        featured = queryBooleanOrNull("featured"),
         sortBy = request.queryParameters["sortBy"],
         sortOrder = request.queryParameters["sortOrder"],
     )

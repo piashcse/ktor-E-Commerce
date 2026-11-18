@@ -446,8 +446,17 @@ class B2bService {
     ): PurchaseOrderResponse =
         query {
             val account = requireApprovedAccount(buyerUserId, forUpdate = true)
-            val quote = B2bQuoteDAO.findById(quoteId) ?: quoteId.throwNotFound("Quote")
+            val quote =
+                B2bQuoteDAO.find { B2bQuoteTable.id eq quoteId.entityID(B2bQuoteTable) }
+                    .forUpdate()
+                    .firstOrNull()
+                    ?: quoteId.throwNotFound("Quote")
             if (quote.buyerUserId.value != buyerUserId) throw ForbiddenException("Quote belongs to another buyer")
+            if (quote.status == B2bQuoteStatus.ACCEPTED) {
+                B2bPurchaseOrderDAO.find { B2bPurchaseOrderTable.quoteId eq quote.id }
+                    .firstOrNull()
+                    ?.let { return@query it.toResponse() }
+            }
             if (quote.status != B2bQuoteStatus.SENT) throw ValidationException("Only SENT quotes can be accepted")
             if (quote.validUntil?.isBefore(currentUtc()) == true) {
                 quote.status = B2bQuoteStatus.EXPIRED

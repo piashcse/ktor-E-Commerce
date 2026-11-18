@@ -3,6 +3,7 @@ package com.piashcse.event.subscriber
 import com.piashcse.constants.PayoutStatus
 import com.piashcse.database.entities.AuditLogDAO
 import com.piashcse.database.entities.OrderDAO
+import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductVariantTable
 import com.piashcse.database.entities.SellerDAO
@@ -36,6 +37,7 @@ import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.or
 import org.slf4j.LoggerFactory
@@ -182,8 +184,13 @@ class NotificationSubscriber(
                 product.name,
                 StorefrontLinks.product(product.id.value),
             )
+        val users =
+            query {
+                UserDAO.find { UserTable.id inList alerts.map { it.userId }.distinct() }
+                    .associateBy { it.id.value }
+            }
         alerts.forEach { alert ->
-            val user = query { UserDAO.findById(alert.userId.value) } ?: return@forEach
+            val user = users[alert.userId.value] ?: return@forEach
             if (!user.isActive) return@forEach
             try {
                 dispatcher.dispatch(
@@ -226,7 +233,17 @@ class NotificationSubscriber(
                         .subtract(order.walletDiscount)
                         .subtract(order.giftCardDiscount)
                         .max(java.math.BigDecimal.ZERO)
-                val netSubTotal = order.subTotal.subtract(sellerFundedDiscount).max(java.math.BigDecimal.ZERO)
+                val inclusiveTax =
+                    OrderItemDAO.itemsForOrder(order.id)
+                        .filter { it.taxInclusive }
+                        .fold(java.math.BigDecimal.ZERO) { acc, item ->
+                            acc.add(item.taxAmount)
+                        }
+                val netSubTotal =
+                    order.subTotal
+                        .subtract(sellerFundedDiscount)
+                        .subtract(inclusiveTax)
+                        .max(java.math.BigDecimal.ZERO)
                 val commission = CommissionService().commissionForOrderTx(order, seller)
                 val effectiveRate =
                     if (netSubTotal > java.math.BigDecimal.ZERO) {

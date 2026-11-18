@@ -11,7 +11,7 @@ import com.piashcse.plugin.ok
 import com.piashcse.plugin.writeRateLimit
 import com.piashcse.service.CatalogCache
 import com.piashcse.utils.extension.currentUserId
-import com.piashcse.utils.extension.paginateQueryParams
+import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondDeleted
@@ -38,7 +38,7 @@ fun Route.reviewRatingRoutes() {
      */
     get {
         val productId = call.requireQueryParameter("productId")
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         call.respondOk(reviewRatingRepo.getReviewRating(productId, limit, offset))
     }.describe { summary = "Retrieve reviews and ratings for a specific product" }
 
@@ -112,7 +112,7 @@ fun Route.reviewRatingRoutes() {
 fun Route.reviewAdminRoutes() {
     val reviewRatingRepo: ReviewRatingRepository by inject()
     get {
-        val (limit, offset) = call.paginateQueryParams()
+        val (limit, offset) = call.pageRequest()
         val status = call.request.queryParameters["status"]?.parseEnum<ReviewStatus>("status")
         call.respondOk(reviewRatingRepo.getReviews(status, limit, offset))
     }.describe {

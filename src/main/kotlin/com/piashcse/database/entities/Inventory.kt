@@ -21,9 +21,17 @@ import java.math.BigDecimal
 fun ProductDAO.inventories(forUpdate: Boolean = false): List<InventoryDAO> {
     val productId = this.id
     val shopIdValue = this.shopId?.value ?: return emptyList()
+    val activeWarehouses =
+        WarehouseDAO.find {
+            (WarehouseTable.shopId eq EntityID(shopIdValue, ShopTable)) and
+                (WarehouseTable.isActive eq true)
+        }.map { it.id }
+    if (activeWarehouses.isEmpty()) return emptyList()
     val query =
         InventoryDAO.find {
-            (InventoryTable.productId eq productId) and (InventoryTable.shopId eq EntityID(shopIdValue, ShopTable))
+            (InventoryTable.productId eq productId) and
+                (InventoryTable.shopId eq EntityID(shopIdValue, ShopTable)) and
+                (InventoryTable.warehouseId inList activeWarehouses)
         }
     return (if (forUpdate) query.forUpdate() else query)
         .orderBy(InventoryTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.ASC)

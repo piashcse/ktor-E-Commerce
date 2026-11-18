@@ -468,6 +468,16 @@ class PaymentRepositoryImpl(
                         (PaymentTable.providerReference eq reference) or (PaymentTable.transactionId eq reference)
                     }.forUpdate().firstOrNull() ?: return false
 
+                // Never let a late webhook rewrite money that already settled or
+                // was refunded, and reject events that do not match the payment.
+                if (event.amount != null && event.amount.compareTo(payment.amount) != 0) return false
+                if (event.currency != null && !event.currency.equals(payment.currency, ignoreCase = true)) return false
+                if (payment.status == PaymentStatus.REFUNDED) return true
+                if (payment.status == PaymentStatus.COMPLETED && event.type == GatewayEventType.PAYMENT_FAILED) {
+                    event.providerStatus?.let { payment.providerStatus = it }
+                    return true
+                }
+
                 event.providerStatus?.let { payment.providerStatus = it }
                 when (event.type) {
                     GatewayEventType.PAYMENT_SUCCEEDED -> {

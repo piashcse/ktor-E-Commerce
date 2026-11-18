@@ -9,6 +9,7 @@ import com.piashcse.plugin.standardErrors
 import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.respondCreated
+import com.piashcse.utils.extension.respondMessage
 import com.piashcse.utils.extension.respondOk
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.*
@@ -75,7 +76,7 @@ fun Route.shipmentRoutes() {
                 ?: call.request.headers["X-Webhook-Signature"]
         val result = service.handleWebhook(provider, call.receiveText(), signature)
         if (result.accepted) {
-            call.respondOk(MessageResponse(result.message))
+            call.respondMessage(result.message)
         } else {
             // 5xx tells the carrier to retry; 200 would permanently drop a
             // transient failure.

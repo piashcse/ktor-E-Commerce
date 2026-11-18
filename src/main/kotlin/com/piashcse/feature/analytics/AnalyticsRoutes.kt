@@ -5,6 +5,7 @@ package com.piashcse.feature.analytics
 import com.piashcse.plugin.generalRateLimit
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
+import com.piashcse.utils.extension.queryLimit
 import com.piashcse.utils.extension.respondOk
 import io.ktor.http.HttpHeaders
 import io.ktor.server.request.receive
@@ -60,7 +61,7 @@ fun Route.analyticsAdminRoutes() {
             service.productFunnel(
                 startDate = call.request.queryParameters["startDate"],
                 endDate = call.request.queryParameters["endDate"],
-                limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 20,
+                limit = call.queryLimit(default = 20),
             ),
         )
     }.describe { summary = "Product view → cart → purchase conversion" }

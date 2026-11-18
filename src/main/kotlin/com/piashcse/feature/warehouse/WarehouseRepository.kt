@@ -79,7 +79,7 @@ class WarehouseRepository {
                 code = request.code.uppercase()
                 address = request.address
                 city = request.city
-                this.country = request.country?.uppercase()
+                this.country = normalizeCountryCode(request.country)
                 latitude = request.latitude
                 longitude = request.longitude
                 phone = request.phone
@@ -105,7 +105,7 @@ class WarehouseRepository {
             warehouse.code = request.code.uppercase()
             warehouse.address = request.address
             warehouse.city = request.city
-            warehouse.country = request.country?.uppercase()
+            warehouse.country = normalizeCountryCode(request.country)
             warehouse.latitude = request.latitude
             warehouse.longitude = request.longitude
             warehouse.phone = request.phone
@@ -147,6 +147,18 @@ class WarehouseRepository {
                     code = "DEFAULT"
                 }
         }
+
+    private fun normalizeCountryCode(raw: String?): String? {
+        val cleaned = raw?.trim()?.uppercase()?.takeIf { it.isNotEmpty() } ?: return null
+        if (cleaned.length <= 3) return cleaned
+        return when (cleaned) {
+            "UNITED STATES", "UNITED STATES OF AMERICA", "USA" -> "US"
+            "UNITED KINGDOM", "GREAT BRITAIN" -> "GB"
+            "CANADA" -> "CA"
+            "BANGLADESH" -> "BD"
+            else -> cleaned.take(3)
+        }
+    }
 
     private fun WarehouseDAO.toResponse() =
         WarehouseResponse(

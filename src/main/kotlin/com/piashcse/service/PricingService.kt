@@ -1,6 +1,8 @@
 package com.piashcse.service
 
 import com.piashcse.constants.AppConstants
+import com.piashcse.database.entities.ProductDAO
+import com.piashcse.database.entities.ProductVariantDAO
 import com.piashcse.utils.common.Money
 import java.math.BigDecimal
 
@@ -15,6 +17,12 @@ data class PriceBreakdown(
 /** Single place for cart/checkout/order totals — replaces 4x duplicated math. */
 object PricingService {
     private val taxRate: BigDecimal get() = Money.of(AppConstants.DEFAULT_TAX_PERCENTAGE)
+
+    /** Variant price wins, then the product's discounted price, then list price. */
+    fun unitPriceUsd(
+        product: ProductDAO,
+        variant: ProductVariantDAO?,
+    ): BigDecimal = variant?.effectivePrice ?: product.discountPrice ?: product.price
 
     fun subtotal(lines: List<Pair<BigDecimal, Int>>): BigDecimal =
         Money.scale2(lines.fold(BigDecimal.ZERO) { acc, (price, qty) -> acc.add(price.multiply(BigDecimal(qty))) })
