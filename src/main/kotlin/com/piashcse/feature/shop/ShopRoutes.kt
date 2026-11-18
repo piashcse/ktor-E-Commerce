@@ -1,12 +1,17 @@
 @file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
 
+@file:Suppress("MatchingDeclarationName")
+
 package com.piashcse.feature.shop
 
 import com.piashcse.constants.Message
 import com.piashcse.constants.ShopStatus
+import com.piashcse.model.request.BulkIdsRequest
+import com.piashcse.model.request.BulkResultResponse
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.service.UploadService
 import com.piashcse.utils.extension.*
@@ -14,7 +19,11 @@ import com.piashcse.utils.validator.NotFoundException
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
+import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
+
+@Serializable
+data class ShopDecisionRequest(val reason: String? = null)
 
 /**
  * Shop Discovery Routes.
@@ -132,6 +141,14 @@ fun Route.shopSellerRoutesV1() {
  */
 fun Route.shopAdminRoutes() {
     val shopRepo: ShopRepository by inject()
+    get {
+        val (limit, offset) = call.pageRequest()
+        val status = call.request.queryParameters["status"]?.parseEnum<ShopStatus>("shop status")
+        call.respondOk(shopRepo.getAllShops(status, call.request.queryParameters["q"], limit, offset))
+    }.describe {
+        summary = "Admin - List all shops"
+        description = "Optional status and name search; includes owner email and KYC state"
+    }
     adminWriteRateLimit {
         /**
          * Admin - Approve a pending shop application
@@ -150,8 +167,12 @@ fun Route.shopAdminRoutes() {
         put("/reject/{id}") {
             val shopId = call.requirePathParameter("id")
             val (actorId, actorEmail, actorRole) = call.actor()
-            call.respondOk(shopRepo.rejectShop(shopId, actorId, actorEmail, actorRole))
-        }.describe { summary = "Admin - Reject a shop application" }
+            val reason = runCatching { call.receive<ShopDecisionRequest>().reason }.getOrNull()
+            call.respondOk(shopRepo.rejectShop(shopId, actorId, actorEmail, actorRole, reason))
+        }.describe {
+            summary = "Admin - Reject a shop application"
+            requestBody { jsonBody<ShopDecisionRequest>() }
+        }
 
         /**
          * Admin - Suspend an active shop
@@ -160,8 +181,12 @@ fun Route.shopAdminRoutes() {
         put("/suspend/{id}") {
             val shopId = call.requirePathParameter("id")
             val (actorId, actorEmail, actorRole) = call.actor()
-            call.respondOk(shopRepo.suspendShop(shopId, actorId, actorEmail, actorRole))
-        }.describe { summary = "Admin - Suspend an active shop" }
+            val reason = runCatching { call.receive<ShopDecisionRequest>().reason }.getOrNull()
+            call.respondOk(shopRepo.suspendShop(shopId, actorId, actorEmail, actorRole, reason))
+        }.describe {
+            summary = "Admin - Suspend an active shop"
+            requestBody { jsonBody<ShopDecisionRequest>() }
+        }
 
         /**
          * Admin - Activate a suspended shop
@@ -172,6 +197,34 @@ fun Route.shopAdminRoutes() {
             val (actorId, actorEmail, actorRole) = call.actor()
             call.respondOk(shopRepo.activateShop(shopId, actorId, actorEmail, actorRole))
         }.describe { summary = "Admin - Activate a suspended shop" }
+
+        post("bulk/approve") {
+            val body = call.receive<BulkIdsRequest>()
+            val (actorId, actorEmail, actorRole) = call.actor()
+            val failed = body.ids.filter { runCatching { shopRepo.approveShop(it, actorId, actorEmail, actorRole) }.isFailure }
+            call.respondOk(BulkResultResponse.of(body.ids.size, failed))
+        }.describe {
+            summary = "Admin - Bulk approve shops"
+            requestBody { jsonBody<BulkIdsRequest>() }
+        }
+        post("bulk/reject") {
+            val body = call.receive<BulkIdsRequest>()
+            val (actorId, actorEmail, actorRole) = call.actor()
+            val failed = body.ids.filter { runCatching { shopRepo.rejectShop(it, actorId, actorEmail, actorRole, body.reason) }.isFailure }
+            call.respondOk(BulkResultResponse.of(body.ids.size, failed))
+        }.describe {
+            summary = "Admin - Bulk reject shops"
+            requestBody { jsonBody<BulkIdsRequest>() }
+        }
+        post("bulk/suspend") {
+            val body = call.receive<BulkIdsRequest>()
+            val (actorId, actorEmail, actorRole) = call.actor()
+            val failed = body.ids.filter { runCatching { shopRepo.suspendShop(it, actorId, actorEmail, actorRole, body.reason) }.isFailure }
+            call.respondOk(BulkResultResponse.of(body.ids.size, failed))
+        }.describe {
+            summary = "Admin - Bulk suspend shops"
+            requestBody { jsonBody<BulkIdsRequest>() }
+        }
     }
 
     /**

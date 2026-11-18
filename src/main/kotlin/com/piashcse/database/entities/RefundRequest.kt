@@ -15,6 +15,9 @@ object RefundRequestTable : BaseIdTable("refund_request") {
     val orderId = reference("order_id", OrderTable.id)
     val reason = text("reason")
     val images = varchar("images", 2000).nullable()
+
+    /** Seller/admin decision note shown to the customer and support. */
+    val decisionReason = text("decision_reason").nullable()
     val status = enumerationByName("status", 20, RefundStatus::class).default(RefundStatus.PENDING)
     val currency = varchar("currency", 3).default("USD")
     val quantity = integer("quantity").default(1)
@@ -40,6 +43,7 @@ class RefundRequestDAO(id: EntityID<String>) : BaseEntity(id, RefundRequestTable
     var orderId by RefundRequestTable.orderId
     var reason by RefundRequestTable.reason
     var images by RefundRequestTable.images
+    var decisionReason by RefundRequestTable.decisionReason
     var status by RefundRequestTable.status
     var currency by RefundRequestTable.currency
     var quantity by RefundRequestTable.quantity

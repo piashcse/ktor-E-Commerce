@@ -141,6 +141,88 @@ class CouponRepositoryImpl : CouponRepository {
             true
         }
 
+    override suspend fun getSellerCoupons(
+        shopId: String,
+        limit: Int,
+        offset: Int,
+        active: Boolean?,
+    ): PaginatedResponse<CouponResponse> =
+        query {
+            CouponTable.selectAll()
+                .andWhere { CouponTable.shopId eq shopId.entityID(com.piashcse.database.entities.ShopTable) }
+                .also { query ->
+                    active?.let { query.andWhere { CouponTable.isActive eq it } }
+                }.orderBy(CouponTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.DESC)
+                .toPaginatedResponse(limit, offset) { CouponDAO.wrapRow(it).toResponse() }
+        }
+
+    override suspend fun createSellerCoupon(
+        shopId: String,
+        request: CouponRequest,
+        actorId: String?,
+    ): CouponResponse =
+        query {
+            val startDate = DateTimes.parseFlexible(request.startDate, "startDate")
+            val endDate = DateTimes.parseFlexible(request.endDate, "endDate", endOfDay = true)
+            validateCouponRequest(request, startDate, endDate)
+            CouponDAO.new {
+                code = normalizeCode(request.code)
+                discountType = request.discountType
+                discountValue = request.discountValue
+                minOrderAmount = request.minOrderAmount
+                maxDiscountAmount = request.maxDiscountAmount
+                this.startDate = startDate
+                this.endDate = endDate
+                usageLimit = request.usageLimit
+                perUserLimit = request.perUserLimit
+                this.shopId = shopId.entityID(com.piashcse.database.entities.ShopTable)
+                categoryId = request.categoryId?.let { it.entityID(com.piashcse.database.entities.ProductCategoryTable) }
+                isActive = request.isActive
+            }.toResponse().also { auditCoupon(actorId, "COUPON_CREATED", it.id) }
+        }
+
+    override suspend fun updateSellerCoupon(
+        shopId: String,
+        couponId: String,
+        request: CouponRequest,
+        actorId: String?,
+    ): CouponResponse =
+        query {
+            val coupon = CouponDAO.findById(couponId) ?: throw NotFoundException(Message.Coupons.NOT_FOUND)
+            if (coupon.shopId?.value != shopId) throw com.piashcse.utils.validator.ForbiddenException("Coupon belongs to another shop")
+            val startDate = DateTimes.parseFlexible(request.startDate, "startDate")
+            val endDate = DateTimes.parseFlexible(request.endDate, "endDate", endOfDay = true)
+            validateCouponRequest(request, startDate, endDate)
+            if (request.usageLimit != null && request.usageLimit < coupon.usageCount) {
+                throw ValidationException("Usage limit cannot be lower than the current usage count (${coupon.usageCount})")
+            }
+            coupon.apply {
+                code = normalizeCode(request.code)
+                discountType = request.discountType
+                discountValue = request.discountValue
+                minOrderAmount = request.minOrderAmount
+                maxDiscountAmount = request.maxDiscountAmount
+                this.startDate = startDate
+                this.endDate = endDate
+                usageLimit = request.usageLimit
+                perUserLimit = request.perUserLimit
+                categoryId = request.categoryId?.let { it.entityID(com.piashcse.database.entities.ProductCategoryTable) }
+                isActive = request.isActive
+            }.toResponse().also { auditCoupon(actorId, "COUPON_UPDATED", it.id) }
+        }
+
+    override suspend fun deleteSellerCoupon(
+        shopId: String,
+        couponId: String,
+    ): Boolean =
+        query {
+            val coupon = CouponDAO.findById(couponId) ?: return@query false
+            if (coupon.shopId?.value != shopId) throw com.piashcse.utils.validator.ForbiddenException("Coupon belongs to another shop")
+            val used = CouponUsageDAO.find { CouponUsageTable.couponId eq coupon.id }.count()
+            if (used > 0) coupon.isActive = false else coupon.delete()
+            true
+        }
+
     private fun normalizeCode(code: String): String = CouponRules.normalize(code)
 
     private fun validateCouponRequest(

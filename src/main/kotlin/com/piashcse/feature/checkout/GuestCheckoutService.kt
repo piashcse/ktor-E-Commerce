@@ -119,6 +119,7 @@ class GuestCheckoutService(
             var exclusiveTax = BigDecimal.ZERO
             var itemCount = 0
             val shopsWithShipping = mutableSetOf<String>()
+            val shopIds = mutableSetOf<String>()
             val couponLines = mutableListOf<CouponLine>()
 
             request.items.forEach { item ->
@@ -139,6 +140,7 @@ class GuestCheckoutService(
                 subtotalUsd = subtotalUsd.add(Money.unitTotal(unitUsd, item.quantity))
                 itemCount += item.quantity
                 product.shopId?.value?.let { shopId ->
+                    shopIds.add(shopId)
                     if (!product.isDigital && !product.freeShipping) shopsWithShipping.add(shopId)
                 }
                 couponLines +=
@@ -182,7 +184,7 @@ class GuestCheckoutService(
                 discount = quote.discount
                 couponError = quote.error
             } else {
-                promotionService.evaluateTx(subtotalUsd)?.let { promotion ->
+                promotionService.evaluateTx(subtotalUsd, shopIds)?.let { promotion ->
                     if (promotion.freeShipping) shipping = BigDecimal.ZERO.setScale(2)
                     discount = Money.scale2(promotion.discount.multiply(fxRate))
                 }

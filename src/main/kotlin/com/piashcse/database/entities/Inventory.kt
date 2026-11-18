@@ -7,6 +7,8 @@ import com.piashcse.constants.ProductStatus
 import com.piashcse.database.entities.base.BaseEntity
 import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
+import com.piashcse.event.LowStockEvent
+import com.piashcse.event.OutboxPublisher
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.validator.ValidationException
@@ -87,6 +89,7 @@ fun ProductDAO.decrementStockAt(
     if (available < quantity) {
         throw ValidationException(Message.Validation.insufficientStock(name, available))
     }
+    val previousStatuses = rows.associate { it.id.value to it.status }
     var remaining = quantity
     rows.forEach { inv ->
         if (remaining <= 0) return@forEach
@@ -95,6 +98,7 @@ fun ProductDAO.decrementStockAt(
         inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
         remaining -= take
     }
+    enqueueLowStock(rows, previousStatuses)
     if (deletedAt == null) {
         status = if (inventories().sumOf { it.stockQuantity } <= 0) ProductStatus.OUT_OF_STOCK else ProductStatus.ACTIVE
     }
@@ -111,6 +115,7 @@ fun ProductDAO.decrementStockFor(
     if (available < quantity) {
         throw ValidationException(Message.Validation.insufficientStock(name, available))
     }
+    val previousStatuses = rows.associate { it.id.value to it.status }
     var remaining = quantity
     rows.forEach { inv ->
         if (remaining <= 0) return@forEach
@@ -119,7 +124,27 @@ fun ProductDAO.decrementStockFor(
         inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
         remaining -= take
     }
+    enqueueLowStock(rows, previousStatuses)
     syncProductStatus(allRows.sumOf { it.stockQuantity })
+}
+
+private fun ProductDAO.enqueueLowStock(
+    rows: List<InventoryDAO>,
+    previousStatuses: Map<String, InventoryStatus>,
+) {
+    rows.filter { it.status.needsAttention && previousStatuses[it.id.value] != it.status }
+        .forEach { inventory ->
+            OutboxPublisher.enqueueTx(
+                "PRODUCT",
+                id.value,
+                LowStockEvent(
+                    productId = id.value,
+                    variantId = inventory.variantId?.value,
+                    shopId = shopId?.value,
+                    stockQuantity = inventory.stockQuantity,
+                ),
+            )
+        }
 }
 
 private fun ProductDAO.syncProductStatus(stock: Int) {

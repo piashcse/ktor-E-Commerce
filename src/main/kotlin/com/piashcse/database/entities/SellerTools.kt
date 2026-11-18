@@ -17,6 +17,9 @@ object SellerReviewTable : BaseIdTable("seller_review") {
     val rating = integer("rating")
     val comment = text("comment").nullable()
     val status = enumerationByName("status", 20, ReviewStatus::class).default(ReviewStatus.ACTIVE)
+    val sellerReply = text("seller_reply").nullable()
+    val sellerRepliedAt = datetime("seller_replied_at").nullable()
+    val moderationReason = text("moderation_reason").nullable()
 
     init {
         uniqueIndex("seller_review_user_order_unique", userId, orderId)
@@ -33,6 +36,9 @@ class SellerReviewDAO(id: EntityID<String>) : BaseEntity(id, SellerReviewTable) 
     var rating by SellerReviewTable.rating
     var comment by SellerReviewTable.comment
     var status by SellerReviewTable.status
+    var sellerReply by SellerReviewTable.sellerReply
+    var sellerRepliedAt by SellerReviewTable.sellerRepliedAt
+    var moderationReason by SellerReviewTable.moderationReason
 }
 
 object SellerDisputeTable : BaseIdTable("seller_dispute") {
@@ -61,6 +67,25 @@ class SellerDisputeDAO(id: EntityID<String>) : BaseEntity(id, SellerDisputeTable
     var resolution by SellerDisputeTable.resolution
     var resolvedBy by SellerDisputeTable.resolvedBy
     var resolvedAt by SellerDisputeTable.resolvedAt
+}
+
+/** Conversation/evidence trail attached to a buyer↔seller dispute. */
+object DisputeMessageTable : BaseIdTable("dispute_message") {
+    val disputeId = reference("dispute_id", SellerDisputeTable.id).index()
+    val authorId = reference("author_id", UserTable.id)
+    val body = text("body")
+
+    /** Internal notes are visible to admins only. */
+    val isInternal = bool("is_internal").default(false)
+}
+
+class DisputeMessageDAO(id: EntityID<String>) : BaseEntity(id, DisputeMessageTable) {
+    companion object : BaseEntityClass<DisputeMessageDAO>(DisputeMessageTable, DisputeMessageDAO::class.java)
+
+    var disputeId by DisputeMessageTable.disputeId
+    var authorId by DisputeMessageTable.authorId
+    var body by DisputeMessageTable.body
+    var isInternal by DisputeMessageTable.isInternal
 }
 
 /** Specificity: seller > shop > category; highest priority wins within a scope. */

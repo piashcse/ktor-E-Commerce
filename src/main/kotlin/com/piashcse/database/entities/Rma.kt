@@ -20,6 +20,7 @@ object RmaTable : BaseIdTable("rma") {
     val status = enumerationByName("status", 20, RmaStatus::class).default(RmaStatus.REQUESTED)
     val reason = text("reason")
     val resolution = enumerationByName("resolution", 20, RmaResolution::class).nullable()
+    val resolutionNote = text("resolution_note").nullable()
     val trackingNumber = varchar("tracking_number", 100).nullable()
     val replacementOrderId = reference("replacement_order_id", OrderTable.id).nullable()
     val refundRequestId = reference("refund_request_id", RefundRequestTable.id).nullable()
@@ -38,6 +39,7 @@ class RmaDAO(id: EntityID<String>) : BaseEntity(id, RmaTable) {
     var status by RmaTable.status
     var reason by RmaTable.reason
     var resolution by RmaTable.resolution
+    var resolutionNote by RmaTable.resolutionNote
     var trackingNumber by RmaTable.trackingNumber
     var replacementOrderId by RmaTable.replacementOrderId
     var refundRequestId by RmaTable.refundRequestId

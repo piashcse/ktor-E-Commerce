@@ -16,5 +16,8 @@ data class ReviewRatingResponse(
     val notHelpfulCount: Int = 0,
     val images: List<String> = emptyList(),
     val status: ReviewStatus = ReviewStatus.ACTIVE,
+    val sellerReply: String? = null,
+    val sellerRepliedAt: String? = null,
+    val moderationReason: String? = null,
     val createdAt: String? = null,
 )

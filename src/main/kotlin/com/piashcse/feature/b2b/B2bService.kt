@@ -526,6 +526,7 @@ class B2bService {
 
     suspend fun sellerPurchaseOrders(
         sellerUserId: String,
+        status: PurchaseOrderStatus?,
         limit: Int,
         offset: Int,
     ): PaginatedResponse<PurchaseOrderResponse> =
@@ -533,6 +534,7 @@ class B2bService {
             val seller = requireSellerByUserId(sellerUserId)
             B2bPurchaseOrderTable.selectAll()
                 .where { B2bPurchaseOrderTable.sellerId eq seller.id }
+                .also { query -> status?.let { query.andWhere { B2bPurchaseOrderTable.status eq it } } }
                 .orderBy(B2bPurchaseOrderTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) { B2bPurchaseOrderDAO.wrapRow(it).toResponse() }
         }
@@ -664,6 +666,7 @@ class B2bService {
 
     suspend fun sellerInvoices(
         sellerUserId: String,
+        status: B2bInvoiceStatus?,
         limit: Int,
         offset: Int,
     ): PaginatedResponse<B2bInvoiceResponse> =
@@ -671,16 +674,19 @@ class B2bService {
             val seller = requireSellerByUserId(sellerUserId)
             B2bInvoiceTable.selectAll()
                 .where { B2bInvoiceTable.sellerId eq seller.id }
+                .also { query -> status?.let { query.andWhere { B2bInvoiceTable.status eq it } } }
                 .orderBy(B2bInvoiceTable.dueDate to SortOrder.ASC)
                 .toPaginatedResponse(limit, offset) { B2bInvoiceDAO.wrapRow(it).toResponse() }
         }
 
     suspend fun adminInvoices(
+        status: B2bInvoiceStatus?,
         limit: Int,
         offset: Int,
     ): PaginatedResponse<B2bInvoiceResponse> =
         query {
             B2bInvoiceTable.selectAll()
+                .also { query -> status?.let { query.andWhere { B2bInvoiceTable.status eq it } } }
                 .orderBy(B2bInvoiceTable.dueDate to SortOrder.ASC)
                 .toPaginatedResponse(limit, offset) { B2bInvoiceDAO.wrapRow(it).toResponse() }
         }
@@ -782,11 +788,13 @@ class B2bService {
         }
 
     suspend fun adminPurchaseOrders(
+        status: PurchaseOrderStatus?,
         limit: Int,
         offset: Int,
     ): PaginatedResponse<PurchaseOrderResponse> =
         query {
             B2bPurchaseOrderTable.selectAll()
+                .also { query -> status?.let { query.andWhere { B2bPurchaseOrderTable.status eq it } } }
                 .orderBy(B2bPurchaseOrderTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) { B2bPurchaseOrderDAO.wrapRow(it).toResponse() }
         }

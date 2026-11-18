@@ -6,12 +6,15 @@ import com.piashcse.config.DotEnvConfig
 import com.piashcse.constants.Message
 import com.piashcse.constants.RefundStatus
 import com.piashcse.constants.UserType
+import com.piashcse.model.request.BulkIdsRequest
+import com.piashcse.model.request.BulkResultResponse
 import com.piashcse.model.request.RefundRequestRequest
 import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.generalRateLimit
+import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.plugin.writeRateLimit
@@ -128,7 +131,17 @@ fun Route.refundSellerRoutes() {
         get {
             val (limit, offset) = call.pageRequest()
             val status = call.request.queryParameters["status"]?.parseEnum<RefundStatus>("refund status")
-            call.respondOk(refundRequestRepo.listForSeller(call.currentUserId, status, limit, offset))
+            call.respondOk(
+                refundRequestRepo.listForSeller(
+                    call.currentUserId,
+                    status,
+                    call.request.queryParameters["q"],
+                    call.queryInstant("from"),
+                    call.queryInstant("to"),
+                    limit,
+                    offset,
+                ),
+            )
         }.describe {
             summary = "Seller - List refund requests"
             description = "Optional status filter; scoped to the seller's shop"
@@ -159,7 +172,16 @@ fun Route.refundAdminRoutes() {
     get {
         val (limit, offset) = call.pageRequest()
         val status = call.request.queryParameters["status"]?.parseEnum<RefundStatus>("refund status")
-        call.respondOk(refundRequestRepo.listAll(status, limit, offset))
+        call.respondOk(
+            refundRequestRepo.listAll(
+                status,
+                call.request.queryParameters["q"],
+                call.queryInstant("from"),
+                call.queryInstant("to"),
+                limit,
+                offset,
+            ),
+        )
     }.describe {
         summary = "Admin - List refund requests"
         description = "Optional status filter across all shops"
@@ -178,6 +200,25 @@ fun Route.refundAdminRoutes() {
                 ),
             )
         }.describe { summary = "Admin - Update refund status" }
+
+        post("bulk/status") {
+            val status = call.requireQueryParameter("status").parseEnum<RefundStatus>("refund status")
+            val body = call.receive<BulkIdsRequest>()
+            val failed =
+                body.ids.filter { id ->
+                    runCatching {
+                        refundRequestRepo.updateRefundStatus(
+                            id,
+                            UpdateRefundStatusRequest(status = status, decisionReason = body.reason),
+                            call.currentUserId,
+                        )
+                    }.isFailure
+                }
+            call.respondOk(BulkResultResponse.of(body.ids.size, failed))
+        }.describe {
+            summary = "Admin - Bulk update refund status"
+            requestBody { jsonBody<BulkIdsRequest>() }
+        }
     }
 
     /**
@@ -190,4 +231,33 @@ fun Route.refundAdminRoutes() {
             refundRequestRepo.getRefundsByOrderId(call.requirePathParameter("orderId"), call.currentUserId, UserType.ADMIN, limit, offset),
         )
     }.describe { summary = "Admin - Get all refund requests for an order" }
+
+    get("export") {
+        call.respondCsv(
+            "refunds.csv",
+            listOf("id", "order_number", "customer_email", "product", "status", "refund_amount", "decision_reason", "created_at"),
+            fetch = { limit, offset ->
+                refundRequestRepo.listAll(
+                    call.request.queryParameters["status"]?.parseEnum<RefundStatus>("refund status"),
+                    call.request.queryParameters["q"],
+                    call.queryInstant("from"),
+                    call.queryInstant("to"),
+                    limit,
+                    offset,
+                ).data
+            },
+            row = {
+                listOf(
+                    it.id,
+                    it.orderNumber.orEmpty(),
+                    it.customerEmail.orEmpty(),
+                    it.productName.orEmpty(),
+                    it.status,
+                    it.refundAmount.orEmpty(),
+                    it.decisionReason.orEmpty(),
+                    it.createdAt,
+                )
+            },
+        )
+    }.describe { summary = "Admin - Export refunds CSV" }
 }

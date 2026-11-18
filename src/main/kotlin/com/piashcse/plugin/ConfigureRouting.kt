@@ -32,8 +32,11 @@ import com.piashcse.feature.consent.consentAdminRoutes
 import com.piashcse.feature.consent.consentRoutes
 import com.piashcse.feature.coupon.couponAdminRoutes
 import com.piashcse.feature.coupon.couponRoutes
+import com.piashcse.feature.coupon.sellerCouponRoutes
+import com.piashcse.feature.dashboard.adminQueueRoutes
 import com.piashcse.feature.dashboard.dashboardAdminRoutes
 import com.piashcse.feature.dashboard.dashboardSellerRoutes
+import com.piashcse.feature.dashboard.sellerReadinessRoutes
 import com.piashcse.feature.featureflag.featureFlagRoutes
 import com.piashcse.feature.fraud.chargebackAdminRoutes
 import com.piashcse.feature.fraud.fraudAdminRoutes
@@ -52,6 +55,7 @@ import com.piashcse.feature.loyalty.referralRoutes
 import com.piashcse.feature.loyalty.walletAdminRoutes
 import com.piashcse.feature.loyalty.walletRoutes
 import com.piashcse.feature.notification.notificationRoutes
+import com.piashcse.feature.notification.sellerNotificationRoutes
 import com.piashcse.feature.omnichannel.pickupActionRoutes
 import com.piashcse.feature.omnichannel.pickupSellerListRoutes
 import com.piashcse.feature.omnichannel.posSellerRoutes
@@ -77,6 +81,7 @@ import com.piashcse.feature.product_sub_category.productSubCategoryAdminRoutes
 import com.piashcse.feature.product_sub_category.productSubCategoryRoutes
 import com.piashcse.feature.profile.profileRoutes
 import com.piashcse.feature.promotion.promotionAdminRoutes
+import com.piashcse.feature.promotion.sellerPromotionRoutes
 import com.piashcse.feature.recommendation.recommendationRoutes
 import com.piashcse.feature.refund_request.refundAdminRoutes
 import com.piashcse.feature.refund_request.refundRequestRoutes
@@ -96,6 +101,7 @@ import com.piashcse.feature.seller.sellerReviewAdminRoutes
 import com.piashcse.feature.seller.sellerReviewRoutes
 import com.piashcse.feature.shipping.orderShipmentRoutes
 import com.piashcse.feature.shipping.shipmentRoutes
+import com.piashcse.feature.shipping_method.sellerShippingMethodRoutes
 import com.piashcse.feature.shipping_method.shippingMethodAdminRoutes
 import com.piashcse.feature.shop.shopAdminRoutes
 import com.piashcse.feature.shop.shopRoutes
@@ -271,9 +277,14 @@ private fun Route.sellerRoutes() {
             route("refund-requests") { refundSellerRoutes() }.describe { tag(ApiTags.REFUND) }
             route("rma-requests") { rmaSellerRoutes() }.describe { tag(ApiTags.RMA) }
             route("dashboard") { dashboardSellerRoutes() }.describe { tag(ApiTags.DASHBOARD) }
+            route("readiness") { sellerReadinessRoutes() }.describe { tag(ApiTags.DASHBOARD) }
             route("payouts") { payoutSellerRoutes() }.describe { tag(ApiTags.PAYOUT) }
             route("reviews") { sellerOwnReviewRoutes() }.describe { tag(ApiTags.SELLER) }
+            route("notifications") { sellerNotificationRoutes() }.describe { tag(ApiTags.NOTIFICATION) }
             route("commission") { commissionSellerRoutes() }.describe { tag(ApiTags.SELLER) }
+            route("coupons") { sellerCouponRoutes() }.describe { tag(ApiTags.COUPON) }
+            route("promotions") { sellerPromotionRoutes() }.describe { tag(ApiTags.COUPON) }
+            route("shipping-methods") { sellerShippingMethodRoutes() }.describe { tag(ApiTags.SHIPPING_METHOD) }
             route("b2b/quotes") { b2bSellerQuoteRoutes() }.describe { tag(ApiTags.B2B) }
             route("b2b/purchase-orders") { b2bSellerPurchaseOrderRoutes() }.describe { tag(ApiTags.B2B) }
             route("b2b/invoices") { b2bSellerInvoiceRoutes() }.describe { tag(ApiTags.B2B) }
@@ -354,6 +365,9 @@ private fun Route.adminRoutes() {
             route("reviews") { reviewAdminRoutes() }.describe { tag(ApiTags.REVIEW) }
             requirePermission(Permission.DASHBOARD_VIEW) {
                 route("dashboard") { dashboardAdminRoutes() }.describe { tag(ApiTags.DASHBOARD) }
+            }
+            requirePermission(Permission.DASHBOARD_VIEW) {
+                route("queues") { adminQueueRoutes() }.describe { tag(ApiTags.DASHBOARD) }
             }
             requirePermission(Permission.DASHBOARD_VIEW) {
                 route("analytics") { analyticsAdminRoutes() }.describe { tag(ApiTags.ANALYTICS) }

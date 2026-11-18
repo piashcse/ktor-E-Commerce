@@ -33,6 +33,8 @@ data class UpdateRefundStatusRequest(
     @Contextual val refundShippingAmount: BigDecimal? = null,
     @Contextual val refundTaxAmount: BigDecimal? = null,
     val refundMethod: RefundMethod? = null,
+    /** Seller/admin decision note shown to the customer. */
+    val decisionReason: String? = null,
 ) {
     init {
         validate(this) {

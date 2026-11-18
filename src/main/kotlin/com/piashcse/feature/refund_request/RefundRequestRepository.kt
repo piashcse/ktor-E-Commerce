@@ -7,6 +7,7 @@ import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
 import com.piashcse.model.response.RefundRequestResponse
 import com.piashcse.utils.common.PaginatedResponse
+import java.time.Instant
 
 interface RefundRequestRepository {
     suspend fun createRefundRequest(
@@ -27,6 +28,9 @@ interface RefundRequestRepository {
     suspend fun listForSeller(
         sellerUserId: String,
         status: RefundStatus?,
+        search: String? = null,
+        from: Instant? = null,
+        to: Instant? = null,
         limit: Int = 20,
         offset: Int = 0,
     ): PaginatedResponse<RefundRequestResponse>
@@ -34,6 +38,9 @@ interface RefundRequestRepository {
     /** Admin queue across all shops. */
     suspend fun listAll(
         status: RefundStatus?,
+        search: String? = null,
+        from: Instant? = null,
+        to: Instant? = null,
         limit: Int = 20,
         offset: Int = 0,
     ): PaginatedResponse<RefundRequestResponse>

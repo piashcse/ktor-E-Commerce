@@ -29,6 +29,20 @@ enum class RefundStatus {
     REJECTED,
     REFUNDED,
     SHIPPED,
+    ;
+
+    companion object {
+        fun canTransitionTo(
+            current: RefundStatus,
+            target: RefundStatus,
+        ): Boolean =
+            when (current) {
+                PENDING -> target in listOf(APPROVED, REJECTED)
+                APPROVED -> target in listOf(SHIPPED, REFUNDED, REJECTED)
+                SHIPPED -> target == REFUNDED
+                REJECTED, REFUNDED -> false
+            }
+    }
 }
 
 @Serializable

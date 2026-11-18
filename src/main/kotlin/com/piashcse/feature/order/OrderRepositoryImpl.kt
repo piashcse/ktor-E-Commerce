@@ -193,6 +193,7 @@ class OrderRepositoryImpl(
     private data class CheckoutShipping(
         val name: String,
         val price: BigDecimal,
+        val shopId: String? = null,
     )
 
     private data class Fulfillment(
@@ -250,7 +251,7 @@ class OrderRepositoryImpl(
                         checkoutRequest.shippingMethodId
                             ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND),
                     ) ?: throw ValidationException(Message.Orders.SHIPPING_METHOD_NOT_FOUND)
-                CheckoutShipping(method.name, method.price)
+                CheckoutShipping(method.name, method.price, method.shopId?.value)
             }
         val fullAddress =
             if (pickupWarehouse != null) {
@@ -341,7 +342,7 @@ class OrderRepositoryImpl(
                     if (checkoutRequest.couponCode != null) {
                         applyCoupon(checkoutRequest.couponCode, quote, context, userId, fxRate, checkoutReference)
                     } else {
-                        promotionService.evaluateTx(quote.totalUsdSubTotal)?.let { promotion ->
+                        promotionService.evaluateTx(quote.totalUsdSubTotal, context.itemsByShop.keys)?.let { promotion ->
                             applyPromotion(quote, promotion, fxRate)
                             promotionService.markUsedTx(
                                 promotion.id,
@@ -397,6 +398,11 @@ class OrderRepositoryImpl(
                     ?: throw ValidationException(Message.Orders.productDoesNotBelongToShop(it.productId.value))
             }
         validateShopsApproved(itemsByShop.keys)
+        fulfillment.shippingMethod.shopId?.let { methodShop ->
+            if (itemsByShop.size != 1 || methodShop != itemsByShop.keys.first()) {
+                throw ValidationException("Shipping method is not available for these shops")
+            }
+        }
         fulfillment.pickupWarehouse?.let { warehouse ->
             if (itemsByShop.size != 1) throw ValidationException("Pickup orders must contain items from one shop")
             if (warehouse.shopId.value != itemsByShop.keys.first()) {
@@ -1181,7 +1187,7 @@ class OrderRepositoryImpl(
             var eligibleCouponProductIds: Set<String>? = null
             val couponCode = checkoutRequest.couponCode
             if (couponCode == null) {
-                promotionService.evaluateTx(subUsd)?.let { promotion ->
+                promotionService.evaluateTx(subUsd, context.itemsByShop.keys)?.let { promotion ->
                     val discount = Money.scale2(promotion.discount.multiply(fxRate))
                     val discountedShipping = if (promotion.freeShipping) BigDecimal.ZERO.setScale(2) else ship
                     response =
@@ -1448,6 +1454,9 @@ class OrderRepositoryImpl(
         limit: Int,
         offset: Int,
         status: String?,
+        query: String?,
+        from: Instant?,
+        to: Instant?,
     ): PaginatedResponse<OrderResponse> =
         query {
             val seller =
@@ -1458,9 +1467,18 @@ class OrderRepositoryImpl(
                 }
             val shopId = seller.shopId ?: throw ValidationException(Message.Orders.NO_SHOP_ASSOCIATED)
 
-            val query = OrderTable.selectAll().andWhere { OrderTable.shopId eq shopId }
-            status?.let { query.andWhere { OrderTable.status eq parseOrderStatus(it) } }
-            query
+            val orders = OrderTable.selectAll().andWhere { OrderTable.shopId eq shopId }
+            status?.let { orders.andWhere { OrderTable.status eq parseOrderStatus(it) } }
+            query?.takeIf { it.isNotBlank() }?.let { term ->
+                val pattern = "%${term.trim().lowercase()}%"
+                orders.andWhere {
+                    (OrderTable.orderNumber.lowerCase() like pattern) or
+                        (OrderTable.contactEmail.lowerCase() like pattern)
+                }
+            }
+            from?.let { orders.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
+            to?.let { orders.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
+            orders
                 .orderBy(OrderTable.createdAt to SortOrder.DESC)
                 .toOrdersPaginated(limit, offset, includeSensitive = false)
         }
@@ -1471,13 +1489,21 @@ class OrderRepositoryImpl(
         status: String?,
         startDate: Instant?,
         endDate: Instant?,
+        query: String?,
     ): PaginatedResponse<OrderResponse> =
         query {
-            val query = OrderTable.selectAll()
-            status?.let { query.andWhere { OrderTable.status eq parseOrderStatus(it) } }
-            startDate?.let { query.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
-            endDate?.let { query.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
-            query
+            val orders = OrderTable.selectAll()
+            status?.let { orders.andWhere { OrderTable.status eq parseOrderStatus(it) } }
+            startDate?.let { orders.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
+            endDate?.let { orders.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
+            query?.takeIf { it.isNotBlank() }?.let { term ->
+                val pattern = "%${term.trim().lowercase()}%"
+                orders.andWhere {
+                    (OrderTable.orderNumber.lowerCase() like pattern) or
+                        (OrderTable.contactEmail.lowerCase() like pattern)
+                }
+            }
+            orders
                 .orderBy(OrderTable.createdAt to SortOrder.DESC)
                 .toOrdersPaginated(limit, offset, includeSensitive = false)
         }

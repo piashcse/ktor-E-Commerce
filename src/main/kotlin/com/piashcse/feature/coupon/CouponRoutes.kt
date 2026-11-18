@@ -5,10 +5,13 @@ package com.piashcse.feature.coupon
 import com.piashcse.constants.Message
 import com.piashcse.model.request.CouponRequest
 import com.piashcse.plugin.adminWriteRateLimit
+import com.piashcse.plugin.jsonBody
+import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.utils.common.ApiError
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.queryBooleanOrNull
+import com.piashcse.utils.extension.requireSellerShopId
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
@@ -85,4 +88,40 @@ fun Route.couponAdminRoutes() {
             ),
         )
     }.describe { summary = "Admin - Retrieve a list of all coupons" }
+}
+
+/** Seller coupons scoped to the seller's shop. */
+fun Route.sellerCouponRoutes() {
+    val couponRepo: CouponRepository by inject()
+    get {
+        val (limit, offset) = call.pageRequest(defaultPerPage = 10)
+        val shopId = requireSellerShopId(call.currentUserId)
+        call.respondOk(couponRepo.getSellerCoupons(shopId, limit, offset, call.queryBooleanOrNull("active")))
+    }.describe { summary = "Seller - List my shop coupons" }
+
+    sellerWriteRateLimit {
+        post {
+            val shopId = requireSellerShopId(call.currentUserId)
+            call.respondCreated(couponRepo.createSellerCoupon(shopId, call.receive<CouponRequest>(), call.currentUserId))
+        }.describe {
+            summary = "Seller - Create a shop coupon"
+            requestBody { jsonBody<CouponRequest>() }
+        }
+        put("{id}") {
+            val shopId = requireSellerShopId(call.currentUserId)
+            call.respondOk(
+                couponRepo.updateSellerCoupon(shopId, call.requirePathParameter("id"), call.receive<CouponRequest>(), call.currentUserId),
+            )
+        }.describe {
+            summary = "Seller - Update a shop coupon"
+            requestBody { jsonBody<CouponRequest>() }
+        }
+        delete("{id}") {
+            val shopId = requireSellerShopId(call.currentUserId)
+            if (!couponRepo.deleteSellerCoupon(shopId, call.requirePathParameter("id"))) {
+                throw NotFoundException(Message.Coupons.NOT_FOUND)
+            }
+            call.respondDeleted("Coupon deleted successfully")
+        }.describe { summary = "Seller - Delete a shop coupon" }
+    }
 }

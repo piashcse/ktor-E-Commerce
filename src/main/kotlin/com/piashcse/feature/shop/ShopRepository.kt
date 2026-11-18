@@ -111,6 +111,13 @@ interface ShopRepository {
         offset: Int = 0,
     ): PaginatedResponse<ShopResponse>
 
+    suspend fun getAllShops(
+        status: ShopStatus?,
+        search: String?,
+        limit: Int,
+        offset: Int,
+    ): PaginatedResponse<ShopResponse>
+
     /**
      * Approves a shop application.
      *
@@ -135,6 +142,7 @@ interface ShopRepository {
         actorId: String? = null,
         actorEmail: String? = null,
         actorRole: String? = null,
+        reason: String? = null,
     ): ShopResponse
 
     /**
@@ -148,6 +156,7 @@ interface ShopRepository {
         actorId: String? = null,
         actorEmail: String? = null,
         actorRole: String? = null,
+        reason: String? = null,
     ): ShopResponse
 
     /**

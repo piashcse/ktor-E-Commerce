@@ -9,4 +9,5 @@ data class ShippingMethodResponse(
     val type: String?,
     val price: String,
     val deliveryTime: String?,
+    val shopId: String? = null,
 )

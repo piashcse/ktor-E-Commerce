@@ -74,6 +74,14 @@ fun ApplicationCall.queryInstant(name: String): Instant? =
         }
     }
 
+/** ISO local-date query param (`yyyy-MM-dd`). */
+fun ApplicationCall.queryLocalDate(name: String): java.time.LocalDate? =
+    request.queryParameters[name]?.takeIf { it.isNotBlank() }?.let { raw ->
+        runCatching { java.time.LocalDate.parse(raw) }.getOrElse {
+            throw ValidationException(Message.Errors.invalidParameter(name, raw))
+        }
+    }
+
 fun ApplicationCall.queryBoolean(
     name: String,
     defaultValue: Boolean = false,

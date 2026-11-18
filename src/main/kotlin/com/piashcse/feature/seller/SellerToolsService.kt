@@ -5,6 +5,8 @@ import com.piashcse.constants.DisputeType
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.ReviewStatus
 import com.piashcse.constants.UserType
+import com.piashcse.database.entities.DisputeMessageDAO
+import com.piashcse.database.entities.DisputeMessageTable
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.SellerDisputeDAO
@@ -17,9 +19,13 @@ import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.UserDAO
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
+import com.piashcse.event.DisputeCreatedEvent
+import com.piashcse.event.EventBus
+import com.piashcse.event.SellerReviewCreatedEvent
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.entityID
+import com.piashcse.utils.extension.findSellerByUserId
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.requireSellerByUserId
 import com.piashcse.utils.extension.throwNotFound
@@ -50,7 +56,10 @@ data class SellerReviewRequest(
 }
 
 @Serializable
-data class SellerReviewStatusRequest(val status: ReviewStatus)
+data class SellerReviewStatusRequest(
+    val status: ReviewStatus,
+    val reason: String? = null,
+)
 
 @Serializable
 data class SellerReviewResponse(
@@ -62,6 +71,9 @@ data class SellerReviewResponse(
     val rating: Int,
     val comment: String?,
     val status: ReviewStatus,
+    val sellerReply: String? = null,
+    val sellerRepliedAt: String? = null,
+    val moderationReason: String? = null,
     val createdAt: String?,
 )
 
@@ -88,6 +100,27 @@ data class DisputeUpdateRequest(
 )
 
 @Serializable
+data class DisputeMessageRequest(
+    val body: String,
+    val isInternal: Boolean = false,
+)
+
+@Serializable
+data class DisputeMessageResponse(
+    val id: String,
+    val authorId: String,
+    val body: String,
+    val isInternal: Boolean,
+    val createdAt: String?,
+)
+
+@Serializable
+data class DisputeDetailResponse(
+    val dispute: DisputeResponse,
+    val messages: List<DisputeMessageResponse>,
+)
+
+@Serializable
 data class DisputeResponse(
     val id: String,
     val orderId: String?,
@@ -107,37 +140,43 @@ class SellerToolsService {
     suspend fun createReview(
         userId: String,
         request: SellerReviewRequest,
-    ): SellerReviewResponse =
-        query {
-            val order = OrderDAO.findById(request.orderId) ?: request.orderId.throwNotFound("Order")
-            if (order.userId.value != userId) throw ForbiddenException("You can only review your own orders")
-            if (order.status !in listOf(OrderStatus.DELIVERED, OrderStatus.RECEIVED)) {
-                throw ValidationException("Seller reviews are available after delivery")
-            }
-            val shopId = order.shopId?.value ?: throw ValidationException("Order has no seller")
-            val seller =
-                SellerDAO.find { SellerTable.shopId eq shopId.entityID(ShopTable) }.firstOrNull()
-                    ?: throw ValidationException("Seller not found")
-            if (SellerReviewDAO.find {
-                    (SellerReviewTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable)) and
-                        (SellerReviewTable.orderId eq order.id)
-                }.any()
-            ) {
-                throw ValidationException("This order has already been reviewed")
-            }
-            val review =
-                SellerReviewDAO.new {
-                    this.sellerId = seller.id
-                    this.shopId = seller.shopId
-                    this.userId = userId.entityID(com.piashcse.database.entities.UserTable)
-                    this.orderId = order.id
-                    this.rating = request.rating
-                    this.comment = request.comment
-                    this.status = ReviewStatus.ACTIVE
+    ): SellerReviewResponse {
+        val response =
+            query {
+                val order = OrderDAO.findById(request.orderId) ?: request.orderId.throwNotFound("Order")
+                if (order.userId.value != userId) throw ForbiddenException("You can only review your own orders")
+                if (order.status !in listOf(OrderStatus.DELIVERED, OrderStatus.RECEIVED)) {
+                    throw ValidationException("Seller reviews are available after delivery")
                 }
-            refreshShopRating(seller.shopId?.value)
-            review.toResponse()
-        }
+                val shopId = order.shopId?.value ?: throw ValidationException("Order has no seller")
+                val seller =
+                    SellerDAO.find { SellerTable.shopId eq shopId.entityID(ShopTable) }.firstOrNull()
+                        ?: throw ValidationException("Seller not found")
+                if (SellerReviewDAO.find {
+                        (SellerReviewTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable)) and
+                            (SellerReviewTable.orderId eq order.id)
+                    }.any()
+                ) {
+                    throw ValidationException("This order has already been reviewed")
+                }
+                val review =
+                    SellerReviewDAO.new {
+                        this.sellerId = seller.id
+                        this.shopId = seller.shopId
+                        this.userId = userId.entityID(com.piashcse.database.entities.UserTable)
+                        this.orderId = order.id
+                        this.rating = request.rating
+                        this.comment = request.comment
+                        this.status = ReviewStatus.ACTIVE
+                    }
+                refreshShopRating(seller.shopId?.value)
+                review.toResponse()
+            }
+        EventBus.publish(
+            SellerReviewCreatedEvent(response.id, response.sellerId, userId, response.rating, response.comment),
+        )
+        return response
+    }
 
     suspend fun reviewsForSeller(
         sellerId: String,
@@ -211,52 +250,75 @@ class SellerToolsService {
                 .also { query ->
                     status?.let { query.andWhere { SellerReviewTable.status eq it } }
                     query.orderBy(SellerReviewTable.createdAt to SortOrder.DESC)
-                }.toPaginatedResponse(limit, offset) { SellerReviewDAO.wrapRow(it).toResponse() }
+                }.toPaginatedResponse(limit, offset) {
+                    SellerReviewDAO.wrapRow(it).toResponse(includeModeration = true)
+                }
         }
 
     suspend fun updateReviewStatus(
         reviewId: String,
         status: ReviewStatus,
+        reason: String? = null,
     ): SellerReviewResponse =
         query {
             val review = SellerReviewDAO.findById(reviewId) ?: reviewId.throwNotFound("Seller review")
             review.status = status
+            review.moderationReason = reason?.takeIf { it.isNotBlank() }
             refreshShopRating(review.shopId?.value)
+            review.toResponse(includeModeration = true)
+        }
+
+    /** Seller reply on a review left for their shop. */
+    suspend fun replyToSellerReview(
+        sellerUserId: String,
+        reviewId: String,
+        reply: String,
+    ): SellerReviewResponse =
+        query {
+            val seller = requireSellerByUserId(sellerUserId)
+            val review = SellerReviewDAO.findById(reviewId) ?: reviewId.throwNotFound("Seller review")
+            if (review.sellerId.value != seller.id.value) throw ForbiddenException("Review belongs to another seller")
+            review.sellerReply = reply.trim()
+            review.sellerRepliedAt = currentUtc()
             review.toResponse()
         }
 
     suspend fun createDispute(
         userId: String,
         request: DisputeRequest,
-    ): DisputeResponse =
-        query {
-            val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
-            var sellerId: String? = request.sellerId?.takeIf { it.isNotBlank() }
-            if (request.orderId != null) {
-                val order = OrderDAO.findById(request.orderId) ?: request.orderId.throwNotFound("Order")
-                val seller =
-                    order.shopId?.value?.let { shopId ->
-                        SellerDAO.find { SellerTable.shopId eq shopId.entityID(ShopTable) }.firstOrNull()
+    ): DisputeResponse {
+        val response =
+            query {
+                val user = UserDAO.findById(userId) ?: userId.throwNotFound("User")
+                var sellerId: String? = request.sellerId?.takeIf { it.isNotBlank() }
+                if (request.orderId != null) {
+                    val order = OrderDAO.findById(request.orderId) ?: request.orderId.throwNotFound("Order")
+                    val seller =
+                        order.shopId?.value?.let { shopId ->
+                            SellerDAO.find { SellerTable.shopId eq shopId.entityID(ShopTable) }.firstOrNull()
+                        }
+                    val isOwner = order.userId.value == userId
+                    val isSeller = seller?.userId?.value == userId
+                    if (!isOwner && !isSeller && user.userType !in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)) {
+                        throw ForbiddenException("You do not have access to this order")
                     }
-                val isOwner = order.userId.value == userId
-                val isSeller = seller?.userId?.value == userId
-                if (!isOwner && !isSeller && user.userType !in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)) {
-                    throw ForbiddenException("You do not have access to this order")
+                    sellerId = seller?.id?.value
+                } else if (sellerId == null) {
+                    sellerId = runCatching { requireSellerByUserId(userId).id.value }.getOrNull()
                 }
-                sellerId = seller?.id?.value
-            } else if (sellerId == null) {
-                sellerId = runCatching { requireSellerByUserId(userId).id.value }.getOrNull()
+                SellerDisputeDAO.new {
+                    this.orderId = request.orderId?.entityID(com.piashcse.database.entities.OrderTable)
+                    this.sellerId = sellerId?.entityID(SellerTable)
+                    this.userId = userId.entityID(com.piashcse.database.entities.UserTable)
+                    this.type = request.type
+                    this.subject = request.subject
+                    this.description = request.description
+                    this.status = DisputeStatus.OPEN
+                }.toResponse()
             }
-            SellerDisputeDAO.new {
-                this.orderId = request.orderId?.entityID(com.piashcse.database.entities.OrderTable)
-                this.sellerId = sellerId?.entityID(SellerTable)
-                this.userId = userId.entityID(com.piashcse.database.entities.UserTable)
-                this.type = request.type
-                this.subject = request.subject
-                this.description = request.description
-                this.status = DisputeStatus.OPEN
-            }.toResponse()
-        }
+        EventBus.publish(DisputeCreatedEvent(response.id, response.sellerId, userId, response.subject))
+        return response
+    }
 
     suspend fun myDisputes(
         userId: String,
@@ -334,7 +396,7 @@ class SellerToolsService {
             }
     }
 
-    private fun SellerReviewDAO.toResponse() =
+    private fun SellerReviewDAO.toResponse(includeModeration: Boolean = false) =
         SellerReviewResponse(
             id = id.value,
             sellerId = sellerId.value,
@@ -344,6 +406,9 @@ class SellerToolsService {
             rating = rating,
             comment = comment,
             status = status,
+            sellerReply = sellerReply,
+            sellerRepliedAt = sellerRepliedAt?.toUtcString(),
+            moderationReason = moderationReason.takeIf { includeModeration },
             createdAt = createdAt.toUtcString(),
         )
 
@@ -362,4 +427,69 @@ class SellerToolsService {
             resolvedAt = resolvedAt?.toUtcString(),
             createdAt = createdAt.toUtcString(),
         )
+
+    private fun DisputeMessageDAO.toResponse() =
+        DisputeMessageResponse(
+            id = id.value,
+            authorId = authorId.value,
+            body = body,
+            isInternal = isInternal,
+            createdAt = createdAt.toUtcString(),
+        )
+
+    suspend fun disputeDetail(
+        userId: String,
+        userType: UserType,
+        disputeId: String,
+    ): DisputeDetailResponse =
+        query {
+            val dispute = loadDisputeForActor(userId, userType, disputeId)
+            val isAdmin = userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
+            val messages =
+                DisputeMessageDAO.find { DisputeMessageTable.disputeId eq dispute.id }
+                    .filter { isAdmin || !it.isInternal }
+                    .sortedBy { it.createdAt }
+                    .map { it.toResponse() }
+            DisputeDetailResponse(dispute.toResponse(), messages)
+        }
+
+    suspend fun addDisputeMessage(
+        userId: String,
+        userType: UserType,
+        disputeId: String,
+        request: DisputeMessageRequest,
+    ): DisputeDetailResponse =
+        query {
+            val dispute = loadDisputeForActor(userId, userType, disputeId)
+            val isAdmin = userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
+            if (request.isInternal && !isAdmin) throw ForbiddenException("Only admins can add internal notes")
+            if (request.body.isBlank()) throw ValidationException("Message body is required")
+            DisputeMessageDAO.new {
+                this.disputeId = dispute.id
+                authorId = userId.entityID(UserTable)
+                body = request.body.trim()
+                isInternal = request.isInternal
+            }
+            val messages =
+                DisputeMessageDAO.find { DisputeMessageTable.disputeId eq dispute.id }
+                    .filter { isAdmin || !it.isInternal }
+                    .sortedBy { it.createdAt }
+                    .map { it.toResponse() }
+            DisputeDetailResponse(dispute.toResponse(), messages)
+        }
+
+    private fun loadDisputeForActor(
+        userId: String,
+        userType: UserType,
+        disputeId: String,
+    ): SellerDisputeDAO {
+        val dispute = SellerDisputeDAO.findById(disputeId) ?: disputeId.throwNotFound("Dispute")
+        val isAdmin = userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN)
+        val seller = findSellerByUserId(userId)
+        val isParticipant =
+            dispute.userId.value == userId ||
+                (dispute.sellerId != null && seller?.id?.value == dispute.sellerId?.value)
+        if (!isAdmin && !isParticipant) throw ForbiddenException("You do not have access to this dispute")
+        return dispute
+    }
 }

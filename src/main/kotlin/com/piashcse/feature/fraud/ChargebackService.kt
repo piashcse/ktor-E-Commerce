@@ -18,6 +18,9 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.greaterEq
+import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.math.BigDecimal
 
@@ -49,6 +52,7 @@ data class ChargebackResponse(
     val reason: String?,
     val outcome: String?,
     val evidenceDueAt: String?,
+    val evidenceUrl: String? = null,
     val openedAt: String,
     val resolvedAt: String?,
     val createdAt: String?,
@@ -58,11 +62,46 @@ class ChargebackService {
     suspend fun list(
         limit: Int,
         offset: Int,
+        status: ChargebackStatus? = null,
+        dueBefore: java.time.Instant? = null,
+        openedFrom: java.time.Instant? = null,
+        openedTo: java.time.Instant? = null,
     ): PaginatedResponse<ChargebackResponse> =
         query {
             ChargebackTable.selectAll()
-                .orderBy(ChargebackTable.createdAt to SortOrder.DESC)
+                .also { query ->
+                    status?.let { query.andWhere { ChargebackTable.status eq it } }
+                    dueBefore?.let { date ->
+                        query.andWhere {
+                            ChargebackTable.evidenceDueAt lessEq
+                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
+                        }
+                    }
+                    openedFrom?.let { date ->
+                        query.andWhere {
+                            ChargebackTable.openedAt greaterEq
+                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
+                        }
+                    }
+                    openedTo?.let { date ->
+                        query.andWhere {
+                            ChargebackTable.openedAt lessEq
+                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
+                        }
+                    }
+                }
+                .orderBy(ChargebackTable.evidenceDueAt to SortOrder.ASC)
                 .toPaginatedResponse(limit, offset) { ChargebackDAO.wrapRow(it).toResponse() }
+        }
+
+    suspend fun attachEvidence(
+        id: String,
+        evidenceUrl: String,
+    ): ChargebackResponse =
+        query {
+            val chargeback = ChargebackDAO.findById(id) ?: id.throwNotFound("Chargeback")
+            chargeback.evidenceUrl = evidenceUrl
+            chargeback.toResponse()
         }
 
     suspend fun get(id: String): ChargebackResponse =
@@ -137,6 +176,7 @@ class ChargebackService {
             reason = reason,
             outcome = outcome,
             evidenceDueAt = evidenceDueAt?.toUtcString(),
+            evidenceUrl = evidenceUrl,
             openedAt = openedAt.toUtcString(),
             resolvedAt = resolvedAt?.toUtcString(),
             createdAt = createdAt.toUtcString(),

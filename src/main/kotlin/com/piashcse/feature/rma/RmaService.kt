@@ -15,13 +15,19 @@ import com.piashcse.event.RmaStatusChangedEvent
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
+import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.core.like
+import org.jetbrains.exposed.v1.core.lowerCase
+import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
@@ -62,6 +68,11 @@ data class RmaResponse(
     val status: RmaStatus,
     val reason: String,
     val resolution: RmaResolution?,
+    val note: String? = null,
+    val orderNumber: String? = null,
+    val customerEmail: String? = null,
+    val productName: String? = null,
+    val allowedActions: List<String> = emptyList(),
     val trackingNumber: String?,
     val replacementOrderId: String?,
     val refundRequestId: String?,
@@ -89,6 +100,7 @@ class RmaService {
                 email = UserDAO.findById(rma.userId.value)?.email.orEmpty(),
                 fromStatus = fromStatus?.name ?: "NONE",
                 toStatus = toStatus.name,
+                note = rma.resolutionNote,
             ),
         )
     }
@@ -144,37 +156,105 @@ class RmaService {
             RmaTable.selectAll().andWhere { RmaTable.userId eq userId }
                 .orderBy(RmaTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toResponse() }
+                .let { enrichRmas(it) }
         }
 
     suspend fun getSellerRmas(
         sellerUserId: String,
+        status: RmaStatus?,
+        search: String?,
+        from: java.time.Instant?,
+        to: java.time.Instant?,
         limit: Int,
         offset: Int,
     ): PaginatedResponse<RmaResponse> =
         query {
             val seller = requireSellerByUserId(sellerUserId)
             val shopId = seller.shopId?.value ?: throw ValidationException(Message.Orders.NO_SHOP_ASSOCIATED)
-            RmaTable.selectAll().andWhere { RmaTable.shopId eq shopId }
+            var orderIds = OrderDAO.find { OrderTable.shopId eq shopId }.map { it.id }
+            search?.takeIf { it.isNotBlank() }?.let { term ->
+                val pattern = "%${term.trim().lowercase()}%"
+                orderIds =
+                    OrderDAO.find {
+                        (OrderTable.id inList orderIds) and
+                            ((OrderTable.orderNumber.lowerCase() like pattern) or (OrderTable.contactEmail.lowerCase() like pattern))
+                    }.map { it.id }
+            }
+            if (orderIds.isEmpty()) return@query com.piashcse.utils.common.emptyPage(limit, offset)
+            RmaTable.selectAll().andWhere { RmaTable.orderId inList orderIds }
+                .also { q ->
+                    status?.let { q.andWhere { RmaTable.status eq it } }
+                    from?.let { date ->
+                        q.andWhere {
+                            RmaTable.createdAt greaterEq
+                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
+                        }
+                    }
+                    to?.let { date ->
+                        q.andWhere {
+                            RmaTable.createdAt lessEq
+                                java.time.LocalDateTime.ofInstant(date, java.time.ZoneOffset.UTC)
+                        }
+                    }
+                }
                 .orderBy(RmaTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toResponse() }
+                .let { enrichRmas(it) }
         }
 
     suspend fun getAdminRmas(
         limit: Int,
         offset: Int,
-        status: String?,
+        status: RmaStatus?,
+        search: String?,
+        from: java.time.Instant?,
+        to: java.time.Instant?,
     ): PaginatedResponse<RmaResponse> =
         query {
-            val query = RmaTable.selectAll()
-            status?.let {
-                val parsed =
-                    runCatching { RmaStatus.valueOf(it.uppercase()) }
-                        .getOrElse { throw ValidationException("Invalid RMA status: $it") }
-                query.andWhere { RmaTable.status eq parsed }
+            val matchingOrderIds =
+                search?.takeIf { it.isNotBlank() }?.let { term ->
+                    val pattern = "%${term.trim().lowercase()}%"
+                    OrderDAO.find {
+                        (OrderTable.orderNumber.lowerCase() like pattern) or
+                            (OrderTable.contactEmail.lowerCase() like pattern)
+                    }.map { it.id }
+                }
+            if (matchingOrderIds != null && matchingOrderIds.isEmpty()) {
+                return@query com.piashcse.utils.common.emptyPage(limit, offset)
             }
+            val query = RmaTable.selectAll()
+            status?.let { query.andWhere { RmaTable.status eq it } }
+            matchingOrderIds?.let { query.andWhere { RmaTable.orderId inList it } }
+            from?.let { query.andWhere { RmaTable.createdAt greaterEq java.time.LocalDateTime.ofInstant(it, java.time.ZoneOffset.UTC) } }
+            to?.let { query.andWhere { RmaTable.createdAt lessEq java.time.LocalDateTime.ofInstant(it, java.time.ZoneOffset.UTC) } }
             query.orderBy(RmaTable.createdAt to SortOrder.DESC)
                 .toPaginatedResponse(limit, offset) { RmaDAO.wrapRow(it).toResponse() }
+                .let { enrichRmas(it) }
         }
+
+    private fun enrichRmas(page: PaginatedResponse<RmaResponse>): PaginatedResponse<RmaResponse> {
+        if (page.data.isEmpty()) return page
+        val orders =
+            OrderDAO.find { OrderTable.id inList page.data.map { it.orderId }.distinct().map { it.entityID(OrderTable) } }
+                .associateBy { it.id.value }
+        val items =
+            OrderItemDAO.find {
+                OrderItemTable.id inList page.data.map { it.orderItemId }.distinct().map { it.entityID(OrderItemTable) }
+            }.associateBy { it.id.value }
+        val users =
+            UserDAO.find { UserTable.id inList page.data.map { it.userId }.distinct().map { it.entityID(UserTable) } }
+                .associateBy { it.id.value }
+        return page.copy(
+            data =
+                page.data.map { rma ->
+                    rma.copy(
+                        orderNumber = orders[rma.orderId]?.orderNumber,
+                        customerEmail = users[rma.userId]?.email,
+                        productName = items[rma.orderItemId]?.productName,
+                    )
+                },
+        )
+    }
 
     suspend fun ship(
         rmaId: String,
@@ -230,8 +310,9 @@ class RmaService {
                 throw ValidationException("Use the dedicated ship/cancel endpoints for this transition")
             }
             if (!RmaStatus.canTransitionTo(rma.status, request.status)) {
-                throw ValidationException("Cannot change RMA status from ${rma.status} to ${request.status}")
+                throw ConflictException("Cannot change RMA status from ${rma.status} to ${request.status}")
             }
+            request.note?.takeIf { it.isNotBlank() }?.let { rma.resolutionNote = it }
             val fromStatus = rma.status
 
             when (request.status) {
@@ -334,6 +415,12 @@ class RmaService {
             status = status,
             reason = reason,
             resolution = resolution,
+            note = resolutionNote,
+            allowedActions =
+                RmaStatus.entries
+                    .filter { it != RmaStatus.IN_TRANSIT && it != RmaStatus.CANCELLED }
+                    .filter { RmaStatus.canTransitionTo(status, it) }
+                    .map { it.name },
             trackingNumber = trackingNumber,
             replacementOrderId = replacementOrderId?.value,
             refundRequestId = refundRequestId?.value,

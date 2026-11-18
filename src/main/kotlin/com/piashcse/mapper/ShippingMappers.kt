@@ -29,4 +29,5 @@ fun ShippingMethodDAO.toShippingMethodResponse() =
         type = type,
         price = Money.str(price),
         deliveryTime = deliveryTime,
+        shopId = shopId?.value,
     )

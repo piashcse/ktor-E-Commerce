@@ -1,5 +1,7 @@
 @file:OptIn(io.ktor.utils.io.ExperimentalKtorApi::class)
 
+@file:Suppress("MatchingDeclarationName")
+
 package com.piashcse.feature.seller
 
 import com.piashcse.constants.DisputeStatus
@@ -10,10 +12,12 @@ import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.requireRole
+import com.piashcse.plugin.sellerWriteRateLimit
 import com.piashcse.plugin.standardErrors
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
+import com.piashcse.utils.extension.requireUserType
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
@@ -22,7 +26,11 @@ import io.ktor.server.request.receive
 import io.ktor.server.request.requirePathParameter
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
+import kotlinx.serialization.Serializable
 import org.koin.ktor.ext.inject
+
+@Serializable
+data class SellerReviewReplyRequest(val reply: String)
 
 /** Public seller review listings. */
 fun Route.sellerPublicRoutes() {
@@ -69,10 +77,29 @@ fun Route.sellerReviewRoutes() {
 /** Seller reads reviews received by their shop. */
 fun Route.sellerOwnReviewRoutes() {
     val service: SellerToolsService by inject()
+    val reviewRatingRepo: com.piashcse.feature.review_rating.ReviewRatingRepository by inject()
     get {
         val (limit, offset) = call.pageRequest()
         call.respondOk(service.reviewsForSellerUser(call.currentUserId, limit, offset))
     }.describe { summary = "Seller: list reviews received" }
+
+    sellerWriteRateLimit {
+        post("products/{id}/reply") {
+            val body = call.receive<SellerReviewReplyRequest>()
+            call.respondOk(reviewRatingRepo.replyAsSeller(call.currentUserId, call.requirePathParameter("id"), body.reply))
+        }.describe {
+            summary = "Seller: reply to a product review"
+            requestBody { jsonBody<SellerReviewReplyRequest>() }
+        }
+
+        post("{id}/reply") {
+            val body = call.receive<SellerReviewReplyRequest>()
+            call.respondOk(service.replyToSellerReview(call.currentUserId, call.requirePathParameter("id"), body.reply))
+        }.describe {
+            summary = "Seller: reply to a seller review"
+            requestBody { jsonBody<SellerReviewReplyRequest>() }
+        }
+    }
 }
 
 /** Admin moderation of seller reviews. */
@@ -87,7 +114,8 @@ fun Route.sellerReviewAdminRoutes() {
     adminWriteRateLimit {
         put("{id}/status") {
             val id = call.requirePathParameter("id")
-            call.respondOk(service.updateReviewStatus(id, call.receive<SellerReviewStatusRequest>().status))
+            val body = call.receive<SellerReviewStatusRequest>()
+            call.respondOk(service.updateReviewStatus(id, body.status, body.reason))
         }.describe {
             summary = "Admin: moderate a seller review"
             requestBody { jsonBody<SellerReviewStatusRequest>() }
@@ -105,6 +133,10 @@ fun Route.disputeRoutes() {
             call.respondOk(service.myDisputes(call.currentUserId, limit, offset))
         }.describe { summary = "List my disputes" }
 
+        get("{id}") {
+            call.respondOk(service.disputeDetail(call.currentUserId, call.requireUserType(), call.requirePathParameter("id")))
+        }.describe { summary = "Get a dispute with its message thread" }
+
         post {
             call.respondCreated(service.createDispute(call.currentUserId, call.receive<DisputeRequest>()))
         }.describe {
@@ -114,6 +146,20 @@ fun Route.disputeRoutes() {
                 created<DisputeResponse>("Dispute created")
                 standardErrors()
             }
+        }
+
+        post("{id}/messages") {
+            call.respondOk(
+                service.addDisputeMessage(
+                    call.currentUserId,
+                    call.requireUserType(),
+                    call.requirePathParameter("id"),
+                    call.receive<DisputeMessageRequest>(),
+                ),
+            )
+        }.describe {
+            summary = "Add a message or evidence to a dispute"
+            requestBody { jsonBody<DisputeMessageRequest>() }
         }
     }
 }
@@ -188,4 +234,8 @@ fun Route.commissionSellerRoutes() {
             ),
         )
     }.describe { summary = "Seller: get my effective commission rate" }
+
+    get("orders/{orderId}") {
+        call.respondOk(service.orderPreview(call.currentUserId, call.requirePathParameter("orderId")))
+    }.describe { summary = "Seller: per-order commission and payout preview" }
 }

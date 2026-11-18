@@ -47,6 +47,24 @@ object OutboxPublisher {
                 is AdminActionEvent -> "ADMIN_ACTION" to outboxJson.encodeToString(AdminActionEvent.serializer(), event)
                 is UserRegisteredEvent -> "USER_REGISTERED" to outboxJson.encodeToString(UserRegisteredEvent.serializer(), event)
                 is SendEmailEvent -> "SEND_EMAIL" to outboxJson.encodeToString(SendEmailEvent.serializer(), event)
+                is SellerReviewCreatedEvent ->
+                    "SELLER_REVIEW_CREATED" to
+                        outboxJson.encodeToString(SellerReviewCreatedEvent.serializer(), event)
+                is ProductReviewCreatedEvent ->
+                    "PRODUCT_REVIEW_CREATED" to
+                        outboxJson.encodeToString(ProductReviewCreatedEvent.serializer(), event)
+                is DisputeCreatedEvent -> "DISPUTE_CREATED" to outboxJson.encodeToString(DisputeCreatedEvent.serializer(), event)
+                is KycStatusChangedEvent ->
+                    "KYC_STATUS_CHANGED" to
+                        outboxJson.encodeToString(KycStatusChangedEvent.serializer(), event)
+                is ShopStatusChangedEvent ->
+                    "SHOP_STATUS_CHANGED" to
+                        outboxJson.encodeToString(ShopStatusChangedEvent.serializer(), event)
+                is PayoutStatusChangedEvent ->
+                    "PAYOUT_STATUS_CHANGED" to
+                        outboxJson.encodeToString(PayoutStatusChangedEvent.serializer(), event)
+                is LowStockEvent ->
+                    "LOW_STOCK" to outboxJson.encodeToString(LowStockEvent.serializer(), event)
             }
         OutboxDAO.new {
             this.aggregateType = aggregateType
@@ -71,6 +89,13 @@ object OutboxPublisher {
                 "ADMIN_ACTION" -> outboxJson.decodeFromString(AdminActionEvent.serializer(), payload)
                 "USER_REGISTERED" -> outboxJson.decodeFromString(UserRegisteredEvent.serializer(), payload)
                 "SEND_EMAIL" -> outboxJson.decodeFromString(SendEmailEvent.serializer(), payload)
+                "SELLER_REVIEW_CREATED" -> outboxJson.decodeFromString(SellerReviewCreatedEvent.serializer(), payload)
+                "PRODUCT_REVIEW_CREATED" -> outboxJson.decodeFromString(ProductReviewCreatedEvent.serializer(), payload)
+                "DISPUTE_CREATED" -> outboxJson.decodeFromString(DisputeCreatedEvent.serializer(), payload)
+                "KYC_STATUS_CHANGED" -> outboxJson.decodeFromString(KycStatusChangedEvent.serializer(), payload)
+                "SHOP_STATUS_CHANGED" -> outboxJson.decodeFromString(ShopStatusChangedEvent.serializer(), payload)
+                "PAYOUT_STATUS_CHANGED" -> outboxJson.decodeFromString(PayoutStatusChangedEvent.serializer(), payload)
+                "LOW_STOCK" -> outboxJson.decodeFromString(LowStockEvent.serializer(), payload)
                 else -> null
             }
         }.getOrNull()

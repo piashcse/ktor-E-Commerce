@@ -6,6 +6,7 @@ import com.piashcse.database.entities.base.BaseEntityClass
 import com.piashcse.database.entities.base.BaseIdTable
 import org.jetbrains.exposed.v1.core.between
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.javatime.datetime
 
 object ReviewRatingTable : BaseIdTable("review_rating") {
     val userId = reference("user_id", UserTable.id).index()
@@ -17,6 +18,9 @@ object ReviewRatingTable : BaseIdTable("review_rating") {
     val helpfulCount = integer("helpful_count").default(0)
     val notHelpfulCount = integer("not_helpful_count").default(0)
     val status = enumerationByName("status", 20, ReviewStatus::class).default(ReviewStatus.ACTIVE)
+    val sellerReply = text("seller_reply").nullable()
+    val sellerRepliedAt = datetime("seller_replied_at").nullable()
+    val moderationReason = text("moderation_reason").nullable()
 
     init {
         uniqueIndex(customIndexName = "review_rating_user_product_unique", userId, productId)
@@ -36,4 +40,7 @@ class ReviewRatingDAO(id: EntityID<String>) : BaseEntity(id, ReviewRatingTable) 
     var helpfulCount by ReviewRatingTable.helpfulCount
     var notHelpfulCount by ReviewRatingTable.notHelpfulCount
     var status by ReviewRatingTable.status
+    var sellerReply by ReviewRatingTable.sellerReply
+    var sellerRepliedAt by ReviewRatingTable.sellerRepliedAt
+    var moderationReason by ReviewRatingTable.moderationReason
 }

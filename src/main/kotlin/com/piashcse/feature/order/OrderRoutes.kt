@@ -247,17 +247,80 @@ fun Route.orderSellerRoutes() {
         get {
             val (limit, offset) = call.pageRequest()
             val status = call.request.queryParameters["status"]
-            call.respondOk(orderRepo.getSellerOrders(call.currentUserId, limit, offset, status))
+            call.respondOk(
+                orderRepo.getSellerOrders(
+                    call.currentUserId,
+                    limit,
+                    offset,
+                    status,
+                    call.request.queryParameters["q"],
+                    call.queryInstant("from"),
+                    call.queryInstant("to"),
+                ),
+            )
         }.describe {
             summary = "Seller: list orders"
-            description = "Optional status filter"
+            description = "Optional status, q (order number/email) and from/to filters"
         }
+        get("export") {
+            call.respondCsv(
+                "orders.csv",
+                listOf("order_number", "status", "payment_status", "currency", "total", "contact_email", "created_at"),
+                fetch = { limit, offset ->
+                    orderRepo.getSellerOrders(
+                        call.currentUserId,
+                        limit,
+                        offset,
+                        call.request.queryParameters["status"],
+                        call.request.queryParameters["q"],
+                        call.queryInstant("from"),
+                        call.queryInstant("to"),
+                    ).data
+                },
+                row = {
+                    listOf(
+                        it.orderNumber,
+                        it.status,
+                        it.paymentStatus,
+                        it.currency,
+                        it.total,
+                        it.contactEmail.orEmpty(),
+                        it.createdAt,
+                    )
+                },
+            )
+        }.describe { summary = "Seller: export orders CSV" }
 
         get("{id}") {
             val id = call.requirePathParameter("id")
             call.respondOk(orderRepo.getOrderById(id, call.currentUserId, call.requireUserType()))
         }.describe {
             summary = "Seller: get order by ID"
+        }
+    }
+
+    writeRateLimit {
+        post("{id}/shipping") {
+            OrderStatusPolicy.assertSeller(call.requireUserType())
+            val body = call.receive<ShipOrderRequest>()
+            call.respondOk(orderRepo.shipOrder(call.requirePathParameter("id"), call.currentUserId, body.trackingNumber))
+        }.describe {
+            summary = "Seller: mark order shipped"
+            requestBody { jsonBody<ShipOrderRequest>() }
+        }
+        post("{id}/cancel") {
+            OrderStatusPolicy.assertSeller(call.requireUserType())
+            call.respondOk(
+                orderRepo.cancelOrder(
+                    call.requirePathParameter("id"),
+                    call.currentUserId,
+                    call.receive<CancelOrderRequest>().reason,
+                    call.requireUserType(),
+                ),
+            )
+        }.describe {
+            summary = "Seller: cancel order"
+            requestBody { jsonBody<CancelOrderRequest>() }
         }
     }
 }
@@ -314,11 +377,48 @@ fun Route.orderAdminRoutes() {
             val startDate = call.queryInstant("startDate")
             val endDate = call.queryInstant("endDate")
 
-            call.respondOk(orderRepo.getAdminOrders(limit, offset, status, startDate, endDate))
+            call.respondOk(
+                orderRepo.getAdminOrders(
+                    limit,
+                    offset,
+                    status,
+                    startDate,
+                    endDate,
+                    call.request.queryParameters["q"],
+                ),
+            )
         }.describe {
             summary = "Admin: list orders"
-            description = "Status and date-range filters"
+            description = "Status, date-range and order-number/email filters"
         }
+
+        get("export") {
+            call.respondCsv(
+                "orders.csv",
+                listOf("order_number", "status", "payment_status", "currency", "total", "contact_email", "created_at"),
+                fetch = { limit, offset ->
+                    orderRepo.getAdminOrders(
+                        limit,
+                        offset,
+                        call.request.queryParameters["status"],
+                        call.queryInstant("startDate"),
+                        call.queryInstant("endDate"),
+                        call.request.queryParameters["q"],
+                    ).data
+                },
+                row = {
+                    listOf(
+                        it.orderNumber,
+                        it.status,
+                        it.paymentStatus,
+                        it.currency,
+                        it.total,
+                        it.contactEmail.orEmpty(),
+                        it.createdAt,
+                    )
+                },
+            )
+        }.describe { summary = "Admin: export orders CSV" }
 
         get("{id}") {
             val id = call.requirePathParameter("id")

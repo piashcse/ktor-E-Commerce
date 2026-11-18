@@ -64,6 +64,18 @@ data class EffectiveCommissionResponse(
     val source: String,
 )
 
+@Serializable
+data class OrderCommissionPreview(
+    val orderId: String,
+    val orderNumber: String,
+    val subTotal: String,
+    val discountAmount: String,
+    val commissionAmount: String,
+    val payoutAmount: String,
+    val commissionRate: String,
+    val currency: String,
+)
+
 /**
  * Commission resolution: most specific active rule wins.
  * Specificity: seller (4) > shop (2) > category (1); ties break on priority.
@@ -164,6 +176,38 @@ class CommissionService {
                     "rule"
                 }
             EffectiveCommissionResponse(rate.setScale(2, RoundingMode.HALF_UP).toPlainString(), source)
+        }
+
+    /** Per-order commission breakdown so sellers can reconcile a payout before requesting it. */
+    suspend fun orderPreview(
+        sellerUserId: String,
+        orderId: String,
+    ): OrderCommissionPreview =
+        query {
+            val seller = requireSellerByUserId(sellerUserId)
+            val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
+            if (order.shopId?.value == null || order.shopId?.value != seller.shopId?.value) {
+                throw com.piashcse.utils.validator.ForbiddenException("Order belongs to another shop")
+            }
+            val commission = commissionForOrderTx(order, seller)
+            val net = order.subTotal.subtract(order.discountAmount).max(BigDecimal.ZERO)
+            val payout = net.subtract(commission).max(BigDecimal.ZERO)
+            val rate =
+                if (net > BigDecimal.ZERO) {
+                    commission.multiply(BigDecimal(100)).divide(net, 2, RoundingMode.HALF_UP)
+                } else {
+                    BigDecimal.ZERO.setScale(2)
+                }
+            OrderCommissionPreview(
+                orderId = order.id.value,
+                orderNumber = order.orderNumber,
+                subTotal = Money.str(order.subTotal),
+                discountAmount = Money.str(order.discountAmount),
+                commissionAmount = Money.str(commission),
+                payoutAmount = Money.str(payout),
+                commissionRate = rate.toPlainString(),
+                currency = order.currency,
+            )
         }
 
     suspend fun list(

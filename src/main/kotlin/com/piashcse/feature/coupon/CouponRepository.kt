@@ -26,4 +26,29 @@ interface CouponRepository {
     suspend fun getCouponByCode(code: String): CouponResponse?
 
     suspend fun deleteCoupon(couponId: String): Boolean
+
+    suspend fun getSellerCoupons(
+        shopId: String,
+        limit: Int,
+        offset: Int,
+        active: Boolean? = null,
+    ): PaginatedResponse<CouponResponse>
+
+    suspend fun createSellerCoupon(
+        shopId: String,
+        request: CouponRequest,
+        actorId: String? = null,
+    ): CouponResponse
+
+    suspend fun updateSellerCoupon(
+        shopId: String,
+        couponId: String,
+        request: CouponRequest,
+        actorId: String? = null,
+    ): CouponResponse
+
+    suspend fun deleteSellerCoupon(
+        shopId: String,
+        couponId: String,
+    ): Boolean
 }

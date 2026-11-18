@@ -21,6 +21,9 @@ object PromotionTable : BaseIdTable("promotion") {
     val priority = integer("priority").default(0)
     val usageLimit = integer("usage_limit").nullable()
     val usageCount = integer("usage_count").default(0)
+
+    /** Null for platform-wide promotions; set for seller-owned promotions. */
+    val shopId = reference("shop_id", ShopTable.id).nullable().index()
 }
 
 class PromotionDAO(id: EntityID<String>) : BaseEntity(id, PromotionTable) {
@@ -37,6 +40,7 @@ class PromotionDAO(id: EntityID<String>) : BaseEntity(id, PromotionTable) {
     var priority by PromotionTable.priority
     var usageLimit by PromotionTable.usageLimit
     var usageCount by PromotionTable.usageCount
+    var shopId by PromotionTable.shopId
 }
 
 /** Ledger of automatic promotion redemptions; one row per split order. */

@@ -26,13 +26,15 @@ object NotificationTemplates {
         refundId: String,
         from: String,
         to: String,
-    ) = Content("Refund $to", "Refund $refundId changed from $from to $to.")
+        reason: String? = null,
+    ) = Content("Refund $to", "Refund $refundId changed from $from to $to." + (reason?.let { " Reason: $it" } ?: ""))
 
     fun rmaStatusChanged(
         rmaId: String,
         from: String,
         to: String,
-    ) = Content("Return/exchange $to", "Request $rmaId changed from $from to $to.")
+        note: String? = null,
+    ) = Content("Return/exchange $to", "Request $rmaId changed from $from to $to." + (note?.let { " Note: $it" } ?: ""))
 
     fun welcome(userType: String) = Content("Welcome", "Your account has been created as $userType.")
 
@@ -72,4 +74,57 @@ object NotificationTemplates {
         "$productName is available again. Order it before it sells out." +
             (productUrl?.let { "\n\nBuy it now: $it" } ?: ""),
     )
+
+    fun sellerNewOrder(
+        orderNumber: String,
+        total: String,
+    ) = Content("New order $orderNumber", "You have a new order worth $total. Confirm and fulfill it from your seller dashboard.")
+
+    fun sellerOrderPaid(orderNumber: String) = Content("Order $orderNumber paid", "The order is paid and ready to fulfill.")
+
+    fun sellerOrderCanceled(orderNumber: String) = Content("Order $orderNumber canceled", "The customer canceled this order.")
+
+    fun sellerRefundUpdate(
+        orderId: String,
+        status: String,
+        reason: String? = null,
+    ) = Content("Refund $status", "A refund for order $orderId is now $status." + (reason?.let { " Reason: $it" } ?: ""))
+
+    fun sellerRmaUpdate(
+        orderId: String,
+        status: String,
+        note: String? = null,
+    ) = Content("Return $status", "A return/exchange for order $orderId is now $status." + (note?.let { " Note: $it" } ?: ""))
+
+    fun sellerReview(
+        rating: Int,
+        comment: String?,
+    ) = Content("New $rating-star review", comment?.takeIf { it.isNotBlank() } ?: "A customer left a new review.")
+
+    fun disputeCreated(
+        disputeId: String,
+        subject: String,
+    ) = Content("New dispute $disputeId", "A dispute was opened: $subject")
+
+    fun kycStatus(
+        status: String,
+        reason: String?,
+    ) = Content("KYC $status", "Your KYC submission is $status." + (reason?.let { " Reason: $it" } ?: ""))
+
+    fun shopStatus(
+        status: String,
+        reason: String?,
+    ) = Content("Shop $status", "Your shop is now $status." + (reason?.let { " Reason: $it" } ?: ""))
+
+    fun payoutStatus(
+        status: String,
+        amount: String,
+        currency: String,
+        reason: String? = null,
+    ) = Content("Payout $status", "$currency $amount payout is $status." + (reason?.let { " Reason: $it" } ?: ""))
+
+    fun adminQueue(
+        title: String,
+        detail: String,
+    ) = Content(title, detail)
 }

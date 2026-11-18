@@ -1,5 +1,6 @@
 package com.piashcse.mapper
 
+import com.piashcse.constants.OrderStatus
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.feature.i18n.I18nService
@@ -24,6 +25,19 @@ fun OrderDAO.toOrderResponse(
     total = Money.str(total),
     currency = currency,
     status = status,
+    allowedActions =
+        when (status) {
+            OrderStatus.PENDING -> listOf("CONFIRM", "CANCEL")
+            OrderStatus.CONFIRMED -> listOf("PAY", "CANCEL")
+            OrderStatus.PAID -> listOf("SHIP")
+            OrderStatus.SHIPPED -> listOf("DELIVER")
+            OrderStatus.DELIVERED -> listOf("RECEIVE")
+            OrderStatus.CANCELED, OrderStatus.RECEIVED -> emptyList()
+        },
+    nextStatuses =
+        OrderStatus.entries
+            .filter { OrderStatus.canTransitionTo(status, it) }
+            .map { it.name },
     paymentStatus = paymentStatus,
     couponCode = couponCode,
     paymentMethod = paymentMethod,

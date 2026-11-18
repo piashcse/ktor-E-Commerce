@@ -19,4 +19,8 @@ interface DashboardRepository {
     suspend fun getRecentActivity(limit: Int?): List<RecentActivityResponse>
 
     suspend fun getSellerStats(sellerUserId: String): DashboardStatsResponse
+
+    suspend fun getAdminQueues(): WorkQueuesResponse
+
+    suspend fun getSellerReadiness(sellerUserId: String): SellerReadinessResponse
 }

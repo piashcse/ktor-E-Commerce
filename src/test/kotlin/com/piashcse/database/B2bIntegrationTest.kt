@@ -270,7 +270,7 @@ class B2bIntegrationTest {
         transaction {
             assertEquals(PaymentStatus.COMPLETED, OrderDAO.findById(fulfilled.orderId!!)!!.paymentStatus)
         }
-        assertEquals(1, kotlinx.coroutines.runBlocking { b2b.sellerPurchaseOrders(sellerUserId, 10, 0) }.data.size)
+        assertEquals(1, kotlinx.coroutines.runBlocking { b2b.sellerPurchaseOrders(sellerUserId, null, 10, 0) }.data.size)
         assertEquals(
             1,
             kotlinx.coroutines.runBlocking { b2b.adminAccounts(null, 10, 0) }.data.count { it.userId == buyerId },
