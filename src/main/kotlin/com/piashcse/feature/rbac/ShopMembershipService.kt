@@ -202,9 +202,11 @@ class ShopMembershipService {
         AdminAudit.publish(actorUserId, "SHOP_MEMBER_REMOVED", "SHOP_MEMBER", memberId)
     }
 
-    private fun ownerShopId(actorUserId: String): String =
-        requireSellerByUserId(actorUserId).shopId?.value
-            ?: throw ValidationException("Seller has no shop yet")
+    private suspend fun ownerShopId(actorUserId: String): String =
+        query {
+            requireSellerByUserId(actorUserId).shopId?.value
+                ?: throw ValidationException("Seller has no shop yet")
+        }
 
     private fun shopRoles(roleIds: List<String>): List<RoleRef> {
         if (roleIds.isEmpty()) throw ValidationException("At least one role is required")
