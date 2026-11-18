@@ -3,6 +3,7 @@ package com.piashcse.plugin
 /** Single source for OpenAPI tag names. */
 object ApiTags {
     const val AUTH = "Auth"
+    const val RBAC = "RBAC"
     const val PROFILE = "Profile"
     const val SHOP = "Shop"
     const val SHOP_CATEGORY = "Shop Category"

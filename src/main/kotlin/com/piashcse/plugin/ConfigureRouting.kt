@@ -261,8 +261,8 @@ private fun Route.customerRoutes() {
     route("notifications") { notificationRoutes() }.describe { tag(ApiTags.NOTIFICATION) }
     route("privacy") { privacyRoutes() }.describe { tag(ApiTags.PRIVACY) }
     route("api-keys") { apiKeyRoutes() }.describe { tag(ApiTags.API_KEYS) }
-    route("me") { meRoutes() }.describe { tag(ApiTags.AUTH) }
-    route("invitations") { invitationRoutes() }.describe { tag(ApiTags.AUTH) }
+    route("me") { meRoutes() }.describe { tag(ApiTags.RBAC) }
+    route("invitations") { invitationRoutes() }.describe { tag(ApiTags.RBAC) }
 }
 
 private fun Route.sellerRoutes() {
@@ -287,7 +287,7 @@ private fun Route.sellerRoutes() {
             route("payouts") { payoutSellerRoutes() }.describe { tag(ApiTags.PAYOUT) }
             route("reviews") { sellerOwnReviewRoutes() }.describe { tag(ApiTags.SELLER) }
             route("notifications") { sellerNotificationRoutes() }.describe { tag(ApiTags.NOTIFICATION) }
-            route("members") { sellerMemberRoutes() }.describe { tag(ApiTags.AUTH) }
+            route("members") { sellerMemberRoutes() }.describe { tag(ApiTags.RBAC) }
             route("commission") { commissionSellerRoutes() }.describe { tag(ApiTags.SELLER) }
             route("coupons") { sellerCouponRoutes() }.describe { tag(ApiTags.COUPON) }
             route("promotions") { sellerPromotionRoutes() }.describe { tag(ApiTags.COUPON) }
@@ -415,7 +415,7 @@ private fun Route.adminIdentityRoutes() {
         route("auth") { authAdminRoutes() }.describe { tag(ApiTags.AUTH) }
     }
     route("users") { adminUserRoutes() }.describe { tag(ApiTags.AUTH) }
-    route("rbac") { adminRbacRoutes() }.describe { tag(ApiTags.AUTH) }
+    route("rbac") { adminRbacRoutes() }.describe { tag(ApiTags.RBAC) }
 }
 
 private fun Route.adminCatalogRoutes() {

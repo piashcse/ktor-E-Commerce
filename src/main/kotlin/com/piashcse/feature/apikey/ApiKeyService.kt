@@ -22,7 +22,8 @@ import java.time.LocalDateTime
 @Serializable
 data class ApiKeyCreateRequest(
     val name: String,
-    val scopes: List<Permission>? = null,
+    /** Permission codes (`order:manage`) or legacy enum names (`ORDER_MANAGE`). */
+    val scopes: List<String>? = null,
     /** ISO local date-time; omit for no expiry. */
     val expiresAt: String? = null,
 )
@@ -62,12 +63,15 @@ class ApiKeyService {
         val allowed = rbac.permissionsForUser(user)
         // Omit scopes to inherit the effective permission set. An explicit empty
         // list means "no scopes" and must not fail open.
-        val requested = request.scopes?.toSet() ?: Permission.entries.filter { it.code in allowed }.toSet()
-        val invalid = requested.filter { it.code !in allowed && it.name !in allowed }
+        val requested =
+            request.scopes
+                ?.map { Permission.fromString(it)?.code ?: it.trim() }
+                ?.filter { it.isNotBlank() }
+                ?.toSet()
+                ?: Permission.entries.filter { it.code in allowed }.map { it.code }.toSet()
+        val invalid = requested.filter { it !in allowed }
         if (invalid.isNotEmpty()) {
-            throw ValidationException(
-                "Requested scopes exceed the ${user.userType} role: ${invalid.joinToString { it.name }}",
-            )
+            throw ValidationException("Requested scopes exceed the ${user.userType} role: ${invalid.joinToString()}")
         }
         val expiresAt =
             request.expiresAt?.let {
@@ -86,7 +90,7 @@ class ApiKeyService {
                     this.name = request.name
                     keyHash = sha256Hex(raw)
                     prefix = raw.take(12)
-                    scopes = requested.joinToString(",") { it.name }
+                    scopes = requested.joinToString(",")
                     this.expiresAt = expiresAt
                 }
             }
@@ -94,7 +98,7 @@ class ApiKeyService {
             id = dao.id.value,
             name = dao.name,
             prefix = dao.prefix,
-            scopes = requested.map { it.name },
+            scopes = requested.toList(),
             key = raw,
             createdAt = dao.createdAt.toUtcString(),
         )

@@ -26,9 +26,27 @@ This documentation provides comprehensive details for the Authentication API end
 | `POST` | `/api/v1/auth/passkeys/register/options` | Start passkey registration | Yes |
 | `POST` | `/api/v1/auth/passkeys/register` | Finish passkey registration | Yes |
 | `DELETE` | `/api/v1/auth/passkeys/{id}` | Delete a passkey | Yes |
-| `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin/Super Admin) |
-| `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin/Super Admin) |
-| `PUT` | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin/Super Admin) |
+| `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin + `user:manage`) |
+| `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin + `user:manage`) |
+| `PUT` | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin + `user:manage`) |
+
+---
+
+## Authorization model
+
+`user_type` is the **account kind**:
+
+- `CUSTOMER`
+- `SELLER`
+- `ADMIN`
+
+Platform roles and permissions are stored in the database and resolved on every request:
+
+- `ADMIN` alone grants console entry, not permissions.
+- An admin with no role has no effective permissions.
+- `SUPER_ADMIN` is a legacy enum value mapped to the `platform:super_admin` role.
+- Effective permissions are returned by `GET /api/v1/me/permissions`.
+- See [Users, Roles & Permissions](rbac.md) for roles, scopes and endpoints.
 
 ---
 
@@ -410,7 +428,9 @@ curl -X 'PUT' \
 
 **`PUT /api/v1/admin/auth/{userId}/change-user-type`**
 
-Change an existing user's account type. This endpoint is available to administrators.
+Change an existing user's account type. This endpoint is available to administrators
+with `user:manage`. Promoting to `ADMIN` also assigns the `platform:admin` role; the actor
+must be allowed to grant that role.
 
 #### Path Parameters
 
@@ -422,14 +442,14 @@ Change an existing user's account type. This endpoint is available to administra
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `userType` | string | Yes | New user type to assign (`CUSTOMER`, `SELLER`, `ADMIN`, `SUPER_ADMIN`) |
+| `userType` | string | Yes | New account type (`CUSTOMER`, `SELLER`, `ADMIN`; `SUPER_ADMIN` is legacy) |
 
 #### Headers
 
 | Header | Value | Required |
 |--------|-------|----------|
 | `accept` | `application/json` | Yes |
-| `Authorization` | `Bearer <access_token>` | Yes (Admin/Super Admin) |
+| `Authorization` | `Bearer <access_token>` | Yes (Admin + `user:manage`) |
 
 #### Example Request
 
@@ -467,7 +487,7 @@ Deactivate a user account, preventing the user from logging in or accessing the 
 | Header | Value | Required |
 |--------|-------|----------|
 | `accept` | `application/json` | Yes |
-| `Authorization` | `Bearer <access_token>` | Yes (Admin/Super Admin) |
+| `Authorization` | `Bearer <access_token>` | Yes (Admin + `user:manage`) |
 
 #### Example Request
 
@@ -503,7 +523,7 @@ Activate a previously deactivated user account, allowing the user to log in and 
 | Header | Value | Required |
 |--------|-------|----------|
 | `accept` | `application/json` | Yes |
-| `Authorization` | `Bearer <access_token>` | Yes (Admin/Super Admin) |
+| `Authorization` | `Bearer <access_token>` | Yes (Admin + `user:manage`) |
 
 #### Example Request
 
@@ -730,9 +750,9 @@ SPKI key and verifies assertions.
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin/Super Admin) |
-| `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin/Super Admin) |
-| `PUT` | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin/Super Admin) |
+| `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin + `user:manage`) |
+| `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin + `user:manage`) |
+| `PUT` | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin + `user:manage`) |
 
 ---
 
@@ -816,10 +836,11 @@ All passwords must meet the following criteria:
 ### Administrative User Management Guidelines
 
 ### Role Management
-- Only Admin and Super Admin accounts can modify user types
-- User type changes may affect access to different parts of the system
-- Deactivated users cannot log in but their data remains intact
-- Activation restores full account access and functionality
+- Admin endpoints require both an `ADMIN` account and the relevant permission.
+- User type changes update the linked platform role assignment.
+- Deactivated users cannot log in but their data remains intact.
+- Activation restores account access; roles remain assigned.
+- Role and permission management lives under `/api/v1/admin/rbac/*`; see [RBAC](rbac.md).
 
 ### Security Considerations
 - Changing user types should be done carefully to maintain system security
@@ -829,7 +850,7 @@ All passwords must meet the following criteria:
 
 ## API Keys
 
-API keys are scoped to a subset of the role's permissions and are shown once at creation. Send them as `Authorization: Bearer ek_...`.
+API keys are scoped to a subset of the owner's **effective permissions** and are shown once at creation. Send them as `Authorization: Bearer ek_...`.
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -837,4 +858,8 @@ API keys are scoped to a subset of the role's permissions and are shown once at 
 | `POST` | `/api/v1/api-keys` | Create a key (`name`, optional `scopes`, `expiresAt`) |
 | `DELETE` | `/api/v1/api-keys/{id}` | Revoke a key |
 
-Feature flags are managed by super admins via `GET/PUT /api/v1/admin/feature-flags`.
+Scopes accept permission codes (`order:manage`, `inventory:manage`) or legacy enum names
+(`ORDER_MANAGE`, `INVENTORY_MANAGE`). Keys are re-checked against the owner's current effective
+permissions at authentication, so a role change narrows an existing key.
+
+Feature flags require `feature_flag:manage`; see [RBAC](rbac.md).

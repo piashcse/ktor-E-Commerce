@@ -32,6 +32,22 @@ Authorization: Bearer <your_access_token>
 
 ---
 
+## Shop staff
+
+Shop owners can invite staff and assign shop roles:
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/seller/members` | List shop staff |
+| `POST` | `/api/v1/seller/members/invite` | Invite a staff member |
+| `PUT` | `/api/v1/seller/members/{id}/roles` | Replace a member's roles |
+| `DELETE` | `/api/v1/seller/members/{id}` | Remove a member |
+
+Shop staff roles include owner, manager, catalog, fulfillment, inventory, finance, support,
+analyst, warehouse and POS. See [RBAC](rbac.md) for the full role catalog.
+
+---
+
 ## Endpoint Details
 
 ### 1. Create Shop (V1)

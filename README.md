@@ -38,9 +38,13 @@
 
 ### 1. Role-Based Access Control
 
-- **Customer Role**: Shoppers with basic access to browse and make purchases.
-- **Seller Role**: Vendors can list products and manage their inventory.
-- **Admin Role**: Administrators have full control over the platform.
+- **Account Types**: Customer, Seller and Admin. `SUPER_ADMIN` is a legacy value mapped to the platform super-admin role.
+- **Database-Backed Roles**: Create custom roles, assign permission bundles and edit permissions without a deploy.
+- **Scoped Permissions**: Platform (`GLOBAL`) and shop (`SHOP`) roles using `resource:action` codes such as `order:manage`.
+- **Seller Staff**: Shop memberships, invitations and role-based staff access.
+- **Effective Permissions**: `GET /api/v1/me/permissions` exposes roles, memberships and resolved permissions.
+- **Least Privilege**: Admin route groups require explicit permissions; mixed customer/seller/admin routes guard admin access separately.
+- **Auditable Changes**: Role, permission and membership changes are audited and bump `authz_version` to invalidate cached permissions.
 
 ### 2. User Accounts and Authentication
 
@@ -446,7 +450,7 @@ The API is organized into the following modules:
 - **Payout** - Seller balance, payout requests, statements, admin payouts
 - **Tax Rules** - Country/category tax rules
 - **FX Rates** - Multi-currency rates
-- **API Keys** - Scoped self-service API keys
+- **API Keys** - Scoped self-service API keys bounded by effective permissions
 - **Feature Flags** - Runtime feature switches
 - **Outbox** - Outbox health and dead-letter replay
 - **Privacy Policy / Consent** - Policy lifecycle and GDPR consent
@@ -455,7 +459,7 @@ The API is organized into the following modules:
 - **Audit Log** - Admin audit trail and activity tracking
 - **Health** - Liveness and readiness probes
 
-See the **[complete endpoint index](docs/endpoints.md)** for all **206** operations with
+See the **[complete endpoint index](docs/endpoints.md)** for all **383** operations with
 method, path, description and access level. It mirrors the same OpenAPI document
 that powers Swagger UI.
 
@@ -463,22 +467,47 @@ that powers Swagger UI.
 
 Interactive API documentation is available via Swagger UI at `http://localhost:8080/swagger` when the application is running.
 
-> **API contract note:** every operation is documented below as a `<details>` block with
-> Description, Curl, Request URL and Response. All 206 operations are also listed in the
-> generated [endpoint index](docs/endpoints.md). Success responses return data directly and
-> errors use the `ApiError` shape; some older examples may still show a legacy `data`/`message`
-> wrapper, so use the generated blocks and Swagger as the canonical contract.
+> **API contract note:** common operations are documented below as `<details>` blocks with
+> Description, Curl, Request URL and Response. The canonical index lists all 383 operations in
+> the [endpoint index](docs/endpoints.md); RBAC and shop-membership APIs are summarized above.
+> Success responses return data directly and errors use the `ApiError` shape; some older
+> examples may still show a legacy `data`/`message` wrapper, so use the generated blocks and
+> Swagger as the canonical contract.
 
 ### ROLE MANAGEMENT
 
 <details>
-<summary>Admin, Seller, Customer </summary>
+<summary>Account types, roles and permissions </summary>
 
-- <b>Customer Role:</b> Basic shoppers who can browse products, manage their cart, wishlist, shipping addresses, and place orders.
-- <b>Seller Role:</b> Vendors who can manage their own shops, list products, handle inventory, and manage orders and refund requests for their products.
-- <b>Admin Role:</b> Platform administrators with full access to manage all users, shops, categories, brands, coupons, shipping methods, and system-wide settings.
+- <b>Customer:</b> Self-service shopping, orders, refunds, reviews, addresses and API keys.
+- <b>Seller:</b> Shop owner/staff portal. Staff access is controlled by shop memberships and shop roles.
+- <b>Admin:</b> Platform console access. Actual access comes from assigned platform roles and permissions.
+- <b>Super admin:</b> Legacy account value mapped to the `platform:super_admin` break-glass role.
 
 </details>
+
+### RBAC & SHOP MEMBERSHIP
+
+| Method | Endpoint | Access |
+|---|---|---|
+| `GET` | `/api/v1/admin/rbac/permissions` | Admin (`role:manage`) |
+| `GET` | `/api/v1/admin/rbac/roles` | Admin (`role:manage`) |
+| `POST` | `/api/v1/admin/rbac/roles` | Admin (`role:manage`) |
+| `GET` | `/api/v1/admin/rbac/roles/{id}` | Admin (`role:manage`) |
+| `PUT` | `/api/v1/admin/rbac/roles/{id}` | Admin (`role:manage`) |
+| `DELETE` | `/api/v1/admin/rbac/roles/{id}` | Admin (`role:manage`) |
+| `PUT` | `/api/v1/admin/rbac/roles/{id}/permissions` | Admin (`role:manage`) |
+| `GET` | `/api/v1/admin/rbac/users/{id}/roles` | Admin (`role:manage`) |
+| `PUT` | `/api/v1/admin/rbac/users/{id}/roles` | Admin (`role:manage`) |
+| `GET` | `/api/v1/admin/rbac/users/{id}/effective-permissions` | Admin (`role:manage`) |
+| `GET` | `/api/v1/seller/members` | Seller owner |
+| `POST` | `/api/v1/seller/members/invite` | Seller owner |
+| `PUT` | `/api/v1/seller/members/{id}/roles` | Seller owner |
+| `DELETE` | `/api/v1/seller/members/{id}` | Seller owner |
+| `GET` | `/api/v1/me/permissions` | Authenticated |
+| `POST` | `/api/v1/invitations/accept` | Authenticated |
+
+See [Users, Roles & Permissions](docs/rbac.md) for the permission catalog and role model.
 
 ### AUTH
 
@@ -777,7 +806,7 @@ http://localhost:8080/api/v1/auth/change-password
 <summary> <code>PUT</code> <code>/api/v1/admin/auth/{userId}/change-user-type</code></summary>
 
 ### Description
-Admin: Change user role (CUSTOMER, SELLER, ADMIN).
+Admin: Change account type (CUSTOMER, SELLER, ADMIN). Platform roles are assigned separately under `/api/v1/admin/rbac/users/{id}/roles`.
 
 ### Curl
 ```bash
@@ -3507,19 +3536,21 @@ http://localhost:8080/api/v1/reviews
 <summary> <code>PUT</code> <code>/api/v1/reviews/{id}</code></summary>
 
 ### Description
-Update an existing review and rating.
+Update an existing review and rating. A JSON body is preferred; legacy query parameters are still accepted.
 
 ### Curl
 ```bash
 curl -X 'PUT' \
-  'http://localhost:8080/api/v1/reviews/review-uuid?review=Updated%20review&rating=5' \
+  'http://localhost:8080/api/v1/reviews/review-uuid' \
   -H 'accept: application/json' \
-  -H 'Authorization: Bearer <token>'
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"review":"Updated review","rating":5}'
 ```
 
 ### Request URL
 ```text
-http://localhost:8080/api/v1/reviews/{id}?review={review}&rating={rating}
+http://localhost:8080/api/v1/reviews/{id}
 ```
 
 ### Response
