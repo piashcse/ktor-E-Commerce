@@ -46,6 +46,9 @@ interface OrderRepository {
         limit: Int,
         offset: Int,
         status: String? = null,
+        query: String? = null,
+        from: Instant? = null,
+        to: Instant? = null,
     ): PaginatedResponse<OrderResponse>
 
     /** Keyset-paginated customer orders; preferred for large histories. */

@@ -10,10 +10,12 @@ import com.piashcse.feature.order.OrderRepository
 import com.piashcse.feature.payment.PaymentGateway
 import com.piashcse.feature.payment.availablePaymentMethods
 import com.piashcse.feature.payment.isMethodAllowed
+import com.piashcse.feature.policy.PolicyRepository
 import com.piashcse.feature.shipping_address.ShippingAddressRepository
 import com.piashcse.feature.shipping_method.ShippingMethodRepository
 import com.piashcse.model.request.CheckoutRequest
 import com.piashcse.model.request.GuestCheckoutRequest
+import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.model.response.CheckoutSummaryResponse
 import com.piashcse.model.response.OrderResponse
@@ -24,6 +26,7 @@ import com.piashcse.plugin.jsonBody
 import com.piashcse.plugin.ok
 import com.piashcse.plugin.standardErrors
 import com.piashcse.plugin.writeRateLimit
+import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey
 import com.piashcse.utils.extension.pageRequest
@@ -31,6 +34,7 @@ import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondOk
 import com.piashcse.utils.validator.ValidationException
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.*
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
@@ -41,6 +45,7 @@ fun Route.checkoutRoutes() {
     val shippingMethodRepo: ShippingMethodRepository by inject()
     val orderRepo: OrderRepository by inject()
     val consentRepo: ConsentRepository by inject()
+    val policyRepo: PolicyRepository by inject()
     val guestCheckoutService: GuestCheckoutService by inject()
     val featureFlags: FeatureFlags by inject()
     val gateway: PaymentGateway by inject()
@@ -79,7 +84,9 @@ fun Route.checkoutRoutes() {
                 throw ValidationException("Explicit policy consent is required for guest checkout")
             }
             requireSupportedPayment(body.paymentMethod)
-            call.respondCreated(guestCheckoutService.placeOrder(body))
+            val result = guestCheckoutService.placeOrder(body)
+            call.recordGuestConsent(result.userId, body.consentAccepted, consentRequired(), consentRepo, policyRepo)
+            call.respondCreated(result.orders)
         }.describe {
             summary = "Guest checkout"
             description = "Feature-flagged; creates/claims a guest account and places the order"
@@ -194,5 +201,28 @@ fun Route.checkoutRoutes() {
     }.describe {
         summary = "List shipping methods"
         description = "Public; optional shopId returns platform-wide + that shop's rates"
+    }
+}
+
+/** Persists the policy versions a guest explicitly accepted during checkout. */
+private suspend fun ApplicationCall.recordGuestConsent(
+    userId: String,
+    accepted: Boolean,
+    required: Boolean,
+    consentRepo: ConsentRepository,
+    policyRepo: PolicyRepository,
+) {
+    if (!accepted || !required) return
+    PolicyType.entries.filter { it.requiresConsent }.forEach { type ->
+        runCatching { policyRepo.getPolicyByType(type) }.getOrNull()?.let { policy ->
+            consentRepo.recordConsent(
+                userId,
+                PolicyConsentRequest(
+                    policyId = policy.id,
+                    ipAddress = clientIp,
+                    userAgent = request.headers["User-Agent"],
+                ),
+            )
+        }
     }
 }

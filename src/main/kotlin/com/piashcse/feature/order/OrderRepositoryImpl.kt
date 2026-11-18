@@ -65,12 +65,17 @@ class OrderRepositoryImpl(
         limit: Int,
         offset: Int,
         includeSensitive: Boolean = true,
+        forCustomer: Boolean = false,
     ): PaginatedResponse<OrderResponse> {
         val (totalCount, rows) = toPaginatedList(limit, offset) { OrderDAO.wrapRow(it) }
         val itemsMap = loadItemsForOrders(rows)
         val data =
             rows.map { order ->
-                order.toOrderResponse(itemsMap[order.id.value], includeSensitive = includeSensitive)
+                order.toOrderResponse(
+                    itemsMap[order.id.value],
+                    includeSensitive = includeSensitive,
+                    forCustomer = forCustomer,
+                )
             }
         return PaginatedResponse(data, PaginationMetadata(totalCount, limit, offset))
     }
@@ -1230,13 +1235,25 @@ class OrderRepositoryImpl(
         limit: Int,
         offset: Int,
         status: String?,
+        query: String?,
+        from: Instant?,
+        to: Instant?,
     ): PaginatedResponse<OrderResponse> =
         query {
-            val query = OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
-            status?.let { query.andWhere { OrderTable.status eq parseOrderStatus(it) } }
-            query
+            val orders = OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
+            status?.let { orders.andWhere { OrderTable.status eq parseOrderStatus(it) } }
+            query?.takeIf { it.isNotBlank() }?.let { term ->
+                val pattern = "%${term.trim().lowercase()}%"
+                orders.andWhere {
+                    (OrderTable.orderNumber.lowerCase() like pattern) or
+                        (OrderTable.contactEmail.lowerCase() like pattern)
+                }
+            }
+            from?.let { orders.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
+            to?.let { orders.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
+            orders
                 .orderBy(OrderTable.createdAt to SortOrder.DESC)
-                .toOrdersPaginated(limit, offset)
+                .toOrdersPaginated(limit, offset, forCustomer = true)
         }
 
     override suspend fun getOrdersCursor(
@@ -1252,7 +1269,7 @@ class OrderRepositoryImpl(
             val orders = page.data.map { OrderDAO.wrapRow(it) }
             val itemsMap = loadItemsForOrders(orders)
             CursorPage(
-                data = orders.map { it.toOrderResponse(itemsMap[it.id.value]) },
+                data = orders.map { it.toOrderResponse(itemsMap[it.id.value], forCustomer = true) },
                 nextCursor = page.nextCursor,
                 hasMore = page.hasMore,
                 limit = page.limit,
@@ -1272,6 +1289,7 @@ class OrderRepositoryImpl(
             order.toOrderResponse(
                 OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
                 includeSensitive = false,
+                forCustomer = true,
             )
         }
 
@@ -1287,6 +1305,7 @@ class OrderRepositoryImpl(
             order.toOrderResponse(
                 OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
                 includeSensitive = userType == UserType.CUSTOMER,
+                forCustomer = userType == UserType.CUSTOMER,
             )
         }
 
@@ -1350,6 +1369,7 @@ class OrderRepositoryImpl(
                 order.toOrderResponse(
                     OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
                     includeSensitive = user.userType == UserType.CUSTOMER,
+                    forCustomer = user.userType == UserType.CUSTOMER,
                 )
             }
         CatalogCache.invalidate()
@@ -1382,6 +1402,7 @@ class OrderRepositoryImpl(
                 order.toOrderResponse(
                     OrderItemDAO.itemsForOrder(order.id).toItemResponses(),
                     includeSensitive = userType == UserType.CUSTOMER,
+                    forCustomer = userType == UserType.CUSTOMER,
                 )
             }
         CatalogCache.invalidate()

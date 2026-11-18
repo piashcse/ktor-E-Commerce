@@ -34,7 +34,10 @@ fun Route.wishlistRoutes() {
              */
             post("move-to-cart") {
                 val productId = call.requireQueryParameter("productId")
-                val quantity = call.request.queryParameters["quantity"]?.toIntOrNull() ?: 1
+                val quantity =
+                    call.request.queryParameters["quantity"]?.let {
+                        it.toIntOrNull() ?: throw com.piashcse.utils.validator.ValidationException("quantity must be an integer")
+                    } ?: 1
                 val variantId = call.request.queryParameters["variantId"]
                 call.respondCreated(wishlistRepo.moveToCart(call.currentUserId, productId, quantity, variantId))
             }.describe {

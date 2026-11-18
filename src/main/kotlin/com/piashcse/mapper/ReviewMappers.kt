@@ -7,9 +7,10 @@ import com.piashcse.utils.common.DateTimes.toUtcString
 fun ReviewRatingDAO.toReviewRatingResponse(
     images: List<String> = emptyList(),
     includeModeration: Boolean = false,
+    includeUserId: Boolean = true,
 ) = ReviewRatingResponse(
     id = id.value,
-    userId = userId.value,
+    userId = userId.value.takeIf { includeUserId },
     productId = productId.value,
     reviewText = reviewText,
     rating = rating,

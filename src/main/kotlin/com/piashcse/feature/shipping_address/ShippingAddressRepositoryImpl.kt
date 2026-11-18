@@ -2,6 +2,7 @@ package com.piashcse.feature.shipping_address
 
 import com.piashcse.database.entities.ShippingAddressDAO
 import com.piashcse.database.entities.ShippingAddressTable
+import com.piashcse.database.entities.UserTable
 import com.piashcse.mapper.toShippingAddressResponse
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.model.response.ShippingAddressResponse
@@ -20,12 +21,12 @@ class ShippingAddressRepositoryImpl : ShippingAddressRepository {
         query {
             if (request.isDefault) {
                 ShippingAddressDAO.find {
-                    ShippingAddressTable.userId eq userId and (ShippingAddressTable.isDefault eq true)
+                    ShippingAddressTable.userId eq userId.entityID(UserTable) and (ShippingAddressTable.isDefault eq true)
                 }.forEach { it.isDefault = false }
             }
 
             ShippingAddressDAO.new {
-                this.userId = userId.entityID(ShippingAddressTable)
+                this.userId = userId.entityID(UserTable)
                 firstName = request.firstName
                 lastName = request.lastName
                 email = request.email
@@ -62,7 +63,7 @@ class ShippingAddressRepositoryImpl : ShippingAddressRepository {
 
             if (request.isDefault && !address.isDefault) {
                 ShippingAddressDAO.find {
-                    ShippingAddressTable.userId eq userId and (ShippingAddressTable.isDefault eq true)
+                    ShippingAddressTable.userId eq userId.entityID(UserTable) and (ShippingAddressTable.isDefault eq true)
                 }.forEach { it.isDefault = false }
             }
 

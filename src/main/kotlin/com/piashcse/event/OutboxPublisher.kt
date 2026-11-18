@@ -65,6 +65,8 @@ object OutboxPublisher {
                         outboxJson.encodeToString(PayoutStatusChangedEvent.serializer(), event)
                 is LowStockEvent ->
                     "LOW_STOCK" to outboxJson.encodeToString(LowStockEvent.serializer(), event)
+                is ReviewReplyEvent ->
+                    "REVIEW_REPLY" to outboxJson.encodeToString(ReviewReplyEvent.serializer(), event)
             }
         OutboxDAO.new {
             this.aggregateType = aggregateType
@@ -96,6 +98,7 @@ object OutboxPublisher {
                 "SHOP_STATUS_CHANGED" -> outboxJson.decodeFromString(ShopStatusChangedEvent.serializer(), payload)
                 "PAYOUT_STATUS_CHANGED" -> outboxJson.decodeFromString(PayoutStatusChangedEvent.serializer(), payload)
                 "LOW_STOCK" -> outboxJson.decodeFromString(LowStockEvent.serializer(), payload)
+                "REVIEW_REPLY" -> outboxJson.decodeFromString(ReviewReplyEvent.serializer(), payload)
                 else -> null
             }
         }.getOrNull()

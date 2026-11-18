@@ -52,6 +52,11 @@ import java.util.UUID
  * can never place orders into someone else's account. A guest can later claim
  * the account by registering and verifying the OTP (isGuest is cleared).
  */
+data class GuestCheckoutResult(
+    val orders: List<OrderResponse>,
+    val userId: String,
+)
+
 class GuestCheckoutService(
     private val orderRepository: OrderRepository,
 ) {
@@ -215,7 +220,7 @@ class GuestCheckoutService(
         }
     }
 
-    suspend fun placeOrder(request: GuestCheckoutRequest): List<OrderResponse> {
+    suspend fun placeOrder(request: GuestCheckoutRequest): GuestCheckoutResult {
         val normalizedEmail = request.email.trim().lowercase()
 
         val (guestUserId, addressId) =
@@ -293,27 +298,29 @@ class GuestCheckoutService(
                 guest.id.value to address.id.value
             }
 
-        return try {
-            orderRepository.placeOrder(
-                guestUserId,
-                CheckoutRequest(
-                    shippingAddressId = addressId,
-                    shippingMethodId = request.shippingMethodId,
-                    paymentMethod = request.paymentMethod,
-                    notes = request.notes,
-                    idempotencyKey = request.idempotencyKey,
-                    couponCode = request.couponCode,
-                    currency = request.currency,
-                    locale = request.locale,
-                    attribution = request.attribution,
-                ),
-            )
-        } finally {
-            // Clear on success, replay and failure so no half-built guest cart remains.
-            query {
-                CartItemDAO.find { CartItemTable.userId eq guestUserId.entityID(UserTable) }
-                    .forEach { it.delete() }
+        val orders =
+            try {
+                orderRepository.placeOrder(
+                    guestUserId,
+                    CheckoutRequest(
+                        shippingAddressId = addressId,
+                        shippingMethodId = request.shippingMethodId,
+                        paymentMethod = request.paymentMethod,
+                        notes = request.notes,
+                        idempotencyKey = request.idempotencyKey,
+                        couponCode = request.couponCode,
+                        currency = request.currency,
+                        locale = request.locale,
+                        attribution = request.attribution,
+                    ),
+                )
+            } finally {
+                // Clear on success, replay and failure so no half-built guest cart remains.
+                query {
+                    CartItemDAO.find { CartItemTable.userId eq guestUserId.entityID(UserTable) }
+                        .forEach { it.delete() }
+                }
             }
-        }
+        return GuestCheckoutResult(orders, guestUserId)
     }
 }

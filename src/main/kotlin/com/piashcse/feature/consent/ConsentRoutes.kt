@@ -11,6 +11,7 @@ import com.piashcse.model.request.PolicyConsentRequest
 import com.piashcse.plugin.customerAuth
 import com.piashcse.plugin.requireRole
 import com.piashcse.plugin.writeRateLimit
+import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.pageRequest
 import com.piashcse.utils.extension.parseEnum
@@ -58,7 +59,7 @@ fun Route.consentRoutes() {
                     call.receive<PolicyConsentRequest>().let {
                         consentRepo.recordConsent(
                             call.currentUserId,
-                            it.copy(it.policyId, call.request.origin.remoteHost, call.request.headers["User-Agent"]),
+                            it.copy(it.policyId, call.clientIp, call.request.headers["User-Agent"]),
                         )
                     },
                 )

@@ -7,6 +7,7 @@ import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
 import com.piashcse.constants.UserType
 import com.piashcse.feature.invoice.InvoiceService
+import com.piashcse.mapper.toPublicTrackingResponse
 import com.piashcse.model.request.CancelOrderRequest
 import com.piashcse.model.response.OrderResponse
 import com.piashcse.plugin.adminWriteRateLimit
@@ -79,8 +80,17 @@ fun Route.orderRoutes() {
              */
             get {
                 val (limit, offset) = call.pageRequest()
-                val status = call.request.queryParameters["status"]
-                call.respondOk(orderRepo.getOrders(call.currentUserId, limit, offset, status))
+                call.respondOk(
+                    orderRepo.getOrders(
+                        call.currentUserId,
+                        limit,
+                        offset,
+                        call.request.queryParameters["status"],
+                        call.request.queryParameters["q"],
+                        call.queryInstant("from"),
+                        call.queryInstant("to"),
+                    ),
+                )
             }.describe { summary = "List my orders" }
 
             /**
@@ -190,16 +200,16 @@ private fun Route.guestOrderTrackingRoutes() {
             val order =
                 orderRepo.getOrderForGuest(orderNumber, email)
                     ?: throw NotFoundException(Message.Orders.NOT_FOUND)
-            call.respondOk(order)
+            call.respondOk(order.toPublicTrackingResponse())
         }.describe {
             summary = "Guest order tracking"
-            description = "Lookup by order number + checkout email"
+            description = "Lookup by order number + checkout email; returns a privacy-safe view"
             parameters {
                 query("orderNumber") { required = true }
                 query("email") { required = true }
             }
             responses {
-                ok<OrderResponse>("Order")
+                ok<com.piashcse.model.response.PublicOrderTrackingResponse>("Order tracking")
                 standardErrors()
             }
         }

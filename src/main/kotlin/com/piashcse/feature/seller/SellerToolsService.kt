@@ -21,6 +21,7 @@ import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.event.DisputeCreatedEvent
 import com.piashcse.event.EventBus
+import com.piashcse.event.ReviewReplyEvent
 import com.piashcse.event.SellerReviewCreatedEvent
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.PaginatedResponse
@@ -66,8 +67,8 @@ data class SellerReviewResponse(
     val id: String,
     val sellerId: String,
     val shopId: String?,
-    val userId: String,
-    val orderId: String,
+    val userId: String? = null,
+    val orderId: String? = null,
     val rating: Int,
     val comment: String?,
     val status: ReviewStatus,
@@ -185,7 +186,7 @@ class SellerToolsService {
     ): PaginatedResponse<SellerReviewResponse> =
         query {
             val seller = SellerDAO.findById(sellerId) ?: sellerId.throwNotFound("Seller")
-            reviewsForSellerTx(seller.id.value, limit, offset)
+            reviewsForSellerTx(seller.id.value, limit, offset, includePrivate = false)
         }
 
     suspend fun reviewsForSellerUser(
@@ -204,6 +205,7 @@ class SellerToolsService {
         sellerId: String,
         limit: Int,
         offset: Int,
+        includePrivate: Boolean = true,
     ): PaginatedResponse<SellerReviewResponse> =
         SellerReviewTable.selectAll()
             .where {
@@ -224,7 +226,9 @@ class SellerToolsService {
                     (SellerReviewTable.shopId eq shopId.entityID(ShopTable)) and
                         (SellerReviewTable.status eq ReviewStatus.ACTIVE)
                 }.orderBy(SellerReviewTable.createdAt to SortOrder.DESC)
-                .toPaginatedResponse(limit, offset) { SellerReviewDAO.wrapRow(it).toResponse() }
+                .toPaginatedResponse(limit, offset) {
+                    SellerReviewDAO.wrapRow(it).toResponse(includePrivate = false)
+                }
         }
 
     /** The signed-in customer's own seller reviews. */
@@ -273,15 +277,19 @@ class SellerToolsService {
         sellerUserId: String,
         reviewId: String,
         reply: String,
-    ): SellerReviewResponse =
-        query {
-            val seller = requireSellerByUserId(sellerUserId)
-            val review = SellerReviewDAO.findById(reviewId) ?: reviewId.throwNotFound("Seller review")
-            if (review.sellerId.value != seller.id.value) throw ForbiddenException("Review belongs to another seller")
-            review.sellerReply = reply.trim()
-            review.sellerRepliedAt = currentUtc()
-            review.toResponse()
-        }
+    ): SellerReviewResponse {
+        val response =
+            query {
+                val seller = requireSellerByUserId(sellerUserId)
+                val review = SellerReviewDAO.findById(reviewId) ?: reviewId.throwNotFound("Seller review")
+                if (review.sellerId.value != seller.id.value) throw ForbiddenException("Review belongs to another seller")
+                review.sellerReply = reply.trim()
+                review.sellerRepliedAt = currentUtc()
+                review.toResponse()
+            }
+        response.userId?.let { EventBus.publish(ReviewReplyEvent(response.id, it, response.sellerReply.orEmpty())) }
+        return response
+    }
 
     suspend fun createDispute(
         userId: String,
@@ -396,21 +404,23 @@ class SellerToolsService {
             }
     }
 
-    private fun SellerReviewDAO.toResponse(includeModeration: Boolean = false) =
-        SellerReviewResponse(
-            id = id.value,
-            sellerId = sellerId.value,
-            shopId = shopId?.value,
-            userId = userId.value,
-            orderId = orderId.value,
-            rating = rating,
-            comment = comment,
-            status = status,
-            sellerReply = sellerReply,
-            sellerRepliedAt = sellerRepliedAt?.toUtcString(),
-            moderationReason = moderationReason.takeIf { includeModeration },
-            createdAt = createdAt.toUtcString(),
-        )
+    private fun SellerReviewDAO.toResponse(
+        includeModeration: Boolean = false,
+        includePrivate: Boolean = true,
+    ) = SellerReviewResponse(
+        id = id.value,
+        sellerId = sellerId.value,
+        shopId = shopId?.value,
+        userId = userId.value.takeIf { includePrivate },
+        orderId = orderId.value.takeIf { includePrivate },
+        rating = rating,
+        comment = comment,
+        status = status,
+        sellerReply = sellerReply,
+        sellerRepliedAt = sellerRepliedAt?.toUtcString(),
+        moderationReason = moderationReason.takeIf { includeModeration },
+        createdAt = createdAt.toUtcString(),
+    )
 
     private fun SellerDisputeDAO.toResponse() =
         DisputeResponse(

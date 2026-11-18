@@ -6,6 +6,9 @@ import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.feature.i18n.I18nService
 import com.piashcse.model.response.OrderItemResponse
 import com.piashcse.model.response.OrderResponse
+import com.piashcse.model.response.PublicOrderItem
+import com.piashcse.model.response.PublicOrderTrackingResponse
+import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
 
 private val i18n = I18nService()
@@ -13,6 +16,7 @@ private val i18n = I18nService()
 fun OrderDAO.toOrderResponse(
     items: List<OrderItemResponse>? = null,
     includeSensitive: Boolean = true,
+    forCustomer: Boolean = false,
 ) = OrderResponse(
     orderId = id.value,
     orderNumber = orderNumber,
@@ -26,17 +30,26 @@ fun OrderDAO.toOrderResponse(
     currency = currency,
     status = status,
     allowedActions =
-        when (status) {
-            OrderStatus.PENDING -> listOf("CONFIRM", "CANCEL")
-            OrderStatus.CONFIRMED -> listOf("PAY", "CANCEL")
-            OrderStatus.PAID -> listOf("SHIP")
-            OrderStatus.SHIPPED -> listOf("DELIVER")
-            OrderStatus.DELIVERED -> listOf("RECEIVE")
-            OrderStatus.CANCELED, OrderStatus.RECEIVED -> emptyList()
+        if (forCustomer) {
+            when (status) {
+                OrderStatus.PENDING, OrderStatus.CONFIRMED -> listOf("CANCEL")
+                OrderStatus.DELIVERED -> listOf("RECEIVE")
+                else -> emptyList()
+            }
+        } else {
+            when (status) {
+                OrderStatus.PENDING -> listOf("CONFIRM", "CANCEL")
+                OrderStatus.CONFIRMED -> listOf("PAY", "CANCEL")
+                OrderStatus.PAID -> listOf("SHIP")
+                OrderStatus.SHIPPED -> listOf("DELIVER")
+                OrderStatus.DELIVERED -> listOf("RECEIVE")
+                OrderStatus.CANCELED, OrderStatus.RECEIVED -> emptyList()
+            }
         },
     nextStatuses =
         OrderStatus.entries
             .filter { OrderStatus.canTransitionTo(status, it) }
+            .filter { !forCustomer || it in listOf(OrderStatus.CANCELED, OrderStatus.RECEIVED) }
             .map { it.name },
     paymentStatus = paymentStatus,
     couponCode = couponCode,
@@ -88,4 +101,23 @@ fun OrderItemDAO.toOrderItemResponse() =
         taxInclusive = taxInclusive,
         taxClassId = taxClassId?.value,
         isDigital = isDigital,
+    )
+
+/** Public tracking projection that never leaks customer identity or address. */
+fun OrderResponse.toPublicTrackingResponse() =
+    PublicOrderTrackingResponse(
+        orderNumber = orderNumber,
+        status = status,
+        paymentStatus = paymentStatus,
+        total = total,
+        currency = currency,
+        itemCount = items?.sumOf { it.quantity } ?: 0,
+        items = items.orEmpty().map { PublicOrderItem(it.productName, it.variantName, it.quantity, it.total.orEmpty()) },
+        trackingNumber = trackingNumber,
+        shippingDate = shippingDate?.toUtcString(),
+        deliveredDate = deliveredDate?.toUtcString(),
+        canceledDate = canceledDate?.toUtcString(),
+        completedDate = completedDate?.toUtcString(),
+        fulfillmentType = fulfillmentType,
+        pickupStatus = pickupStatus,
     )
