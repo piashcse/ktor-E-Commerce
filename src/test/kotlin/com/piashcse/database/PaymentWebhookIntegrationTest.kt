@@ -69,6 +69,130 @@ class PaymentWebhookIntegrationTest {
         }
     }
 
+    @Test
+    fun `late payment for a canceled order is refunded`() {
+        val external = envDb()
+        if (external != null) {
+            runLatePaymentFlow(external.first, external.second, external.third)
+            return
+        }
+        if (System.getenv("CI") != null) {
+            assertTrue(dockerAvailable(), "DB_* environment or Docker is required in CI")
+        } else {
+            Assume.assumeTrue("Docker daemon or DB_* environment required", dockerAvailable())
+        }
+        val pg = PostgreSQLContainer("postgres:16-alpine")
+        pg.start()
+        try {
+            runLatePaymentFlow(pg.jdbcUrl, pg.username, pg.password)
+        } finally {
+            pg.stop()
+        }
+    }
+
+    private fun runLatePaymentFlow(
+        jdbcUrl: String,
+        user: String,
+        dbPassword: String,
+    ) {
+        Flyway.configure()
+            .dataSource(jdbcUrl, user, dbPassword)
+            .locations("classpath:db/migration")
+            .load()
+            .migrate()
+        Database.connect(jdbcUrl, user = user, password = dbPassword)
+
+        val suffix = UUID.randomUUID().toString().take(8)
+        val lateReference = "pi_late_$suffix"
+        lateinit var orderId: String
+        lateinit var paymentId: String
+        transaction {
+            val customer =
+                UserDAO.new {
+                    email = "late-webhook-$suffix@example.com"
+                    userType = UserType.CUSTOMER
+                    password = "hashed"
+                    isVerified = true
+                }
+            val order =
+                OrderDAO.new {
+                    userId = customer.id
+                    orderNumber = "LATE-$suffix"
+                    subTotal = BigDecimal("10.00")
+                    total = BigDecimal("10.00")
+                    status = OrderStatus.CANCELED
+                    paymentStatus = PaymentStatus.PENDING
+                }
+            orderId = order.id.value
+            val payment =
+                PaymentDAO.new {
+                    this.orderId = order.id
+                    this.userId = customer.id
+                    amount = BigDecimal("10.00")
+                    currency = "USD"
+                    paymentMethod = PaymentMethod.CREDIT_CARD
+                    status = PaymentStatus.PENDING
+                    provider = PaymentProvider.STRIPE
+                    providerReference = lateReference
+                    transactionId = lateReference
+                }
+            paymentId = payment.id.value
+        }
+
+        var refunds = 0
+        val gateway =
+            object : PaymentGateway {
+                override val name = "fake-stripe"
+                override val provider = PaymentProvider.STRIPE
+
+                override fun supports(paymentMethod: PaymentMethod) = true
+
+                override suspend fun charge(
+                    orderId: String,
+                    amount: BigDecimal,
+                    currency: String,
+                    paymentMethod: PaymentMethod,
+                    transactionId: String?,
+                    returnUrl: String?,
+                    idempotencyKey: String?,
+                    require3ds: Boolean,
+                ) = GatewayChargeResult(true)
+
+                override suspend fun refund(
+                    providerReference: String,
+                    amount: BigDecimal,
+                    currency: String,
+                    idempotencyKey: String,
+                ): GatewayRefundResult {
+                    refunds += 1
+                    return GatewayRefundResult(true, "re_late", "succeeded")
+                }
+
+                override fun verifyWebhook(
+                    payload: String,
+                    signature: String?,
+                ) = signature == "sig"
+
+                override fun parseWebhook(payload: String) =
+                    GatewayWebhookEvent(
+                        eventId = "evt_late_$suffix",
+                        provider = PaymentProvider.STRIPE,
+                        type = GatewayEventType.PAYMENT_SUCCEEDED,
+                        providerReference = lateReference,
+                        amount = BigDecimal("10.00"),
+                        currency = "USD",
+                    )
+            }
+
+        val result = kotlinx.coroutines.runBlocking { PaymentRepositoryImpl(gateway).handleWebhook("stripe", "{}", "sig") }
+        assertTrue(result.accepted)
+        assertEquals(1, refunds)
+        transaction {
+            assertEquals(PaymentStatus.REFUNDED, PaymentDAO.findById(paymentId)!!.status)
+            assertEquals(OrderStatus.CANCELED, OrderDAO.findById(orderId)!!.status)
+        }
+    }
+
     private fun runWebhookFlow(
         jdbcUrl: String,
         user: String,

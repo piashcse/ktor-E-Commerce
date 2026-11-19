@@ -7,6 +7,7 @@ import com.piashcse.model.request.PaymentRequest
 import com.piashcse.plugin.adminWriteRateLimit
 import com.piashcse.plugin.customerOnlyAuth
 import com.piashcse.plugin.writeRateLimit
+import com.piashcse.utils.common.MessageResponse
 import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.idempotencyKey
@@ -15,7 +16,9 @@ import com.piashcse.utils.extension.parseEnum
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondMessage
 import com.piashcse.utils.extension.respondOk
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.*
+import io.ktor.server.response.respond
 import io.ktor.server.routing.*
 import io.ktor.server.routing.openapi.describe
 import org.koin.ktor.ext.inject
@@ -36,7 +39,13 @@ fun Route.paymentRoutes() {
             call.request.headers["Stripe-Signature"]
                 ?: call.request.headers["X-Webhook-Signature"]
         val result = paymentRepo.handleWebhook(provider, call.receiveText(), signature)
-        call.respondMessage(result.message)
+        if (result.accepted) {
+            call.respondMessage(result.message)
+        } else {
+            // Ask the provider to retry an event that arrived before the local
+            // payment/refund row was visible.
+            call.respond(HttpStatusCode.InternalServerError, MessageResponse(result.message))
+        }
     }.describe {
         summary = "Payment provider webhook"
         description = "Verifies the provider signature and applies payment/refund state changes idempotently"

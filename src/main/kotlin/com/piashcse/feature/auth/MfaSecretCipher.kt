@@ -41,7 +41,12 @@ class MfaSecretCipher(
         private const val PREFIX = "enc:v1:"
 
         fun fromConfig(): MfaSecretCipher {
-            val material = DotEnvConfig.mfaEncryptionKey.ifBlank { DotEnvConfig.jwtSecret }
+            // Never use the JWT signing key directly for TOTP-seed encryption.
+            // When no dedicated key is configured, derive a distinct subkey.
+            val material =
+                DotEnvConfig.mfaEncryptionKey.ifBlank {
+                    com.piashcse.utils.common.hmacSha256Hex(DotEnvConfig.jwtSecret, "ktor-ecom:mfa-secret-encryption")
+                }
             return MfaSecretCipher(material)
         }
     }

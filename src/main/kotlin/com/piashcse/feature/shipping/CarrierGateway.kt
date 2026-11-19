@@ -271,16 +271,13 @@ class ShippoCarrierGateway(
         signature: String?,
     ): Boolean {
         if (signature.isNullOrBlank() || webhookSecret.isBlank()) return false
-        // Accept either an HMAC-SHA256 hex digest or the shared secret itself.
+        // HMAC-SHA256 only. Accepting the shared secret itself would put a
+        // long-lived credential on the wire and turn signatures into bearer tokens.
         val expected = hmacSha256(webhookSecret, payload)
         return MessageDigest.isEqual(
             expected.toByteArray(StandardCharsets.UTF_8),
             signature.toByteArray(StandardCharsets.UTF_8),
-        ) ||
-            MessageDigest.isEqual(
-                webhookSecret.toByteArray(StandardCharsets.UTF_8),
-                signature.toByteArray(StandardCharsets.UTF_8),
-            )
+        )
     }
 
     override fun parseWebhook(payload: String): CarrierWebhookEvent {

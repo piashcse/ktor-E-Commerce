@@ -61,8 +61,14 @@ fun ProductDAO.effectiveStockFor(
         variantInventories(variantId, forUpdate = forUpdate).sumOf { it.stockQuantity }
     }
 
+/** One warehouse-level stock movement produced by a decrement. */
+data class StockAllocation(
+    val warehouseId: String,
+    val quantity: Int,
+)
+
 /** Decrements stock across warehouses, oldest first, and throws if insufficient. */
-fun ProductDAO.decrementStock(quantity: Int) = decrementStockFor(null, quantity)
+fun ProductDAO.decrementStock(quantity: Int): List<StockAllocation> = decrementStockFor(null, quantity)
 
 /** Decrements product-level stock at a specific warehouse (POS/BOPIS). */
 fun ProductDAO.effectiveStockForAt(
@@ -76,13 +82,13 @@ fun ProductDAO.effectiveStockForAt(
 fun ProductDAO.decrementStockAt(
     warehouseId: String,
     quantity: Int,
-) = decrementStockAt(warehouseId, null, quantity)
+): List<StockAllocation> = decrementStockAt(warehouseId, null, quantity)
 
 fun ProductDAO.decrementStockAt(
     warehouseId: String,
     variantId: String?,
     quantity: Int,
-) {
+): List<StockAllocation> {
     val rows = inventories(forUpdate = true).filter { it.warehouseId.value == warehouseId && it.variantId?.value == variantId }
     if (rows.isEmpty()) throw ValidationException(Message.Inventory.NOT_FOUND)
     val available = rows.sumOf { it.stockQuantity }
@@ -90,24 +96,29 @@ fun ProductDAO.decrementStockAt(
         throw ValidationException(Message.Validation.insufficientStock(name, available))
     }
     val previousStatuses = rows.associate { it.id.value to it.status }
+    val allocations = mutableListOf<StockAllocation>()
     var remaining = quantity
     rows.forEach { inv ->
         if (remaining <= 0) return@forEach
         val take = minOf(inv.stockQuantity, remaining)
-        inv.stockQuantity -= take
-        inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
-        remaining -= take
+        if (take > 0) {
+            inv.stockQuantity -= take
+            inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
+            allocations += StockAllocation(inv.warehouseId.value, take)
+            remaining -= take
+        }
     }
     enqueueLowStock(rows, previousStatuses)
     if (deletedAt == null) {
         status = if (inventories().sumOf { it.stockQuantity } <= 0) ProductStatus.OUT_OF_STOCK else ProductStatus.ACTIVE
     }
+    return allocations
 }
 
 fun ProductDAO.decrementStockFor(
     variantId: String?,
     quantity: Int,
-) {
+): List<StockAllocation> {
     val allRows = inventories(forUpdate = true)
     val rows = allRows.filter { it.variantId?.value == variantId }
     if (rows.isEmpty()) throw ValidationException(Message.Inventory.NOT_FOUND)
@@ -116,16 +127,21 @@ fun ProductDAO.decrementStockFor(
         throw ValidationException(Message.Validation.insufficientStock(name, available))
     }
     val previousStatuses = rows.associate { it.id.value to it.status }
+    val allocations = mutableListOf<StockAllocation>()
     var remaining = quantity
     rows.forEach { inv ->
         if (remaining <= 0) return@forEach
         val take = minOf(inv.stockQuantity, remaining)
-        inv.stockQuantity -= take
-        inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
-        remaining -= take
+        if (take > 0) {
+            inv.stockQuantity -= take
+            inv.status = InventoryStatus.fromStockLevel(inv.stockQuantity, inv.minimumStockLevel)
+            allocations += StockAllocation(inv.warehouseId.value, take)
+            remaining -= take
+        }
     }
     enqueueLowStock(rows, previousStatuses)
     syncProductStatus(allRows.sumOf { it.stockQuantity })
+    return allocations
 }
 
 private fun ProductDAO.enqueueLowStock(

@@ -49,6 +49,7 @@ import java.util.*
 
 private val i18n = I18nService()
 
+@Suppress("LargeClass", "TooManyFunctions")
 class OrderRepositoryImpl(
     private val fxService: FxService = FxService(),
     private val taxService: TaxService = TaxService(),
@@ -375,11 +376,12 @@ class OrderRepositoryImpl(
         idempotencyKey: String?,
     ): List<OrderResponse>? {
         if (idempotencyKey == null) return null
+        val escapedKey = idempotencyKey.escapeLike()
         val existing =
             OrderDAO.find {
                 (
                     (OrderTable.idempotencyKey eq idempotencyKey) or
-                        (OrderTable.idempotencyKey like "$idempotencyKey:%")
+                        (OrderTable.idempotencyKey like "$escapedKey:%")
                 ) and (OrderTable.userId eq userId)
             }.toList()
         if (existing.isEmpty()) return null
@@ -590,24 +592,28 @@ class OrderRepositoryImpl(
                     discountAmount = BigDecimal.ZERO
                 }
 
-            if (pickupWarehouseId != null) {
-                product.decrementStockAt(pickupWarehouseId, variant?.id?.value, cartItem.quantity)
-            } else if (variant == null) {
-                product.decrementStock(cartItem.quantity)
-            } else {
-                product.decrementStockFor(variant.id.value, cartItem.quantity)
-            }
+            val allocations =
+                when {
+                    pickupWarehouseId != null ->
+                        product.decrementStockAt(pickupWarehouseId, variant?.id?.value, cartItem.quantity)
+                    variant == null -> product.decrementStock(cartItem.quantity)
+                    else -> product.decrementStockFor(variant.id.value, cartItem.quantity)
+                }
             product.addSales(cartItem.quantity)
 
-            StockReservationDAO.new {
-                this.orderId = order.id
-                this.orderItemId = orderItem.id
-                this.productId = product.id
-                this.variantId = variant?.id
-                this.shopId = shopIdValue.entityID(ShopTable)
-                this.quantity = cartItem.quantity
-                this.status = ReservationStatus.ACTIVE
-                this.expiresAt = currentUtc().plusHours(24)
+            allocations.forEach { allocation ->
+                StockReservationDAO.new {
+                    this.orderId = order.id
+                    this.orderItemId = orderItem.id
+                    this.productId = product.id
+                    this.variantId = variant?.id
+                    this.shopId = shopIdValue.entityID(ShopTable)
+                    this.warehouseId = allocation.warehouseId.entityID(WarehouseTable)
+                    this.quantity = allocation.quantity
+                    this.restoredQuantity = 0
+                    this.status = ReservationStatus.ACTIVE
+                    this.expiresAt = currentUtc().plusHours(24)
+                }
             }
 
             shopSubTotal = shopSubTotal.add(itemTotal)
@@ -1243,7 +1249,7 @@ class OrderRepositoryImpl(
             val orders = OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
             status?.let { orders.andWhere { OrderTable.status eq parseOrderStatus(it) } }
             query?.takeIf { it.isNotBlank() }?.let { term ->
-                val pattern = "%${term.trim().lowercase()}%"
+                val pattern = "%${term.trim().lowercase().escapeLike()}%"
                 orders.andWhere {
                     (OrderTable.orderNumber.lowerCase() like pattern) or
                         (OrderTable.contactEmail.lowerCase() like pattern)
@@ -1491,7 +1497,7 @@ class OrderRepositoryImpl(
             val orders = OrderTable.selectAll().andWhere { OrderTable.shopId eq shopId }
             status?.let { orders.andWhere { OrderTable.status eq parseOrderStatus(it) } }
             query?.takeIf { it.isNotBlank() }?.let { term ->
-                val pattern = "%${term.trim().lowercase()}%"
+                val pattern = "%${term.trim().lowercase().escapeLike()}%"
                 orders.andWhere {
                     (OrderTable.orderNumber.lowerCase() like pattern) or
                         (OrderTable.contactEmail.lowerCase() like pattern)
@@ -1518,7 +1524,7 @@ class OrderRepositoryImpl(
             startDate?.let { orders.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
             endDate?.let { orders.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
             query?.takeIf { it.isNotBlank() }?.let { term ->
-                val pattern = "%${term.trim().lowercase()}%"
+                val pattern = "%${term.trim().lowercase().escapeLike()}%"
                 orders.andWhere {
                     (OrderTable.orderNumber.lowerCase() like pattern) or
                         (OrderTable.contactEmail.lowerCase() like pattern)

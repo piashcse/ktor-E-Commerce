@@ -124,6 +124,14 @@ class AuthRoutesTest {
         }
 
     @Test
+    fun `otp-verification query params are rejected`() =
+        testApplication {
+            setup()
+            val res = client.post("/api/v1/auth/otp-verification?userId=user-1&otp=123456")
+            assertEquals(HttpStatusCode.BadRequest, res.status)
+        }
+
+    @Test
     fun `refresh-token happy path returns 200`() =
         testApplication {
             coEvery { authRepo.refreshAccessToken(any()) } returns

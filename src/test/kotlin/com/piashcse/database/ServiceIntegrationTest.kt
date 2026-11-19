@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod")
+
 package com.piashcse.database
 
 import com.piashcse.constants.KycStatus
@@ -319,7 +321,17 @@ class ServiceIntegrationTest {
 
         // KYC
         val kyc = KycService()
-        kotlinx.coroutines.runBlocking { kyc.submit(sellerUserId, SellerKycSubmitRequest(businessName = "Service Business")) }
+        kotlinx.coroutines.runBlocking {
+            kyc.submit(
+                sellerUserId,
+                SellerKycSubmitRequest(
+                    businessName = "Service Business",
+                    documentUrl = "/uploads/kyc/service-$suffix.pdf",
+                    bankName = "Service Bank",
+                    bankAccountNumber = "0123456789",
+                ),
+            )
+        }
         assertEquals(KycStatus.PENDING, kotlinx.coroutines.runBlocking { kyc.get(sellerUserId) }.kycStatus)
         assertEquals(KycStatus.VERIFIED, kotlinx.coroutines.runBlocking { kyc.verify(sellerId) }.kycStatus)
 

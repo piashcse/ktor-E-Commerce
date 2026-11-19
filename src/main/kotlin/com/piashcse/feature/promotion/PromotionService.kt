@@ -117,7 +117,8 @@ class PromotionService {
                     (PromotionTable.endsAt greaterEq now) and
                     (PromotionTable.minOrderAmount lessEq amountUsd) and
                     scopeCondition
-            }.orderBy(PromotionTable.priority to org.jetbrains.exposed.v1.core.SortOrder.DESC)
+            }.forUpdate()
+                .orderBy(PromotionTable.priority to org.jetbrains.exposed.v1.core.SortOrder.DESC)
                 .orderBy(PromotionTable.createdAt to org.jetbrains.exposed.v1.core.SortOrder.ASC)
                 .firstOrNull { it.usageLimit?.let { limit -> it.usageCount < limit } ?: true }
                 ?: return null

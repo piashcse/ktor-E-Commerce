@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 383
+**Operations:** 464 (generated OpenAPI); the curated tables below cover 383 core operations
 
 **Tags:** 47
 

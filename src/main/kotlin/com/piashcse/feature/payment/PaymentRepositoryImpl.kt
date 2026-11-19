@@ -15,6 +15,9 @@ import com.piashcse.event.PaymentCompletedEvent
 import com.piashcse.feature.fraud.FraudContext
 import com.piashcse.feature.fraud.FraudService
 import com.piashcse.feature.loyalty.LoyaltyService
+import com.piashcse.feature.refund_request.RefundRequestRepository
+import com.piashcse.feature.refund_request.RefundRequestRepositoryImpl
+import com.piashcse.feature.seller.PayoutLedger
 import com.piashcse.feature.subscription.DigitalDeliveryService
 import com.piashcse.feature.subscription.SubscriptionBillingService
 import com.piashcse.mapper.toPaymentResponse
@@ -24,19 +27,27 @@ import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.resilience.CircuitBreaker
+import com.piashcse.utils.validator.ConflictException
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.FraudBlockedException
 import com.piashcse.utils.validator.NotFoundException
 import com.piashcse.utils.validator.ValidationException
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.less
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.update
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Payment ledger.
@@ -53,9 +64,34 @@ class PaymentRepositoryImpl(
     private val loyaltyService: LoyaltyService = LoyaltyService(),
     private val digitalDelivery: DigitalDeliveryService = DigitalDeliveryService(),
     private val subscriptionBilling: SubscriptionBillingService = SubscriptionBillingService(digitalDelivery),
+    private val refunds: RefundRequestRepository = RefundRequestRepositoryImpl(),
 ) : PaymentRepository {
     private val log = LoggerFactory.getLogger(PaymentRepositoryImpl::class.java)
     private val gatewayBreaker = CircuitBreaker("payment-gateway", failureThreshold = 5, cooldownMs = 30_000)
+
+    /**
+     * Serializes payment creation per order inside this process. The database
+     * re-validation still protects against cross-instance races; a distributed
+     * lock/advisory lock is the next step for multi-instance deployments.
+     */
+    private val orderLocks = ConcurrentHashMap<String, Mutex>()
+    private val orderLockRefs = ConcurrentHashMap<String, AtomicInteger>()
+
+    private suspend fun <T> withOrderLock(
+        orderId: String,
+        block: suspend () -> T,
+    ): T {
+        val mutex = orderLocks.computeIfAbsent(orderId) { Mutex() }
+        orderLockRefs.computeIfAbsent(orderId) { AtomicInteger() }.incrementAndGet()
+        return try {
+            mutex.withLock { block() }
+        } finally {
+            if (orderLockRefs.computeIfAbsent(orderId) { AtomicInteger() }.decrementAndGet() <= 0) {
+                orderLocks.remove(orderId, mutex)
+                orderLockRefs.remove(orderId)
+            }
+        }
+    }
 
     private fun Throwable.isUniqueViolation(): Boolean =
         generateSequence(this) { it.cause }.any { t ->
@@ -86,9 +122,14 @@ class PaymentRepositoryImpl(
         return existing
     }
 
-    private fun completedTotal(orderId: EntityID<String>): BigDecimal =
+    private fun completedTotal(
+        orderId: EntityID<String>,
+        currency: String,
+    ): BigDecimal =
         PaymentDAO.find {
-            (PaymentTable.orderId eq orderId) and (PaymentTable.status eq PaymentStatus.COMPLETED)
+            (PaymentTable.orderId eq orderId) and
+                (PaymentTable.status eq PaymentStatus.COMPLETED) and
+                (PaymentTable.currency eq currency)
         }.fold(BigDecimal.ZERO) { acc, payment -> acc.add(payment.amount) }
 
     /**
@@ -102,7 +143,10 @@ class PaymentRepositoryImpl(
         // REVIEW payments must be explicitly released by an admin before the order is paid.
         if (payment.riskDecision != RiskDecision.ALLOW) return
         if (order.paymentStatus == PaymentStatus.COMPLETED) return
-        val paid = completedTotal(order.id)
+        // Never resurrect an auto-canceled/received order. If the provider has
+        // already captured money, the late payment needs an explicit refund.
+        if (order.status == OrderStatus.CANCELED || order.status == OrderStatus.RECEIVED) return
+        val paid = completedTotal(order.id, order.currency)
         if (paid < order.total) return
 
         order.paymentStatus = PaymentStatus.COMPLETED
@@ -115,6 +159,9 @@ class PaymentRepositoryImpl(
             }
         loyaltyService.earnForPaidOrderTx(order.userId.value, order.id.value, loyaltyTotalUsd)
         digitalDelivery.grantForOrderTx(order)
+        // Create the seller ledger inside the same transaction so an immediate
+        // refund/cancellation can reverse it deterministically.
+        PayoutLedger.createForOrderTx(order)
         StockReservationDAO.find { StockReservationTable.orderId eq order.id }
             .forEach { it.status = ReservationStatus.FINALIZED }
         OutboxPublisher.enqueueTx(
@@ -159,7 +206,7 @@ class PaymentRepositoryImpl(
             throw ValidationException(Message.Payments.ALREADY_PAID)
         }
 
-        val remaining = order.total.subtract(completedTotal(order.id))
+        val remaining = order.total.subtract(completedTotal(order.id, order.currency))
         if (remaining <= BigDecimal.ZERO) throw ValidationException(Message.Payments.ALREADY_PAID)
         if (paymentRequest.amount > remaining) {
             throw ValidationException(
@@ -181,6 +228,69 @@ class PaymentRepositoryImpl(
     }
 
     override suspend fun createPayment(
+        paymentRequest: PaymentRequest,
+        callerUserId: String,
+        ipAddress: String?,
+    ): PaymentResponse {
+        val leaseOwner = UUID.randomUUID().toString()
+        if (!acquireChargeLock(paymentRequest.orderId, leaseOwner)) {
+            throw ConflictException("A payment for this order is already being processed")
+        }
+        return try {
+            withOrderLock(paymentRequest.orderId) {
+                createPaymentLocked(paymentRequest, callerUserId, ipAddress)
+            }
+        } finally {
+            runCatching { releaseChargeLock(paymentRequest.orderId, leaseOwner) }
+        }
+    }
+
+    private suspend fun acquireChargeLock(
+        orderId: String,
+        owner: String,
+    ): Boolean {
+        val existing = query { PaymentChargeLockDAO.find { PaymentChargeLockTable.orderId eq orderId.entityID(OrderTable) }.firstOrNull() }
+        if (existing == null) {
+            return try {
+                query {
+                    PaymentChargeLockDAO.new {
+                        this.orderId = orderId.entityID(OrderTable)
+                        this.owner = owner
+                        this.lockedUntil = currentUtc().plusMinutes(5)
+                    }
+                }
+                true
+            } catch (e: Exception) {
+                if (e.isUniqueViolation()) false else throw e
+            }
+        }
+        if (existing.lockedUntil.isAfter(currentUtc())) return false
+        return query {
+            PaymentChargeLockTable.update(
+                {
+                    (PaymentChargeLockTable.orderId eq orderId.entityID(OrderTable)) and
+                        (PaymentChargeLockTable.lockedUntil less currentUtc())
+                },
+            ) {
+                it[PaymentChargeLockTable.owner] = owner
+                it[PaymentChargeLockTable.lockedUntil] = currentUtc().plusMinutes(5)
+            } > 0
+        }
+    }
+
+    private suspend fun releaseChargeLock(
+        orderId: String,
+        owner: String,
+    ) {
+        query {
+            PaymentChargeLockDAO.find {
+                (PaymentChargeLockTable.orderId eq orderId.entityID(OrderTable)) and
+                    (PaymentChargeLockTable.owner eq owner)
+            }.forEach { it.delete() }
+        }
+    }
+
+    private suspend fun createPaymentLocked(
         paymentRequest: PaymentRequest,
         callerUserId: String,
         ipAddress: String?,
@@ -407,41 +517,127 @@ class PaymentRepositoryImpl(
                 .getOrElse { throw ValidationException("Invalid webhook payload") }
         AppMetrics.paymentWebhooks.increment()
 
-        return query {
-            val existing =
+        val outcome =
+            query {
+                val existing =
+                    PaymentWebhookEventDAO.find {
+                        (PaymentWebhookEventTable.provider eq event.provider) and
+                            (PaymentWebhookEventTable.eventId eq event.eventId)
+                    }.firstOrNull()
+                if (existing != null && existing.status in listOf(WebhookEventStatus.PROCESSED, WebhookEventStatus.IGNORED)) {
+                    return@query Pair(WebhookResult(true, duplicate = true, message = "Duplicate webhook ignored"), null)
+                }
+
+                // A retry of an unprocessed delivery reuses the stored row.
+                val record =
+                    existing ?: PaymentWebhookEventDAO.new {
+                        this.provider = event.provider
+                        this.eventId = event.eventId
+                        this.eventType = event.type.name
+                        this.payload = payload
+                        this.status = WebhookEventStatus.RECEIVED
+                    }
+                record.status = WebhookEventStatus.RECEIVED
+                record.error = null
+                // true = applied, false = logically ignored, null = retry later
+                // (most commonly a webhook that arrived before the payment row).
+                when (applyWebhookEvent(event)) {
+                    true -> {
+                        record.status = WebhookEventStatus.PROCESSED
+                        record.processedAt = currentUtc()
+                        Pair(WebhookResult(true, message = "Webhook processed"), null)
+                    }
+                    null -> {
+                        record.status = WebhookEventStatus.RECEIVED
+                        record.error = "Payment/refund not found yet; provider should retry"
+                        // A captured payment for an order that was auto-canceled
+                        // must be refunded, not applied to the canceled order.
+                        Pair(
+                            WebhookResult(false, message = "Webhook queued for retry"),
+                            event.takeIf { it.type == GatewayEventType.PAYMENT_SUCCEEDED },
+                        )
+                    }
+                    false -> {
+                        record.status = WebhookEventStatus.IGNORED
+                        record.error = "No matching payment or refund for ${event.type}"
+                        record.processedAt = currentUtc()
+                        Pair(WebhookResult(true, message = "Webhook ignored"), null)
+                    }
+                }
+            }
+
+        // Provider-initiated refunds: apply local stock/payout/payment effects
+        // idempotently instead of only recording the provider status.
+        if (event.type == GatewayEventType.REFUND_UPDATED && event.refund != null) {
+            val refund = event.refund
+            val reconciled = refunds.reconcileProviderRefund(refund.providerRefundId, refund.status, refund.amount)
+            if (reconciled) {
+                query {
+                    PaymentWebhookEventDAO.find {
+                        (PaymentWebhookEventTable.provider eq event.provider) and
+                            (PaymentWebhookEventTable.eventId eq event.eventId)
+                    }.firstOrNull()?.apply {
+                        status = WebhookEventStatus.PROCESSED
+                        error = null
+                        processedAt = currentUtc()
+                    }
+                }
+                return WebhookResult(true, message = "Refund update reconciled")
+            }
+        }
+
+        // Gateway calls must run outside the transaction; if the late payment
+        // was refunded, mark the stored event processed.
+        val retryEvent = outcome.second
+        if (retryEvent != null && refundLatePayment(retryEvent)) {
+            query {
                 PaymentWebhookEventDAO.find {
                     (PaymentWebhookEventTable.provider eq event.provider) and
                         (PaymentWebhookEventTable.eventId eq event.eventId)
-                }.firstOrNull()
-            if (existing != null) {
-                return@query WebhookResult(true, duplicate = true, message = "Duplicate webhook ignored")
-            }
-
-            val record =
-                PaymentWebhookEventDAO.new {
-                    this.provider = event.provider
-                    this.eventId = event.eventId
-                    this.eventType = event.type.name
-                    this.payload = payload
-                    this.status = WebhookEventStatus.RECEIVED
+                }.firstOrNull()?.apply {
+                    status = WebhookEventStatus.PROCESSED
+                    error = "Refunded payment for a canceled order"
+                    processedAt = currentUtc()
                 }
-            // Let unexpected failures roll back and surface as 5xx so the provider retries.
-            // Only logically ignored events are acknowledged with 200.
-            val applied = applyWebhookEvent(event)
-            if (applied) {
-                record.status = WebhookEventStatus.PROCESSED
-                record.processedAt = currentUtc()
-            } else if (record.status == WebhookEventStatus.RECEIVED) {
-                record.status = WebhookEventStatus.IGNORED
-                record.error = "No matching payment or refund for ${event.type}"
-                record.processedAt = currentUtc()
             }
-            WebhookResult(true, message = "Webhook processed")
+            return WebhookResult(true, message = "Late payment refunded")
         }
+        return outcome.first
     }
 
-    /** Must run inside the webhook transaction. */
-    private fun applyWebhookEvent(event: GatewayWebhookEvent): Boolean {
+    /** Refunds a captured payment whose order is no longer payable. Must run outside a transaction. */
+    private suspend fun refundLatePayment(event: GatewayWebhookEvent): Boolean {
+        val reference = event.providerReference ?: return false
+        val payment =
+            query {
+                PaymentDAO.find {
+                    (PaymentTable.providerReference eq reference) or (PaymentTable.transactionId eq reference)
+                }.firstOrNull { it.status != PaymentStatus.REFUNDED }
+            } ?: return false
+        val providerReference = payment.providerReference ?: return false
+        val refund =
+            runCatching {
+                gatewayBreaker.execute {
+                    gateway.refund(
+                        providerReference = providerReference,
+                        amount = payment.amount,
+                        currency = payment.currency,
+                        idempotencyKey = "late-cancel:${payment.id.value}",
+                    )
+                }
+            }.getOrNull() ?: return false
+        if (!refund.success) return false
+        query {
+            val row = PaymentDAO.findById(payment.id.value) ?: return@query
+            row.status = PaymentStatus.REFUNDED
+            row.providerStatus = "paid_on_canceled_order_refunded"
+        }
+        return true
+    }
+
+    /** Must run inside the webhook transaction. Returns null when the event should be retried. */
+    @Suppress("CyclomaticComplexMethod") // payment state machine intentionally exhaustive
+    private fun applyWebhookEvent(event: GatewayWebhookEvent): Boolean? {
         // Subscription renewals are PaymentIntents without an order; route them by invoice metadata.
         val subscriptionInvoiceId = event.metadata["subscription_invoice_id"]
         if (!subscriptionInvoiceId.isNullOrBlank()) {
@@ -466,7 +662,7 @@ class PaymentRepositoryImpl(
                 val payment =
                     PaymentDAO.find {
                         (PaymentTable.providerReference eq reference) or (PaymentTable.transactionId eq reference)
-                    }.forUpdate().firstOrNull() ?: return false
+                    }.forUpdate().firstOrNull() ?: return null
 
                 // Never let a late webhook rewrite money that already settled or
                 // was refunded, and reject events that do not match the payment.
@@ -481,12 +677,21 @@ class PaymentRepositoryImpl(
                 event.providerStatus?.let { payment.providerStatus = it }
                 when (event.type) {
                     GatewayEventType.PAYMENT_SUCCEEDED -> {
+                        val order =
+                            OrderDAO.find { OrderTable.id eq payment.orderId }
+                                .forUpdate()
+                                .firstOrNull()
+                        if (order == null) return null
+                        // The order may have been auto-canceled while an async
+                        // payment was in flight. Do not resurrect it; leave the
+                        // event retryable so it can be refunded/reconciled.
+                        if (order.status == OrderStatus.CANCELED || order.status == OrderStatus.RECEIVED) {
+                            payment.providerStatus = "paid_on_canceled_order"
+                            return null
+                        }
                         payment.status = PaymentStatus.COMPLETED
                         payment.scaStatus = ScaStatus.AUTHENTICATED
-                        OrderDAO.find { OrderTable.id eq payment.orderId }
-                            .forUpdate()
-                            .firstOrNull()
-                            ?.let { completeOrderIfFullyPaid(it, payment) }
+                        completeOrderIfFullyPaid(order, payment)
                     }
                     GatewayEventType.PAYMENT_FAILED -> {
                         payment.status = PaymentStatus.FAILED
@@ -541,13 +746,18 @@ class PaymentRepositoryImpl(
                     }
             val applied = applyWebhookEvent(event)
             record.status =
-                if (applied) {
-                    WebhookEventStatus.PROCESSED
-                } else {
-                    WebhookEventStatus.IGNORED
+                when (applied) {
+                    true -> WebhookEventStatus.PROCESSED
+                    null -> WebhookEventStatus.RECEIVED
+                    false -> WebhookEventStatus.IGNORED
                 }
-            record.error = if (applied) null else "No matching payment/refund for ${event.type}"
-            record.processedAt = currentUtc()
+            record.error =
+                when (applied) {
+                    true -> null
+                    null -> "No matching payment/refund yet; provider should retry"
+                    false -> "No matching payment/refund for ${event.type}"
+                }
+            record.processedAt = if (applied == null) null else currentUtc()
             AdminAudit.publish(
                 actorUserId,
                 "WEBHOOK_REPLAYED",
@@ -555,7 +765,7 @@ class PaymentRepositoryImpl(
                 eventId,
                 "${event.type}: ${record.status}",
             )
-            WebhookResult(true, message = "Webhook replayed")
+            WebhookResult(applied != null, message = "Webhook replayed")
         }
 
     override suspend fun getPaymentById(

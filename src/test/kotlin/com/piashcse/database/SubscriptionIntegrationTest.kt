@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod")
+
 package com.piashcse.database
 
 import com.piashcse.constants.BillingInterval
@@ -234,8 +236,15 @@ class SubscriptionIntegrationTest {
             kotlinx.coroutines.runBlocking {
                 plans.subscribe(customerId, SubscribeRequest(plan.id, paymentReference = "pay_initial"))
             }
-        assertEquals(SubscriptionStatus.ACTIVE, subscription.status)
-        assertEquals("Pro Monthly", subscription.planName)
+        // Subscriptions start PENDING. Only the admin/provider activation path
+        // may mark the first invoice paid and activate the subscription.
+        assertEquals(SubscriptionStatus.PENDING, subscription.status)
+        val activatedInitial =
+            kotlinx.coroutines.runBlocking {
+                plans.activate(subscription.id, "pay_initial")
+            }
+        assertEquals(SubscriptionStatus.ACTIVE, activatedInitial.status)
+        assertEquals("Pro Monthly", activatedInitial.planName)
 
         val invoices = kotlinx.coroutines.runBlocking { plans.invoicesForUser(customerId, subscription.id) }
         assertEquals(1, invoices.size)
@@ -247,7 +256,8 @@ class SubscriptionIntegrationTest {
         assertEquals(productId, initialLibrary.single().productId)
         val token = initialLibrary.single().downloadToken
         val download = kotlinx.coroutines.runBlocking { deliveries.download(token, customerId) }
-        assertEquals(49, download.remainingDownloads)
+        // Minting the signed URL does not consume quota; fetching the asset does.
+        assertEquals(50, download.remainingDownloads)
         assertEquals("pack-$suffix.zip", download.fileName)
         assertTrue(download.downloadUrl.contains("/api/v1/library/asset"))
         val signed = java.net.URI(download.downloadUrl)
@@ -261,6 +271,11 @@ class SubscriptionIntegrationTest {
             kotlinx.coroutines.runBlocking {
                 deliveries.asset(params.getValue("token"), params.getValue("expires").toLong(), params.getValue("signature"))
             },
+        )
+        assertEquals(
+            49,
+            kotlinx.coroutines.runBlocking { deliveries.library(customerId) }.single().remainingDownloads,
+            "Fetching the signed asset must consume one download",
         )
 
         // Payment for a one-off digital order grants a second entitlement.
@@ -346,6 +361,8 @@ class SubscriptionIntegrationTest {
                     ),
                 )
             }
+        // The first charge is explicit; renewals then use the stored method.
+        kotlinx.coroutines.runBlocking { recurring.activate(recurringSubscription.id, "pay_recurring_initial") }
         val renewed = kotlinx.coroutines.runBlocking { recurring.runBilling(currentUtc().plusDays(100)) }
         assertTrue(renewed.paid >= 1)
         assertEquals(
@@ -383,6 +400,9 @@ class SubscriptionIntegrationTest {
                 )
             }
         gateway.failing += dunningSubscription.id
+        // Activate the initial invoice so the subscription is eligible for
+        // off-session renewal/dunning.
+        kotlinx.coroutines.runBlocking { recurring.activate(dunningSubscription.id, "pay_dunning_initial") }
         val failedRun = kotlinx.coroutines.runBlocking { recurring.runBilling(currentUtc().plusDays(130)) }
         assertTrue(failedRun.failed >= 1)
         assertEquals(

@@ -1,5 +1,8 @@
 # Ktor E-Commerce — Deep Analysis & Remediation Tracker
 
+> **Historical document.** The current, verified state is in [`TEST_ANALYSIS.md`](TEST_ANALYSIS.md)
+> (2026-11-19: 642/642 tests passing, 58.27 % instruction / 31.14 % branch coverage, all gates green).
+
 > Living document. Each item is marked `[x]` when the fix is implemented and the project compiles/tests pass.
 > `[~]` means the in-repo scaffold/guard is implemented but a third-party provider or deployment config is still required.
 > `[ ]` means still open.

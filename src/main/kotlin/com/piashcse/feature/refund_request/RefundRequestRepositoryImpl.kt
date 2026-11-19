@@ -212,6 +212,7 @@ class RefundRequestRepositoryImpl(
     }
 
     private fun restoreRefundEffects(
+        refundId: String,
         order: OrderDAO,
         orderItem: OrderItemDAO,
         refundAmount: BigDecimal,
@@ -219,9 +220,31 @@ class RefundRequestRepositoryImpl(
         shippingRefund: BigDecimal,
         taxRefund: BigDecimal,
     ) {
-        // Stock and sales counters.
+        // Stock and sales counters. Restore each warehouse allocation that is
+        // still outstanding for this order line; fall back to the pickup/first
+        // warehouse for reservations created before allocation tracking.
         ProductDAO.findById(orderItem.productId.value)?.let { product ->
-            product.restoreStockFor(orderItem.variantId?.value, quantity, order.pickupWarehouseId?.value)
+            val reservations =
+                StockReservationDAO.find { StockReservationTable.orderItemId eq orderItem.id }
+                    .orderBy(StockReservationTable.createdAt to SortOrder.ASC)
+                    .toList()
+            var remaining = quantity
+            reservations.forEach { reservation ->
+                val available = (reservation.quantity - reservation.restoredQuantity).coerceAtLeast(0)
+                val take = minOf(available, remaining)
+                if (take > 0) {
+                    product.restoreStockFor(
+                        orderItem.variantId?.value,
+                        take,
+                        reservation.warehouseId?.value,
+                    )
+                    reservation.restoredQuantity += take
+                    remaining -= take
+                }
+            }
+            if (remaining > 0) {
+                product.restoreStockFor(orderItem.variantId?.value, remaining, order.pickupWarehouseId?.value)
+            }
             product.removeSales(quantity)
         }
 
@@ -256,7 +279,7 @@ class RefundRequestRepositoryImpl(
             this.currency = order.currency
             this.status = PaymentStatus.REFUNDED
             this.paymentMethod = order.paymentMethod ?: PaymentMethod.COD
-            this.transactionId = "refund:${order.id.value}:${orderItem.id.value}:${ledgerAmount.toPlainString()}"
+            this.transactionId = "refund:$refundId"
         }
     }
 
@@ -282,6 +305,10 @@ class RefundRequestRepositoryImpl(
                 if (method != RefundMethod.ORIGINAL) return@query null
                 if (!canTransitionTo(refund.status, request.status)) return@query null
                 requireRefundActor(refund, userId)
+                // Money authority must be checked before the provider call. A
+                // seller may approve/ship a refund but only an admin may move
+                // the actual money.
+                requireRefundMoneyAuthority(userId)
 
                 val order =
                     OrderDAO.findById(refund.orderId.value)
@@ -492,6 +519,7 @@ class RefundRequestRepositoryImpl(
         val amount = refund.refundAmount ?: maxRefundAmount
         refund.refundAmount = amount
         restoreRefundEffects(
+            refund.id.value,
             order,
             orderItem,
             amount,
@@ -523,6 +551,44 @@ class RefundRequestRepositoryImpl(
         current: RefundStatus,
         target: RefundStatus,
     ): Boolean = RefundStatus.canTransitionTo(current, target)
+
+    override suspend fun reconcileProviderRefund(
+        providerRefundId: String,
+        status: String,
+        amount: BigDecimal?,
+    ): Boolean =
+        query {
+            val refund =
+                RefundRequestDAO.find { RefundRequestTable.providerRefundId eq providerRefundId }
+                    .forUpdate()
+                    .firstOrNull() ?: return@query false
+            refund.providerRefundStatus = status
+            val succeeded = status.lowercase() in setOf("succeeded", "refunded", "completed")
+            if (!succeeded || refund.status == RefundStatus.REFUNDED) return@query true
+
+            val order =
+                OrderDAO.findById(refund.orderId.value)
+                    ?: throw ValidationException(Message.Orders.NOT_FOUND)
+            val orderItem =
+                OrderItemDAO.findById(refund.orderItemId.value)
+                    ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
+            val maxRefundAmount = maxRefundableAmount(order, orderItem, refund.quantity)
+            val refundAmount = refund.refundAmount ?: maxRefundAmount
+            val expected =
+                refundAmount.add(refund.shippingRefund).add(refund.taxRefund).setScale(2)
+            if (amount != null && amount.compareTo(expected) != 0) {
+                refund.providerRefundStatus = "amount_mismatch:$status"
+                return@query true
+            }
+            if (refund.refundMethod == null) refund.refundMethod = RefundMethod.ORIGINAL
+            refund.refundAmount = refundAmount
+            val fromStatus = refund.status
+            refund.status = RefundStatus.REFUNDED
+            refund.resolvedAt = currentUtc()
+            applyRefunded(refund, order, orderItem, maxRefundAmount)
+            eventFor(refund, fromStatus.name, RefundStatus.REFUNDED.name)
+            true
+        }
 
     override suspend fun shipRefund(
         refundId: String,

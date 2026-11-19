@@ -25,6 +25,9 @@ fun String.throwNotFound(): Nothing = throw NotFoundException()
 
 fun String.throwConflict(resourceName: String): Nothing = throw ConflictException("$resourceName already exists")
 
+/** Escapes `%`, `_` and `\` for a SQL LIKE pattern (PostgreSQL default escape). */
+fun String.escapeLike(): String = replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
 fun String.requireNotBlank(fieldName: String) {
     if (isBlank()) throw ValidationException(Message.Validation.blankField(fieldName))
 }

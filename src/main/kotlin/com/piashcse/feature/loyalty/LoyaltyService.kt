@@ -503,7 +503,10 @@ class LoyaltyService {
 
     private fun accountFor(userId: String): WalletAccountDAO {
         UserDAO.findById(userId) ?: userId.throwNotFound("User")
+        // Lock the wallet row: point/credit redemption is a read-modify-write
+        // operation and concurrent checkouts must not spend the same balance twice.
         return WalletAccountDAO.find { WalletAccountTable.userId eq userId.entityID(com.piashcse.database.entities.UserTable) }
+            .forUpdate()
             .firstOrNull()
             ?: WalletAccountDAO.new {
                 this.userId = userId.entityID(com.piashcse.database.entities.UserTable)

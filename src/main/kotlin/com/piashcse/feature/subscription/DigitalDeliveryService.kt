@@ -54,7 +54,11 @@ data class DigitalDownloadResponse(
 
 /** Grants and serves access to digital products. */
 class DigitalDeliveryService(
-    private val signingSecret: String = DotEnvConfig.digitalUrlSecret.ifBlank { DotEnvConfig.jwtSecret },
+    private val signingSecret: String =
+        DotEnvConfig.digitalUrlSecret.ifBlank {
+            // Derive a separate key rather than reusing the JWT signing secret.
+            com.piashcse.utils.common.hmacSha256Hex(DotEnvConfig.jwtSecret, "ktor-ecom:digital-download-signing")
+        },
 ) {
     /** Must run inside the payment transaction after the order is fully paid. */
     fun grantForOrderTx(order: OrderDAO) {

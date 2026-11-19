@@ -135,14 +135,18 @@ class PayoutRepositoryImpl : PayoutRepository {
                     .mapValues { (_, rows) ->
                         rows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }.toPlainString()
                     }
+            val pendingByCurrency =
+                pendingRows
+                    .groupBy { it.currency }
+                    .mapValues { (_, rows) -> rows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) } }
             val primaryCurrency =
                 byCurrency.keys.firstOrNull()
-                    ?: pendingRows.firstOrNull()?.currency
+                    ?: pendingByCurrency.keys.firstOrNull()
                     ?: "USD"
             PayoutBalanceResponse(
                 available = byCurrency[primaryCurrency] ?: "0.00",
                 currency = primaryCurrency,
-                pendingRequestAmount = pendingRows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }.toPlainString(),
+                pendingRequestAmount = (pendingByCurrency[primaryCurrency] ?: BigDecimal.ZERO).toPlainString(),
                 balances = byCurrency,
             )
         }
@@ -151,6 +155,7 @@ class PayoutRepositoryImpl : PayoutRepository {
         sellerUserId: String,
         from: String?,
         to: String?,
+        currency: String?,
     ): SellerStatementResponse =
         query {
             val seller = requireActiveSeller(sellerUserId)
@@ -170,16 +175,22 @@ class PayoutRepositoryImpl : PayoutRepository {
             val base = SellerPayoutTable.selectAll().andWhere { SellerPayoutTable.sellerId eq seller.id }
             fromDate?.let { base.andWhere { SellerPayoutTable.createdAt greaterEq it.atStartOfDay() } }
             toDate?.let { base.andWhere { SellerPayoutTable.createdAt lessEq it.atTime(java.time.LocalTime.MAX) } }
-            val payouts =
+            val allPayouts =
                 base.orderBy(SellerPayoutTable.createdAt to SortOrder.ASC)
                     .toList()
                     .map { SellerPayoutDAO.wrapRow(it) }
+            val selectedCurrency =
+                currency?.takeIf { it.isNotBlank() }?.uppercase()
+                    ?: allPayouts.firstOrNull()?.currency
+                    ?: "USD"
+            val payouts = allPayouts.filter { it.currency.equals(selectedCurrency, ignoreCase = true) }
 
             val taxQuery =
                 OrderTable.select(OrderTable.taxAmount).apply {
                     andWhere {
                         (OrderTable.shopId eq seller.shopId) and
-                            (OrderTable.status neq OrderStatus.CANCELED)
+                            (OrderTable.status neq OrderStatus.CANCELED) and
+                            (OrderTable.currency eq selectedCurrency)
                     }
                     fromDate?.let { date -> andWhere { OrderTable.createdAt greaterEq date.atStartOfDay() } }
                     toDate?.let { date -> andWhere { OrderTable.createdAt lessEq date.atTime(java.time.LocalTime.MAX) } }
@@ -195,7 +206,7 @@ class PayoutRepositoryImpl : PayoutRepository {
             SellerStatementResponse(
                 from = fromDate?.toString(),
                 to = toDate?.toString(),
-                currency = payouts.firstOrNull()?.currency ?: "USD",
+                currency = selectedCurrency,
                 grossSales = Money.str(payouts.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.subTotal) }),
                 commission = Money.str(payouts.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.commissionAmount) }),
                 netPayout = Money.str(payouts.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }),
@@ -486,7 +497,10 @@ class PayoutRepositoryImpl : PayoutRepository {
         payoutId: String,
         actorId: String?,
     ) = query {
-        val payout = SellerPayoutDAO.findById(payoutId) ?: payoutId.throwNotFound("Payout")
+        val payout =
+            SellerPayoutDAO.find { SellerPayoutTable.id eq payoutId.entityID(SellerPayoutTable) }
+                .forUpdate()
+                .firstOrNull() ?: payoutId.throwNotFound("Payout")
         if (payout.status == PayoutStatus.PAID.name) return@query payout.toResponse()
         if (payout.status != PayoutStatus.APPROVED.name) {
             throw ConflictException("Payout must be approved before it can be paid (current: ${payout.status})")
@@ -520,120 +534,128 @@ class PayoutRepositoryImpl : PayoutRepository {
         amount: BigDecimal,
         requestKey: String?,
         currency: String?,
-    ): List<PayoutResponse> =
-        retryQuery {
-            val seller = requireActiveSeller(sellerUserId)
-            if (amount <= BigDecimal.ZERO) {
-                throw ValidationException("Payout amount must be greater than 0")
-            }
-            if (requestKey != null && requestKey.length > 100) {
-                throw ValidationException("Idempotency-Key must be at most 100 characters")
-            }
-
-            // Retry-safe replay: return the rows bound to the existing request.
-            if (requestKey != null) {
-                val existing =
-                    PayoutRequestDAO.find {
-                        (PayoutRequestTable.sellerId eq seller.id) and
-                            (PayoutRequestTable.idempotencyKey eq requestKey)
-                    }.firstOrNull()
-                if (existing != null) {
-                    return@retryQuery SellerPayoutDAO.find {
-                        SellerPayoutTable.payoutRequestId eq existing.id
-                    }.map { it.toResponse() }
+    ): List<PayoutResponse> {
+        val rows =
+            retryQuery {
+                val seller = requireActiveSeller(sellerUserId)
+                if (amount <= BigDecimal.ZERO) {
+                    throw ValidationException("Payout amount must be greater than 0")
                 }
-            }
+                if (requestKey != null && requestKey.length > 100) {
+                    throw ValidationException("Idempotency-Key must be at most 100 characters")
+                }
 
-            val normalizedCurrency = currency?.takeIf { it.isNotBlank() }?.uppercase()
-            val available =
-                SellerPayoutDAO.find {
-                    (SellerPayoutTable.sellerId eq seller.id) and
-                        (SellerPayoutTable.status eq PayoutStatus.PENDING.name) and
-                        (SellerPayoutTable.requestedAt.isNull())
-                }.forUpdate()
-                    .orderBy(SellerPayoutTable.createdAt to SortOrder.ASC)
-                    .toList()
-                    .filter { normalizedCurrency == null || it.currency.equals(normalizedCurrency, ignoreCase = true) }
-
-            val currencies = available.map { it.currency }.distinct()
-            if (currencies.size > 1) {
-                throw ValidationException(
-                    "Multiple currencies available (${currencies.joinToString()}); specify a currency",
-                )
-            }
-            val currency = currencies.firstOrNull() ?: normalizedCurrency ?: "USD"
-
-            val balance = available.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }
-            if (balance <= BigDecimal.ZERO) throw ValidationException("No available payout balance to request")
-            if (amount > balance) throw ValidationException("Requested amount exceeds available payout balance")
-            // Payout rows are order-level and cannot be split safely without a
-            // separate request-line table. Require a full withdrawal so a request
-            // can never pay out more than the seller asked for.
-            if (amount.compareTo(balance) != 0) {
-                throw ValidationException(
-                    "Payout requests must withdraw the full available balance (${balance.toPlainString()})",
-                )
-            }
-
-            val request =
-                try {
-                    PayoutRequestDAO.new {
-                        this.sellerId = seller.id
-                        this.idempotencyKey = requestKey
-                        this.amount = amount
-                        this.currency = currency
-                        this.status = PayoutStatus.REQUESTED.name
+                // Retry-safe replay: return the rows bound to the existing request.
+                if (requestKey != null) {
+                    val existing =
+                        PayoutRequestDAO.find {
+                            (PayoutRequestTable.sellerId eq seller.id) and
+                                (PayoutRequestTable.idempotencyKey eq requestKey)
+                        }.firstOrNull()
+                    if (existing != null) {
+                        return@retryQuery SellerPayoutDAO.find {
+                            SellerPayoutTable.payoutRequestId eq existing.id
+                        }.map { it.toResponse() }
                     }
-                } catch (e: Exception) {
-                    // Unique (seller, key) race: return the winner's rows.
-                    if (requestKey != null) {
-                        val winner =
-                            PayoutRequestDAO.find {
-                                (PayoutRequestTable.sellerId eq seller.id) and
-                                    (PayoutRequestTable.idempotencyKey eq requestKey)
-                            }.firstOrNull()
-                        if (winner != null) {
-                            return@retryQuery SellerPayoutDAO.find {
-                                SellerPayoutTable.payoutRequestId eq winner.id
-                            }.map { it.toResponse() }
+                }
+
+                val normalizedCurrency = currency?.takeIf { it.isNotBlank() }?.uppercase()
+                val available =
+                    SellerPayoutDAO.find {
+                        (SellerPayoutTable.sellerId eq seller.id) and
+                            (SellerPayoutTable.status eq PayoutStatus.PENDING.name) and
+                            (SellerPayoutTable.requestedAt.isNull())
+                    }.forUpdate()
+                        .orderBy(SellerPayoutTable.createdAt to SortOrder.ASC)
+                        .toList()
+                        .filter { normalizedCurrency == null || it.currency.equals(normalizedCurrency, ignoreCase = true) }
+
+                val currencies = available.map { it.currency }.distinct()
+                if (currencies.size > 1) {
+                    throw ValidationException(
+                        "Multiple currencies available (${currencies.joinToString()}); specify a currency",
+                    )
+                }
+                val currency = currencies.firstOrNull() ?: normalizedCurrency ?: "USD"
+
+                val balance = available.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount) }
+                if (balance <= BigDecimal.ZERO) throw ValidationException("No available payout balance to request")
+                if (amount > balance) throw ValidationException("Requested amount exceeds available payout balance")
+                // Payout rows are order-level and cannot be split safely without a
+                // separate request-line table. Require a full withdrawal so a request
+                // can never pay out more than the seller asked for.
+                if (amount.compareTo(balance) != 0) {
+                    throw ValidationException(
+                        "Payout requests must withdraw the full available balance (${balance.toPlainString()})",
+                    )
+                }
+
+                val request =
+                    try {
+                        PayoutRequestDAO.new {
+                            this.sellerId = seller.id
+                            this.idempotencyKey = requestKey
+                            this.amount = amount
+                            this.currency = currency
+                            this.status = PayoutStatus.REQUESTED.name
                         }
+                    } catch (e: Exception) {
+                        // Unique (seller, key) race: return the winner's rows.
+                        if (requestKey != null) {
+                            val winner =
+                                PayoutRequestDAO.find {
+                                    (PayoutRequestTable.sellerId eq seller.id) and
+                                        (PayoutRequestTable.idempotencyKey eq requestKey)
+                                }.firstOrNull()
+                            if (winner != null) {
+                                return@retryQuery SellerPayoutDAO.find {
+                                    SellerPayoutTable.payoutRequestId eq winner.id
+                                }.map { it.toResponse() }
+                            }
+                        }
+                        throw e
                     }
-                    throw e
-                }
 
-            val now = currentUtc()
-            var covered = BigDecimal.ZERO
-            val claimed = mutableListOf<SellerPayoutDAO>()
-            for (row in available) {
-                if (covered >= amount) break
-                row.requestedAt = now
-                row.payoutRequestId = request.id
-                row.status = PayoutStatus.REQUESTED.name
-                row.currency = currency
-                row.rejectedAt = null
-                claimed.add(row)
-                covered = covered.add(row.payoutAmount)
+                val now = currentUtc()
+                var covered = BigDecimal.ZERO
+                val claimed = mutableListOf<SellerPayoutDAO>()
+                for (row in available) {
+                    if (covered >= amount) break
+                    row.requestedAt = now
+                    row.payoutRequestId = request.id
+                    row.status = PayoutStatus.REQUESTED.name
+                    row.currency = currency
+                    row.rejectedAt = null
+                    claimed.add(row)
+                    covered = covered.add(row.payoutAmount)
+                }
+                AppMetrics.payoutsRequested.increment()
+                claimed.map { it.toResponse() }
             }
-            AppMetrics.payoutsRequested.increment()
-            claimed.map { it.toResponse() }
-        }.also { rows ->
-            val first = rows.firstOrNull() ?: return@also
-            val sellerUserId = SellerDAO.findById(first.sellerId)?.userId?.value ?: return@also
-            EventBus.publish(
-                PayoutStatusChangedEvent(
-                    payoutRequestId = first.payoutRequestId.orEmpty(),
-                    sellerId = first.sellerId,
-                    userId = sellerUserId,
-                    status = PayoutStatus.REQUESTED.name,
-                    amount = rows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount.toBigDecimal()) },
-                    currency = first.currency,
-                ),
-            )
+        rows.firstOrNull()?.let { first ->
+            val sellerUserId = query { SellerDAO.findById(first.sellerId)?.userId?.value }
+            if (sellerUserId != null) {
+                EventBus.publish(
+                    PayoutStatusChangedEvent(
+                        payoutRequestId = first.payoutRequestId.orEmpty(),
+                        sellerId = first.sellerId,
+                        userId = sellerUserId,
+                        status = PayoutStatus.REQUESTED.name,
+                        amount = rows.fold(BigDecimal.ZERO) { acc, row -> acc.add(row.payoutAmount.toBigDecimal()) },
+                        currency = first.currency,
+                    ),
+                )
+            }
         }
+        return rows
+    }
 
     override suspend fun approvePayout(payoutId: String) =
         query {
-            val payout = SellerPayoutDAO.findById(payoutId) ?: payoutId.throwNotFound("Payout")
+            val payout =
+                SellerPayoutDAO.find { SellerPayoutTable.id eq payoutId.entityID(SellerPayoutTable) }
+                    .forUpdate()
+                    .firstOrNull() ?: payoutId.throwNotFound("Payout")
             if (payout.status == PayoutStatus.APPROVED.name) return@query payout.toResponse()
             if (payout.status != PayoutStatus.REQUESTED.name) {
                 throw ConflictException("Payout $payoutId cannot be approved from status ${payout.status}")
@@ -650,7 +672,10 @@ class PayoutRepositoryImpl : PayoutRepository {
         payoutId: String,
         reason: String?,
     ) = query {
-        val payout = SellerPayoutDAO.findById(payoutId) ?: payoutId.throwNotFound("Payout")
+        val payout =
+            SellerPayoutDAO.find { SellerPayoutTable.id eq payoutId.entityID(SellerPayoutTable) }
+                .forUpdate()
+                .firstOrNull() ?: payoutId.throwNotFound("Payout")
         if (payout.status == PayoutStatus.REJECTED.name) return@query payout.toResponse()
         if (payout.status !in listOf(PayoutStatus.REQUESTED.name, PayoutStatus.APPROVED.name)) {
             throw ConflictException("Payout $payoutId cannot be rejected from status ${payout.status}")

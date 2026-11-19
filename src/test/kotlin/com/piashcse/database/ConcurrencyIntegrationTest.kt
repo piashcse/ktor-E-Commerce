@@ -2,6 +2,7 @@ package com.piashcse.database
 
 import com.piashcse.constants.CouponDiscountType
 import com.piashcse.constants.PaymentMethod
+import com.piashcse.constants.PromotionType
 import com.piashcse.constants.ShopStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.CouponDAO
@@ -17,11 +18,16 @@ import com.piashcse.database.entities.PayoutRequestDAO
 import com.piashcse.database.entities.PayoutRequestTable
 import com.piashcse.database.entities.ProductCategoryDAO
 import com.piashcse.database.entities.ProductDAO
+import com.piashcse.database.entities.PromotionDAO
 import com.piashcse.database.entities.SellerDAO
 import com.piashcse.database.entities.ShopCategoryDAO
 import com.piashcse.database.entities.ShopDAO
 import com.piashcse.database.entities.UserDAO
+import com.piashcse.database.entities.WalletAccountDAO
+import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.database.entities.decrementStock
+import com.piashcse.feature.loyalty.LoyaltyService
+import com.piashcse.feature.promotion.PromotionService
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
@@ -367,6 +373,109 @@ class ConcurrencyIntegrationTest {
                     }.count()
                 assertEquals(1, count, "Coupon usage must be unique per coupon/user/order")
                 CouponUsageDAO.find { CouponUsageTable.couponId eq couponId }.forEach { it.delete() }
+            }
+        }
+    }
+
+    @Test
+    fun `concurrent loyalty redemptions cannot double spend`() {
+        withDatabase {
+            lateinit var userId: EntityID<String>
+            transaction {
+                val user =
+                    UserDAO.new {
+                        email = "loyalty-${UUID.randomUUID()}@example.com"
+                        userType = UserType.CUSTOMER
+                        password = "x"
+                    }
+                WalletAccountDAO.new {
+                    this.userId = user.id
+                    pointsBalance = 100
+                    referralCode = "REF-${UUID.randomUUID().toString().take(8)}"
+                }
+                userId = user.id
+            }
+
+            val results =
+                runConcurrently(2) {
+                    transaction {
+                        LoyaltyService().redeemPointsTx(userId.value, 100, "order-${UUID.randomUUID()}")
+                    }
+                }
+
+            assertEquals(1, results.count { it.isSuccess }, "Only one redemption may spend the balance")
+            transaction {
+                assertEquals(
+                    0,
+                    WalletAccountDAO.find { com.piashcse.database.entities.WalletAccountTable.userId eq userId }.single().pointsBalance,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `concurrent promotion usage respects the limit`() {
+        withDatabase {
+            lateinit var promoUserId: EntityID<String>
+            lateinit var promoOrderId: EntityID<String>
+            lateinit var promotionId: EntityID<String>
+            transaction {
+                val user =
+                    UserDAO.new {
+                        email = "promo-${UUID.randomUUID()}@example.com"
+                        userType = UserType.CUSTOMER
+                        password = "x"
+                    }
+                val shopCategory = ShopCategoryDAO.new { name = "Promo Shops ${UUID.randomUUID()}" }
+                val shop =
+                    ShopDAO.new {
+                        userId = user.id
+                        categoryId = shopCategory.id
+                        name = "Promo Shop"
+                        status = ShopStatus.APPROVED
+                    }
+                val order =
+                    OrderDAO.new {
+                        userId = user.id
+                        shopId = shop.id
+                        orderNumber = "PROMO-${UUID.randomUUID()}"
+                        subTotal = BigDecimal("100.00")
+                        total = BigDecimal("100.00")
+                    }
+                val promotion =
+                    PromotionDAO.new {
+                        name = "One use only"
+                        type = PromotionType.FIXED
+                        value = BigDecimal("10.00")
+                        startsAt = currentUtc().minusDays(1)
+                        endsAt = currentUtc().plusDays(1)
+                        usageLimit = 1
+                    }
+                promoUserId = user.id
+                promoOrderId = order.id
+                promotionId = promotion.id
+            }
+
+            runConcurrently(2) {
+                transaction {
+                    val match = PromotionService().evaluateTx(BigDecimal("100.00"))
+                    if (match != null) {
+                        PromotionService().markUsedTx(
+                            match.id,
+                            promoUserId.value,
+                            listOf(promoOrderId.value),
+                            "checkout-${UUID.randomUUID()}",
+                        )
+                    }
+                }
+            }
+
+            transaction {
+                assertEquals(
+                    1,
+                    PromotionDAO.findById(promotionId)!!.usageCount,
+                    "A usage limit of one must survive concurrent checkouts",
+                )
             }
         }
     }

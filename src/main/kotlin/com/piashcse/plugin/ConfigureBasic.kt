@@ -216,8 +216,12 @@ private fun Application.configureCallLogging() {
             val queryParams =
                 call.request.queryParameters.entries()
                     .joinToString(", ") { (key, values) ->
-                        if (key.lowercase() in sensitiveKeys) "$key=[REDACTED]" else "$key=${values.joinToString()}"
-                    }
+                        if (key.lowercase() in sensitiveKeys) {
+                            "$key=[REDACTED]"
+                        } else {
+                            "$key=${values.joinToString().logSafe()}"
+                        }
+                    }.logSafe()
             val duration = call.processingTimeMillis()
             val remoteHost = call.request.origin.remoteHost.logSafe()
             val coloredStatus =

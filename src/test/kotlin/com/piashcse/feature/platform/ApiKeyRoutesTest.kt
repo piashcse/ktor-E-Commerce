@@ -97,4 +97,37 @@ class ApiKeyRoutesTest {
             val res = client.get("/api/v1/api-keys")
             assertEquals(HttpStatusCode.Unauthorized, res.status)
         }
+
+    @Test
+    fun `api keys cannot mint or revoke api keys`() =
+        testApplication {
+            setup()
+            val create =
+                client.post("/api/v1/api-keys") {
+                    header(
+                        HttpHeaders.Authorization,
+                        authHeader(
+                            userType = "CUSTOMER",
+                            isApiKey = true,
+                            scopes = setOf("api_key:manage"),
+                        ),
+                    )
+                    contentType(ContentType.Application.Json)
+                    setBody("""{"name":"escalated"}""")
+                }
+            assertEquals(HttpStatusCode.Forbidden, create.status)
+
+            val revoke =
+                client.delete("/api/v1/api-keys/key-1") {
+                    header(
+                        HttpHeaders.Authorization,
+                        authHeader(
+                            userType = "CUSTOMER",
+                            isApiKey = true,
+                            scopes = setOf("api_key:manage"),
+                        ),
+                    )
+                }
+            assertEquals(HttpStatusCode.Forbidden, revoke.status)
+        }
 }

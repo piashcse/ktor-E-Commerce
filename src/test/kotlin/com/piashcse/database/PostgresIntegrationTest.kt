@@ -121,6 +121,9 @@ class PostgresIntegrationTest {
             assertTrue(columnExists("product_option_value", "value"), "product_option_value missing")
             assertTrue(columnExists("cart_item", "variant_id"), "cart_item.variant_id missing")
             assertTrue(columnExists("order_item", "variant_id"), "order_item.variant_id missing")
+            assertTrue(columnExists("stock_reservation", "warehouse_id"), "stock_reservation.warehouse_id missing")
+            assertTrue(columnExists("stock_reservation", "restored_quantity"), "stock_reservation.restored_quantity missing")
+            assertTrue(columnExists("payment_charge_lock", "locked_until"), "payment_charge_lock missing")
             assertTrue(columnExists("inventory", "variant_id"), "inventory.variant_id missing")
 
             // R__ seeds loaded.

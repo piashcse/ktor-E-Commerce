@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod")
+
 package com.piashcse.database
 
 import com.piashcse.constants.CouponDiscountType
@@ -45,6 +47,8 @@ import com.piashcse.model.request.ReviewRatingRequest
 import com.piashcse.model.request.ShippingAddressRequest
 import com.piashcse.model.request.UserProfileRequest
 import com.piashcse.utils.extension.entityID
+import com.piashcse.utils.validator.ConflictException
+import com.piashcse.utils.validator.ForbiddenException
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.flywaydb.core.Flyway
@@ -57,6 +61,7 @@ import java.math.BigDecimal
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -112,8 +117,10 @@ class CommerceServiceIntegrationTest {
 
         val suffix = UUID.randomUUID().toString().take(8)
         lateinit var customerId: String
+        lateinit var voterId: String
         lateinit var sellerUserId: String
         lateinit var productId: String
+        lateinit var sellerShopId: String
 
         transaction {
             val customer =
@@ -127,6 +134,15 @@ class CommerceServiceIntegrationTest {
                 UserDAO.new {
                     email = "commerce-seller-$suffix@example.com"
                     userType = UserType.SELLER
+                    password = "hashed"
+                    isVerified = true
+                }
+            // A separate customer is required because authors cannot vote on
+            // their own reviews.
+            val voter =
+                UserDAO.new {
+                    email = "commerce-voter-$suffix@example.com"
+                    userType = UserType.CUSTOMER
                     password = "hashed"
                     isVerified = true
                 }
@@ -173,8 +189,10 @@ class CommerceServiceIntegrationTest {
                 stockQuantity = 20
             }
             customerId = customer.id.value
+            voterId = voter.id.value
             sellerUserId = sellerUser.id.value
             productId = product.id.value
+            sellerShopId = shop.id.value
         }
 
         // Cart
@@ -238,19 +256,40 @@ class CommerceServiceIntegrationTest {
         assertTrue(kotlinx.coroutines.runBlocking { reviews.getReviewRating(productId, 10, 0) }.data.isNotEmpty())
         val updatedReview = kotlinx.coroutines.runBlocking { reviews.updateReviewRating(customerId, review.id, "Updated", 4) }
         assertEquals(4, updatedReview.rating)
+        assertFailsWith<ForbiddenException> {
+            kotlinx.coroutines.runBlocking { reviews.updateReviewRating(voterId, review.id, "Hijacked", 1) }
+        }
+        assertFailsWith<ConflictException> {
+            kotlinx.coroutines.runBlocking {
+                reviews.addReviewRating(
+                    customerId,
+                    ReviewRatingRequest(productId, "Duplicate", 5, emptyList()),
+                )
+            }
+        }
+        assertTrue(kotlinx.coroutines.runBlocking { reviews.getReviews(null, 10, 0) }.data.any { it.id == review.id })
         val withImages =
             kotlinx.coroutines.runBlocking {
                 reviews.updateReviewImages(customerId, review.id, listOf("/uploads/review-images/b.png"))
             }
         assertEquals(listOf("/uploads/review-images/b.png"), withImages.images)
-        val helpful = kotlinx.coroutines.runBlocking { reviews.markHelpful(customerId, review.id, true) }
+        val helpful = kotlinx.coroutines.runBlocking { reviews.markHelpful(voterId, review.id, true) }
         assertTrue(helpful.helpfulCount >= 1)
+        // Re-voting updates the existing row rather than creating a second vote.
+        val unhelpful = kotlinx.coroutines.runBlocking { reviews.markHelpful(voterId, review.id, false) }
+        assertEquals(0, unhelpful.helpfulCount)
+        assertNotNull(kotlinx.coroutines.runBlocking { reviews.getReviewSummary(productId) })
+        val replied = kotlinx.coroutines.runBlocking { reviews.replyAsSeller(sellerUserId, review.id, "Thanks for the feedback") }
+        assertEquals("Thanks for the feedback", replied.sellerReply)
         assertEquals(
             ReviewStatus.HIDDEN,
             kotlinx.coroutines.runBlocking { reviews.moderateReview(review.id, ReviewStatus.HIDDEN) }.status,
         )
         assertTrue(kotlinx.coroutines.runBlocking { reviews.getReviews(ReviewStatus.HIDDEN, 10, 0) }.data.any { it.id == review.id })
         assertTrue(kotlinx.coroutines.runBlocking { reviews.getReviewRating(productId, 10, 0) }.data.none { it.id == review.id })
+        assertFailsWith<ForbiddenException> {
+            kotlinx.coroutines.runBlocking { reviews.deleteReviewRating(voterId, review.id) }
+        }
         assertEquals(review.id, kotlinx.coroutines.runBlocking { reviews.deleteReviewRating(customerId, review.id) })
 
         // Profile
@@ -310,6 +349,48 @@ class CommerceServiceIntegrationTest {
         assertTrue(kotlinx.coroutines.runBlocking { coupons.getCoupons(10, 0, code, true) }.data.any { it.id == coupon.id })
         assertTrue(kotlinx.coroutines.runBlocking { coupons.deleteCoupon(coupon.id) })
 
+        // Seller-scoped coupon CRUD and ownership guard.
+        val sellerCoupon =
+            kotlinx.coroutines.runBlocking {
+                coupons.createSellerCoupon(
+                    sellerShopId,
+                    CouponRequest(
+                        code = "SELL-$suffix",
+                        discountType = CouponDiscountType.FIXED,
+                        discountValue = BigDecimal("2.00"),
+                        startDate = currentUtc().minusDays(1).toString(),
+                        endDate = currentUtc().plusDays(1).toString(),
+                    ),
+                    sellerUserId,
+                )
+            }
+        assertEquals(sellerShopId, sellerCoupon.shopId)
+        assertTrue(
+            kotlinx.coroutines.runBlocking { coupons.getSellerCoupons(sellerShopId, 10, 0, true) }
+                .data.any { it.id == sellerCoupon.id },
+        )
+        val renamedCoupon =
+            kotlinx.coroutines.runBlocking {
+                coupons.updateSellerCoupon(
+                    sellerShopId,
+                    sellerCoupon.id,
+                    CouponRequest(
+                        code = "SELL-UPDATED-$suffix",
+                        discountType = CouponDiscountType.PERCENTAGE,
+                        discountValue = BigDecimal("10.00"),
+                        startDate = currentUtc().minusDays(1).toString(),
+                        endDate = currentUtc().plusDays(1).toString(),
+                    ),
+                    sellerUserId,
+                )
+            }
+        assertEquals("SELL-UPDATED-$suffix".uppercase(), renamedCoupon.code)
+        assertFailsWith<ForbiddenException> {
+            kotlinx.coroutines.runBlocking { coupons.deleteSellerCoupon("another-shop", sellerCoupon.id) }
+        }
+        assertTrue(kotlinx.coroutines.runBlocking { coupons.deleteSellerCoupon(sellerShopId, sellerCoupon.id) })
+        assertFalse(kotlinx.coroutines.runBlocking { coupons.deleteCoupon("missing-coupon") })
+
         // Policies
         val policies = PolicyRepositoryImpl()
         val policy =
@@ -333,6 +414,19 @@ class CommerceServiceIntegrationTest {
         assertNotNull(kotlinx.coroutines.runBlocking { dashboard.getTopProducts(5) })
         assertNotNull(kotlinx.coroutines.runBlocking { dashboard.getRecentActivity(5) })
         assertNotNull(kotlinx.coroutines.runBlocking { dashboard.getSellerStats(sellerUserId) })
+        assertNotNull(
+            kotlinx.coroutines.runBlocking {
+                dashboard.getRevenueStats(
+                    currentUtc().minusDays(30).toLocalDate().toString(),
+                    currentUtc().toLocalDate().toString(),
+                )
+            },
+        )
+        assertNotNull(kotlinx.coroutines.runBlocking { dashboard.getOrderStats("PAID") })
+        assertNotNull(kotlinx.coroutines.runBlocking { dashboard.getUserGrowth(7) })
+        assertNotNull(kotlinx.coroutines.runBlocking { dashboard.getTopProducts(3) })
+        assertNotNull(kotlinx.coroutines.runBlocking { dashboard.getAdminQueues() })
+        assertNotNull(kotlinx.coroutines.runBlocking { dashboard.getSellerReadiness(sellerUserId) })
 
         // Recommendations
         val recommendations = RecommendationService()

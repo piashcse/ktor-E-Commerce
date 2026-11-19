@@ -1,5 +1,8 @@
 # Ktor E-Commerce — Codebase Analysis Report
 
+> **Historical document.** See [`TEST_ANALYSIS.md`](TEST_ANALYSIS.md) for the current verified
+> state (2026-11-19: 642/642 tests, all coverage gates green).
+
 Analyzed 212 Kotlin files. Findings verified by direct inspection of source. Ordered by severity.
 
 > **Status legend:** ✅ DONE = implemented and verified (compiles + `./gradlew build` passes). Items not marked remain open.

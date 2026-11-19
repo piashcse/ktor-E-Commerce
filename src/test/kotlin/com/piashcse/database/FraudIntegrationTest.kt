@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod")
+
 package com.piashcse.database
 
 import com.piashcse.constants.AvsResult
@@ -119,6 +121,14 @@ class FraudIntegrationTest {
                     status = PaymentStatus.COMPLETED
                 }
             paymentId = payment.id.value
+            // A second order makes the ORDER_COUNT velocity rule below fire
+            // (the rule uses a strict greater-than comparison).
+            OrderDAO.new {
+                this.userId = customer.id
+                orderNumber = "FRAUD2-$suffix"
+                subTotal = BigDecimal("50.00")
+                total = BigDecimal("50.00")
+            }
         }
 
         val fraud = FraudService()

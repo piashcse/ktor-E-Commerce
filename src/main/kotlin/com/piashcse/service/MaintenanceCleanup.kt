@@ -11,6 +11,7 @@ import com.piashcse.database.entities.OtpAttemptTable
 import com.piashcse.database.entities.OutboxDeadLetterTable
 import com.piashcse.database.entities.OutboxTable
 import com.piashcse.database.entities.PasskeyChallengeTable
+import com.piashcse.database.entities.PaymentChargeLockTable
 import com.piashcse.database.entities.PaymentWebhookEventTable
 import com.piashcse.database.entities.RefreshTokenTable
 import com.piashcse.database.entities.SupportTicketTable
@@ -107,6 +108,10 @@ object MaintenanceCleanup {
 
             PasskeyChallengeTable.deleteWhere {
                 PasskeyChallengeTable.expiresAt less nowLocal
+            }
+
+            PaymentChargeLockTable.deleteWhere {
+                PaymentChargeLockTable.lockedUntil less nowLocal
             }
 
             var purged = 0

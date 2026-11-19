@@ -194,6 +194,8 @@ class ProductRepositoryImpl : ProductRepository {
             }
         }
 
+    /** Legacy update path kept together for atomic validation. */
+    @Suppress("CyclomaticComplexMethod")
     override suspend fun updateProduct(
         userId: String,
         productId: String,

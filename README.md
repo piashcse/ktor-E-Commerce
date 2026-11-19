@@ -137,7 +137,7 @@
 - **PostgreSQL integration tests**: Flyway migrations, repositories, order/payment/refund/payout
   lifecycles and concurrency guards
 - **Coverage gate**: JaCoCo overall + per-package rules; CI enforces the integration-backed target
-- **Current baseline**: 430 tests, **54.3% instruction / 25.7% branch / 59.3% line**
+- **Current baseline**: 652 tests, **58.7% instruction / 31.4% branch / 69.5% line** (PostgreSQL-backed run)
 
 ```bash
 ./gradlew test jacocoTestReport
@@ -199,7 +199,7 @@ This architecture ensures:
 ## Requirements
 
 - **Java**: JDK 17 or latest
-- **PostgreSQL**: Version 12 or latest
+- **PostgreSQL**: Version 14 or latest (the migrations use partial unique indexes and are tested on PostgreSQL 14 and 16)
 
 ## Clone the repository
 
@@ -459,7 +459,7 @@ The API is organized into the following modules:
 - **Audit Log** - Admin audit trail and activity tracking
 - **Health** - Liveness and readiness probes
 
-See the **[complete endpoint index](docs/endpoints.md)** for all **383** operations with
+See the **[complete endpoint index](docs/endpoints.md)** for all **464** operations with
 method, path, description and access level. It mirrors the same OpenAPI document
 that powers Swagger UI.
 
@@ -468,8 +468,9 @@ that powers Swagger UI.
 Interactive API documentation is available via Swagger UI at `http://localhost:8080/swagger` when the application is running.
 
 > **API contract note:** common operations are documented below as `<details>` blocks with
-> Description, Curl, Request URL and Response. The canonical index lists all 383 operations in
-> the [endpoint index](docs/endpoints.md); RBAC and shop-membership APIs are summarized above.
+> Description, Curl, Request URL and Response. The generated specification currently exposes
+> 464 operations; the [endpoint index](docs/endpoints.md) documents 383 core operations while the
+> remaining admin/RBAC aliases are summarized above.
 > Success responses return data directly and errors use the `ApiError` shape; some older
 > examples may still show a legacy `data`/`message` wrapper, so use the generated blocks and
 > Swagger as the canonical contract.
