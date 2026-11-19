@@ -225,6 +225,7 @@ data class B2bInvoiceResponse(
 @Serializable
 data class B2bDunningResponse(val reminded: Int)
 
+@Suppress("TooManyFunctions")
 class B2bService {
     suspend fun account(userId: String): B2bAccountResponse =
         query {

@@ -349,6 +349,17 @@ class RmaService {
                                     )
                             }.firstOrNull()
                         if (existingRefund == null) {
+                            val alreadyRefundedQuantity =
+                                RefundRequestDAO.find {
+                                    (RefundRequestTable.orderItemId eq item.id) and
+                                        (RefundRequestTable.status eq RefundStatus.REFUNDED)
+                                }.fold(0) { acc, row -> acc + row.quantity }
+                            if (alreadyRefundedQuantity + rma.quantity > item.quantity) {
+                                throw ValidationException(
+                                    "RMA quantity exceeds the remaining ordered quantity " +
+                                        "(${item.quantity - alreadyRefundedQuantity})",
+                                )
+                            }
                             // Create the refund and leave the RMA open at RECEIVED.
                             // Calling COMPLETED again after the refund settles closes it.
                             val refund =

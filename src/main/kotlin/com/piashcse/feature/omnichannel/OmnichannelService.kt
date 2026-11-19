@@ -243,6 +243,15 @@ class OmnichannelService(
             order.toOrderResponse(includeSensitive = false)
         }
 
+    private fun requireOperationalShop(shopId: String) {
+        val shop =
+            com.piashcse.database.entities.ShopDAO.findById(shopId)
+                ?: throw ValidationException("Shop not found")
+        if (shop.status != com.piashcse.constants.ShopStatus.APPROVED) {
+            throw ForbiddenException("Shop is not operational")
+        }
+    }
+
     suspend fun posSale(
         sellerUserId: String,
         request: PosSaleRequest,
@@ -250,6 +259,7 @@ class OmnichannelService(
         query {
             val seller = requireSellerByUserId(sellerUserId)
             val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
+            requireOperationalShop(shopId.value)
             if (request.paymentMethod in listOf(PaymentMethod.CREDIT_CARD, PaymentMethod.PAYPAL)) {
                 throw ValidationException("POS card/PayPal processing is not configured; use COD or bank transfer")
             }
@@ -483,6 +493,7 @@ class OmnichannelService(
         query {
             val seller = requireSellerByUserId(sellerUserId)
             val shopId = seller.shopId ?: throw ValidationException("Seller has no shop")
+            requireOperationalShop(shopId.value)
             val warehouse =
                 request.warehouseId?.takeIf { it.isNotBlank() }?.let { warehouseId ->
                     val row =

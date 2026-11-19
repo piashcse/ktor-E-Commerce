@@ -1,16 +1,12 @@
 package com.piashcse.event.subscriber
 
-import com.piashcse.constants.PayoutStatus
 import com.piashcse.constants.UserType
 import com.piashcse.database.entities.AuditLogDAO
 import com.piashcse.database.entities.OrderDAO
-import com.piashcse.database.entities.OrderItemDAO
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductVariantTable
 import com.piashcse.database.entities.RefundRequestDAO
 import com.piashcse.database.entities.SellerDAO
-import com.piashcse.database.entities.SellerPayoutDAO
-import com.piashcse.database.entities.SellerPayoutTable
 import com.piashcse.database.entities.SellerTable
 import com.piashcse.database.entities.ShopTable
 import com.piashcse.database.entities.StockAlertDAO
@@ -41,7 +37,7 @@ import com.piashcse.feature.notification.NotificationDispatcher
 import com.piashcse.feature.notification.NotificationMessage
 import com.piashcse.feature.notification.NotificationTemplates
 import com.piashcse.feature.notification.StorefrontLinks
-import com.piashcse.feature.seller.CommissionService
+import com.piashcse.feature.seller.PayoutLedger
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
@@ -375,18 +371,25 @@ class NotificationSubscriber(
         // Payout capture must propagate (see captureSellerPayout), so it runs outside
         // the non-fatal notification try/catch below.
         if (event is PaymentCompletedEvent) {
-            try {
-                messagesFor(event).forEach { dispatcher.dispatch(it) }
-            } catch (e: Exception) {
-                log.error("Notification dispatch failed for ${event::class.simpleName}", e)
+            val failures = mutableListOf<Throwable>()
+            messagesFor(event).forEach { message ->
+                runCatching { dispatcher.dispatch(message) }
+                    .onFailure { failures += it }
             }
             captureSellerPayout(event)
+            failures.firstOrNull()?.let { throw it }
             return
         }
-        try {
-            messagesFor(event).forEach { dispatcher.dispatch(it) }
-        } catch (e: Exception) {
-            log.error("Notification dispatch failed for ${event::class.simpleName}", e)
+        val failures = mutableListOf<Throwable>()
+        messagesFor(event).forEach { message ->
+            runCatching { dispatcher.dispatch(message) }
+                .onFailure { failures += it }
+        }
+        // A failed email/SMS must reach the outbox ack policy so it is retried
+        // instead of being marked delivered.
+        failures.firstOrNull()?.let {
+            log.error("Notification dispatch failed for ${event::class.simpleName}", it)
+            throw it
         }
     }
 
@@ -441,54 +444,9 @@ class NotificationSubscriber(
         try {
             query {
                 val order = OrderDAO.findById(event.orderId) ?: return@query
-                val shopId = order.shopId?.value ?: return@query
-                val seller =
-                    SellerDAO.find { SellerTable.shopId eq shopId.entityID(ShopTable) }.firstOrNull()
-                        ?: return@query
-                val exists =
-                    SellerPayoutDAO.find {
-                        (SellerPayoutTable.sellerId eq seller.id) and
-                            (SellerPayoutTable.orderId eq order.id)
-                    }.firstOrNull() != null
-                if (exists) return@query
-                // Seller is paid on the net product amount after seller-funded
-                // discounts only. Wallet points/credit and gift cards are
-                // platform payment instruments; they must not reduce seller pay.
-                val sellerFundedDiscount =
-                    order.discountAmount
-                        .subtract(order.walletDiscount)
-                        .subtract(order.giftCardDiscount)
-                        .max(java.math.BigDecimal.ZERO)
-                val inclusiveTax =
-                    OrderItemDAO.itemsForOrder(order.id)
-                        .filter { it.taxInclusive }
-                        .fold(java.math.BigDecimal.ZERO) { acc, item ->
-                            acc.add(item.taxAmount)
-                        }
-                val netSubTotal =
-                    order.subTotal
-                        .subtract(sellerFundedDiscount)
-                        .subtract(inclusiveTax)
-                        .max(java.math.BigDecimal.ZERO)
-                val commission = CommissionService().commissionForOrderTx(order, seller)
-                val effectiveRate =
-                    if (netSubTotal > java.math.BigDecimal.ZERO) {
-                        commission
-                            .multiply(java.math.BigDecimal(100))
-                            .divide(netSubTotal, 2, java.math.RoundingMode.HALF_UP)
-                    } else {
-                        java.math.BigDecimal.ZERO.setScale(2)
-                    }
-                SellerPayoutDAO.new {
-                    this.sellerId = seller.id
-                    this.orderId = order.id
-                    subTotal = netSubTotal
-                    commissionAmount = commission
-                    commissionRate = effectiveRate
-                    payoutAmount = netSubTotal.subtract(commission)
-                    currency = order.currency
-                    status = PayoutStatus.PENDING.name
-                }
+                // Idempotent fallback for payments created before the ledger
+                // was moved into the payment transaction.
+                PayoutLedger.createForOrderTx(order)
                 Unit
             }
         } catch (e: Exception) {

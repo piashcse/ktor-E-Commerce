@@ -84,16 +84,16 @@ COVERAGE_MIN=0.50 COVERAGE_ENFORCE_DB=true \
 
 At the time of writing (CI configuration):
 
-- **430 tests**
-- **54.3% instruction**, **25.7% branch**, **59.3% line**, **78.1% class**
+- **654 tests**
+- **59.4% instruction**, **31.6% branch**, **69.5% line**, **86.1% class**
 
 Known lower-coverage areas and next targets:
 
-- `feature.auth` — login/lockout/refresh token edge cases
-- `feature.product` — search facets, variant/option guards
 - `event.subscriber` — notification/email/audit subscribers
 - `utils.email` — SMTP failure and circuit-breaker paths
-- `config` — environment validation and fail-fast behavior
+- full-stack auth/RBAC route tests against the production plugin chain
+- provider refunds without a local refund request
+- splitting the remaining giant integration flows into behavior-level tests
 
 ## Adding tests
 

@@ -98,6 +98,7 @@ interface PayoutRepository {
         sellerUserId: String,
         from: String?,
         to: String?,
+        currency: String? = null,
     ): SellerStatementResponse
 
     suspend fun sellerPayouts(

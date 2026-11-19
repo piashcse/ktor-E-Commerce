@@ -65,11 +65,12 @@ fun Route.payoutSellerRoutes() {
                     call.currentUserId,
                     call.request.queryParameters["from"],
                     call.request.queryParameters["to"],
+                    call.request.queryParameters["currency"],
                 ),
             )
         }.describe {
             summary = "Seller: payout statement"
-            description = "Optional from/to ISO dates"
+            description = "Optional from/to ISO dates and currency"
         }
         get("statement/export") {
             val rows =
@@ -77,6 +78,7 @@ fun Route.payoutSellerRoutes() {
                     call.currentUserId,
                     call.request.queryParameters["from"],
                     call.request.queryParameters["to"],
+                    call.request.queryParameters["currency"],
                 ).rows
             call.respondCsv(
                 "statement.csv",

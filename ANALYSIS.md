@@ -1,5 +1,8 @@
 # ktor-ecom — Deep Analysis & Remediation Plan
 
+> **Historical document.** See [`TEST_ANALYSIS.md`](TEST_ANALYSIS.md) for the current verified
+> state (2026-11-19: 642/642 tests, all coverage gates green).
+
 > Static review of ~37k LOC of Kotlin, 55 Flyway migrations, routes/auth DSL, tests, docs, Docker and CI.
 > Each item is implemented on a dedicated branch. Status: `[ ]` open, `[~]` partially implemented, `[x]` fixed.
 

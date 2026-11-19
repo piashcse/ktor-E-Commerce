@@ -2,6 +2,7 @@
 
 package com.piashcse.plugin
 
+import com.piashcse.config.DotEnv
 import com.piashcse.config.DotEnvConfig
 import com.piashcse.utils.common.ApiError
 import io.ktor.http.*
@@ -41,12 +42,15 @@ fun Application.configureMetrics() {
             val expected = DotEnvConfig.metricsToken
             val provided = call.request.headers["X-Metrics-Token"]
             val loopback = call.request.local.remoteHost in listOf("localhost", "127.0.0.1", "0:0:0:0:0:0:0:1", "::1")
+            // Behind a proxy the socket peer can be loopback for every client;
+            // never allow the unauthenticated fallback when proxy headers are trusted.
+            val loopbackAllowed = !DotEnvConfig.forceHttps && !DotEnv.getBoolean("TRUST_PROXY", false)
             val authorized =
                 (
                     expected.isNotBlank() && provided != null &&
                         java.security.MessageDigest.isEqual(provided.toByteArray(), expected.toByteArray())
                 ) ||
-                    (expected.isBlank() && loopback)
+                    (expected.isBlank() && loopback && loopbackAllowed)
             if (!authorized) {
                 call.respond(
                     HttpStatusCode.Forbidden,

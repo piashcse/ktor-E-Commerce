@@ -25,6 +25,7 @@ import com.piashcse.utils.extension.bearerToken
 import com.piashcse.utils.extension.clientIp
 import com.piashcse.utils.extension.currentUserId
 import com.piashcse.utils.extension.parseEnum
+import com.piashcse.utils.extension.requireNotBlank
 import com.piashcse.utils.extension.respondCreated
 import com.piashcse.utils.extension.respondDeleted
 import com.piashcse.utils.extension.respondMessage
@@ -61,19 +62,15 @@ fun Route.authRoutes() {
      */
     otpRateLimit {
         post("otp-verification") {
-            // Prefer the documented JSON body; keep query params as a legacy fallback.
+            // Body-only: OTPs in query strings leak to proxy/APM/browser logs.
             val body =
-                if (call.request.queryParameters["userId"] == null) {
-                    runCatching { call.receive<OtpVerificationRequest>() }.getOrNull()
-                } else {
-                    null
+                runCatching { call.receive<OtpVerificationRequest>() }.getOrElse {
+                    throw MissingParameterException("userId")
                 }
-            val userId =
-                call.request.queryParameters["userId"] ?: body?.userId
-                    ?: throw MissingParameterException("userId")
-            val otp =
-                call.request.queryParameters["otp"] ?: body?.otp
-                    ?: throw MissingParameterException("otp")
+            body.userId.requireNotBlank("userId")
+            body.otp.requireNotBlank("otp")
+            val userId = body.userId
+            val otp = body.otp
             if (!userAuthService.otpVerification(userId, otp)) {
                 throw ValidationException(Message.Auth.OTP_INVALID)
             }

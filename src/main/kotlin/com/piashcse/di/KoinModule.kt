@@ -163,7 +163,7 @@ val serviceModule =
         }
         single { FraudService() }
         single { ChargebackService() }
-        single<PaymentRepository> { PaymentRepositoryImpl(get(), get(), get(), get(), get()) }
+        single<PaymentRepository> { PaymentRepositoryImpl(get(), get(), get(), get(), get(), get()) }
         single { WebhookAdminService(get(), get()) }
         single<PolicyRepository> { PolicyRepositoryImpl() }
         single<ProductRepository> { ProductRepositoryImpl() }

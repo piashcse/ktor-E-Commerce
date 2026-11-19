@@ -77,17 +77,35 @@ object OrderCancellation {
             } else {
                 emptyMap()
             }
+        val reservations =
+            StockReservationDAO.find { StockReservationTable.orderId eq order.id }.toList()
+        if (reservations.isNotEmpty()) {
+            reservations
+                .groupBy { Triple(it.productId.value, it.variantId?.value, it.warehouseId?.value) }
+                .forEach { (allocation, rows) ->
+                    val product = products[allocation.first] ?: return@forEach
+                    val remaining =
+                        rows.sumOf { (it.quantity - it.restoredQuantity).coerceAtLeast(0) }
+                    if (remaining > 0) {
+                        product.restoreStockFor(allocation.second, remaining, allocation.third)
+                    }
+                    rows.forEach { it.restoredQuantity = it.quantity }
+                }
+        } else {
+            // Legacy rows created before warehouse allocations were recorded.
+            orderItems.forEach { orderItem ->
+                products[orderItem.productId.value]?.restoreStockFor(
+                    orderItem.variantId?.value,
+                    orderItem.quantity,
+                    order.pickupWarehouseId?.value,
+                )
+            }
+        }
         orderItems.forEach { orderItem ->
-            products[orderItem.productId.value]?.restoreStockFor(
-                orderItem.variantId?.value,
-                orderItem.quantity,
-                order.pickupWarehouseId?.value,
-            )
             products[orderItem.productId.value]?.removeSales(orderItem.quantity)
         }
 
-        StockReservationDAO.find { StockReservationTable.orderId eq order.id }
-            .forEach { it.status = ReservationStatus.RELEASED }
+        reservations.forEach { it.status = ReservationStatus.RELEASED }
 
         reverseCouponUsage(order)
         PromotionService().reverseForOrderTx(order.id.value)

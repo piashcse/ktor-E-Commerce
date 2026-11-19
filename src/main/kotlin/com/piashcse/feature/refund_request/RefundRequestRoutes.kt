@@ -69,7 +69,7 @@ fun Route.refundRequestRoutes() {
                 val imageUrl =
                     call.receiveSingleImage(
                         purpose = "refund evidence",
-                        upload = { file, _ -> UploadService.uploadRefundImage(file) },
+                        upload = { file, bytes -> UploadService.uploadRefundImage(file, bytes) },
                         publicUrl = UploadService::getRefundImageUrl,
                     )
                 call.respondCreated(refundRequestRepo.addRefundEvidence(refundId, call.currentUserId, imageUrl))
@@ -99,6 +99,17 @@ fun Route.refundRequestRoutes() {
                 ) ?: throw NotFoundException(Message.Refunds.NOT_FOUND)
             // Touch the record so authorization above is the gate, then serve the file.
             check(refund.id == refundId)
+            // Object-level authorization: the requested file must belong to this
+            // refund, not merely live in the shared refund-images directory.
+            val ownedFiles =
+                refund.images.orEmpty()
+                    .split(',')
+                    .map { it.trim().substringAfterLast('/').substringAfterLast('\\') }
+                    .filter { it.isNotBlank() }
+                    .toSet()
+            if (fileName !in ownedFiles) {
+                throw NotFoundException(Message.Refunds.NOT_FOUND)
+            }
             val root = File(DotEnvConfig.uploadDir, "refund-images").canonicalFile
             val file = File(root, fileName).canonicalFile
             if (!file.canonicalPath.startsWith(root.canonicalPath) || !file.isFile) {

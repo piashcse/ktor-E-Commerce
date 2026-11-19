@@ -40,10 +40,12 @@ class MaintenanceCleanupIntegrationTest {
             runCleanup(external.first, external.second, external.third)
             return
         }
-        Assume.assumeTrue(
-            "Docker daemon or DB_* environment required",
-            runCatching { ProcessBuilder("docker", "info").start().waitFor() == 0 }.getOrDefault(false),
-        )
+        val docker = runCatching { ProcessBuilder("docker", "info").start().waitFor() == 0 }.getOrDefault(false)
+        if (System.getenv("CI") != null) {
+            assertTrue(docker, "DB_* environment or Docker is required in CI")
+        } else {
+            Assume.assumeTrue("Docker daemon or DB_* environment required", docker)
+        }
         val pg = PostgreSQLContainer("postgres:16-alpine")
         pg.start()
         try {

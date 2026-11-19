@@ -69,4 +69,14 @@ interface RefundRequestRepository {
         userId: String,
         imageUrl: String,
     ): RefundRequestResponse
+
+    /**
+     * Reconciles a provider-initiated refund update. Idempotent: once the local
+     * request is REFUNDED, repeat updates only refresh the provider status.
+     */
+    suspend fun reconcileProviderRefund(
+        providerRefundId: String,
+        status: String,
+        amount: java.math.BigDecimal?,
+    ): Boolean
 }

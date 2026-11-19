@@ -8,8 +8,10 @@ import com.piashcse.database.entities.AnalyticsEventDAO
 import com.piashcse.database.entities.AnalyticsEventTable
 import com.piashcse.database.entities.OrderDAO
 import com.piashcse.database.entities.OrderItemDAO
+import com.piashcse.database.entities.OrderItemTable
 import com.piashcse.database.entities.OrderTable
 import com.piashcse.database.entities.ProductDAO
+import com.piashcse.database.entities.ProductTable
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
 import com.piashcse.utils.common.DateTimes
@@ -321,34 +323,58 @@ class AnalyticsService {
                     .groupBy({ it.first }, { it.second })
                     .mapValues { (_, rows) -> rows.map { it[AnalyticsEventTable.sessionId] }.toSet().size.toLong() }
 
-            val purchases = mutableMapOf<String, Long>()
-            val revenue = mutableMapOf<String, BigDecimal>()
-            OrderTable.selectAll().where {
-                (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
-                    (OrderTable.status neq OrderStatus.CANCELED) and
-                    (OrderTable.createdAt greaterEq start) and
-                    (OrderTable.createdAt lessEq end)
-            }.map { OrderDAO.wrapRow(it) }.forEach { order ->
-                OrderItemDAO.itemsForOrder(order.id).forEach { item ->
-                    val key = item.productId.value
-                    purchases[key] = (purchases[key] ?: 0L) + item.quantity
-                    revenue[key] = (revenue[key] ?: BigDecimal.ZERO).add(Money.toUsd(item.total, order.fxRate))
+            val orders =
+                OrderTable.selectAll().where {
+                    (OrderTable.paymentStatus eq PaymentStatus.COMPLETED) and
+                        (OrderTable.status neq OrderStatus.CANCELED) and
+                        (OrderTable.createdAt greaterEq start) and
+                        (OrderTable.createdAt lessEq end)
+                }.map { OrderDAO.wrapRow(it) }
+            val fxByOrder = orders.associate { it.id.value to it.fxRate }
+            val items =
+                if (orders.isEmpty()) {
+                    emptyList()
+                } else {
+                    OrderItemDAO.find { OrderItemTable.orderId inList orders.map { it.id } }.toList()
                 }
+            val purchases = mutableMapOf<String, Long>()
+            val purchaseOrders = mutableMapOf<String, MutableSet<String>>()
+            val revenue = mutableMapOf<String, BigDecimal>()
+            items.forEach { item ->
+                val key = item.productId.value
+                purchases[key] = (purchases[key] ?: 0L) + item.quantity
+                purchaseOrders.getOrPut(key) { mutableSetOf() }.add(item.orderId.value)
+                revenue[key] =
+                    (revenue[key] ?: BigDecimal.ZERO)
+                        .add(Money.toUsd(item.total, fxByOrder[item.orderId.value] ?: BigDecimal.ONE))
             }
 
             val productIds = (views.keys + carts.keys + purchases.keys).toSet()
+            val names =
+                if (productIds.isEmpty()) {
+                    emptyMap()
+                } else {
+                    ProductDAO.find { ProductTable.id inList productIds.map { it.entityID(ProductTable) } }
+                        .associate { it.id.value to it.name }
+                }
             val rows =
                 productIds.map { productId ->
                     val viewCount = views[productId] ?: 0L
                     val cartCount = carts[productId] ?: 0L
                     val purchaseCount = purchases[productId] ?: 0L
+                    val purchaseOrderCount = (purchaseOrders[productId]?.size ?: 0).toLong()
                     ProductFunnelRow(
                         productId = productId,
-                        name = ProductDAO.findById(productId)?.name ?: productId,
+                        name = names[productId] ?: productId,
                         views = viewCount,
                         addToCart = cartCount,
                         purchases = purchaseCount,
-                        conversionRate = if (viewCount == 0L) 0.0 else percentage(purchaseCount, viewCount),
+                        conversionRate =
+                            if (viewCount == 0L) {
+                                0.0
+                            } else {
+                                percentage(purchaseOrderCount.coerceAtMost(viewCount), viewCount)
+                            },
                         revenue = Money.str(revenue[productId] ?: BigDecimal.ZERO),
                     )
                 }.sortedWith(compareByDescending<ProductFunnelRow> { it.purchases }.thenByDescending { it.views })

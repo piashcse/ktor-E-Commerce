@@ -54,7 +54,11 @@ data class DigitalDownloadResponse(
 
 /** Grants and serves access to digital products. */
 class DigitalDeliveryService(
-    private val signingSecret: String = DotEnvConfig.digitalUrlSecret.ifBlank { DotEnvConfig.jwtSecret },
+    private val signingSecret: String =
+        DotEnvConfig.digitalUrlSecret.ifBlank {
+            // Derive a separate key rather than reusing the JWT signing secret.
+            com.piashcse.utils.common.hmacSha256Hex(DotEnvConfig.jwtSecret, "ktor-ecom:digital-download-signing")
+        },
 ) {
     /** Must run inside the payment transaction after the order is fully paid. */
     fun grantForOrderTx(order: OrderDAO) {
@@ -236,7 +240,11 @@ class DigitalDeliveryService(
     private fun subscriptionActive(subscriptionId: String?): Boolean {
         if (subscriptionId == null) return true
         val subscription = SubscriptionDAO.findById(subscriptionId) ?: return false
-        return subscription.status == SubscriptionStatus.ACTIVE && subscription.currentPeriodEnd.isAfter(currentUtc())
+        val now = currentUtc()
+        if (subscription.status == SubscriptionStatus.ACTIVE && subscription.currentPeriodEnd.isAfter(now)) return true
+        // Dunning grace: PAST_DUE retains access until graceUntil passes.
+        return subscription.status == SubscriptionStatus.PAST_DUE &&
+            subscription.graceUntil?.isAfter(now) == true
     }
 
     private fun DigitalEntitlementDAO.toLibraryItem(

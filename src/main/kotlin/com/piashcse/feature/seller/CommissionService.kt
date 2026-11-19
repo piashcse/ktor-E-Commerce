@@ -128,16 +128,24 @@ class CommissionService {
         val inclusiveTax =
             items.filter { it.taxInclusive }
                 .fold(BigDecimal.ZERO) { acc, item -> acc.add(item.taxAmount) }
+        // Only seller-funded discounts (coupons/promotions) reduce the seller's
+        // base. Wallet points/credit and gift cards are platform payment
+        // instruments and must not change commission.
+        val sellerFundedDiscount =
+            order.discountAmount
+                .subtract(order.walletDiscount)
+                .subtract(order.giftCardDiscount)
+                .max(BigDecimal.ZERO)
         val netTotal =
             order.subTotal
-                .subtract(order.discountAmount)
+                .subtract(sellerFundedDiscount)
                 .subtract(inclusiveTax)
                 .max(BigDecimal.ZERO)
         val commission =
             items.fold(BigDecimal.ZERO) { acc, item ->
                 val discountShare =
                     if (order.subTotal > BigDecimal.ZERO) {
-                        Money.proportionalSplit(order.discountAmount, item.total, order.subTotal)
+                        Money.proportionalSplit(sellerFundedDiscount, item.total, order.subTotal)
                     } else {
                         BigDecimal.ZERO
                     }

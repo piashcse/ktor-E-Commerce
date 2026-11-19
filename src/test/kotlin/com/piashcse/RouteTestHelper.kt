@@ -39,6 +39,9 @@ object RouteTestHelper {
         userId: String = "user-1",
         email: String = "test@example.com",
         userType: String = "CUSTOMER",
+        permissions: Set<String>? = null,
+        isApiKey: Boolean = false,
+        scopes: Set<String> = emptySet(),
     ): String =
         JWT.create()
             .withSubject("Authentication")
@@ -47,6 +50,9 @@ object RouteTestHelper {
             .withClaim("email", email)
             .withClaim("userId", userId)
             .withClaim("userType", userType)
+            .apply { permissions?.let { withClaim("permissions", it.toList()) } }
+            .withClaim("isApiKey", isApiKey)
+            .withClaim("scopes", scopes.toList())
             .sign(algorithm)
 
     fun Application.installTestInfra(koinModule: Module) {
@@ -80,7 +86,14 @@ object RouteTestHelper {
                     if (userId.isNullOrBlank() || email.isNullOrBlank() || userType.isNullOrBlank()) {
                         null
                     } else {
-                        JwtTokenRequest(userId, email, userType)
+                        JwtTokenRequest(
+                            userId = userId,
+                            email = email,
+                            userType = userType,
+                            permissions = credential.payload.getClaim("permissions").asList(String::class.java)?.toSet(),
+                            isApiKey = credential.payload.getClaim("isApiKey").asBoolean() ?: false,
+                            scopes = credential.payload.getClaim("scopes").asList(String::class.java)?.toSet() ?: emptySet(),
+                        )
                     }
                 }
             }
@@ -112,7 +125,10 @@ object RouteTestHelper {
         userId: String = "user-1",
         email: String = "test@example.com",
         userType: String = "CUSTOMER",
-    ): String = "Bearer ${token(userId, email, userType)}"
+        permissions: Set<String>? = null,
+        isApiKey: Boolean = false,
+        scopes: Set<String> = emptySet(),
+    ): String = "Bearer ${token(userId, email, userType, permissions, isApiKey, scopes)}"
 
     /**
      * JSON client per Ktor docs (createClient + ContentNegotiation) for typed

@@ -249,10 +249,10 @@ class CmsService {
                     (ProductTable.status eq ProductStatus.ACTIVE) and
                         (ProductTable.deletedAt.isNull()) and
                         (ProductTable.shopId inList approvedShops)
-                }.take(5000)
+                }.limit(5000).toList()
             val categories = ProductCategoryTable.selectAll().limit(1000).map { it[ProductCategoryTable.id].value }
             val pages =
-                CmsPageDAO.find { CmsPageTable.status eq CmsPageStatus.PUBLISHED }.take(1000)
+                CmsPageDAO.find { CmsPageTable.status eq CmsPageStatus.PUBLISHED }.limit(1000).toList()
             buildString {
                 append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
                 append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n")

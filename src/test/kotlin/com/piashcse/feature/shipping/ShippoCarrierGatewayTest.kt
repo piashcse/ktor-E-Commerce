@@ -121,13 +121,13 @@ class ShippoCarrierGatewayTest {
         }
 
     @Test
-    fun `webhook signature accepts hmac or the shared secret`() {
+    fun `webhook signature accepts hmac and rejects the shared secret`() {
         val payload = """{"event":"track_updated"}"""
         val gateway = gateway(FakeTransport { CarrierHttpResponse(200, "{}") })
         val signature = ShippoCarrierGateway.hmacSha256(secret, payload)
 
         assertTrue(gateway.verifyWebhook(payload, signature))
-        assertTrue(gateway.verifyWebhook(payload, secret))
+        assertFalse(gateway.verifyWebhook(payload, secret))
         assertFalse(gateway.verifyWebhook("$payload ", signature))
         assertFalse(gateway.verifyWebhook(payload, "nope"))
         assertFalse(gateway.verifyWebhook(payload, null))

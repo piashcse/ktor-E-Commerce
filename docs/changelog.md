@@ -8,6 +8,54 @@ hide:
 
 ### Fixed
 
+- Full-codebase audit fixes: per-order reservation cleanup, direct PAID status
+  rejection, canceled-parcel delivery handling, duplicate label/order
+  idempotency, inStock filtering, variant inventory buckets, coupon line-level
+  tax, wallet/gift tax exclusion, failed-payment confirmation, duplicate live
+  payment intents, refund-webhook reconciliation ordering, subscription
+  amount/currency and grace handling, loyalty clawback, gift-card locking,
+  COD ORIGINAL-refund guard, exact-role API keys, admin role mutation guard,
+  refresh-token reuse invalidation, refund evidence upload, durable audit/review
+  outbox events, notification retry propagation, promotion end-of-day, tax-zone
+  specificity, sitemap SQL limits, support first-response, POS shop status,
+  warehouse allocation restore and payment charge leases.
+- Performance/conciseness pass: product funnel batch-loads orders/items/products
+  and reports conversion from distinct purchase orders; cart stock preview uses
+  active warehouses; variant listing batch-loads stock; coupon/promotion tax
+  allocation is persisted once per eligible line.
+- Test suite restored to green: 654 tests, including the five stale integration
+  expectations (fraud velocity fixture, admin-only refund completion, review
+  self-vote, subscription activation and KYC document requirements).
+- `V57` now uses PostgreSQL-14-compatible partial unique indexes instead of
+  `NULLS NOT DISTINCT`; the documented minimum is PostgreSQL 14. Databases that
+  already applied the previous V57 checksum should run Flyway repair once.
+- Late payment webhooks for auto-canceled orders are refunded instead of
+  resurrecting the order; unmatched webhooks stay retryable instead of being
+  acknowledged as ignored.
+- Refund money authority is checked before the provider refund call; refund
+  ledger keys are per refund request; refund evidence files must belong to the
+  authorized refund; provider `REFUND_UPDATED` webhooks now reconcile local
+  stock/payout/payment effects idempotently.
+- Payment creation is serialized per order with an in-process lock plus a
+  database-backed `payment_charge_lock` lease (`V69`), closing the double-charge
+  window across application instances; wallet and promotion rows are locked
+  before balance/usage checks.
+- Seller payout rows are created in the payment-completion transaction; payout
+  approve/reject/mark-paid transitions are row-locked; the payout idempotency
+  event is published after the transaction (fixes `No transaction in context`).
+- Payout balances/statements are currency-scoped (`currency` query parameter or
+  the primary currency) instead of summing across currencies.
+- RMA-created refunds enforce the cumulative remaining quantity across refunds.
+- Order lines record warehouse-level stock allocations (`V68`); cancellations and
+  refunds restore each warehouse that actually shipped the stock.
+- Carrier webhooks accept HMAC-SHA256 signatures only; API keys cannot mint or
+  revoke API keys; OTP verification is body-only.
+- TOTP and digital-download keys are derived subkeys instead of reusing
+  `JWT_SECRET`; unauthenticated metrics are disabled when proxy headers are
+  trusted; query values are sanitized before request logging.
+- Coverage gates pass at 59.43 % instruction / 31.60 % branch, including the
+  previously failing coupon, refund, review, dashboard and payout packages.
+
 - B2B purchase-order fulfillment now creates the buyer order, decrements stock and links the PO to
   the generated order.
 - Digital downloads return short-lived signed URLs; raw asset URLs are no longer exposed in JSON.

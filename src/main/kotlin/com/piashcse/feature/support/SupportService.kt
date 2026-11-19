@@ -382,7 +382,7 @@ class SupportService {
                 ticket.resolvedAt = null
             }
             ticket.lastMessageAt = now
-            if (ticket.firstResponseAt == null) ticket.firstResponseAt = now
+            if (!request.isInternal && ticket.firstResponseAt == null) ticket.firstResponseAt = now
             AdminAudit.publish(
                 adminId,
                 if (request.isInternal) "SUPPORT_INTERNAL_NOTE" else "SUPPORT_REPLY",

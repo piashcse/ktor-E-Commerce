@@ -22,6 +22,7 @@ import com.piashcse.event.OutboxPublisher
 import com.piashcse.service.AppMetrics
 import com.piashcse.utils.common.DateTimes.toUtcString
 import com.piashcse.utils.common.Money
+import com.piashcse.utils.db.isUniqueViolation
 import com.piashcse.utils.extension.entityID
 import com.piashcse.utils.extension.query
 import com.piashcse.utils.extension.requireOrderAccess
@@ -179,26 +180,38 @@ class ShipmentService(
         // counts against shipped quantities, so concurrent purchases cannot
         // allocate the same units; a carrier failure marks it FAILED and frees them.
         val (shipment, allocation) =
-            query {
-                val finalAllocation = planAllocationTx(orderId, userId, request.items)
-                val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
-                val reservation =
-                    ShipmentDAO.new {
-                        this.orderId = order.id
-                        this.carrier = carrierProvider
-                        this.rateId = request.rateId
-                        this.idempotencyKey = request.idempotencyKey?.takeIf { it.isNotBlank() }
-                        this.status = ShipmentStatus.PENDING
-                        this.currency = order.currency
+            try {
+                query {
+                    val finalAllocation = planAllocationTx(orderId, userId, request.items)
+                    val order = OrderDAO.findById(orderId) ?: orderId.throwNotFound("Order")
+                    val reservation =
+                        ShipmentDAO.new {
+                            this.orderId = order.id
+                            this.carrier = carrierProvider
+                            this.rateId = request.rateId
+                            this.idempotencyKey = request.idempotencyKey?.takeIf { it.isNotBlank() }
+                            this.status = ShipmentStatus.PENDING
+                            this.currency = order.currency
+                        }
+                    finalAllocation.forEach { line ->
+                        ShipmentItemDAO.new {
+                            this.shipmentId = reservation.id
+                            this.orderItemId = line.orderItemId.entityID(OrderItemTable)
+                            this.quantity = line.quantity
+                        }
                     }
-                finalAllocation.forEach { line ->
-                    ShipmentItemDAO.new {
-                        this.shipmentId = reservation.id
-                        this.orderItemId = line.orderItemId.entityID(OrderItemTable)
-                        this.quantity = line.quantity
-                    }
+                    reservation to finalAllocation
                 }
-                reservation to finalAllocation
+            } catch (error: Exception) {
+                if (error.isUniqueViolation() && request.idempotencyKey != null) {
+                    query {
+                        ShipmentDAO.find {
+                            (ShipmentTable.orderId eq orderId.entityID(OrderTable)) and
+                                (ShipmentTable.idempotencyKey eq request.idempotencyKey)
+                        }.firstOrNull()
+                    }?.let { return it.toResponse() }
+                }
+                throw error
             }
 
         val label =
@@ -401,9 +414,11 @@ class ShipmentService(
         if (status == ShipmentStatus.DELIVERED) {
             shipment.deliveredAt = currentUtc()
             val order = OrderDAO.findById(shipment.orderId.value) ?: return true
-            val allDelivered =
+            val relevantShipments =
                 ShipmentDAO.find { ShipmentTable.orderId eq order.id }
-                    .all { it.status == ShipmentStatus.DELIVERED }
+                    .filter { it.status !in listOf(ShipmentStatus.CANCELED, ShipmentStatus.FAILED) }
+            val allDelivered =
+                relevantShipments.isNotEmpty() && relevantShipments.all { it.status == ShipmentStatus.DELIVERED }
             if (allDelivered && order.status == OrderStatus.SHIPPED) {
                 val from = order.status
                 order.status = OrderStatus.DELIVERED

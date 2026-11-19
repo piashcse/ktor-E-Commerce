@@ -31,6 +31,7 @@ import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.common.cursorPage
+import com.piashcse.utils.db.isUniqueViolation
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
@@ -49,6 +50,7 @@ import java.util.*
 
 private val i18n = I18nService()
 
+@Suppress("LargeClass", "TooManyFunctions")
 class OrderRepositoryImpl(
     private val fxService: FxService = FxService(),
     private val taxService: TaxService = TaxService(),
@@ -339,31 +341,39 @@ class OrderRepositoryImpl(
         }
 
         val responses =
-            retryQuery {
-                existingOrderResponses(userId, idempotencyKey) ?: run {
-                    val checkoutReference = UUID.randomUUID().toString()
-                    val context = loadCheckoutContext(userId, checkoutRequest)
-                    val quote = createOrders(context, userId, checkoutRequest, currency, fxRate)
-                    if (checkoutRequest.couponCode != null) {
-                        applyCoupon(checkoutRequest.couponCode, quote, context, userId, fxRate, checkoutReference)
-                    } else {
-                        promotionService.evaluateTx(quote.totalUsdSubTotal, context.itemsByShop.keys)?.let { promotion ->
-                            applyPromotion(quote, promotion, fxRate)
-                            promotionService.markUsedTx(
-                                promotion.id,
-                                userId,
-                                quote.orders.map { it.id.value },
-                                checkoutReference,
-                            )
+            try {
+                retryQuery {
+                    existingOrderResponses(userId, idempotencyKey) ?: run {
+                        val checkoutReference = UUID.randomUUID().toString()
+                        val context = loadCheckoutContext(userId, checkoutRequest)
+                        val quote = createOrders(context, userId, checkoutRequest, currency, fxRate)
+                        if (checkoutRequest.couponCode != null) {
+                            applyCoupon(checkoutRequest.couponCode, quote, context, userId, fxRate, checkoutReference)
+                        } else {
+                            promotionService.evaluateTx(quote.totalUsdSubTotal, context.itemsByShop.keys)?.let { promotion ->
+                                applyPromotion(quote, promotion, fxRate)
+                                promotionService.markUsedTx(
+                                    promotion.id,
+                                    userId,
+                                    quote.orders.map { it.id.value },
+                                    checkoutReference,
+                                )
+                            }
                         }
+                        recalculateTaxes(quote)
+                        applyWalletRedemptions(quote, checkoutRequest, userId, fxRate)
+                        updateSellerTotals(quote.orders)
+                        context.cartItems.forEach { it.delete() }
+                        finalizePlacedOrders(quote.orders, userId, callerEmail)
+                        val itemsMap = loadItemsForOrders(quote.orders)
+                        quote.orders.map { it.toOrderResponse(itemsMap[it.id.value]) }
                     }
-                    recalculateTaxes(quote)
-                    applyWalletRedemptions(quote, checkoutRequest, userId, fxRate)
-                    updateSellerTotals(quote.orders)
-                    context.cartItems.forEach { it.delete() }
-                    finalizePlacedOrders(quote.orders, userId, callerEmail)
-                    val itemsMap = loadItemsForOrders(quote.orders)
-                    quote.orders.map { it.toOrderResponse(itemsMap[it.id.value]) }
+                }
+            } catch (error: Exception) {
+                if (error.isUniqueViolation() && idempotencyKey != null) {
+                    query { existingOrderResponses(userId, idempotencyKey) } ?: throw error
+                } else {
+                    throw error
                 }
             }
         CatalogCache.invalidate()
@@ -375,11 +385,12 @@ class OrderRepositoryImpl(
         idempotencyKey: String?,
     ): List<OrderResponse>? {
         if (idempotencyKey == null) return null
+        val escapedKey = idempotencyKey.escapeLike()
         val existing =
             OrderDAO.find {
                 (
                     (OrderTable.idempotencyKey eq idempotencyKey) or
-                        (OrderTable.idempotencyKey like "$idempotencyKey:%")
+                        (OrderTable.idempotencyKey like "$escapedKey:%")
                 ) and (OrderTable.userId eq userId)
             }.toList()
         if (existing.isEmpty()) return null
@@ -590,24 +601,28 @@ class OrderRepositoryImpl(
                     discountAmount = BigDecimal.ZERO
                 }
 
-            if (pickupWarehouseId != null) {
-                product.decrementStockAt(pickupWarehouseId, variant?.id?.value, cartItem.quantity)
-            } else if (variant == null) {
-                product.decrementStock(cartItem.quantity)
-            } else {
-                product.decrementStockFor(variant.id.value, cartItem.quantity)
-            }
+            val allocations =
+                when {
+                    pickupWarehouseId != null ->
+                        product.decrementStockAt(pickupWarehouseId, variant?.id?.value, cartItem.quantity)
+                    variant == null -> product.decrementStock(cartItem.quantity)
+                    else -> product.decrementStockFor(variant.id.value, cartItem.quantity)
+                }
             product.addSales(cartItem.quantity)
 
-            StockReservationDAO.new {
-                this.orderId = order.id
-                this.orderItemId = orderItem.id
-                this.productId = product.id
-                this.variantId = variant?.id
-                this.shopId = shopIdValue.entityID(ShopTable)
-                this.quantity = cartItem.quantity
-                this.status = ReservationStatus.ACTIVE
-                this.expiresAt = currentUtc().plusHours(24)
+            allocations.forEach { allocation ->
+                StockReservationDAO.new {
+                    this.orderId = order.id
+                    this.orderItemId = orderItem.id
+                    this.productId = product.id
+                    this.variantId = variant?.id
+                    this.shopId = shopIdValue.entityID(ShopTable)
+                    this.warehouseId = allocation.warehouseId.entityID(WarehouseTable)
+                    this.quantity = allocation.quantity
+                    this.restoredQuantity = 0
+                    this.status = ReservationStatus.ACTIVE
+                    this.expiresAt = currentUtc().plusHours(24)
+                }
             }
 
             shopSubTotal = shopSubTotal.add(itemTotal)
@@ -695,6 +710,24 @@ class OrderRepositoryImpl(
             order.discountAmount = orderDiscount
             order.couponCode = code
             order.total = Money.scale2(order.total.subtract(orderDiscount))
+
+            // Persist the coupon discount on the lines it actually applies to;
+            // tax and seller settlement must not discount ineligible lines.
+            val orderItems = OrderItemDAO.itemsForOrder(order.id)
+            val eligibleItems =
+                orderItems.filter { item ->
+                    val product = context.productsMap[item.productId.value] ?: return@filter false
+                    CouponRules.matches(snapshot, product.shopId?.value, product.categoryId.value)
+                }
+            val eligibleTotal = eligibleItems.fold(BigDecimal.ZERO) { acc, item -> acc.add(item.total) }
+            orderItems.forEach { item ->
+                item.discountAmount =
+                    if (item in eligibleItems && eligibleTotal > BigDecimal.ZERO) {
+                        Money.proportionalSplit(orderDiscount, item.total, eligibleTotal)
+                    } else {
+                        BigDecimal.ZERO.setScale(2)
+                    }
+            }
         }
     }
 
@@ -715,6 +748,14 @@ class OrderRepositoryImpl(
             order.discountAmount = orderDiscount
             if (promotion.freeShipping) order.shippingCost = BigDecimal.ZERO.setScale(2)
             order.total = Money.scale2(order.subTotal.add(order.shippingCost).subtract(orderDiscount).max(BigDecimal.ZERO))
+            OrderItemDAO.itemsForOrder(order.id).forEach { item ->
+                item.discountAmount =
+                    if (order.subTotal > BigDecimal.ZERO) {
+                        Money.proportionalSplit(orderDiscount, item.total, order.subTotal)
+                    } else {
+                        BigDecimal.ZERO.setScale(2)
+                    }
+            }
         }
     }
 
@@ -837,19 +878,19 @@ class OrderRepositoryImpl(
         quote.orders.forEach { order ->
             val items = OrderItemDAO.itemsForOrder(order.id)
             if (items.isEmpty()) return@forEach
-            val discount = order.discountAmount
+            // Wallet credit and gift cards are payment instruments, not price
+            // discounts; only coupon/promotion amounts reduce the taxable base.
+            val discount =
+                order.discountAmount
+                    .subtract(order.walletDiscount)
+                    .subtract(order.giftCardDiscount)
+                    .max(BigDecimal.ZERO)
             var allTax = BigDecimal.ZERO
             var exclusiveTax = BigDecimal.ZERO
             items.forEach { item ->
-                val discountShare =
-                    if (order.subTotal > BigDecimal.ZERO) {
-                        Money.proportionalSplit(discount, item.total, order.subTotal)
-                    } else {
-                        BigDecimal.ZERO
-                    }
-                // Persist the line-level share so order/item responses and
-                // downstream settlement do not report a zero discount.
-                item.discountAmount = discountShare
+                // Coupon/promotion allocation was persisted on the line; wallet
+                // and gift-card amounts were deliberately excluded above.
+                val discountShare = item.discountAmount.max(BigDecimal.ZERO)
                 val taxable = item.total.subtract(discountShare).max(BigDecimal.ZERO)
                 val amounts =
                     taxService.apply(
@@ -1243,7 +1284,7 @@ class OrderRepositoryImpl(
             val orders = OrderTable.selectAll().andWhere { OrderTable.userId eq userId }
             status?.let { orders.andWhere { OrderTable.status eq parseOrderStatus(it) } }
             query?.takeIf { it.isNotBlank() }?.let { term ->
-                val pattern = "%${term.trim().lowercase()}%"
+                val pattern = "%${term.trim().lowercase().escapeLike()}%"
                 orders.andWhere {
                     (OrderTable.orderNumber.lowerCase() like pattern) or
                         (OrderTable.contactEmail.lowerCase() like pattern)
@@ -1332,16 +1373,11 @@ class OrderRepositoryImpl(
                     throw ValidationException(Message.Orders.INVALID_STATUS)
                 }
                 if (status == OrderStatus.PAID) {
-                    val hasCompletedPayment =
-                        PaymentDAO.find {
-                            (PaymentTable.orderId eq order.id) and
-                                (PaymentTable.status eq PaymentStatus.COMPLETED)
-                        }.any()
-                    if (!hasCompletedPayment) {
-                        throw ValidationException(
-                            "Order cannot be marked paid without a completed payment record",
-                        )
-                    }
+                    // PAID is owned by the payment pipeline so payout, loyalty,
+                    // digital delivery and reservation finalization cannot be skipped.
+                    throw ValidationException(
+                        "Order cannot be marked paid directly; confirm the payment instead",
+                    )
                 }
 
                 val fromStatus = order.status
@@ -1491,7 +1527,7 @@ class OrderRepositoryImpl(
             val orders = OrderTable.selectAll().andWhere { OrderTable.shopId eq shopId }
             status?.let { orders.andWhere { OrderTable.status eq parseOrderStatus(it) } }
             query?.takeIf { it.isNotBlank() }?.let { term ->
-                val pattern = "%${term.trim().lowercase()}%"
+                val pattern = "%${term.trim().lowercase().escapeLike()}%"
                 orders.andWhere {
                     (OrderTable.orderNumber.lowerCase() like pattern) or
                         (OrderTable.contactEmail.lowerCase() like pattern)
@@ -1518,7 +1554,7 @@ class OrderRepositoryImpl(
             startDate?.let { orders.andWhere { OrderTable.createdAt greaterEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
             endDate?.let { orders.andWhere { OrderTable.createdAt lessEq LocalDateTime.ofInstant(it, ZoneOffset.UTC) } }
             query?.takeIf { it.isNotBlank() }?.let { term ->
-                val pattern = "%${term.trim().lowercase()}%"
+                val pattern = "%${term.trim().lowercase().escapeLike()}%"
                 orders.andWhere {
                     (OrderTable.orderNumber.lowerCase() like pattern) or
                         (OrderTable.contactEmail.lowerCase() like pattern)
