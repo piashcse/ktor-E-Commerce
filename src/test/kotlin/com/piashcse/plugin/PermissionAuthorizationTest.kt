@@ -29,6 +29,11 @@ class PermissionAuthorizationTest {
                         get { call.respond(HttpStatusCode.OK, "allowed") }
                     }
                 }
+                route("/customer-only") {
+                    customerOnlyAuth {
+                        get { call.respond(HttpStatusCode.OK, "customer") }
+                    }
+                }
             }
         }
     }
@@ -104,5 +109,41 @@ class PermissionAuthorizationTest {
             setup()
             val res = client.get("/secure")
             assertEquals(HttpStatusCode.Unauthorized, res.status)
+        }
+
+    @Test
+    fun `seller api key cannot pass the exact customer gate`() =
+        testApplication {
+            setup()
+            val res =
+                client.get("/customer-only") {
+                    header(
+                        HttpHeaders.Authorization,
+                        authHeader(
+                            userType = "SELLER",
+                            isApiKey = true,
+                            scopes = setOf("api_key:manage"),
+                        ),
+                    )
+                }
+            assertEquals(HttpStatusCode.Forbidden, res.status)
+        }
+
+    @Test
+    fun `customer api key passes the exact customer gate`() =
+        testApplication {
+            setup()
+            val res =
+                client.get("/customer-only") {
+                    header(
+                        HttpHeaders.Authorization,
+                        authHeader(
+                            userType = "CUSTOMER",
+                            isApiKey = true,
+                            scopes = setOf("api_key:manage"),
+                        ),
+                    )
+                }
+            assertEquals(HttpStatusCode.OK, res.status)
         }
 }

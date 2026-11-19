@@ -38,53 +38,56 @@ object StockReservationCleanup {
         job = null
     }
 
-    private suspend fun releaseExpired() =
-        query {
-            // Identify candidates first, then lock the order before its reservations.
-            // This matches the cancellation lock order and avoids deadlocks.
-            val candidates =
+    private suspend fun releaseExpired() {
+        // Identify candidates first; each order is processed in its own
+        // transaction so one bad order cannot roll back the whole cleanup batch.
+        val candidates =
+            query {
                 StockReservationDAO.find {
                     (StockReservationTable.status eq ReservationStatus.ACTIVE) and
                         (StockReservationTable.expiresAt less currentUtc())
                 }.map { it.orderId.value }
                     .toSet()
+            }
+        candidates.forEach { orderId ->
+            runCatching {
+                query {
+                    val order =
+                        OrderDAO.find { OrderTable.id eq orderId.entityID(OrderTable) }
+                            .forUpdate()
+                            .firstOrNull()
+                            ?: return@query
+                    val reservations =
+                        StockReservationDAO.find {
+                            (StockReservationTable.orderId eq order.id) and
+                                (StockReservationTable.status eq ReservationStatus.ACTIVE) and
+                                (StockReservationTable.expiresAt less currentUtc())
+                        }.forUpdate().toList()
+                    if (reservations.isEmpty()) return@query
 
-            if (candidates.isEmpty()) return@query
-
-            candidates.forEach { orderId ->
-                val order =
-                    OrderDAO.find { OrderTable.id eq orderId.entityID(OrderTable) }
-                        .forUpdate()
-                        .firstOrNull()
-                        ?: return@forEach
-                val reservations =
-                    StockReservationDAO.find {
-                        (StockReservationTable.orderId eq order.id) and
-                            (StockReservationTable.status eq ReservationStatus.ACTIVE) and
-                            (StockReservationTable.expiresAt less currentUtc())
-                    }.forUpdate().toList()
-                if (reservations.isEmpty()) return@forEach
-
-                log.info("Releasing ${reservations.size} expired reservation(s)")
-                when {
-                    order.paymentStatus == PaymentStatus.COMPLETED -> {
-                        // Paid order: stock is legitimately consumed; keep the reservation finalized.
-                        reservations.forEach { it.status = ReservationStatus.FINALIZED }
-                    }
-                    order.status == OrderStatus.PENDING || order.status == OrderStatus.CONFIRMED -> {
-                        // Shared cancellation path restores stock, sales, seller totals,
-                        // coupon usage, payout rows, history and marks reservations RELEASED.
-                        OrderCancellation.cancel(
-                            order,
-                            "Auto-canceled: expired stock reservation",
-                            changedBy = null,
-                        )
-                    }
-                    else -> {
-                        // Non-cancellable order (already shipped/delivered): do not touch stock.
-                        reservations.forEach { it.status = ReservationStatus.FINALIZED }
+                    log.info("Releasing ${reservations.size} expired reservation(s)")
+                    when {
+                        order.paymentStatus == PaymentStatus.COMPLETED -> {
+                            // Paid order: stock is legitimately consumed; keep finalized.
+                            reservations.forEach { it.status = ReservationStatus.FINALIZED }
+                        }
+                        order.status == OrderStatus.PENDING || order.status == OrderStatus.CONFIRMED -> {
+                            // Shared cancellation path restores stock, sales, seller totals,
+                            // coupon usage, payout rows, history and releases reservations.
+                            OrderCancellation.cancel(
+                                order,
+                                "Auto-canceled: expired stock reservation",
+                                changedBy = null,
+                            )
+                        }
+                        else -> {
+                            // Non-cancellable order (already shipped/delivered): do not touch stock.
+                            reservations.forEach { it.status = ReservationStatus.FINALIZED }
+                        }
                     }
                 }
-            }
+            }.onSuccess { CatalogCache.invalidate() }
+                .onFailure { log.warn("Reservation cleanup failed for order $orderId: ${it.message}", it) }
         }
+    }
 }

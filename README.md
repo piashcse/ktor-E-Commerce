@@ -137,7 +137,7 @@
 - **PostgreSQL integration tests**: Flyway migrations, repositories, order/payment/refund/payout
   lifecycles and concurrency guards
 - **Coverage gate**: JaCoCo overall + per-package rules; CI enforces the integration-backed target
-- **Current baseline**: 652 tests, **58.7% instruction / 31.4% branch / 69.5% line** (PostgreSQL-backed run)
+- **Current baseline**: 654 tests, **59.4% instruction / 31.6% branch / 69.5% line** (PostgreSQL-backed run)
 
 ```bash
 ./gradlew test jacocoTestReport

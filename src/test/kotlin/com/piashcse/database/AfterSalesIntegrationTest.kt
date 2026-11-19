@@ -262,7 +262,7 @@ class AfterSalesIntegrationTest {
             kotlinx.coroutines.runBlocking {
                 refunds.updateRefundStatus(
                     refund.id,
-                    UpdateRefundStatusRequest(RefundStatus.REFUNDED, refundAmount = amount, refundMethod = RefundMethod.ORIGINAL),
+                    UpdateRefundStatusRequest(RefundStatus.REFUNDED, refundAmount = amount, refundMethod = RefundMethod.BANK_TRANSFER),
                     adminId,
                 )
             }
@@ -297,7 +297,7 @@ class AfterSalesIntegrationTest {
             kotlinx.coroutines.runBlocking {
                 refunds.updateRefundStatus(
                     refund.id,
-                    UpdateRefundStatusRequest(RefundStatus.REFUNDED, refundAmount = amount, refundMethod = RefundMethod.ORIGINAL),
+                    UpdateRefundStatusRequest(RefundStatus.REFUNDED, refundAmount = amount, refundMethod = RefundMethod.BANK_TRANSFER),
                     adminId,
                 )
             }

@@ -83,7 +83,15 @@ class ProductRepositoryImpl : ProductRepository {
         filter.hotDeal?.let { andWhere { ProductTable.hotDeal eq it } }
         filter.featured?.let { andWhere { ProductTable.featured eq it } }
         if (filter.inStockOnly == true) {
-            andWhere { ProductTable.status eq ProductStatus.ACTIVE }
+            andWhere {
+                (ProductTable.status eq ProductStatus.ACTIVE) and
+                    (
+                        ProductTable.id inSubQuery
+                            InventoryTable.select(InventoryTable.productId).where {
+                                InventoryTable.stockQuantity greater 0
+                            }
+                    )
+            }
         }
         val sortOrder = if (filter.sortOrder?.lowercase() == "asc") SortOrder.ASC else SortOrder.DESC
         when (filter.sortBy?.lowercase()) {

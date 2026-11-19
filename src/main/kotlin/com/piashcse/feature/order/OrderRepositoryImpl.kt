@@ -31,6 +31,7 @@ import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.PaginationMetadata
 import com.piashcse.utils.common.cursorPage
+import com.piashcse.utils.db.isUniqueViolation
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ForbiddenException
 import com.piashcse.utils.validator.ValidationException
@@ -340,31 +341,39 @@ class OrderRepositoryImpl(
         }
 
         val responses =
-            retryQuery {
-                existingOrderResponses(userId, idempotencyKey) ?: run {
-                    val checkoutReference = UUID.randomUUID().toString()
-                    val context = loadCheckoutContext(userId, checkoutRequest)
-                    val quote = createOrders(context, userId, checkoutRequest, currency, fxRate)
-                    if (checkoutRequest.couponCode != null) {
-                        applyCoupon(checkoutRequest.couponCode, quote, context, userId, fxRate, checkoutReference)
-                    } else {
-                        promotionService.evaluateTx(quote.totalUsdSubTotal, context.itemsByShop.keys)?.let { promotion ->
-                            applyPromotion(quote, promotion, fxRate)
-                            promotionService.markUsedTx(
-                                promotion.id,
-                                userId,
-                                quote.orders.map { it.id.value },
-                                checkoutReference,
-                            )
+            try {
+                retryQuery {
+                    existingOrderResponses(userId, idempotencyKey) ?: run {
+                        val checkoutReference = UUID.randomUUID().toString()
+                        val context = loadCheckoutContext(userId, checkoutRequest)
+                        val quote = createOrders(context, userId, checkoutRequest, currency, fxRate)
+                        if (checkoutRequest.couponCode != null) {
+                            applyCoupon(checkoutRequest.couponCode, quote, context, userId, fxRate, checkoutReference)
+                        } else {
+                            promotionService.evaluateTx(quote.totalUsdSubTotal, context.itemsByShop.keys)?.let { promotion ->
+                                applyPromotion(quote, promotion, fxRate)
+                                promotionService.markUsedTx(
+                                    promotion.id,
+                                    userId,
+                                    quote.orders.map { it.id.value },
+                                    checkoutReference,
+                                )
+                            }
                         }
+                        recalculateTaxes(quote)
+                        applyWalletRedemptions(quote, checkoutRequest, userId, fxRate)
+                        updateSellerTotals(quote.orders)
+                        context.cartItems.forEach { it.delete() }
+                        finalizePlacedOrders(quote.orders, userId, callerEmail)
+                        val itemsMap = loadItemsForOrders(quote.orders)
+                        quote.orders.map { it.toOrderResponse(itemsMap[it.id.value]) }
                     }
-                    recalculateTaxes(quote)
-                    applyWalletRedemptions(quote, checkoutRequest, userId, fxRate)
-                    updateSellerTotals(quote.orders)
-                    context.cartItems.forEach { it.delete() }
-                    finalizePlacedOrders(quote.orders, userId, callerEmail)
-                    val itemsMap = loadItemsForOrders(quote.orders)
-                    quote.orders.map { it.toOrderResponse(itemsMap[it.id.value]) }
+                }
+            } catch (error: Exception) {
+                if (error.isUniqueViolation() && idempotencyKey != null) {
+                    query { existingOrderResponses(userId, idempotencyKey) } ?: throw error
+                } else {
+                    throw error
                 }
             }
         CatalogCache.invalidate()
@@ -701,6 +710,24 @@ class OrderRepositoryImpl(
             order.discountAmount = orderDiscount
             order.couponCode = code
             order.total = Money.scale2(order.total.subtract(orderDiscount))
+
+            // Persist the coupon discount on the lines it actually applies to;
+            // tax and seller settlement must not discount ineligible lines.
+            val orderItems = OrderItemDAO.itemsForOrder(order.id)
+            val eligibleItems =
+                orderItems.filter { item ->
+                    val product = context.productsMap[item.productId.value] ?: return@filter false
+                    CouponRules.matches(snapshot, product.shopId?.value, product.categoryId.value)
+                }
+            val eligibleTotal = eligibleItems.fold(BigDecimal.ZERO) { acc, item -> acc.add(item.total) }
+            orderItems.forEach { item ->
+                item.discountAmount =
+                    if (item in eligibleItems && eligibleTotal > BigDecimal.ZERO) {
+                        Money.proportionalSplit(orderDiscount, item.total, eligibleTotal)
+                    } else {
+                        BigDecimal.ZERO.setScale(2)
+                    }
+            }
         }
     }
 
@@ -721,6 +748,14 @@ class OrderRepositoryImpl(
             order.discountAmount = orderDiscount
             if (promotion.freeShipping) order.shippingCost = BigDecimal.ZERO.setScale(2)
             order.total = Money.scale2(order.subTotal.add(order.shippingCost).subtract(orderDiscount).max(BigDecimal.ZERO))
+            OrderItemDAO.itemsForOrder(order.id).forEach { item ->
+                item.discountAmount =
+                    if (order.subTotal > BigDecimal.ZERO) {
+                        Money.proportionalSplit(orderDiscount, item.total, order.subTotal)
+                    } else {
+                        BigDecimal.ZERO.setScale(2)
+                    }
+            }
         }
     }
 
@@ -843,19 +878,19 @@ class OrderRepositoryImpl(
         quote.orders.forEach { order ->
             val items = OrderItemDAO.itemsForOrder(order.id)
             if (items.isEmpty()) return@forEach
-            val discount = order.discountAmount
+            // Wallet credit and gift cards are payment instruments, not price
+            // discounts; only coupon/promotion amounts reduce the taxable base.
+            val discount =
+                order.discountAmount
+                    .subtract(order.walletDiscount)
+                    .subtract(order.giftCardDiscount)
+                    .max(BigDecimal.ZERO)
             var allTax = BigDecimal.ZERO
             var exclusiveTax = BigDecimal.ZERO
             items.forEach { item ->
-                val discountShare =
-                    if (order.subTotal > BigDecimal.ZERO) {
-                        Money.proportionalSplit(discount, item.total, order.subTotal)
-                    } else {
-                        BigDecimal.ZERO
-                    }
-                // Persist the line-level share so order/item responses and
-                // downstream settlement do not report a zero discount.
-                item.discountAmount = discountShare
+                // Coupon/promotion allocation was persisted on the line; wallet
+                // and gift-card amounts were deliberately excluded above.
+                val discountShare = item.discountAmount.max(BigDecimal.ZERO)
                 val taxable = item.total.subtract(discountShare).max(BigDecimal.ZERO)
                 val amounts =
                     taxService.apply(
@@ -1338,16 +1373,11 @@ class OrderRepositoryImpl(
                     throw ValidationException(Message.Orders.INVALID_STATUS)
                 }
                 if (status == OrderStatus.PAID) {
-                    val hasCompletedPayment =
-                        PaymentDAO.find {
-                            (PaymentTable.orderId eq order.id) and
-                                (PaymentTable.status eq PaymentStatus.COMPLETED)
-                        }.any()
-                    if (!hasCompletedPayment) {
-                        throw ValidationException(
-                            "Order cannot be marked paid without a completed payment record",
-                        )
-                    }
+                    // PAID is owned by the payment pipeline so payout, loyalty,
+                    // digital delivery and reservation finalization cannot be skipped.
+                    throw ValidationException(
+                        "Order cannot be marked paid directly; confirm the payment instead",
+                    )
                 }
 
                 val fromStatus = order.status

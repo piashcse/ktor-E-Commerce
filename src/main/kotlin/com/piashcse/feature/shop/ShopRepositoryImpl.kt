@@ -21,6 +21,7 @@ import com.piashcse.mapper.toShopResponse
 import com.piashcse.model.request.ShopRequest
 import com.piashcse.model.request.UpdateShopRequest
 import com.piashcse.model.response.ShopResponse
+import com.piashcse.service.CatalogCache
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.extension.*
 import com.piashcse.utils.validator.ConflictException
@@ -275,6 +276,7 @@ class ShopRepositoryImpl : ShopRepository {
             EventBus.publishAdminAction(Triple(actorId, actorEmail.orEmpty(), actorRole ?: "ADMIN"), action, "SHOP", shopId)
         }
         ownerUserId?.let { EventBus.publish(ShopStatusChangedEvent(shopId, it, target.name, reason)) }
+        CatalogCache.invalidate()
         return response
     }
 

@@ -240,7 +240,11 @@ class DigitalDeliveryService(
     private fun subscriptionActive(subscriptionId: String?): Boolean {
         if (subscriptionId == null) return true
         val subscription = SubscriptionDAO.findById(subscriptionId) ?: return false
-        return subscription.status == SubscriptionStatus.ACTIVE && subscription.currentPeriodEnd.isAfter(currentUtc())
+        val now = currentUtc()
+        if (subscription.status == SubscriptionStatus.ACTIVE && subscription.currentPeriodEnd.isAfter(now)) return true
+        // Dunning grace: PAST_DUE retains access until graceUntil passes.
+        return subscription.status == SubscriptionStatus.PAST_DUE &&
+            subscription.graceUntil?.isAfter(now) == true
     }
 
     private fun DigitalEntitlementDAO.toLibraryItem(

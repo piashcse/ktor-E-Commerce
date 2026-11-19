@@ -215,9 +215,20 @@ class CartRepositoryImpl : CartRepository {
                 } else {
                     emptyMap()
                 }
+            val shopIds = products.values.mapNotNull { it.shopId?.value }.distinct()
+            val activeWarehouseIds =
+                if (shopIds.isEmpty()) {
+                    emptySet()
+                } else {
+                    WarehouseDAO.find {
+                        (WarehouseTable.shopId inList shopIds.map { it.entityID(ShopTable) }) and
+                            (WarehouseTable.isActive eq true)
+                    }.map { it.id.value }.toSet()
+                }
             val inventoryRows =
                 if (products.isNotEmpty()) {
-                    InventoryDAO.find { InventoryTable.productId inList productEntityIds }.toList()
+                    InventoryDAO.find { InventoryTable.productId inList productEntityIds }
+                        .filter { it.warehouseId.value in activeWarehouseIds }
                 } else {
                     emptyList()
                 }
@@ -230,7 +241,6 @@ class CartRepositoryImpl : CartRepository {
                     .filter {
                         it.productId.value == productId && it.variantId?.value == variantId
                     }.sumOf { it.stockQuantity }
-            val shopIds = products.values.mapNotNull { it.shopId?.value }.distinct()
             val shops =
                 if (shopIds.isNotEmpty()) {
                     ShopDAO.find { ShopTable.id inList shopIds }.associateBy { it.id.value }

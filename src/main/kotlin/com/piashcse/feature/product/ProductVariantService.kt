@@ -1,6 +1,8 @@
 package com.piashcse.feature.product
 
 import com.piashcse.constants.ProductStatus
+import com.piashcse.database.entities.InventoryDAO
+import com.piashcse.database.entities.InventoryTable
 import com.piashcse.database.entities.ProductDAO
 import com.piashcse.database.entities.ProductOptionDAO
 import com.piashcse.database.entities.ProductOptionTable
@@ -10,6 +12,8 @@ import com.piashcse.database.entities.ProductVariantDAO
 import com.piashcse.database.entities.ProductVariantOptionDAO
 import com.piashcse.database.entities.ProductVariantOptionTable
 import com.piashcse.database.entities.ProductVariantTable
+import com.piashcse.database.entities.WarehouseDAO
+import com.piashcse.database.entities.WarehouseTable
 import com.piashcse.database.entities.optionResponses
 import com.piashcse.database.entities.variantResponses
 import com.piashcse.model.response.ProductOptionResponse
@@ -30,6 +34,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import java.math.BigDecimal
 
@@ -87,11 +92,17 @@ class ProductVariantService(
     suspend fun listVariants(productId: String): List<ProductVariantResponse> =
         query {
             requireProduct(productId)
-            variantResponses(
+            val variants =
                 ProductVariantDAO.find { ProductVariantTable.productId eq productId.entityID(ProductTable) }
                     .orderBy(ProductVariantTable.sortOrder to SortOrder.ASC)
-                    .toList(),
-            )
+                    .toList()
+            val stockByVariant =
+                InventoryDAO.find {
+                    (InventoryTable.productId eq productId.entityID(ProductTable)) and
+                        (InventoryTable.variantId.isNotNull())
+                }.groupBy { it.variantId!!.value }
+                    .mapValues { (_, rows) -> rows.sumOf { it.stockQuantity } }
+            variantResponses(variants, stockByVariant)
         }
 
     suspend fun listOptions(productId: String): List<ProductOptionResponse> =
@@ -114,11 +125,31 @@ class ProductVariantService(
             if (request.isDefault) clearDefault(product.id.value)
             val hasVariants =
                 ProductVariantDAO.find { ProductVariantTable.productId eq product.id }.firstOrNull() != null
-            ProductVariantDAO.new {
-                this.productId = product.id
-                applyRequest(request)
-                isDefault = request.isDefault || !hasVariants
-            }.toResponse()
+            val variant =
+                ProductVariantDAO.new {
+                    this.productId = product.id
+                    applyRequest(request)
+                    isDefault = request.isDefault || !hasVariants
+                }
+            // Give the variant an explicit bucket in every active warehouse so
+            // checkout reports "insufficient stock" instead of "inventory not found".
+            product.shopId?.let { shopId ->
+                WarehouseDAO.find {
+                    (WarehouseTable.shopId eq shopId) and (WarehouseTable.isActive eq true)
+                }.forEach { warehouse ->
+                    InventoryDAO.new {
+                        this.productId = product.id
+                        this.variantId = variant.id
+                        this.shopId = shopId
+                        this.warehouseId = warehouse.id
+                        stockQuantity = 0
+                        minimumStockLevel = 10
+                        maximumStockLevel = 1000
+                        status = com.piashcse.constants.InventoryStatus.OUT_OF_STOCK
+                    }
+                }
+            }
+            variant.toResponse()
         }.also { invalidateCatalog() }
 
     suspend fun updateVariant(

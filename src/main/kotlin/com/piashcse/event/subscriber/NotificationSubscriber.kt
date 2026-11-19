@@ -371,18 +371,25 @@ class NotificationSubscriber(
         // Payout capture must propagate (see captureSellerPayout), so it runs outside
         // the non-fatal notification try/catch below.
         if (event is PaymentCompletedEvent) {
-            try {
-                messagesFor(event).forEach { dispatcher.dispatch(it) }
-            } catch (e: Exception) {
-                log.error("Notification dispatch failed for ${event::class.simpleName}", e)
+            val failures = mutableListOf<Throwable>()
+            messagesFor(event).forEach { message ->
+                runCatching { dispatcher.dispatch(message) }
+                    .onFailure { failures += it }
             }
             captureSellerPayout(event)
+            failures.firstOrNull()?.let { throw it }
             return
         }
-        try {
-            messagesFor(event).forEach { dispatcher.dispatch(it) }
-        } catch (e: Exception) {
-            log.error("Notification dispatch failed for ${event::class.simpleName}", e)
+        val failures = mutableListOf<Throwable>()
+        messagesFor(event).forEach { message ->
+            runCatching { dispatcher.dispatch(message) }
+                .onFailure { failures += it }
+        }
+        // A failed email/SMS must reach the outbox ack policy so it is retried
+        // instead of being marked delivered.
+        failures.firstOrNull()?.let {
+            log.error("Notification dispatch failed for ${event::class.simpleName}", it)
+            throw it
         }
     }
 

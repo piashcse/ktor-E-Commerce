@@ -74,7 +74,8 @@ object OutboxPoller {
         // Read + claim the batch in one short transaction. Delivery happens outside
         // the transaction because it waits for subscribers; a crashed instance's
         // claim expires after five minutes.
-        val claimCutoff = currentUtc().minusMinutes(5)
+        // Must exceed the worst-case batch drain (batchSize * publish timeout).
+        val claimCutoff = currentUtc().minusMinutes(15)
         val pending =
             query {
                 OutboxDAO.find {

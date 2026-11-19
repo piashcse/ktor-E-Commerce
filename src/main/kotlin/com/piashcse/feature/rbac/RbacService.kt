@@ -279,6 +279,11 @@ class RbacService {
         roleIds: List<String>,
     ): EffectivePermissionsResponse {
         val user = query { UserDAO.findById(userId) ?: userId.throwNotFound("User") }
+        // Only a super admin may change roles on an admin account. Without this,
+        // a lesser admin can strip another admin/super-admin back to no roles.
+        if (user.userType in listOf(UserType.ADMIN, UserType.SUPER_ADMIN) && !isSuperAdmin(actorUserId)) {
+            throw ForbiddenException("Only a super admin can modify admin role assignments")
+        }
         if (roleIds.isNotEmpty() && user.userType != UserType.ADMIN && user.userType != UserType.SUPER_ADMIN) {
             throw ValidationException("Admin roles can only be assigned to ADMIN accounts")
         }

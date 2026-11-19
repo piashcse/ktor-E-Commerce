@@ -232,7 +232,10 @@ class LoyaltyService {
         entries.forEach { entry ->
             when (entry.type) {
                 WalletEntryType.POINTS_EARN ->
-                    account.pointsBalance = (account.pointsBalance - entry.pointsDelta).coerceAtLeast(0)
+                    // Allow a negative balance: if the user already spent the
+                    // points, the debt must be recovered from future earnings
+                    // instead of being erased on refund.
+                    account.pointsBalance -= entry.pointsDelta
                 WalletEntryType.POINTS_REDEEM -> pointsToRestore += -entry.pointsDelta
                 WalletEntryType.CREDIT_REDEEM -> creditToRestore = creditToRestore.add(entry.creditDelta.negate())
                 else -> Unit
@@ -273,9 +276,13 @@ class LoyaltyService {
         }
 
         GiftCardRedemptionDAO.find { GiftCardRedemptionTable.orderId eq orderId.entityID(com.piashcse.database.entities.OrderTable) }
+            .forUpdate()
             .forEach { redemption ->
                 if (redemption.reversedAt == null) {
-                    val card = GiftCardDAO.findById(redemption.giftCardId.value) ?: return@forEach
+                    val card =
+                        GiftCardDAO.find { GiftCardTable.id eq redemption.giftCardId }
+                            .forUpdate()
+                            .firstOrNull() ?: return@forEach
                     card.balance = card.balance.add(redemption.amount).setScale(2, RoundingMode.HALF_UP)
                     if (card.status == GiftCardStatus.REDEEMED && card.expiresAt?.isBefore(currentUtc()) != true) {
                         card.status = GiftCardStatus.ACTIVE

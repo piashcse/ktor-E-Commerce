@@ -69,7 +69,7 @@ fun Route.refundRequestRoutes() {
                 val imageUrl =
                     call.receiveSingleImage(
                         purpose = "refund evidence",
-                        upload = { file, _ -> UploadService.uploadRefundImage(file) },
+                        upload = { file, bytes -> UploadService.uploadRefundImage(file, bytes) },
                         publicUrl = UploadService::getRefundImageUrl,
                     )
                 call.respondCreated(refundRequestRepo.addRefundEvidence(refundId, call.currentUserId, imageUrl))

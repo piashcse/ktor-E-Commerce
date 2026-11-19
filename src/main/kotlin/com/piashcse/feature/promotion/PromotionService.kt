@@ -206,7 +206,7 @@ class PromotionService {
     suspend fun create(request: PromotionRequest): PromotionResponse =
         query {
             val startsAt = DateTimes.parseFlexible(request.startsAt, "startsAt")
-            val endsAt = DateTimes.parseFlexible(request.endsAt, "endsAt")
+            val endsAt = DateTimes.parseFlexible(request.endsAt, "endsAt", endOfDay = true)
             if (startsAt.isAfter(endsAt)) throw ValidationException("startsAt must be before endsAt")
             PromotionDAO.new {
                 name = request.name
@@ -234,7 +234,7 @@ class PromotionService {
                 throw com.piashcse.utils.validator.ForbiddenException("Promotion belongs to another shop")
             }
             val startsAt = DateTimes.parseFlexible(request.startsAt, "startsAt")
-            val endsAt = DateTimes.parseFlexible(request.endsAt, "endsAt")
+            val endsAt = DateTimes.parseFlexible(request.endsAt, "endsAt", endOfDay = true)
             if (startsAt.isAfter(endsAt)) throw ValidationException("startsAt must be before endsAt")
             promotion.apply {
                 name = request.name

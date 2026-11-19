@@ -548,7 +548,9 @@ class AuthRepositoryImpl : AuthRepository {
                     ?: throw NotFoundException(Message.Auth.INVALID_REFRESH_TOKEN)
 
             if (!storedToken.isValid) {
-                // Reuse detection: suspected theft — revoke entire token family.
+                // Reuse detection: suspected theft — revoke the token family and
+                // bump the credential version so already-issued access tokens die too.
+                UserDAO.findById(storedToken.userId.value)?.tokenVersion += 1
                 runCatching { revokeAllUserTokensTx(storedToken.userId.value) }
                 storedToken.revokedAt = Instant.now()
                 throw NotFoundException(Message.Auth.TOKEN_EXPIRED)

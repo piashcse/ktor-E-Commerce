@@ -8,7 +8,22 @@ hide:
 
 ### Fixed
 
-- Test suite restored to green: 652 tests, including the five stale integration
+- Full-codebase audit fixes: per-order reservation cleanup, direct PAID status
+  rejection, canceled-parcel delivery handling, duplicate label/order
+  idempotency, inStock filtering, variant inventory buckets, coupon line-level
+  tax, wallet/gift tax exclusion, failed-payment confirmation, duplicate live
+  payment intents, refund-webhook reconciliation ordering, subscription
+  amount/currency and grace handling, loyalty clawback, gift-card locking,
+  COD ORIGINAL-refund guard, exact-role API keys, admin role mutation guard,
+  refresh-token reuse invalidation, refund evidence upload, durable audit/review
+  outbox events, notification retry propagation, promotion end-of-day, tax-zone
+  specificity, sitemap SQL limits, support first-response, POS shop status,
+  warehouse allocation restore and payment charge leases.
+- Performance/conciseness pass: product funnel batch-loads orders/items/products
+  and reports conversion from distinct purchase orders; cart stock preview uses
+  active warehouses; variant listing batch-loads stock; coupon/promotion tax
+  allocation is persisted once per eligible line.
+- Test suite restored to green: 654 tests, including the five stale integration
   expectations (fraud velocity fixture, admin-only refund completion, review
   self-vote, subscription activation and KYC document requirements).
 - `V57` now uses PostgreSQL-14-compatible partial unique indexes instead of
@@ -38,7 +53,7 @@ hide:
 - TOTP and digital-download keys are derived subkeys instead of reusing
   `JWT_SECRET`; unauthenticated metrics are disabled when proxy headers are
   trusted; query values are sanitized before request logging.
-- Coverage gates pass at 58.67 % instruction / 31.42 % branch, including the
+- Coverage gates pass at 59.43 % instruction / 31.60 % branch, including the
   previously failing coupon, refund, review, dashboard and payout packages.
 
 - B2B purchase-order fulfillment now creates the buyer order, decrements stock and links the PO to

@@ -24,6 +24,7 @@ import com.piashcse.model.request.ShipRefundRequest
 import com.piashcse.model.request.UpdateRefundStatusRequest
 import com.piashcse.model.response.RefundRequestResponse
 import com.piashcse.service.AppMetrics
+import com.piashcse.service.CatalogCache
 import com.piashcse.utils.common.Money
 import com.piashcse.utils.common.PaginatedResponse
 import com.piashcse.utils.common.emptyPage
@@ -376,53 +377,56 @@ class RefundRequestRepositoryImpl(
         userId: String,
     ): RefundRequestResponse {
         val providerRefund = prepareProviderRefund(refundId, request, userId)
-        return query {
-            val refundReq =
-                RefundRequestDAO.find { RefundRequestTable.id eq refundId.entityID(RefundRequestTable) }
-                    .forUpdate()
-                    .firstOrNull()
-                    ?: throw ValidationException(Message.Refunds.NOT_FOUND)
+        val result =
+            query {
+                val refundReq =
+                    RefundRequestDAO.find { RefundRequestTable.id eq refundId.entityID(RefundRequestTable) }
+                        .forUpdate()
+                        .firstOrNull()
+                        ?: throw ValidationException(Message.Refunds.NOT_FOUND)
 
-            requireRefundActor(refundReq, userId)
-            if (request.status == RefundStatus.REFUNDED) requireRefundMoneyAuthority(userId)
-            if (!canTransitionTo(refundReq.status, request.status)) {
-                throw ConflictException(Message.Refunds.invalidTransition(refundReq.status.name, request.status.name))
-            }
+                requireRefundActor(refundReq, userId)
+                if (request.status == RefundStatus.REFUNDED) requireRefundMoneyAuthority(userId)
+                if (!canTransitionTo(refundReq.status, request.status)) {
+                    throw ConflictException(Message.Refunds.invalidTransition(refundReq.status.name, request.status.name))
+                }
 
-            val order =
-                OrderDAO.findById(refundReq.orderId.value)
-                    ?: throw ValidationException(Message.Orders.NOT_FOUND)
-            val orderItem =
-                OrderItemDAO.findById(refundReq.orderItemId.value)
-                    ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
-            val maxRefundAmount = maxRefundableAmount(order, orderItem, refundReq.quantity)
-            validateRefundAmounts(order, orderItem, refundReq.quantity, request, maxRefundAmount)
-            if (request.status == RefundStatus.REFUNDED && request.refundAmount == null && refundReq.refundAmount == null) {
-                throw ValidationException(Message.Refunds.REFUND_AMOUNT_REQUIRED)
-            }
+                val order =
+                    OrderDAO.findById(refundReq.orderId.value)
+                        ?: throw ValidationException(Message.Orders.NOT_FOUND)
+                val orderItem =
+                    OrderItemDAO.findById(refundReq.orderItemId.value)
+                        ?: throw ValidationException(Message.Refunds.ITEM_NOT_FOUND)
+                val maxRefundAmount = maxRefundableAmount(order, orderItem, refundReq.quantity)
+                validateRefundAmounts(order, orderItem, refundReq.quantity, request, maxRefundAmount)
+                if (request.status == RefundStatus.REFUNDED && request.refundAmount == null && refundReq.refundAmount == null) {
+                    throw ValidationException(Message.Refunds.REFUND_AMOUNT_REQUIRED)
+                }
 
-            val fromStatus = refundReq.status
-            refundReq.status = request.status
-            request.decisionReason?.takeIf { it.isNotBlank() }?.let { refundReq.decisionReason = it }
-            if (request.status in listOf(RefundStatus.REFUNDED, RefundStatus.REJECTED)) {
-                refundReq.resolvedAt = currentUtc()
-            }
-            request.refundAmount?.let { refundReq.refundAmount = it }
-            request.refundShippingAmount?.let { refundReq.shippingRefund = it }
-            request.refundTaxAmount?.let { refundReq.taxRefund = it }
-            request.refundMethod?.let { refundReq.refundMethod = it }
+                val fromStatus = refundReq.status
+                refundReq.status = request.status
+                request.decisionReason?.takeIf { it.isNotBlank() }?.let { refundReq.decisionReason = it }
+                if (request.status in listOf(RefundStatus.REFUNDED, RefundStatus.REJECTED)) {
+                    refundReq.resolvedAt = currentUtc()
+                }
+                request.refundAmount?.let { refundReq.refundAmount = it }
+                request.refundShippingAmount?.let { refundReq.shippingRefund = it }
+                request.refundTaxAmount?.let { refundReq.taxRefund = it }
+                request.refundMethod?.let { refundReq.refundMethod = it }
 
-            if (request.status == RefundStatus.REFUNDED) {
-                applyRefunded(refundReq, order, orderItem, maxRefundAmount)
+                if (request.status == RefundStatus.REFUNDED) {
+                    applyRefunded(refundReq, order, orderItem, maxRefundAmount)
+                }
+                providerRefund?.let {
+                    refundReq.providerRefundId = it.providerRefundId
+                    refundReq.providerRefundStatus = it.status
+                }
+                if (request.status == RefundStatus.REJECTED) AppMetrics.refundsRejected.increment()
+                eventFor(refundReq, fromStatus.name, request.status.name)
+                refundReq.toRefundRequestResponse()
             }
-            providerRefund?.let {
-                refundReq.providerRefundId = it.providerRefundId
-                refundReq.providerRefundStatus = it.status
-            }
-            if (request.status == RefundStatus.REJECTED) AppMetrics.refundsRejected.increment()
-            eventFor(refundReq, fromStatus.name, request.status.name)
-            refundReq.toRefundRequestResponse()
-        }
+        CatalogCache.invalidate()
+        return result
     }
 
     private fun requireRefundMoneyAuthority(userId: String) {

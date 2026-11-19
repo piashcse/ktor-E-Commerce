@@ -3,7 +3,7 @@
 **Repository:** `ktor-ecom`
 **Commit analysed:** `795e067` (`fix(rbac): load seller membership owner inside a transaction`)
 **Analysis date:** 2026-11-18
-**Remediation status:** ✅ completed 2026-11-19 — 652/652 tests pass, all coverage gates pass, detekt/ktlint pass.
+**Remediation status:** ✅ completed 2026-11-19 — 654/654 tests pass, all coverage gates pass, detekt/ktlint pass.
 **Scope:** all of `src/main/kotlin`, all of `src/test/kotlin`, Flyway migrations, CI, coverage gates, and the test execution results.
 
 > This is a *fresh* analysis. The older `ANALYSIS.md`, `CODE_ANALYSIS.md` and
@@ -22,12 +22,12 @@
 | Test Kotlin files | 123 (122 with tests + 1 helper) |
 | Test Kotlin LOC | 15,833 |
 | Flyway migrations | 68 files (`V1`…`V67` + one repeatable seed) |
-| Test methods | **652** |
+| Test methods | **654** |
 | Unit/route tests | **625** — all pass without a database |
 | Integration test methods | **27** — all pass against PostgreSQL |
 | Skipped without a database | **23** |
-| Global instruction coverage, with PostgreSQL | **58.67 %** |
-| Global branch coverage, with PostgreSQL | **31.42 %** |
+| Global instruction coverage, with PostgreSQL | **59.43 %** |
+| Global branch coverage, with PostgreSQL | **31.60 %** |
 | Global instruction coverage, no database | **29.80 %** |
 | CI integration coverage gates | **PASS (0 violations)** |
 | OpenAPI surface generated from the real route tree | **390 paths / 464 operations / 47 tags / 294 schemas** |
@@ -37,8 +37,8 @@
 All findings below were fixed on 2026-11-19:
 
 1. **Five stale integration tests fixed** (fraud fixture, admin refund authority, voter
-   identity, subscription activation, KYC document). The suite is now **652/652 green**.
-2. **Coverage gates green**: instruction **58.67 %**, branch **31.42 %**, line **69.51 %**;
+   identity, subscription activation, KYC document). The suite is now **654/654 green**.
+2. **Coverage gates green**: instruction **59.43 %**, branch **31.60 %**, line **69.50 %**;
    all seven previously failing package rules now pass.
 3. **V57 made PostgreSQL-14 compatible** with two partial unique indexes. The documented
    minimum is now PostgreSQL 14 (tested on 14.17 and CI's PG16).
@@ -195,7 +195,7 @@ omnichannel/POS/BOPIS, feature flags, API keys and webhook administration.
 | Route/contract with mocked repositories | 51 | 404 | No |
 | Integration (repositories/services against PostgreSQL) | 20 | 27 | Yes |
 | Root contract tests (`ContractSerializationTest`, `TypedContractTest`) | 2 | 12 | No |
-| **Total** | **122** | **652** | |
+| **Total** | **122** | **654** | |
 
 The complete per-file inventory is in §9.
 
@@ -261,7 +261,7 @@ database coverage.
 ### 4.1 Without a database
 
 ```
-652 tests completed
+654 tests completed
 0 failures
 0 errors
 26 skipped
@@ -280,7 +280,7 @@ run at all.
 ### 4.2 Against PostgreSQL — pre-fix failures (all fixed on 2026-11-19)
 
 ```
-652 tests completed
+654 tests completed
 0 failures
 0 errors
 0 skipped (post-fix)
@@ -328,14 +328,14 @@ missing in CI.
 
 | Counter | With PostgreSQL | No database |
 |---|---:|---:|
-| Instruction | **58.67 %** | 28.48 % |
-| Branch | **31.42 %** | 10.71 % |
-| Line | **69.51 %** | 30.26 % |
-| Method | 67.19 % | 40.82 % |
-| Class | 86.11 % | 68.44 % |
+| Instruction | **59.43 %** | 29.70 % |
+| Branch | **31.60 %** | 10.61 % |
+| Line | **69.50 %** | 30.52 % |
+| Method | 68.54 % | 42.88 % |
+| Class | 87.14 % | 69.98 % |
 
 README and `docs/testing.md` now carry the post-remediation baseline:
-**652 tests, 58.67 % instruction, 31.42 % branch, 69.51 % line** on the
+**654 tests, 59.43 % instruction, 31.60 % branch, 69.50 % line** on the
 PostgreSQL-backed run.
 
 ### 5.2 Lowest-covered packages (instruction)
@@ -394,7 +394,7 @@ instruction coverage and are the next targets:
 
 These are covered indirectly by route tests (mocked) or skipped integration flows, so they
 remain the highest-value additions for the next coverage pass. Overall instruction coverage is
-now **58.67 %**, so these gaps no longer fail the configured gates.
+now **59.43 %**, so these gaps no longer fail the configured gates.
 
 ### 5.4 CI coverage gate (fixed)
 
@@ -550,8 +550,8 @@ useful but do not replace them.
 
 ### 6.7 Weakness 6 — docs and generated contract drift
 
-- `README.md` and `docs/testing.md` are now updated to **652 tests** and
-  58.67 % / 31.42 % / 69.51 % (PostgreSQL-backed run).
+- `README.md` and `docs/testing.md` are now updated to **654 tests** and
+  59.43 % / 31.60 % / 69.50 % (PostgreSQL-backed run).
 - `docs/endpoints.md` still documents 383 core operations while the generated
   spec has **464 operations / 390 paths / 47 tags / 294 schemas**; README now
   states both counts explicitly.
@@ -570,7 +570,7 @@ useful but do not replace them.
 - `jacocoTestCoverageVerification` passes locally without a DB (29.8 % vs 28 %
   minimum) and **passes** with the CI DB profile.
 - The overall CI threshold (50 %) has only ~0.8 points of headroom on the
-  current green run (58.67 % vs 50 % minimum), leaving reasonable headroom.
+  current green run (59.43 % vs 50 % minimum), leaving reasonable headroom.
 
 ---
 
@@ -783,7 +783,7 @@ warehouse-specific stock restoration (`stock_reservation.warehouse_id` +
 ### P0 — restore a truthful, green suite (✅ completed)
 
 1. Five stale integration tests were fixed as described in §4.2.
-2. `./gradlew test` with the CI database is now green at **652/652**.
+2. `./gradlew test` with the CI database is now green at **654/654**.
 3. V57 was rewritten with PG14-compatible partial unique indexes and the
    documented minimum is PostgreSQL 14.
 4. `jacocoTestCoverageVerification` now passes every gate.
@@ -932,7 +932,7 @@ shared harness and contains no tests, so it is omitted.
 | Unit | `plugin/IndustryStandardTest.kt` | 2 |
 | Unit | `plugin/OpenApiDocumentationTest.kt` | 2 |
 | Unit | `plugin/OpenApiGenerationTest.kt` | 1 |
-| Route/contract | `plugin/PermissionAuthorizationTest.kt` | 5 |
+| Route/contract | `plugin/PermissionAuthorizationTest.kt` | 7 |
 | Route/contract | `plugin/SecurityHeadersTest.kt` | 1 |
 | Unit | `plugin/SerializerTest.kt` | 5 |
 | Unit | `service/CatalogCacheTest.kt` | 1 |
@@ -956,7 +956,7 @@ shared harness and contains no tests, so it is omitted.
 | Unit | `utils/ValidationRulesTest.kt` | 4 |
 | Unit/contract | `ContractSerializationTest.kt` | 6 |
 | Unit/contract | `TypedContractTest.kt` | 6 |
-| **Total** | **122 files** | **652** |
+| **Total** | **122 files** | **654** |
 
 ---
 
@@ -964,11 +964,11 @@ shared harness and contains no tests, so it is omitted.
 
 | Step | Result |
 |---|---|
-| `./gradlew cleanTest test` (no DB) | **PASS** — 652 run, 0 failed, 27 skipped; 28.48 % instruction |
+| `./gradlew cleanTest test` (no DB) | **PASS** — 654 run, 0 failed, 27 skipped; 29.70 % instruction |
 | `./gradlew jacocoTestReport jacocoTestCoverageVerification` (no DB) | **PASS** — 29.80 % instruction, 10.63 % branch |
 | `./gradlew cleanTest test` with PG14 + original V57 | **FAIL** — 23/23 integration tests fail at `V57:5` (`syntax error at or near "NULLS"`) |
-| `./gradlew cleanTest test` with the portable V57 on PG14 | **PASS** — 652 run, 0 failed, 0 errors |
-| `./gradlew jacocoTestReport -x test` (DB execution data) | **PASS** — 58.67 % instruction, 31.42 % branch, 69.51 % line |
+| `./gradlew cleanTest test` with the portable V57 on PG14 | **PASS** — 654 run, 0 failed, 0 errors |
+| `./gradlew jacocoTestReport -x test` (DB execution data) | **PASS** — 59.43 % instruction, 31.60 % branch, 69.50 % line |
 | `COVERAGE_ENFORCE_DB=true COVERAGE_MIN=0.50 ./gradlew jacocoTestCoverageVerification -x test` | **PASS** — 0 violations |
 | `./gradlew detekt ktlintCheck` | **PASS** |
 | `git status` after analysis | **CLEAN** — V57 restored to original |

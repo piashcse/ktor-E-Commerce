@@ -2,6 +2,7 @@ package com.piashcse.feature.payment
 
 import com.piashcse.constants.Message
 import com.piashcse.constants.OrderStatus
+import com.piashcse.constants.PaymentProvider
 import com.piashcse.constants.PaymentStatus
 import com.piashcse.constants.RiskDecision
 import com.piashcse.constants.ScaStatus
@@ -38,6 +39,7 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.core.less
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -290,6 +292,7 @@ class PaymentRepositoryImpl(
         }
     }
 
+    @Suppress("LongMethod") // payment intent lifecycle kept in one atomic flow
     private suspend fun createPaymentLocked(
         paymentRequest: PaymentRequest,
         callerUserId: String,
@@ -313,6 +316,23 @@ class PaymentRepositoryImpl(
                 null
             }
         if (replay != null) return replay
+
+        // Never leave two live provider intents for the same order: a second
+        // confirmed intent would capture extra money that is never refunded.
+        val openIntent =
+            query {
+                PaymentDAO.find {
+                    (PaymentTable.orderId eq paymentRequest.orderId.entityID(OrderTable)) and
+                        (PaymentTable.status eq PaymentStatus.PENDING) and
+                        (PaymentTable.providerReference.isNotNull())
+                }.firstOrNull()
+            }
+        if (openIntent != null) {
+            if (openIntent.amount.compareTo(paymentRequest.amount) == 0) {
+                return openIntent.toPaymentResponse()
+            }
+            throw ConflictException("A payment intent for this order is already open")
+        }
 
         // Validate before charging so an invalid order never reaches the provider.
         val (payable, risk) =
@@ -473,6 +493,9 @@ class PaymentRepositoryImpl(
             if (!payment.isPayable()) {
                 throw ValidationException(Message.Payments.CANNOT_CONFIRM.format(payment.status))
             }
+            if (payment.status == PaymentStatus.FAILED && payment.provider != PaymentProvider.MANUAL) {
+                throw ValidationException("A failed provider payment must be retried through the gateway")
+            }
 
             val order =
                 OrderDAO.find { OrderTable.id eq payment.orderId }
@@ -516,6 +539,38 @@ class PaymentRepositoryImpl(
             runCatching { gateway.parseWebhook(payload) }
                 .getOrElse { throw ValidationException("Invalid webhook payload") }
         AppMetrics.paymentWebhooks.increment()
+
+        if (event.type == GatewayEventType.REFUND_UPDATED && event.refund != null) {
+            val refund = event.refund
+            val existing =
+                query {
+                    PaymentWebhookEventDAO.find {
+                        (PaymentWebhookEventTable.provider eq event.provider) and
+                            (PaymentWebhookEventTable.eventId eq event.eventId)
+                    }.firstOrNull()
+                }
+            if (existing != null && existing.status in listOf(WebhookEventStatus.PROCESSED, WebhookEventStatus.IGNORED)) {
+                return WebhookResult(true, duplicate = true, message = "Duplicate webhook ignored")
+            }
+            // Reconcile before committing PROCESSED: a failure must stay
+            // retryable instead of being acknowledged and lost.
+            val reconciled =
+                refunds.reconcileProviderRefund(refund.providerRefundId, refund.status, refund.amount)
+            query {
+                val record =
+                    existing ?: PaymentWebhookEventDAO.new {
+                        this.provider = event.provider
+                        this.eventId = event.eventId
+                        this.eventType = event.type.name
+                        this.payload = payload
+                        this.status = WebhookEventStatus.RECEIVED
+                    }
+                record.status = if (reconciled) WebhookEventStatus.PROCESSED else WebhookEventStatus.IGNORED
+                record.error = if (reconciled) null else "No matching local refund request"
+                record.processedAt = currentUtc()
+            }
+            return WebhookResult(true, message = if (reconciled) "Refund update reconciled" else "Refund update ignored")
+        }
 
         val outcome =
             query {
@@ -565,26 +620,6 @@ class PaymentRepositoryImpl(
                     }
                 }
             }
-
-        // Provider-initiated refunds: apply local stock/payout/payment effects
-        // idempotently instead of only recording the provider status.
-        if (event.type == GatewayEventType.REFUND_UPDATED && event.refund != null) {
-            val refund = event.refund
-            val reconciled = refunds.reconcileProviderRefund(refund.providerRefundId, refund.status, refund.amount)
-            if (reconciled) {
-                query {
-                    PaymentWebhookEventDAO.find {
-                        (PaymentWebhookEventTable.provider eq event.provider) and
-                            (PaymentWebhookEventTable.eventId eq event.eventId)
-                    }.firstOrNull()?.apply {
-                        status = WebhookEventStatus.PROCESSED
-                        error = null
-                        processedAt = currentUtc()
-                    }
-                }
-                return WebhookResult(true, message = "Refund update reconciled")
-            }
-        }
 
         // Gateway calls must run outside the transaction; if the late payment
         // was refunded, mark the stored event processed.
@@ -643,7 +678,12 @@ class PaymentRepositoryImpl(
         if (!subscriptionInvoiceId.isNullOrBlank()) {
             return when (event.type) {
                 GatewayEventType.PAYMENT_SUCCEEDED ->
-                    subscriptionBilling.applyPaidInvoiceTx(subscriptionInvoiceId, event.providerReference)
+                    subscriptionBilling.applyPaidInvoiceTx(
+                        subscriptionInvoiceId,
+                        event.providerReference,
+                        event.amount,
+                        event.currency,
+                    )
                 GatewayEventType.PAYMENT_FAILED ->
                     subscriptionBilling.applyFailedInvoiceTx(
                         subscriptionInvoiceId,

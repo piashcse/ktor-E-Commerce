@@ -206,11 +206,17 @@ class TaxService {
             return TaxQuote(rate = BigDecimal.ZERO, inclusive = false, taxClassId = taxClassId, exempt = true)
         }
 
-        val zone =
+        val matchingZones =
             TaxZoneDAO.find {
                 (TaxZoneTable.country eq normalized) and (TaxZoneTable.isActive eq true)
             }.filter { it.region == null || it.region.equals(region, ignoreCase = true) }
-                .maxByOrNull { it.priority }
+        // A region-specific zone outranks a country-wide fallback regardless of
+        // priority; priority only breaks ties within the same specificity.
+        val zone =
+            (
+                matchingZones.filter { it.region != null }.maxByOrNull { it.priority }
+                    ?: matchingZones.filter { it.region == null }.maxByOrNull { it.priority }
+            )
 
         if (zone != null && !zone.isNexus) {
             return TaxQuote(rate = BigDecimal.ZERO, inclusive = false, taxClassId = taxClassId)

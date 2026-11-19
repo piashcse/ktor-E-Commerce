@@ -18,7 +18,7 @@ import com.piashcse.database.entities.ReviewRatingDAO
 import com.piashcse.database.entities.ReviewRatingTable
 import com.piashcse.database.entities.UserTable
 import com.piashcse.database.entities.base.currentUtc
-import com.piashcse.event.EventBus
+import com.piashcse.event.OutboxPublisher
 import com.piashcse.event.ProductReviewCreatedEvent
 import com.piashcse.event.ReviewReplyEvent
 import com.piashcse.mapper.toReviewRatingResponse
@@ -190,18 +190,21 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                         }
                     }
                     recalculateProductRating(reviewRating.productId)
-                    review.toResponseWithImages()
+                    val created = review.toResponseWithImages()
+                    OutboxPublisher.enqueueTx(
+                        "PRODUCT",
+                        created.productId,
+                        ProductReviewCreatedEvent(
+                            created.id,
+                            created.productId,
+                            userId,
+                            created.rating,
+                            created.reviewText,
+                        ),
+                    )
+                    created
                 }
             }
-        EventBus.publish(
-            ProductReviewCreatedEvent(
-                response.id,
-                response.productId,
-                userId,
-                response.rating,
-                response.reviewText,
-            ),
-        )
         return response
     }
 
@@ -308,9 +311,16 @@ class ReviewRatingRepositoryImpl : ReviewRatingRepository {
                 if (!sellerOwnsShop(seller, shopId)) throw ForbiddenException(Message.Products.NOT_SHOP_OWNER)
                 review.sellerReply = reply.trim()
                 review.sellerRepliedAt = currentUtc()
-                review.toResponseWithImages()
+                val response = review.toResponseWithImages()
+                response.userId?.let {
+                    OutboxPublisher.enqueueTx(
+                        "PRODUCT",
+                        response.productId,
+                        ReviewReplyEvent(response.id, it, response.sellerReply.orEmpty()),
+                    )
+                }
+                response
             }
-        response.userId?.let { EventBus.publish(ReviewReplyEvent(response.id, it, response.sellerReply.orEmpty())) }
         return response
     }
 

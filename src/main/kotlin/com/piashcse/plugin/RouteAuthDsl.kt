@@ -47,9 +47,13 @@ val RoleAuthorizationPlugin =
             val hasAccess =
                 allowedRoles.any { role ->
                     if (principal.isApiKey) {
-                        // API keys are scope-bound. Require the role's full default
-                        // scope set; stored scopes may be legacy enum names or codes.
-                        role.defaultPermissions().all { it.code in principal.scopes || it.name in principal.scopes }
+                        // API keys are scope-bound, but must still satisfy exact-role
+                        // gates (customerOnlyAuth must not accept a seller key).
+                        val exactRoleMatches = !exact || principal.hasRole(role)
+                        exactRoleMatches &&
+                            role.defaultPermissions().all {
+                                it.code in principal.scopes || it.name in principal.scopes
+                            }
                     } else if (exact) {
                         principal.getUserType()?.hasExactRole(role) == true
                     } else {

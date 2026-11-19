@@ -88,7 +88,10 @@ object UploadService {
     /**
      * Uploads a refund evidence image (5MB limit).
      */
-    suspend fun uploadRefundImage(file: PartData.FileItem): String = upload(file, REFUND_DIR, MAX_FILE_SIZE, "refund image")
+    suspend fun uploadRefundImage(
+        file: PartData.FileItem,
+        preloadedBytes: ByteArray? = null,
+    ): String = upload(file, REFUND_DIR, MAX_FILE_SIZE, "refund image", preloadedBytes)
 
     /** Uploads a support-ticket evidence image (5MB limit). */
     suspend fun uploadSupportAttachment(

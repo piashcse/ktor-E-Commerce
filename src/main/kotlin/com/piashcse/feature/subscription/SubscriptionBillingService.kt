@@ -120,6 +120,7 @@ class SubscriptionBillingService(
         data object Skipped : RenewalOutcome
     }
 
+    @Suppress("LongMethod", "CyclomaticComplexMethod") // billing state machine is intentionally exhaustive
     private suspend fun bill(
         subscriptionId: String,
         now: LocalDateTime,
@@ -135,6 +136,11 @@ class SubscriptionBillingService(
                     subscription.status = SubscriptionStatus.CANCELED
                     digitalDelivery.revokeSubscriptionTx(subscription.id.value)
                     return@query Loaded.Canceled
+                }
+                // Re-check due-ness under the row lock: another billing run may
+                // already have paid and extended the period while we waited.
+                if (subscription.status == SubscriptionStatus.ACTIVE && subscription.currentPeriodEnd.isAfter(now)) {
+                    return@query Loaded.Skipped
                 }
                 val dueInvoice =
                     SubscriptionInvoiceDAO.find {
@@ -180,6 +186,15 @@ class SubscriptionBillingService(
                 if (subscription.status == SubscriptionStatus.ACTIVE) {
                     subscription.status = SubscriptionStatus.PAST_DUE
                     subscription.graceUntil = now.plusDays(graceDays)
+                }
+                // Manual/no-card renewals have no automatic charge. Without this
+                // they remain PAST_DUE forever and block re-subscription.
+                val manualRenewal =
+                    subscription.paymentMethodReference.isNullOrBlank() || gateway.provider == PaymentProvider.MANUAL
+                if (manualRenewal && graceExpired) {
+                    subscription.status = SubscriptionStatus.EXPIRED
+                    digitalDelivery.revokeSubscriptionTx(subscription.id.value)
+                    return@query Loaded.Expired
                 }
                 Loaded.Ready(
                     RenewalSnapshot(
@@ -285,12 +300,16 @@ class SubscriptionBillingService(
     fun applyPaidInvoiceTx(
         invoiceId: String,
         providerReference: String?,
+        paidAmount: BigDecimal? = null,
+        currency: String? = null,
     ): Boolean {
         val invoice =
             SubscriptionInvoiceDAO.find {
                 SubscriptionInvoiceTable.id eq invoiceId.entityID(SubscriptionInvoiceTable)
             }.forUpdate().firstOrNull() ?: return false
         if (invoice.status == InvoiceStatus.PAID) return false
+        if (paidAmount != null && paidAmount.compareTo(invoice.amount) != 0) return false
+        if (currency != null && !currency.equals(invoice.currency, ignoreCase = true)) return false
         val subscription =
             SubscriptionDAO.find { SubscriptionTable.id eq invoice.subscriptionId }
                 .forUpdate()
