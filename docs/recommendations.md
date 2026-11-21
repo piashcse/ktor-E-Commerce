@@ -1,6 +1,6 @@
 # Recommendations
 
-Recommendations are read-only, cache-friendly and derived from catalog signals that already exist in the database.
+Read-only product recommendations from catalog and purchase signals.
 
 ## Public endpoints
 

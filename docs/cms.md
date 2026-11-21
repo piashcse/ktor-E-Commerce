@@ -1,6 +1,6 @@
 # CMS, SEO & Sitemap
 
-Storefront content pages, per-entity SEO metadata, XML sitemap and robots policy.
+CMS pages, per-entity SEO metadata, sitemap and robots policy.
 
 ## CMS pages
 
@@ -36,6 +36,15 @@ Admin:
 
 Publishing sets `publishedAt`; unpublishing clears it. Slugs must match
 `^[a-z0-9]+(?:-[a-z0-9]+)*$`.
+
+## Endpoints
+
+| Method | Endpoint | Description | Authentication Required |
+|--------|----------|-------------|------------------------|
+| `GET` | `/api/v1/seo/metadata` | Get SEO metadata for an entity | No |
+| `PUT` | `/api/v1/admin/seo/metadata` | Admin: create/update SEO metadata | Yes (Admin) |
+
+## Endpoint Details
 
 ### 1. SEO metadata
 

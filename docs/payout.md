@@ -1,7 +1,6 @@
 # Seller Payouts & Statements
 
-Payouts require an APPROVED shop and VERIFIED seller KYC. Amounts are net of platform
-commission. Payout requests are idempotent per seller via `Idempotency-Key`.
+Seller balances, payout requests, statements and admin settlement.
 
 ## Seller endpoints
 

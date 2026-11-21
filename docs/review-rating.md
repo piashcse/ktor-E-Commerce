@@ -1,6 +1,6 @@
 # Review Rating
 
-This documentation provides comprehensive details for the Review Rating API endpoints. The API supports creating, retrieving, updating, and deleting product reviews and ratings within the platform. Reviews are associated with specific products and users, enabling a complete feedback system for e-commerce platforms.
+Product reviews, ratings, helpful votes, images and moderation.
 
 ## Authentication
 
@@ -317,6 +317,52 @@ curl -X 'GET' \
       "count": 1
     }
   ]
+}
+```
+
+---
+
+### 11. Admin: moderate a review
+
+**`PUT /api/v1/admin/reviews/{id}/status`**
+
+Admin: moderate a review
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/reviews/6c5078d3-f8e3-4c88-9afe-48b5423c664f/status' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "status": "ACTIVE",
+  "reason": "Policy violation"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "reviewText": "Looks good",
+  "rating": 1,
+  "title": "Example",
+  "isVerifiedPurchase": true,
+  "helpfulCount": 1,
+  "notHelpfulCount": 1,
+  "images": [
+    "https://example.com/image.jpg"
+  ],
+  "status": "ACTIVE",
+  "sellerReply": "Looks good",
+  "sellerRepliedAt": "2024-05-06T12:00:00",
+  "moderationReason": "Policy violation",
+  "createdAt": "2024-05-06T12:00:00"
 }
 ```
 

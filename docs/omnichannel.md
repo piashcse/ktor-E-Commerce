@@ -1,6 +1,6 @@
 # BOPIS, POS & Store Locator
 
-Omnichannel pickup, in-store sales and nearby store discovery.
+BOPIS pickup, POS sessions and public store discovery.
 
 ### 1. Store locator
 

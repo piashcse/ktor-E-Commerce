@@ -1,6 +1,6 @@
 # Coupon Management
 
-The Coupon module provides a flexible way to manage discounts and promotional offers. It supports both fixed amount and percentage-based discounts with various validation rules.
+Fixed and percentage discounts, coupon validation and automatic promotions.
 
 ## Endpoints
 

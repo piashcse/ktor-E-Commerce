@@ -1,6 +1,6 @@
 # Feature Flags
 
-Runtime switches backed by the `feature_flag` table. Super-admins can toggle capabilities without a redeploy.
+Runtime switches that toggle platform capabilities without a redeploy.
 
 ## Endpoints
 

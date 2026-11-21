@@ -1,6 +1,6 @@
 # Support Tickets
 
-Customer support with threaded replies, internal notes, assignment, priorities and resolution.
+Support tickets with replies, attachments, SLAs and CSAT.
 
 ### 1. Customer flow
 

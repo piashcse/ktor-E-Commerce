@@ -1,6 +1,6 @@
 # Dashboard Analytics
 
-This documentation provides comprehensive details for the Dashboard Analytics API endpoints. The API provides aggregate statistics and insights for platform administrators.
+Admin and seller statistics for revenue, orders, users, products and activity.
 
 ## Authentication
 

@@ -1,6 +1,6 @@
 # Brand
 
-This documentation provides comprehensive details for the Brand API endpoints. The API supports creating, retrieving, updating, and deleting brands within the platform. Brands are independent entities that can be associated with products and managed by administrators or authorized users.
+Create, update, list and remove product brands; upload brand logos.
 
 ## Authentication
 

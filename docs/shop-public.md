@@ -1,7 +1,6 @@
 # Public Shop Discovery
 
-Public endpoints for browsing shops. No authentication is required. Shop management and admin
-approval lives in [Shop API](shop.md).
+Public shop discovery; no authentication required.
 
 ## Endpoints
 

@@ -1,6 +1,6 @@
 # Shipping & Carrier
 
-Carrier rate quotes, label purchase, per-line fulfillment, and tracking webhooks.
+Carrier quotes, label purchase, fulfillment and tracking webhooks.
 
 All endpoints except the tracking webhook require Bearer authentication. A customer may read
 their own order's shipments; sellers may quote and purchase labels for their shop; admins may do
@@ -130,6 +130,50 @@ curl -X 'POST' \
   -H 'X-Carrier-Signature: <hmac-or-shared-secret>' \
   -H 'Content-Type: application/json' \
   -d '{"event":"track_updated","data":{"tracking_number":"9400111","tracking_status":{"status":"DELIVERED"}}}'
+```
+
+---
+
+## Endpoint Details
+
+### 5. Retrieve a shipment
+
+**`GET /api/v1/shipments/{id}`**
+
+Retrieve a shipment
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shipments/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "carrier": "string",
+  "service": "string",
+  "trackingNumber": "1Z999AA10123456784",
+  "labelUrl": "string",
+  "rateAmount": "250.00",
+  "currency": "USD",
+  "status": "PENDING",
+  "shippedAt": "2024-05-06T12:00:00",
+  "deliveredAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00",
+  "items": [
+    {
+      "orderItemId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "quantity": 1
+    }
+  ]
+}
 ```
 
 ---

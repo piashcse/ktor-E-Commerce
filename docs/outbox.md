@@ -1,8 +1,6 @@
 # Transactional Outbox & Dead Letters
 
-Domain events are written to `outbox` in the same transaction as the business change, then
-relayed by `OutboxPoller` with consumer acknowledgement. Failures are retried and eventually
-retired to `outbox_dead_letter` for inspection/replay.
+Transactional outbox, dead-letter inspection and replay.
 
 ## Customer-facing event types
 

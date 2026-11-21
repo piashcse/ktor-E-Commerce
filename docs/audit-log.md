@@ -1,6 +1,6 @@
 # Audit Log
 
-This documentation provides comprehensive details for the Audit Log API endpoints. The API provides a centralized, immutable record of all administrative actions for compliance monitoring, security auditing, and operational troubleshooting.
+Immutable audit trail for administrative actions, actors and outcomes.
 
 ## Authentication
 

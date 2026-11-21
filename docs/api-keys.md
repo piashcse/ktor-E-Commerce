@@ -1,6 +1,6 @@
 # API Keys
 
-Scoped API keys allow integrations to call permitted endpoints without a user JWT. Keys use the same `Authorization: Bearer <key>` header as JWTs.
+Create scoped API keys that inherit the owner's effective permissions.
 
 ## Endpoints
 

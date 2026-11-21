@@ -1,6 +1,6 @@
 # Authentication
 
-This documentation provides comprehensive details for the Authentication API endpoints. The API supports user registration, login, password management, token refresh, email verification, and account security features.
+Registration, login, OTP, password reset, refresh tokens, MFA and passkeys.
 
 ### Auth Endpoints
 

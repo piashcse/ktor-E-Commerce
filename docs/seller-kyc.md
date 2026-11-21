@@ -1,7 +1,6 @@
 # Seller KYC
 
-Sellers must submit KYC before requesting payouts. Already-approved sellers are grandfathered as
-`VERIFIED` by migration `V26`.
+Seller identity and bank verification required before payouts.
 
 ## Endpoints
 
@@ -269,6 +268,46 @@ curl -X 'GET' \
     "createdAt": "2024-05-06T12:00:00"
   }
 ]
+```
+
+---
+### 10. Admin: reject KYC
+
+**`PUT /api/v1/admin/sellers/{sellerId}/reject`**
+
+Admin: reject KYC
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/sellers/6c5078d3-f8e3-4c88-9afe-48b5423c664f/reject' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "reason": "Policy violation"
+}'
+```
+
+#### Response
+
+```json
+{
+  "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "email": "jane@example.com",
+  "businessName": "string",
+  "businessRegistrationNumber": "string",
+  "taxId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "bankName": "string",
+  "kycStatus": "NOT_SUBMITTED",
+  "documentUrl": "string",
+  "submittedAt": "2024-05-06T12:00:00",
+  "verifiedAt": "2024-05-06T12:00:00",
+  "rejectionReason": "Policy violation",
+  "shopStatus": "ACTIVE"
+}
 ```
 
 ---

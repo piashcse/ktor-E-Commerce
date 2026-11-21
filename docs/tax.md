@@ -1,8 +1,6 @@
 # Tax Engine
 
-Tax is resolved per order line using zones/nexus, product tax classes, and exemptions.
-Rates are decimal fractions (`0.15` = 15%). Each line snapshots its rate, class and
-inclusive/exclusive mode on `order_item`; the checkout summary returns a per-line breakdown.
+Tax zones, classes, rules and exemptions resolved per order line.
 
 ## Resolution order
 

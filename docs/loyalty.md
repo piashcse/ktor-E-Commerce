@@ -1,6 +1,6 @@
 # Loyalty, Referrals & Gift Cards
 
-A unified wallet for loyalty points, store credit, referral rewards and gift cards.
+Wallet balances, loyalty points, referrals and gift cards.
 
 All endpoints require Bearer authentication.
 

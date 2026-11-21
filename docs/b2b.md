@@ -1,6 +1,17 @@
 # B2B Quotes, Purchase Orders & Net Terms
 
-Wholesale accounts, negotiated quotes, purchase orders with credit limits and payment terms.
+Wholesale accounts, quotes, purchase orders, credit limits and net-term invoices.
+
+## Endpoints
+
+| Method | Endpoint | Description | Authentication Required |
+|--------|----------|-------------|------------------------|
+| `POST` | `/api/v1/b2b/account` | Apply for or update a B2B account | Yes |
+| `POST` | `/api/v1/b2b/quotes` | Request a B2B quote | Yes |
+| `PUT` | `/api/v1/seller/b2b/quotes/{id}` | Seller: price and send/reject a quote | Yes (Seller) |
+| `POST` | `/api/v1/b2b/quotes/{id}/accept` | Accept a quote and create a purchase order | Yes |
+
+## Endpoint Details
 
 ### 1. Accounts
 

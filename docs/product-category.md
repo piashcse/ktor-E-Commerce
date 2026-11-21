@@ -1,6 +1,6 @@
 # Product Category
 
-This documentation provides comprehensive details for the Product Category API endpoints. The API supports creating, retrieving, updating, and deleting product categories within the platform. Product categories can have sub-categories and are managed by administrators or authorized users.
+Create, update, list and remove top-level product categories.
 
 ## Authentication
 

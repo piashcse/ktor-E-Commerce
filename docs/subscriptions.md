@@ -1,6 +1,6 @@
 # Subscriptions & Digital Goods
 
-Recurring plans, invoices and download entitlements for digital products.
+Recurring plans, invoices and digital download entitlements.
 
 ## Plans
 
@@ -27,6 +27,18 @@ Admin CRUD:
 - `POST /api/v1/admin/subscription-plans`
 - `PUT /api/v1/admin/subscription-plans/{id}`
 - `DELETE /api/v1/admin/subscription-plans/{id}` — deactivates
+
+## Endpoints
+
+| Method | Endpoint | Description | Authentication Required |
+|--------|----------|-------------|------------------------|
+| `POST` | `/api/v1/subscriptions` | Subscribe to a plan | Yes |
+| `POST` | `/api/v1/admin/subscriptions/run-billing` | Create renewal invoices for due subscriptions | Yes (Admin) |
+| `POST` | `/api/v1/admin/subscriptions/{id}/activate` | Admin: mark a pending subscription invoice paid and activate | Yes (Admin) |
+| `GET` | `/api/v1/library` | List my digital purchases | Yes |
+| `GET` | `/api/v1/library/{token}/download` | Redeem a digital download | Yes |
+
+## Endpoint Details
 
 ### 1. Subscribing
 

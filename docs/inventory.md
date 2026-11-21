@@ -1,6 +1,6 @@
 # Inventory
 
-This documentation provides comprehensive details for the Inventory API endpoints. The API supports managing inventory records for products.
+Per-shop and per-warehouse stock, low-stock alerts and adjustments.
 
 ## Authentication
 

@@ -1,7 +1,6 @@
 # Warehouses
 
-Sellers can split inventory across physical locations. Every shop receives a `DEFAULT`
-warehouse automatically; existing shops were backfilled by V24.
+Split seller inventory across physical warehouse locations.
 
 ## Endpoints
 

@@ -1,6 +1,6 @@
 # Privacy Policy
 
-This documentation provides comprehensive details for the Privacy Policy API endpoints. The API supports creating, retrieving, updating, and managing privacy policies and terms of conditions within the platform. Policies can be versioned, activated/deactivated, and managed by administrators.
+Policy documents, versions, activation and consent-aware retrieval.
 
 ## Authentication
 

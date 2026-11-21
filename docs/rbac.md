@@ -1,5 +1,7 @@
 # Users, roles and permissions
 
+Database-backed roles, permissions, seller memberships and invitations.
+
 Status: **foundation implemented** (schema, effective-permission resolution, platform role APIs, seller membership APIs).
 
 Scope: platform operators, sellers and customers. B2B company memberships are intentionally out of scope for this phase.

@@ -1,6 +1,6 @@
 # Refund Request
 
-This documentation provides comprehensive details for the Refund Request API endpoints.
+Customer refund requests, evidence upload and seller/admin decisions.
 
 ## Authentication
 

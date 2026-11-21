@@ -1,7 +1,17 @@
 # Funnel & Attribution Analytics
 
-Anonymous storefront events power conversion funnels, UTM/referrer attribution and per-product
-conversion reporting.
+Track anonymous storefront funnels, UTM attribution and product conversion.
+
+## Endpoints
+
+| Method | Endpoint | Description | Authentication Required |
+|--------|----------|-------------|------------------------|
+| `POST` | `/api/v1/analytics/events` | Ingest storefront analytics events | No |
+| `GET` | `/api/v1/admin/analytics/funnel` | Conversion funnel report | Yes (Admin) |
+| `GET` | `/api/v1/admin/analytics/attribution` | UTM/referrer attribution report | Yes (Admin) |
+| `GET` | `/api/v1/admin/analytics/products` | Product view → cart → purchase conversion | Yes (Admin) |
+
+## Endpoint Details
 
 ### 1. Event ingestion
 

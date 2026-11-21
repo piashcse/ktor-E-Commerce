@@ -1,7 +1,6 @@
 # Localization & Localized Checkout
 
-Locale negotiation, translated API messages, localized product content, and locale/currency-aware
-checkout totals.
+Locale negotiation, translated messages, product content and localized checkout.
 
 ## Supported locales
 

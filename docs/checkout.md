@@ -1,6 +1,6 @@
 # Checkout
 
-The Checkout module consolidates the process of finalizing an order, including shipping details, total calculations, and order placement.
+Shipping addresses, shipping methods, summaries and order placement.
 
 ## Consolidated Workflow
 All endpoints are under `/api/v1/checkout` and require `CUSTOMER` authentication, except

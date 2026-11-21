@@ -1,6 +1,6 @@
 # Fraud, Risk & Chargebacks
 
-Velocity rules, blocklists, AVS/CVV capture, 3-D Secure enforcement and dispute records.
+Velocity rules, blocklists, payment risk checks and chargebacks.
 
 All endpoints require an admin Bearer token.
 

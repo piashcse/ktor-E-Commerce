@@ -1,6 +1,6 @@
 # Product Variants & Options
 
-Products can expose purchasable variants (e.g. `T-Shirt / Red / M`) with their own SKU, price, image and stock. Variants are optional; products without variants keep the existing product-level price and inventory.
+Variant SKUs, prices, images, options and per-variant stock.
 
 ## Public endpoints
 

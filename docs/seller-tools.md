@@ -1,7 +1,6 @@
 # Seller Reviews, Disputes & Commission Rules
 
-Marketplace trust and economics: post-delivery seller ratings, buyer/seller disputes and
-scope-aware commission rules.
+Seller reviews, buyer disputes and commission rules.
 
 ## Seller reviews
 

@@ -1,6 +1,6 @@
 # RMA / Returns & Exchanges
 
-Return merchandise authorization (RMA) covers physical returns and exchanges for delivered, paid order items.
+Returns and exchanges for delivered, paid order items.
 
 ## Customer endpoints
 

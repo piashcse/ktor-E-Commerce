@@ -1,6 +1,6 @@
 # Notifications
 
-Notifications are rendered from centralized templates and delivered through a channel dispatcher.
+Inbox, announcements, delivery channels and per-event preferences.
 
 ## Channels
 
