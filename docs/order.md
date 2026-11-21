@@ -10,33 +10,33 @@ All Order endpoints require Bearer token authentication.
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/api/v1/orders` | Retrieve customer orders (offset pagination) | Yes (Customer) |
-| `GET` | `/api/v1/orders/cursor` | Retrieve customer orders with keyset pagination (`cursor` + `limit`) | Yes (Customer) |
-| `GET` | `/api/v1/orders/track` | Public guest tracking (`orderNumber` + `email`) | No |
-| `PATCH` | `/api/v1/orders/status/{id}` | Update status (Customer: RECEIVED/CANCELED; Seller: CONFIRMED/SHIPPED/DELIVERED) | Yes |
-| `POST` | `/api/v1/orders/{id}/cancel` | Cancel an order with reason | Yes (Customer) |
-| `POST` | `/api/v1/orders/{id}/shipping` | Seller: mark a paid order SHIPPED with tracking | Yes (Seller) |
-| `POST` | `/api/v1/admin/orders/{id}/shipping` | Admin: mark a paid order SHIPPED with tracking | Yes (Admin) |
-| `GET` | `/api/v1/seller/orders` | Retrieve seller's shop orders | Yes (Seller) |
-| `PATCH` | `/api/v1/admin/orders/status/{id}` | Update any order status | Yes (Admin) |
-| `POST` | `/api/v1/admin/orders/{id}/cancel` | Cancel any order | Yes (Admin) |
-| `GET` | `/api/v1/admin/orders` | Retrieve all orders with advanced filters | Yes (Admin) |
-| `GET` | `/api/v1/orders/{id}/invoice` | Printable HTML invoice (owner/seller/admin) | Yes |
-| `GET` | `/api/v1/orders/{id}/packing-slip` | Printable HTML packing slip | Yes |
-| `GET` | `/api/v1/admin/orders/export` | Admin: export orders CSV | Yes |
-| `GET` | `/api/v1/admin/orders/{id}` | Admin: get order by ID | Yes |
-| `GET` | `/api/v1/orders/track/invoice` | Guest order invoice | No |
-| `GET` | `/api/v1/orders/track/timeline` | Guest order timeline | No |
-| `GET` | `/api/v1/orders/{id}` | Get order by ID | Yes |
-| `GET` | `/api/v1/orders/{id}/shipments` | List order shipments | Yes |
-| `POST` | `/api/v1/orders/{id}/shipments` | Purchase a shipping label | Yes |
-| `POST` | `/api/v1/orders/{id}/shipping-quotes` | Get shipping rate quotes | Yes |
-| `GET` | `/api/v1/seller/orders/export` | Seller: export orders CSV | Yes |
-| `GET` | `/api/v1/seller/orders/{id}` | Seller: get order by ID | Yes |
-| `POST` | `/api/v1/seller/orders/{id}/cancel` | Seller: cancel order | Yes |
-| `POST` | `/api/v1/seller/orders/{id}/pickup/complete` | Seller: verify pickup code and complete collection | Yes |
-| `POST` | `/api/v1/seller/orders/{id}/pickup/ready` | Seller: mark a pickup order ready | Yes |
-| `POST` | `/api/v1/seller/orders/{id}/shipping` | Seller: mark order shipped | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/orders` | Retrieve customer orders (offset pagination) | Yes (Customer) |
+| <span class="method-badge get">GET</span> | `/api/v1/orders/cursor` | Retrieve customer orders with keyset pagination (`cursor` + `limit`) | Yes (Customer) |
+| <span class="method-badge get">GET</span> | `/api/v1/orders/track` | Public guest tracking (`orderNumber` + `email`) | No |
+| <span class="method-badge patch">PATCH</span> | `/api/v1/orders/status/{id}` | Update status (Customer: RECEIVED/CANCELED; Seller: CONFIRMED/SHIPPED/DELIVERED) | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/orders/{id}/cancel` | Cancel an order with reason | Yes (Customer) |
+| <span class="method-badge post">POST</span> | `/api/v1/orders/{id}/shipping` | Seller: mark a paid order SHIPPED with tracking | Yes (Seller) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/orders/{id}/shipping` | Admin: mark a paid order SHIPPED with tracking | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/orders` | Retrieve seller's shop orders | Yes (Seller) |
+| <span class="method-badge patch">PATCH</span> | `/api/v1/admin/orders/status/{id}` | Update any order status | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/orders/{id}/cancel` | Cancel any order | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/orders` | Retrieve all orders with advanced filters | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/orders/{id}/invoice` | Printable HTML invoice (owner/seller/admin) | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/orders/{id}/packing-slip` | Printable HTML packing slip | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/orders/export` | Admin: export orders CSV | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/orders/{id}` | Admin: get order by ID | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/orders/track/invoice` | Guest order invoice | No |
+| <span class="method-badge get">GET</span> | `/api/v1/orders/track/timeline` | Guest order timeline | No |
+| <span class="method-badge get">GET</span> | `/api/v1/orders/{id}` | Get order by ID | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/orders/{id}/shipments` | List order shipments | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/orders/{id}/shipments` | Purchase a shipping label | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/orders/{id}/shipping-quotes` | Get shipping rate quotes | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/orders/export` | Seller: export orders CSV | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/orders/{id}` | Seller: get order by ID | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/orders/{id}/cancel` | Seller: cancel order | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/orders/{id}/pickup/complete` | Seller: verify pickup code and complete collection | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/orders/{id}/pickup/ready` | Seller: mark a pickup order ready | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/orders/{id}/shipping` | Seller: mark order shipped | Yes |
 
 ---
 
@@ -44,7 +44,10 @@ All Order endpoints require Bearer token authentication.
 
 ### 1. Get Customer Orders
 
-**`GET /api/v1/orders`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/orders</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -56,7 +59,11 @@ curl -X 'GET' \
 
 ### 2. Update Order Status (Customer/Seller)
 
-**`PATCH /api/v1/orders/status/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge patch">PATCH</span>
+  <span class="endpoint-path">/api/v1/orders/status/{id}</span>
+</div>
+
 - **Seller**: `CONFIRMED`, `SHIPPED`, `DELIVERED`
 
 #### Request
@@ -71,7 +78,10 @@ curl -X 'PATCH' \
 
 ### 3. Cancel Order
 
-**`POST /api/v1/orders/{id}/cancel`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/orders/{id}/cancel</span>
+</div>
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -93,7 +103,10 @@ curl -X 'POST' \
 
 ### 4. Get Admin Orders
 
-**`GET /api/v1/admin/orders`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/orders</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -105,7 +118,10 @@ curl -X 'POST' \
 
 ### 5. Cursor-paginated order history
 
-**`GET /api/v1/orders/cursor`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/orders/cursor</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -156,7 +172,10 @@ curl -X 'GET' \
 
 ### 6. Guest order tracking
 
-**`GET /api/v1/orders/track`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/orders/track</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -196,7 +215,10 @@ curl -X 'GET' \
 
 ### 7. Seller: mark order shipped
 
-**`POST /api/v1/orders/{id}/shipping`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/orders/{id}/shipping</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -244,7 +266,10 @@ curl -X 'POST' \
 
 ### 8. Admin - Mark a paid order as shipped
 
-**`POST /api/v1/admin/orders/{id}/shipping`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/orders/{id}/shipping</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -292,7 +317,10 @@ curl -X 'POST' \
 
 ### 9. Seller: list orders
 
-**`GET /api/v1/seller/orders`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/orders</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -350,7 +378,10 @@ curl -X 'GET' \
 
 ### 10. Admin - Update the status of any order
 
-**`PATCH /api/v1/admin/orders/status/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge patch">PATCH</span>
+  <span class="endpoint-path">/api/v1/admin/orders/status/{id}</span>
+</div>
 
 ```bash
 curl -X 'PATCH' \
@@ -394,7 +425,10 @@ curl -X 'PATCH' \
 
 ### 11. Admin - Cancel any order
 
-**`POST /api/v1/admin/orders/{id}/cancel`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/orders/{id}/cancel</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -442,7 +476,10 @@ curl -X 'POST' \
 
 ### 12. Printable order invoice
 
-**`GET /api/v1/orders/{id}/invoice`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/orders/{id}/invoice</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -461,7 +498,10 @@ curl -X 'GET' \
 
 ### 13. Printable packing slip
 
-**`GET /api/v1/orders/{id}/packing-slip`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/orders/{id}/packing-slip</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -480,7 +520,10 @@ curl -X 'GET' \
 
 ### 14. Admin: export orders CSV
 
-**`GET /api/v1/admin/orders/export`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/orders/export</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -500,7 +543,10 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 
 ### 15. Admin: get order by ID
 
-**`GET /api/v1/admin/orders/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/orders/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -544,7 +590,10 @@ curl -X 'GET' \
 
 ### 16. Guest order invoice
 
-**`GET /api/v1/orders/track/invoice`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/orders/track/invoice</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -562,7 +611,10 @@ curl -X 'GET' \
 
 ### 17. Guest order timeline
 
-**`GET /api/v1/orders/track/timeline`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/orders/track/timeline</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -591,7 +643,10 @@ curl -X 'GET' \
 
 ### 18. Get order by ID
 
-**`GET /api/v1/orders/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/orders/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -635,7 +690,10 @@ curl -X 'GET' \
 
 ### 19. List order shipments
 
-**`GET /api/v1/orders/{id}/shipments`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/orders/{id}/shipments</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -675,7 +733,10 @@ curl -X 'GET' \
 
 ### 20. Purchase a shipping label
 
-**`POST /api/v1/orders/{id}/shipments`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/orders/{id}/shipments</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -724,7 +785,10 @@ curl -X 'POST' \
 
 ### 21. Get shipping rate quotes
 
-**`POST /api/v1/orders/{id}/shipping-quotes`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/orders/{id}/shipping-quotes</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -785,7 +849,10 @@ curl -X 'POST' \
 
 ### 22. Seller: export orders CSV
 
-**`GET /api/v1/seller/orders/export`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/orders/export</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -805,7 +872,10 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 
 ### 23. Seller: get order by ID
 
-**`GET /api/v1/seller/orders/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/orders/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -849,7 +919,10 @@ curl -X 'GET' \
 
 ### 24. Seller: cancel order
 
-**`POST /api/v1/seller/orders/{id}/cancel`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/orders/{id}/cancel</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -897,7 +970,10 @@ curl -X 'POST' \
 
 ### 25. Seller: verify pickup code and complete collection
 
-**`POST /api/v1/seller/orders/{id}/pickup/complete`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/orders/{id}/pickup/complete</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -945,7 +1021,10 @@ curl -X 'POST' \
 
 ### 26. Seller: mark a pickup order ready
 
-**`POST /api/v1/seller/orders/{id}/pickup/ready`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/orders/{id}/pickup/ready</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -989,7 +1068,10 @@ curl -X 'POST' \
 
 ### 27. Seller: mark order shipped
 
-**`POST /api/v1/seller/orders/{id}/shipping`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/orders/{id}/shipping</span>
+</div>
 
 ```bash
 curl -X 'POST' \

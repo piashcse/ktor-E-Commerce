@@ -10,13 +10,16 @@ is rejected for new checkout calculations.
 
 | Method | Endpoint | Description | Authentication Required |
 |---|---|---|---|
-| `GET` | `/api/v1/admin/fx-rates` | List stored rates | Yes (Admin) |
-| `PUT` | `/api/v1/admin/fx-rates/{targetCurrency}` | Set/refresh a rate | Yes (Admin) |
-| `GET` | `/api/v1/fx-rates` | List FX rates | No |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/fx-rates` | List stored rates | Yes (Admin) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/fx-rates/{targetCurrency}` | Set/refresh a rate | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/fx-rates` | List FX rates | No |
 
 ### 1. Set FX rate
 
-**`PUT /api/v1/admin/fx-rates/{targetCurrency}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/fx-rates/{targetCurrency}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
@@ -59,7 +62,10 @@ curl -X 'PUT' \
 
 ### 2. List FX rates
 
-**`GET /api/v1/admin/fx-rates`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/fx-rates</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -84,7 +90,10 @@ curl -X 'GET' \
 
 ### 3. List FX rates
 
-**`GET /api/v1/fx-rates`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/fx-rates</span>
+</div>
 
 ```bash
 curl -X 'GET' \

@@ -15,11 +15,11 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/admin/product-categories` | Create a new product category | Yes (Admin) |
-| `GET` | `/api/v1/product-categories` | Retrieve list of product categories | No (public) |
-| `PUT` | `/api/v1/admin/product-categories/{id}` | Update an existing product category | Yes (Admin) |
-| `POST` | `/api/v1/admin/product-categories/{id}/image` | Upload a category image | Yes (Admin) |
-| `DELETE` | `/api/v1/admin/product-categories/{id}` | Delete a product category | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/product-categories` | Create a new product category | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/product-categories` | Retrieve list of product categories | No (public) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/product-categories/{id}` | Update an existing product category | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/product-categories/{id}/image` | Upload a category image | Yes (Admin) |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/product-categories/{id}` | Delete a product category | Yes (Admin) |
 
 ---
 
@@ -27,7 +27,10 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Product Category
 
-**`POST /api/v1/admin/product-categories`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/product-categories</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -64,7 +67,10 @@ curl -X 'POST' \
 
 ### 2. Get Product Categories
 
-**`GET /api/v1/product-categories`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/product-categories</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -111,7 +117,10 @@ curl -X 'GET' \
 
 ### 3. Update Product Category
 
-**`PUT /api/v1/admin/product-categories/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/product-categories/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -153,7 +162,10 @@ curl -X 'PUT' \
 
 ### 4. Delete Product Category
 
-**`DELETE /api/v1/admin/product-categories/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/product-categories/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -228,7 +240,10 @@ All error messages are centralized and consistent across all endpoints.
 
 ### 5. Upload Category Image
 
-**`POST /api/v1/admin/product-categories/{id}/image`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/product-categories/{id}/image</span>
+</div>
 
 #### Multipart Form Data
 

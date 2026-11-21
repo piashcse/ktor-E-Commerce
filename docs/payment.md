@@ -13,13 +13,13 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/payments` | Create a payment intent for an order (server-owned status) | Yes (Customer) |
-| `POST` | `/api/v1/admin/payments/{id}/confirm` | Confirm a pending payment as completed | Yes (Admin) |
-| `POST` | `/api/v1/payments/webhook/{provider}` | Provider webhook with signature verification (public) | No |
-| `GET` | `/api/v1/admin/payments` | Admin - List payments | Yes |
-| `POST` | `/api/v1/admin/payments/{id}/risk` | Record AVS/CVV results for a payment | Yes |
-| `POST` | `/api/v1/admin/webhooks/bulk/replay` | Admin: bulk replay webhooks | Yes |
-| `GET` | `/api/v1/admin/webhooks/{id}` | Admin: inspect a webhook payload | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/payments` | Create a payment intent for an order (server-owned status) | Yes (Customer) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/payments/{id}/confirm` | Confirm a pending payment as completed | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/payments/webhook/{provider}` | Provider webhook with signature verification (public) | No |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/payments` | Admin - List payments | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/payments/{id}/risk` | Record AVS/CVV results for a payment | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/webhooks/bulk/replay` | Admin: bulk replay webhooks | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/webhooks/{id}` | Admin: inspect a webhook payload | Yes |
 
 ---
 
@@ -27,7 +27,10 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Payment
 
-**`POST /api/v1/payments`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/payments</span>
+</div>
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -67,7 +70,10 @@ curl -X 'POST' \
 
 ### 2. Get Payment by ID
 
-**`GET /api/v1/payments/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/payments/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -104,7 +110,10 @@ curl -X 'GET' \
 
 ### 3. Get Payments by Order
 
-**`GET /api/v1/payments/order/{orderId}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/payments/order/{orderId}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -152,7 +161,10 @@ curl -X 'GET' \
 
 ### 4. Admin - List payments
 
-**`GET /api/v1/admin/payments`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/payments</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -205,7 +217,10 @@ curl -X 'GET' \
 
 ### 5. Record AVS/CVV results for a payment
 
-**`POST /api/v1/admin/payments/{id}/risk`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/payments/{id}/risk</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -231,7 +246,10 @@ curl -X 'POST' \
 
 ### 6. Admin: bulk replay webhooks
 
-**`POST /api/v1/admin/webhooks/bulk/replay`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/webhooks/bulk/replay</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -261,7 +279,10 @@ curl -X 'POST' \
 
 ### 7. Admin: inspect a webhook payload
 
-**`GET /api/v1/admin/webhooks/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/webhooks/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -335,8 +356,10 @@ All error messages are centralized and consistent across all endpoints.
 
 ### 8. Confirm Payment (Admin)
 
-**`POST /api/v1/admin/payments/{id}/confirm`**
-
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/payments/{id}/confirm</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -348,7 +371,11 @@ curl -X 'POST' \
 
 ### 9. Provider Webhook
 
-**`POST /api/v1/payments/webhook/{provider}`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/payments/webhook/{provider}</span>
+</div>
+
   300 seconds and can be tuned with `STRIPE_WEBHOOK_TOLERANCE_SECONDS`.
 - Other adapters can use `X-Webhook-Signature`.
 - Deliveries are deduplicated by `(provider, event_id)`, so retries are safe.
@@ -391,13 +418,22 @@ provider payment, the API issues the refund through the processor and stores
 
 ### 10. Release a risk review
 
-**`POST /api/v1/admin/payments/{id}/risk/approve`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/payments/{id}/risk/approve</span>
+</div>
 
 ### 11. Webhook inspection and replay
 
-**`GET /api/v1/admin/webhooks?source=PAYMENT&status=FAILED`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/webhooks?source=PAYMENT&status=FAILED</span>
+</div>
 
-**`POST /api/v1/admin/webhooks/carriers/{id}/replay`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/webhooks/carriers/{id}/replay</span>
+</div>
 
 ## Payment Status Values
 

@@ -20,14 +20,14 @@ Authorization: Bearer <admin_access_token>
 
 | Method | Endpoint | Description | Authentication Required | Role |
 |--------|----------|-------------|------------------------|------|
-| `GET` | `/api/v1/checkout/shipping-method` | Retrieve all available shipping methods | No | Any |
-| `POST` | `/api/v1/admin/shipping-methods` | Create a new shipping method | Yes | Admin |
-| `PUT` | `/api/v1/admin/shipping-methods/{id}` | Update an existing shipping method | Yes | Admin |
-| `DELETE` | `/api/v1/admin/shipping-methods/{id}` | Delete a shipping method | Yes | Admin |
-| `GET` | `/api/v1/seller/shipping-methods` | Seller - List my shipping methods | Yes | Seller |
-| `POST` | `/api/v1/seller/shipping-methods` | Seller - Create a shipping method | Yes | Seller |
-| `DELETE` | `/api/v1/seller/shipping-methods/{id}` | Seller - Delete a shipping method | Yes | Seller |
-| `PUT` | `/api/v1/seller/shipping-methods/{id}` | Seller - Update a shipping method | Yes | Seller |
+| <span class="method-badge get">GET</span> | `/api/v1/checkout/shipping-method` | Retrieve all available shipping methods | No | Any |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/shipping-methods` | Create a new shipping method | Yes | Admin |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/shipping-methods/{id}` | Update an existing shipping method | Yes | Admin |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/shipping-methods/{id}` | Delete a shipping method | Yes | Admin |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/shipping-methods` | Seller - List my shipping methods | Yes | Seller |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/shipping-methods` | Seller - Create a shipping method | Yes | Seller |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/seller/shipping-methods/{id}` | Seller - Delete a shipping method | Yes | Seller |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/shipping-methods/{id}` | Seller - Update a shipping method | Yes | Seller |
 
 ---
 
@@ -35,7 +35,10 @@ Authorization: Bearer <admin_access_token>
 
 ### 1. Get All Shipping Methods
 
-**`GET /api/v1/checkout/shipping-method`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/checkout/shipping-method</span>
+</div>
 
 ```json
 [
@@ -60,7 +63,10 @@ Authorization: Bearer <admin_access_token>
 
 ### 2. Create Shipping Method (Admin)
 
-**`POST /api/v1/admin/shipping-methods`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/shipping-methods</span>
+</div>
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -84,7 +90,10 @@ Authorization: Bearer <admin_access_token>
 
 ### 3. Update Shipping Method (Admin)
 
-**`PUT /api/v1/admin/shipping-methods/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/shipping-methods/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -98,14 +107,20 @@ Same as **Create Shipping Method**.
 
 ### 4. Delete Shipping Method (Admin)
 
-**`DELETE /api/v1/admin/shipping-methods/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/shipping-methods/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the shipping method to delete |
 ### 5. Seller - List my shipping methods
 
-**`GET /api/v1/seller/shipping-methods`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/shipping-methods</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -145,7 +160,10 @@ curl -X 'GET' \
 
 ### 6. Seller - Create a shipping method
 
-**`POST /api/v1/seller/shipping-methods`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/shipping-methods</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -178,7 +196,10 @@ curl -X 'POST' \
 
 ### 7. Seller - Delete a shipping method
 
-**`DELETE /api/v1/seller/shipping-methods/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/seller/shipping-methods/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -199,7 +220,10 @@ curl -X 'DELETE' \
 
 ### 8. Seller - Update a shipping method
 
-**`PUT /api/v1/seller/shipping-methods/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/shipping-methods/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \

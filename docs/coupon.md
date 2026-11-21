@@ -6,29 +6,32 @@ Fixed and percentage discounts, coupon validation and automatic promotions.
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/api/v1/admin/coupons` | Admin - Retrieve a list of all coupons | Yes (Admin) |
-| `POST` | `/api/v1/admin/coupons` | Admin - Create a new discount coupon | Yes (Admin) |
-| `DELETE` | `/api/v1/admin/coupons/{id}` | Admin - Delete a coupon | Yes (Admin) |
-| `PUT` | `/api/v1/admin/coupons/{id}` | Admin - Update an existing coupon | Yes (Admin) |
-| `GET` | `/api/v1/admin/promotions` | Admin: list promotions | Yes (Admin) |
-| `POST` | `/api/v1/admin/promotions` | Admin: create a promotion | Yes (Admin) |
-| `DELETE` | `/api/v1/admin/promotions/{id}` | Admin: deactivate a promotion | Yes (Admin) |
-| `PUT` | `/api/v1/admin/promotions/{id}` | Admin: update a promotion | Yes (Admin) |
-| `GET` | `/api/v1/coupons/{code}` | Retrieve detailed information about a coupon by its code | No |
-| `GET` | `/api/v1/seller/coupons` | Seller - List my shop coupons | Yes (Seller) |
-| `POST` | `/api/v1/seller/coupons` | Seller - Create a shop coupon | Yes (Seller) |
-| `DELETE` | `/api/v1/seller/coupons/{id}` | Seller - Delete a shop coupon | Yes (Seller) |
-| `PUT` | `/api/v1/seller/coupons/{id}` | Seller - Update a shop coupon | Yes (Seller) |
-| `GET` | `/api/v1/seller/promotions` | Seller: list my promotions | Yes (Seller) |
-| `POST` | `/api/v1/seller/promotions` | Seller: create a promotion | Yes (Seller) |
-| `DELETE` | `/api/v1/seller/promotions/{id}` | Seller: deactivate a promotion | Yes (Seller) |
-| `PUT` | `/api/v1/seller/promotions/{id}` | Seller: update a promotion | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/coupons` | Admin - Retrieve a list of all coupons | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/coupons` | Admin - Create a new discount coupon | Yes (Admin) |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/coupons/{id}` | Admin - Delete a coupon | Yes (Admin) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/coupons/{id}` | Admin - Update an existing coupon | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/promotions` | Admin: list promotions | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/promotions` | Admin: create a promotion | Yes (Admin) |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/promotions/{id}` | Admin: deactivate a promotion | Yes (Admin) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/promotions/{id}` | Admin: update a promotion | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/coupons/{code}` | Retrieve detailed information about a coupon by its code | No |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/coupons` | Seller - List my shop coupons | Yes (Seller) |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/coupons` | Seller - Create a shop coupon | Yes (Seller) |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/seller/coupons/{id}` | Seller - Delete a shop coupon | Yes (Seller) |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/coupons/{id}` | Seller - Update a shop coupon | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/promotions` | Seller: list my promotions | Yes (Seller) |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/promotions` | Seller: create a promotion | Yes (Seller) |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/seller/promotions/{id}` | Seller: deactivate a promotion | Yes (Seller) |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/promotions/{id}` | Seller: update a promotion | Yes (Seller) |
 
 ## Endpoint Details
 
 ### 1. Admin - Retrieve a list of all coupons
 
-**`GET /api/v1/admin/coupons`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/coupons</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -76,7 +79,10 @@ curl -X 'GET' \
 
 ### 2. Admin - Create a new discount coupon
 
-**`POST /api/v1/admin/coupons`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/coupons</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -125,7 +131,10 @@ curl -X 'POST' \
 
 ### 3. Admin - Delete a coupon
 
-**`DELETE /api/v1/admin/coupons/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/coupons/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -146,7 +155,10 @@ curl -X 'DELETE' \
 
 ### 4. Admin - Update an existing coupon
 
-**`PUT /api/v1/admin/coupons/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/coupons/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -195,7 +207,10 @@ curl -X 'PUT' \
 
 ### 5. Admin: list promotions
 
-**`GET /api/v1/admin/promotions`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/promotions</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -243,7 +258,10 @@ curl -X 'GET' \
 
 ### 6. Admin: create a promotion
 
-**`POST /api/v1/admin/promotions`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/promotions</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -291,7 +309,10 @@ curl -X 'POST' \
 
 ### 7. Admin: deactivate a promotion
 
-**`DELETE /api/v1/admin/promotions/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/promotions/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -312,7 +333,10 @@ curl -X 'DELETE' \
 
 ### 8. Admin: update a promotion
 
-**`PUT /api/v1/admin/promotions/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/promotions/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -360,7 +384,10 @@ curl -X 'PUT' \
 
 ### 9. Retrieve detailed information about a coupon by its code
 
-**`GET /api/v1/coupons/{code}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/coupons/{code}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -393,7 +420,10 @@ curl -X 'GET' \
 
 ### 10. Seller - List my shop coupons
 
-**`GET /api/v1/seller/coupons`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/coupons</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -441,7 +471,10 @@ curl -X 'GET' \
 
 ### 11. Seller - Create a shop coupon
 
-**`POST /api/v1/seller/coupons`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/coupons</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -490,7 +523,10 @@ curl -X 'POST' \
 
 ### 12. Seller - Delete a shop coupon
 
-**`DELETE /api/v1/seller/coupons/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/seller/coupons/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -511,7 +547,10 @@ curl -X 'DELETE' \
 
 ### 13. Seller - Update a shop coupon
 
-**`PUT /api/v1/seller/coupons/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/coupons/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -560,7 +599,10 @@ curl -X 'PUT' \
 
 ### 14. Seller: list my promotions
 
-**`GET /api/v1/seller/promotions`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/promotions</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -608,7 +650,10 @@ curl -X 'GET' \
 
 ### 15. Seller: create a promotion
 
-**`POST /api/v1/seller/promotions`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/promotions</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -656,7 +701,10 @@ curl -X 'POST' \
 
 ### 16. Seller: deactivate a promotion
 
-**`DELETE /api/v1/seller/promotions/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/seller/promotions/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -677,7 +725,10 @@ curl -X 'DELETE' \
 
 ### 17. Seller: update a promotion
 
-**`PUT /api/v1/seller/promotions/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/promotions/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \

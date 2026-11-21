@@ -1,224 +1,201 @@
 # Product Sub Category
 
-Create, update, list and remove product subcategories.
+Create, update, list and remove product subcategories linked to parent product categories.
+
+---
 
 ## Authentication
 
-This documentation provides comprehensive details for the Product Sub Category API endpoints. The
-public listing endpoint is unauthenticated; create/update/delete require an admin token.
+- **Public**: `GET /api/v1/product-subcategories` requires no authentication.
+- **Admin**: All mutating endpoints (`POST`, `PUT`, `DELETE`) require an authenticated `ADMIN` account with `catalog:manage` permission:
 
+```http
+Authorization: Bearer <admin_access_token>
 ```
-Authorization: Bearer <your_access_token>
-```
 
-### Product Sub Category Endpoints
+---
 
-| Method | Endpoint | Description | Authentication Required |
-|--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/admin/product-subcategories` | Create a new product sub category | Yes (Admin) |
-| `GET` | `/api/v1/product-subcategories` | Retrieve list of product sub categories (public) | No |
-| `PUT` | `/api/v1/admin/product-subcategories/{id}` | Update an existing product sub category | Yes (Admin) |
-| `DELETE` | `/api/v1/admin/product-subcategories/{id}` | Delete a product sub category | Yes (Admin) |
+## Product Sub Category Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|:---|:---|:---|:---|
+| <span class="method-badge get">GET</span> | `/api/v1/product-subcategories` | Retrieve subcategories for a category | <span class="auth-badge public">Public</span> |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/product-subcategories` | Create a new product subcategory | <span class="badge-req">Admin + catalog:manage</span> |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/product-subcategories/{id}` | Update an existing subcategory name | <span class="badge-req">Admin + catalog:manage</span> |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/product-subcategories/{id}` | Delete a product subcategory | <span class="badge-req">Admin + catalog:manage</span> |
 
 ---
 
 ## Endpoint Details
 
-### 1. Create Product Sub Category
+### 1. Get Product Sub Categories
 
-**`POST /api/v1/admin/product-subcategories`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/product-subcategories</span>
+  <span class="auth-badge public">Public / No Auth Required</span>
+</div>
+
+Retrieves all subcategories associated with a mandatory parent category UUID.
+
+#### Query Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | Yes | Name of the product sub category |
-| `categoryId` | string | Yes | UUID of the product category to associate with |
+|:---|:---|:---|:---|
+| `categoryId` | string | <span class="badge-req">Required</span> | UUID of the parent product category |
+| `page` / `offset` | integer | <span class="badge-opt">Optional</span> | Page number (default: 1) or offset (default: 0) |
+| `perPage` / `limit` | integer | <span class="badge-opt">Optional</span> | Items per page (default: 20) |
 
-#### Headers
+#### Request Examples
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-| `Content-Type` | `application/json` | Yes |
+=== "cURL"
+    ```bash
+    curl -X GET 'http://localhost:8080/api/v1/product-subcategories?categoryId=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&page=1&perPage=20' \
+      -H 'Accept: application/json'
+    ```
 
-#### Request
-
-```bash
-curl -X 'POST' \
-  'http://localhost:8080/api/v1/admin/product-subcategories' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
-  "name": "Paper"
-}'
-```
+=== "TypeScript (Fetch)"
+    ```typescript
+    const res = await fetch("http://localhost:8080/api/v1/product-subcategories?categoryId=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f");
+    const subCategories = await res.json();
+    ```
 
 #### Response
 
-```json
-{
-    "id": "751cef10-f98a-4ecc-ae03-4173830a626d",
-    "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
-    "name": "Paper"
-  }
-}
-```
+=== "200 OK"
+    ```json
+    [
+      {
+        "id": "751cef10-f98a-4ecc-ae03-4173830a626d",
+        "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
+        "name": "Paper"
+      }
+    ]
+    ```
+
+=== "400 Bad Request (Missing categoryId)"
+    ```json
+    {
+      "message": "Missing required query parameter: categoryId"
+    }
+    ```
 
 ---
 
-### 2. Get Product Sub Categories
+### 2. Create Product Sub Category
 
-**`GET /api/v1/product-subcategories`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/product-subcategories</span>
+  <span class="auth-badge">Admin Token Required</span>
+</div>
+
+Creates a new subcategory linked to an existing parent category.
+
+#### Request Body Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `categoryId` | string | No | Filter by category ID (returns sub categories for that category) |
-| `limit` | number | No | Maximum number of sub-categories to return (default: 20) |
-| `offset` | number | No | Number of sub-categories to skip for pagination (default: 0) |
+|:---|:---|:---|:---|
+| `categoryId` | string | <span class="badge-req">Required</span> | UUID of the parent category |
+| `name` | string | <span class="badge-req">Required</span> | Subcategory display title |
 
-#### Headers
+#### Request Examples
 
-No authentication required (public).
-
-#### Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/product-subcategories?categoryId=b8ccc13f-e118-4540-8e9e-5eaa8028cb4f&limit=10' \
-  -H 'accept: application/json'
-```
+=== "cURL"
+    ```bash
+    curl -X POST 'http://localhost:8080/api/v1/admin/product-subcategories' \
+      -H 'Accept: application/json' \
+      -H 'Content-Type: application/json' \
+      -H 'Authorization: Bearer <admin_access_token>' \
+      -d '{
+        "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
+        "name": "Notebooks"
+      }'
+    ```
 
 #### Response
 
-```json
-[
+=== "201 Created"
+    ```json
     {
       "id": "751cef10-f98a-4ecc-ae03-4173830a626d",
       "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
-      "name": "Paper"
+      "name": "Notebooks"
     }
-  ]
-}
-```
+    ```
 
 ---
 
 ### 3. Update Product Sub Category
 
-**`PUT /api/v1/admin/product-subcategories/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/product-subcategories/{id}</span>
+  <span class="auth-badge">Admin Token Required</span>
+</div>
+
+Updates the name of an existing product subcategory. The new name can be passed as a JSON body parameter or URL query parameter.
+
+#### Path & Query Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the product sub category to update |
+|:---|:---|:---|:---|
+| `id` | string (path) | <span class="badge-req">Required</span> | UUID of the subcategory to update |
+| `name` | string (query/body) | <span class="badge-req">Required</span> | Updated name |
 
-#### Query Parameters
+#### Request Examples
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `name` | string | Yes | New name for the product sub category |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-
-#### Request
-
-```bash
-curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/product-subcategories/751cef10-f98a-4ecc-ae03-4173830a626d?name=Pencil' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
+=== "cURL"
+    ```bash
+    curl -X PUT 'http://localhost:8080/api/v1/admin/product-subcategories/751cef10-f98a-4ecc-ae03-4173830a626d?name=Premium+Paper' \
+      -H 'Accept: application/json' \
+      -H 'Authorization: Bearer <admin_access_token>'
+    ```
 
 #### Response
 
-```json
-{
-    "id": "751cef10-f98a-4ecc-ae03-4173830a626d",
-    "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
-    "name": "Pencil"
-  }
-}
-```
+=== "200 OK"
+    ```json
+    {
+      "id": "751cef10-f98a-4ecc-ae03-4173830a626d",
+      "categoryId": "b8ccc13f-e118-4540-8e9e-5eaa8028cb4f",
+      "name": "Premium Paper"
+    }
+    ```
 
 ---
 
 ### 4. Delete Product Sub Category
 
-**`DELETE /api/v1/admin/product-subcategories/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/product-subcategories/{id}</span>
+  <span class="auth-badge">Admin Token Required</span>
+</div>
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier of the product sub category to delete |
+Permanently removes a product subcategory.
 
-#### Headers
+#### Request Examples
 
-| Header | Value | Required |
-|--------|-------|----------|
-| `Authorization` | `Bearer <access_token>` | Yes |
-
-#### Request
-
-```bash
-curl -X 'DELETE' \
-  'http://localhost:8080/api/v1/admin/product-subcategories/751cef10-f98a-4ecc-ae03-4173830a626d' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
-```
+=== "cURL"
+    ```bash
+    curl -X DELETE 'http://localhost:8080/api/v1/admin/product-subcategories/751cef10-f98a-4ecc-ae03-4173830a626d' \
+      -H 'Accept: application/json' \
+      -H 'Authorization: Bearer <admin_access_token>'
+    ```
 
 #### Response
 
-```json
-{
-  "message": "Subcategory deleted successfully"
-}
-```
+=== "200 OK"
+    ```json
+    {
+      "message": "Subcategory deleted successfully"
+    }
+    ```
 
 ---
 
 ## Error Handling
 
-This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
-
-### Success Responses
-- **HTTP status code indicates success** (200, 201, 204)
-- **Response body contains data directly** (no wrapper object)
-- No `isSuccess` or `statusCode` fields needed
-
-#### Error Responses
-
-**Standard Error (400/401/403/404/500):**
-```json
-{
-  "message": "Error description"
-}
-```
-
-**Validation Error (400):**
-```json
-{
-  "message": "Validation failed",
-  "errors": [
-    {"field": "email", "message": "Invalid email format"},
-    {"field": "password", "message": "Password must be at least 8 characters"}
-  ]
-}
-```
-
-### Common Error Codes
-
-| Status Code | Description | Example Message |
-|-------------|-------------|-----------------|
-| `400` | Bad Request | `"Invalid email or password"` |
-| `401` | Unauthorized | `"Authentication required"` |
-| `403` | Forbidden | `"Insufficient permissions"` |
-| `404` | Not Found | `"Product not found"` |
-| `409` | Conflict | `"User already exists with this email"` |
-| `500` | Internal Server Error | `"Internal server error"` |
-
-All error messages are centralized and consistent across all endpoints.
-
----
+!!! tip "Standard Error Responses"
+    For error payload structures, common status codes (`400`, `401`, `403`, `404`), and validation failure schemas, see the **[Error Handling & Status Codes Guide](errors.md)**.

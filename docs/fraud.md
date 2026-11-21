@@ -8,21 +8,21 @@ All endpoints require an admin Bearer token.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/admin/fraud/rules` | List velocity rules |
-| `POST` | `/api/v1/admin/fraud/rules` | Create a rule |
-| `PUT` | `/api/v1/admin/fraud/rules/{id}` | Update a rule |
-| `DELETE` | `/api/v1/admin/fraud/rules/{id}` | Delete a rule |
-| `GET` | `/api/v1/admin/fraud/blocklist` | List blocklist entries |
-| `POST` | `/api/v1/admin/fraud/blocklist` | Add a blocklist entry |
-| `DELETE` | `/api/v1/admin/fraud/blocklist/{id}` | Delete a blocklist entry |
-| `GET` | `/api/v1/admin/fraud/high-risk` | List payments flagged for review/block |
-| `POST` | `/api/v1/admin/payments/{id}/risk` | Record AVS/CVV results |
-| `GET` | `/api/v1/admin/chargebacks` | List chargebacks |
-| `POST` | `/api/v1/admin/chargebacks` | Record a chargeback |
-| `GET` | `/api/v1/admin/chargebacks/{id}` | Retrieve a chargeback |
-| `PUT` | `/api/v1/admin/chargebacks/{id}` | Update status/outcome |
-| `GET` | `/api/v1/admin/chargebacks/export` | Export chargebacks CSV |
-| `POST` | `/api/v1/admin/chargebacks/{id}/evidence` | Attach evidence to a chargeback |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/fraud/rules` | List velocity rules |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/fraud/rules` | Create a rule |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/fraud/rules/{id}` | Update a rule |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/fraud/rules/{id}` | Delete a rule |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/fraud/blocklist` | List blocklist entries |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/fraud/blocklist` | Add a blocklist entry |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/fraud/blocklist/{id}` | Delete a blocklist entry |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/fraud/high-risk` | List payments flagged for review/block |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/payments/{id}/risk` | Record AVS/CVV results |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/chargebacks` | List chargebacks |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/chargebacks` | Record a chargeback |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/chargebacks/{id}` | Retrieve a chargeback |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/chargebacks/{id}` | Update status/outcome |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/chargebacks/export` | Export chargebacks CSV |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/chargebacks/{id}/evidence` | Attach evidence to a chargeback |
 
 ---
 
@@ -123,7 +123,10 @@ curl -X POST 'http://localhost:8080/api/v1/admin/payments/payment-uuid/risk/appr
 
 ### 1. List fraud velocity rules
 
-**`GET /api/v1/admin/fraud/rules`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/fraud/rules</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -153,7 +156,10 @@ curl -X 'GET' \
 
 ### 2. Create a fraud velocity rule
 
-**`POST /api/v1/admin/fraud/rules`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/fraud/rules</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -191,7 +197,10 @@ curl -X 'POST' \
 
 ### 3. Update a fraud velocity rule
 
-**`PUT /api/v1/admin/fraud/rules/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/fraud/rules/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -229,7 +238,10 @@ curl -X 'PUT' \
 
 ### 4. Delete a fraud velocity rule
 
-**`DELETE /api/v1/admin/fraud/rules/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/fraud/rules/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -250,7 +262,10 @@ curl -X 'DELETE' \
 
 ### 5. List blocklist entries
 
-**`GET /api/v1/admin/fraud/blocklist`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/fraud/blocklist</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -279,7 +294,10 @@ curl -X 'GET' \
 
 ### 6. Add a blocklist entry
 
-**`POST /api/v1/admin/fraud/blocklist`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/fraud/blocklist</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -314,7 +332,10 @@ curl -X 'POST' \
 
 ### 7. Delete a blocklist entry
 
-**`DELETE /api/v1/admin/fraud/blocklist/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/fraud/blocklist/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -335,7 +356,10 @@ curl -X 'DELETE' \
 
 ### 8. List payments flagged for review or blocked
 
-**`GET /api/v1/admin/fraud/high-risk`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/fraud/high-risk</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -388,7 +412,10 @@ curl -X 'GET' \
 
 ### 9. Record AVS/CVV results for a payment
 
-**`POST /api/v1/admin/payments/{id}/risk`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/payments/{id}/risk</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -414,7 +441,10 @@ curl -X 'POST' \
 
 ### 10. List chargebacks
 
-**`GET /api/v1/admin/chargebacks`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/chargebacks</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -462,7 +492,10 @@ curl -X 'GET' \
 
 ### 11. Record a chargeback/dispute
 
-**`POST /api/v1/admin/chargebacks`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/chargebacks</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -504,7 +537,10 @@ curl -X 'POST' \
 
 ### 12. Retrieve a chargeback
 
-**`GET /api/v1/admin/chargebacks/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/chargebacks/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -538,7 +574,10 @@ curl -X 'GET' \
 
 ### 13. Update a chargeback status/outcome
 
-**`PUT /api/v1/admin/chargebacks/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/chargebacks/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -578,7 +617,10 @@ curl -X 'PUT' \
 
 ### 14. Export chargebacks CSV
 
-**`GET /api/v1/admin/chargebacks/export`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/chargebacks/export</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -598,7 +640,10 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 
 ### 15. Attach evidence to a chargeback
 
-**`POST /api/v1/admin/chargebacks/{id}/evidence`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/chargebacks/{id}/evidence</span>
+</div>
 
 ```bash
 curl -X 'POST' \

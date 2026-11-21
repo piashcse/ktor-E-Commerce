@@ -10,12 +10,12 @@ All Inventory endpoints require Bearer token authentication for sellers and admi
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/seller/inventories` | Create a new inventory record | Yes (Seller) |
-| `PUT` | `/api/v1/seller/inventories/stock/{productId}` | Update product stock quantity | Yes (Seller) |
-| `GET` | `/api/v1/seller/inventories/product/{productId}` | Retrieve inventory item details by product ID | Yes (Seller) |
-| `GET` | `/api/v1/seller/inventories/shop/{shopId}` | Retrieve all inventory items for a shop | Yes (Seller) |
-| `GET` | `/api/v1/seller/inventories/low-stock` | Retrieve items with stock below a threshold | Yes (Seller) |
-| `GET` | `/api/v1/admin/inventories` | List inventory across all shops | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/inventories` | Create a new inventory record | Yes (Seller) |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/inventories/stock/{productId}` | Update product stock quantity | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/inventories/product/{productId}` | Retrieve inventory item details by product ID | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/inventories/shop/{shopId}` | Retrieve all inventory items for a shop | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/inventories/low-stock` | Retrieve items with stock below a threshold | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/inventories` | List inventory across all shops | Yes (Admin) |
 
 ---
 
@@ -23,7 +23,10 @@ All Inventory endpoints require Bearer token authentication for sellers and admi
 
 ### 1. Update Product Stock (Seller)
 
-**`PUT /api/v1/seller/inventories/stock/{productId}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/inventories/stock/{productId}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -45,7 +48,10 @@ curl -X 'PUT' \
 
 ### 2. Get Low Stock Records
 
-**`GET /api/v1/seller/inventories/low-stock`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/inventories/low-stock</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -55,8 +61,10 @@ curl -X 'GET' \
 
 ### 3. Admin inventory
 
-**`GET /api/v1/admin/inventories`**
-
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/inventories</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -68,8 +76,10 @@ curl -X 'GET' \
 
 ### 4. Create or update inventory
 
-**`POST /api/v1/seller/inventories`**
-
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/inventories</span>
+</div>
 
 #### Request
 
@@ -117,7 +127,10 @@ curl -X 'POST' \
 
 ### 5. Get product inventory
 
-**`GET /api/v1/seller/inventories/product/{productId}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/inventories/product/{productId}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -152,7 +165,10 @@ curl -X 'GET' \
 
 ### 6. List shop inventory
 
-**`GET /api/v1/seller/inventories/shop/{shopId}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/inventories/shop/{shopId}</span>
+</div>
 
 ```bash
 curl -X 'GET' \

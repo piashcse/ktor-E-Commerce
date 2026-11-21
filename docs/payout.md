@@ -6,31 +6,31 @@ Seller balances, payout requests, statements and admin settlement.
 
 | Method | Endpoint | Description | Authentication Required |
 |---|---|---|---|
-| `GET` | `/api/v1/seller/payouts` | Payout ledger rows | Yes (Seller) |
-| `GET` | `/api/v1/seller/payouts/balance` | Available and pending amounts | Yes (Seller) |
-| `POST` | `/api/v1/seller/payouts/request` | Request a payout | Yes (Seller) |
-| `GET` | `/api/v1/seller/payouts/statement?from=&to=` | Sales/commission/payout/tax statement | Yes (Seller) |
-| `GET` | `/api/v1/seller/payouts/statement/export?from=&to=` | Statement CSV export | Yes (Seller) |
-| `GET` | `/api/v1/seller/payouts/requests` | Seller: list payout requests | Yes |
-| `GET` | `/api/v1/seller/payouts/requests/{id}` | Seller: payout request detail | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/payouts` | Payout ledger rows | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/payouts/balance` | Available and pending amounts | Yes (Seller) |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/payouts/request` | Request a payout | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/payouts/statement?from=&to=` | Sales/commission/payout/tax statement | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/payouts/statement/export?from=&to=` | Statement CSV export | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/payouts/requests` | Seller: list payout requests | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/payouts/requests/{id}` | Seller: payout request detail | Yes |
 
 ## Admin endpoints
 
 | Method | Endpoint | Description | Authentication Required |
 |---|---|---|---|
-| `GET` | `/api/v1/admin/payouts` | List all payout requests (optional `status` filter) | Yes (Admin) |
-| `GET` | `/api/v1/admin/payouts/export` | Export payouts as CSV | Yes (Admin) |
-| `POST` | `/api/v1/admin/payouts/{id}/approve` | Approve a requested payout | Yes (Admin) |
-| `POST` | `/api/v1/admin/payouts/{id}/reject` | Reject a requested payout | Yes (Admin) |
-| `POST` | `/api/v1/admin/payouts/{id}/pay` | Mark an approved payout as paid | Yes (Admin) |
-| `GET` | `/api/v1/admin/payouts/requests` | Admin: list payout requests | Yes |
-| `POST` | `/api/v1/admin/payouts/requests/bulk/approve` | Admin: bulk approve payout requests | Yes |
-| `POST` | `/api/v1/admin/payouts/requests/bulk/pay` | Admin: bulk mark payout requests paid | Yes |
-| `POST` | `/api/v1/admin/payouts/requests/bulk/reject` | Admin: bulk reject payout requests | Yes |
-| `GET` | `/api/v1/admin/payouts/requests/{id}` | Admin: payout request detail | Yes |
-| `POST` | `/api/v1/admin/payouts/requests/{id}/approve` | Admin: approve a payout request | Yes |
-| `POST` | `/api/v1/admin/payouts/requests/{id}/pay` | Admin: mark a payout request paid | Yes |
-| `POST` | `/api/v1/admin/payouts/requests/{id}/reject` | Admin: reject a payout request | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/payouts` | List all payout requests (optional `status` filter) | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/payouts/export` | Export payouts as CSV | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/payouts/{id}/approve` | Approve a requested payout | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/payouts/{id}/reject` | Reject a requested payout | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/payouts/{id}/pay` | Mark an approved payout as paid | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/payouts/requests` | Admin: list payout requests | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/payouts/requests/bulk/approve` | Admin: bulk approve payout requests | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/payouts/requests/bulk/pay` | Admin: bulk mark payout requests paid | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/payouts/requests/bulk/reject` | Admin: bulk reject payout requests | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/payouts/requests/{id}` | Admin: payout request detail | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/payouts/requests/{id}/approve` | Admin: approve a payout request | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/payouts/requests/{id}/pay` | Admin: mark a payout request paid | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/payouts/requests/{id}/reject` | Admin: reject a payout request | Yes |
 
 ## Lifecycle
 
@@ -71,7 +71,10 @@ curl -X 'POST' \
 
 ### 1. Seller: list payouts
 
-**`GET /api/v1/seller/payouts`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/payouts</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -125,7 +128,10 @@ curl -X 'GET' \
 
 ### 2. Seller: available balance
 
-**`GET /api/v1/seller/payouts/balance`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/payouts/balance</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -149,7 +155,10 @@ curl -X 'GET' \
 
 ### 3. Seller: request payout
 
-**`POST /api/v1/seller/payouts/request`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/payouts/request</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -196,7 +205,10 @@ curl -X 'POST' \
 
 ### 4. Seller: payout statement
 
-**`GET /api/v1/seller/payouts/statement`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/payouts/statement</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -239,7 +251,10 @@ curl -X 'GET' \
 
 ### 5. Seller: export statement CSV
 
-**`GET /api/v1/seller/payouts/statement/export`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/payouts/statement/export</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -259,7 +274,10 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 
 ### 6. Seller: list payout requests
 
-**`GET /api/v1/seller/payouts/requests`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/payouts/requests</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -305,7 +323,10 @@ curl -X 'GET' \
 
 ### 7. Seller: payout request detail
 
-**`GET /api/v1/seller/payouts/requests/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/payouts/requests/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -362,7 +383,10 @@ curl -X 'GET' \
 ---
 ### 8. Admin: list payouts
 
-**`GET /api/v1/admin/payouts`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/payouts</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -416,7 +440,10 @@ curl -X 'GET' \
 
 ### 9. Admin: export payouts CSV
 
-**`GET /api/v1/admin/payouts/export`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/payouts/export</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -436,7 +463,10 @@ example-id,PAID,250.00,USD,2024-05-06T12:00:00
 
 ### 10. Admin: approve payout row
 
-**`POST /api/v1/admin/payouts/{id}/approve`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/payouts/{id}/approve</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -476,7 +506,10 @@ curl -X 'POST' \
 
 ### 11. Admin: reject payout row
 
-**`POST /api/v1/admin/payouts/{id}/reject`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/payouts/{id}/reject</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -520,7 +553,10 @@ curl -X 'POST' \
 
 ### 12. Admin: mark payout row paid
 
-**`POST /api/v1/admin/payouts/{id}/pay`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/payouts/{id}/pay</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -560,7 +596,10 @@ curl -X 'POST' \
 
 ### 13. Admin: list payout requests
 
-**`GET /api/v1/admin/payouts/requests`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/payouts/requests</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -606,7 +645,10 @@ curl -X 'GET' \
 
 ### 14. Admin: bulk approve payout requests
 
-**`POST /api/v1/admin/payouts/requests/bulk/approve`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/payouts/requests/bulk/approve</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -636,7 +678,10 @@ curl -X 'POST' \
 
 ### 15. Admin: bulk mark payout requests paid
 
-**`POST /api/v1/admin/payouts/requests/bulk/pay`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/payouts/requests/bulk/pay</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -666,7 +711,10 @@ curl -X 'POST' \
 
 ### 16. Admin: bulk reject payout requests
 
-**`POST /api/v1/admin/payouts/requests/bulk/reject`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/payouts/requests/bulk/reject</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -696,7 +744,10 @@ curl -X 'POST' \
 
 ### 17. Admin: payout request detail
 
-**`GET /api/v1/admin/payouts/requests/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/payouts/requests/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -754,7 +805,10 @@ curl -X 'GET' \
 
 ### 18. Admin: approve a payout request
 
-**`POST /api/v1/admin/payouts/requests/{id}/approve`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/payouts/requests/{id}/approve</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -786,7 +840,10 @@ curl -X 'POST' \
 
 ### 19. Admin: mark a payout request paid
 
-**`POST /api/v1/admin/payouts/requests/{id}/pay`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/payouts/requests/{id}/pay</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -818,7 +875,10 @@ curl -X 'POST' \
 
 ### 20. Admin: reject a payout request
 
-**`POST /api/v1/admin/payouts/requests/{id}/reject`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/payouts/requests/{id}/reject</span>
+</div>
 
 ```bash
 curl -X 'POST' \

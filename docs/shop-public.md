@@ -6,10 +6,10 @@ Public shop discovery; no authentication required.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/shops/{id}` | Retrieve a shop by ID (only `APPROVED` shops are public) |
-| `GET` | `/api/v1/shops/public` | List public shops with filters and pagination |
-| `GET` | `/api/v1/shops/category/{categoryId}` | List public shops in a category |
-| `GET` | `/api/v1/shops/featured` | List featured shops |
+| <span class="method-badge get">GET</span> | `/api/v1/shops/{id}` | Retrieve a shop by ID (only `APPROVED` shops are public) |
+| <span class="method-badge get">GET</span> | `/api/v1/shops/public` | List public shops with filters and pagination |
+| <span class="method-badge get">GET</span> | `/api/v1/shops/category/{categoryId}` | List public shops in a category |
+| <span class="method-badge get">GET</span> | `/api/v1/shops/featured` | List featured shops |
 
 ## Filters
 
@@ -32,7 +32,10 @@ public detail endpoint and are excluded from all public lists.
 
 ### 1. Retrieve detailed information about a specific shop
 
-**`GET /api/v1/shops/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/shops/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -70,7 +73,10 @@ curl -X 'GET' \
 
 ### 2. Retrieve public shops with filters (public)
 
-**`GET /api/v1/shops/public`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/shops/public</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -122,7 +128,10 @@ curl -X 'GET' \
 
 ### 3. Retrieve shops by category (public)
 
-**`GET /api/v1/shops/category/{categoryId}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/shops/category/{categoryId}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -174,7 +183,10 @@ curl -X 'GET' \
 
 ### 4. Retrieve featured shops (public)
 
-**`GET /api/v1/shops/featured`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/shops/featured</span>
+</div>
 
 ```bash
 curl -X 'GET' \

@@ -1,92 +1,149 @@
 site_name: Ktor-E-Commerce
-site_description: Ktor-E-Commerce is a high performance backend solution for modern e-commerce applications, built with JetBrain's ktor.
-
-theme:
-  name: material
-  icon:
-    logo: material/library
-  palette:
-    - media: "(prefers-color-scheme)"
-      toggle:
-        icon: material/brightness-auto
-        name: Switch to light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: green
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: green
-      toggle:
-        icon: material/brightness-4
-        name: Switch to system preference
-  features:
-   - navigation.tabs  # 👈 enables top tab bar
-  hide:
-   - navigation
-
-nav:
-  - Home: index.md
-  - API Reference:
-      - Auth: auth.md
-      - Users, Roles & Permissions: rbac.md
-      - Profile: profile.md
-      - Shop Category: shop-category.md
-      - Shop: shop.md
-      - Shop Public: shop-public.md
-      - Brand: brand.md
-      - Product Category: product-category.md
-      - Product Sub Category: product-sub-category.md
-      - Product: product.md
-      - Product Variants: product-variants.md
-      - Recommendations: recommendations.md
-      - Review Rating: review-rating.md
-      - WishList: wishlist.md
-      - Cart: cart.md
-      - Checkout: checkout.md
-      - Order: order.md
-      - Payment: payment.md
-      - Coupon: coupon.md
-      - Shipping Address: shipping-address.md
-      - Shipping Method: shipping-method.md
-      - Shipments: shipping.md
-      - Inventory: inventory.md
-      - Warehouses: warehouse.md
-      - Refund Request: refund-request.md
-      - RMA / Returns: rma.md
-      - Notifications: notification.md
-      - Seller KYC: seller-kyc.md
-      - Seller Reviews & Commission: seller-tools.md
-      - Payouts & Statements: payout.md
-      - Tax Rules: tax.md
-      - Fraud & Chargebacks: fraud.md
-      - Loyalty & Wallet: loyalty.md
-      - Localization: localization.md
-      - Subscriptions: subscriptions.md
-      - B2B Quotes & POs: b2b.md
-      - BOPIS, POS & Stores: omnichannel.md
-      - CMS, SEO & Sitemap: cms.md
-      - Support Tickets: support.md
-      - FX Rates: fx.md
-      - API Keys: api-keys.md
-      - Feature Flags: feature-flags.md
-      - Outbox & DLQ: outbox.md
-      - Privacy Policy: privacy-policy.md
-      - Data Retention: privacy-retention.md
-      - Privacy Policy Consent: privacy-policy-consent.md
-      - Dashboard: dashboard.md
-      - Analytics: analytics.md
-      - Audit Log: audit-log.md
-  - Changelog: changelog.md
-
+site_description: High-performance e-commerce backend solution built with Kotlin and Ktor.
 site_url: https://piashcse.github.io/ktor-E-Commerce/
 repo_url: https://github.com/piashcse/ktor-E-Commerce
 edit_uri: edit/main/docs/
 
+theme:
+  name: material
+  icon:
+    logo: material/storefront-outline
+    repo: fontawesome/brands/github
+  palette:
+    # Auto system preference
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: green
+      accent: green
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: green
+      accent: green
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to system preference
+
+  features:
+    - navigation.tabs              # Top navigation bar
+    - navigation.tabs.sticky       # Keeps navigation tabs visible on scroll
+    - navigation.sections          # Groups nav items into clean collapsible sections
+    - navigation.expand            # Auto-expands active sections
+    - navigation.path              # Breadcrumb navigation path at top of content
+    - navigation.top               # 'Back to top' floating button
+    - navigation.tracking          # Updates URL hash dynamically as you scroll
+    - navigation.instant           # SPA-like instant page loading
+    - navigation.instant.progress  # Loading progress bar for instant navigation
+    - toc.follow                   # Right-hand TOC scrolls alongside reader
+    - search.suggest               # Intelligent search query suggestions
+    - search.highlight             # Highlights searched terms on page
+    - search.share                 # Shareable deep-link search results
+    - content.code.copy            # One-click code copy button
+    - content.code.select          # One-click code selection button
+    - content.tabs.link            # Synchronizes multi-language tabs across the entire site
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets
+  - attr_list
+  - md_in_html
+  - tables
+  - def_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
 extra_css:
   - css/extra.css
+
 plugins:
   - search
-  - meta  # 👈 Required for per-page 'hide' to work
+  - meta
+
+nav:
+  - Overview:
+      - Overview: index.md
+      - Storefront Configuration: config.md
+      - Health Checks & Monitoring: health.md
+      - Error Handling & Status Codes: errors.md
+      - Changelog: changelog.md
+
+  - Identity & Access:
+      - Authentication: auth.md
+      - Users, Roles & Permissions: rbac.md
+      - Profile: profile.md
+      - API Keys: api-keys.md
+
+  - Store & Catalog:
+      - Shop Category: shop-category.md
+      - Shop Management: shop.md
+      - Shop Public: shop-public.md
+      - Brands: brand.md
+      - Product Category: product-category.md
+      - Product Sub Category: product-sub-category.md
+      - Products: product.md
+      - Product Variants: product-variants.md
+      - Recommendations: recommendations.md
+      - Reviews & Ratings: review-rating.md
+
+  - Cart & Checkout:
+      - Wishlist: wishlist.md
+      - Cart: cart.md
+      - Checkout: checkout.md
+      - Coupons & Discounts: coupon.md
+      - FX & Currencies: fx.md
+
+  - Orders & Logistics:
+      - Orders: order.md
+      - Payments: payment.md
+      - Shipping Address: shipping-address.md
+      - Shipping Methods: shipping-method.md
+      - Shipments & Tracking: shipping.md
+      - Inventory Control: inventory.md
+      - Warehouses: warehouse.md
+
+  - Returns & Support:
+      - Refund Requests: refund-request.md
+      - RMA / Returns & Exchanges: rma.md
+      - Support Tickets: support.md
+
+  - Seller Portal:
+      - Seller KYC: seller-kyc.md
+      - Seller Reviews & Commission: seller-tools.md
+      - Payouts & Statements: payout.md
+
+  - Platform & Operations:
+      - Dashboard: dashboard.md
+      - Analytics: analytics.md
+      - Audit Log: audit-log.md
+      - Notifications: notification.md
+      - Loyalty & Wallet: loyalty.md
+      - Subscriptions: subscriptions.md
+      - B2B Quotes & POs: b2b.md
+      - BOPIS, POS & Stores: omnichannel.md
+      - CMS & Sitemap: cms.md
+      - Localization: localization.md
+      - Feature Flags: feature-flags.md
+      - Outbox & DLQ: outbox.md
+      - Tax Rules: tax.md
+      - Fraud & Chargebacks: fraud.md
+      - Privacy Policy: privacy-policy.md
+      - Privacy Policy Consent: privacy-policy-consent.md
+      - Data Retention: privacy-retention.md

@@ -17,10 +17,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/api/v1/checkout/shipping-address` | Retrieve all shipping addresses for the authenticated user | Yes |
-| `POST` | `/api/v1/checkout/shipping-address` | Add a new shipping address | Yes |
-| `PUT` | `/api/v1/checkout/shipping-address/{id}` | Update an existing shipping address | Yes |
-| `DELETE` | `/api/v1/checkout/shipping-address/{id}` | Delete a shipping address | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/checkout/shipping-address` | Retrieve all shipping addresses for the authenticated user | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/checkout/shipping-address` | Add a new shipping address | Yes |
+| <span class="method-badge put">PUT</span> | `/api/v1/checkout/shipping-address/{id}` | Update an existing shipping address | Yes |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/checkout/shipping-address/{id}` | Delete a shipping address | Yes |
 
 ---
 
@@ -28,7 +28,10 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Get All Shipping Addresses
 
-**`GET /api/v1/checkout/shipping-address`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/checkout/shipping-address</span>
+</div>
 
 ```json
 [
@@ -53,7 +56,10 @@ Authorization: Bearer <your_access_token>
 
 ### 2. Add Shipping Address
 
-**`POST /api/v1/checkout/shipping-address`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/checkout/shipping-address</span>
+</div>
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -89,7 +95,10 @@ Authorization: Bearer <your_access_token>
 
 ### 3. Update Shipping Address
 
-**`PUT /api/v1/checkout/shipping-address/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/checkout/shipping-address/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -103,7 +112,10 @@ Same as **Add Shipping Address**.
 
 ### 4. Delete Shipping Address
 
-**`DELETE /api/v1/checkout/shipping-address/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/checkout/shipping-address/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|

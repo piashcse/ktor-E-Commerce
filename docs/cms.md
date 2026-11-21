@@ -41,18 +41,26 @@ Publishing sets `publishedAt`; unpublishing clears it. Slugs must match
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/api/v1/seo/metadata` | Get SEO metadata for an entity | No |
-| `PUT` | `/api/v1/admin/seo/metadata` | Admin: create/update SEO metadata | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/seo/metadata` | Get SEO metadata for an entity | No |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/seo/metadata` | Admin: create/update SEO metadata | Yes (Admin) |
 
 ## Endpoint Details
 
 ### 1. SEO metadata
 
-**`GET /api/v1/seo/metadata?entityType=PAGE&entityId=about-us&locale=en`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seo/metadata?entityType=PAGE&entityId=about-us&locale=en</span>
+</div>
 
 Admin upsert:
 
-**`PUT /api/v1/admin/seo/metadata`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/seo/metadata</span>
+</div>
+
+```json
 {
   "entityType": "PRODUCT",
   "entityId": "product-uuid",

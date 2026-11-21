@@ -14,12 +14,12 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/api/v1/policies/{policyType}` | Retrieve latest active policy by type | No |
-| `POST` | `/api/v1/admin/policies` | Create a new policy or version | Yes (Admin) |
-| `PUT` | `/api/v1/admin/policies/{id}` | Update an existing policy document | Yes (Admin) |
-| `POST` | `/api/v1/admin/policies/deactivate/{id}` | Deactivate a policy document | Yes (Admin) |
-| `GET` | `/api/v1/admin/policies/by-id/{id}` | Retrieve a policy document by ID | Yes (Admin) |
-| `GET` | `/api/v1/admin/policies/{policyType}/history` | Retrieve all versions of a policy type | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/policies/{policyType}` | Retrieve latest active policy by type | No |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/policies` | Create a new policy or version | Yes (Admin) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/policies/{id}` | Update an existing policy document | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/policies/deactivate/{id}` | Deactivate a policy document | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/policies/by-id/{id}` | Retrieve a policy document by ID | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/policies/{policyType}/history` | Retrieve all versions of a policy type | Yes (Admin) |
 
 ---
 
@@ -27,7 +27,10 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Get Policy by Type
 
-**`GET /api/v1/policies/{policyType}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/policies/{policyType}</span>
+</div>
 
 | Header | Value | Required |
 |--------|-------|----------|
@@ -75,7 +78,10 @@ curl -X 'GET' \
 
 ### 2. Create Policy
 
-**`POST /api/v1/admin/policies`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/policies</span>
+</div>
 
 | Header | Value | Required |
 |--------|-------|----------|
@@ -129,7 +135,10 @@ curl -X 'POST' \
 
 ### 3. Get Policy History
 
-**`GET /api/v1/admin/policies/{type}/history`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/policies/{type}/history</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -174,13 +183,16 @@ curl -X 'GET' \
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/policy-consents/consent` | Create a new policy consent record | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/policy-consents/consent` | Create a new policy consent record | Yes |
 
 ---
 
 ### 4. Create Policy Consent
 
-**`POST /api/v1/policy-consents/consent`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/policy-consents/consent</span>
+</div>
 
 | Header | Value | Required |
 |--------|-------|----------|
@@ -226,7 +238,10 @@ curl -X 'POST' \
 
 ### 5. Admin - Update an existing policy document
 
-**`PUT /api/v1/admin/policies/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/policies/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -263,7 +278,10 @@ curl -X 'PUT' \
 
 ### 6. Admin - Deactivate a policy document
 
-**`POST /api/v1/admin/policies/deactivate/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/policies/deactivate/{id}</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -282,7 +300,10 @@ true
 
 ### 7. Admin - Retrieve a policy document by ID
 
-**`GET /api/v1/admin/policies/by-id/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/policies/by-id/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -311,7 +332,10 @@ curl -X 'GET' \
 
 ### 8. Export all personal data held for the authenticated user
 
-**`GET /api/v1/privacy/export`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/privacy/export</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -504,7 +528,10 @@ curl -X 'GET' \
 
 ### 9. Erase/anonymize the authenticated account (password required)
 
-**`POST /api/v1/privacy/erase`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/privacy/erase</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -602,7 +629,7 @@ Common policy types supported by the system:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/privacy/export` | Export the authenticated user's personal data |
-| `POST` | `/api/v1/privacy/erase` | Erase/anonymize the account (body: `{"password":"..."}`) |
+| <span class="method-badge get">GET</span> | `/api/v1/privacy/export` | Export the authenticated user's personal data |
+| <span class="method-badge post">POST</span> | `/api/v1/privacy/erase` | Erase/anonymize the account (body: `{"password":"..."}`) |
 
 Orders and payments are retained in pseudonymous form for financial/legal obligations; direct identifiers, addresses, carts, wishlists, reviews, consents and notifications are removed or anonymized.

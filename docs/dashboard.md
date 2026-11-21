@@ -10,15 +10,15 @@ All Dashboard endpoints require `ADMIN` role.
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/api/v1/admin/dashboard` | Get dashboard summary | Yes (Admin) |
-| `GET` | `/api/v1/admin/dashboard/revenue` | Get revenue analytics | Yes (Admin) |
-| `GET` | `/api/v1/admin/dashboard/orders` | Get order statistics | Yes (Admin) |
-| `GET` | `/api/v1/admin/dashboard/users` | Get user growth trends | Yes (Admin) |
-| `GET` | `/api/v1/admin/dashboard/top-products` | Get top selling products | Yes (Admin) |
-| `GET` | `/api/v1/admin/dashboard/activity` | Get recent activity feed | Yes (Admin) |
-| `GET` | `/api/v1/seller/dashboard` | Seller-scoped revenue, orders and top products | Yes (Seller) |
-| `GET` | `/api/v1/admin/queues` | Admin work queues | Yes |
-| `GET` | `/api/v1/seller/readiness` | Seller readiness | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/dashboard` | Get dashboard summary | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/dashboard/revenue` | Get revenue analytics | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/dashboard/orders` | Get order statistics | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/dashboard/users` | Get user growth trends | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/dashboard/top-products` | Get top selling products | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/dashboard/activity` | Get recent activity feed | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/dashboard` | Seller-scoped revenue, orders and top products | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/queues` | Admin work queues | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/readiness` | Seller readiness | Yes |
 
 ---
 
@@ -26,7 +26,10 @@ All Dashboard endpoints require `ADMIN` role.
 
 ### 1. Get Dashboard Summary
 
-**`GET /api/v1/admin/dashboard`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/dashboard</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -50,7 +53,10 @@ curl -X 'GET' \
 
 ### 2. Get Revenue Stats
 
-**`GET /api/v1/admin/dashboard/revenue`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/dashboard/revenue</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -84,7 +90,10 @@ curl -X 'GET' \
 
 ### 3. Get Order Stats
 
-**`GET /api/v1/admin/dashboard/orders`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/dashboard/orders</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -121,7 +130,10 @@ curl -X 'GET' \
 
 ### 4. Get User Growth
 
-**`GET /api/v1/admin/dashboard/users`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/dashboard/users</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -154,7 +166,10 @@ curl -X 'GET' \
 
 ### 5. Get Top Products
 
-**`GET /api/v1/admin/dashboard/top-products`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/dashboard/top-products</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -189,7 +204,10 @@ curl -X 'GET' \
 
 ### 6. Get Recent Activity
 
-**`GET /api/v1/admin/dashboard/activity`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/dashboard/activity</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -226,8 +244,10 @@ curl -X 'GET' \
 
 ### 7. Seller dashboard
 
-**`GET /api/v1/seller/dashboard`**
-
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/dashboard</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -239,8 +259,10 @@ curl -X 'GET' \
 
 ### 8. Admin work queues
 
-**`GET /api/v1/admin/queues`**
-
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/queues</span>
+</div>
 
 #### Request
 
@@ -271,7 +293,10 @@ curl -X 'GET' \
 
 ### 9. Seller readiness
 
-**`GET /api/v1/seller/readiness`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/readiness</span>
+</div>
 
 ```bash
 curl -X 'GET' \

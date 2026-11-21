@@ -6,9 +6,9 @@ Create scoped API keys that inherit the owner's effective permissions.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/api-keys` | List keys (prefixes only; secrets are never returned) |
-| `POST` | `/api/v1/api-keys` | Create a key |
-| `DELETE` | `/api/v1/api-keys/{id}` | Revoke a key |
+| <span class="method-badge get">GET</span> | `/api/v1/api-keys` | List keys (prefixes only; secrets are never returned) |
+| <span class="method-badge post">POST</span> | `/api/v1/api-keys` | Create a key |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/api-keys/{id}` | Revoke a key |
 
 All three require `api_key:manage`.
 
@@ -51,7 +51,10 @@ returns:
 
 ### 1. List API keys
 
-**`GET /api/v1/api-keys`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/api-keys</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -83,7 +86,10 @@ curl -X 'GET' \
 
 ### 2. Create API key
 
-**`POST /api/v1/api-keys`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/api-keys</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -119,7 +125,10 @@ curl -X 'POST' \
 
 ### 3. Revoke API key
 
-**`DELETE /api/v1/api-keys/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/api-keys/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \

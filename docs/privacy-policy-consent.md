@@ -6,16 +6,21 @@ User consent records for policies, with read-only admin views.
 
 | Method | Endpoint | Description | Authentication Required |
 |---|---|---|---|
-| `GET` | `/api/v1/policy-consents` | List all consent records for the authenticated user | Yes |
-| `GET` | `/api/v1/policy-consents/{policyType}` | Check consent for a policy type | Yes |
-| `POST` | `/api/v1/policy-consents/consent` | Record consent for a specific policy document | Yes |
-| `DELETE` | `/api/v1/policy-consents/{id}` | Revoke a consent record (owner or admin) | Yes |
-| `GET` | `/api/v1/admin/policy-consents` | List consent records filtered by user and/or policy type | Yes (Admin) |
-| `GET` | `/api/v1/policy-consents/requirements` | Policies requiring consent | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/policy-consents` | List all consent records for the authenticated user | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/policy-consents/{policyType}` | Check consent for a policy type | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/policy-consents/consent` | Record consent for a specific policy document | Yes |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/policy-consents/{id}` | Revoke a consent record (owner or admin) | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/policy-consents` | List consent records filtered by user and/or policy type | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/policy-consents/requirements` | Policies requiring consent | Yes |
 
 ### 1. Record consent
 
-**`POST /api/v1/policy-consents/consent`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/policy-consents/consent</span>
+</div>
+
+```json
 {
   "policyId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
 }
@@ -26,8 +31,10 @@ Consent rows are append-only: re-consenting creates a new row with `grantedAt`, 
 
 ### 2. Check consent
 
-**`GET /api/v1/policy-consents/{policyType}`**
-
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/policy-consents/{policyType}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -37,7 +44,10 @@ curl -X 'GET' \
 
 ### 3. Admin filtering
 
-**`GET /api/v1/admin/policy-consents?userId=&policyType=`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/policy-consents?userId=&policyType=</span>
+</div>
 
 When `REQUIRE_POLICY_CONSENT=true`, checkout rejects orders until the customer has consented to
 every policy type where `requiresConsent` is true (`SHIPPING_POLICY` is excluded).
@@ -45,8 +55,10 @@ every policy type where `requiresConsent` is true (`SHIPPING_POLICY` is excluded
 
 ### 4. Retrieve all consent records for the authenticated user
 
-**`GET /api/v1/policy-consents`**
-
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/policy-consents</span>
+</div>
 
 #### Request
 
@@ -91,7 +103,10 @@ curl -X 'GET' \
 
 ### 5. Revoke a consent record (owner or admin)
 
-**`DELETE /api/v1/policy-consents/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/policy-consents/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -112,7 +127,10 @@ curl -X 'DELETE' \
 
 ### 6. Policies requiring consent
 
-**`GET /api/v1/policy-consents/requirements`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/policy-consents/requirements</span>
+</div>
 
 ```bash
 curl -X 'GET' \

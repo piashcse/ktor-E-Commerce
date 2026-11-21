@@ -10,8 +10,8 @@ All Audit Log endpoints require `ADMIN` role.
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `GET` | `/api/v1/admin/audit-logs` | List audit logs | Yes (Admin) |
-| `GET` | `/api/v1/admin/audit-logs/{id}` | Get audit log by ID | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/audit-logs` | List audit logs | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/audit-logs/{id}` | Get audit log by ID | Yes (Admin) |
 
 ---
 
@@ -19,7 +19,10 @@ All Audit Log endpoints require `ADMIN` role.
 
 ### 1. List Audit Logs
 
-**`GET /api/v1/admin/audit-logs`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/audit-logs</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -72,7 +75,10 @@ curl -X 'GET' \
 
 ### 2. Get Audit Log by ID
 
-**`GET /api/v1/admin/audit-logs/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/audit-logs/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|

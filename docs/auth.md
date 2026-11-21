@@ -6,34 +6,34 @@ Registration, login, OTP, password reset, refresh tokens, MFA and passkeys.
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/auth/login` | Authenticate user and receive access + refresh tokens | No |
-| `POST` | `/api/v1/auth/register` | Register a new user account | No |
-| `POST` | `/api/v1/auth/otp-verification` | Verify OTP for account activation | No |
-| `POST` | `/api/v1/auth/forgot-password` | Request password reset verification code | No |
-| `POST` | `/api/v1/auth/reset-password` | Reset password using verification code | No |
-| `POST` | `/api/v1/auth/refresh-token` | Refresh access token using refresh token | No |
-| `POST` | `/api/v1/auth/logout` | Logout and revoke refresh token | Yes |
-| `PUT` | `/api/v1/auth/change-password` | Change password for authenticated user | Yes |
-| `POST` | `/api/v1/auth/mfa/setup` | Start TOTP MFA setup and get the secret | Yes |
-| `POST` | `/api/v1/auth/mfa/enable` | Enable TOTP MFA after verifying a code | Yes |
-| `POST` | `/api/v1/auth/mfa/disable` | Disable TOTP MFA after verifying a code | Yes |
-| `POST` | `/api/v1/auth/social/google` | Google social login with an ID token | No |
-| `POST` | `/api/v1/auth/passkeys/login/options` | Start passkey login | No |
-| `POST` | `/api/v1/auth/passkeys/login` | Finish passkey login | No |
-| `GET` | `/api/v1/auth/passkeys` | List my passkeys | Yes |
-| `POST` | `/api/v1/auth/passkeys/register/options` | Start passkey registration | Yes |
-| `POST` | `/api/v1/auth/passkeys/register` | Finish passkey registration | Yes |
-| `DELETE` | `/api/v1/auth/passkeys/{id}` | Delete a passkey | Yes |
-| `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin + `user:manage`) |
-| `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin + `user:manage`) |
-| `PUT` | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin + `user:manage`) |
-| `GET` | `/api/v1/admin/users` | Admin: search users | Yes |
-| `GET` | `/api/v1/admin/users/{id}` | Admin: user detail | Yes |
-| `PUT` | `/api/v1/admin/users/{id}/activate` | Admin: activate a user | Yes |
-| `PUT` | `/api/v1/admin/users/{id}/deactivate` | Admin: deactivate a user | Yes |
-| `GET` | `/api/v1/admin/users/{id}/login-attempts` | Admin: inspect login/OTP lockouts | Yes |
-| `PUT` | `/api/v1/admin/users/{id}/type` | Admin: change a user's role | Yes |
-| `POST` | `/api/v1/admin/users/{id}/unlock` | Admin: clear login and OTP lockouts | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/login` | Authenticate user and receive access + refresh tokens | No |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/register` | Register a new user account | No |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/otp-verification` | Verify OTP for account activation | No |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/forgot-password` | Request password reset verification code | No |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/reset-password` | Reset password using verification code | No |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/refresh-token` | Refresh access token using refresh token | No |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/logout` | Logout and revoke refresh token | Yes |
+| <span class="method-badge put">PUT</span> | `/api/v1/auth/change-password` | Change password for authenticated user | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/mfa/setup` | Start TOTP MFA setup and get the secret | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/mfa/enable` | Enable TOTP MFA after verifying a code | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/mfa/disable` | Disable TOTP MFA after verifying a code | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/social/google` | Google social login with an ID token | No |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/passkeys/login/options` | Start passkey login | No |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/passkeys/login` | Finish passkey login | No |
+| <span class="method-badge get">GET</span> | `/api/v1/auth/passkeys` | List my passkeys | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/passkeys/register/options` | Start passkey registration | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/auth/passkeys/register` | Finish passkey registration | Yes |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/auth/passkeys/{id}` | Delete a passkey | Yes |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin + `user:manage`) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin + `user:manage`) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin + `user:manage`) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/users` | Admin: search users | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/users/{id}` | Admin: user detail | Yes |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/users/{id}/activate` | Admin: activate a user | Yes |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/users/{id}/deactivate` | Admin: deactivate a user | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/users/{id}/login-attempts` | Admin: inspect login/OTP lockouts | Yes |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/users/{id}/type` | Admin: change a user's role | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/users/{id}/unlock` | Admin: clear login and OTP lockouts | Yes |
 
 ---
 
@@ -59,7 +59,10 @@ Platform roles and permissions are stored in the database and resolved on every 
 
 ### 1. User Login
 
-**`POST /api/v1/auth/login`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/login</span>
+</div>
 
 #### Request Parameters
 
@@ -121,7 +124,10 @@ curl -X 'POST' \
 
 ### 2. User Registration
 
-**`POST /api/v1/auth/register`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/register</span>
+</div>
 
 #### Key Features
 - Multiple user types supported for self-registration (customer, seller)
@@ -166,7 +172,10 @@ curl -X 'POST' \
 
 ### 3. OTP Verification
 
-**`POST /api/v1/auth/otp-verification`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/otp-verification</span>
+</div>
 
 #### Request Body
 
@@ -200,7 +209,10 @@ true
 
 ### 4. Forgot Password
 
-**`POST /api/v1/auth/forgot-password`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/forgot-password</span>
+</div>
 
 #### Request Body
 
@@ -236,7 +248,10 @@ curl -X 'POST' \
 
 ### 5. Reset Password
 
-**`POST /api/v1/auth/reset-password`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/reset-password</span>
+</div>
 
 #### Request Body
 
@@ -276,7 +291,10 @@ curl -X 'POST' \
 
 ### 6. Refresh Token
 
-**`POST /api/v1/auth/refresh-token`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/refresh-token</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -319,7 +337,10 @@ curl -X 'POST' \
 
 ### 7. Logout
 
-**`POST /api/v1/auth/logout`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/logout</span>
+</div>
 
 | Header | Value | Required |
 |--------|-------|----------|
@@ -359,7 +380,10 @@ curl -X 'POST' \
 
 ### 8. Change Password
 
-**`PUT /api/v1/auth/change-password`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/auth/change-password</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -399,7 +423,10 @@ curl -X 'PUT' \
 
 ### 9. Change User Type
 
-**`PUT /api/v1/admin/auth/{userId}/change-user-type`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/auth/{userId}/change-user-type</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -439,7 +466,10 @@ curl -X 'PUT' \
 
 ### 10. Deactivate User
 
-**`PUT /api/v1/admin/auth/{userId}/deactivate`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/auth/{userId}/deactivate</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -471,7 +501,10 @@ curl -X 'PUT' \
 
 ### 11. Activate User
 
-**`PUT /api/v1/admin/auth/{userId}/activate`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/auth/{userId}/activate</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -503,7 +536,10 @@ curl -X 'PUT' \
 
 ### 12. Start MFA Setup
 
-**`POST /api/v1/auth/mfa/setup`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/mfa/setup</span>
+</div>
 
 | Header | Value | Required |
 |--------|-------|----------|
@@ -532,7 +568,10 @@ curl -X 'POST' \
 
 ### 13. Enable MFA
 
-**`POST /api/v1/auth/mfa/enable`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/mfa/enable</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -560,7 +599,10 @@ curl -X 'POST' \
 
 ### 14. Disable MFA
 
-**`POST /api/v1/auth/mfa/disable`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/mfa/disable</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -588,7 +630,12 @@ curl -X 'POST' \
 
 ### 15. Social login
 
-**`POST /api/v1/auth/social/google`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/social/google</span>
+</div>
+
+```json
 { "idToken": "google-id-token", "mfaCode": "123456" }
 ```
 
@@ -693,15 +740,18 @@ SPKI key and verifies assertions.
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin + `user:manage`) |
-| `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin + `user:manage`) |
-| `PUT` | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin + `user:manage`) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin + `user:manage`) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin + `user:manage`) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin + `user:manage`) |
 
 ---
 
 ### 16. Start passkey login
 
-**`POST /api/v1/auth/passkeys/login/options`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/passkeys/login/options</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -738,7 +788,10 @@ curl -X 'POST' \
 
 ### 17. Finish passkey login
 
-**`POST /api/v1/auth/passkeys/login`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/passkeys/login</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -781,7 +834,10 @@ curl -X 'POST' \
 
 ### 18. List my passkeys
 
-**`GET /api/v1/auth/passkeys`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/auth/passkeys</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -810,7 +866,10 @@ curl -X 'GET' \
 
 ### 19. Start passkey registration
 
-**`POST /api/v1/auth/passkeys/register/options`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/passkeys/register/options</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -847,7 +906,10 @@ curl -X 'POST' \
 
 ### 20. Finish passkey registration
 
-**`POST /api/v1/auth/passkeys/register`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/auth/passkeys/register</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -886,7 +948,10 @@ curl -X 'POST' \
 
 ### 21. Delete a passkey
 
-**`DELETE /api/v1/auth/passkeys/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/auth/passkeys/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -912,7 +977,10 @@ curl -X 'DELETE' \
 
 ### 22. Admin: search users
 
-**`GET /api/v1/admin/users`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/users</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -954,7 +1022,10 @@ curl -X 'GET' \
 
 ### 23. Admin: user detail
 
-**`GET /api/v1/admin/users/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/users/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -989,7 +1060,10 @@ curl -X 'GET' \
 
 ### 24. Admin: activate a user
 
-**`PUT /api/v1/admin/users/{id}/activate`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/users/{id}/activate</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -1010,7 +1084,10 @@ curl -X 'PUT' \
 
 ### 25. Admin: deactivate a user
 
-**`PUT /api/v1/admin/users/{id}/deactivate`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/users/{id}/deactivate</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -1031,7 +1108,10 @@ curl -X 'PUT' \
 
 ### 26. Admin: inspect login/OTP lockouts
 
-**`GET /api/v1/admin/users/{id}/login-attempts`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/users/{id}/login-attempts</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -1060,7 +1140,10 @@ curl -X 'GET' \
 
 ### 27. Admin: change a user's role
 
-**`PUT /api/v1/admin/users/{id}/type`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/users/{id}/type</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -1085,7 +1168,10 @@ curl -X 'PUT' \
 
 ### 28. Admin: clear login and OTP lockouts
 
-**`POST /api/v1/admin/users/{id}/unlock`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/users/{id}/unlock</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -1106,7 +1192,10 @@ curl -X 'POST' \
 
 ### 29. List API keys
 
-**`GET /api/v1/api-keys`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/api-keys</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -1138,7 +1227,10 @@ curl -X 'GET' \
 
 ### 30. Create API key
 
-**`POST /api/v1/api-keys`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/api-keys</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -1174,7 +1266,10 @@ curl -X 'POST' \
 
 ### 31. Revoke API key
 
-**`DELETE /api/v1/api-keys/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/api-keys/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
@@ -1290,9 +1385,9 @@ API keys are scoped to a subset of the owner's **effective permissions** and are
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/api-keys` | List your API keys (metadata only) |
-| `POST` | `/api/v1/api-keys` | Create a key (`name`, optional `scopes`, `expiresAt`) |
-| `DELETE` | `/api/v1/api-keys/{id}` | Revoke a key |
+| <span class="method-badge get">GET</span> | `/api/v1/api-keys` | List your API keys (metadata only) |
+| <span class="method-badge post">POST</span> | `/api/v1/api-keys` | Create a key (`name`, optional `scopes`, `expiresAt`) |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/api-keys/{id}` | Revoke a key |
 
 Scopes accept permission codes (`order:manage`, `inventory:manage`) or legacy enum names
 (`ORDER_MANAGE`, `INVENTORY_MANAGE`). Keys are re-checked against the owner's current effective

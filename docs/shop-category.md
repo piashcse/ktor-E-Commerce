@@ -14,10 +14,10 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/admin/shop-categories` | Create a new shop category | Yes (Admin) |
-| `GET` | `/api/v1/shop-categories` | Retrieve list of shop categories (public) | No |
-| `PUT` | `/api/v1/admin/shop-categories/{id}` | Update an existing shop category | Yes (Admin) |
-| `DELETE` | `/api/v1/admin/shop-categories/{id}` | Delete a shop category | Yes (Admin) |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/shop-categories` | Create a new shop category | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/shop-categories` | Retrieve list of shop categories (public) | No |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/shop-categories/{id}` | Update an existing shop category | Yes (Admin) |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/admin/shop-categories/{id}` | Delete a shop category | Yes (Admin) |
 
 ---
 
@@ -25,7 +25,10 @@ Authorization: Bearer <your_access_token>
 
 ### 1. Create Shop Category
 
-**`POST /api/v1/admin/shop-categories`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/shop-categories</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -65,7 +68,10 @@ curl -X 'POST' \
 
 ### 2. Get Shop Categories
 
-**`GET /api/v1/shop-categories`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/shop-categories</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -110,7 +116,10 @@ curl -X 'GET' \
 
 ### 3. Update Shop Category
 
-**`PUT /api/v1/admin/shop-categories/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/shop-categories/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -151,7 +160,10 @@ curl -X 'PUT' \
 
 ### 4. Delete Shop Category
 
-**`DELETE /api/v1/admin/shop-categories/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/admin/shop-categories/{id}</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|

@@ -6,10 +6,10 @@ Split seller inventory across physical warehouse locations.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/seller/warehouses` | List active warehouses |
-| `POST` | `/api/v1/seller/warehouses` | Create a warehouse |
-| `PUT` | `/api/v1/seller/warehouses/{id}` | Update a warehouse |
-| `DELETE` | `/api/v1/seller/warehouses/{id}` | Deactivate a warehouse |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/warehouses` | List active warehouses |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/warehouses` | Create a warehouse |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/warehouses/{id}` | Update a warehouse |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/seller/warehouses/{id}` | Deactivate a warehouse |
 
 Body:
 
@@ -32,7 +32,10 @@ See [Inventory](inventory.md) and [Product Variants](product-variants.md).
 
 ### 1. List warehouses
 
-**`GET /api/v1/seller/warehouses`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/warehouses</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -69,7 +72,10 @@ curl -X 'GET' \
 
 ### 2. Create warehouse
 
-**`POST /api/v1/seller/warehouses`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/warehouses</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -118,7 +124,10 @@ curl -X 'POST' \
 
 ### 3. Update warehouse
 
-**`PUT /api/v1/seller/warehouses/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/warehouses/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -167,7 +176,10 @@ curl -X 'PUT' \
 
 ### 4. Deactivate warehouse
 
-**`DELETE /api/v1/seller/warehouses/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/seller/warehouses/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \

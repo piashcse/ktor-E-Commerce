@@ -14,24 +14,24 @@ Authorization: Bearer <your_access_token>
 
 | Method | Endpoint | Description | Authentication Required |
 |--------|----------|-------------|------------------------|
-| `POST` | `/api/v1/seller/shops` | Create a new shop | Yes (Seller) |
-| `GET` | `/api/v1/seller/shops` | Retrieve list of owned shops | Yes (Seller) |
-| `PUT` | `/api/v1/seller/shops/{id}` | Update an existing shop | Yes (Seller) |
-| `POST` | `/api/v1/seller/shops/{id}/image` | Upload a shop logo | Yes (Seller) |
-| `GET` | `/api/v1/shops/{id}` | Retrieve detailed info about a specific shop | No |
-| `GET` | `/api/v1/shops/public` | Retrieve list of public shops with filters | No |
-| `GET` | `/api/v1/shops/category/{categoryId}` | Retrieve shops by category | No |
-| `GET` | `/api/v1/shops/featured` | Retrieve featured shops | No |
-| `GET` | `/api/v1/admin/shops/status` | Retrieve shops by status | Yes (Admin) |
-| `PUT` | `/api/v1/admin/shops/approve/{id}` | Approve a shop | Yes (Admin) |
-| `PUT` | `/api/v1/admin/shops/reject/{id}` | Reject a shop | Yes (Admin) |
-| `PUT` | `/api/v1/admin/shops/suspend/{id}` | Suspend a shop | Yes (Admin) |
-| `PUT` | `/api/v1/admin/shops/activate/{id}` | Activate a shop | Yes (Admin) |
-| `GET` | `/api/v1/admin/shops` | Admin - List all shops | Yes |
-| `POST` | `/api/v1/admin/shops/bulk/approve` | Admin - Bulk approve shops | Yes |
-| `POST` | `/api/v1/admin/shops/bulk/reject` | Admin - Bulk reject shops | Yes |
-| `POST` | `/api/v1/admin/shops/bulk/suspend` | Admin - Bulk suspend shops | Yes |
-| `GET` | `/api/v1/shops/{id}/products` | List products for a shop | No |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/shops` | Create a new shop | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/shops` | Retrieve list of owned shops | Yes (Seller) |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/shops/{id}` | Update an existing shop | Yes (Seller) |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/shops/{id}/image` | Upload a shop logo | Yes (Seller) |
+| <span class="method-badge get">GET</span> | `/api/v1/shops/{id}` | Retrieve detailed info about a specific shop | No |
+| <span class="method-badge get">GET</span> | `/api/v1/shops/public` | Retrieve list of public shops with filters | No |
+| <span class="method-badge get">GET</span> | `/api/v1/shops/category/{categoryId}` | Retrieve shops by category | No |
+| <span class="method-badge get">GET</span> | `/api/v1/shops/featured` | Retrieve featured shops | No |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/shops/status` | Retrieve shops by status | Yes (Admin) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/shops/approve/{id}` | Approve a shop | Yes (Admin) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/shops/reject/{id}` | Reject a shop | Yes (Admin) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/shops/suspend/{id}` | Suspend a shop | Yes (Admin) |
+| <span class="method-badge put">PUT</span> | `/api/v1/admin/shops/activate/{id}` | Activate a shop | Yes (Admin) |
+| <span class="method-badge get">GET</span> | `/api/v1/admin/shops` | Admin - List all shops | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/shops/bulk/approve` | Admin - Bulk approve shops | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/shops/bulk/reject` | Admin - Bulk reject shops | Yes |
+| <span class="method-badge post">POST</span> | `/api/v1/admin/shops/bulk/suspend` | Admin - Bulk suspend shops | Yes |
+| <span class="method-badge get">GET</span> | `/api/v1/shops/{id}/products` | List products for a shop | No |
 
 ---
 
@@ -41,10 +41,10 @@ Shop owners can invite staff and assign shop roles:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/v1/seller/members` | List shop staff |
-| `POST` | `/api/v1/seller/members/invite` | Invite a staff member |
-| `PUT` | `/api/v1/seller/members/{id}/roles` | Replace a member's roles |
-| `DELETE` | `/api/v1/seller/members/{id}` | Remove a member |
+| <span class="method-badge get">GET</span> | `/api/v1/seller/members` | List shop staff |
+| <span class="method-badge post">POST</span> | `/api/v1/seller/members/invite` | Invite a staff member |
+| <span class="method-badge put">PUT</span> | `/api/v1/seller/members/{id}/roles` | Replace a member's roles |
+| <span class="method-badge delete">DELETE</span> | `/api/v1/seller/members/{id}` | Remove a member |
 
 Shop staff roles include owner, manager, catalog, fulfillment, inventory, finance, support,
 analyst, warehouse and POS. See [RBAC](rbac.md) for the full role catalog.
@@ -55,7 +55,10 @@ analyst, warehouse and POS. See [RBAC](rbac.md) for the full role catalog.
 
 ### 1. Create Shop (V1)
 
-**`POST /api/v1/seller/shops`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/shops</span>
+</div>
 
 | Header | Value | Required |
 |--------|-------|----------|
@@ -96,7 +99,10 @@ curl -X 'POST' \
 
 ### 2. Upload Shop Logo
 
-**`POST /api/v1/seller/shops/{id}/image`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/shops/{id}/image</span>
+</div>
 
 #### Multipart Form Data
 
@@ -135,7 +141,10 @@ curl -X 'POST' \
 
 ### 3. Get Public Shops (V1)
 
-**`GET /api/v1/shops/public`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/shops/public</span>
+</div>
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
@@ -175,7 +184,10 @@ curl -X 'GET' \
 
 ### 4. Admin Shop Approval
 
-**`PUT /api/v1/admin/shops/approve/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/shops/approve/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -196,7 +208,10 @@ curl -X 'PUT' \
 
 ### 5. Seller - Retrieve owned shops
 
-**`GET /api/v1/seller/shops`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/shops</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -249,7 +264,10 @@ curl -X 'GET' \
 
 ### 6. Seller - Update shop details
 
-**`PUT /api/v1/seller/shops/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/shops/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -298,7 +316,10 @@ curl -X 'PUT' \
 
 ### 7. Retrieve detailed information about a specific shop
 
-**`GET /api/v1/shops/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/shops/{id}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -336,7 +357,10 @@ curl -X 'GET' \
 
 ### 8. Retrieve shops by category (public)
 
-**`GET /api/v1/shops/category/{categoryId}`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/shops/category/{categoryId}</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -388,7 +412,10 @@ curl -X 'GET' \
 
 ### 9. Retrieve featured shops (public)
 
-**`GET /api/v1/shops/featured`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/shops/featured</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -440,7 +467,10 @@ curl -X 'GET' \
 
 ### 10. Admin - Retrieve shops filtered by status
 
-**`GET /api/v1/admin/shops/status`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/shops/status</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -493,7 +523,10 @@ curl -X 'GET' \
 
 ### 11. Admin - Reject a shop application
 
-**`PUT /api/v1/admin/shops/reject/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/shops/reject/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -536,7 +569,10 @@ curl -X 'PUT' \
 
 ### 12. Admin - Suspend an active shop
 
-**`PUT /api/v1/admin/shops/suspend/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/shops/suspend/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -579,7 +615,10 @@ curl -X 'PUT' \
 
 ### 13. Admin - Activate a suspended shop
 
-**`PUT /api/v1/admin/shops/activate/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/admin/shops/activate/{id}</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -618,7 +657,10 @@ curl -X 'PUT' \
 
 ### 14. Admin - List all shops
 
-**`GET /api/v1/admin/shops`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/admin/shops</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -671,7 +713,10 @@ curl -X 'GET' \
 
 ### 15. Admin - Bulk approve shops
 
-**`POST /api/v1/admin/shops/bulk/approve`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/shops/bulk/approve</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -701,7 +746,10 @@ curl -X 'POST' \
 
 ### 16. Admin - Bulk reject shops
 
-**`POST /api/v1/admin/shops/bulk/reject`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/shops/bulk/reject</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -731,7 +779,10 @@ curl -X 'POST' \
 
 ### 17. Admin - Bulk suspend shops
 
-**`POST /api/v1/admin/shops/bulk/suspend`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/admin/shops/bulk/suspend</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -761,7 +812,10 @@ curl -X 'POST' \
 
 ### 18. List products for a shop
 
-**`GET /api/v1/shops/{id}/products`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/shops/{id}/products</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -814,7 +868,10 @@ curl -X 'GET' \
 
 ### 19. Seller: list shop members
 
-**`GET /api/v1/seller/members`**
+<div class="endpoint-header">
+  <span class="method-badge get">GET</span>
+  <span class="endpoint-path">/api/v1/seller/members</span>
+</div>
 
 ```bash
 curl -X 'GET' \
@@ -845,7 +902,10 @@ curl -X 'GET' \
 
 ### 20. Seller: invite a staff member
 
-**`POST /api/v1/seller/members/invite`**
+<div class="endpoint-header">
+  <span class="method-badge post">POST</span>
+  <span class="endpoint-path">/api/v1/seller/members/invite</span>
+</div>
 
 ```bash
 curl -X 'POST' \
@@ -877,7 +937,10 @@ curl -X 'POST' \
 
 ### 21. Seller: replace a member's roles
 
-**`PUT /api/v1/seller/members/{id}/roles`**
+<div class="endpoint-header">
+  <span class="method-badge put">PUT</span>
+  <span class="endpoint-path">/api/v1/seller/members/{id}/roles</span>
+</div>
 
 ```bash
 curl -X 'PUT' \
@@ -912,7 +975,10 @@ curl -X 'PUT' \
 
 ### 22. Seller: remove a shop member
 
-**`DELETE /api/v1/seller/members/{id}`**
+<div class="endpoint-header">
+  <span class="method-badge delete">DELETE</span>
+  <span class="endpoint-path">/api/v1/seller/members/{id}</span>
+</div>
 
 ```bash
 curl -X 'DELETE' \
