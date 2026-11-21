@@ -1,0 +1,2590 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Ktor-E-Commerce is a high performance backend solution for modern e-commerce applications, built with JetBrain's ktor.">
+      
+      
+      
+        <link rel="canonical" href="https://piashcse.github.io/ktor-E-Commerce/rbac/">
+      
+      
+        <link rel="prev" href="../auth/">
+      
+      
+        <link rel="next" href="../profile/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.21">
+    
+    
+      
+        <title>Users, Roles & Permissions - Ktor-E-Commerce</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.2a3383ac.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../css/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#users-roles-and-permissions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Ktor-E-Commerce" class="md-header__button md-logo" aria-label="Ktor-E-Commerce" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Ktor-E-Commerce
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Users, Roles & Permissions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../auth/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Ktor-E-Commerce" class="md-nav__button md-logo" aria-label="Ktor-E-Commerce" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Ktor-E-Commerce
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Auth
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Users, Roles & Permissions
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Users, Roles & Permissions
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Model
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#account-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Account types
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Tables
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-permission-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Permission codes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-effective-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Effective permissions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-authentication-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Authentication flow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-seeded-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Seeded roles
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Seeded roles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#platform-global" class="md-nav__link">
+    <span class="md-ellipsis">
+      Platform (GLOBAL)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shop-shop" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shop (SHOP)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. API
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      Platform
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seller" class="md-nav__link">
+    <span class="md-ellipsis">
+      Seller
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shared" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shared
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Migration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-admin-route-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Admin route gates
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-behavior-changes-from-the-old-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Behavior changes from the old model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-known-limitations-next-phase" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Known limitations / next phase
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-code-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Code layout
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. Verification
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Profile
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shop-category/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shop Category
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shop
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shop-public/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shop Public
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../brand/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Brand
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../product-category/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Product Category
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../product-sub-category/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Product Sub Category
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../product/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Product
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../product-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Product Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../recommendations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Recommendations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../review-rating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Review Rating
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wishlist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    WishList
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Cart
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../checkout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Checkout
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../order/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Order
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Payment
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../coupon/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Coupon
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-address/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Address
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-method/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Method
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipments
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Inventory
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../warehouse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Warehouses
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../refund-request/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Refund Request
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rma/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    RMA / Returns
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Notifications
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seller-kyc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Seller KYC
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seller-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Seller Reviews & Commission
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../payout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Payouts & Statements
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tax/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tax Rules
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fraud/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fraud & Chargebacks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../loyalty/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Loyalty & Wallet
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../localization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Localization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../subscriptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Subscriptions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../b2b/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    B2B Quotes & POs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../omnichannel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    BOPIS, POS & Stores
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CMS, SEO & Sitemap
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Support Tickets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FX Rates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Keys
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../feature-flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Feature Flags
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../outbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Outbox & DLQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Privacy Policy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Retention
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-policy-consent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Privacy Policy Consent
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Analytics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../audit-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Audit Log
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Model
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#account-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Account types
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Tables
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-permission-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Permission codes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-effective-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Effective permissions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-authentication-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Authentication flow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-seeded-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Seeded roles
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Seeded roles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#platform-global" class="md-nav__link">
+    <span class="md-ellipsis">
+      Platform (GLOBAL)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shop-shop" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shop (SHOP)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. API
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      Platform
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seller" class="md-nav__link">
+    <span class="md-ellipsis">
+      Seller
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#shared" class="md-nav__link">
+    <span class="md-ellipsis">
+      Shared
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Migration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-admin-route-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Admin route gates
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-behavior-changes-from-the-old-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Behavior changes from the old model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-known-limitations-next-phase" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Known limitations / next phase
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-code-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Code layout
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. Verification
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="users-roles-and-permissions">Users, roles and permissions</h1>
+<p>Database-backed roles, permissions, seller memberships and invitations.</p>
+<p>Status: <strong>foundation implemented</strong> (schema, effective-permission resolution, platform role APIs, seller membership APIs).</p>
+<p>Scope: platform operators, sellers and customers. B2B company memberships are intentionally out of scope for this phase.</p>
+<h2 id="1-model">1. Model</h2>
+<p>Authorization is split into three layers:</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Question</th>
+<th>Stored in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Account type</td>
+<td>What kind of identity is this?</td>
+<td><code>"user".user_type</code></td>
+</tr>
+<tr>
+<td>Membership</td>
+<td>Which shop/platform does the user act in?</td>
+<td><code>shop_member</code>, <code>auth_user_role</code></td>
+</tr>
+<tr>
+<td>Role + permission</td>
+<td>What may they do?</td>
+<td><code>auth_role</code>, <code>auth_permission</code>, <code>auth_role_permission</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="account-types">Account types</h3>
+<pre><code>CUSTOMER
+SELLER
+ADMIN
+</code></pre>
+<p>Rules:</p>
+<ul>
+<li><code>ADMIN</code> only grants access to the admin console. Permissions come from roles.</li>
+<li><code>SUPER_ADMIN</code> is retained as a <strong>legacy enum value</strong> and mapped to the <code>platform:super_admin</code> role. It will be removed after existing rows and clients are migrated.</li>
+<li>Guest checkout uses <code>user.is_guest</code>, not an account type.</li>
+<li>Staff is never an account type. A staff member is <code>user + membership + role</code>.</li>
+</ul>
+<h2 id="2-tables">2. Tables</h2>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>auth_permission</code></td>
+<td>Permission catalog (<code>resource:action</code>)</td>
+</tr>
+<tr>
+<td><code>auth_role</code></td>
+<td>Platform (<code>GLOBAL</code>) and shop (<code>SHOP</code>) roles</td>
+</tr>
+<tr>
+<td><code>auth_role_permission</code></td>
+<td>Role → permission mapping</td>
+</tr>
+<tr>
+<td><code>auth_user_role</code></td>
+<td>Platform role assignment</td>
+</tr>
+<tr>
+<td><code>shop_member</code></td>
+<td>User membership in a shop</td>
+</tr>
+<tr>
+<td><code>shop_member_role</code></td>
+<td>Shop role assignment</td>
+</tr>
+<tr>
+<td><code>shop_invitation</code></td>
+<td>Pending staff invitation (token hash, expiry)</td>
+</tr>
+<tr>
+<td><code>member_warehouse</code></td>
+<td>Optional warehouse scoping for shop staff</td>
+</tr>
+<tr>
+<td><code>"user".authz_version</code></td>
+<td>Invalidates cached permissions</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-permission-codes">3. Permission codes</h2>
+<p>The existing <code>Permission</code> enum now carries a stable code:</p>
+<table>
+<thead>
+<tr>
+<th>Enum</th>
+<th>Code</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>USER_MANAGE</code></td>
+<td><code>user:manage</code></td>
+</tr>
+<tr>
+<td><code>CATALOG_MANAGE</code></td>
+<td><code>catalog:manage</code></td>
+</tr>
+<tr>
+<td><code>ORDER_MANAGE</code></td>
+<td><code>order:manage</code></td>
+</tr>
+<tr>
+<td><code>PAYMENT_MANAGE</code></td>
+<td><code>payment:manage</code></td>
+</tr>
+<tr>
+<td><code>REFUND_MANAGE</code></td>
+<td><code>refund:manage</code></td>
+</tr>
+<tr>
+<td><code>PAYOUT_MANAGE</code></td>
+<td><code>payout:manage</code></td>
+</tr>
+<tr>
+<td><code>COUPON_MANAGE</code></td>
+<td><code>coupon:manage</code></td>
+</tr>
+<tr>
+<td><code>SHOP_MANAGE</code></td>
+<td><code>shop:manage</code></td>
+</tr>
+<tr>
+<td><code>INVENTORY_MANAGE</code></td>
+<td><code>inventory:manage</code></td>
+</tr>
+<tr>
+<td><code>POLICY_MANAGE</code></td>
+<td><code>policy:manage</code></td>
+</tr>
+<tr>
+<td><code>DASHBOARD_VIEW</code></td>
+<td><code>dashboard:read</code></td>
+</tr>
+<tr>
+<td><code>AUDIT_VIEW</code></td>
+<td><code>audit:read</code></td>
+</tr>
+<tr>
+<td><code>NOTIFICATION_SEND</code></td>
+<td><code>notification:send</code></td>
+</tr>
+<tr>
+<td><code>TAX_MANAGE</code></td>
+<td><code>tax:manage</code></td>
+</tr>
+<tr>
+<td><code>FX_MANAGE</code></td>
+<td><code>fx:manage</code></td>
+</tr>
+<tr>
+<td><code>OUTBOX_MANAGE</code></td>
+<td><code>outbox:manage</code></td>
+</tr>
+<tr>
+<td><code>API_KEY_MANAGE</code></td>
+<td><code>api_key:manage</code></td>
+</tr>
+<tr>
+<td><code>FEATURE_FLAG_MANAGE</code></td>
+<td><code>feature_flag:manage</code></td>
+</tr>
+<tr>
+<td><code>ROLE_MANAGE</code></td>
+<td><code>role:manage</code></td>
+</tr>
+<tr>
+<td><code>SUPPORT_MANAGE</code></td>
+<td><code>support:manage</code></td>
+</tr>
+<tr>
+<td><code>FRAUD_MANAGE</code></td>
+<td><code>fraud:manage</code></td>
+</tr>
+<tr>
+<td><code>CMS_MANAGE</code></td>
+<td><code>cms:manage</code></td>
+</tr>
+<tr>
+<td><code>SUBSCRIPTION_MANAGE</code></td>
+<td><code>subscription:manage</code></td>
+</tr>
+<tr>
+<td><code>REVIEW_MANAGE</code></td>
+<td><code>review:manage</code></td>
+</tr>
+<tr>
+<td><code>SHIPPING_MANAGE</code></td>
+<td><code>shipping:manage</code></td>
+</tr>
+<tr>
+<td><code>B2B_MANAGE</code></td>
+<td><code>b2b:manage</code></td>
+</tr>
+</tbody>
+</table>
+<p>Custom roles may include codes that do not have an enum constant yet. Route gates still use enum constants, so new route-level checks require a code constant; business-level checks can use raw codes through the resolver.</p>
+<h2 id="4-effective-permissions">4. Effective permissions</h2>
+<pre><code>effective(user) =
+  union(permissions of active platform roles)
+  ∪ union(permissions of active shop memberships)
+</code></pre>
+<p>Rules:</p>
+<ul>
+<li>If the user has <strong>no assignments</strong>, the legacy <code>UserType.defaultPermissions()</code> mapping is used for customers and sellers. This keeps existing behavior working.</li>
+<li>Platform admins are the exception: an <code>ADMIN</code>/<code>SUPER_ADMIN</code> with no role assignment gets <strong>no permissions</strong>, so an orphaned admin can never fall back to full access.</li>
+<li>If the user has <strong>any assignment</strong>, the result is exact. An assigned role with no permissions grants nothing.</li>
+<li>Results are cached by <code>userId + authz_version</code> for 60 seconds.</li>
+<li>Any role assignment or membership change increments <code>authz_version</code>, so the next request resolves fresh permissions.</li>
+</ul>
+<h2 id="5-authentication-flow">5. Authentication flow</h2>
+<p><code>ConfigureAuth</code> now:</p>
+<ol>
+<li>Validates the JWT and loads the user from the database.</li>
+<li>Resolves effective permissions through <code>RbacService</code>.</li>
+<li>Builds <code>JwtTokenRequest</code> with <code>permissions</code> and <code>authzVersion</code>.</li>
+</ol>
+<p><code>JwtTokenRequest.hasPermission()</code>:</p>
+<ul>
+<li>JWT: checks the resolved permission set (code or legacy enum name).</li>
+<li>API key: checks explicit scopes (legacy enum names or codes).</li>
+<li>Fallback: role defaults only when no resolved set was supplied.</li>
+</ul>
+<p>API keys are validated against the owner's effective permissions at creation <strong>and</strong> at authentication, so a role change narrows an existing key.</p>
+<h2 id="6-seeded-roles">6. Seeded roles</h2>
+<h3 id="platform-global">Platform (<code>GLOBAL</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>platform:super_admin</code></td>
+<td>All permissions; break-glass</td>
+</tr>
+<tr>
+<td><code>platform:admin</code></td>
+<td>All except <code>feature_flag:manage</code></td>
+</tr>
+<tr>
+<td><code>platform:ops</code></td>
+<td>Users, shops, dashboards, audit</td>
+</tr>
+<tr>
+<td><code>platform:catalog</code></td>
+<td>Catalog and inventory</td>
+</tr>
+<tr>
+<td><code>platform:orders</code></td>
+<td>Orders, refunds, shipping</td>
+</tr>
+<tr>
+<td><code>platform:finance_approver</code></td>
+<td>Payments, refunds, payouts, tax, FX</td>
+</tr>
+<tr>
+<td><code>platform:finance_payer</code></td>
+<td>Payments and payouts</td>
+</tr>
+<tr>
+<td><code>platform:support</code></td>
+<td>Support tickets</td>
+</tr>
+<tr>
+<td><code>platform:content</code></td>
+<td>CMS, policies, coupons, notifications</td>
+</tr>
+<tr>
+<td><code>platform:auditor</code></td>
+<td>Audit and dashboards (read-only)</td>
+</tr>
+<tr>
+<td><code>platform:developer</code></td>
+<td>Feature flags, outbox, API keys</td>
+</tr>
+</tbody>
+</table>
+<h3 id="shop-shop">Shop (<code>SHOP</code>)</h3>
+<p><code>shop:owner</code>, <code>shop:manager</code>, <code>catalog:manager</code>, <code>order:fulfillment</code>, <code>inventory:manager</code>, <code>finance:viewer</code>, <code>support:agent</code>, <code>analyst</code>, <code>warehouse:operator</code>, <code>pos:cashier</code>.</p>
+<h2 id="7-api">7. API</h2>
+<p>OpenAPI tag: <code>RBAC</code>.</p>
+<h3 id="platform">Platform</h3>
+<pre><code>GET    /api/v1/admin/rbac/permissions
+GET    /api/v1/admin/rbac/roles?scope=GLOBAL|SHOP
+POST   /api/v1/admin/rbac/roles
+GET    /api/v1/admin/rbac/roles/{id}
+PUT    /api/v1/admin/rbac/roles/{id}
+DELETE /api/v1/admin/rbac/roles/{id}
+PUT    /api/v1/admin/rbac/roles/{id}/permissions
+GET    /api/v1/admin/rbac/users/{id}/roles
+PUT    /api/v1/admin/rbac/users/{id}/roles
+GET    /api/v1/admin/rbac/users/{id}/effective-permissions
+</code></pre>
+<p>All platform RBAC routes require <code>role:manage</code>.</p>
+<p>Authorization rules enforced by the service:</p>
+<ul>
+<li>A non-super admin can only grant permissions they already hold.</li>
+<li>Only a super admin can grant <code>platform:super_admin</code> or edit system roles.</li>
+<li>The last super admin cannot be removed.</li>
+<li>Role and membership changes bump <code>authz_version</code> and are audited.</li>
+</ul>
+<h3 id="seller">Seller</h3>
+<pre><code>GET    /api/v1/seller/members
+POST   /api/v1/seller/members/invite
+PUT    /api/v1/seller/members/{id}/roles
+DELETE /api/v1/seller/members/{id}
+</code></pre>
+<p>The seller must own the shop. The invitation token is returned once; deliver it by email.</p>
+<h3 id="shared">Shared</h3>
+<pre><code>GET  /api/v1/me/permissions
+POST /api/v1/invitations/accept
+</code></pre>
+<h2 id="8-migration">8. Migration</h2>
+<p><code>V66__rbac_and_seller_members.sql</code>:</p>
+<ol>
+<li>Adds <code>user.authz_version</code>.</li>
+<li>Creates the RBAC and shop-membership tables.</li>
+<li>Seeds the permission catalog and all system roles.</li>
+<li>Backfills <code>SUPER_ADMIN</code> → <code>platform:super_admin</code>.</li>
+<li>Backfills <code>ADMIN</code> → <code>platform:admin</code>.</li>
+<li>Creates owner memberships for existing sellers with a shop.</li>
+</ol>
+<p><code>V67__b2b_permission.sql</code> adds the <code>b2b:manage</code> permission and grants it to
+<code>platform:admin</code> and <code>platform:super_admin</code>.</p>
+<p>Backward compatibility:</p>
+<ul>
+<li>Existing admin JWTs keep working because permissions are resolved server-side.</li>
+<li>Existing API keys keep working because scopes accept both enum names and codes.</li>
+<li><code>SUPER_ADMIN</code> remains accepted by <code>adminAuth</code> until the enum value is retired.</li>
+</ul>
+<h2 id="9-admin-route-gates">9. Admin route gates</h2>
+<p>The following admin groups now require explicit permissions instead of relying on <code>adminAuth</code> alone:</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Permission</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>admin/auth</code>, <code>admin/users</code></td>
+<td><code>user:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/rbac</code></td>
+<td><code>role:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/brands</code>, categories, products</td>
+<td><code>catalog:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/inventories</code></td>
+<td><code>inventory:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/orders</code></td>
+<td><code>order:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/payments</code>, webhooks, gift cards, wallets</td>
+<td><code>payment:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/refunds</code>, <code>admin/rma-requests</code></td>
+<td><code>refund:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/payouts</code>, commission rules</td>
+<td><code>payout:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/fraud</code>, <code>admin/chargebacks</code></td>
+<td><code>fraud:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/support/tickets</code>, <code>admin/disputes</code></td>
+<td><code>support:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/cms</code>, <code>admin/seo</code></td>
+<td><code>cms:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/policies</code>, policy consents</td>
+<td><code>policy:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/shipping-methods</code></td>
+<td><code>shipping:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/subscriptions</code>, plans</td>
+<td><code>subscription:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/reviews</code>, seller reviews</td>
+<td><code>review:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/feature-flags</code></td>
+<td><code>feature_flag:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/outbox</code></td>
+<td><code>outbox:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/tax-*</code></td>
+<td><code>tax:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/fx-rates</code></td>
+<td><code>fx:manage</code></td>
+</tr>
+<tr>
+<td><code>admin/audit-logs</code></td>
+<td><code>audit:read</code></td>
+</tr>
+<tr>
+<td><code>admin/dashboard</code>, queues, analytics</td>
+<td><code>dashboard:read</code></td>
+</tr>
+<tr>
+<td><code>admin/b2b</code></td>
+<td><code>b2b:manage</code></td>
+</tr>
+</tbody>
+</table>
+<p>Mixed customer/seller/admin routes use <code>requireAdminPermission(...)</code> so a narrowly-scoped admin cannot bypass the permission gate through a customer or seller endpoint. <code>sellerAuth</code> is exact <code>SELLER</code> only; admins use the admin console.</p>
+<h2 id="10-behavior-changes-from-the-old-model">10. Behavior changes from the old model</h2>
+<ul>
+<li><code>sellerAuth</code> now allows <strong>exact <code>SELLER</code></strong> accounts only. Admins use the admin console instead of inheriting seller routes.</li>
+<li>Customer order detail, refund evidence and invoice routes no longer give admins implicit access. Admin access is checked with <code>requireAdminPermission(...)</code> (<code>order:manage</code> / <code>refund:manage</code>) or through the admin routes.</li>
+<li><code>notifications/send</code> requires <code>notification:send</code> instead of any admin/seller role.</li>
+<li>Feature flags now require <code>feature_flag:manage</code>; a plain <code>ADMIN</code> no longer gets implicit access (only <code>SUPER_ADMIN</code>/<code>platform:developer</code> do).</li>
+<li>Invoice, packing-slip and shipment endpoints require <code>order:manage</code> for admin principals.</li>
+<li>B2B admin routes require <code>b2b:manage</code>.</li>
+<li>Changing a role's permissions increments <code>authz_version</code> for every holder of that role, so cached permissions are invalidated immediately.</li>
+</ul>
+<h2 id="11-known-limitations-next-phase">11. Known limitations / next phase</h2>
+<ul>
+<li>Seller <strong>service</strong> authorization still uses <code>requireSellerByUserId</code> and <code>sellerOwnsShop</code>. Invited staff have a membership, but seller endpoints that require a <code>seller</code> row will reject them. The next phase is to replace those checks with <code>requireShopPermission(user, shopId, permission)</code>.</li>
+<li>Invited staff should be <code>SELLER</code> accounts to enter the seller center in this phase. A <code>CUSTOMER</code> invitee can accept and receive a membership, but the seller portal gate will reject them until membership-based portal access lands.</li>
+<li>Route gates are still coarse (<code>CATALOG_MANAGE</code>, not <code>catalog:read</code> / <code>catalog:write</code>). Granular route gates can be added incrementally.</li>
+<li><code>platform:finance_approver</code> and <code>platform:finance_payer</code> currently share the coarse <code>payout:manage</code> code. Split into <code>payout:approve</code> and <code>payout:pay</code> when payout endpoints are migrated.</li>
+<li>Invitation emails are not sent yet; the token is returned by the API.</li>
+<li><code>SUPER_ADMIN</code> should be removed from <code>UserType</code> after a data backfill and client migration.</li>
+<li>B2B company memberships are out of scope.</li>
+</ul>
+<h2 id="12-code-layout">12. Code layout</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RbacModels.kt</code></td>
+<td>API request/response DTOs</td>
+</tr>
+<tr>
+<td><code>RbacService.kt</code></td>
+<td>Permission resolution, roles, platform assignments</td>
+</tr>
+<tr>
+<td><code>ShopMembershipService.kt</code></td>
+<td>Shop staff memberships and invitations</td>
+</tr>
+<tr>
+<td><code>RbacSupport.kt</code></td>
+<td>Shared role/member lookup and mapping helpers</td>
+</tr>
+<tr>
+<td><code>constants/Rbac.kt</code></td>
+<td>Role scope, membership/invitation status and seeded ids</td>
+</tr>
+<tr>
+<td><code>RbacRoutes.kt</code></td>
+<td>Admin, seller member, <code>/me</code> and invitation routes</td>
+</tr>
+</tbody>
+</table>
+<p>Shared utilities: <code>utils/common/Hashing.kt</code> and <code>Iterable&lt;String&gt;.entityIDs(...)</code> in <code>StringExt.kt</code>.</p>
+<h2 id="13-verification">13. Verification</h2>
+<ul>
+<li><code>./gradlew build</code> passes: <strong>637 tests, 0 failures</strong>.</li>
+<li><code>mkdocs build --strict</code> passes.</li>
+<li>The module API pages and Swagger UI cover <strong>464 operations / 47 tags</strong>, including the 16 RBAC operations.</li>
+<li><code>./gradlew detekt</code> reports only the four pre-existing structural warnings.</li>
+<li><code>V66</code> was applied against a fresh PostgreSQL schema; seeds produced 25 permissions, 21 roles and 98 role-permission links. <code>V67</code> adds <code>b2b:manage</code> and two role links (26 permissions, 100 links).</li>
+<li><code>platform:admin</code> intentionally excludes <code>feature_flag:manage</code>.</li>
+<li><code>RbacPrincipalTest</code> covers permission codes, resolved permission checks, legacy fallback and API-key scopes.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>

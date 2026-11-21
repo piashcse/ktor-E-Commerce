@@ -10,11 +10,13 @@
       
       
       
+        <link rel="canonical" href="https://piashcse.github.io/ktor-E-Commerce/auth/">
+      
       
         <link rel="prev" href="..">
       
       
-        <link rel="next" href="../profile/">
+        <link rel="next" href="../rbac/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -76,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#authentication-api" class="md-skip">
+        <a href="#authentication" class="md-skip">
           Skip to content
         </a>
       
@@ -200,7 +202,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/piashcse/ktor-ecommerce" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -317,7 +319,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/piashcse/ktor-ecommerce" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -464,6 +466,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#authorization-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Authorization model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#endpoint-details" class="md-nav__link">
     <span class="md-ellipsis">
       Endpoint Details
@@ -493,18 +504,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request" class="md-nav__link">
+  <a href="#request" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response" class="md-nav__link">
+  <a href="#response" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -553,18 +564,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_1" class="md-nav__link">
+  <a href="#request_1" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_1" class="md-nav__link">
+  <a href="#response_1" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -586,27 +597,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#query-parameters" class="md-nav__link">
+  <a href="#request-body" class="md-nav__link">
     <span class="md-ellipsis">
-      Query Parameters
+      Request Body
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_2" class="md-nav__link">
+  <a href="#request_2" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_2" class="md-nav__link">
+  <a href="#response_2" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -628,7 +639,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#request-body" class="md-nav__link">
+  <a href="#request-body_1" class="md-nav__link">
     <span class="md-ellipsis">
       Request Body
     </span>
@@ -637,18 +648,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_3" class="md-nav__link">
+  <a href="#request_3" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_3" class="md-nav__link">
+  <a href="#response_3" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -670,7 +681,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#request-body_1" class="md-nav__link">
+  <a href="#request-body_2" class="md-nav__link">
     <span class="md-ellipsis">
       Request Body
     </span>
@@ -679,18 +690,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_4" class="md-nav__link">
+  <a href="#request_4" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_4" class="md-nav__link">
+  <a href="#response_4" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -712,27 +723,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#request-body_2" class="md-nav__link">
+  <a href="#request_5" class="md-nav__link">
     <span class="md-ellipsis">
-      Request Body
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_5" class="md-nav__link">
+  <a href="#response_5" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response_5" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -763,15 +765,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#headers" class="md-nav__link">
-    <span class="md-ellipsis">
-      Headers
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#request-body_3" class="md-nav__link">
     <span class="md-ellipsis">
       Request Body
@@ -781,18 +774,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_6" class="md-nav__link">
+  <a href="#request_6" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_6" class="md-nav__link">
+  <a href="#response_6" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -814,16 +807,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#request-body_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      Request Body
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#headers_1" class="md-nav__link">
+  <a href="#headers" class="md-nav__link">
     <span class="md-ellipsis">
       Headers
     </span>
@@ -832,18 +816,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_7" class="md-nav__link">
+  <a href="#request_7" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_7" class="md-nav__link">
+  <a href="#response_7" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -865,16 +849,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#path-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Path Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#query-parameters_1" class="md-nav__link">
+  <a href="#query-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       Query Parameters
     </span>
@@ -883,7 +858,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#headers_2" class="md-nav__link">
+  <a href="#headers_1" class="md-nav__link">
     <span class="md-ellipsis">
       Headers
     </span>
@@ -892,18 +867,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_8" class="md-nav__link">
+  <a href="#request_8" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_8" class="md-nav__link">
+  <a href="#response_8" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -925,16 +900,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#path-parameters_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Path Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#headers_3" class="md-nav__link">
+  <a href="#headers_2" class="md-nav__link">
     <span class="md-ellipsis">
       Headers
     </span>
@@ -943,18 +909,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_9" class="md-nav__link">
+  <a href="#request_9" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_9" class="md-nav__link">
+  <a href="#response_9" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -976,16 +942,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#path-parameters_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      Path Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#headers_4" class="md-nav__link">
+  <a href="#headers_3" class="md-nav__link">
     <span class="md-ellipsis">
       Headers
     </span>
@@ -994,18 +951,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_10" class="md-nav__link">
+  <a href="#request_10" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_10" class="md-nav__link">
+  <a href="#response_10" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -1013,6 +970,114 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-start-mfa-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Start MFA Setup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Start MFA Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-enable-mfa" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. Enable MFA
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Enable MFA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-disable-mfa" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. Disable MFA
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Disable MFA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-social-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. Social login
+    </span>
+  </a>
   
 </li>
         
@@ -1037,6 +1102,390 @@
       Administrative Auth Endpoints Table
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-start-passkey-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. Start passkey login
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. Start passkey login">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#17-finish-passkey-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. Finish passkey login
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. Finish passkey login">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#18-list-my-passkeys" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. List my passkeys
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. List my passkeys">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19-start-passkey-registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. Start passkey registration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. Start passkey registration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#20-finish-passkey-registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. Finish passkey registration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. Finish passkey registration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#21-delete-a-passkey" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. Delete a passkey
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21. Delete a passkey">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-admin-search-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      22. Admin: search users
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="22. Admin: search users">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-admin-user-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      23. Admin: user detail
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23. Admin: user detail">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-admin-activate-a-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      24. Admin: activate a user
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="24. Admin: activate a user">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-admin-deactivate-a-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      25. Admin: deactivate a user
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25. Admin: deactivate a user">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-admin-inspect-loginotp-lockouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      26. Admin: inspect login/OTP lockouts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="26. Admin: inspect login/OTP lockouts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#27-admin-change-a-users-role" class="md-nav__link">
+    <span class="md-ellipsis">
+      27. Admin: change a user's role
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="27. Admin: change a user&#39;s role">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#28-admin-clear-login-and-otp-lockouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      28. Admin: clear login and OTP lockouts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="28. Admin: clear login and OTP lockouts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#29-list-api-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      29. List API keys
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29. List API keys">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#30-create-api-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      30. Create API key
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30. Create API key">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#31-revoke-api-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      31. Revoke API key
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31. Revoke API key">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1125,6 +1574,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#multi-factor-authentication-totp" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi-Factor Authentication (TOTP)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#refresh-token-security" class="md-nav__link">
     <span class="md-ellipsis">
       Refresh Token Security
@@ -1165,10 +1623,42 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#api-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      API Keys
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rbac/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Users, Roles & Permissions
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -1348,6 +1838,52 @@
   
   <span class="md-ellipsis">
     Product
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../product-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Product Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../recommendations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Recommendations
     
   </span>
   
@@ -1572,12 +2108,58 @@
   
   
     <li class="md-nav__item">
+      <a href="../shipping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipments
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../inventory/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Inventory
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../warehouse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Warehouses
     
   </span>
   
@@ -1618,12 +2200,449 @@
   
   
     <li class="md-nav__item">
+      <a href="../rma/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    RMA / Returns
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Notifications
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seller-kyc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Seller KYC
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seller-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Seller Reviews & Commission
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../payout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Payouts & Statements
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tax/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tax Rules
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fraud/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fraud & Chargebacks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../loyalty/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Loyalty & Wallet
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../localization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Localization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../subscriptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Subscriptions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../b2b/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    B2B Quotes & POs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../omnichannel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    BOPIS, POS & Stores
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CMS, SEO & Sitemap
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Support Tickets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FX Rates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Keys
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../feature-flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Feature Flags
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../outbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Outbox & DLQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../privacy-policy/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Privacy Policy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Retention
     
   </span>
   
@@ -1670,6 +2689,29 @@
   
   <span class="md-ellipsis">
     Dashboard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Analytics
     
   </span>
   
@@ -1768,6 +2810,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#authorization-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Authorization model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#endpoint-details" class="md-nav__link">
     <span class="md-ellipsis">
       Endpoint Details
@@ -1797,18 +2848,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request" class="md-nav__link">
+  <a href="#request" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response" class="md-nav__link">
+  <a href="#response" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -1857,18 +2908,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_1" class="md-nav__link">
+  <a href="#request_1" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_1" class="md-nav__link">
+  <a href="#response_1" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -1890,27 +2941,27 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#query-parameters" class="md-nav__link">
+  <a href="#request-body" class="md-nav__link">
     <span class="md-ellipsis">
-      Query Parameters
+      Request Body
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_2" class="md-nav__link">
+  <a href="#request_2" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_2" class="md-nav__link">
+  <a href="#response_2" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -1932,7 +2983,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#request-body" class="md-nav__link">
+  <a href="#request-body_1" class="md-nav__link">
     <span class="md-ellipsis">
       Request Body
     </span>
@@ -1941,18 +2992,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_3" class="md-nav__link">
+  <a href="#request_3" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_3" class="md-nav__link">
+  <a href="#response_3" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -1974,7 +3025,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#request-body_1" class="md-nav__link">
+  <a href="#request-body_2" class="md-nav__link">
     <span class="md-ellipsis">
       Request Body
     </span>
@@ -1983,18 +3034,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_4" class="md-nav__link">
+  <a href="#request_4" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_4" class="md-nav__link">
+  <a href="#response_4" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -2016,27 +3067,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#request-body_2" class="md-nav__link">
+  <a href="#request_5" class="md-nav__link">
     <span class="md-ellipsis">
-      Request Body
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_5" class="md-nav__link">
+  <a href="#response_5" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response_5" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -2067,15 +3109,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#headers" class="md-nav__link">
-    <span class="md-ellipsis">
-      Headers
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#request-body_3" class="md-nav__link">
     <span class="md-ellipsis">
       Request Body
@@ -2085,18 +3118,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_6" class="md-nav__link">
+  <a href="#request_6" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_6" class="md-nav__link">
+  <a href="#response_6" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -2118,16 +3151,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#request-body_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      Request Body
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#headers_1" class="md-nav__link">
+  <a href="#headers" class="md-nav__link">
     <span class="md-ellipsis">
       Headers
     </span>
@@ -2136,18 +3160,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_7" class="md-nav__link">
+  <a href="#request_7" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_7" class="md-nav__link">
+  <a href="#response_7" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -2169,16 +3193,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#path-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Path Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#query-parameters_1" class="md-nav__link">
+  <a href="#query-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       Query Parameters
     </span>
@@ -2187,7 +3202,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#headers_2" class="md-nav__link">
+  <a href="#headers_1" class="md-nav__link">
     <span class="md-ellipsis">
       Headers
     </span>
@@ -2196,18 +3211,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_8" class="md-nav__link">
+  <a href="#request_8" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_8" class="md-nav__link">
+  <a href="#response_8" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -2229,16 +3244,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#path-parameters_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Path Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#headers_3" class="md-nav__link">
+  <a href="#headers_2" class="md-nav__link">
     <span class="md-ellipsis">
       Headers
     </span>
@@ -2247,18 +3253,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_9" class="md-nav__link">
+  <a href="#request_9" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_9" class="md-nav__link">
+  <a href="#response_9" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -2280,16 +3286,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#path-parameters_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      Path Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#headers_4" class="md-nav__link">
+  <a href="#headers_3" class="md-nav__link">
     <span class="md-ellipsis">
       Headers
     </span>
@@ -2298,18 +3295,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-request_10" class="md-nav__link">
+  <a href="#request_10" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response_10" class="md-nav__link">
+  <a href="#response_10" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -2317,6 +3314,114 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-start-mfa-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Start MFA Setup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Start MFA Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-enable-mfa" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. Enable MFA
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Enable MFA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-disable-mfa" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. Disable MFA
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Disable MFA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-social-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. Social login
+    </span>
+  </a>
   
 </li>
         
@@ -2341,6 +3446,390 @@
       Administrative Auth Endpoints Table
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-start-passkey-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. Start passkey login
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. Start passkey login">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#17-finish-passkey-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. Finish passkey login
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. Finish passkey login">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#18-list-my-passkeys" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. List my passkeys
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. List my passkeys">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19-start-passkey-registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. Start passkey registration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. Start passkey registration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#20-finish-passkey-registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. Finish passkey registration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. Finish passkey registration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#21-delete-a-passkey" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. Delete a passkey
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21. Delete a passkey">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-admin-search-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      22. Admin: search users
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="22. Admin: search users">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-admin-user-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      23. Admin: user detail
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23. Admin: user detail">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-admin-activate-a-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      24. Admin: activate a user
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="24. Admin: activate a user">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-admin-deactivate-a-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      25. Admin: deactivate a user
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25. Admin: deactivate a user">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-admin-inspect-loginotp-lockouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      26. Admin: inspect login/OTP lockouts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="26. Admin: inspect login/OTP lockouts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#27-admin-change-a-users-role" class="md-nav__link">
+    <span class="md-ellipsis">
+      27. Admin: change a user's role
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="27. Admin: change a user&#39;s role">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#28-admin-clear-login-and-otp-lockouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      28. Admin: clear login and OTP lockouts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="28. Admin: clear login and OTP lockouts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#29-list-api-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      29. List API keys
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29. List API keys">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#30-create-api-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      30. Create API key
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30. Create API key">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#31-revoke-api-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      31. Revoke API key
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31. Revoke API key">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -2429,6 +3918,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#multi-factor-authentication-totp" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi-Factor Authentication (TOTP)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#refresh-token-security" class="md-nav__link">
     <span class="md-ellipsis">
       Refresh Token Security
@@ -2469,6 +3967,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#api-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      API Keys
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2488,9 +3995,8 @@
   
 
 
-<h1 id="authentication-api">Authentication API</h1>
-<p>This documentation provides comprehensive details for the Authentication API endpoints. The API supports user registration, login, password management, token refresh, email verification, and account security features.</p>
-<p><strong>Base URL:</strong> <code>http://localhost:8080</code></p>
+<h1 id="authentication">Authentication</h1>
+<p>Registration, login, OTP, password reset, refresh tokens, MFA and passkeys.</p>
 <h3 id="auth-endpoints">Auth Endpoints</h3>
 <table>
 <thead>
@@ -2515,7 +4021,7 @@
 <td>No</td>
 </tr>
 <tr>
-<td><code>GET</code></td>
+<td><code>POST</code></td>
 <td><code>/api/v1/auth/otp-verification</code></td>
 <td>Verify OTP for account activation</td>
 <td>No</td>
@@ -2551,33 +4057,147 @@
 <td>Yes</td>
 </tr>
 <tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/auth/mfa/setup</code></td>
+<td>Start TOTP MFA setup and get the secret</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/auth/mfa/enable</code></td>
+<td>Enable TOTP MFA after verifying a code</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/auth/mfa/disable</code></td>
+<td>Disable TOTP MFA after verifying a code</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/auth/social/google</code></td>
+<td>Google social login with an ID token</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/auth/passkeys/login/options</code></td>
+<td>Start passkey login</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/auth/passkeys/login</code></td>
+<td>Finish passkey login</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/auth/passkeys</code></td>
+<td>List my passkeys</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/auth/passkeys/register/options</code></td>
+<td>Start passkey registration</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/auth/passkeys/register</code></td>
+<td>Finish passkey registration</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/v1/auth/passkeys/{id}</code></td>
+<td>Delete a passkey</td>
+<td>Yes</td>
+</tr>
+<tr>
 <td><code>PUT</code></td>
 <td><code>/api/v1/admin/auth/{userId}/change-user-type</code></td>
 <td>Change user's account type</td>
-<td>Yes (Admin/Super Admin)</td>
+<td>Yes (Admin + <code>user:manage</code>)</td>
 </tr>
 <tr>
 <td><code>PUT</code></td>
 <td><code>/api/v1/admin/auth/{userId}/deactivate</code></td>
 <td>Deactivate user account</td>
-<td>Yes (Admin/Super Admin)</td>
+<td>Yes (Admin + <code>user:manage</code>)</td>
 </tr>
 <tr>
 <td><code>PUT</code></td>
 <td><code>/api/v1/admin/auth/{userId}/activate</code></td>
 <td>Activate user account</td>
-<td>Yes (Admin/Super Admin)</td>
+<td>Yes (Admin + <code>user:manage</code>)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/admin/users</code></td>
+<td>Admin: search users</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/admin/users/{id}</code></td>
+<td>Admin: user detail</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/v1/admin/users/{id}/activate</code></td>
+<td>Admin: activate a user</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/v1/admin/users/{id}/deactivate</code></td>
+<td>Admin: deactivate a user</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/admin/users/{id}/login-attempts</code></td>
+<td>Admin: inspect login/OTP lockouts</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/v1/admin/users/{id}/type</code></td>
+<td>Admin: change a user's role</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/admin/users/{id}/unlock</code></td>
+<td>Admin: clear login and OTP lockouts</td>
+<td>Yes</td>
 </tr>
 </tbody>
 </table>
 <hr />
+<h2 id="authorization-model">Authorization model</h2>
+<p><code>user_type</code> is the <strong>account kind</strong>:</p>
+<ul>
+<li><code>CUSTOMER</code></li>
+<li><code>SELLER</code></li>
+<li><code>ADMIN</code></li>
+</ul>
+<p>Platform roles and permissions are stored in the database and resolved on every request:</p>
+<ul>
+<li><code>ADMIN</code> alone grants console entry, not permissions.</li>
+<li>An admin with no role has no effective permissions.</li>
+<li><code>SUPER_ADMIN</code> is a legacy enum value mapped to the <code>platform:super_admin</code> role.</li>
+<li>Effective permissions are returned by <code>GET /api/v1/me/permissions</code>.</li>
+<li>See <a href="../rbac/">Users, Roles &amp; Permissions</a> for roles, scopes and endpoints.</li>
+</ul>
+<hr />
 <h2 id="endpoint-details">Endpoint Details</h2>
 <h3 id="1-user-login">1. User Login</h3>
 <p><strong><code>POST /api/v1/auth/login</code></strong></p>
-<p>Authenticate a user and receive access + refresh tokens for subsequent API calls.</p>
-<blockquote>
-<p><strong>Security</strong>: This endpoint is rate-limited to 5 requests per 10 minutes per IP address to prevent brute-force attacks. After 5 failed login attempts, the account will be locked for 30 minutes.</p>
-</blockquote>
 <h4 id="request-parameters">Request Parameters</h4>
 <table>
 <thead>
@@ -2607,20 +4227,26 @@
 <td>Yes</td>
 <td>Type of user (<code>customer</code>, <code>seller</code>, <code>admin</code>)</td>
 </tr>
+<tr>
+<td><code>mfaCode</code></td>
+<td>string</td>
+<td>Conditional</td>
+<td>6-digit TOTP code. Required when MFA is enabled for the account</td>
+</tr>
 </tbody>
 </table>
-<h4 id="example-request">Example Request</h4>
+<h4 id="request">Request</h4>
 <pre><code class="language-bash">curl -X 'POST' \
   'http://localhost:8080/api/v1/auth/login' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
     &quot;email&quot;: &quot;customer@gmail.com&quot;,
-    &quot;password&quot;: &quot;p1234&quot;,
+    &quot;password&quot;: &quot;Password123!&quot;,
     &quot;userType&quot;: &quot;customer&quot;
   }'
 </code></pre>
-<h4 id="example-response">Example Response</h4>
+<h4 id="response">Response</h4>
 <p><strong>Status: 200 OK</strong></p>
 <pre><code class="language-json">{
   &quot;user&quot;: {
@@ -2647,13 +4273,9 @@
 <hr />
 <h3 id="2-user-registration">2. User Registration</h3>
 <p><strong><code>POST /api/v1/auth/register</code></strong></p>
-<p>Register a new user account. Users can register with the same email for different roles.</p>
-<blockquote>
-<p><strong>Security</strong>: This endpoint is rate-limited to 5 requests per 10 minutes per IP address. Passwords must meet strength requirements: minimum 8 characters with uppercase, lowercase, digit, and special character.</p>
-</blockquote>
 <h4 id="key-features">Key Features</h4>
 <ul>
-<li>Multiple user types supported (customer, seller, admin)</li>
+<li>Multiple user types supported for self-registration (customer, seller)</li>
 <li>Same email can be used for different user types</li>
 <li>Automatic email verification process</li>
 <li>Password strength validation enforced</li>
@@ -2685,11 +4307,11 @@
 <td><code>userType</code></td>
 <td>string</td>
 <td>Yes</td>
-<td>Type of user (<code>customer</code>, <code>seller</code>, <code>admin</code>)</td>
+<td>Type of user (<code>customer</code>, <code>seller</code>)</td>
 </tr>
 </tbody>
 </table>
-<h4 id="example-request_1">Example Request</h4>
+<h4 id="request_1">Request</h4>
 <pre><code class="language-bash">curl -X 'POST' \
   'http://localhost:8080/api/v1/auth/register' \
   -H 'accept: application/json' \
@@ -2697,10 +4319,10 @@
   -d '{
     &quot;email&quot;: &quot;piash@gmail.com&quot;,
     &quot;password&quot;: &quot;Str0ng!Pass&quot;,
-    &quot;userType&quot;: &quot;admin&quot;
+    &quot;userType&quot;: &quot;customer&quot;
   }'
 </code></pre>
-<h4 id="example-response_1">Example Response</h4>
+<h4 id="response_1">Response</h4>
 <p><strong>Status: 201 Created</strong></p>
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;f48ec4f9-5482-4a23-9e49-e69f97bd20a6&quot;,
@@ -2709,9 +4331,8 @@
 </code></pre>
 <hr />
 <h3 id="3-otp-verification">3. OTP Verification</h3>
-<p><strong><code>GET /api/v1/auth/otp-verification</code></strong></p>
-<p>Verify the OTP (One-Time Password) sent to user's email during registration.</p>
-<h4 id="query-parameters">Query Parameters</h4>
+<p><strong><code>POST /api/v1/auth/otp-verification</code></strong></p>
+<h4 id="request-body">Request Body</h4>
 <table>
 <thead>
 <tr>
@@ -2736,23 +4357,24 @@
 </tr>
 </tbody>
 </table>
-<h4 id="example-request_2">Example Request</h4>
-<pre><code class="language-bash">curl -X 'GET' \
-  'http://localhost:8080/api/v1/auth/otp-verification?userId=3842e19b-2608-40f8-98bd-6a6b43939fec&amp;otp=560674d' \
-  -H 'accept: application/json'
+<h4 id="request_2">Request</h4>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/otp-verification' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    &quot;userId&quot;: &quot;3842e19b-2608-40f8-98bd-6a6b43939fec&quot;,
+    &quot;otp&quot;: &quot;560674d&quot;
+  }'
 </code></pre>
-<h4 id="example-response_2">Example Response</h4>
+<h4 id="response_2">Response</h4>
 <p><strong>Status: 200 OK</strong></p>
 <pre><code class="language-json">true
 </code></pre>
 <hr />
 <h3 id="4-forgot-password">4. Forgot Password</h3>
 <p><strong><code>POST /api/v1/auth/forgot-password</code></strong></p>
-<p>Request a password reset verification code. The code will be sent to the user's email address.</p>
-<blockquote>
-<p><strong>Security</strong>: This endpoint is rate-limited to 5 requests per 10 minutes per IP address.</p>
-</blockquote>
-<h4 id="request-body">Request Body</h4>
+<h4 id="request-body_1">Request Body</h4>
 <table>
 <thead>
 <tr>
@@ -2777,7 +4399,7 @@
 </tr>
 </tbody>
 </table>
-<h4 id="example-request_3">Example Request</h4>
+<h4 id="request_3">Request</h4>
 <pre><code class="language-bash">curl -X 'POST' \
   'http://localhost:8080/api/v1/auth/forgot-password' \
   -H 'accept: application/json' \
@@ -2787,7 +4409,7 @@
     &quot;userType&quot;: &quot;customer&quot;
   }'
 </code></pre>
-<h4 id="example-response_3">Example Response</h4>
+<h4 id="response_3">Response</h4>
 <p><strong>Status: 200 OK</strong></p>
 <pre><code class="language-json">{
   &quot;message&quot;: &quot;Verification code sent to your email&quot;
@@ -2796,11 +4418,7 @@
 <hr />
 <h3 id="5-reset-password">5. Reset Password</h3>
 <p><strong><code>POST /api/v1/auth/reset-password</code></strong></p>
-<p>Reset user password using the verification code sent via email.</p>
-<blockquote>
-<p><strong>Security</strong>: This endpoint is rate-limited to 5 requests per 10 minutes per IP address. Passwords must meet strength requirements.</p>
-</blockquote>
-<h4 id="request-body_1">Request Body</h4>
+<h4 id="request-body_2">Request Body</h4>
 <table>
 <thead>
 <tr>
@@ -2837,7 +4455,7 @@
 </tr>
 </tbody>
 </table>
-<h4 id="example-request_4">Example Request</h4>
+<h4 id="request_4">Request</h4>
 <pre><code class="language-bash">curl -X 'POST' \
   'http://localhost:8080/api/v1/auth/reset-password' \
   -H 'accept: application/json' \
@@ -2849,7 +4467,7 @@
     &quot;userType&quot;: &quot;customer&quot;
   }'
 </code></pre>
-<h4 id="example-response_4">Example Response</h4>
+<h4 id="response_4">Response</h4>
 <p><strong>Status: 200 OK</strong></p>
 <pre><code class="language-json">{
   &quot;message&quot;: &quot;Password reset successful&quot;
@@ -2858,8 +4476,6 @@
 <hr />
 <h3 id="6-refresh-token">6. Refresh Token</h3>
 <p><strong><code>POST /api/v1/auth/refresh-token</code></strong></p>
-<p>Refresh an expired access token using a valid refresh token. Returns a new access token and refresh token pair.</p>
-<h4 id="request-body_2">Request Body</h4>
 <table>
 <thead>
 <tr>
@@ -2878,7 +4494,7 @@
 </tr>
 </tbody>
 </table>
-<h4 id="example-request_5">Example Request</h4>
+<h4 id="request_5">Request</h4>
 <pre><code class="language-bash">curl -X 'POST' \
   'http://localhost:8080/api/v1/auth/refresh-token' \
   -H 'accept: application/json' \
@@ -2887,7 +4503,7 @@
     &quot;refreshToken&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;
   }'
 </code></pre>
-<h4 id="example-response_5">Example Response</h4>
+<h4 id="response_5">Response</h4>
 <p><strong>Status: 200 OK</strong></p>
 <pre><code class="language-json">{
   &quot;accessToken&quot;: &quot;eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...&quot;,
@@ -2904,8 +4520,6 @@
 <hr />
 <h3 id="7-logout">7. Logout</h3>
 <p><strong><code>POST /api/v1/auth/logout</code></strong></p>
-<p>Logout the authenticated user and revoke the refresh token to prevent further token refreshes.</p>
-<h4 id="headers">Headers</h4>
 <table>
 <thead>
 <tr>
@@ -2946,7 +4560,7 @@
 </tr>
 </tbody>
 </table>
-<h4 id="example-request_6">Example Request</h4>
+<h4 id="request_6">Request</h4>
 <pre><code class="language-bash">curl -X 'POST' \
   'http://localhost:8080/api/v1/auth/logout' \
   -H 'accept: application/json' \
@@ -2956,7 +4570,7 @@
     &quot;refreshToken&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;
   }'
 </code></pre>
-<h4 id="example-response_6">Example Response</h4>
+<h4 id="response_6">Response</h4>
 <p><strong>Status: 200 OK</strong></p>
 <pre><code class="language-json">{
   &quot;message&quot;: &quot;Logged out successfully&quot;
@@ -2965,8 +4579,6 @@
 <hr />
 <h3 id="8-change-password">8. Change Password</h3>
 <p><strong><code>PUT /api/v1/auth/change-password</code></strong></p>
-<p>Change password for an authenticated user. Requires valid access token.</p>
-<h4 id="request-body_4">Request Body</h4>
 <table>
 <thead>
 <tr>
@@ -2991,7 +4603,7 @@
 </tr>
 </tbody>
 </table>
-<h4 id="headers_1">Headers</h4>
+<h4 id="headers">Headers</h4>
 <table>
 <thead>
 <tr>
@@ -3013,26 +4625,24 @@
 </tr>
 </tbody>
 </table>
-<h4 id="example-request_7">Example Request</h4>
+<h4 id="request_7">Request</h4>
 <pre><code class="language-bash">curl -X 'PUT' \
   'http://localhost:8080/api/v1/auth/change-password' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
   -H 'Content-Type: application/json' \
   -d '{
-    &quot;oldPassword&quot;: &quot;p1234&quot;,
-    &quot;newPassword&quot;: &quot;newp1234&quot;
+    &quot;oldPassword&quot;: &quot;Password123!&quot;,
+    &quot;newPassword&quot;: &quot;NewPassword123!&quot;
   }'
 </code></pre>
-<h4 id="example-response_7">Example Response</h4>
+<h4 id="response_7">Response</h4>
 <p><strong>Status: 200 OK</strong></p>
 <pre><code class="language-json">&quot;Password has been changed&quot;
 </code></pre>
 <hr />
 <h3 id="9-change-user-type">9. Change User Type</h3>
 <p><strong><code>PUT /api/v1/admin/auth/{userId}/change-user-type</code></strong></p>
-<p>Change an existing user's account type. This endpoint is available to administrators.</p>
-<h4 id="path-parameters">Path Parameters</h4>
 <table>
 <thead>
 <tr>
@@ -3051,7 +4661,7 @@
 </tr>
 </tbody>
 </table>
-<h4 id="query-parameters_1">Query Parameters</h4>
+<h4 id="query-parameters">Query Parameters</h4>
 <table>
 <thead>
 <tr>
@@ -3066,7 +4676,60 @@
 <td><code>userType</code></td>
 <td>string</td>
 <td>Yes</td>
-<td>New user type to assign (<code>CUSTOMER</code>, <code>SELLER</code>, <code>ADMIN</code>, <code>SUPER_ADMIN</code>)</td>
+<td>New account type (<code>CUSTOMER</code>, <code>SELLER</code>, <code>ADMIN</code>; <code>SUPER_ADMIN</code> is legacy)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="headers_1">Headers</h4>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Value</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>accept</code></td>
+<td><code>application/json</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>Authorization</code></td>
+<td><code>Bearer &lt;access_token&gt;</code></td>
+<td>Yes (Admin + <code>user:manage</code>)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="request_8">Request</h4>
+<pre><code class="language-bash">curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type?userType=ADMIN' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+</code></pre>
+<h4 id="response_8">Response</h4>
+<p><strong>Status: 200 OK</strong></p>
+<pre><code class="language-json">&quot;User type changed successfully to ADMIN&quot;
+</code></pre>
+<hr />
+<h3 id="10-deactivate-user">10. Deactivate User</h3>
+<p><strong><code>PUT /api/v1/admin/auth/{userId}/deactivate</code></strong></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>userId</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Unique identifier of the user to deactivate</td>
 </tr>
 </tbody>
 </table>
@@ -3088,25 +4751,22 @@
 <tr>
 <td><code>Authorization</code></td>
 <td><code>Bearer &lt;access_token&gt;</code></td>
-<td>Yes (Admin/Super Admin)</td>
+<td>Yes (Admin + <code>user:manage</code>)</td>
 </tr>
 </tbody>
 </table>
-<h4 id="example-request_8">Example Request</h4>
+<h4 id="request_9">Request</h4>
 <pre><code class="language-bash">curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/change-user-type?userType=ADMIN' \
+  'http://localhost:8080/api/v1/admin/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
-<h4 id="example-response_8">Example Response</h4>
-<p><strong>Status: 200 OK</strong></p>
-<pre><code class="language-json">&quot;User type changed successfully to ADMIN&quot;
+<h4 id="response_9">Response</h4>
+<pre><code class="language-json">&quot;User deactivated successfully&quot;
 </code></pre>
 <hr />
-<h3 id="10-deactivate-user">10. Deactivate User</h3>
-<p><strong><code>PUT /api/v1/admin/auth/{userId}/deactivate</code></strong></p>
-<p>Deactivate a user account, preventing the user from logging in or accessing the system. This operation can be reversed with the activate endpoint.</p>
-<h4 id="path-parameters_1">Path Parameters</h4>
+<h3 id="11-activate-user">11. Activate User</h3>
+<p><strong><code>PUT /api/v1/admin/auth/{userId}/activate</code></strong></p>
 <table>
 <thead>
 <tr>
@@ -3121,7 +4781,7 @@
 <td><code>userId</code></td>
 <td>string</td>
 <td>Yes</td>
-<td>Unique identifier of the user to deactivate</td>
+<td>Unique identifier of the user to activate</td>
 </tr>
 </tbody>
 </table>
@@ -3143,24 +4803,53 @@
 <tr>
 <td><code>Authorization</code></td>
 <td><code>Bearer &lt;access_token&gt;</code></td>
-<td>Yes (Admin/Super Admin)</td>
+<td>Yes (Admin + <code>user:manage</code>)</td>
 </tr>
 </tbody>
 </table>
-<h4 id="example-request_9">Example Request</h4>
+<h4 id="request_10">Request</h4>
 <pre><code class="language-bash">curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/deactivate' \
+  'http://localhost:8080/api/v1/admin/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
 </code></pre>
-<h4 id="example-response_9">Example Response</h4>
-<pre><code class="language-json">&quot;User deactivated successfully&quot;
+<h4 id="response_10">Response</h4>
+<pre><code class="language-json">&quot;User activated successfully&quot;
 </code></pre>
 <hr />
-<h3 id="11-activate-user">11. Activate User</h3>
-<p><strong><code>PUT /api/v1/admin/auth/{userId}/activate</code></strong></p>
-<p>Activate a previously deactivated user account, allowing the user to log in and access the system again.</p>
-<h4 id="path-parameters_2">Path Parameters</h4>
+<h3 id="12-start-mfa-setup">12. Start MFA Setup</h3>
+<p><strong><code>POST /api/v1/auth/mfa/setup</code></strong></p>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Value</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Authorization</code></td>
+<td><code>Bearer &lt;access_token&gt;</code></td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<h4 id="request_11">Request</h4>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/mfa/setup' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+</code></pre>
+<h4 id="response_11">Response</h4>
+<p><strong>Status: 200 OK</strong></p>
+<pre><code class="language-json">{
+  &quot;secret&quot;: &quot;JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP&quot;,
+  &quot;otpauthUrl&quot;: &quot;otpauth://totp/Ktor%20E-Commerce:customer@gmail.com?secret=JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP&amp;issuer=Ktor%20E-Commerce&amp;digits=6&amp;period=30&quot;
+}
+</code></pre>
+<hr />
+<h3 id="13-enable-mfa">13. Enable MFA</h3>
+<p><strong><code>POST /api/v1/auth/mfa/enable</code></strong></p>
 <table>
 <thead>
 <tr>
@@ -3172,44 +4861,142 @@
 </thead>
 <tbody>
 <tr>
-<td><code>userId</code></td>
+<td><code>code</code></td>
 <td>string</td>
 <td>Yes</td>
-<td>Unique identifier of the user to activate</td>
+<td>6-digit TOTP code from the authenticator app</td>
 </tr>
 </tbody>
 </table>
-<h4 id="headers_4">Headers</h4>
+<h4 id="request_12">Request</h4>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/mfa/enable' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{ &quot;code&quot;: &quot;123456&quot; }'
+</code></pre>
+<h4 id="response_12">Response</h4>
+<p><strong>Status: 200 OK</strong></p>
+<pre><code class="language-json">{ &quot;message&quot;: &quot;MFA enabled&quot; }
+</code></pre>
+<hr />
+<h3 id="14-disable-mfa">14. Disable MFA</h3>
+<p><strong><code>POST /api/v1/auth/mfa/disable</code></strong></p>
 <table>
 <thead>
 <tr>
-<th>Header</th>
-<th>Value</th>
+<th>Parameter</th>
+<th>Type</th>
 <th>Required</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>accept</code></td>
-<td><code>application/json</code></td>
+<td><code>code</code></td>
+<td>string</td>
 <td>Yes</td>
-</tr>
-<tr>
-<td><code>Authorization</code></td>
-<td><code>Bearer &lt;access_token&gt;</code></td>
-<td>Yes (Admin/Super Admin)</td>
+<td>6-digit TOTP code from the authenticator app</td>
 </tr>
 </tbody>
 </table>
-<h4 id="example-request_10">Example Request</h4>
-<pre><code class="language-bash">curl -X 'PUT' \
-  'http://localhost:8080/api/v1/admin/auth/a67fd0cc-3d92-4259-bbd4-1e0ba49dece4/activate' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...'
+<h4 id="request_13">Request</h4>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/mfa/disable' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9...' \
+  -H 'Content-Type: application/json' \
+  -d '{ &quot;code&quot;: &quot;123456&quot; }'
 </code></pre>
-<h4 id="example-response_10">Example Response</h4>
-<pre><code class="language-json">&quot;User activated successfully&quot;
+<h4 id="response_13">Response</h4>
+<p><strong>Status: 200 OK</strong></p>
+<pre><code class="language-json">{ &quot;message&quot;: &quot;MFA disabled&quot; }
 </code></pre>
+<hr />
+<h3 id="15-social-login">15. Social login</h3>
+<p><strong><code>POST /api/v1/auth/social/google</code></strong>
+{ "idToken": "google-id-token", "mfaCode": "123456" }</p>
+<pre><code>
+`mfaCode` is required when the linked account has TOTP MFA enabled.
+
+The server verifies the token through Google's `tokeninfo` endpoint and checks:
+
+- `aud` matches `GOOGLE_CLIENT_ID`
+- `email_verified = true`
+- `exp` is in the future
+
+Existing customers are matched by email; new verified customer accounts are created automatically and
+the Google `sub` is linked as the social identity. The response is the same token payload as password
+login.
+
+## Passkeys (WebAuthn)
+
+Passkeys enable passwordless login with platform authenticators.
+
+1. Start registration (authenticated):
+
+```bash
+curl -X POST 'http://localhost:8080/api/v1/auth/passkeys/register/options' \
+  -H 'Authorization: Bearer &lt;token&gt;'
+</code></pre>
+<ol>
+<li>Finish registration with the authenticator result:</li>
+</ol>
+<pre><code class="language-json">{
+  &quot;credentialId&quot;: &quot;base64url-credential-id&quot;,
+  &quot;clientDataJson&quot;: &quot;base64url-client-data&quot;,
+  &quot;publicKey&quot;: &quot;base64-spki-public-key&quot;,
+  &quot;name&quot;: &quot;Laptop&quot;,
+  &quot;transports&quot;: [&quot;internal&quot;],
+  &quot;password&quot;: &quot;current-password&quot;
+}
+</code></pre>
+<p>Passkey registration and deletion require step-up re-authentication. Supply the current password,
+or the current TOTP <code>mfaCode</code> when MFA is enabled. Accounts with MFA must supply a valid MFA code.</p>
+<ol>
+<li>Start login (public):</li>
+</ol>
+<pre><code class="language-json">{ &quot;email&quot;: &quot;customer@example.com&quot;, &quot;userType&quot;: &quot;customer&quot; }
+</code></pre>
+<ol>
+<li>Finish login with the assertion:</li>
+</ol>
+<pre><code class="language-json">{
+  &quot;email&quot;: &quot;customer@example.com&quot;,
+  &quot;userType&quot;: &quot;customer&quot;,
+  &quot;credentialId&quot;: &quot;base64url-credential-id&quot;,
+  &quot;clientDataJson&quot;: &quot;base64url-client-data&quot;,
+  &quot;authenticatorData&quot;: &quot;base64url-authenticator-data&quot;,
+  &quot;signature&quot;: &quot;base64url-signature&quot;,
+  &quot;mfaCode&quot;: &quot;123456&quot;
+}
+</code></pre>
+<p>Validation:</p>
+<ul>
+<li>challenge is single-use and expires after 5 minutes</li>
+<li>ceremony type (<code>webauthn.create</code> / <code>webauthn.get</code>) and origin must match</li>
+<li>ES256 signatures are verified against the stored SPKI public key</li>
+<li>credentials are scoped to the owning user</li>
+<li>when <code>WEBAUTHN_REQUIRE_UV=true</code>, the authenticator must assert user verification (UV)</li>
+<li>passkey changes require recent password/MFA re-authentication</li>
+</ul>
+<p>Configuration:</p>
+<pre><code class="language-bash">GOOGLE_CLIENT_ID=
+WEBAUTHN_RP_ID=localhost
+WEBAUTHN_RP_NAME=Ktor E-Commerce
+WEBAUTHN_ORIGIN=http://localhost:3000
+WEBAUTHN_REQUIRE_UV=false
+</code></pre>
+<p>Delete a passkey with a step-up body:</p>
+<pre><code class="language-bash">curl -X DELETE 'http://localhost:8080/api/v1/auth/passkeys/&lt;id&gt;' \
+  -H 'Authorization: Bearer &lt;token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{&quot;password&quot;:&quot;current-password&quot;}'
+</code></pre>
+<p>Passkey login returns the same access/refresh token pair as password login. When the account has
+TOTP MFA enabled, <code>mfaCode</code> is required. The authenticator RP-ID hash, user-presence flag and
+signature counter are validated; a counter regression is rejected. Attestation statement
+verification is intentionally left to the relying-party deployment; this API stores the registered
+SPKI key and verifies assertions.</p>
 <hr />
 <h2 id="administrative-auth-endpoints">Administrative Auth Endpoints</h2>
 <h3 id="administrative-auth-endpoints-table">Administrative Auth Endpoints Table</h3>
@@ -3227,22 +5014,388 @@
 <td><code>PUT</code></td>
 <td><code>/api/v1/admin/auth/{userId}/change-user-type</code></td>
 <td>Change user's account type</td>
-<td>Yes (Admin/Super Admin)</td>
+<td>Yes (Admin + <code>user:manage</code>)</td>
 </tr>
 <tr>
 <td><code>PUT</code></td>
 <td><code>/api/v1/admin/auth/{userId}/deactivate</code></td>
 <td>Deactivate user account</td>
-<td>Yes (Admin/Super Admin)</td>
+<td>Yes (Admin + <code>user:manage</code>)</td>
 </tr>
 <tr>
 <td><code>PUT</code></td>
 <td><code>/api/v1/admin/auth/{userId}/activate</code></td>
 <td>Activate user account</td>
-<td>Yes (Admin/Super Admin)</td>
+<td>Yes (Admin + <code>user:manage</code>)</td>
 </tr>
 </tbody>
 </table>
+<hr />
+<h3 id="16-start-passkey-login">16. Start passkey login</h3>
+<p><strong><code>POST /api/v1/auth/passkeys/login/options</code></strong></p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/passkeys/login/options' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;email&quot;: &quot;jane@example.com&quot;,
+  &quot;userType&quot;: &quot;CUSTOMER&quot;
+}'
+</code></pre>
+<h4 id="response_14">Response</h4>
+<pre><code class="language-json">{
+  &quot;challenge&quot;: &quot;string&quot;,
+  &quot;rpId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;timeout&quot;: 1,
+  &quot;allowCredentials&quot;: [
+    {
+      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;type&quot;: &quot;CUSTOMER&quot;,
+      &quot;transports&quot;: [
+        &quot;string&quot;
+      ]
+    }
+  ],
+  &quot;userVerification&quot;: &quot;string&quot;
+}
+</code></pre>
+<hr />
+<h3 id="17-finish-passkey-login">17. Finish passkey login</h3>
+<p><strong><code>POST /api/v1/auth/passkeys/login</code></strong></p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/passkeys/login' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;email&quot;: &quot;jane@example.com&quot;,
+  &quot;userType&quot;: &quot;CUSTOMER&quot;,
+  &quot;credentialId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;clientDataJson&quot;: &quot;string&quot;,
+  &quot;authenticatorData&quot;: &quot;string&quot;,
+  &quot;signature&quot;: &quot;string&quot;,
+  &quot;mfaCode&quot;: &quot;SAVE10&quot;
+}'
+</code></pre>
+<h4 id="response_15">Response</h4>
+<pre><code class="language-json">{
+  &quot;user&quot;: {
+    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;email&quot;: &quot;jane@example.com&quot;,
+    &quot;isVerified&quot;: true,
+    &quot;userType&quot;: &quot;CUSTOMER&quot;,
+    &quot;isActive&quot;: true,
+    &quot;mfaEnabled&quot;: false,
+    &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;,
+    &quot;updatedAt&quot;: &quot;2024-05-06T12:00:00&quot;
+  },
+  &quot;accessToken&quot;: &quot;token-value&quot;,
+  &quot;refreshToken&quot;: &quot;token-value&quot;,
+  &quot;expiresIn&quot;: 1,
+  &quot;tokenType&quot;: &quot;CUSTOMER&quot;
+}
+</code></pre>
+<hr />
+<h3 id="18-list-my-passkeys">18. List my passkeys</h3>
+<p><strong><code>GET /api/v1/auth/passkeys</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/auth/passkeys' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;access_token&gt;'
+</code></pre>
+<h4 id="response_16">Response</h4>
+<pre><code class="language-json">[
+  {
+    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;credentialId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;name&quot;: &quot;Example&quot;,
+    &quot;transports&quot;: &quot;string&quot;,
+    &quot;signCount&quot;: 1,
+    &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;,
+    &quot;lastUsedAt&quot;: &quot;2024-05-06T12:00:00&quot;
+  }
+]
+</code></pre>
+<hr />
+<h3 id="19-start-passkey-registration">19. Start passkey registration</h3>
+<p><strong><code>POST /api/v1/auth/passkeys/register/options</code></strong></p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/passkeys/register/options' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;access_token&gt;'
+</code></pre>
+<h4 id="response_17">Response</h4>
+<pre><code class="language-json">{
+  &quot;challenge&quot;: &quot;string&quot;,
+  &quot;rpId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;rpName&quot;: &quot;string&quot;,
+  &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;userName&quot;: &quot;string&quot;,
+  &quot;userDisplayName&quot;: &quot;string&quot;,
+  &quot;timeout&quot;: 1,
+  &quot;excludeCredentials&quot;: [
+    {
+      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;type&quot;: &quot;CUSTOMER&quot;,
+      &quot;transports&quot;: [
+        &quot;string&quot;
+      ]
+    }
+  ],
+  &quot;userVerification&quot;: &quot;string&quot;
+}
+</code></pre>
+<hr />
+<h3 id="20-finish-passkey-registration">20. Finish passkey registration</h3>
+<p><strong><code>POST /api/v1/auth/passkeys/register</code></strong></p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/passkeys/register' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;access_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;credentialId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;clientDataJson&quot;: &quot;string&quot;,
+  &quot;publicKey&quot;: &quot;string&quot;,
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;transports&quot;: [
+    &quot;string&quot;
+  ],
+  &quot;password&quot;: &quot;string&quot;,
+  &quot;mfaCode&quot;: &quot;SAVE10&quot;
+}'
+</code></pre>
+<h4 id="response_18">Response</h4>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;credentialId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;transports&quot;: &quot;string&quot;,
+  &quot;signCount&quot;: 1,
+  &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;,
+  &quot;lastUsedAt&quot;: &quot;2024-05-06T12:00:00&quot;
+}
+</code></pre>
+<hr />
+<h3 id="21-delete-a-passkey">21. Delete a passkey</h3>
+<p><strong><code>DELETE /api/v1/auth/passkeys/{id}</code></strong></p>
+<pre><code class="language-bash">curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/auth/passkeys/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;access_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;password&quot;: &quot;string&quot;,
+  &quot;mfaCode&quot;: &quot;SAVE10&quot;
+}'
+</code></pre>
+<h4 id="response_19">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
+</code></pre>
+<hr />
+<h3 id="22-admin-search-users">22. Admin: search users</h3>
+<p><strong><code>GET /api/v1/admin/users</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/users?page=1&amp;perPage=20&amp;userType=CUSTOMER&amp;active=true&amp;query=phone' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;'
+</code></pre>
+<h4 id="response_20">Response</h4>
+<pre><code class="language-json">{
+  &quot;data&quot;: [
+    {
+      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;email&quot;: &quot;jane@example.com&quot;,
+      &quot;userType&quot;: &quot;CUSTOMER&quot;,
+      &quot;isVerified&quot;: true,
+      &quot;isActive&quot;: true,
+      &quot;mfaEnabled&quot;: false,
+      &quot;isGuest&quot;: false,
+      &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
+    }
+  ],
+  &quot;metadata&quot;: {
+    &quot;totalCount&quot;: 1,
+    &quot;limit&quot;: 20,
+    &quot;offset&quot;: 0,
+    &quot;page&quot;: 1,
+    &quot;perPage&quot;: 20,
+    &quot;totalPages&quot;: 1,
+    &quot;hasNext&quot;: false,
+    &quot;hasPrev&quot;: false
+  }
+}
+</code></pre>
+<hr />
+<h3 id="23-admin-user-detail">23. Admin: user detail</h3>
+<p><strong><code>GET /api/v1/admin/users/{id}</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;'
+</code></pre>
+<h4 id="response_21">Response</h4>
+<pre><code class="language-json">{
+  &quot;user&quot;: {
+    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;email&quot;: &quot;jane@example.com&quot;,
+    &quot;userType&quot;: &quot;CUSTOMER&quot;,
+    &quot;isVerified&quot;: true,
+    &quot;isActive&quot;: true,
+    &quot;mfaEnabled&quot;: false,
+    &quot;isGuest&quot;: false,
+    &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
+  },
+  &quot;sellerId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;shopStatus&quot;: &quot;PENDING&quot;,
+  &quot;kycStatus&quot;: &quot;NOT_SUBMITTED&quot;,
+  &quot;orderCount&quot;: 1
+}
+</code></pre>
+<hr />
+<h3 id="24-admin-activate-a-user">24. Admin: activate a user</h3>
+<p><strong><code>PUT /api/v1/admin/users/{id}/activate</code></strong></p>
+<pre><code class="language-bash">curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/activate' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;'
+</code></pre>
+<h4 id="response_22">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
+</code></pre>
+<hr />
+<h3 id="25-admin-deactivate-a-user">25. Admin: deactivate a user</h3>
+<p><strong><code>PUT /api/v1/admin/users/{id}/deactivate</code></strong></p>
+<pre><code class="language-bash">curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/deactivate' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;'
+</code></pre>
+<h4 id="response_23">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
+</code></pre>
+<hr />
+<h3 id="26-admin-inspect-loginotp-lockouts">26. Admin: inspect login/OTP lockouts</h3>
+<p><strong><code>GET /api/v1/admin/users/{id}/login-attempts</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/login-attempts' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;'
+</code></pre>
+<h4 id="response_24">Response</h4>
+<pre><code class="language-json">[
+  {
+    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;email&quot;: &quot;jane@example.com&quot;,
+    &quot;userType&quot;: &quot;CUSTOMER&quot;,
+    &quot;ipAddress&quot;: &quot;123 Main St&quot;,
+    &quot;attemptCount&quot;: 1,
+    &quot;lockedUntil&quot;: &quot;2024-05-06T12:00:00&quot;,
+    &quot;isLocked&quot;: true
+  }
+]
+</code></pre>
+<hr />
+<h3 id="27-admin-change-a-users-role">27. Admin: change a user's role</h3>
+<p><strong><code>PUT /api/v1/admin/users/{id}/type</code></strong></p>
+<pre><code class="language-bash">curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/type' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;userType&quot;: &quot;CUSTOMER&quot;
+}'
+</code></pre>
+<h4 id="response_25">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
+</code></pre>
+<hr />
+<h3 id="28-admin-clear-login-and-otp-lockouts">28. Admin: clear login and OTP lockouts</h3>
+<p><strong><code>POST /api/v1/admin/users/{id}/unlock</code></strong></p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/unlock' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;'
+</code></pre>
+<h4 id="response_26">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
+</code></pre>
+<hr />
+<h3 id="29-list-api-keys">29. List API keys</h3>
+<p><strong><code>GET /api/v1/api-keys</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/api-keys' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;access_token&gt;'
+</code></pre>
+<h4 id="response_27">Response</h4>
+<pre><code class="language-json">[
+  {
+    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;name&quot;: &quot;Example&quot;,
+    &quot;prefix&quot;: &quot;string&quot;,
+    &quot;scopes&quot;: [
+      &quot;string&quot;
+    ],
+    &quot;isActive&quot;: true,
+    &quot;lastUsedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
+    &quot;expiresAt&quot;: &quot;2024-05-06T12:00:00&quot;,
+    &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
+  }
+]
+</code></pre>
+<hr />
+<h3 id="30-create-api-key">30. Create API key</h3>
+<p><strong><code>POST /api/v1/api-keys</code></strong></p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/api-keys' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;access_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;scopes&quot;: [
+    &quot;string&quot;
+  ],
+  &quot;expiresAt&quot;: &quot;2024-05-06T12:00:00&quot;
+}'
+</code></pre>
+<h4 id="response_28">Response</h4>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;prefix&quot;: &quot;string&quot;,
+  &quot;scopes&quot;: [
+    &quot;string&quot;
+  ],
+  &quot;key&quot;: &quot;pending-orders&quot;,
+  &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
+}
+</code></pre>
+<hr />
+<h3 id="31-revoke-api-key">31. Revoke API key</h3>
+<p><strong><code>DELETE /api/v1/api-keys/{id}</code></strong></p>
+<pre><code class="language-bash">curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/api-keys/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;access_token&gt;'
+</code></pre>
+<h4 id="response_29">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
+</code></pre>
 <hr />
 <h2 id="error-handling">Error Handling</h2>
 <p>This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):</p>
@@ -3328,6 +5481,17 @@
 - At least one lowercase letter
 - At least one digit
 - At least one special character</p>
+<h3 id="multi-factor-authentication-totp">Multi-Factor Authentication (TOTP)</h3>
+<ul>
+<li>RFC 6238 TOTP with SHA-1, 6 digits and a 30-second period</li>
+<li>One time step of clock drift is accepted in either direction</li>
+<li>The secret is generated server-side and stored AES-GCM encrypted (<code>MFA_ENCRYPTION_KEY</code>, falling
+  back to <code>JWT_SECRET</code> in development); enable/disable requires a valid code</li>
+<li>A TOTP time step can only be used once, preventing code replay within the 30-second window</li>
+<li>When MFA is enabled, login must include <code>mfaCode</code></li>
+<li>Missing code returns <code>401 MFA_REQUIRED</code>; an incorrect code returns <code>401 INVALID_MFA_CODE</code></li>
+<li>Failed MFA attempts count toward the same 5-attempt lockout as bad passwords</li>
+</ul>
 <h3 id="refresh-token-security">Refresh Token Security</h3>
 <ul>
 <li>Refresh tokens are hashed before storage (SHA-256)</li>
@@ -3338,10 +5502,11 @@
 <h3 id="administrative-user-management-guidelines">Administrative User Management Guidelines</h3>
 <h3 id="role-management">Role Management</h3>
 <ul>
-<li>Only Admin and Super Admin accounts can modify user types</li>
-<li>User type changes may affect access to different parts of the system</li>
-<li>Deactivated users cannot log in but their data remains intact</li>
-<li>Activation restores full account access and functionality</li>
+<li>Admin endpoints require both an <code>ADMIN</code> account and the relevant permission.</li>
+<li>User type changes update the linked platform role assignment.</li>
+<li>Deactivated users cannot log in but their data remains intact.</li>
+<li>Activation restores account access; roles remain assigned.</li>
+<li>Role and permission management lives under <code>/api/v1/admin/rbac/*</code>; see <a href="../rbac/">RBAC</a>.</li>
 </ul>
 <h3 id="security-considerations">Security Considerations</h3>
 <ul>
@@ -3349,6 +5514,38 @@
 <li>Deactivation should be used for temporary account suspension</li>
 <li>Regular monitoring of user type changes helps maintain security</li>
 </ul>
+<h2 id="api-keys">API Keys</h2>
+<p>API keys are scoped to a subset of the owner's <strong>effective permissions</strong> and are shown once at creation. Send them as <code>Authorization: Bearer ek_...</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/api-keys</code></td>
+<td>List your API keys (metadata only)</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/api-keys</code></td>
+<td>Create a key (<code>name</code>, optional <code>scopes</code>, <code>expiresAt</code>)</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/v1/api-keys/{id}</code></td>
+<td>Revoke a key</td>
+</tr>
+</tbody>
+</table>
+<p>Scopes accept permission codes (<code>order:manage</code>, <code>inventory:manage</code>) or legacy enum names
+(<code>ORDER_MANAGE</code>, <code>INVENTORY_MANAGE</code>). Keys are re-checked against the owner's current effective
+permissions at authentication, so a role change narrows an existing key.</p>
+<p>Feature flags require <code>feature_flag:manage</code>; see <a href="../rbac/">RBAC</a>.</p>
 
 
 

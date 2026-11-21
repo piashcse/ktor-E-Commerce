@@ -1,0 +1,2479 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Ktor-E-Commerce is a high performance backend solution for modern e-commerce applications, built with JetBrain's ktor.">
+      
+      
+      
+        <link rel="canonical" href="https://piashcse.github.io/ktor-E-Commerce/seller-kyc/">
+      
+      
+        <link rel="prev" href="../notification/">
+      
+      
+        <link rel="next" href="../seller-tools/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.21">
+    
+    
+      
+        <title>Seller KYC - Ktor-E-Commerce</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.2a3383ac.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../css/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#seller-kyc" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Ktor-E-Commerce" class="md-header__button md-logo" aria-label="Ktor-E-Commerce" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Ktor-E-Commerce
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Seller KYC
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="green" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../auth/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Ktor-E-Commerce" class="md-nav__button md-logo" aria-label="Ktor-E-Commerce" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Ktor-E-Commerce
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            API Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Auth
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rbac/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Users, Roles & Permissions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../profile/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Profile
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shop-category/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shop Category
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shop
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shop-public/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shop Public
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../brand/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Brand
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../product-category/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Product Category
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../product-sub-category/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Product Sub Category
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../product/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Product
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../product-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Product Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../recommendations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Recommendations
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../review-rating/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Review Rating
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wishlist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    WishList
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Cart
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../checkout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Checkout
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../order/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Order
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Payment
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../coupon/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Coupon
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-address/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Address
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-method/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Method
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipments
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Inventory
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../warehouse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Warehouses
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../refund-request/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Refund Request
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rma/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    RMA / Returns
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Notifications
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Seller KYC
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Seller KYC
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Endpoints
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-submit-kyc" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Submit KYC
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpoint-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Endpoint Details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoint Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3-get-my-kyc-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Get my KYC status
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Get my KYC status">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-admin-list-kyc-submissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Admin: list KYC submissions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Admin: list KYC submissions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-admin-bulk-reject-kyc" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Admin: bulk reject KYC
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Admin: bulk reject KYC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-admin-bulk-verify-kyc" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Admin: bulk verify KYC
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Admin: bulk verify KYC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-admin-export-kyc-submissions-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Admin: export KYC submissions CSV
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Admin: export KYC submissions CSV">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-admin-kyc-decision-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Admin: KYC decision history
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Admin: KYC decision history">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-get-my-kyc-submission-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Get my KYC submission history
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Get my KYC submission history">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-admin-reject-kyc" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Admin: reject KYC
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Admin: reject KYC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seller-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Seller Reviews & Commission
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../payout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Payouts & Statements
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tax/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tax Rules
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fraud/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fraud & Chargebacks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../loyalty/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Loyalty & Wallet
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../localization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Localization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../subscriptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Subscriptions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../b2b/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    B2B Quotes & POs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../omnichannel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    BOPIS, POS & Stores
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CMS, SEO & Sitemap
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Support Tickets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FX Rates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Keys
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../feature-flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Feature Flags
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../outbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Outbox & DLQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Privacy Policy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Retention
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-policy-consent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Privacy Policy Consent
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Analytics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../audit-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Audit Log
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Changelog
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Endpoints
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-submit-kyc" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Submit KYC
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpoint-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Endpoint Details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoint Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3-get-my-kyc-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Get my KYC status
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Get my KYC status">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-admin-list-kyc-submissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Admin: list KYC submissions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Admin: list KYC submissions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-admin-bulk-reject-kyc" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Admin: bulk reject KYC
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Admin: bulk reject KYC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-admin-bulk-verify-kyc" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Admin: bulk verify KYC
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Admin: bulk verify KYC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-admin-export-kyc-submissions-csv" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Admin: export KYC submissions CSV
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Admin: export KYC submissions CSV">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-admin-kyc-decision-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Admin: KYC decision history
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Admin: KYC decision history">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-get-my-kyc-submission-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Get my KYC submission history
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Get my KYC submission history">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-admin-reject-kyc" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Admin: reject KYC
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Admin: reject KYC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="seller-kyc">Seller KYC</h1>
+<p>Seller identity and bank verification required before payouts.</p>
+<h2 id="endpoints">Endpoints</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+<th>Authentication Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/seller/kyc</code></td>
+<td>Current KYC state</td>
+<td>Yes (Seller)</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/seller/kyc</code></td>
+<td>Submit business/bank details and optional document URL</td>
+<td>Yes (Seller)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/admin/sellers?status=PENDING</code></td>
+<td>Admin KYC queue (optional status filter)</td>
+<td>Yes (Admin)</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/v1/admin/sellers/{sellerId}/verify</code></td>
+<td>Verify KYC</td>
+<td>Yes (Admin)</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/v1/admin/sellers/{sellerId}/reject</code></td>
+<td>Reject KYC with a reason</td>
+<td>Yes (Admin)</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/admin/sellers/bulk/reject</code></td>
+<td>Admin: bulk reject KYC</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/admin/sellers/bulk/verify</code></td>
+<td>Admin: bulk verify KYC</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/admin/sellers/export</code></td>
+<td>Admin: export KYC submissions CSV</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/admin/sellers/{sellerId}/history</code></td>
+<td>Admin: KYC decision history</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/seller/kyc/history</code></td>
+<td>Get my KYC submission history</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<p>States: <code>NOT_SUBMITTED → PENDING → VERIFIED</code> or <code>PENDING → REJECTED</code>.</p>
+<h3 id="1-submit-kyc">1. Submit KYC</h3>
+<p><strong><code>POST /api/v1/seller/kyc</code></strong>
+{
+  "businessName": "ACME Ltd",
+  "businessRegistrationNumber": "REG-12345",
+  "taxId": "TAX-9988",
+  "bankAccountNumber": "0123456789",
+  "bankName": "Example Bank",
+  "bankRoutingNumber": "110000",
+  "documentUrl": "/uploads/kyc/acme.pdf"
+}</p>
+<pre><code>
+All fields are optional; submitting sets the status to `PENDING`. A `documentUrl` must point to an
+already-uploaded document.
+
+### 2. Verify / reject
+
+**`PUT /api/v1/admin/sellers/{sellerId}/verify`**
+
+```json
+{
+  &quot;reason&quot;: &quot;Business registration expired&quot;
+}
+</code></pre>
+<p>Marks the seller <code>REJECTED</code> and stores <code>rejectionReason</code>, which is returned by
+<code>GET /api/v1/seller/kyc</code>.</p>
+<pre><code class="language-bash">curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/sellers/seller-1/reject' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{&quot;reason&quot;:&quot;Business registration expired&quot;}'
+</code></pre>
+<h2 id="endpoint-details">Endpoint Details</h2>
+<h3 id="3-get-my-kyc-status">3. Get my KYC status</h3>
+<p><strong><code>GET /api/v1/seller/kyc</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/kyc' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;seller_token&gt;'
+</code></pre>
+<h4 id="response">Response</h4>
+<pre><code class="language-json">{
+  &quot;sellerId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;email&quot;: &quot;jane@example.com&quot;,
+  &quot;businessName&quot;: &quot;string&quot;,
+  &quot;businessRegistrationNumber&quot;: &quot;string&quot;,
+  &quot;taxId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;bankName&quot;: &quot;string&quot;,
+  &quot;kycStatus&quot;: &quot;NOT_SUBMITTED&quot;,
+  &quot;documentUrl&quot;: &quot;string&quot;,
+  &quot;submittedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
+  &quot;verifiedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
+  &quot;rejectionReason&quot;: &quot;Policy violation&quot;,
+  &quot;shopStatus&quot;: &quot;ACTIVE&quot;
+}
+</code></pre>
+<hr />
+<h3 id="4-admin-list-kyc-submissions">4. Admin: list KYC submissions</h3>
+<p><strong><code>GET /api/v1/admin/sellers</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/sellers?page=1&amp;perPage=20&amp;status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;'
+</code></pre>
+<h4 id="response_1">Response</h4>
+<pre><code class="language-json">{
+  &quot;data&quot;: [
+    {
+      &quot;sellerId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;email&quot;: &quot;jane@example.com&quot;,
+      &quot;businessName&quot;: &quot;string&quot;,
+      &quot;businessRegistrationNumber&quot;: &quot;string&quot;,
+      &quot;taxId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;bankName&quot;: &quot;string&quot;,
+      &quot;kycStatus&quot;: &quot;NOT_SUBMITTED&quot;,
+      &quot;documentUrl&quot;: &quot;string&quot;,
+      &quot;submittedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
+      &quot;verifiedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
+      &quot;rejectionReason&quot;: &quot;Policy violation&quot;,
+      &quot;shopStatus&quot;: &quot;ACTIVE&quot;
+    }
+  ],
+  &quot;metadata&quot;: {
+    &quot;totalCount&quot;: 1,
+    &quot;limit&quot;: 20,
+    &quot;offset&quot;: 0,
+    &quot;page&quot;: 1,
+    &quot;perPage&quot;: 20,
+    &quot;totalPages&quot;: 1,
+    &quot;hasNext&quot;: false,
+    &quot;hasPrev&quot;: false
+  }
+}
+</code></pre>
+<hr />
+<h3 id="5-admin-bulk-reject-kyc">5. Admin: bulk reject KYC</h3>
+<p><strong><code>POST /api/v1/admin/sellers/bulk/reject</code></strong></p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/sellers/bulk/reject' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;ids&quot;: [
+    &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;
+  ],
+  &quot;reason&quot;: &quot;Policy violation&quot;
+}'
+</code></pre>
+<h4 id="response_2">Response</h4>
+<pre><code class="language-json">{
+  &quot;requested&quot;: 1,
+  &quot;succeeded&quot;: 1,
+  &quot;failed&quot;: []
+}
+</code></pre>
+<hr />
+<h3 id="6-admin-bulk-verify-kyc">6. Admin: bulk verify KYC</h3>
+<p><strong><code>POST /api/v1/admin/sellers/bulk/verify</code></strong></p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/sellers/bulk/verify' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;ids&quot;: [
+    &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;
+  ],
+  &quot;reason&quot;: &quot;Policy violation&quot;
+}'
+</code></pre>
+<h4 id="response_3">Response</h4>
+<pre><code class="language-json">{
+  &quot;requested&quot;: 1,
+  &quot;succeeded&quot;: 1,
+  &quot;failed&quot;: []
+}
+</code></pre>
+<hr />
+<h3 id="7-admin-export-kyc-submissions-csv">7. Admin: export KYC submissions CSV</h3>
+<p><strong><code>GET /api/v1/admin/sellers/export</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/sellers/export?status=PENDING' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;'
+</code></pre>
+<h4 id="response_4">Response</h4>
+<pre><code class="language-csv">id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+</code></pre>
+<hr />
+<h3 id="8-admin-kyc-decision-history">8. Admin: KYC decision history</h3>
+<p><strong><code>GET /api/v1/admin/sellers/{sellerId}/history</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/sellers/6c5078d3-f8e3-4c88-9afe-48b5423c664f/history' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;'
+</code></pre>
+<h4 id="response_5">Response</h4>
+<pre><code class="language-json">[
+  {
+    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;status&quot;: &quot;PENDING&quot;,
+    &quot;reason&quot;: &quot;Policy violation&quot;,
+    &quot;actorId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
+  }
+]
+</code></pre>
+<hr />
+<h3 id="9-get-my-kyc-submission-history">9. Get my KYC submission history</h3>
+<p><strong><code>GET /api/v1/seller/kyc/history</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/kyc/history' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;seller_token&gt;'
+</code></pre>
+<h4 id="response_6">Response</h4>
+<pre><code class="language-json">[
+  {
+    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;status&quot;: &quot;PENDING&quot;,
+    &quot;reason&quot;: &quot;Policy violation&quot;,
+    &quot;actorId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
+  }
+]
+</code></pre>
+<hr />
+<h3 id="10-admin-reject-kyc">10. Admin: reject KYC</h3>
+<p><strong><code>PUT /api/v1/admin/sellers/{sellerId}/reject</code></strong></p>
+<p>Admin: reject KYC</p>
+<h4 id="request">Request</h4>
+<pre><code class="language-bash">curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/sellers/6c5078d3-f8e3-4c88-9afe-48b5423c664f/reject' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;reason&quot;: &quot;Policy violation&quot;
+}'
+</code></pre>
+<h4 id="response_7">Response</h4>
+<pre><code class="language-json">{
+  &quot;sellerId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;email&quot;: &quot;jane@example.com&quot;,
+  &quot;businessName&quot;: &quot;string&quot;,
+  &quot;businessRegistrationNumber&quot;: &quot;string&quot;,
+  &quot;taxId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;bankName&quot;: &quot;string&quot;,
+  &quot;kycStatus&quot;: &quot;NOT_SUBMITTED&quot;,
+  &quot;documentUrl&quot;: &quot;string&quot;,
+  &quot;submittedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
+  &quot;verifiedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
+  &quot;rejectionReason&quot;: &quot;Policy violation&quot;,
+  &quot;shopStatus&quot;: &quot;ACTIVE&quot;
+}
+</code></pre>
+<hr />
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.tabs"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>

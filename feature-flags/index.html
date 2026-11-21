@@ -10,7 +10,13 @@
       
       
       
+        <link rel="canonical" href="https://piashcse.github.io/ktor-E-Commerce/feature-flags/">
       
+      
+        <link rel="prev" href="../api-keys/">
+      
+      
+        <link rel="next" href="../outbox/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -18,7 +24,7 @@
     
     
       
-        <title>Environment Variables Configuration - Ktor-E-Commerce</title>
+        <title>Feature Flags - Ktor-E-Commerce</title>
       
     
     
@@ -72,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#environment-variables-configuration" class="md-skip">
+        <a href="#feature-flags" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Environment Variables Configuration
+              Feature Flags
             
           </span>
         </div>
@@ -196,7 +202,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/piashcse/ktor-ecommerce" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -244,10 +250,12 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
+      <li class="md-tabs__item md-tabs__item--active">
         <a href="../auth/" class="md-tabs__link">
           
   
@@ -311,7 +319,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/piashcse/ktor-ecommerce" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -350,24 +358,29 @@
       
   
   
+    
   
   
+  
     
     
     
     
-      
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -380,7 +393,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             API Reference
@@ -400,6 +413,29 @@
   
   <span class="md-ellipsis">
     Auth
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rbac/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Users, Roles & Permissions
     
   </span>
   
@@ -440,29 +476,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../shop/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Shop
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../shop-category/" class="md-nav__link">
         
   
@@ -486,12 +499,58 @@
   
   
     <li class="md-nav__item">
-      <a href="../product/" class="md-nav__link">
+      <a href="../shop/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Product
+    Shop
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shop-public/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shop Public
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../brand/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Brand
     
   </span>
   
@@ -555,12 +614,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../brand/" class="md-nav__link">
+      <a href="../product/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Brand
+    Product
     
   </span>
   
@@ -578,12 +637,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../wishlist/" class="md-nav__link">
+      <a href="../product-variants/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Wishlist
+    Product Variants
     
   </span>
   
@@ -601,12 +660,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../shipping/" class="md-nav__link">
+      <a href="../recommendations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Shipping
+    Recommendations
     
   </span>
   
@@ -647,12 +706,58 @@
   
   
     <li class="md-nav__item">
+      <a href="../wishlist/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    WishList
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../cart/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Cart
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../checkout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Checkout
     
   </span>
   
@@ -716,12 +821,81 @@
   
   
     <li class="md-nav__item">
-      <a href="../privacy-policy/" class="md-nav__link">
+      <a href="../coupon/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Privacy Policy & Consents
+    Coupon
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-address/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Address
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping-method/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipping Method
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shipping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipments
     
   </span>
   
@@ -744,7 +918,728 @@
   
   
   <span class="md-ellipsis">
-    Inventory Management
+    Inventory
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../warehouse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Warehouses
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../refund-request/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Refund Request
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rma/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    RMA / Returns
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Notifications
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seller-kyc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Seller KYC
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seller-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Seller Reviews & Commission
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../payout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Payouts & Statements
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tax/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tax Rules
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fraud/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fraud & Chargebacks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../loyalty/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Loyalty & Wallet
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../localization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Localization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../subscriptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Subscriptions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../b2b/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    B2B Quotes & POs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../omnichannel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    BOPIS, POS & Stores
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CMS, SEO & Sitemap
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Support Tickets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FX Rates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Keys
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Feature Flags
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Feature Flags
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Endpoints
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      Known flags
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpoint-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Endpoint Details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoint Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-list-feature-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. List feature flags
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. List feature flags">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-set-feature-flag" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Set feature flag
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Set feature flag">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../outbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Outbox & DLQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Privacy Policy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Retention
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-policy-consent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Privacy Policy Consent
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dashboard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Analytics
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../audit-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Audit Log
     
   </span>
   
@@ -811,48 +1706,78 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#setup" class="md-nav__link">
+  <a href="#endpoints" class="md-nav__link">
     <span class="md-ellipsis">
-      Setup
+      Endpoints
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#known-flags" class="md-nav__link">
     <span class="md-ellipsis">
-      Usage
+      Known flags
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Usage">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#endpoint-details" class="md-nav__link">
+    <span class="md-ellipsis">
+      Endpoint Details
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoint Details">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#using-dotenvconfig-recommended" class="md-nav__link">
+  <a href="#1-list-feature-flags" class="md-nav__link">
     <span class="md-ellipsis">
-      Using DotEnvConfig (Recommended)
+      1. List feature flags
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. List feature flags">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
     </span>
   </a>
   
 </li>
         
+      </ul>
+    </nav>
+  
+</li>
+        
           <li class="md-nav__item">
-  <a href="#using-environment-utility-directly" class="md-nav__link">
+  <a href="#2-set-feature-flag" class="md-nav__link">
     <span class="md-ellipsis">
-      Using Environment Utility Directly
+      2. Set feature flag
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Set feature flag">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
     </span>
   </a>
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#adding-new-environment-variables" class="md-nav__link">
-    <span class="md-ellipsis">
-      Adding New Environment Variables
-    </span>
-  </a>
+      </ul>
+    </nav>
   
 </li>
         
@@ -880,61 +1805,92 @@
   
 
 
-<h1 id="environment-variables-configuration">Environment Variables Configuration</h1>
-<p>This project uses the <code>io.github.cdimascio:dotenv-kotlin</code> library to manage environment variables.</p>
-<h2 id="setup">Setup</h2>
-<ol>
-<li>Create a <code>.env</code> file in the project root directory</li>
-<li>Add your configuration values to the <code>.env</code> file</li>
-</ol>
-<p>Example <code>.env</code> file:</p>
-<pre><code class="language-env"># Database Configuration
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=ecommerce_db
-DB_USER=postgres
-DB_PASSWORD=postgres
-
-# JWT Configuration
-JWT_SECRET=secret
-JWT_AUDIENCE=ecommerce-app
-JWT_REALM=ecommerce-server
-JWT_ISSUER=http://0.0.0.0:8080/
-
-# Email Configuration
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USERNAME=your-email@gmail.com
-EMAIL_PASSWORD=your-app-password
-
-# Server Configuration
-SERVER_PORT=8080
+<h1 id="feature-flags">Feature Flags</h1>
+<p>Runtime switches that toggle platform capabilities without a redeploy.</p>
+<h2 id="endpoints">Endpoints</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/admin/feature-flags</code></td>
+<td>List all flags</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/v1/admin/feature-flags/{key}</code></td>
+<td>Enable/disable a flag</td>
+</tr>
+</tbody>
+</table>
+<p>Update body:</p>
+<pre><code class="language-json">{
+  &quot;enabled&quot;: true,
+  &quot;description&quot;: &quot;Allow checkout without an account&quot;
+}
 </code></pre>
-<h2 id="usage">Usage</h2>
-<h3 id="using-dotenvconfig-recommended">Using DotEnvConfig (Recommended)</h3>
-<p>The project provides a <code>DotEnvConfig</code> object that you can use to access environment variables:</p>
-<pre><code class="language-kotlin">import com.piashcse.config.DotEnvConfig
-
-val dbHost = DotEnvConfig.dbHost
-val dbPort = DotEnvConfig.dbPort
-val jwtSecret = DotEnvConfig.jwtSecret
+<h2 id="known-flags">Known flags</h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>guest_checkout</code></td>
+<td>Enables <code>POST /api/v1/checkout/guest</code></td>
+</tr>
+</tbody>
+</table>
+<p>Unknown flags default to disabled (<code>FeatureFlags.isEnabled</code> returns <code>false</code>).</p>
+<h2 id="endpoint-details">Endpoint Details</h2>
+<h3 id="1-list-feature-flags">1. List feature flags</h3>
+<p><strong><code>GET /api/v1/admin/feature-flags</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/feature-flags' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;'
 </code></pre>
-<h3 id="using-environment-utility-directly">Using Environment Utility Directly</h3>
-<p>You can also use the <code>Environment</code> utility class directly:</p>
-<pre><code class="language-kotlin">import com.piashcse.utils.Environment
-
-val dbHost = Environment.get(&quot;DB_HOST&quot;, &quot;localhost&quot;)
-val dbPort = Environment.getInt(&quot;DB_PORT&quot;, 5432)
-val jwtSecret = Environment.get(&quot;JWT_SECRET&quot;, &quot;default-secret&quot;)
+<h4 id="response">Response</h4>
+<pre><code class="language-json">[
+  {
+    &quot;key&quot;: &quot;pending-orders&quot;,
+    &quot;enabled&quot;: true,
+    &quot;description&quot;: &quot;Looks good&quot;,
+    &quot;updatedAt&quot;: &quot;2024-05-06T12:00:00&quot;
+  }
+]
 </code></pre>
-<h3 id="adding-new-environment-variables">Adding New Environment Variables</h3>
-<ol>
-<li>Add the new variable to your <code>.env</code> file</li>
-<li>Update the <code>DotEnvConfig</code> object to include the new variable:
-   <code>kotlin
-   val newVariable: String get() = Environment.get("NEW_VARIABLE", "default-value")</code></li>
-<li>Use the variable in your code through <code>DotEnvConfig.newVariable</code></li>
-</ol>
+<hr />
+<h3 id="2-set-feature-flag">2. Set feature flag</h3>
+<p><strong><code>PUT /api/v1/admin/feature-flags/{key}</code></strong></p>
+<pre><code class="language-bash">curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/feature-flags/new_checkout' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;enabled&quot;: true,
+  &quot;description&quot;: &quot;Looks good&quot;
+}'
+</code></pre>
+<h4 id="response_1">Response</h4>
+<pre><code class="language-json">{
+  &quot;key&quot;: &quot;pending-orders&quot;,
+  &quot;enabled&quot;: true,
+  &quot;description&quot;: &quot;Looks good&quot;,
+  &quot;updatedAt&quot;: &quot;2024-05-06T12:00:00&quot;
+}
+</code></pre>
+<hr />
 
 
 

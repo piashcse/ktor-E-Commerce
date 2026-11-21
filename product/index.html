@@ -10,11 +10,13 @@
       
       
       
+        <link rel="canonical" href="https://piashcse.github.io/ktor-E-Commerce/product/">
+      
       
         <link rel="prev" href="../product-sub-category/">
       
       
-        <link rel="next" href="../review-rating/">
+        <link rel="next" href="../product-variants/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -76,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#product-api" class="md-skip">
+        <a href="#product" class="md-skip">
           Skip to content
         </a>
       
@@ -200,7 +202,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/piashcse/ktor-ecommerce" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -317,7 +319,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/piashcse/ktor-ecommerce" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/piashcse/ktor-E-Commerce" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.0.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -411,6 +413,29 @@
   
   <span class="md-ellipsis">
     Auth
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rbac/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Users, Roles & Permissions
     
   </span>
   
@@ -649,9 +674,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#product-endpoints" class="md-nav__link">
+  <a href="#product_1" class="md-nav__link">
     <span class="md-ellipsis">
-      Product Endpoints
+      Product
     </span>
   </a>
   
@@ -683,18 +708,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-request" class="md-nav__link">
+  <a href="#response" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -716,18 +732,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#query-parameters" class="md-nav__link">
+  <a href="#request" class="md-nav__link">
     <span class="md-ellipsis">
-      Query Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-request_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
@@ -745,21 +752,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Get Seller Products">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#example-request_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Request
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
           <li class="md-nav__item">
@@ -773,9 +765,660 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-request_3" class="md-nav__link">
+  <a href="#multipart-form-data" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Multipart Form Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Headers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#request_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-update-product" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Update product
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Update product">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-delete-product" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Delete product
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Delete product">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-retrieve-a-paginated-list-of-products-with-optional-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Retrieve a paginated list of products with optional filters
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Retrieve a paginated list of products with optional filters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-product-search-suggestions" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Product search suggestions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Product search suggestions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-get-product-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Get product detail
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Get product detail">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-list-product-variants" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. List product variants
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. List product variants">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-list-product-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. List product options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. List product options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-related-products" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Related products
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Related products">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-frequently-bought-together" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. Frequently bought together
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Frequently bought together">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-best-seller-recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. Best-seller recommendations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Best-seller recommendations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-admin-permanently-delete-any-product" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. Admin - Permanently delete any product
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. Admin - Permanently delete any product">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-assign-a-product-tax-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. Assign a product tax class
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. Assign a product tax class">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#17-list-a-products-translations" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. List a product's translations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. List a product&#39;s translations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#18-delete-a-product-translation" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. Delete a product translation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. Delete a product translation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19-create-or-update-a-product-translation" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. Create or update a product translation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. Create or update a product translation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#20-create-option-dimension" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. Create option dimension
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. Create option dimension">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#21-delete-option-dimension" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. Delete option dimension
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21. Delete option dimension">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-add-option-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      22. Add option value
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="22. Add option value">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-delete-option-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      23. Delete option value
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23. Delete option value">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-create-product-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      24. Create product variant
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="24. Create product variant">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-delete-product-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      25. Delete product variant
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25. Delete product variant">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-update-product-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      26. Update product variant
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="26. Update product variant">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#27-attach-option-values-to-a-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      27. Attach option values to a variant
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="27. Attach option values to a variant">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#28-list-back-in-stock-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      28. List back-in-stock alerts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="28. List back-in-stock alerts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#29-subscribe-to-a-back-in-stock-alert" class="md-nav__link">
+    <span class="md-ellipsis">
+      29. Subscribe to a back-in-stock alert
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29. Subscribe to a back-in-stock alert">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#30-remove-a-back-in-stock-alert" class="md-nav__link">
+    <span class="md-ellipsis">
+      30. Remove a back-in-stock alert
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30. Remove a back-in-stock alert">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
     </span>
   </a>
   
@@ -798,7 +1441,16 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Error Handling">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-catalog-and-recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Public catalog and recommendations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Public catalog and recommendations">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -828,6 +1480,52 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../product-variants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Product Variants
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../recommendations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Recommendations
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -1047,12 +1745,58 @@
   
   
     <li class="md-nav__item">
+      <a href="../shipping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Shipments
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../inventory/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Inventory
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../warehouse/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Warehouses
     
   </span>
   
@@ -1093,12 +1837,449 @@
   
   
     <li class="md-nav__item">
+      <a href="../rma/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    RMA / Returns
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Notifications
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seller-kyc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Seller KYC
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seller-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Seller Reviews & Commission
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../payout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Payouts & Statements
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tax/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tax Rules
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fraud/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Fraud & Chargebacks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../loyalty/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Loyalty & Wallet
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../localization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Localization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../subscriptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Subscriptions
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../b2b/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    B2B Quotes & POs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../omnichannel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    BOPIS, POS & Stores
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CMS, SEO & Sitemap
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Support Tickets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FX Rates
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-keys/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Keys
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../feature-flags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Feature Flags
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../outbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Outbox & DLQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../privacy-policy/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     Privacy Policy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../privacy-retention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Data Retention
     
   </span>
   
@@ -1145,6 +2326,29 @@
   
   <span class="md-ellipsis">
     Dashboard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analytics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Analytics
     
   </span>
   
@@ -1244,9 +2448,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#product-endpoints" class="md-nav__link">
+  <a href="#product_1" class="md-nav__link">
     <span class="md-ellipsis">
-      Product Endpoints
+      Product
     </span>
   </a>
   
@@ -1278,18 +2482,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-request" class="md-nav__link">
+  <a href="#response" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Response
+      Response
     </span>
   </a>
   
@@ -1311,18 +2506,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#query-parameters" class="md-nav__link">
+  <a href="#request" class="md-nav__link">
     <span class="md-ellipsis">
-      Query Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-request_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Request
+      Request
     </span>
   </a>
   
@@ -1340,21 +2526,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Get Seller Products">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#example-request_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Request
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
           <li class="md-nav__item">
@@ -1368,9 +2539,660 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-request_3" class="md-nav__link">
+  <a href="#multipart-form-data" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Request
+      Multipart Form Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Headers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#request_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Request
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#response_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-update-product" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Update product
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Update product">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-delete-product" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Delete product
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Delete product">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-retrieve-a-paginated-list-of-products-with-optional-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Retrieve a paginated list of products with optional filters
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Retrieve a paginated list of products with optional filters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-product-search-suggestions" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Product search suggestions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Product search suggestions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-get-product-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Get product detail
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Get product detail">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-list-product-variants" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. List product variants
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. List product variants">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-list-product-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. List product options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. List product options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-related-products" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Related products
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Related products">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-frequently-bought-together" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. Frequently bought together
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Frequently bought together">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-best-seller-recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. Best-seller recommendations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Best-seller recommendations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-admin-permanently-delete-any-product" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. Admin - Permanently delete any product
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. Admin - Permanently delete any product">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-assign-a-product-tax-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. Assign a product tax class
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. Assign a product tax class">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#17-list-a-products-translations" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. List a product's translations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. List a product&#39;s translations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#18-delete-a-product-translation" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. Delete a product translation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. Delete a product translation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19-create-or-update-a-product-translation" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. Create or update a product translation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. Create or update a product translation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#20-create-option-dimension" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. Create option dimension
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. Create option dimension">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#21-delete-option-dimension" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. Delete option dimension
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21. Delete option dimension">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-add-option-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      22. Add option value
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="22. Add option value">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-delete-option-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      23. Delete option value
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23. Delete option value">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-create-product-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      24. Create product variant
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="24. Create product variant">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-delete-product-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      25. Delete product variant
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25. Delete product variant">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-update-product-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      26. Update product variant
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="26. Update product variant">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#27-attach-option-values-to-a-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      27. Attach option values to a variant
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="27. Attach option values to a variant">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#28-list-back-in-stock-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      28. List back-in-stock alerts
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="28. List back-in-stock alerts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#29-subscribe-to-a-back-in-stock-alert" class="md-nav__link">
+    <span class="md-ellipsis">
+      29. Subscribe to a back-in-stock alert
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29. Subscribe to a back-in-stock alert">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#30-remove-a-back-in-stock-alert" class="md-nav__link">
+    <span class="md-ellipsis">
+      30. Remove a back-in-stock alert
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30. Remove a back-in-stock alert">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      Response
     </span>
   </a>
   
@@ -1393,7 +3215,16 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Error Handling">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-catalog-and-recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Public catalog and recommendations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Public catalog and recommendations">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1438,14 +3269,19 @@
   
 
 
-<h1 id="product-api">Product API</h1>
-<p>This documentation provides comprehensive details for the Product API endpoints. The API supports managing products within the platform, including creating, retrieving, updating, and deleting products. Products are associated with categories and can be managed by authorized sellers or administrators.</p>
-<p><strong>Base URL:</strong> <code>http://localhost:8080</code></p>
+<h1 id="product">Product</h1>
+<blockquote>
+<p>Note: <code>status</code> is a string enum (<code>ACTIVE</code>, <code>OUT_OF_STOCK</code>). Optional fields have defaults; partial updates are supported.</p>
+</blockquote>
+<p>Catalog search, variants, options, images, translations and stock alerts.</p>
 <h2 id="authentication">Authentication</h2>
 <p>Most Product API endpoints require Bearer token authentication. Include the access token in the Authorization header:</p>
 <pre><code>Authorization: Bearer &lt;your_access_token&gt;
 </code></pre>
-<h3 id="product-endpoints">Product Endpoints</h3>
+<h3 id="product_1">Product</h3>
+<blockquote>
+<p>Note: <code>status</code> is a string enum (<code>ACTIVE</code>, <code>OUT_OF_STOCK</code>). Optional fields have defaults; partial updates are supported. Endpoints</p>
+</blockquote>
 <table>
 <thead>
 <tr>
@@ -1488,8 +3324,8 @@
 </tr>
 <tr>
 <td><code>GET</code></td>
-<td><code>/api/v1/products/{id}</code></td>
-<td>Retrieve a specific product</td>
+<td><code>/api/v1/products</code></td>
+<td>Retrieve a paginated list of products with optional filters</td>
 <td>No</td>
 </tr>
 <tr>
@@ -1499,10 +3335,142 @@
 <td>No</td>
 </tr>
 <tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/products/suggest</code></td>
+<td>Autocomplete over products, categories and brands</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/products/{id}</code></td>
+<td>Retrieve a specific product</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/products/{id}/variants</code></td>
+<td>List purchasable variants</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/products/{id}/options</code></td>
+<td>List option dimensions and values</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/products/{id}/related</code></td>
+<td>Related products</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/products/{id}/also-bought</code></td>
+<td>Frequently bought together</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/products/recommendations</code></td>
+<td>Best-seller recommendations</td>
+<td>No</td>
+</tr>
+<tr>
 <td><code>DELETE</code></td>
 <td><code>/api/v1/admin/products/{id}</code></td>
 <td>Delete a product (Admin)</td>
 <td>Yes (Admin)</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/v1/admin/products/{id}/tax-class</code></td>
+<td>Assign a product tax class</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/admin/products/{id}/translations</code></td>
+<td>List a product's translations</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/v1/admin/products/{id}/translations/{locale}</code></td>
+<td>Delete a product translation</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/v1/admin/products/{id}/translations/{locale}</code></td>
+<td>Create or update a product translation</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/seller/products/{id}/options</code></td>
+<td>Create option dimension</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/v1/seller/products/{id}/options/{optionId}</code></td>
+<td>Delete option dimension</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/seller/products/{id}/options/{optionId}/values</code></td>
+<td>Add option value</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/v1/seller/products/{id}/options/{optionId}/values/{valueId}</code></td>
+<td>Delete option value</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/seller/products/{id}/variants</code></td>
+<td>Create product variant</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/v1/seller/products/{id}/variants/{variantId}</code></td>
+<td>Delete product variant</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/v1/seller/products/{id}/variants/{variantId}</code></td>
+<td>Update product variant</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/v1/seller/products/{id}/variants/{variantId}/options</code></td>
+<td>Attach option values to a variant</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/stock-alerts</code></td>
+<td>List back-in-stock alerts</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/stock-alerts</code></td>
+<td>Subscribe to a back-in-stock alert</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/v1/stock-alerts/{productId}</code></td>
+<td>Remove a back-in-stock alert</td>
+<td>Yes</td>
 </tr>
 </tbody>
 </table>
@@ -1510,8 +3478,6 @@
 <h2 id="endpoint-details">Endpoint Details</h2>
 <h3 id="1-create-product-seller">1. Create Product (Seller)</h3>
 <p><strong><code>POST /api/v1/seller/products</code></strong></p>
-<p>Create a new product as a seller. The product will be automatically associated with your shop.</p>
-<h4 id="example-request">Example Request</h4>
 <pre><code class="language-bash">curl -X 'POST' \
   'http://localhost:8080/api/v1/seller/products' \
   -H 'accept: application/json' \
@@ -1528,7 +3494,7 @@
   &quot;images&quot;: [&quot;image1.png&quot;]
 }'
 </code></pre>
-<h4 id="example-response">Example Response</h4>
+<h4 id="response">Response</h4>
 <pre><code class="language-json">{
   &quot;id&quot;: &quot;718f0b9a-24ef-450f-9126-7d3d9b27cad5&quot;,
   &quot;name&quot;: &quot;Smart watch&quot;,
@@ -1538,8 +3504,6 @@
 <hr />
 <h3 id="2-search-products">2. Search Products</h3>
 <p><strong><code>GET /api/v1/products/search</code></strong></p>
-<p>Search for products using various filters. This is a public endpoint.</p>
-<h4 id="query-parameters">Query Parameters</h4>
 <table>
 <thead>
 <tr>
@@ -1606,7 +3570,7 @@
 </tr>
 </tbody>
 </table>
-<h4 id="example-request_1">Example Request</h4>
+<h4 id="request">Request</h4>
 <pre><code class="language-bash">curl -X 'GET' \
   'http://localhost:8080/api/v1/products?limit=10&amp;sortBy=price&amp;sortOrder=asc' \
   -H 'accept: application/json'
@@ -1614,8 +3578,6 @@
 <hr />
 <h3 id="3-get-seller-products">3. Get Seller Products</h3>
 <p><strong><code>GET /api/v1/seller/products</code></strong></p>
-<p>Retrieve all products belonging to the authenticated seller.</p>
-<h4 id="example-request_2">Example Request</h4>
 <pre><code class="language-bash">curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/products?limit=10' \
   -H 'Authorization: Bearer &lt;seller_token&gt;'
@@ -1623,16 +3585,809 @@
 <hr />
 <h3 id="4-upload-product-image">4. Upload Product Image</h3>
 <p><strong><code>POST /api/v1/seller/products/image-upload</code></strong></p>
-<p>Upload an image for a specific product.</p>
-<h4 id="example-request_3">Example Request</h4>
+<h4 id="multipart-form-data">Multipart Form Data</h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image</code></td>
+<td>file</td>
+<td>Yes</td>
+<td><code>image/jpeg</code>, <code>image/png</code> or <code>image/webp</code> (<code>.jpg</code>, <code>.jpeg</code>, <code>.png</code>, <code>.webp</code>). Maximum <strong>5 MB</strong>.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="headers">Headers</h4>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Value</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Authorization</code></td>
+<td><code>Bearer &lt;seller_token&gt;</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>Content-Type</code></td>
+<td><code>multipart/form-data</code></td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<h4 id="request_1">Request</h4>
 <pre><code class="language-bash">curl -X 'POST' \
-  'http://localhost:8080/api/v1/seller/products/image-upload?id=718f0b9a-24ef-450f-9126-7d3d9b27cad5' \
+  'http://localhost:8080/api/v1/seller/products/image-upload' \
   -H 'Authorization: Bearer &lt;seller_token&gt;' \
   -H 'Content-Type: multipart/form-data' \
-  -F 'file=@product_watch.png;type=image/png'
+  -F 'image=@product.png;type=image/png'
+</code></pre>
+<h4 id="response_1">Response</h4>
+<pre><code class="language-json">&quot;/uploads/product-images/8f2c1a.png&quot;
+</code></pre>
+<h3 id="5-update-product">5. Update product</h3>
+<p><strong><code>PUT /api/v1/seller/products/{id}</code></strong></p>
+<pre><code class="language-bash">curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;seller_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;categoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;subCategoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;brandId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;description&quot;: &quot;Looks good&quot;,
+  &quot;productCode&quot;: &quot;SAVE10&quot;,
+  &quot;barcode&quot;: &quot;SAVE10&quot;,
+  &quot;weight&quot;: 250.0,
+  &quot;dimensions&quot;: &quot;10x20x30 cm&quot;,
+  &quot;minOrderQuantity&quot;: 1,
+  &quot;price&quot;: &quot;250.00&quot;,
+  &quot;discountPrice&quot;: &quot;250.00&quot;,
+  &quot;clearDiscountPrice&quot;: true,
+  &quot;status&quot;: &quot;ACTIVE&quot;,
+  &quot;videoLink&quot;: &quot;https://example.com/video.mp4&quot;,
+  &quot;hotDeal&quot;: true,
+  &quot;featured&quot;: true,
+  &quot;freeShipping&quot;: true,
+  &quot;images&quot;: [
+    &quot;https://example.com/image.jpg&quot;
+  ],
+  &quot;isDigital&quot;: true
+}'
+</code></pre>
+<h4 id="response_2">Response</h4>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;categoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;subCategoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;brandId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;description&quot;: &quot;Looks good&quot;,
+  &quot;sku&quot;: &quot;SKU-12345&quot;,
+  &quot;barcode&quot;: &quot;SAVE10&quot;,
+  &quot;weight&quot;: 250.0,
+  &quot;dimensions&quot;: &quot;10x20x30 cm&quot;,
+  &quot;minOrderQuantity&quot;: 1,
+  &quot;price&quot;: &quot;250.00&quot;,
+  &quot;discountPrice&quot;: &quot;250.00&quot;,
+  &quot;discountPercentage&quot;: 250.0,
+  &quot;videoLink&quot;: &quot;https://example.com/video.mp4&quot;,
+  &quot;hotDeal&quot;: true,
+  &quot;featured&quot;: true,
+  &quot;bestSeller&quot;: true
+}
+</code></pre>
+<hr />
+<h3 id="6-delete-product">6. Delete product</h3>
+<p><strong><code>DELETE /api/v1/seller/products/{id}</code></strong></p>
+<pre><code class="language-bash">curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;seller_token&gt;'
+</code></pre>
+<h4 id="response_3">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
+</code></pre>
+<hr />
+<h3 id="7-retrieve-a-paginated-list-of-products-with-optional-filters">7. Retrieve a paginated list of products with optional filters</h3>
+<p><strong><code>GET /api/v1/products</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/products?page=1&amp;perPage=20' \
+  -H 'accept: application/json'
+</code></pre>
+<h4 id="response_4">Response</h4>
+<pre><code class="language-json">{
+  &quot;data&quot;: [
+    {
+      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;categoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;subCategoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;brandId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;name&quot;: &quot;Example&quot;,
+      &quot;description&quot;: &quot;Looks good&quot;,
+      &quot;sku&quot;: &quot;SKU-12345&quot;,
+      &quot;barcode&quot;: &quot;SAVE10&quot;,
+      &quot;weight&quot;: 250.0,
+      &quot;dimensions&quot;: &quot;10x20x30 cm&quot;,
+      &quot;minOrderQuantity&quot;: 1,
+      &quot;price&quot;: &quot;250.00&quot;,
+      &quot;discountPrice&quot;: &quot;250.00&quot;,
+      &quot;discountPercentage&quot;: 250.0,
+      &quot;videoLink&quot;: &quot;https://example.com/video.mp4&quot;,
+      &quot;hotDeal&quot;: true,
+      &quot;featured&quot;: true,
+      &quot;bestSeller&quot;: true
+    }
+  ],
+  &quot;metadata&quot;: {
+    &quot;totalCount&quot;: 1,
+    &quot;limit&quot;: 20,
+    &quot;offset&quot;: 0,
+    &quot;page&quot;: 1,
+    &quot;perPage&quot;: 20,
+    &quot;totalPages&quot;: 1,
+    &quot;hasNext&quot;: false,
+    &quot;hasPrev&quot;: false
+  }
+}
+</code></pre>
+<hr />
+<h3 id="8-product-search-suggestions">8. Product search suggestions</h3>
+<p><strong><code>GET /api/v1/products/suggest</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/suggest?limit=20&amp;q=phone' \
+  -H 'accept: application/json'
+</code></pre>
+<h4 id="response_5">Response</h4>
+<pre><code class="language-json">{
+  &quot;query&quot;: &quot;string&quot;,
+  &quot;suggestions&quot;: [
+    {
+      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;text&quot;: &quot;string&quot;,
+      &quot;type&quot;: &quot;CUSTOMER&quot;
+    }
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="9-get-product-detail">9. Get product detail</h3>
+<p><strong><code>GET /api/v1/products/{id}</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json'
+</code></pre>
+<h4 id="response_6">Response</h4>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;categoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;subCategoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;brandId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;description&quot;: &quot;Looks good&quot;,
+  &quot;sku&quot;: &quot;SKU-12345&quot;,
+  &quot;barcode&quot;: &quot;SAVE10&quot;,
+  &quot;weight&quot;: 250.0,
+  &quot;dimensions&quot;: &quot;10x20x30 cm&quot;,
+  &quot;minOrderQuantity&quot;: 1,
+  &quot;price&quot;: &quot;250.00&quot;,
+  &quot;discountPrice&quot;: &quot;250.00&quot;,
+  &quot;discountPercentage&quot;: 250.0,
+  &quot;videoLink&quot;: &quot;https://example.com/video.mp4&quot;,
+  &quot;hotDeal&quot;: true,
+  &quot;featured&quot;: true,
+  &quot;bestSeller&quot;: true
+}
+</code></pre>
+<hr />
+<h3 id="10-list-product-variants">10. List product variants</h3>
+<p><strong><code>GET /api/v1/products/{id}/variants</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants' \
+  -H 'accept: application/json'
+</code></pre>
+<h4 id="response_7">Response</h4>
+<pre><code class="language-json">[
+  {
+    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;productId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;sku&quot;: &quot;SKU-12345&quot;,
+    &quot;name&quot;: &quot;Example&quot;,
+    &quot;price&quot;: &quot;250.00&quot;,
+    &quot;discountPrice&quot;: &quot;250.00&quot;,
+    &quot;discountPercentage&quot;: 250.0,
+    &quot;barcode&quot;: &quot;SAVE10&quot;,
+    &quot;weight&quot;: 250.0,
+    &quot;dimensions&quot;: &quot;10x20x30 cm&quot;,
+    &quot;imageUrl&quot;: &quot;string&quot;,
+    &quot;status&quot;: &quot;ACTIVE&quot;,
+    &quot;isDefault&quot;: true,
+    &quot;sortOrder&quot;: 1,
+    &quot;stockQuantity&quot;: 1,
+    &quot;inStock&quot;: true,
+    &quot;options&quot;: [
+      {
+        &quot;optionId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+        &quot;optionName&quot;: &quot;string&quot;,
+        &quot;valueId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+        &quot;value&quot;: &quot;10.00&quot;
+      }
+    ]
+  }
+]
+</code></pre>
+<hr />
+<h3 id="11-list-product-options">11. List product options</h3>
+<p><strong><code>GET /api/v1/products/{id}/options</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options' \
+  -H 'accept: application/json'
+</code></pre>
+<h4 id="response_8">Response</h4>
+<pre><code class="language-json">[
+  {
+    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;productId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;name&quot;: &quot;Example&quot;,
+    &quot;sortOrder&quot;: 1,
+    &quot;values&quot;: [
+      {
+        &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+        &quot;optionId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+        &quot;value&quot;: &quot;10.00&quot;,
+        &quot;sortOrder&quot;: 1
+      }
+    ]
+  }
+]
+</code></pre>
+<hr />
+<h3 id="12-related-products">12. Related products</h3>
+<p><strong><code>GET /api/v1/products/{id}/related</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/related' \
+  -H 'accept: application/json'
+</code></pre>
+<h4 id="response_9">Response</h4>
+<pre><code class="language-json">{
+  &quot;strategy&quot;: &quot;250.00&quot;,
+  &quot;sourceProductId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;items&quot;: [
+    {
+      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;categoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;subCategoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;brandId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;name&quot;: &quot;Example&quot;,
+      &quot;description&quot;: &quot;Looks good&quot;,
+      &quot;sku&quot;: &quot;SKU-12345&quot;,
+      &quot;barcode&quot;: &quot;SAVE10&quot;,
+      &quot;weight&quot;: 250.0,
+      &quot;dimensions&quot;: &quot;10x20x30 cm&quot;,
+      &quot;minOrderQuantity&quot;: 1,
+      &quot;price&quot;: &quot;250.00&quot;,
+      &quot;discountPrice&quot;: &quot;250.00&quot;,
+      &quot;discountPercentage&quot;: 250.0,
+      &quot;videoLink&quot;: &quot;https://example.com/video.mp4&quot;,
+      &quot;hotDeal&quot;: true,
+      &quot;featured&quot;: true,
+      &quot;bestSeller&quot;: true
+    }
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="13-frequently-bought-together">13. Frequently bought together</h3>
+<p><strong><code>GET /api/v1/products/{id}/also-bought</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/also-bought' \
+  -H 'accept: application/json'
+</code></pre>
+<h4 id="response_10">Response</h4>
+<pre><code class="language-json">{
+  &quot;strategy&quot;: &quot;250.00&quot;,
+  &quot;sourceProductId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;items&quot;: [
+    {
+      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;categoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;subCategoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;brandId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;name&quot;: &quot;Example&quot;,
+      &quot;description&quot;: &quot;Looks good&quot;,
+      &quot;sku&quot;: &quot;SKU-12345&quot;,
+      &quot;barcode&quot;: &quot;SAVE10&quot;,
+      &quot;weight&quot;: 250.0,
+      &quot;dimensions&quot;: &quot;10x20x30 cm&quot;,
+      &quot;minOrderQuantity&quot;: 1,
+      &quot;price&quot;: &quot;250.00&quot;,
+      &quot;discountPrice&quot;: &quot;250.00&quot;,
+      &quot;discountPercentage&quot;: 250.0,
+      &quot;videoLink&quot;: &quot;https://example.com/video.mp4&quot;,
+      &quot;hotDeal&quot;: true,
+      &quot;featured&quot;: true,
+      &quot;bestSeller&quot;: true
+    }
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="14-best-seller-recommendations">14. Best-seller recommendations</h3>
+<p><strong><code>GET /api/v1/products/recommendations</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/recommendations' \
+  -H 'accept: application/json'
+</code></pre>
+<h4 id="response_11">Response</h4>
+<pre><code class="language-json">{
+  &quot;strategy&quot;: &quot;250.00&quot;,
+  &quot;sourceProductId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;items&quot;: [
+    {
+      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;userId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;shopId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;categoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;subCategoryId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;brandId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;name&quot;: &quot;Example&quot;,
+      &quot;description&quot;: &quot;Looks good&quot;,
+      &quot;sku&quot;: &quot;SKU-12345&quot;,
+      &quot;barcode&quot;: &quot;SAVE10&quot;,
+      &quot;weight&quot;: 250.0,
+      &quot;dimensions&quot;: &quot;10x20x30 cm&quot;,
+      &quot;minOrderQuantity&quot;: 1,
+      &quot;price&quot;: &quot;250.00&quot;,
+      &quot;discountPrice&quot;: &quot;250.00&quot;,
+      &quot;discountPercentage&quot;: 250.0,
+      &quot;videoLink&quot;: &quot;https://example.com/video.mp4&quot;,
+      &quot;hotDeal&quot;: true,
+      &quot;featured&quot;: true,
+      &quot;bestSeller&quot;: true
+    }
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="15-admin-permanently-delete-any-product">15. Admin - Permanently delete any product</h3>
+<p><strong><code>DELETE /api/v1/admin/products/{id}</code></strong></p>
+<pre><code class="language-bash">curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;'
+</code></pre>
+<h4 id="response_12">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
+</code></pre>
+<hr />
+<h3 id="16-assign-a-product-tax-class">16. Assign a product tax class</h3>
+<p><strong><code>PUT /api/v1/admin/products/{id}/tax-class</code></strong></p>
+<pre><code class="language-bash">curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/tax-class' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;taxClassId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;
+}'
+</code></pre>
+<h4 id="response_13">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
+</code></pre>
+<hr />
+<h3 id="17-list-a-products-translations">17. List a product's translations</h3>
+<p><strong><code>GET /api/v1/admin/products/{id}/translations</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/translations' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;'
+</code></pre>
+<h4 id="response_14">Response</h4>
+<pre><code class="language-json">[
+  {
+    &quot;productId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;locale&quot;: &quot;en&quot;,
+    &quot;name&quot;: &quot;Example&quot;,
+    &quot;description&quot;: &quot;Looks good&quot;
+  }
+]
+</code></pre>
+<hr />
+<h3 id="18-delete-a-product-translation">18. Delete a product translation</h3>
+<p><strong><code>DELETE /api/v1/admin/products/{id}/translations/{locale}</code></strong></p>
+<pre><code class="language-bash">curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/translations/en' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;'
+</code></pre>
+<h4 id="response_15">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
+</code></pre>
+<hr />
+<h3 id="19-create-or-update-a-product-translation">19. Create or update a product translation</h3>
+<p><strong><code>PUT /api/v1/admin/products/{id}/translations/{locale}</code></strong></p>
+<pre><code class="language-bash">curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/translations/en' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;admin_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;description&quot;: &quot;Looks good&quot;
+}'
+</code></pre>
+<h4 id="response_16">Response</h4>
+<pre><code class="language-json">{
+  &quot;productId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;locale&quot;: &quot;en&quot;,
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;description&quot;: &quot;Looks good&quot;
+}
+</code></pre>
+<hr />
+<h3 id="20-create-option-dimension">20. Create option dimension</h3>
+<p><strong><code>POST /api/v1/seller/products/{id}/options</code></strong></p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;seller_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;sortOrder&quot;: 1
+}'
+</code></pre>
+<h4 id="response_17">Response</h4>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;productId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;sortOrder&quot;: 1,
+  &quot;values&quot;: [
+    {
+      &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;optionId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;value&quot;: &quot;10.00&quot;,
+      &quot;sortOrder&quot;: 1
+    }
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="21-delete-option-dimension">21. Delete option dimension</h3>
+<p><strong><code>DELETE /api/v1/seller/products/{id}/options/{optionId}</code></strong></p>
+<pre><code class="language-bash">curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;seller_token&gt;'
+</code></pre>
+<h4 id="response_18">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
+</code></pre>
+<hr />
+<h3 id="22-add-option-value">22. Add option value</h3>
+<p><strong><code>POST /api/v1/seller/products/{id}/options/{optionId}/values</code></strong></p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options/6c5078d3-f8e3-4c88-9afe-48b5423c664f/values' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;seller_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;value&quot;: &quot;10.00&quot;,
+  &quot;sortOrder&quot;: 1
+}'
+</code></pre>
+<h4 id="response_19">Response</h4>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;optionId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;value&quot;: &quot;10.00&quot;,
+  &quot;sortOrder&quot;: 1
+}
+</code></pre>
+<hr />
+<h3 id="23-delete-option-value">23. Delete option value</h3>
+<p><strong><code>DELETE /api/v1/seller/products/{id}/options/{optionId}/values/{valueId}</code></strong></p>
+<pre><code class="language-bash">curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options/6c5078d3-f8e3-4c88-9afe-48b5423c664f/values/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;seller_token&gt;'
+</code></pre>
+<h4 id="response_20">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
+</code></pre>
+<hr />
+<h3 id="24-create-product-variant">24. Create product variant</h3>
+<p><strong><code>POST /api/v1/seller/products/{id}/variants</code></strong></p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;seller_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;sku&quot;: &quot;SKU-12345&quot;,
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;price&quot;: &quot;250.00&quot;,
+  &quot;discountPrice&quot;: &quot;250.00&quot;,
+  &quot;barcode&quot;: &quot;SAVE10&quot;,
+  &quot;weight&quot;: &quot;string&quot;,
+  &quot;dimensions&quot;: &quot;10x20x30 cm&quot;,
+  &quot;imageUrl&quot;: &quot;string&quot;,
+  &quot;status&quot;: &quot;ACTIVE&quot;,
+  &quot;isDefault&quot;: true,
+  &quot;sortOrder&quot;: 1
+}'
+</code></pre>
+<h4 id="response_21">Response</h4>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;productId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;sku&quot;: &quot;SKU-12345&quot;,
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;price&quot;: &quot;250.00&quot;,
+  &quot;discountPrice&quot;: &quot;250.00&quot;,
+  &quot;discountPercentage&quot;: 250.0,
+  &quot;barcode&quot;: &quot;SAVE10&quot;,
+  &quot;weight&quot;: 250.0,
+  &quot;dimensions&quot;: &quot;10x20x30 cm&quot;,
+  &quot;imageUrl&quot;: &quot;string&quot;,
+  &quot;status&quot;: &quot;ACTIVE&quot;,
+  &quot;isDefault&quot;: true,
+  &quot;sortOrder&quot;: 1,
+  &quot;stockQuantity&quot;: 1,
+  &quot;inStock&quot;: true,
+  &quot;options&quot;: [
+    {
+      &quot;optionId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;optionName&quot;: &quot;string&quot;,
+      &quot;valueId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;value&quot;: &quot;10.00&quot;
+    }
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="25-delete-product-variant">25. Delete product variant</h3>
+<p><strong><code>DELETE /api/v1/seller/products/{id}/variants/{variantId}</code></strong></p>
+<pre><code class="language-bash">curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;seller_token&gt;'
+</code></pre>
+<h4 id="response_22">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
+</code></pre>
+<hr />
+<h3 id="26-update-product-variant">26. Update product variant</h3>
+<p><strong><code>PUT /api/v1/seller/products/{id}/variants/{variantId}</code></strong></p>
+<pre><code class="language-bash">curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;seller_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;sku&quot;: &quot;SKU-12345&quot;,
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;price&quot;: &quot;250.00&quot;,
+  &quot;discountPrice&quot;: &quot;250.00&quot;,
+  &quot;barcode&quot;: &quot;SAVE10&quot;,
+  &quot;weight&quot;: &quot;string&quot;,
+  &quot;dimensions&quot;: &quot;10x20x30 cm&quot;,
+  &quot;imageUrl&quot;: &quot;string&quot;,
+  &quot;status&quot;: &quot;ACTIVE&quot;,
+  &quot;isDefault&quot;: true,
+  &quot;sortOrder&quot;: 1
+}'
+</code></pre>
+<h4 id="response_23">Response</h4>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;productId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;sku&quot;: &quot;SKU-12345&quot;,
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;price&quot;: &quot;250.00&quot;,
+  &quot;discountPrice&quot;: &quot;250.00&quot;,
+  &quot;discountPercentage&quot;: 250.0,
+  &quot;barcode&quot;: &quot;SAVE10&quot;,
+  &quot;weight&quot;: 250.0,
+  &quot;dimensions&quot;: &quot;10x20x30 cm&quot;,
+  &quot;imageUrl&quot;: &quot;string&quot;,
+  &quot;status&quot;: &quot;ACTIVE&quot;,
+  &quot;isDefault&quot;: true,
+  &quot;sortOrder&quot;: 1,
+  &quot;stockQuantity&quot;: 1,
+  &quot;inStock&quot;: true,
+  &quot;options&quot;: [
+    {
+      &quot;optionId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;optionName&quot;: &quot;string&quot;,
+      &quot;valueId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;value&quot;: &quot;10.00&quot;
+    }
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="27-attach-option-values-to-a-variant">27. Attach option values to a variant</h3>
+<p><strong><code>PUT /api/v1/seller/products/{id}/variants/{variantId}/options</code></strong></p>
+<pre><code class="language-bash">curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;seller_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;valueIds&quot;: [
+    &quot;string&quot;
+  ]
+}'
+</code></pre>
+<h4 id="response_24">Response</h4>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;productId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;sku&quot;: &quot;SKU-12345&quot;,
+  &quot;name&quot;: &quot;Example&quot;,
+  &quot;price&quot;: &quot;250.00&quot;,
+  &quot;discountPrice&quot;: &quot;250.00&quot;,
+  &quot;discountPercentage&quot;: 250.0,
+  &quot;barcode&quot;: &quot;SAVE10&quot;,
+  &quot;weight&quot;: 250.0,
+  &quot;dimensions&quot;: &quot;10x20x30 cm&quot;,
+  &quot;imageUrl&quot;: &quot;string&quot;,
+  &quot;status&quot;: &quot;ACTIVE&quot;,
+  &quot;isDefault&quot;: true,
+  &quot;sortOrder&quot;: 1,
+  &quot;stockQuantity&quot;: 1,
+  &quot;inStock&quot;: true,
+  &quot;options&quot;: [
+    {
+      &quot;optionId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;optionName&quot;: &quot;string&quot;,
+      &quot;valueId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+      &quot;value&quot;: &quot;10.00&quot;
+    }
+  ]
+}
+</code></pre>
+<hr />
+<h3 id="28-list-back-in-stock-alerts">28. List back-in-stock alerts</h3>
+<p><strong><code>GET /api/v1/stock-alerts</code></strong></p>
+<pre><code class="language-bash">curl -X 'GET' \
+  'http://localhost:8080/api/v1/stock-alerts' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;access_token&gt;'
+</code></pre>
+<h4 id="response_25">Response</h4>
+<pre><code class="language-json">[
+  {
+    &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;productId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;variantId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+    &quot;notifiedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
+    &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
+  }
+]
+</code></pre>
+<hr />
+<h3 id="29-subscribe-to-a-back-in-stock-alert">29. Subscribe to a back-in-stock alert</h3>
+<p><strong><code>POST /api/v1/stock-alerts</code></strong></p>
+<pre><code class="language-bash">curl -X 'POST' \
+  'http://localhost:8080/api/v1/stock-alerts' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;access_token&gt;' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  &quot;productId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;variantId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;
+}'
+</code></pre>
+<h4 id="response_26">Response</h4>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;productId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;variantId&quot;: &quot;6c5078d3-f8e3-4c88-9afe-48b5423c664f&quot;,
+  &quot;notifiedAt&quot;: &quot;2024-05-06T12:00:00&quot;,
+  &quot;createdAt&quot;: &quot;2024-05-06T12:00:00&quot;
+}
+</code></pre>
+<hr />
+<h3 id="30-remove-a-back-in-stock-alert">30. Remove a back-in-stock alert</h3>
+<p><strong><code>DELETE /api/v1/stock-alerts/{productId}</code></strong></p>
+<pre><code class="language-bash">curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/stock-alerts/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer &lt;access_token&gt;'
+</code></pre>
+<h4 id="response_27">Response</h4>
+<pre><code class="language-json">{
+  &quot;message&quot;: &quot;Operation completed&quot;
+}
 </code></pre>
 <hr />
 <h2 id="error-handling">Error Handling</h2>
+<h2 id="public-catalog-and-recommendations">Public catalog and recommendations</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/products</code></td>
+<td>Offset pagination (<code>page</code>/<code>perPage</code> or <code>limit</code>/<code>offset</code>) with the same filters as search</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/products/{id}/related</code></td>
+<td>Same category/brand, excludes the current product</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/products/{id}/also-bought</code></td>
+<td>Co-purchase feed from paid order history</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/products/recommendations</code></td>
+<td>Best sellers, accepts <code>limit</code> (default 10)</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/products/{id}/variants</code></td>
+<td>Purchasable variants with per-variant stock</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/products/{id}/options</code></td>
+<td>Option dimensions (Size, Color) and their values</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">curl -X 'GET' 'http://localhost:8080/api/v1/products?page=1&amp;perPage=20'
+curl -X 'GET' 'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/related'
+</code></pre>
+<p>See <a href="../product-variants/">Product Variants</a> for seller-side variant/option management.</p>
 <h3 id="success-responses">Success Responses</h3>
 <ul>
 <li><strong>HTTP 200/201</strong>: Success.</li>
