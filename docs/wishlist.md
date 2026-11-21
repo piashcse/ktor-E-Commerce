@@ -21,6 +21,7 @@ Authorization: Bearer <your_access_token>
 | `GET` | `/api/v1/wishlists/check` | Check if a product is in wishlist | Yes |
 | `POST` | `/api/v1/wishlists/move-to-cart` | Move a wishlist product into the cart | Yes |
 | `DELETE` | `/api/v1/wishlists/remove` | Remove a product from wishlist | Yes |
+| `GET` | `/api/v1/wishlists/ids` | List wishlisted product IDs | Yes |
 
 ---
 

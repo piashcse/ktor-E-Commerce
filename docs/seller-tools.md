@@ -32,6 +32,15 @@ Admin moderation:
 | `GET` | `/api/v1/seller/reviews` | Seller's received reviews |
 | `GET` | `/api/v1/admin/seller-reviews?status=` | Admin moderation list |
 | `PUT` | `/api/v1/admin/seller-reviews/{id}/status` | Hide/flag/activate |
+| `GET` | `/api/v1/admin/disputes` | Admin: list disputes |
+| `PUT` | `/api/v1/admin/disputes/{id}` | Admin: resolve/update a dispute |
+| `GET` | `/api/v1/disputes/{id}` | Get a dispute with its message thread |
+| `POST` | `/api/v1/disputes/{id}/messages` | Add a message or evidence to a dispute |
+| `GET` | `/api/v1/seller-reviews/mine` | List my seller reviews |
+| `GET` | `/api/v1/seller/commission` | Seller: get my effective commission rate |
+| `GET` | `/api/v1/seller/commission/orders/{orderId}` | Seller: per-order commission and payout preview |
+| `POST` | `/api/v1/seller/reviews/products/{id}/reply` | Seller: reply to a product review |
+| `POST` | `/api/v1/seller/reviews/{id}/reply` | Seller: reply to a seller review |
 
 Moderation body:
 

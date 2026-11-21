@@ -79,3 +79,7 @@ Configuration:
 ```bash
 PUBLIC_BASE_URL=https://shop.example
 ```
+
+Other operations:
+
+- `GET /api/v1/config` — Public storefront configuration

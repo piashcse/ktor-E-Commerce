@@ -16,6 +16,8 @@ retired to `outbox_dead_letter` for inspection/replay.
 | `GET` | `/api/v1/admin/outbox/summary` | Pending rows + dead-letter count |
 | `GET` | `/api/v1/admin/outbox/dead-letters` | Paginated dead letters |
 | `POST` | `/api/v1/admin/outbox/dead-letters/{id}/requeue` | Requeue a payload |
+| `POST` | `/api/v1/admin/outbox/dead-letters/requeue` | Bulk requeue dead letters |
+| `GET` | `/api/v1/admin/outbox/dead-letters/{id}` | Inspect a dead letter |
 
 ## Semantics
 

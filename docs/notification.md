@@ -46,6 +46,7 @@ override controls the additional delivery channel.
 | `POST` | `/api/v1/notifications/{id}/read` | Mark one read |
 | `POST` | `/api/v1/notifications/read-all` | Mark all read |
 | `POST` | `/api/v1/notifications/send` | Send an announcement (Admin / Seller) |
+| `POST` | `/api/v1/seller/notifications/send` | Seller: notify one of my customers |
 
 Sellers/admins can send announcements with `POST /api/v1/notifications/send`
 (sellers may only target customers who ordered from their shop).

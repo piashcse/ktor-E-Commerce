@@ -147,3 +147,7 @@ paid period. Canceled/PAST_DUE/expired subscriptions no longer expose active dow
 entitlements are removed on cancellation/expiry; one-off
 order entitlements allow 5 downloads and expire after one year. Order cancellation/full refund
 revokes order-based entitlements immediately.
+
+Other operations:
+
+- `GET /api/v1/admin/subscriptions` — List all subscriptions

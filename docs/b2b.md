@@ -132,3 +132,8 @@ flows.
 - Credit limit cannot be negative; terms must be positive.
 - The platform tracks net-terms invoices and reminders but does not auto-charge bank transfers;
   settlement remains an accounting/ERP integration.
+
+Other operations:
+
+- `POST /api/v1/admin/b2b/invoices/{id}/void` — Admin: void an unpaid B2B invoice
+- `POST /api/v1/seller/b2b/purchase-orders/{id}/cancel` — Seller: cancel an open purchase order

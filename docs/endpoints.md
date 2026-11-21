@@ -3,7 +3,7 @@
 Canonical index of every HTTP operation exposed by the service, mirroring the OpenAPI
 document served by Swagger UI.
 
-**Operations:** 464 (generated OpenAPI); the curated tables below cover 383 core operations
+**Operations:** 464 (generated OpenAPI); the tables below cover all 464 operations.
 
 **Tags:** 47
 
@@ -16,51 +16,51 @@ document served by Swagger UI.
 
 | Tag | Operations |
 |---|---:|
-| [Auth](#auth) | 21 |
+| [Auth](#auth) | 28 |
 | [RBAC](#rbac) | 16 |
 | [Profile](#profile) | 3 |
-| [Shop](#shop) | 13 |
+| [Shop](#shop) | 18 |
 | [Shop Category](#shop-category) | 4 |
 | [Brand](#brand) | 5 |
 | [Product Category](#product-category) | 5 |
 | [Product Sub Category](#product-sub-category) | 4 |
 | [Product](#product) | 26 |
 | [Recommendation](#recommendation) | 1 |
-| [Review](#review) | 8 |
-| [Wishlist](#wishlist) | 5 |
+| [Review](#review) | 11 |
+| [Wishlist](#wishlist) | 6 |
 | [Cart](#cart) | 6 |
-| [Checkout](#checkout) | 8 |
-| [Order](#order) | 13 |
-| [Payment](#payment) | 9 |
-| [Coupon](#coupon) | 9 |
-| [Shipping Method](#shipping-method) | 4 |
+| [Checkout](#checkout) | 9 |
+| [Order](#order) | 22 |
+| [Payment](#payment) | 12 |
+| [Coupon](#coupon) | 17 |
+| [Shipping Method](#shipping-method) | 8 |
 | [Shipment](#shipment) | 5 |
 | [Inventory](#inventory) | 6 |
 | [Warehouse](#warehouse) | 4 |
-| [Refund](#refund) | 9 |
-| [RMA](#rma) | 8 |
-| [Notification](#notification) | 10 |
-| [KYC](#kyc) | 5 |
-| [Payout](#payout) | 10 |
+| [Refund](#refund) | 13 |
+| [RMA](#rma) | 10 |
+| [Notification](#notification) | 11 |
+| [KYC](#kyc) | 10 |
+| [Payout](#payout) | 20 |
 | [Tax](#tax) | 16 |
-| [Fraud](#fraud) | 14 |
+| [Fraud](#fraud) | 15 |
 | [Loyalty](#loyalty) | 9 |
 | [Localization](#localization) | 5 |
 | [Analytics](#analytics) | 4 |
-| [Seller Tools](#seller-tools) | 14 |
+| [Seller Tools](#seller-tools) | 21 |
 | [Subscription](#subscription) | 15 |
-| [B2B](#b2b) | 20 |
+| [B2B](#b2b) | 22 |
 | [Omnichannel](#omnichannel) | 11 |
-| [CMS & SEO](#cms-seo) | 10 |
+| [CMS & SEO](#cms-seo) | 11 |
 | [Support](#support) | 13 |
-| [FX](#fx) | 2 |
+| [FX](#fx) | 3 |
 | [API Keys](#api-keys) | 3 |
 | [Feature Flags](#feature-flags) | 2 |
-| [Outbox](#outbox) | 3 |
-| [Policy](#policy) | 6 |
-| [Consent](#consent) | 5 |
+| [Outbox](#outbox) | 5 |
+| [Policy](#policy) | 7 |
+| [Consent](#consent) | 6 |
 | [Privacy](#privacy) | 2 |
-| [Dashboard](#dashboard) | 7 |
+| [Dashboard](#dashboard) | 9 |
 | [Audit Log](#audit-log) | 2 |
 | [Health](#health) | 3 |
 
@@ -89,6 +89,13 @@ document served by Swagger UI.
 | `POST` | `/api/v1/auth/mfa/enable` | Enable TOTP MFA | Authenticated |
 | `POST` | `/api/v1/auth/mfa/disable` | Disable TOTP MFA | Authenticated |
 | `POST` | `/api/v1/auth/reset-password` | Reset password with OTP | Public |
+| `GET` | `/api/v1/admin/users` | Admin: search users | Admin |
+| `GET` | `/api/v1/admin/users/{id}` | Admin: user detail | Admin |
+| `PUT` | `/api/v1/admin/users/{id}/activate` | Admin: activate a user | Admin |
+| `PUT` | `/api/v1/admin/users/{id}/deactivate` | Admin: deactivate a user | Admin |
+| `GET` | `/api/v1/admin/users/{id}/login-attempts` | Admin: inspect login/OTP lockouts | Admin |
+| `PUT` | `/api/v1/admin/users/{id}/type` | Admin: change a user's role | Admin |
+| `POST` | `/api/v1/admin/users/{id}/unlock` | Admin: clear login and OTP lockouts | Admin |
 
 ## RBAC
 
@@ -136,6 +143,11 @@ document served by Swagger UI.
 | `GET` | `/api/v1/shops/featured` | Retrieve featured shops (public) | Public |
 | `GET` | `/api/v1/shops/public` | Retrieve public shops with filters (public) | Public |
 | `GET` | `/api/v1/shops/{id}` | Retrieve detailed information about a specific shop | Public |
+| `GET` | `/api/v1/admin/shops` | Admin - List all shops | Admin |
+| `POST` | `/api/v1/admin/shops/bulk/approve` | Admin - Bulk approve shops | Admin |
+| `POST` | `/api/v1/admin/shops/bulk/reject` | Admin - Bulk reject shops | Admin |
+| `POST` | `/api/v1/admin/shops/bulk/suspend` | Admin - Bulk suspend shops | Admin |
+| `GET` | `/api/v1/shops/{id}/products` | List products for a shop | Public |
 
 ## Shop Category
 
@@ -224,6 +236,9 @@ document served by Swagger UI.
 | `POST` | `/api/v1/reviews/{id}/helpful` | Vote a review helpful | Authenticated |
 | `GET` | `/api/v1/admin/reviews` | Admin: list reviews by status | Admin |
 | `PUT` | `/api/v1/admin/reviews/{id}/status` | Admin: moderate a review | Admin |
+| `POST` | `/api/v1/admin/reviews/bulk/status` | Admin: bulk moderate reviews | Admin |
+| `GET` | `/api/v1/admin/reviews/export` | Admin: export reviews CSV | Admin |
+| `GET` | `/api/v1/reviews/summary` | Rating distribution for a product | Public |
 
 ## Wishlist
 
@@ -234,6 +249,7 @@ document served by Swagger UI.
 | `GET` | `/api/v1/wishlists/check` | Check if a specific product is in the user's wishlist | Authenticated |
 | `POST` | `/api/v1/wishlists/move-to-cart` | Move a wishlist product to the cart | Authenticated |
 | `DELETE` | `/api/v1/wishlists/remove` | Remove from wishlist | Authenticated |
+| `GET` | `/api/v1/wishlists/ids` | List wishlisted product IDs | Authenticated |
 
 ## Cart
 
@@ -258,6 +274,7 @@ document served by Swagger UI.
 | `DELETE` | `/api/v1/checkout/shipping-address/{id}` | Delete shipping address | Authenticated |
 | `GET` | `/api/v1/checkout/shipping-method` | List shipping methods | Authenticated |
 | `POST` | `/api/v1/checkout/summary` | Checkout summary | Authenticated |
+| `POST` | `/api/v1/checkout/guest/summary` | Guest checkout quote | Public |
 
 ## Order
 
@@ -276,6 +293,15 @@ document served by Swagger UI.
 | `POST` | `/api/v1/orders/{id}/cancel` | Cancel order | Authenticated |
 | `POST` | `/api/v1/orders/{id}/shipping` | Seller: mark order shipped | Authenticated |
 | `GET` | `/api/v1/seller/orders` | Seller: list orders | Seller |
+| `GET` | `/api/v1/admin/orders/export` | Admin: export orders CSV | Admin |
+| `GET` | `/api/v1/admin/orders/{id}` | Admin: get order by ID | Admin |
+| `GET` | `/api/v1/orders/track/invoice` | Guest order invoice | Public |
+| `GET` | `/api/v1/orders/track/timeline` | Guest order timeline | Public |
+| `GET` | `/api/v1/orders/{id}` | Get order by ID | Authenticated |
+| `GET` | `/api/v1/seller/orders/export` | Seller: export orders CSV | Seller |
+| `GET` | `/api/v1/seller/orders/{id}` | Seller: get order by ID | Seller |
+| `POST` | `/api/v1/seller/orders/{id}/cancel` | Seller: cancel order | Seller |
+| `POST` | `/api/v1/seller/orders/{id}/shipping` | Seller: mark order shipped | Seller |
 
 ## Payment
 
@@ -290,6 +316,9 @@ document served by Swagger UI.
 | `POST` | `/api/v1/admin/webhooks/carriers/{id}/replay` | Admin: replay a carrier webhook | Admin |
 | `GET` | `/api/v1/payments/order/{orderId}` | Retrieve all payments for a specific order | Authenticated |
 | `GET` | `/api/v1/payments/{id}` | Retrieve payment details by ID | Authenticated |
+| `GET` | `/api/v1/admin/payments` | Admin - List payments | Admin |
+| `POST` | `/api/v1/admin/webhooks/bulk/replay` | Admin: bulk replay webhooks | Admin |
+| `GET` | `/api/v1/admin/webhooks/{id}` | Admin: inspect a webhook payload | Admin |
 
 ## Coupon
 
@@ -304,6 +333,14 @@ document served by Swagger UI.
 | `POST` | `/api/v1/admin/promotions` | Admin - Create an automatic promotion | Admin |
 | `PUT` | `/api/v1/admin/promotions/{id}` | Admin - Update a promotion | Admin |
 | `DELETE` | `/api/v1/admin/promotions/{id}` | Admin - Deactivate a promotion | Admin |
+| `GET` | `/api/v1/seller/coupons` | Seller - List my shop coupons | Seller |
+| `POST` | `/api/v1/seller/coupons` | Seller - Create a shop coupon | Seller |
+| `DELETE` | `/api/v1/seller/coupons/{id}` | Seller - Delete a shop coupon | Seller |
+| `PUT` | `/api/v1/seller/coupons/{id}` | Seller - Update a shop coupon | Seller |
+| `GET` | `/api/v1/seller/promotions` | Seller: list my promotions | Seller |
+| `POST` | `/api/v1/seller/promotions` | Seller: create a promotion | Seller |
+| `DELETE` | `/api/v1/seller/promotions/{id}` | Seller: deactivate a promotion | Seller |
+| `PUT` | `/api/v1/seller/promotions/{id}` | Seller: update a promotion | Seller |
 
 ## Shipping Method
 
@@ -313,6 +350,10 @@ document served by Swagger UI.
 | `POST` | `/api/v1/admin/shipping-methods` | Admin - Create a new shipping method | Admin |
 | `PUT` | `/api/v1/admin/shipping-methods/{id}` | Admin - Update an existing shipping method | Admin |
 | `DELETE` | `/api/v1/admin/shipping-methods/{id}` | Admin - Delete a shipping method | Admin |
+| `GET` | `/api/v1/seller/shipping-methods` | Seller - List my shipping methods | Seller |
+| `POST` | `/api/v1/seller/shipping-methods` | Seller - Create a shipping method | Seller |
+| `DELETE` | `/api/v1/seller/shipping-methods/{id}` | Seller - Delete a shipping method | Seller |
+| `PUT` | `/api/v1/seller/shipping-methods/{id}` | Seller - Update a shipping method | Seller |
 
 ## Shipment
 
@@ -357,6 +398,10 @@ document served by Swagger UI.
 | `POST` | `/api/v1/refund-requests/{id}/ship` | Mark an approved refund as shipped | Authenticated |
 | `POST` | `/api/v1/refund-requests/{orderId}` | Create a refund request for an order item | Authenticated |
 | `PUT` | `/api/v1/seller/refund-requests/{id}/status` | Seller - Update refund request status | Seller |
+| `GET` | `/api/v1/admin/refund-requests` | Admin - List refund requests | Admin |
+| `POST` | `/api/v1/admin/refund-requests/bulk/status` | Admin - Bulk update refund status | Admin |
+| `GET` | `/api/v1/admin/refund-requests/export` | Admin - Export refunds CSV | Admin |
+| `GET` | `/api/v1/seller/refund-requests` | Seller - List refund requests | Seller |
 
 ## RMA
 
@@ -370,6 +415,8 @@ document served by Swagger UI.
 | `POST` | `/api/v1/rma-requests/{id}/ship` | Mark RMA as shipped | Authenticated |
 | `GET` | `/api/v1/seller/rma-requests` | Seller: list RMAs | Seller |
 | `PUT` | `/api/v1/seller/rma-requests/{id}/status` | Seller: update RMA status | Seller |
+| `POST` | `/api/v1/admin/rma-requests/bulk/status` | Admin: bulk update RMA status | Admin |
+| `GET` | `/api/v1/admin/rma-requests/export` | Admin: export RMAs CSV | Admin |
 
 ## Notification
 
@@ -385,6 +432,7 @@ document served by Swagger UI.
 | `POST` | `/api/v1/notifications/send` | Send notification | Admin / Seller |
 | `GET` | `/api/v1/notifications/unread-count` | Unread notification count | Authenticated |
 | `POST` | `/api/v1/notifications/{id}/read` | Mark notification read | Authenticated |
+| `POST` | `/api/v1/seller/notifications/send` | Seller: notify one of my customers | Seller |
 
 ## KYC
 
@@ -395,6 +443,11 @@ document served by Swagger UI.
 | `PUT` | `/api/v1/admin/sellers/{sellerId}/verify` | Admin: verify KYC | Admin |
 | `GET` | `/api/v1/seller/kyc` | Get my KYC status | Seller |
 | `POST` | `/api/v1/seller/kyc` | Submit KYC | Seller |
+| `POST` | `/api/v1/admin/sellers/bulk/reject` | Admin: bulk reject KYC | Admin |
+| `POST` | `/api/v1/admin/sellers/bulk/verify` | Admin: bulk verify KYC | Admin |
+| `GET` | `/api/v1/admin/sellers/export` | Admin: export KYC submissions CSV | Admin |
+| `GET` | `/api/v1/admin/sellers/{sellerId}/history` | Admin: KYC decision history | Admin |
+| `GET` | `/api/v1/seller/kyc/history` | Get my KYC submission history | Seller |
 
 ## Payout
 
@@ -410,6 +463,16 @@ document served by Swagger UI.
 | `POST` | `/api/v1/seller/payouts/request` | Seller: request payout | Seller |
 | `GET` | `/api/v1/seller/payouts/statement` | Seller: payout statement | Seller |
 | `GET` | `/api/v1/seller/payouts/statement/export` | Seller: export statement CSV | Seller |
+| `GET` | `/api/v1/admin/payouts/requests` | Admin: list payout requests | Admin |
+| `POST` | `/api/v1/admin/payouts/requests/bulk/approve` | Admin: bulk approve payout requests | Admin |
+| `POST` | `/api/v1/admin/payouts/requests/bulk/pay` | Admin: bulk mark payout requests paid | Admin |
+| `POST` | `/api/v1/admin/payouts/requests/bulk/reject` | Admin: bulk reject payout requests | Admin |
+| `GET` | `/api/v1/admin/payouts/requests/{id}` | Admin: payout request detail | Admin |
+| `POST` | `/api/v1/admin/payouts/requests/{id}/approve` | Admin: approve a payout request | Admin |
+| `POST` | `/api/v1/admin/payouts/requests/{id}/pay` | Admin: mark a payout request paid | Admin |
+| `POST` | `/api/v1/admin/payouts/requests/{id}/reject` | Admin: reject a payout request | Admin |
+| `GET` | `/api/v1/seller/payouts/requests` | Seller: list payout requests | Seller |
+| `GET` | `/api/v1/seller/payouts/requests/{id}` | Seller: payout request detail | Seller |
 
 ## Tax
 
@@ -450,6 +513,7 @@ document served by Swagger UI.
 | `GET` | `/api/v1/admin/chargebacks/{id}` | Retrieve a chargeback | Admin |
 | `PUT` | `/api/v1/admin/chargebacks/{id}` | Update chargeback status/outcome | Admin |
 | `POST` | `/api/v1/admin/chargebacks/{id}/evidence` | Attach evidence to a chargeback | Admin |
+| `GET` | `/api/v1/admin/chargebacks/export` | Export chargebacks CSV | Admin |
 
 ## Loyalty
 
@@ -502,6 +566,13 @@ document served by Swagger UI.
 | `PUT` | `/api/v1/admin/commission-rules/{id}` | Update a commission rule | Admin |
 | `DELETE` | `/api/v1/admin/commission-rules/{id}` | Delete a commission rule | Admin |
 | `GET` | `/api/v1/seller/commission` | Seller: effective commission rate | Seller |
+| `GET` | `/api/v1/disputes/{id}` | Get a dispute with its message thread | Authenticated |
+| `POST` | `/api/v1/disputes/{id}/messages` | Add a message or evidence to a dispute | Authenticated |
+| `GET` | `/api/v1/seller-reviews` | List active seller reviews for a shop | Public |
+| `GET` | `/api/v1/seller-reviews/mine` | List my seller reviews | Authenticated |
+| `GET` | `/api/v1/seller/commission/orders/{orderId}` | Seller: per-order commission and payout preview | Seller |
+| `POST` | `/api/v1/seller/reviews/products/{id}/reply` | Seller: reply to a product review | Seller |
+| `POST` | `/api/v1/seller/reviews/{id}/reply` | Seller: reply to a seller review | Seller |
 
 ## Subscription
 
@@ -547,6 +618,8 @@ document served by Swagger UI.
 | `GET` | `/api/v1/admin/b2b/invoices` | Admin: list B2B invoices | Admin |
 | `POST` | `/api/v1/admin/b2b/invoices/{id}/pay` | Admin: mark a B2B invoice paid | Admin |
 | `POST` | `/api/v1/admin/b2b/invoices/run-dunning` | Admin: send B2B invoice reminders | Admin |
+| `POST` | `/api/v1/admin/b2b/invoices/{id}/void` | Admin: void an unpaid B2B invoice | Admin |
+| `POST` | `/api/v1/seller/b2b/purchase-orders/{id}/cancel` | Seller: cancel an open purchase order | Seller |
 
 ## Omnichannel
 
@@ -578,6 +651,7 @@ document served by Swagger UI.
 | `PUT` | `/api/v1/admin/seo/metadata` | Admin: upsert SEO metadata | Admin |
 | `GET` | `/sitemap.xml` | XML sitemap | Public |
 | `GET` | `/robots.txt` | Robots policy | Public |
+| `GET` | `/api/v1/config` | Public storefront configuration | Public |
 
 ## Support
 
@@ -603,6 +677,7 @@ document served by Swagger UI.
 |---|---|---|---|
 | `GET` | `/api/v1/admin/fx-rates` | List FX rates | Admin |
 | `PUT` | `/api/v1/admin/fx-rates/{targetCurrency}` | Set FX rate | Admin |
+| `GET` | `/api/v1/fx-rates` | List FX rates | Public |
 
 ## API Keys
 
@@ -626,6 +701,8 @@ document served by Swagger UI.
 | `GET` | `/api/v1/admin/outbox/dead-letters` | List dead letters | Admin |
 | `POST` | `/api/v1/admin/outbox/dead-letters/{id}/requeue` | Requeue dead letter | Admin |
 | `GET` | `/api/v1/admin/outbox/summary` | Outbox summary | Admin |
+| `POST` | `/api/v1/admin/outbox/dead-letters/requeue` | Bulk requeue dead letters | Admin |
+| `GET` | `/api/v1/admin/outbox/dead-letters/{id}` | Inspect a dead letter | Admin |
 
 ## Policy
 
@@ -637,6 +714,7 @@ document served by Swagger UI.
 | `PUT` | `/api/v1/admin/policies/{id}` | Admin - Update an existing policy document | Admin |
 | `GET` | `/api/v1/admin/policies/{policyType}/history` | Admin - Retrieve all versions of a specific policy type | Admin |
 | `GET` | `/api/v1/policies/{policyType}` | Retrieve the latest active version of a policy by type | Public |
+| `GET` | `/api/v1/admin/policies` | Admin - List policy documents | Admin |
 
 ## Consent
 
@@ -647,6 +725,7 @@ document served by Swagger UI.
 | `POST` | `/api/v1/policy-consents/consent` | Record user consent for a specific policy document | Authenticated |
 | `DELETE` | `/api/v1/policy-consents/{id}` | Revoke a consent record (owner or admin) | Owner / Admin |
 | `GET` | `/api/v1/policy-consents/{policyType}` | Check if the user has consented to a specific policy type | Authenticated |
+| `GET` | `/api/v1/policy-consents/requirements` | Policies requiring consent | Authenticated |
 
 ## Privacy
 
@@ -666,6 +745,8 @@ document served by Swagger UI.
 | `GET` | `/api/v1/admin/dashboard/top-products` | Get top-selling products sorted by sales volume | Admin |
 | `GET` | `/api/v1/admin/dashboard/users` | Get user growth analytics over a period | Admin |
 | `GET` | `/api/v1/seller/dashboard` | Seller dashboard | Seller |
+| `GET` | `/api/v1/admin/queues` | Admin work queues | Admin |
+| `GET` | `/api/v1/seller/readiness` | Seller readiness | Seller |
 
 ## Audit Log
 

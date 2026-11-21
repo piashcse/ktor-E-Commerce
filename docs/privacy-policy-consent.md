@@ -14,6 +14,7 @@ The admin view is read-only; consent is always written by the authenticated user
 | `POST` | `/api/v1/policy-consents/consent` | Record consent for a specific policy document | Yes |
 | `DELETE` | `/api/v1/policy-consents/{id}` | Revoke a consent record (owner or admin) | Yes |
 | `GET` | `/api/v1/admin/policy-consents` | List consent records filtered by user and/or policy type | Yes (Admin) |
+| `GET` | `/api/v1/policy-consents/requirements` | Policies requiring consent | Yes |
 
 ## Record consent
 

@@ -25,6 +25,20 @@ All Order endpoints require Bearer token authentication.
 | `GET` | `/api/v1/admin/orders` | Retrieve all orders with advanced filters | Yes (Admin) |
 | `GET` | `/api/v1/orders/{id}/invoice` | Printable HTML invoice (owner/seller/admin) | Yes |
 | `GET` | `/api/v1/orders/{id}/packing-slip` | Printable HTML packing slip | Yes |
+| `GET` | `/api/v1/admin/orders/export` | Admin: export orders CSV | Yes |
+| `GET` | `/api/v1/admin/orders/{id}` | Admin: get order by ID | Yes |
+| `GET` | `/api/v1/orders/track/invoice` | Guest order invoice | No |
+| `GET` | `/api/v1/orders/track/timeline` | Guest order timeline | No |
+| `GET` | `/api/v1/orders/{id}` | Get order by ID | Yes |
+| `GET` | `/api/v1/orders/{id}/shipments` | List order shipments | Yes |
+| `POST` | `/api/v1/orders/{id}/shipments` | Purchase a shipping label | Yes |
+| `POST` | `/api/v1/orders/{id}/shipping-quotes` | Get shipping rate quotes | Yes |
+| `GET` | `/api/v1/seller/orders/export` | Seller: export orders CSV | Yes |
+| `GET` | `/api/v1/seller/orders/{id}` | Seller: get order by ID | Yes |
+| `POST` | `/api/v1/seller/orders/{id}/cancel` | Seller: cancel order | Yes |
+| `POST` | `/api/v1/seller/orders/{id}/pickup/complete` | Seller: verify pickup code and complete collection | Yes |
+| `POST` | `/api/v1/seller/orders/{id}/pickup/ready` | Seller: mark a pickup order ready | Yes |
+| `POST` | `/api/v1/seller/orders/{id}/shipping` | Seller: mark order shipped | Yes |
 
 ---
 

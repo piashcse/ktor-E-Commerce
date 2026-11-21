@@ -24,6 +24,9 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/api/v1/reviews/{id}/helpful` | Vote a review helpful | Yes |
 | `GET` | `/api/v1/admin/reviews` | Admin: list reviews by status | Yes (Admin) |
 | `PUT` | `/api/v1/admin/reviews/{id}/status` | Admin: moderate a review | Yes (Admin) |
+| `POST` | `/api/v1/admin/reviews/bulk/status` | Admin: bulk moderate reviews | Yes |
+| `GET` | `/api/v1/admin/reviews/export` | Admin: export reviews CSV | Yes |
+| `GET` | `/api/v1/reviews/summary` | Rating distribution for a product | No |
 
 ---
 

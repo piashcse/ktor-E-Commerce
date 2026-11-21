@@ -29,6 +29,11 @@ Authorization: Bearer <your_access_token>
 | `PUT` | `/api/v1/admin/shops/reject/{id}` | Reject a shop | Yes (Admin) |
 | `PUT` | `/api/v1/admin/shops/suspend/{id}` | Suspend a shop | Yes (Admin) |
 | `PUT` | `/api/v1/admin/shops/activate/{id}` | Activate a shop | Yes (Admin) |
+| `GET` | `/api/v1/admin/shops` | Admin - List all shops | Yes |
+| `POST` | `/api/v1/admin/shops/bulk/approve` | Admin - Bulk approve shops | Yes |
+| `POST` | `/api/v1/admin/shops/bulk/reject` | Admin - Bulk reject shops | Yes |
+| `POST` | `/api/v1/admin/shops/bulk/suspend` | Admin - Bulk suspend shops | Yes |
+| `GET` | `/api/v1/shops/{id}/products` | List products for a shop | No |
 
 ---
 

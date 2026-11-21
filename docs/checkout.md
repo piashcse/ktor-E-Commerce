@@ -99,3 +99,7 @@ A list of created orders (split by shop if multi-vendor).
 `POST /api/v1/checkout/guest` places an order without an account. It is gated by the `guest_checkout` feature flag (disabled by default; enable via the super-admin feature-flags API).
 
 A guest order creates an unverified guest CUSTOMER for the checkout email. If that email later registers and verifies the OTP, the account (and order history) is claimed. Guest orders can be tracked with `GET /api/v1/orders/track?orderNumber=...&email=...`.
+
+Other operations:
+
+- `POST /api/v1/checkout/guest/summary` — Guest checkout quote

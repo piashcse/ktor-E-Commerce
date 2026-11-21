@@ -13,6 +13,7 @@ is rejected for new checkout calculations.
 |---|---|---|---|
 | `GET` | `/api/v1/admin/fx-rates` | List stored rates | Yes (Admin) |
 | `PUT` | `/api/v1/admin/fx-rates/{targetCurrency}` | Set/refresh a rate | Yes (Admin) |
+| `GET` | `/api/v1/fx-rates` | List FX rates | No |
 
 ### Set FX rate
 

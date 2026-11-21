@@ -20,6 +20,11 @@ All Refund Request endpoints require Bearer token authentication.
 | `POST` | `/api/v1/refund-requests/{id}/ship` | Mark refund as shipped | Yes (Customer) |
 | `GET` | `/api/v1/admin/refund-requests/order/{orderId}` | Get refunds for an order (Admin) | Yes (Admin) |
 | `PUT` | `/api/v1/admin/refund-requests/{id}/status` | Update refund status (Admin) | Yes (Admin) |
+| `GET` | `/api/v1/admin/refund-requests` | Admin - List refund requests | Yes |
+| `POST` | `/api/v1/admin/refund-requests/bulk/status` | Admin - Bulk update refund status | Yes |
+| `GET` | `/api/v1/admin/refund-requests/export` | Admin - Export refunds CSV | Yes |
+| `POST` | `/api/v1/refund-requests/{id}/evidence` | Upload private evidence for a refund request | Yes |
+| `GET` | `/api/v1/seller/refund-requests` | Seller - List refund requests | Yes |
 
 ---
 

@@ -63,6 +63,14 @@ coupon is used instead of an automatic promotion.
 | `POST` | `/api/v1/admin/promotions` | Create a promotion |
 | `PUT` | `/api/v1/admin/promotions/{id}` | Update a promotion |
 | `DELETE` | `/api/v1/admin/promotions/{id}` | Deactivate a promotion |
+| `GET` | `/api/v1/seller/coupons` | Seller - List my shop coupons |
+| `POST` | `/api/v1/seller/coupons` | Seller - Create a shop coupon |
+| `DELETE` | `/api/v1/seller/coupons/{id}` | Seller - Delete a shop coupon |
+| `PUT` | `/api/v1/seller/coupons/{id}` | Seller - Update a shop coupon |
+| `GET` | `/api/v1/seller/promotions` | Seller: list my promotions |
+| `POST` | `/api/v1/seller/promotions` | Seller: create a promotion |
+| `DELETE` | `/api/v1/seller/promotions/{id}` | Seller: deactivate a promotion |
+| `PUT` | `/api/v1/seller/promotions/{id}` | Seller: update a promotion |
 
 ```json
 {

@@ -29,6 +29,13 @@ This documentation provides comprehensive details for the Authentication API end
 | `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin + `user:manage`) |
 | `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin + `user:manage`) |
 | `PUT` | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin + `user:manage`) |
+| `GET` | `/api/v1/admin/users` | Admin: search users | Yes |
+| `GET` | `/api/v1/admin/users/{id}` | Admin: user detail | Yes |
+| `PUT` | `/api/v1/admin/users/{id}/activate` | Admin: activate a user | Yes |
+| `PUT` | `/api/v1/admin/users/{id}/deactivate` | Admin: deactivate a user | Yes |
+| `GET` | `/api/v1/admin/users/{id}/login-attempts` | Admin: inspect login/OTP lockouts | Yes |
+| `PUT` | `/api/v1/admin/users/{id}/type` | Admin: change a user's role | Yes |
+| `POST` | `/api/v1/admin/users/{id}/unlock` | Admin: clear login and OTP lockouts | Yes |
 
 ---
 

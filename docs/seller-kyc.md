@@ -12,6 +12,11 @@ Sellers must submit KYC before requesting payouts. Already-approved sellers are 
 | `GET` | `/api/v1/admin/sellers?status=PENDING` | Admin KYC queue (optional status filter) | Yes (Admin) |
 | `PUT` | `/api/v1/admin/sellers/{sellerId}/verify` | Verify KYC | Yes (Admin) |
 | `PUT` | `/api/v1/admin/sellers/{sellerId}/reject` | Reject KYC with a reason | Yes (Admin) |
+| `POST` | `/api/v1/admin/sellers/bulk/reject` | Admin: bulk reject KYC | Yes |
+| `POST` | `/api/v1/admin/sellers/bulk/verify` | Admin: bulk verify KYC | Yes |
+| `GET` | `/api/v1/admin/sellers/export` | Admin: export KYC submissions CSV | Yes |
+| `GET` | `/api/v1/admin/sellers/{sellerId}/history` | Admin: KYC decision history | Yes |
+| `GET` | `/api/v1/seller/kyc/history` | Get my KYC submission history | Yes |
 
 States: `NOT_SUBMITTED → PENDING → VERIFIED` or `PENDING → REJECTED`.
 

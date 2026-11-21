@@ -18,6 +18,10 @@ Authorization: Bearer <your_access_token>
 | `POST` | `/api/v1/payments` | Create a payment intent for an order (server-owned status) | Yes (Customer) |
 | `POST` | `/api/v1/admin/payments/{id}/confirm` | Confirm a pending payment as completed | Yes (Admin) |
 | `POST` | `/api/v1/payments/webhook/{provider}` | Provider webhook with signature verification (public) | No |
+| `GET` | `/api/v1/admin/payments` | Admin - List payments | Yes |
+| `POST` | `/api/v1/admin/payments/{id}/risk` | Record AVS/CVV results for a payment | Yes |
+| `POST` | `/api/v1/admin/webhooks/bulk/replay` | Admin: bulk replay webhooks | Yes |
+| `GET` | `/api/v1/admin/webhooks/{id}` | Admin: inspect a webhook payload | Yes |
 
 ---
 

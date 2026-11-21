@@ -23,6 +23,8 @@ All endpoints require an admin Bearer token.
 | `POST` | `/api/v1/admin/chargebacks` | Record a chargeback |
 | `GET` | `/api/v1/admin/chargebacks/{id}` | Retrieve a chargeback |
 | `PUT` | `/api/v1/admin/chargebacks/{id}` | Update status/outcome |
+| `GET` | `/api/v1/admin/chargebacks/export` | Export chargebacks CSV |
+| `POST` | `/api/v1/admin/chargebacks/{id}/evidence` | Attach evidence to a chargeback |
 
 ---
 

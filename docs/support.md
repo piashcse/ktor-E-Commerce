@@ -48,6 +48,7 @@ Other customer endpoints:
 | `GET` | `/api/v1/admin/support/tickets/{id}` | Full thread incl. internal notes |
 | `POST` | `/api/v1/admin/support/tickets/{id}/messages` | Reply or internal note |
 | `PUT` | `/api/v1/admin/support/tickets/{id}` | Status/priority/category/assignment |
+| `GET` | `/api/v1/admin/support/tickets/{id}/attachments/{attachmentId}` | Admin: download a support attachment |
 
 Reply body:
 

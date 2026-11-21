@@ -19,6 +19,8 @@ All Dashboard endpoints require `ADMIN` role.
 | `GET` | `/api/v1/admin/dashboard/top-products` | Get top selling products | Yes (Admin) |
 | `GET` | `/api/v1/admin/dashboard/activity` | Get recent activity feed | Yes (Admin) |
 | `GET` | `/api/v1/seller/dashboard` | Seller-scoped revenue, orders and top products | Yes (Seller) |
+| `GET` | `/api/v1/admin/queues` | Admin work queues | Yes |
+| `GET` | `/api/v1/seller/readiness` | Seller readiness | Yes |
 
 ---
 

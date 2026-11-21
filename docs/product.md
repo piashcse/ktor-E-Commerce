@@ -35,6 +35,21 @@ Authorization: Bearer <your_access_token>
 | `GET` | `/api/v1/products/{id}/also-bought` | Frequently bought together | No |
 | `GET` | `/api/v1/products/recommendations` | Best-seller recommendations | No |
 | `DELETE` | `/api/v1/admin/products/{id}` | Delete a product (Admin) | Yes (Admin) |
+| `PUT` | `/api/v1/admin/products/{id}/tax-class` | Assign a product tax class | Yes |
+| `GET` | `/api/v1/admin/products/{id}/translations` | List a product's translations | Yes |
+| `DELETE` | `/api/v1/admin/products/{id}/translations/{locale}` | Delete a product translation | Yes |
+| `PUT` | `/api/v1/admin/products/{id}/translations/{locale}` | Create or update a product translation | Yes |
+| `POST` | `/api/v1/seller/products/{id}/options` | Create option dimension | Yes |
+| `DELETE` | `/api/v1/seller/products/{id}/options/{optionId}` | Delete option dimension | Yes |
+| `POST` | `/api/v1/seller/products/{id}/options/{optionId}/values` | Add option value | Yes |
+| `DELETE` | `/api/v1/seller/products/{id}/options/{optionId}/values/{valueId}` | Delete option value | Yes |
+| `POST` | `/api/v1/seller/products/{id}/variants` | Create product variant | Yes |
+| `DELETE` | `/api/v1/seller/products/{id}/variants/{variantId}` | Delete product variant | Yes |
+| `PUT` | `/api/v1/seller/products/{id}/variants/{variantId}` | Update product variant | Yes |
+| `PUT` | `/api/v1/seller/products/{id}/variants/{variantId}/options` | Attach option values to a variant | Yes |
+| `GET` | `/api/v1/stock-alerts` | List back-in-stock alerts | Yes |
+| `POST` | `/api/v1/stock-alerts` | Subscribe to a back-in-stock alert | Yes |
+| `DELETE` | `/api/v1/stock-alerts/{productId}` | Remove a back-in-stock alert | Yes |
 
 ---
 

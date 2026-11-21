@@ -25,6 +25,10 @@ Authorization: Bearer <admin_access_token>
 | `POST` | `/api/v1/admin/shipping-methods` | Create a new shipping method | Yes | Admin |
 | `PUT` | `/api/v1/admin/shipping-methods/{id}` | Update an existing shipping method | Yes | Admin |
 | `DELETE` | `/api/v1/admin/shipping-methods/{id}` | Delete a shipping method | Yes | Admin |
+| `GET` | `/api/v1/seller/shipping-methods` | Seller - List my shipping methods | Yes | Seller |
+| `POST` | `/api/v1/seller/shipping-methods` | Seller - Create a shipping method | Yes | Seller |
+| `DELETE` | `/api/v1/seller/shipping-methods/{id}` | Seller - Delete a shipping method | Yes | Seller |
+| `PUT` | `/api/v1/seller/shipping-methods/{id}` | Seller - Update a shipping method | Yes | Seller |
 
 ---
 

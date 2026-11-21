@@ -104,7 +104,8 @@ hide:
   invitations, `/me/permissions`, and admin role CRUD. Admin route groups, mixed
   customer/seller/admin routes, notifications, invoices, shipments and B2B admin routes now
   enforce explicit permissions. See [Users, Roles & Permissions](rbac.md).
-- Endpoint index and README now document 383 operations, including the RBAC and seller membership APIs.
+- Endpoint index and README now document all 464 generated operations, including the RBAC and
+  seller membership APIs.
 - Subscription recurring billing (`V50`): stored provider customer/payment-method references,
   off-session renewal charges, idempotent per-period invoices, retry/backoff dunning, grace periods,
   automatic expiry with entitlement revocation, and webhook-driven invoice activation.

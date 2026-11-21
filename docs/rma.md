@@ -31,6 +31,8 @@ Create body:
 | `PUT` | `/api/v1/seller/rma-requests/{id}/status` | Approve/reject/receive/complete |
 | `GET` | `/api/v1/admin/rma-requests` | Admin queue (optional `status`) |
 | `PUT` | `/api/v1/admin/rma-requests/{id}/status` | Admin status update |
+| `POST` | `/api/v1/admin/rma-requests/bulk/status` | Admin: bulk update RMA status |
+| `GET` | `/api/v1/admin/rma-requests/export` | Admin: export RMAs CSV |
 
 Status update body:
 

@@ -72,6 +72,8 @@ Admin APIs:
 | `GET` | `/api/v1/admin/products/{id}/translations` | List translations |
 | `PUT` | `/api/v1/admin/products/{id}/translations/{locale}` | Create/update |
 | `DELETE` | `/api/v1/admin/products/{id}/translations/{locale}` | Delete |
+| `GET` | `/api/v1/i18n/locales` | List supported locales |
+| `GET` | `/api/v1/i18n/messages` | Get translated API message catalog |
 
 ```json
 {
