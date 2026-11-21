@@ -119,3 +119,577 @@ to `ALLOW` and finalizes the order if the payment was captured:
 curl -X POST 'http://localhost:8080/api/v1/admin/payments/payment-uuid/risk/approve' \
   -H 'Authorization: Bearer <admin-token>'
 ```
+## Endpoint Details
+
+### 1. List fraud velocity rules
+
+**`GET /api/v1/admin/fraud/rules`**
+
+List fraud velocity rules
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/fraud/rules' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "name": "Example",
+    "metric": "ORDER_COUNT",
+    "windowMinutes": 1,
+    "threshold": "string",
+    "action": "ALLOW",
+    "priority": 1,
+    "isActive": true
+  }
+]
+```
+
+---
+
+### 2. Create a fraud velocity rule
+
+**`POST /api/v1/admin/fraud/rules`**
+
+Create a fraud velocity rule
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/fraud/rules' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "metric": "ORDER_COUNT",
+  "windowMinutes": 1,
+  "threshold": "string",
+  "action": "ALLOW",
+  "priority": 1,
+  "isActive": true
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "metric": "ORDER_COUNT",
+  "windowMinutes": 1,
+  "threshold": "string",
+  "action": "ALLOW",
+  "priority": 1,
+  "isActive": true
+}
+```
+
+---
+
+### 3. Update a fraud velocity rule
+
+**`PUT /api/v1/admin/fraud/rules/{id}`**
+
+Update a fraud velocity rule
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/fraud/rules/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "metric": "ORDER_COUNT",
+  "windowMinutes": 1,
+  "threshold": "string",
+  "action": "ALLOW",
+  "priority": 1,
+  "isActive": true
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "metric": "ORDER_COUNT",
+  "windowMinutes": 1,
+  "threshold": "string",
+  "action": "ALLOW",
+  "priority": 1,
+  "isActive": true
+}
+```
+
+---
+
+### 4. Delete a fraud velocity rule
+
+**`DELETE /api/v1/admin/fraud/rules/{id}`**
+
+Delete a fraud velocity rule
+
+#### Request
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/fraud/rules/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 5. List blocklist entries
+
+**`GET /api/v1/admin/fraud/blocklist`**
+
+List blocklist entries
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/fraud/blocklist' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "type": "USER",
+    "value": "10.00",
+    "reason": "Policy violation",
+    "isActive": true,
+    "expiresAt": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00"
+  }
+]
+```
+
+---
+
+### 6. Add a blocklist entry
+
+**`POST /api/v1/admin/fraud/blocklist`**
+
+Add a blocklist entry
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/fraud/blocklist' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "type": "USER",
+  "value": "10.00",
+  "reason": "Policy violation",
+  "expiresAt": "2024-05-06T12:00:00",
+  "isActive": true
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "type": "USER",
+  "value": "10.00",
+  "reason": "Policy violation",
+  "isActive": true,
+  "expiresAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 7. Delete a blocklist entry
+
+**`DELETE /api/v1/admin/fraud/blocklist/{id}`**
+
+Delete a blocklist entry
+
+#### Request
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/fraud/blocklist/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 8. List payments flagged for review or blocked
+
+**`GET /api/v1/admin/fraud/high-risk`**
+
+List payments flagged for review or blocked
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/fraud/high-risk?page=1&perPage=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "amount": "250.00",
+      "currency": "USD",
+      "status": "PENDING",
+      "paymentMethod": "CREDIT_CARD",
+      "transactionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "createdAt": "2024-05-06T12:00:00",
+      "provider": "MANUAL",
+      "providerReference": "pi_123456789",
+      "clientSecret": "pi_123_secret_456",
+      "nextActionUrl": "https://example.com/next",
+      "scaStatus": "NOT_REQUIRED",
+      "providerStatus": "succeeded",
+      "riskScore": 1,
+      "riskDecision": "ALLOW",
+      "avsStatus": "MATCH",
+      "cvvStatus": "MATCH",
+      "threeDsEnforced": true
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 9. Record AVS/CVV results for a payment
+
+**`POST /api/v1/admin/payments/{id}/risk`**
+
+Record AVS/CVV results for a payment
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payments/6c5078d3-f8e3-4c88-9afe-48b5423c664f/risk' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "avsStatus": "MATCH",
+  "cvvStatus": "MATCH"
+}'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 10. List chargebacks
+
+**`GET /api/v1/admin/chargebacks`**
+
+List chargebacks
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/chargebacks?page=1&perPage=20&status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "paymentId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "providerDisputeId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "amount": "250.00",
+      "currency": "USD",
+      "status": "OPEN",
+      "reason": "Policy violation",
+      "outcome": "Policy violation",
+      "evidenceDueAt": "2024-05-06T12:00:00",
+      "evidenceUrl": "https://example.com/evidence.pdf",
+      "openedAt": "2024-05-06T12:00:00",
+      "resolvedAt": "2024-05-06T12:00:00",
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 11. Record a chargeback/dispute
+
+**`POST /api/v1/admin/chargebacks`**
+
+Record a chargeback/dispute
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/chargebacks' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "paymentId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "providerDisputeId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "amount": "250.00",
+  "reason": "Policy violation",
+  "evidenceDueAt": "2024-05-06T12:00:00"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "paymentId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "providerDisputeId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "amount": "250.00",
+  "currency": "USD",
+  "status": "OPEN",
+  "reason": "Policy violation",
+  "outcome": "Policy violation",
+  "evidenceDueAt": "2024-05-06T12:00:00",
+  "evidenceUrl": "https://example.com/evidence.pdf",
+  "openedAt": "2024-05-06T12:00:00",
+  "resolvedAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 12. Retrieve a chargeback
+
+**`GET /api/v1/admin/chargebacks/{id}`**
+
+Retrieve a chargeback
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/chargebacks/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "paymentId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "providerDisputeId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "amount": "250.00",
+  "currency": "USD",
+  "status": "OPEN",
+  "reason": "Policy violation",
+  "outcome": "Policy violation",
+  "evidenceDueAt": "2024-05-06T12:00:00",
+  "evidenceUrl": "https://example.com/evidence.pdf",
+  "openedAt": "2024-05-06T12:00:00",
+  "resolvedAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 13. Update a chargeback status/outcome
+
+**`PUT /api/v1/admin/chargebacks/{id}`**
+
+Update a chargeback status/outcome
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/chargebacks/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "status": "OPEN",
+  "outcome": "Policy violation",
+  "reason": "Policy violation"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "paymentId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "providerDisputeId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "amount": "250.00",
+  "currency": "USD",
+  "status": "OPEN",
+  "reason": "Policy violation",
+  "outcome": "Policy violation",
+  "evidenceDueAt": "2024-05-06T12:00:00",
+  "evidenceUrl": "https://example.com/evidence.pdf",
+  "openedAt": "2024-05-06T12:00:00",
+  "resolvedAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 14. Export chargebacks CSV
+
+**`GET /api/v1/admin/chargebacks/export`**
+
+Export chargebacks CSV
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/chargebacks/export?status=PENDING' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```csv
+id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+```
+
+---
+
+### 15. Attach evidence to a chargeback
+
+**`POST /api/v1/admin/chargebacks/{id}/evidence`**
+
+Attach evidence to a chargeback
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/chargebacks/6c5078d3-f8e3-4c88-9afe-48b5423c664f/evidence' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "evidenceUrl": "https://example.com/evidence.pdf"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "paymentId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "providerDisputeId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "amount": "250.00",
+  "currency": "USD",
+  "status": "OPEN",
+  "reason": "Policy violation",
+  "outcome": "Policy violation",
+  "evidenceDueAt": "2024-05-06T12:00:00",
+  "evidenceUrl": "https://example.com/evidence.pdf",
+  "openedAt": "2024-05-06T12:00:00",
+  "resolvedAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+
+---

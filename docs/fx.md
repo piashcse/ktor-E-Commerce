@@ -15,7 +15,7 @@ is rejected for new checkout calculations.
 | `PUT` | `/api/v1/admin/fx-rates/{targetCurrency}` | Set/refresh a rate | Yes (Admin) |
 | `GET` | `/api/v1/fx-rates` | List FX rates | No |
 
-### Set FX rate
+### 1. Set FX rate
 
 **`PUT /api/v1/admin/fx-rates/{targetCurrency}`**
 
@@ -58,3 +58,61 @@ curl -X 'PUT' \
 | `400` | `VALIDATION_FAILED` | Unsupported currency or non-positive rate |
 | `401` | `UNAUTHORIZED` | Missing/invalid token |
 | `403` | `FORBIDDEN` | Caller is not an admin |
+## Endpoint Details
+
+### 2. List FX rates
+
+**`GET /api/v1/admin/fx-rates`**
+
+List FX rates
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/fx-rates' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+[
+  {
+    "targetCurrency": "USD",
+    "rate": "250.00",
+    "effectiveAt": "2024-05-06T12:00:00"
+  }
+]
+```
+
+---
+
+### 3. List FX rates
+
+**`GET /api/v1/fx-rates`**
+
+List FX rates
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/fx-rates' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+[
+  {
+    "targetCurrency": "USD",
+    "rate": "250.00",
+    "effectiveAt": "2024-05-06T12:00:00"
+  }
+]
+```
+
+---

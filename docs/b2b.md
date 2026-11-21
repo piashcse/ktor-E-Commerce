@@ -2,7 +2,7 @@
 
 Wholesale accounts, negotiated quotes, purchase orders with credit limits and payment terms.
 
-## Accounts
+### 1. Accounts
 
 **`POST /api/v1/b2b/account`**
 
@@ -29,7 +29,7 @@ Admin approval:
 }
 ```
 
-## Quotes
+### 2. Quotes
 
 **`POST /api/v1/b2b/quotes`**
 
@@ -71,7 +71,7 @@ Other endpoints:
 - `GET /api/v1/b2b/quotes/{id}`
 - `GET /api/v1/seller/b2b/quotes`
 
-## Purchase orders and net terms
+### 3. Purchase orders and net terms
 
 **`POST /api/v1/b2b/quotes/{id}/accept`**
 

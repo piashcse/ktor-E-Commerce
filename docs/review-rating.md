@@ -267,6 +267,96 @@ Hiding a review removes it from public product review lists and recalculates the
 
 ---
 
+### 8. Admin: bulk moderate reviews
+
+**`POST /api/v1/admin/reviews/bulk/status`**
+
+Admin: bulk moderate reviews
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/reviews/bulk/status?status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+#### Response
+
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+
+---
+
+### 9. Admin: export reviews CSV
+
+**`GET /api/v1/admin/reviews/export`**
+
+Admin: export reviews CSV
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/reviews/export?status=PENDING' \
+  -H 'accept: text/csv' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```csv
+id,status,amount,currency,createdAt
+example-id,PAID,250.00,USD,2024-05-06T12:00:00
+```
+
+---
+
+### 10. Rating distribution for a product
+
+**`GET /api/v1/reviews/summary`**
+
+Rating distribution for a product
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/reviews/summary' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+{
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "total": 1,
+  "average": 250.0,
+  "buckets": [
+    {
+      "stars": 1,
+      "count": 1
+    }
+  ]
+}
+```
+
+---
+
 ## Error Handling
 
 This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
@@ -276,7 +366,7 @@ This API follows industry-standard error handling patterns (Stripe, GitHub, Open
 - **Response body contains data directly** (no wrapper object)
 - No `isSuccess` or `statusCode` fields needed
 
-### Error Responses
+#### Error Responses
 
 **Standard Error (400/401/403/404/500):**
 ```json

@@ -646,7 +646,7 @@ curl -X 'POST' \
 
 ---
 
-## Social login
+### 15. Social login
 
 **`POST /api/v1/auth/social/google`**
 
@@ -758,6 +758,564 @@ SPKI key and verifies assertions.
 | `PUT` | `/api/v1/admin/auth/{userId}/change-user-type` | Change user's account type | Yes (Admin + `user:manage`) |
 | `PUT` | `/api/v1/admin/auth/{userId}/deactivate` | Deactivate user account | Yes (Admin + `user:manage`) |
 | `PUT` | `/api/v1/admin/auth/{userId}/activate` | Activate user account | Yes (Admin + `user:manage`) |
+
+---
+
+### 16. Start passkey login
+
+**`POST /api/v1/auth/passkeys/login/options`**
+
+Start passkey login
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/passkeys/login/options' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "jane@example.com",
+  "userType": "CUSTOMER"
+}'
+```
+
+#### Response
+
+```json
+{
+  "challenge": "string",
+  "rpId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "timeout": 1,
+  "allowCredentials": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "type": "CUSTOMER",
+      "transports": [
+        "string"
+      ]
+    }
+  ],
+  "userVerification": "string"
+}
+```
+
+---
+
+### 17. Finish passkey login
+
+**`POST /api/v1/auth/passkeys/login`**
+
+Finish passkey login
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/passkeys/login' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "jane@example.com",
+  "userType": "CUSTOMER",
+  "credentialId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "clientDataJson": "string",
+  "authenticatorData": "string",
+  "signature": "string",
+  "mfaCode": "SAVE10"
+}'
+```
+
+#### Response
+
+```json
+{
+  "user": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "email": "jane@example.com",
+    "isVerified": true,
+    "userType": "CUSTOMER",
+    "isActive": true,
+    "mfaEnabled": false,
+    "createdAt": "2024-05-06T12:00:00",
+    "updatedAt": "2024-05-06T12:00:00"
+  },
+  "accessToken": "token-value",
+  "refreshToken": "token-value",
+  "expiresIn": 1,
+  "tokenType": "CUSTOMER"
+}
+```
+
+---
+
+### 18. List my passkeys
+
+**`GET /api/v1/auth/passkeys`**
+
+List my passkeys
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/auth/passkeys' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "credentialId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "name": "Example",
+    "transports": "string",
+    "signCount": 1,
+    "createdAt": "2024-05-06T12:00:00",
+    "lastUsedAt": "2024-05-06T12:00:00"
+  }
+]
+```
+
+---
+
+### 19. Start passkey registration
+
+**`POST /api/v1/auth/passkeys/register/options`**
+
+Start passkey registration
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/passkeys/register/options' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+{
+  "challenge": "string",
+  "rpId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "rpName": "string",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "userName": "string",
+  "userDisplayName": "string",
+  "timeout": 1,
+  "excludeCredentials": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "type": "CUSTOMER",
+      "transports": [
+        "string"
+      ]
+    }
+  ],
+  "userVerification": "string"
+}
+```
+
+---
+
+### 20. Finish passkey registration
+
+**`POST /api/v1/auth/passkeys/register`**
+
+Finish passkey registration
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/auth/passkeys/register' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "credentialId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "clientDataJson": "string",
+  "publicKey": "string",
+  "name": "Example",
+  "transports": [
+    "string"
+  ],
+  "password": "string",
+  "mfaCode": "SAVE10"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "credentialId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "transports": "string",
+  "signCount": 1,
+  "createdAt": "2024-05-06T12:00:00",
+  "lastUsedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 21. Delete a passkey
+
+**`DELETE /api/v1/auth/passkeys/{id}`**
+
+Delete a passkey
+
+#### Request
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/auth/passkeys/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "password": "string",
+  "mfaCode": "SAVE10"
+}'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 22. Admin: search users
+
+**`GET /api/v1/admin/users`**
+
+Admin: search users
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/users?page=1&perPage=20&userType=CUSTOMER&active=true&query=phone' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "email": "jane@example.com",
+      "userType": "CUSTOMER",
+      "isVerified": true,
+      "isActive": true,
+      "mfaEnabled": false,
+      "isGuest": false,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 23. Admin: user detail
+
+**`GET /api/v1/admin/users/{id}`**
+
+Admin: user detail
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "user": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "email": "jane@example.com",
+    "userType": "CUSTOMER",
+    "isVerified": true,
+    "isActive": true,
+    "mfaEnabled": false,
+    "isGuest": false,
+    "createdAt": "2024-05-06T12:00:00"
+  },
+  "sellerId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopStatus": "PENDING",
+  "kycStatus": "NOT_SUBMITTED",
+  "orderCount": 1
+}
+```
+
+---
+
+### 24. Admin: activate a user
+
+**`PUT /api/v1/admin/users/{id}/activate`**
+
+Admin: activate a user
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/activate' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 25. Admin: deactivate a user
+
+**`PUT /api/v1/admin/users/{id}/deactivate`**
+
+Admin: deactivate a user
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/deactivate' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 26. Admin: inspect login/OTP lockouts
+
+**`GET /api/v1/admin/users/{id}/login-attempts`**
+
+Admin: inspect login/OTP lockouts
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/login-attempts' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "email": "jane@example.com",
+    "userType": "CUSTOMER",
+    "ipAddress": "123 Main St",
+    "attemptCount": 1,
+    "lockedUntil": "2024-05-06T12:00:00",
+    "isLocked": true
+  }
+]
+```
+
+---
+
+### 27. Admin: change a user's role
+
+**`PUT /api/v1/admin/users/{id}/type`**
+
+Admin: change a user's role
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/type' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "userType": "CUSTOMER"
+}'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 28. Admin: clear login and OTP lockouts
+
+**`POST /api/v1/admin/users/{id}/unlock`**
+
+Admin: clear login and OTP lockouts
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/users/6c5078d3-f8e3-4c88-9afe-48b5423c664f/unlock' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 29. List API keys
+
+**`GET /api/v1/api-keys`**
+
+List API keys
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/api-keys' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "name": "Example",
+    "prefix": "string",
+    "scopes": [
+      "string"
+    ],
+    "isActive": true,
+    "lastUsedAt": "2024-05-06T12:00:00",
+    "expiresAt": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00"
+  }
+]
+```
+
+---
+
+### 30. Create API key
+
+**`POST /api/v1/api-keys`**
+
+Create API key
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/api-keys' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "scopes": [
+    "string"
+  ],
+  "expiresAt": "2024-05-06T12:00:00"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "prefix": "string",
+  "scopes": [
+    "string"
+  ],
+  "key": "pending-orders",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 31. Revoke API key
+
+**`DELETE /api/v1/api-keys/{id}`**
+
+Revoke API key
+
+#### Request
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/api-keys/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
 
 ---
 

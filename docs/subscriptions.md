@@ -28,7 +28,7 @@ Admin CRUD:
 - `PUT /api/v1/admin/subscription-plans/{id}`
 - `DELETE /api/v1/admin/subscription-plans/{id}` — deactivates
 
-## Subscribing
+### 1. Subscribing
 
 **`POST /api/v1/subscriptions`**
 
@@ -55,7 +55,7 @@ Other endpoints:
 - `GET /api/v1/subscriptions/{id}/invoices`
 - `POST /api/v1/subscriptions/{id}/cancel` — marks `cancelAtPeriodEnd`
 
-## Renewal billing
+### 2. Renewal billing
 
 **`POST /api/v1/admin/subscriptions/run-billing`**
 
@@ -108,7 +108,7 @@ Products can be marked digital:
 Digital-only orders have **zero shipping cost** and the order shipping method is stored as
 `DIGITAL`. When payment completes, an entitlement is created for each digital product in the order.
 
-### Library
+### 3. Library
 
 **`GET /api/v1/library`**
 

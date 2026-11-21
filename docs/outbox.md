@@ -29,3 +29,165 @@ retired to `outbox_dead_letter` for inspection/replay.
   failures are retried and dead-lettered like any other subscriber.
 
 See [Notifications](notification.md).
+## Endpoint Details
+
+### 1. Outbox summary
+
+**`GET /api/v1/admin/outbox/summary`**
+
+Outbox summary
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/outbox/summary' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "pending": 1,
+  "deadLetters": 1,
+  "oldestPendingAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 2. List dead letters
+
+**`GET /api/v1/admin/outbox/dead-letters`**
+
+List dead letters
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/outbox/dead-letters?page=1&perPage=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "eventType": "CUSTOMER",
+      "aggregateType": "CUSTOMER",
+      "aggregateId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "payload": "{}",
+      "error": "None",
+      "attempts": 1,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 3. Requeue dead letter
+
+**`POST /api/v1/admin/outbox/dead-letters/{id}/requeue`**
+
+Requeue dead letter
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/outbox/dead-letters/6c5078d3-f8e3-4c88-9afe-48b5423c664f/requeue' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 4. Bulk requeue dead letters
+
+**`POST /api/v1/admin/outbox/dead-letters/requeue`**
+
+Bulk requeue dead letters
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/outbox/dead-letters/requeue' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ]
+}'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 5. Inspect a dead letter
+
+**`GET /api/v1/admin/outbox/dead-letters/{id}`**
+
+Inspect a dead letter
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/outbox/dead-letters/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "eventType": "CUSTOMER",
+  "aggregateType": "CUSTOMER",
+  "aggregateId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "payload": "{}",
+  "error": "None",
+  "attempts": 1,
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+
+---

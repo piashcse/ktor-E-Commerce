@@ -18,7 +18,7 @@ both for any order.
 
 ---
 
-## 1. Rate quote
+### 1. Rate quote
 
 **`POST /api/v1/orders/{id}/shipping-quotes`**
 
@@ -63,7 +63,7 @@ Response:
 
 ---
 
-## 2. Purchase a label
+### 2. Purchase a label
 
 **`POST /api/v1/orders/{id}/shipments`**
 
@@ -111,7 +111,7 @@ Rules:
 
 ---
 
-## 3. List / retrieve shipments
+### 3. List / retrieve shipments
 
 **`GET /api/v1/orders/{id}/shipments`** returns all parcels for an order.
 
@@ -127,7 +127,7 @@ Rules:
 Stored carrier payloads can be re-applied after fixing a mapping/outage. Replay updates the inbox
 row and writes an audit entry; it does not require the original signature.
 
-## 4. Tracking webhook
+### 4. Tracking webhook
 
 **`POST /api/v1/shipments/webhook/{provider}`**
 

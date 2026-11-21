@@ -47,3 +47,105 @@ returns:
 ```json
 { "message": "API key revoked" }
 ```
+## Endpoint Details
+
+### 1. List API keys
+
+**`GET /api/v1/api-keys`**
+
+List API keys
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/api-keys' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "name": "Example",
+    "prefix": "string",
+    "scopes": [
+      "string"
+    ],
+    "isActive": true,
+    "lastUsedAt": "2024-05-06T12:00:00",
+    "expiresAt": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00"
+  }
+]
+```
+
+---
+
+### 2. Create API key
+
+**`POST /api/v1/api-keys`**
+
+Create API key
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/api-keys' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "scopes": [
+    "string"
+  ],
+  "expiresAt": "2024-05-06T12:00:00"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "prefix": "string",
+  "scopes": [
+    "string"
+  ],
+  "key": "pending-orders",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 3. Revoke API key
+
+**`DELETE /api/v1/api-keys/{id}`**
+
+Revoke API key
+
+#### Request
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/api-keys/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---

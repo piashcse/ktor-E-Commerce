@@ -77,3 +77,416 @@ Attach option values (one value per option):
 ## Inventory
 
 Inventory rows accept an optional `variantId`. Rows with `variantId = NULL` are legacy product-level stock; variant rows are tracked per `(product, shop, warehouse, variant)`. See [Inventory](inventory.md).
+## Endpoint Details
+
+### 1. List product variants
+
+**`GET /api/v1/products/{id}/variants`**
+
+List product variants
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "sku": "SKU-12345",
+    "name": "Example",
+    "price": "250.00",
+    "discountPrice": "250.00",
+    "discountPercentage": 250.0,
+    "barcode": "SAVE10",
+    "weight": 250.0,
+    "dimensions": "10x20x30 cm",
+    "imageUrl": "string",
+    "status": "ACTIVE",
+    "isDefault": true,
+    "sortOrder": 1,
+    "stockQuantity": 1,
+    "inStock": true,
+    "options": [
+      {
+        "optionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+        "optionName": "string",
+        "valueId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+        "value": "10.00"
+      }
+    ]
+  }
+]
+```
+
+---
+
+### 2. List product options
+
+**`GET /api/v1/products/{id}/options`**
+
+List product options
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "name": "Example",
+    "sortOrder": 1,
+    "values": [
+      {
+        "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+        "optionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+        "value": "10.00",
+        "sortOrder": 1
+      }
+    ]
+  }
+]
+```
+
+---
+### 3. Create product variant
+
+**`POST /api/v1/seller/products/{id}/variants`**
+
+Create product variant
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "sku": "SKU-12345",
+  "name": "Example",
+  "price": "250.00",
+  "discountPrice": "250.00",
+  "barcode": "SAVE10",
+  "weight": "string",
+  "dimensions": "10x20x30 cm",
+  "imageUrl": "string",
+  "status": "ACTIVE",
+  "isDefault": true,
+  "sortOrder": 1
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "sku": "SKU-12345",
+  "name": "Example",
+  "price": "250.00",
+  "discountPrice": "250.00",
+  "discountPercentage": 250.0,
+  "barcode": "SAVE10",
+  "weight": 250.0,
+  "dimensions": "10x20x30 cm",
+  "imageUrl": "string",
+  "status": "ACTIVE",
+  "isDefault": true,
+  "sortOrder": 1,
+  "stockQuantity": 1,
+  "inStock": true,
+  "options": [
+    {
+      "optionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "optionName": "string",
+      "valueId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "value": "10.00"
+    }
+  ]
+}
+```
+
+---
+
+### 4. Update product variant
+
+**`PUT /api/v1/seller/products/{id}/variants/{variantId}`**
+
+Update product variant
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "sku": "SKU-12345",
+  "name": "Example",
+  "price": "250.00",
+  "discountPrice": "250.00",
+  "barcode": "SAVE10",
+  "weight": "string",
+  "dimensions": "10x20x30 cm",
+  "imageUrl": "string",
+  "status": "ACTIVE",
+  "isDefault": true,
+  "sortOrder": 1
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "sku": "SKU-12345",
+  "name": "Example",
+  "price": "250.00",
+  "discountPrice": "250.00",
+  "discountPercentage": 250.0,
+  "barcode": "SAVE10",
+  "weight": 250.0,
+  "dimensions": "10x20x30 cm",
+  "imageUrl": "string",
+  "status": "ACTIVE",
+  "isDefault": true,
+  "sortOrder": 1,
+  "stockQuantity": 1,
+  "inStock": true,
+  "options": [
+    {
+      "optionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "optionName": "string",
+      "valueId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "value": "10.00"
+    }
+  ]
+}
+```
+
+---
+
+### 5. Delete product variant
+
+**`DELETE /api/v1/seller/products/{id}/variants/{variantId}`**
+
+Delete product variant
+
+#### Request
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 6. Attach option values to a variant
+
+**`PUT /api/v1/seller/products/{id}/variants/{variantId}/options`**
+
+Attach option values to a variant
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/variants/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "valueIds": [
+    "string"
+  ]
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "sku": "SKU-12345",
+  "name": "Example",
+  "price": "250.00",
+  "discountPrice": "250.00",
+  "discountPercentage": 250.0,
+  "barcode": "SAVE10",
+  "weight": 250.0,
+  "dimensions": "10x20x30 cm",
+  "imageUrl": "string",
+  "status": "ACTIVE",
+  "isDefault": true,
+  "sortOrder": 1,
+  "stockQuantity": 1,
+  "inStock": true,
+  "options": [
+    {
+      "optionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "optionName": "string",
+      "valueId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "value": "10.00"
+    }
+  ]
+}
+```
+
+---
+
+### 7. Create option dimension
+
+**`POST /api/v1/seller/products/{id}/options`**
+
+Create option dimension
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "sortOrder": 1
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "sortOrder": 1,
+  "values": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "optionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "value": "10.00",
+      "sortOrder": 1
+    }
+  ]
+}
+```
+
+---
+
+### 8. Delete option dimension
+
+**`DELETE /api/v1/seller/products/{id}/options/{optionId}`**
+
+Delete option dimension
+
+#### Request
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 9. Add option value
+
+**`POST /api/v1/seller/products/{id}/options/{optionId}/values`**
+
+Add option value
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options/6c5078d3-f8e3-4c88-9afe-48b5423c664f/values' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "value": "10.00",
+  "sortOrder": 1
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "optionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "value": "10.00",
+  "sortOrder": 1
+}
+```
+
+---
+
+### 10. Delete option value
+
+**`DELETE /api/v1/seller/products/{id}/options/{optionId}/values/{valueId}`**
+
+Delete option value
+
+#### Request
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/options/6c5078d3-f8e3-4c88-9afe-48b5423c664f/values/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---

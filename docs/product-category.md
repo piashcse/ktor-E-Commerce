@@ -207,7 +207,7 @@ This API follows industry-standard error handling patterns (Stripe, GitHub, Open
 - **Response body contains data directly** (no wrapper object)
 - No `isSuccess` or `statusCode` fields needed
 
-### Error Responses
+#### Error Responses
 
 **Standard Error (400/401/403/404/500):**
 ```json
@@ -242,7 +242,7 @@ All error messages are centralized and consistent across all endpoints.
 
 ---
 
-## Upload Category Image
+### 5. Upload Category Image
 
 **`POST /api/v1/admin/product-categories/{id}/image`**
 

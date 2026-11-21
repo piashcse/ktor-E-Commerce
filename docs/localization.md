@@ -82,3 +82,146 @@ Admin APIs:
 
 Only supported locale codes are accepted. Translations are only applied when the code matches the
 request locale; missing translations fall back to the product's default name/description.
+## Endpoint Details
+
+### 1. List a product's translations
+
+**`GET /api/v1/admin/products/{id}/translations`**
+
+List a product's translations
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/translations' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+[
+  {
+    "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "locale": "en",
+    "name": "Example",
+    "description": "Looks good"
+  }
+]
+```
+
+---
+
+### 2. Create or update a product translation
+
+**`PUT /api/v1/admin/products/{id}/translations/{locale}`**
+
+Create or update a product translation
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/translations/en' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "description": "Looks good"
+}'
+```
+
+#### Response
+
+```json
+{
+  "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "locale": "en",
+  "name": "Example",
+  "description": "Looks good"
+}
+```
+
+---
+
+### 3. Delete a product translation
+
+**`DELETE /api/v1/admin/products/{id}/translations/{locale}`**
+
+Delete a product translation
+
+#### Request
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/products/6c5078d3-f8e3-4c88-9afe-48b5423c664f/translations/en' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 4. List supported locales
+
+**`GET /api/v1/i18n/locales`**
+
+List supported locales
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/i18n/locales' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+[
+  {
+    "code": "SAVE10",
+    "language": "string",
+    "englishName": "string",
+    "defaultCurrency": "USD"
+  }
+]
+```
+
+---
+
+### 5. Get translated API message catalog
+
+**`GET /api/v1/i18n/messages`**
+
+Get translated API message catalog
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/i18n/messages' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+{
+  "locale": "en",
+  "messages": {}
+}
+```
+
+---

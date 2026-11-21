@@ -25,7 +25,7 @@ Authorization: Bearer <your_access_token>
 
 ## Endpoint Details
 
-### 1. Get All Policies
+### 1. Get Policy by Type
 
 **`GET /api/v1/policies/{policyType}`**
 
@@ -77,52 +77,7 @@ curl -X 'GET' \
 
 ---
 
-### 2. Get Policy by Type
-
-**`GET /api/v1/policies/{policyType}`**
-
-Retrieve a specific policy by its type (PRIVACY_POLICY or TERMS_CONDITIONS).
-
-#### Path Parameters
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `type` | string | Yes | Policy type (PRIVACY_POLICY or TERMS_CONDITIONS) |
-
-#### Headers
-
-| Header | Value | Required |
-|--------|-------|----------|
-| `accept` | `application/json` | Yes |
-
-#### Request
-
-```bash
-curl -X 'GET' \
-  'http://localhost:8080/api/v1/policies/PRIVACY_POLICY' \
-  -H 'accept: application/json'
-```
-
-#### Response
-
-```json
-{
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "type": "PRIVACY_POLICY",
-    "title": "Privacy Policy",
-    "content": "This is our privacy policy...",
-    "version": "1.0",
-    "effectiveDate": "2023-01-01T00:00:00Z",
-    "isActive": true,
-    "createdAt": "2023-01-01T00:00:00Z",
-    "updatedAt": "2023-01-01T00:00:00Z"
-  }
-}
-```
-
----
-
-### 4. Create Policy
+### 2. Create Policy
 
 **`POST /api/v1/admin/policies`**
 
@@ -180,7 +135,7 @@ curl -X 'POST' \
 
 ---
 
-### 6. Get Policy History
+### 3. Get Policy History
 
 **`GET /api/v1/admin/policies/{type}/history`**
 
@@ -235,7 +190,7 @@ curl -X 'GET' \
 
 ---
 
-### 7. Create Policy Consent
+### 4. Create Policy Consent
 
 **`POST /api/v1/policy-consents/consent`**
 
@@ -285,37 +240,328 @@ curl -X 'POST' \
 
 ## Additional Admin Endpoints
 
-### Update Policy
+### 5. Admin - Update an existing policy document
 
 **`PUT /api/v1/admin/policies/{id}`**
 
-Updates title/content/version/effective date of an existing policy document. Only one policy per
-type may be active; activating a new version deactivates the previous one.
+Admin - Update an existing policy document
 
-### Deactivate Policy
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/policies/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "title": "Example",
+  "content": "string",
+  "version": "1.0.0",
+  "effectiveDate": "2024-05-06T12:00:00",
+  "isActive": true
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "title": "Example",
+  "type": "CUSTOMER",
+  "content": "string",
+  "version": "1.0.0",
+  "effectiveDate": "2024-05-06T12:00:00",
+  "isActive": true,
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 6. Admin - Deactivate a policy document
 
 **`POST /api/v1/admin/policies/deactivate/{id}`**
 
-Marks a policy inactive so it is no longer returned by `GET /api/v1/policies/{policyType}`.
-Existing consent records are retained for audit.
+Admin - Deactivate a policy document
 
-### Get Policy By ID
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/policies/deactivate/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+true
+```
+
+---
+
+### 7. Admin - Retrieve a policy document by ID
 
 **`GET /api/v1/admin/policies/by-id/{id}`**
 
-Returns the exact version by its identifier (including inactive versions), for editing and audit.
+Admin - Retrieve a policy document by ID
 
-### Policy Version History
-
-**`GET /api/v1/admin/policies/{policyType}/history`**
-
-Returns all versions of a policy type, newest first.
+#### Request
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/api/v1/admin/policies/PRIVACY_POLICY/history' \
+  'http://localhost:8080/api/v1/admin/policies/by-id/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
   -H 'Authorization: Bearer <admin_token>'
 ```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "title": "Example",
+  "type": "CUSTOMER",
+  "content": "string",
+  "version": "1.0.0",
+  "effectiveDate": "2024-05-06T12:00:00",
+  "isActive": true,
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 8. Export all personal data held for the authenticated user
+
+**`GET /api/v1/privacy/export`**
+
+Export all personal data held for the authenticated user
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/privacy/export' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+{
+  "user": {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "email": "jane@example.com",
+    "isVerified": true,
+    "userType": "CUSTOMER",
+    "isActive": true,
+    "mfaEnabled": false,
+    "createdAt": "2024-05-06T12:00:00",
+    "updatedAt": "2024-05-06T12:00:00"
+  },
+  "profile": {
+    "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "image": "string",
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "mobile": "string",
+    "faxNumber": "string",
+    "streetAddress": "123 Main St",
+    "city": "New York",
+    "state": "PENDING",
+    "country": "US",
+    "identificationType": "CUSTOMER",
+    "identificationNo": "string",
+    "occupation": "string",
+    "postCode": "SAVE10",
+    "gender": "string",
+    "dateOfBirth": "2024-05-06T12:00:00",
+    "bio": "string",
+    "isActive": true,
+    "verified": true
+  },
+  "shippingAddresses": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "email": "jane@example.com",
+      "phoneNumber": "+15551234567",
+      "streetAddress": "123 Main St",
+      "city": "New York",
+      "state": "PENDING",
+      "country": "US",
+      "zipCode": "SAVE10",
+      "isDefault": true
+    }
+  ],
+  "orders": [
+    {
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "subTotal": "250.00",
+      "shippingCost": "25.00",
+      "taxAmount": "250.00",
+      "discountAmount": "250.00",
+      "total": "250.00",
+      "currency": "USD",
+      "status": "PENDING",
+      "allowedActions": [
+        "APPROVE"
+      ],
+      "nextStatuses": [
+        "SHIPPED"
+      ],
+      "paymentStatus": "PENDING",
+      "couponCode": "SAVE10",
+      "paymentMethod": "CREDIT_CARD",
+      "notes": "Looks good",
+      "contactEmail": "jane@example.com",
+      "shippingAddress": "123 Main St",
+      "billingAddress": "123 Main St"
+    }
+  ],
+  "payments": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "amount": "250.00",
+      "currency": "USD",
+      "status": "PENDING",
+      "paymentMethod": "CREDIT_CARD",
+      "transactionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "createdAt": "2024-05-06T12:00:00",
+      "provider": "MANUAL",
+      "providerReference": "pi_123456789",
+      "clientSecret": "pi_123_secret_456",
+      "nextActionUrl": "https://example.com/next",
+      "scaStatus": "NOT_REQUIRED",
+      "providerStatus": "succeeded",
+      "riskScore": 1,
+      "riskDecision": "ALLOW",
+      "avsStatus": "MATCH",
+      "cvvStatus": "MATCH",
+      "threeDsEnforced": true
+    }
+  ],
+  "refunds": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderItemId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderNumber": "ORD-20240506-0001-A1B2C3D4",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "customerEmail": "jane@example.com",
+      "productName": "Wireless Headphones",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "reason": "Policy violation",
+      "images": "https://example.com/image.jpg",
+      "decisionReason": "Policy violation",
+      "status": "PENDING",
+      "currency": "USD",
+      "quantity": 1,
+      "refundAmount": "250.00",
+      "shippingRefund": "25.00",
+      "taxRefund": "25.00",
+      "refundMethod": "ORIGINAL",
+      "trackingNumber": "1Z999AA10123456784",
+      "allowedActions": [
+        "APPROVE"
+      ]
+    }
+  ],
+  "consents": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "policyId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "consentDate": "2024-05-06T12:00:00",
+      "ipAddress": "123 Main St",
+      "userAgent": "string",
+      "revokedAt": "2024-05-06T12:00:00",
+      "policyVersion": "string",
+      "policyContentHash": "string"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "productId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "reviewText": "Looks good",
+      "rating": 1,
+      "title": "Example",
+      "isVerifiedPurchase": true,
+      "helpfulCount": 1,
+      "notHelpfulCount": 1,
+      "images": [
+        "https://example.com/image.jpg"
+      ],
+      "status": "ACTIVE",
+      "sellerReply": "Looks good",
+      "sellerRepliedAt": "2024-05-06T12:00:00",
+      "moderationReason": "Policy violation",
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "channel": "EMAIL",
+      "type": "CUSTOMER",
+      "title": "Example",
+      "body": "Looks good",
+      "resourceType": "CUSTOMER",
+      "resourceId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "isRead": true,
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "additionalData": {},
+  "exportedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 9. Erase/anonymize the authenticated account (password required)
+
+**`POST /api/v1/privacy/erase`**
+
+Erase/anonymize the authenticated account (password required)
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/privacy/erase' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "password": "string"
+}'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
 
 ## Error Handling
 

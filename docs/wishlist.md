@@ -217,6 +217,31 @@ curl -X 'DELETE' \
 
 ---
 
+### 6. List wishlisted product IDs
+
+**`GET /api/v1/wishlists/ids`**
+
+List wishlisted product IDs
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/wishlists/ids' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+[
+  "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+]
+```
+
+---
+
 ## Error Handling
 
 This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
@@ -226,7 +251,7 @@ This API follows industry-standard error handling patterns (Stripe, GitHub, Open
 - **Response body contains data directly** (no wrapper object)
 - No `isSuccess` or `statusCode` fields needed
 
-### Error Responses
+#### Error Responses
 
 **Standard Error (400/401/403/404/500):**
 ```json

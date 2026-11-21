@@ -119,3 +119,145 @@ Delete a shipping method by its ID.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `id` | string | Yes | Unique identifier of the shipping method to delete |
+### 5. Seller - List my shipping methods
+
+**`GET /api/v1/seller/shipping-methods`**
+
+Seller - List my shipping methods
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/shipping-methods?page=1&perPage=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "type": "CUSTOMER",
+      "price": "250.00",
+      "deliveryTime": "2024-05-06T12:00:00",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 6. Seller - Create a shipping method
+
+**`POST /api/v1/seller/shipping-methods`**
+
+Seller - Create a shipping method
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/shipping-methods' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "type": "CUSTOMER",
+  "price": "250.00",
+  "deliveryTime": "2024-05-06T12:00:00"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "type": "CUSTOMER",
+  "price": "250.00",
+  "deliveryTime": "2024-05-06T12:00:00",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+}
+```
+
+---
+
+### 7. Seller - Delete a shipping method
+
+**`DELETE /api/v1/seller/shipping-methods/{id}`**
+
+Seller - Delete a shipping method
+
+#### Request
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/shipping-methods/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 8. Seller - Update a shipping method
+
+**`PUT /api/v1/seller/shipping-methods/{id}`**
+
+Seller - Update a shipping method
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/shipping-methods/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "type": "CUSTOMER",
+  "price": "250.00",
+  "deliveryTime": "2024-05-06T12:00:00"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "type": "CUSTOMER",
+  "price": "250.00",
+  "deliveryTime": "2024-05-06T12:00:00",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+}
+```
+
+---

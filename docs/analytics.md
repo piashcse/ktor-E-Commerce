@@ -3,7 +3,7 @@
 Anonymous storefront events power conversion funnels, UTM/referrer attribution and per-product
 conversion reporting.
 
-## Event ingestion
+### 1. Event ingestion
 
 **`POST /api/v1/analytics/events`** — public, rate-limited, max 50 events per request.
 
@@ -44,7 +44,7 @@ Ingestion is skipped when `consent` is `false` or the request is identified as b
 (common bot user agents). Rejected events return `{ "accepted": 0, "rejected": N }` so storefronts
 can treat this as a successful no-op.
 
-## Funnel
+### 2. Funnel
 
 **`GET /api/v1/admin/analytics/funnel?startDate=2026-05-01&endDate=2026-05-31`**
 
@@ -67,7 +67,7 @@ Stages: `page_view` → `product_view` → `add_to_cart` → `checkout_start` �
 
 `purchase` counts paid, non-canceled orders in the range.
 
-## Attribution
+### 3. Attribution
 
 **`GET /api/v1/admin/analytics/attribution?startDate=...&endDate=...`**
 
@@ -95,7 +95,7 @@ attribution are grouped under `direct` / `none` / `none`.
 
 Revenue is normalized to USD via the order FX rate.
 
-## Product conversion
+### 4. Product conversion
 
 **`GET /api/v1/admin/analytics/products?startDate=...&endDate=...&limit=20`**
 

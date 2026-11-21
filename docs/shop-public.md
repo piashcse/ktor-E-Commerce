@@ -29,3 +29,214 @@ curl -X 'GET' \
 
 Only shops with `status = APPROVED` are returned. Pending/suspended shops return `404` from the
 public detail endpoint and are excluded from all public lists.
+## Endpoint Details
+
+### 1. Retrieve detailed information about a specific shop
+
+**`GET /api/v1/shops/{id}`**
+
+Retrieve detailed information about a specific shop
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shops/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "description": "Looks good",
+  "address": "123 Main St",
+  "phone": "+15551234567",
+  "email": "jane@example.com",
+  "logo": "https://example.com/image.jpg",
+  "coverImage": "https://example.com/image.jpg",
+  "status": "PENDING",
+  "rejectionReason": "Policy violation",
+  "suspendedReason": "Policy violation",
+  "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "ownerEmail": "jane@example.com",
+  "kycStatus": "NOT_SUBMITTED",
+  "rating": "5",
+  "totalReviews": 1,
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 2. Retrieve public shops with filters (public)
+
+**`GET /api/v1/shops/public`**
+
+Retrieve public shops with filters (public)
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shops/public?page=1&perPage=20&status=PENDING' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "description": "Looks good",
+      "address": "123 Main St",
+      "phone": "+15551234567",
+      "email": "jane@example.com",
+      "logo": "https://example.com/image.jpg",
+      "coverImage": "https://example.com/image.jpg",
+      "status": "PENDING",
+      "rejectionReason": "Policy violation",
+      "suspendedReason": "Policy violation",
+      "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ownerEmail": "jane@example.com",
+      "kycStatus": "NOT_SUBMITTED",
+      "rating": "5",
+      "totalReviews": 1,
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 3. Retrieve shops by category (public)
+
+**`GET /api/v1/shops/category/{categoryId}`**
+
+Retrieve shops by category (public)
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shops/category/6c5078d3-f8e3-4c88-9afe-48b5423c664f?page=1&perPage=20' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "description": "Looks good",
+      "address": "123 Main St",
+      "phone": "+15551234567",
+      "email": "jane@example.com",
+      "logo": "https://example.com/image.jpg",
+      "coverImage": "https://example.com/image.jpg",
+      "status": "PENDING",
+      "rejectionReason": "Policy violation",
+      "suspendedReason": "Policy violation",
+      "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ownerEmail": "jane@example.com",
+      "kycStatus": "NOT_SUBMITTED",
+      "rating": "5",
+      "totalReviews": 1,
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 4. Retrieve featured shops (public)
+
+**`GET /api/v1/shops/featured`**
+
+Retrieve featured shops (public)
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shops/featured?page=1&perPage=20' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "description": "Looks good",
+      "address": "123 Main St",
+      "phone": "+15551234567",
+      "email": "jane@example.com",
+      "logo": "https://example.com/image.jpg",
+      "coverImage": "https://example.com/image.jpg",
+      "status": "PENDING",
+      "rejectionReason": "Policy violation",
+      "suspendedReason": "Policy violation",
+      "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ownerEmail": "jane@example.com",
+      "kycStatus": "NOT_SUBMITTED",
+      "rating": "5",
+      "totalReviews": 1,
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---

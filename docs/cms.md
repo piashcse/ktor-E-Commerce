@@ -37,7 +37,7 @@ Admin:
 Publishing sets `publishedAt`; unpublishing clears it. Slugs must match
 `^[a-z0-9]+(?:-[a-z0-9]+)*$`.
 
-## SEO metadata
+### 1. SEO metadata
 
 **`GET /api/v1/seo/metadata?entityType=PAGE&entityId=about-us&locale=en`**
 

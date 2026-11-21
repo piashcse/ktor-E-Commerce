@@ -248,7 +248,7 @@ curl -X 'GET' \
 ]
 ```
 
-## Seller dashboard
+### 7. Seller dashboard
 
 **`GET /api/v1/seller/dashboard`**
 
@@ -259,6 +259,76 @@ paid-only revenue normalized to USD, order counts by status, top products and lo
 curl -X 'GET' \
   'http://localhost:8080/api/v1/seller/dashboard' \
   -H 'Authorization: Bearer <seller_token>'
+```
+
+---
+
+### 8. Admin work queues
+
+**`GET /api/v1/admin/queues`**
+
+Admin work queues
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/queues' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "queues": [
+    {
+      "key": "pending-orders",
+      "label": "Pending orders",
+      "count": 1,
+      "oldestAt": "2024-05-06T12:00:00",
+      "path": "/admin/orders"
+    }
+  ]
+}
+```
+
+---
+
+### 9. Seller readiness
+
+**`GET /api/v1/seller/readiness`**
+
+Seller readiness
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/readiness' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+{
+  "shopStatus": "ACTIVE",
+  "kycStatus": "VERIFIED",
+  "payoutEligible": true,
+  "payoutBlockedReason": "Policy violation",
+  "availablePayout": "25.00",
+  "currency": "USD",
+  "missingRequirements": [
+    "VERIFIED_EMAIL"
+  ],
+  "nextAction": "CAPTURE",
+  "shopRejectionReason": "Policy violation",
+  "shopSuspendedReason": "Policy violation",
+  "kycRejectionReason": "Policy violation"
+}
 ```
 
 ---

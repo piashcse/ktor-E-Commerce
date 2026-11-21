@@ -195,6 +195,815 @@ curl -X 'PUT' \
 
 ---
 
+### 5. Seller - Retrieve owned shops
+
+**`GET /api/v1/seller/shops`**
+
+Seller - Retrieve owned shops
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/shops?page=1&perPage=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "description": "Looks good",
+      "address": "123 Main St",
+      "phone": "+15551234567",
+      "email": "jane@example.com",
+      "logo": "https://example.com/image.jpg",
+      "coverImage": "https://example.com/image.jpg",
+      "status": "PENDING",
+      "rejectionReason": "Policy violation",
+      "suspendedReason": "Policy violation",
+      "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ownerEmail": "jane@example.com",
+      "kycStatus": "NOT_SUBMITTED",
+      "rating": "5",
+      "totalReviews": 1,
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 6. Seller - Update shop details
+
+**`PUT /api/v1/seller/shops/{id}`**
+
+Seller - Update shop details
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/shops/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "name": "Example",
+  "description": "Looks good",
+  "address": "123 Main St",
+  "phone": "+15551234567",
+  "email": "jane@example.com",
+  "logo": "https://example.com/image.jpg",
+  "coverImage": "https://example.com/image.jpg"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "description": "Looks good",
+  "address": "123 Main St",
+  "phone": "+15551234567",
+  "email": "jane@example.com",
+  "logo": "https://example.com/image.jpg",
+  "coverImage": "https://example.com/image.jpg",
+  "status": "PENDING",
+  "rejectionReason": "Policy violation",
+  "suspendedReason": "Policy violation",
+  "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "ownerEmail": "jane@example.com",
+  "kycStatus": "NOT_SUBMITTED",
+  "rating": "5",
+  "totalReviews": 1,
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 7. Retrieve detailed information about a specific shop
+
+**`GET /api/v1/shops/{id}`**
+
+Retrieve detailed information about a specific shop
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shops/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "description": "Looks good",
+  "address": "123 Main St",
+  "phone": "+15551234567",
+  "email": "jane@example.com",
+  "logo": "https://example.com/image.jpg",
+  "coverImage": "https://example.com/image.jpg",
+  "status": "PENDING",
+  "rejectionReason": "Policy violation",
+  "suspendedReason": "Policy violation",
+  "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "ownerEmail": "jane@example.com",
+  "kycStatus": "NOT_SUBMITTED",
+  "rating": "5",
+  "totalReviews": 1,
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 8. Retrieve shops by category (public)
+
+**`GET /api/v1/shops/category/{categoryId}`**
+
+Retrieve shops by category (public)
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shops/category/6c5078d3-f8e3-4c88-9afe-48b5423c664f?page=1&perPage=20' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "description": "Looks good",
+      "address": "123 Main St",
+      "phone": "+15551234567",
+      "email": "jane@example.com",
+      "logo": "https://example.com/image.jpg",
+      "coverImage": "https://example.com/image.jpg",
+      "status": "PENDING",
+      "rejectionReason": "Policy violation",
+      "suspendedReason": "Policy violation",
+      "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ownerEmail": "jane@example.com",
+      "kycStatus": "NOT_SUBMITTED",
+      "rating": "5",
+      "totalReviews": 1,
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 9. Retrieve featured shops (public)
+
+**`GET /api/v1/shops/featured`**
+
+Retrieve featured shops (public)
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shops/featured?page=1&perPage=20' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "description": "Looks good",
+      "address": "123 Main St",
+      "phone": "+15551234567",
+      "email": "jane@example.com",
+      "logo": "https://example.com/image.jpg",
+      "coverImage": "https://example.com/image.jpg",
+      "status": "PENDING",
+      "rejectionReason": "Policy violation",
+      "suspendedReason": "Policy violation",
+      "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ownerEmail": "jane@example.com",
+      "kycStatus": "NOT_SUBMITTED",
+      "rating": "5",
+      "totalReviews": 1,
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 10. Admin - Retrieve shops filtered by status
+
+**`GET /api/v1/admin/shops/status`**
+
+Admin - Retrieve shops filtered by status
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/shops/status?page=1&perPage=20&status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "description": "Looks good",
+      "address": "123 Main St",
+      "phone": "+15551234567",
+      "email": "jane@example.com",
+      "logo": "https://example.com/image.jpg",
+      "coverImage": "https://example.com/image.jpg",
+      "status": "PENDING",
+      "rejectionReason": "Policy violation",
+      "suspendedReason": "Policy violation",
+      "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ownerEmail": "jane@example.com",
+      "kycStatus": "NOT_SUBMITTED",
+      "rating": "5",
+      "totalReviews": 1,
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 11. Admin - Reject a shop application
+
+**`PUT /api/v1/admin/shops/reject/{id}`**
+
+Admin - Reject a shop application
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/shops/reject/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "reason": "Policy violation"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "description": "Looks good",
+  "address": "123 Main St",
+  "phone": "+15551234567",
+  "email": "jane@example.com",
+  "logo": "https://example.com/image.jpg",
+  "coverImage": "https://example.com/image.jpg",
+  "status": "PENDING",
+  "rejectionReason": "Policy violation",
+  "suspendedReason": "Policy violation",
+  "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "ownerEmail": "jane@example.com",
+  "kycStatus": "NOT_SUBMITTED",
+  "rating": "5",
+  "totalReviews": 1,
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 12. Admin - Suspend an active shop
+
+**`PUT /api/v1/admin/shops/suspend/{id}`**
+
+Admin - Suspend an active shop
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/shops/suspend/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "reason": "Policy violation"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "description": "Looks good",
+  "address": "123 Main St",
+  "phone": "+15551234567",
+  "email": "jane@example.com",
+  "logo": "https://example.com/image.jpg",
+  "coverImage": "https://example.com/image.jpg",
+  "status": "PENDING",
+  "rejectionReason": "Policy violation",
+  "suspendedReason": "Policy violation",
+  "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "ownerEmail": "jane@example.com",
+  "kycStatus": "NOT_SUBMITTED",
+  "rating": "5",
+  "totalReviews": 1,
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 13. Admin - Activate a suspended shop
+
+**`PUT /api/v1/admin/shops/activate/{id}`**
+
+Admin - Activate a suspended shop
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/admin/shops/activate/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "name": "Example",
+  "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "description": "Looks good",
+  "address": "123 Main St",
+  "phone": "+15551234567",
+  "email": "jane@example.com",
+  "logo": "https://example.com/image.jpg",
+  "coverImage": "https://example.com/image.jpg",
+  "status": "PENDING",
+  "rejectionReason": "Policy violation",
+  "suspendedReason": "Policy violation",
+  "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "ownerEmail": "jane@example.com",
+  "kycStatus": "NOT_SUBMITTED",
+  "rating": "5",
+  "totalReviews": 1,
+  "createdAt": "2024-05-06T12:00:00",
+  "updatedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 14. Admin - List all shops
+
+**`GET /api/v1/admin/shops`**
+
+Admin - List all shops
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/shops?page=1&perPage=20&status=PENDING&q=phone' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "description": "Looks good",
+      "address": "123 Main St",
+      "phone": "+15551234567",
+      "email": "jane@example.com",
+      "logo": "https://example.com/image.jpg",
+      "coverImage": "https://example.com/image.jpg",
+      "status": "PENDING",
+      "rejectionReason": "Policy violation",
+      "suspendedReason": "Policy violation",
+      "ownerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "ownerEmail": "jane@example.com",
+      "kycStatus": "NOT_SUBMITTED",
+      "rating": "5",
+      "totalReviews": 1,
+      "createdAt": "2024-05-06T12:00:00",
+      "updatedAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 15. Admin - Bulk approve shops
+
+**`POST /api/v1/admin/shops/bulk/approve`**
+
+Admin - Bulk approve shops
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/shops/bulk/approve' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+#### Response
+
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+
+---
+
+### 16. Admin - Bulk reject shops
+
+**`POST /api/v1/admin/shops/bulk/reject`**
+
+Admin - Bulk reject shops
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/shops/bulk/reject' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+#### Response
+
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+
+---
+
+### 17. Admin - Bulk suspend shops
+
+**`POST /api/v1/admin/shops/bulk/suspend`**
+
+Admin - Bulk suspend shops
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/shops/bulk/suspend' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ],
+  "reason": "Policy violation"
+}'
+```
+
+#### Response
+
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+
+---
+
+### 18. List products for a shop
+
+**`GET /api/v1/shops/{id}/products`**
+
+List products for a shop
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/shops/6c5078d3-f8e3-4c88-9afe-48b5423c664f/products?page=1&perPage=20' \
+  -H 'accept: application/json'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "categoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "subCategoryId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "brandId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "name": "Example",
+      "description": "Looks good",
+      "sku": "SKU-12345",
+      "barcode": "SAVE10",
+      "weight": 250.0,
+      "dimensions": "10x20x30 cm",
+      "minOrderQuantity": 1,
+      "price": "250.00",
+      "discountPrice": "250.00",
+      "discountPercentage": 250.0,
+      "videoLink": "https://example.com/video.mp4",
+      "hotDeal": true,
+      "featured": true,
+      "bestSeller": true
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 19. Seller: list shop members
+
+**`GET /api/v1/seller/members`**
+
+Seller: list shop members
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/seller/members' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "email": "jane@example.com",
+    "status": "PENDING",
+    "isOwner": true,
+    "roles": [
+      "string"
+    ]
+  }
+]
+```
+
+---
+
+### 20. Seller: invite a staff member
+
+**`POST /api/v1/seller/members/invite`**
+
+Seller: invite a staff member
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/seller/members/invite' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "jane@example.com",
+  "roleIds": [
+    "string"
+  ]
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "email": "jane@example.com",
+  "expiresAt": "2024-05-06T12:00:00",
+  "token": "token-value"
+}
+```
+
+---
+
+### 21. Seller: replace a member's roles
+
+**`PUT /api/v1/seller/members/{id}/roles`**
+
+Seller: replace a member's roles
+
+#### Request
+
+```bash
+curl -X 'PUT' \
+  'http://localhost:8080/api/v1/seller/members/6c5078d3-f8e3-4c88-9afe-48b5423c664f/roles' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "roleIds": [
+    "string"
+  ]
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "shopId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "userId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "email": "jane@example.com",
+  "status": "PENDING",
+  "isOwner": true,
+  "roles": [
+    "string"
+  ]
+}
+```
+
+---
+
+### 22. Seller: remove a shop member
+
+**`DELETE /api/v1/seller/members/{id}`**
+
+Seller: remove a shop member
+
+#### Request
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/seller/members/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <seller_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
 ## Error Handling
 
 ### Success Responses

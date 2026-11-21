@@ -71,7 +71,7 @@ curl -X 'POST' \
 
 ---
 
-### 3. Get Payment by ID
+### 2. Get Payment by ID
 
 **`GET /api/v1/payments/{id}`**
 
@@ -112,7 +112,7 @@ curl -X 'GET' \
 
 ---
 
-### 4. Get Payments by Order
+### 3. Get Payments by Order
 
 **`GET /api/v1/payments/order/{orderId}`**
 
@@ -164,6 +164,161 @@ curl -X 'GET' \
 
 ---
 
+### 4. Admin - List payments
+
+**`GET /api/v1/admin/payments`**
+
+Admin - List payments
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/payments?page=1&perPage=20&status=PENDING' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "orderId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "amount": "250.00",
+      "currency": "USD",
+      "status": "PENDING",
+      "paymentMethod": "CREDIT_CARD",
+      "transactionId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "createdAt": "2024-05-06T12:00:00",
+      "provider": "MANUAL",
+      "providerReference": "pi_123456789",
+      "clientSecret": "pi_123_secret_456",
+      "nextActionUrl": "https://example.com/next",
+      "scaStatus": "NOT_REQUIRED",
+      "providerStatus": "succeeded",
+      "riskScore": 1,
+      "riskDecision": "ALLOW",
+      "avsStatus": "MATCH",
+      "cvvStatus": "MATCH",
+      "threeDsEnforced": true
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 5. Record AVS/CVV results for a payment
+
+**`POST /api/v1/admin/payments/{id}/risk`**
+
+Record AVS/CVV results for a payment
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/payments/6c5078d3-f8e3-4c88-9afe-48b5423c664f/risk' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "avsStatus": "MATCH",
+  "cvvStatus": "MATCH"
+}'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 6. Admin: bulk replay webhooks
+
+**`POST /api/v1/admin/webhooks/bulk/replay`**
+
+Admin: bulk replay webhooks
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/webhooks/bulk/replay' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "source": "PAYMENT",
+  "ids": [
+    "6c5078d3-f8e3-4c88-9afe-48b5423c664f"
+  ]
+}'
+```
+
+#### Response
+
+```json
+{
+  "requested": 1,
+  "succeeded": 1,
+  "failed": []
+}
+```
+
+---
+
+### 7. Admin: inspect a webhook payload
+
+**`GET /api/v1/admin/webhooks/{id}`**
+
+Admin: inspect a webhook payload
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/webhooks/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "source": "PAYMENT",
+  "provider": "stripe",
+  "eventId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "eventType": "CUSTOMER",
+  "status": "RECEIVED",
+  "error": "None",
+  "payload": "{}",
+  "receivedAt": "2024-05-06T12:00:00",
+  "processedAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
 ## Error Handling
 
 This API follows industry-standard error handling patterns (Stripe, GitHub, OpenAI):
@@ -173,7 +328,7 @@ This API follows industry-standard error handling patterns (Stripe, GitHub, Open
 - **Response body contains data directly** (no wrapper object)
 - No `isSuccess` or `statusCode` fields needed
 
-### Error Responses
+#### Error Responses
 
 **Standard Error (400/401/403/404/500):**
 ```json
@@ -208,7 +363,7 @@ All error messages are centralized and consistent across all endpoints.
 
 ---
 
-## 4. Confirm Payment (Admin)
+### 8. Confirm Payment (Admin)
 
 **`POST /api/v1/admin/payments/{id}/confirm`**
 
@@ -224,7 +379,7 @@ curl -X 'POST' \
 
 ---
 
-## 5. Provider Webhook
+### 9. Provider Webhook
 
 **`POST /api/v1/payments/webhook/{provider}`**
 
@@ -272,7 +427,7 @@ provider payment, the API issues the refund through the processor and stores
 
 ---
 
-## 6. Release a risk review
+### 10. Release a risk review
 
 **`POST /api/v1/admin/payments/{id}/risk/approve`**
 
@@ -281,7 +436,7 @@ captured. `BLOCK` payments cannot be released.
 
 ---
 
-## Webhook inspection and replay
+### 11. Webhook inspection and replay
 
 **`GET /api/v1/admin/webhooks?source=PAYMENT&status=FAILED`**
 

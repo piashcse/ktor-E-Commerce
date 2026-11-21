@@ -107,3 +107,325 @@ Store credit is held in USD and recorded as an `ADMIN_ADJUSTMENT` ledger entry.
   "referralCode": "REF12345"
 }
 ```
+## Endpoint Details
+
+### 1. Get my loyalty wallet
+
+**`GET /api/v1/wallet`**
+
+Get my loyalty wallet
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/wallet' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+{
+  "creditBalance": "250.00",
+  "pointsBalance": 1,
+  "lifetimePoints": 1,
+  "referralCode": "SAVE10"
+}
+```
+
+---
+
+### 2. List my wallet ledger
+
+**`GET /api/v1/wallet/ledger`**
+
+List my wallet ledger
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/wallet/ledger?page=1&perPage=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "type": "POINTS_EARN",
+      "pointsDelta": 1,
+      "creditDelta": "string",
+      "referenceType": "CUSTOMER",
+      "referenceId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "note": "string",
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 3. Check a gift-card balance
+
+**`GET /api/v1/wallet/gift-cards/{code}`**
+
+Check a gift-card balance
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/wallet/gift-cards/SAVE10' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "code": "SAVE10",
+  "initialBalance": "250.00",
+  "balance": "250.00",
+  "currency": "USD",
+  "status": "ACTIVE",
+  "expiresAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 4. List my referrals
+
+**`GET /api/v1/referrals`**
+
+List my referrals
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/referrals' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>'
+```
+
+#### Response
+
+```json
+[
+  {
+    "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "referrerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "refereeUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+    "code": "SAVE10",
+    "status": "PENDING",
+    "rewardPoints": 1,
+    "rewardCredit": "string",
+    "completedAt": "2024-05-06T12:00:00",
+    "createdAt": "2024-05-06T12:00:00"
+  }
+]
+```
+
+---
+
+### 5. Claim a referral code
+
+**`POST /api/v1/referrals/claim`**
+
+Claim a referral code
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/referrals/claim' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <access_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "code": "SAVE10"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "referrerUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "refereeUserId": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "code": "SAVE10",
+  "status": "PENDING",
+  "rewardPoints": 1,
+  "rewardCredit": "string",
+  "completedAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 6. List gift cards
+
+**`GET /api/v1/admin/gift-cards`**
+
+List gift cards
+
+#### Request
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/api/v1/admin/gift-cards?page=1&perPage=20' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+      "code": "SAVE10",
+      "initialBalance": "250.00",
+      "balance": "250.00",
+      "currency": "USD",
+      "status": "ACTIVE",
+      "expiresAt": "2024-05-06T12:00:00",
+      "createdAt": "2024-05-06T12:00:00"
+    }
+  ],
+  "metadata": {
+    "totalCount": 1,
+    "limit": 20,
+    "offset": 0,
+    "page": 1,
+    "perPage": 20,
+    "totalPages": 1,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}
+```
+
+---
+
+### 7. Issue a gift card
+
+**`POST /api/v1/admin/gift-cards`**
+
+Issue a gift card
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/gift-cards' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "amount": "250.00",
+  "currency": "USD",
+  "code": "SAVE10",
+  "expiresAt": "2024-05-06T12:00:00"
+}'
+```
+
+#### Response
+
+```json
+{
+  "id": "6c5078d3-f8e3-4c88-9afe-48b5423c664f",
+  "code": "SAVE10",
+  "initialBalance": "250.00",
+  "balance": "250.00",
+  "currency": "USD",
+  "status": "ACTIVE",
+  "expiresAt": "2024-05-06T12:00:00",
+  "createdAt": "2024-05-06T12:00:00"
+}
+```
+
+---
+
+### 8. Void a gift card
+
+**`DELETE /api/v1/admin/gift-cards/{id}`**
+
+Void a gift card
+
+#### Request
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:8080/api/v1/admin/gift-cards/6c5078d3-f8e3-4c88-9afe-48b5423c664f' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>'
+```
+
+#### Response
+
+```json
+{
+  "message": "Operation completed"
+}
+```
+
+---
+
+### 9. Credit a customer's store balance
+
+**`POST /api/v1/admin/wallets/{userId}/credit`**
+
+Credit a customer's store balance
+
+#### Request
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/api/v1/admin/wallets/6c5078d3-f8e3-4c88-9afe-48b5423c664f/credit' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <admin_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "amount": "250.00",
+  "note": "string"
+}'
+```
+
+#### Response
+
+```json
+{
+  "creditBalance": "250.00",
+  "pointsBalance": 1,
+  "lifetimePoints": 1,
+  "referralCode": "SAVE10"
+}
+```
+
+---
